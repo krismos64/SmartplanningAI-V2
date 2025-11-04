@@ -1,0 +1,100 @@
+version: '3.8'
+
+# ==============================================
+# SMARTPLANNING V2 - ENVIRONNEMENT DÉVELOPPEMENT
+# ==============================================
+# Services :
+# - PostgreSQL 16 (base de données principale)
+# - Redis 7 (cache et sessions)
+# - Adminer (interface web pour PostgreSQL)
+#
+# Commandes :
+#   Démarrer : npm run docker:dev
+#   Arrêter  : npm run docker:dev:down
+#   Logs     : docker-compose -f docker/docker-compose.yml logs -f
+# ==============================================
+
+services:
+  # ----------------------------------------------
+  # 🗄️ PostgreSQL 16 (Base de données)
+  # ----------------------------------------------
+  postgres:
+    image: postgres:16-alpine
+    container_name: smartplanning-postgres
+    restart: unless-stopped
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_USER: smartplanning
+      POSTGRES_PASSWORD: smartplanning
+      POSTGRES_DB: smartplanning
+      POSTGRES_INITDB_ARGS: '--encoding=UTF-8 --lc-collate=fr_FR.UTF-8 --lc-ctype=fr_FR.UTF-8'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - smartplanning-network
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U smartplanning']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ----------------------------------------------
+  # 🔴 Redis 7 (Cache et sessions)
+  # ----------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: smartplanning-redis
+    restart: unless-stopped
+    ports:
+      - '6379:6379'
+    command: redis-server --appendonly yes --requirepass smartplanning
+    volumes:
+      - redis_data:/data
+    networks:
+      - smartplanning-network
+    healthcheck:
+      test: ['CMD', 'redis-cli', '--raw', 'incr', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ----------------------------------------------
+  # 🌐 Adminer (Interface web PostgreSQL)
+  # ----------------------------------------------
+  # Accès : http://localhost:8080
+  # Système : PostgreSQL
+  # Serveur : postgres
+  # Utilisateur : smartplanning
+  # Mot de passe : smartplanning
+  # Base : smartplanning
+  # ----------------------------------------------
+  adminer:
+    image: adminer:latest
+    container_name: smartplanning-adminer
+    restart: unless-stopped
+    ports:
+      - '8080:8080'
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres
+      ADMINER_DESIGN: nette
+    networks:
+      - smartplanning-network
+    depends_on:
+      - postgres
+
+# ----------------------------------------------
+# 📦 VOLUMES (persistance des données)
+# ----------------------------------------------
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+# ----------------------------------------------
+# 🌐 NETWORK (communication inter-conteneurs)
+# ----------------------------------------------
+networks:
+  smartplanning-network:
+    driver: bridge
