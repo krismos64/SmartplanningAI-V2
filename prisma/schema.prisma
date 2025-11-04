@@ -1,0 +1,483 @@
+// ============================================================================
+// SMARTPLANNING V2 - PRISMA SCHEMA
+// ============================================================================
+// Projet CDA - Plateforme SaaS de gestion intelligente des plannings
+// Architecture multi-tenant avec isolation par entreprise
+// Auteur: Christophe Mostefaoui
+// Date: 04/11/2025
+// ============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// AUTHENTIFICATION (NextAuth v5)
+// ============================================================================
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  emailVerified DateTime?
+  name          String?
+  password      String // Hash bcrypt
+  image         String?
+  role          UserRole  @default(EMPLOYEE)
+
+  // Relations NextAuth v5
+  accounts Account[]
+  sessions Session[]
+
+  // Relations métier
+  companyId String?
+  company   Company? @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  employee  Employee?
+
+  // Notifications
+  notifications Notification[]
+
+  // Permissions & sécurité
+  isActive        Boolean @default(true)
+  isEmailVerified Boolean @default(false)
+  lastLoginAt     DateTime?
+
+  // Audit
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([email])
+  @@index([companyId])
+  @@index([role])
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+// ============================================================================
+// ENTREPRISES (Multi-tenant)
+// ============================================================================
+
+model Company {
+  id    String  @id @default(cuid())
+  name  String
+  slug  String  @unique // URL-friendly : /app/acme-corp
+  logo  String?
+  email String?
+  phone String?
+  address String? @db.Text
+
+  // Configuration planning
+  workingHoursStart String   @default("09:00") // Format HH:mm
+  workingHoursEnd   String   @default("18:00")
+  workingDays       String[] @default(["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"])
+  timezone          String   @default("Europe/Paris")
+
+  // Configuration horaires avancée par jour (JSONB)
+  // Exemple: { "MONDAY": { "start": "09:00", "end": "18:00", "break": "12:00-14:00" } }
+  defaultOpeningHours Json?
+
+  // Abonnement SaaS
+  subscriptionPlan   SubscriptionPlan   @default(FREE)
+  subscriptionStatus SubscriptionStatus @default(TRIAL)
+  trialEndsAt        DateTime?
+  subscriptionEndsAt DateTime?
+
+  // Relations
+  users         User[]
+  teams         Team[]
+  employees     Employee[]
+  schedules     Schedule[]
+  leaveRequests LeaveRequest[]
+  notifications Notification[]
+  subscription  Subscription?
+  payments      Payment[]
+
+  // Audit
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([slug])
+  @@index([subscriptionStatus])
+  @@index([isActive])
+  @@map("companies")
+}
+
+// ============================================================================
+// ABONNEMENTS & PAIEMENTS (Stripe)
+// ============================================================================
+
+model Subscription {
+  id        String @id @default(cuid())
+  companyId String @unique
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  // Stripe
+  stripeCustomerId     String  @unique
+  stripeSubscriptionId String? @unique
+  stripePriceId        String?
+
+  // Plan
+  plan            SubscriptionPlan   @default(FREE)
+  planPrice       Float?
+  currency        String             @default("EUR")
+  billingInterval String?            // "month" ou "year"
+
+  // Statut
+  status             SubscriptionStatus @default(TRIAL)
+  currentPeriodStart DateTime?
+  currentPeriodEnd   DateTime?
+  cancelAtPeriodEnd  Boolean            @default(false)
+  canceledAt         DateTime?
+
+  // Relations
+  payments Payment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([stripeCustomerId])
+  @@index([stripeSubscriptionId])
+  @@index([status])
+  @@map("subscriptions")
+}
+
+model Payment {
+  id             String        @id @default(cuid())
+  companyId      String
+  company        Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  subscriptionId String?
+  subscription   Subscription? @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+
+  // Stripe
+  stripePaymentId String  @unique
+  stripeInvoiceId String?
+
+  // Montant
+  amount   Float
+  currency String @default("EUR")
+
+  // Statut
+  status        String // "succeeded", "pending", "failed", "refunded"
+  paymentMethod String? // "card", "sepa_debit", etc.
+
+  // Dates
+  paidAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([companyId, createdAt(sort: Desc)])
+  @@index([subscriptionId])
+  @@index([status])
+  @@map("payments")
+}
+
+// ============================================================================
+// ÉQUIPES & EMPLOYÉS
+// ============================================================================
+
+model Team {
+  id          String  @id @default(cuid())
+  name        String
+  description String?
+  color       String  @default("#3B82F6") // Couleur pour l'affichage planning
+
+  // Manager de l'équipe
+  managerId String?
+  manager   Employee? @relation("TeamManager", fields: [managerId], references: [id])
+
+  // Relations
+  companyId String
+  company   Company    @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  employees Employee[] @relation("TeamMembers")
+  schedules Schedule[]
+
+  // Audit
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([companyId])
+  @@index([managerId])
+  @@map("teams")
+}
+
+model Employee {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Informations RH
+  firstName  String
+  lastName   String
+  jobTitle   String?
+  department String?
+  phone      String?
+  hireDate   DateTime?
+
+  // Planning
+  weeklyHours Float @default(35.0) // Heures contractuelles
+
+  // Compétences & Préférences (IA future)
+  skills      String[] @default([]) // ["React", "TypeScript", "Node.js"]
+  // Exemple preferences: { "preferredDays": ["MONDAY", "TUESDAY"], "maxConsecutiveDays": 5 }
+  preferences Json?
+
+  // Relations
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  teamId String?
+  team   Team?   @relation("TeamMembers", fields: [teamId], references: [id])
+
+  managedTeams  Team[]         @relation("TeamManager")
+  schedules     Schedule[]
+  leaveRequests LeaveRequest[]
+
+  // Audit
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([companyId])
+  @@index([teamId])
+  @@index([userId])
+  @@index([isActive])
+  @@map("employees")
+}
+
+// ============================================================================
+// PLANNINGS
+// ============================================================================
+
+model Schedule {
+  id String @id @default(cuid())
+
+  // Dates & horaires
+  startDate DateTime
+  endDate   DateTime
+  startTime String // Format HH:mm
+  endTime   String // Format HH:mm
+
+  // Type de créneau
+  type   ScheduleType   @default(WORK)
+  status ScheduleStatus @default(CONFIRMED)
+
+  // Description
+  title       String?
+  description String? @db.Text
+  location    String?
+  color       String? @default("#10B981")
+
+  // Relations
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  teamId String?
+  team   Team?   @relation(fields: [teamId], references: [id])
+
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  // Audit
+  createdById String? // ID du User qui a créé
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([employeeId])
+  @@index([companyId])
+  @@index([startDate, endDate])
+  @@index([status])
+  @@index([type])
+  @@map("schedules")
+}
+
+// ============================================================================
+// DEMANDES DE CONGÉS
+// ============================================================================
+
+model LeaveRequest {
+  id String @id @default(cuid())
+
+  // Dates
+  startDate DateTime
+  endDate   DateTime
+  days      Float // Nombre de jours ouvrés
+
+  // Type de congé
+  type   LeaveType              @default(PAID_LEAVE)
+  status LeaveRequestStatus @default(PENDING)
+
+  // Justification
+  reason      String?
+  comment     String?   @db.Text
+  attachments String[]  @default([]) // URLs fichiers justificatifs
+
+  // Relations
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  // Validation
+  reviewedById  String? // ID du manager qui valide
+  reviewedAt    DateTime?
+  reviewComment String?   @db.Text
+
+  // Audit
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([employeeId])
+  @@index([companyId])
+  @@index([status])
+  @@index([startDate, endDate])
+  @@map("leave_requests")
+}
+
+// ============================================================================
+// NOTIFICATIONS
+// ============================================================================
+
+model Notification {
+  id String @id @default(cuid())
+
+  // Contenu
+  title   String
+  message String           @db.Text
+  type    NotificationType @default(INFO)
+
+  // Contexte
+  relatedType String? // "LeaveRequest", "Schedule"
+  relatedId   String? // ID de l'objet lié
+
+  // Destinataire
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  // Statut
+  isRead Boolean   @default(false)
+  readAt DateTime?
+
+  // Audit
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, isRead])
+  @@index([companyId])
+  @@index([createdAt(sort: Desc)])
+  @@map("notifications")
+}
+
+// ============================================================================
+// ENUMS
+// ============================================================================
+
+enum UserRole {
+  SYSTEM_ADMIN // Super admin plateforme SaaS
+  DIRECTOR // Directeur entreprise (accès total entreprise)
+  MANAGER // Manager équipe (gestion équipe)
+  EMPLOYEE // Employé (consultation + demandes congés)
+}
+
+enum SubscriptionPlan {
+  FREE // 0€ - 5 employés max
+  STARTER // 29€/mois - 20 employés
+  BUSINESS // 99€/mois - 100 employés
+  ENTERPRISE // Sur devis - illimité
+}
+
+enum SubscriptionStatus {
+  TRIAL // Période d'essai
+  ACTIVE // Actif payé
+  PAST_DUE // Paiement en retard
+  CANCELED // Annulé
+  EXPIRED // Expiré
+}
+
+enum ScheduleType {
+  WORK // Travail normal
+  MEETING // Réunion
+  BREAK // Pause
+  TRAINING // Formation
+  REMOTE // Télétravail
+  ON_CALL // Astreinte
+  OVERTIME // Heures supplémentaires
+}
+
+enum ScheduleStatus {
+  DRAFT // Brouillon
+  CONFIRMED // Confirmé
+  CANCELLED // Annulé
+  COMPLETED // Terminé
+}
+
+enum LeaveType {
+  PAID_LEAVE // Congés payés
+  SICK_LEAVE // Arrêt maladie
+  UNPAID_LEAVE // Congé sans solde
+  RTT // RTT
+  PARENTAL_LEAVE // Congé parental
+  OTHER // Autre
+}
+
+enum LeaveRequestStatus {
+  PENDING // En attente
+  APPROVED // Approuvée
+  REJECTED // Refusée
+  CANCELLED // Annulée par l'employé
+}
+
+enum NotificationType {
+  INFO
+  SUCCESS
+  WARNING
+  ERROR
+  SYSTEM
+}
