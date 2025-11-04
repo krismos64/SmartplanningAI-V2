@@ -1,12 +1,3 @@
-// ============================================================================
-// SMARTPLANNING V2 - PRISMA SCHEMA
-// ============================================================================
-// Projet CDA - Plateforme SaaS de gestion intelligente des plannings
-// Architecture multi-tenant avec isolation par entreprise
-// Auteur: Christophe Mostefaoui
-// Date: 04/11/2025
-// ============================================================================
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -35,15 +26,15 @@ model User {
 
   // Relations métier
   companyId String?
-  company   Company? @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  company   Company?  @relation(fields: [companyId], references: [id], onDelete: Cascade)
   employee  Employee?
 
   // Notifications
   notifications Notification[]
 
   // Permissions & sécurité
-  isActive        Boolean @default(true)
-  isEmailVerified Boolean @default(false)
+  isActive        Boolean   @default(true)
+  isEmailVerified Boolean   @default(false)
   lastLoginAt     DateTime?
 
   // Audit
@@ -102,12 +93,12 @@ model VerificationToken {
 // ============================================================================
 
 model Company {
-  id    String  @id @default(cuid())
-  name  String
-  slug  String  @unique // URL-friendly : /app/acme-corp
-  logo  String?
-  email String?
-  phone String?
+  id      String  @id @default(cuid())
+  name    String
+  slug    String  @unique // URL-friendly : /app/acme-corp
+  logo    String?
+  email   String?
+  phone   String?
   address String? @db.Text
 
   // Configuration planning
@@ -152,8 +143,8 @@ model Company {
 // ============================================================================
 
 model Subscription {
-  id        String @id @default(cuid())
-  companyId String @unique
+  id        String  @id @default(cuid())
+  companyId String  @unique
   company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   // Stripe
@@ -162,10 +153,10 @@ model Subscription {
   stripePriceId        String?
 
   // Plan
-  plan            SubscriptionPlan   @default(FREE)
+  plan            SubscriptionPlan @default(FREE)
   planPrice       Float?
-  currency        String             @default("EUR")
-  billingInterval String?            // "month" ou "year"
+  currency        String           @default("EUR")
+  billingInterval String? // "month" ou "year"
 
   // Statut
   status             SubscriptionStatus @default(TRIAL)
@@ -347,13 +338,13 @@ model LeaveRequest {
   days      Float // Nombre de jours ouvrés
 
   // Type de congé
-  type   LeaveType              @default(PAID_LEAVE)
+  type   LeaveType          @default(PAID_LEAVE)
   status LeaveRequestStatus @default(PENDING)
 
   // Justification
   reason      String?
-  comment     String?   @db.Text
-  attachments String[]  @default([]) // URLs fichiers justificatifs
+  comment     String?  @db.Text
+  attachments String[] @default([]) // URLs fichiers justificatifs
 
   // Relations
   employeeId String
