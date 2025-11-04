@@ -1,0 +1,50 @@
+# ==============================================
+# SMARTPLANNING V2 - DOCKERFILE DÉVELOPPEMENT
+# ==============================================
+# Image optimisée pour le développement avec hot-reload
+# Usage : docker build -f docker/Dockerfile.dev -t smartplanning:dev .
+# ==============================================
+
+FROM node:20-alpine AS base
+
+# Installer les dépendances système nécessaires
+RUN apk add --no-cache libc6-compat openssl
+
+WORKDIR /app
+
+# ----------------------------------------------
+# ÉTAPE 1 : Installation des dépendances
+# ----------------------------------------------
+FROM base AS deps
+
+# Copier les fichiers de dépendances
+COPY package.json package-lock.json* ./
+
+# Installer les dépendances (y compris devDependencies pour le dev)
+RUN npm ci
+
+# ----------------------------------------------
+# ÉTAPE 2 : Développement
+# ----------------------------------------------
+FROM base AS dev
+
+WORKDIR /app
+
+# Copier les dépendances depuis l'étape précédente
+COPY --from=deps /app/node_modules ./node_modules
+
+# Copier tout le code source
+COPY . .
+
+# Générer le Prisma Client
+RUN npx prisma generate
+
+# Exposer le port de développement Next.js
+EXPOSE 3000
+
+# Variables d'environnement pour le développement
+ENV NODE_ENV=development
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# Commande de démarrage avec hot-reload (Turbopack activé)
+CMD ["npm", "run", "dev"]
