@@ -19,7 +19,7 @@ services:
   # 🗄️ PostgreSQL 16 (Base de données)
   # ----------------------------------------------
   postgres:
-    image: postgres:16-alpine
+    image: postgres:16
     container_name: smartplanning-postgres
     restart: unless-stopped
     ports:
@@ -28,13 +28,13 @@ services:
       POSTGRES_USER: smartplanning
       POSTGRES_PASSWORD: smartplanning
       POSTGRES_DB: smartplanning
-      POSTGRES_INITDB_ARGS: '--encoding=UTF-8 --lc-collate=fr_FR.UTF-8 --lc-ctype=fr_FR.UTF-8'
+      POSTGRES_HOST_AUTH_METHOD: scram-sha-256
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - smartplanning-network
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U smartplanning']
+      test: ['CMD-SHELL', 'pg_isready -U smartplanning -d smartplanning']
       interval: 10s
       timeout: 5s
       retries: 5
