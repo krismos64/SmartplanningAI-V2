@@ -627,11 +627,3 @@ enum NotificationType {
 → **Persistantes** (BDD) + possibilité WebSocket en V2
 
 ---
-
-## 🚀 Prochaines Étapes
-
-1. ✅ Architecture validée → **Créer le fichier `prisma/schema.prisma`**
-2. Générer Prisma Client : `npm run db:generate`
-3. Créer la migration : `npm run db:migrate`
-4. Vérifier les tables dans DBeaver
-5. (Optionnel) Créer un seed pour données de test

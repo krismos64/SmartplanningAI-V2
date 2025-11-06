@@ -19,6 +19,7 @@ Le fichier `prisma/schema.prisma` contient :
 ## 📝 Modifications Appliquées
 
 ### 1. Company - Configuration horaires avancée
+
 ```prisma
 defaultOpeningHours Json? // Configuration par jour
 // Exemple:
@@ -29,6 +30,7 @@ defaultOpeningHours Json? // Configuration par jour
 ```
 
 ### 2. Employee - Compétences & Préférences
+
 ```prisma
 skills      String[] @default([])  // ["React", "TypeScript"]
 preferences Json?                  // Préférences de planning
@@ -41,16 +43,19 @@ preferences Json?                  // Préférences de planning
 ```
 
 ### 3. Subscription - Stripe complet
+
 - `stripeCustomerId`, `stripeSubscriptionId`, `stripePriceId`
 - Gestion du cycle de facturation
 - Relation avec Payment
 
 ### 4. Payment - Historique paiements
+
 - `stripePaymentId`, `stripeInvoiceId`
 - Statut (succeeded, pending, failed, refunded)
 - Relation avec Subscription
 
 ### 5. Schedule - Simplifié pour MVP
+
 - ❌ Enlevé `isRecurring` et `recurrenceRule` (V2)
 - ✅ Gardé tous les autres champs
 
@@ -61,34 +66,39 @@ preferences Json?                  // Préférences de planning
 Le **Prisma Client** est le code TypeScript généré automatiquement pour accéder à ta base de données.
 
 ### Commande
+
 ```bash
 npm run db:generate
 ```
 
 **Équivalent à :**
+
 ```bash
 npx prisma generate
 ```
 
 ### Ce que ça fait
+
 1. Lit le fichier `prisma/schema.prisma`
 2. Génère le code TypeScript dans `node_modules/@prisma/client`
 3. Crée les types TypeScript pour tous tes modèles
 4. Configure l'autocomplete dans VSCode
 
 ### Résultat attendu
+
 ```
 ✔ Generated Prisma Client (v6.1.0) to ./node_modules/@prisma/client
 ```
 
 ### Utilisation ensuite
+
 ```typescript
 import { prisma } from '@/lib/prisma'
 
 // Autocomplete parfait avec TypeScript ! ✨
 const users = await prisma.user.findMany({
   where: { companyId: 'xxx' },
-  include: { employee: true }
+  include: { employee: true },
 })
 ```
 
@@ -99,22 +109,26 @@ const users = await prisma.user.findMany({
 La **migration** crée les tables dans PostgreSQL selon ton schéma.
 
 ### Commande
+
 ```bash
 npm run db:migrate
 ```
 
 **Équivalent à :**
+
 ```bash
 npx prisma migrate dev --name init
 ```
 
 ### Ce que ça fait
+
 1. Compare ton schéma Prisma avec la base PostgreSQL
 2. Génère un fichier SQL de migration (`prisma/migrations/xxx_init/migration.sql`)
 3. **EXÉCUTE** le SQL dans PostgreSQL (crée les tables)
 4. Génère automatiquement le Prisma Client
 
 ### Résultat attendu
+
 ```
 Prisma Migrate applied the following migration(s):
 
@@ -126,9 +140,11 @@ migrations/
 ```
 
 ### Fichier migration.sql généré
+
 Le fichier contient tous les `CREATE TABLE`, `CREATE INDEX`, etc.
 
 **Exemple extrait :**
+
 ```sql
 -- CreateEnum
 CREATE TYPE "UserRole" AS ENUM ('SYSTEM_ADMIN', 'DIRECTOR', 'MANAGER', 'EMPLOYEE');
@@ -154,13 +170,16 @@ CREATE INDEX "users_companyId_idx" ON "users"("companyId");
 ## 🎯 Étape 3 : Vérifier dans DBeaver
 
 ### Ouvre DBeaver
+
 1. Connexion déjà créée : `smartplanning` (localhost:5432)
 2. Expand : **smartplanning** → **Schemas** → **public** → **Tables**
 
 ### Tables créées (13 tables)
+
 Tu devrais voir :
 
 **Métier (8 tables)**
+
 - ✅ `users`
 - ✅ `companies`
 - ✅ `employees`
@@ -170,28 +189,34 @@ Tu devrais voir :
 - ✅ `notifications`
 
 **Abonnements (2 tables)**
+
 - ✅ `subscriptions`
 - ✅ `payments`
 
 **NextAuth (3 tables)**
+
 - ✅ `accounts`
 - ✅ `sessions`
 - ✅ `verification_tokens`
 
 **Prisma (1 table)**
+
 - ✅ `_prisma_migrations` (historique des migrations)
 
 ### Vérifier une table
+
 1. Clic droit sur `users` → **View Table**
 2. Tu verras les colonnes :
    - `id`, `email`, `password`, `role`, `companyId`, etc.
    - `createdAt`, `updatedAt`
 
 ### Vérifier les relations
+
 1. Clic droit sur `users` → **View Diagram**
 2. DBeaver affiche les relations (FK) entre les tables
 
 ### Vérifier les index
+
 1. Expand `users` → **Indexes**
 2. Tu devrais voir :
    - `users_email_key` (UNIQUE)
@@ -205,27 +230,32 @@ Tu devrais voir :
 **Prisma Studio** = Interface web pour visualiser/éditer les données.
 
 ### Commande
+
 ```bash
 npm run db:studio
 ```
 
 **Équivalent à :**
+
 ```bash
 npx prisma studio
 ```
 
 ### Ce que ça fait
+
 1. Lance un serveur web sur **http://localhost:5555**
 2. Interface visuelle pour voir toutes les tables
 3. Permet de créer/modifier/supprimer des données
 
 ### Utilisation
+
 - Clique sur une table (ex: `User`)
 - Clique sur **"Add record"** pour créer un utilisateur
 - Édite les champs directement
 - Sauvegarde → Prisma écrit dans PostgreSQL
 
 **Utile pour :**
+
 - Tester rapidement sans écrire de code
 - Créer des données de test
 - Debug (voir les données en temps réel)
@@ -237,6 +267,7 @@ npx prisma studio
 Le **seed** crée des données de test automatiquement.
 
 ### Créer le fichier seed
+
 **Fichier :** `prisma/seed.ts`
 
 ```typescript
@@ -303,8 +334,20 @@ async function main() {
 
   // 4. Créer des employés
   const employeeData = [
-    { firstName: 'Marie', lastName: 'Martin', email: 'marie@acme-corp.fr', jobTitle: 'Développeur Senior', skills: ['React', 'TypeScript'] },
-    { firstName: 'Pierre', lastName: 'Bernard', email: 'pierre@acme-corp.fr', jobTitle: 'Développeur Junior', skills: ['JavaScript', 'Node.js'] },
+    {
+      firstName: 'Marie',
+      lastName: 'Martin',
+      email: 'marie@acme-corp.fr',
+      jobTitle: 'Développeur Senior',
+      skills: ['React', 'TypeScript'],
+    },
+    {
+      firstName: 'Pierre',
+      lastName: 'Bernard',
+      email: 'pierre@acme-corp.fr',
+      jobTitle: 'Développeur Junior',
+      skills: ['JavaScript', 'Node.js'],
+    },
   ]
 
   for (const emp of employeeData) {
@@ -349,16 +392,19 @@ main()
 ```
 
 ### Exécuter le seed
+
 ```bash
 npm run db:seed
 ```
 
 **Équivalent à :**
+
 ```bash
 npx tsx prisma/seed.ts
 ```
 
 ### Résultat
+
 ```
 🌱 Seeding database...
 ✅ Company created: Acme Corp
@@ -378,16 +424,19 @@ Ensuite, ouvre **DBeaver** ou **Prisma Studio** pour voir les données !
 Si tu veux tout supprimer et repartir de zéro :
 
 ### Commande
+
 ```bash
 npm run db:reset
 ```
 
 **Équivalent à :**
+
 ```bash
 npx prisma migrate reset
 ```
 
 ### Ce que ça fait
+
 1. **SUPPRIME** toutes les tables
 2. **RECRÉE** toutes les tables (re-execute les migrations)
 3. **EXÉCUTE** le seed automatiquement
@@ -398,21 +447,17 @@ npx prisma migrate reset
 
 ## 📝 Commandes Prisma Récapitulatives
 
-| Commande | Équivalent | Description |
-|----------|------------|-------------|
-| `npm run db:generate` | `npx prisma generate` | Génère le Prisma Client TypeScript |
-| `npm run db:migrate` | `npx prisma migrate dev` | Crée une migration + applique |
-| `npm run db:push` | `npx prisma db push` | Applique le schéma sans créer de migration (dev rapide) |
-| `npm run db:studio` | `npx prisma studio` | Interface web (localhost:5555) |
-| `npm run db:seed` | `npx tsx prisma/seed.ts` | Créer des données de test |
-| `npm run db:reset` | `npx prisma migrate reset` | Supprimer + recréer + seed |
-| `npm run db:migrate:prod` | `npx prisma migrate deploy` | Déploiement production |
+| Commande                  | Équivalent                  | Description                                             |
+| ------------------------- | --------------------------- | ------------------------------------------------------- |
+| `npm run db:generate`     | `npx prisma generate`       | Génère le Prisma Client TypeScript                      |
+| `npm run db:migrate`      | `npx prisma migrate dev`    | Crée une migration + applique                           |
+| `npm run db:push`         | `npx prisma db push`        | Applique le schéma sans créer de migration (dev rapide) |
+| `npm run db:studio`       | `npx prisma studio`         | Interface web (localhost:5555)                          |
+| `npm run db:seed`         | `npx tsx prisma/seed.ts`    | Créer des données de test                               |
+| `npm run db:reset`        | `npx prisma migrate reset`  | Supprimer + recréer + seed                              |
+| `npm run db:migrate:prod` | `npx prisma migrate deploy` | Déploiement production                                  |
 
 ---
-
-## 🎓 Pour la Soutenance CDA
-
-### Points à expliquer au jury
 
 1. **Architecture Multi-Tenant**
    - Toutes les tables ont `companyId` pour isolation
@@ -455,10 +500,3 @@ npx prisma migrate reset
 - [ ] DBeaver affiche les 13 tables
 - [ ] (Optionnel) Prisma Studio fonctionne
 - [ ] (Optionnel) Seed créé des données de test
-
----
-
-**Document créé le :** 4 novembre 2025
-**Auteur :** Christophe Mostefaoui
-**Projet :** SmartPlanning V2 - Titre CDA
-**Statut :** ✅ Schéma Prisma prêt, guide complet
