@@ -21,7 +21,7 @@
  */
 
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import { Inter, Rajdhani } from 'next/font/google'
 import './globals.css'
 
 /**
@@ -36,6 +36,24 @@ const inter = Inter({
   subsets: ['latin'],
   display: 'swap',
   variable: '--font-inter',
+})
+
+/**
+ * Configuration Google Font Rajdhani (SmartPlanning)
+ *
+ * ✅ Source : SP-106 - Configuration Shadcn/ui
+ *
+ * Rajdhani est la police officielle de SmartPlanning
+ * - Style moderne et futuriste
+ * - Excellente pour les titres et interfaces
+ * - Weights : 400 (Regular), 500 (Medium), 600 (SemiBold), 700 (Bold)
+ * - Chargement optimisé par Next.js (auto-hébergée)
+ */
+const rajdhani = Rajdhani({
+  weight: ['400', '500', '600', '700'],
+  subsets: ['latin'],
+  variable: '--font-rajdhani',
+  display: 'swap',
 })
 
 /**
@@ -154,12 +172,17 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="fr" className={inter.variable} suppressHydrationWarning>
-      <body className="min-h-screen bg-background font-sans antialiased">
+    <html
+      lang="fr"
+      className={`${inter.variable} ${rajdhani.variable}`}
+      suppressHydrationWarning
+    >
+      <body className="min-h-screen bg-background font-rajdhani antialiased">
         {/*
           Structure sémantique HTML5
           - <main> sera fourni par les layouts enfants
           - Permet l'accessibilité (lecteurs d'écran)
+          - Font Rajdhani appliquée par défaut (SmartPlanning branding)
         */}
         {children}
       </body>

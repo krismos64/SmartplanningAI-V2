@@ -39,26 +39,27 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    /* Primaire (Bleu pour SmartPlanning) */
-    --primary: 221.2 83.2% 53.3%;
+    /* ✨ Couleurs SmartPlanning personnalisées */
+    --primary: 217 93% 56%;      /* #2979f8 - Bleu SmartPlanning */
     --primary-foreground: 210 40% 98%;
 
-    /* Secondaire */
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217 78% 50%;    /* #1c62e3 - Bleu foncé */
+    --secondary-foreground: 210 40% 98%;
 
-    /* Accent */
-    --accent: 210 40% 96.1%;
+    --accent: 217 96% 64%;       /* #4c91fa - Bleu clair */
     --accent-foreground: 222.2 47.4% 11.2%;
 
-    /* Destructive (Rouge) */
-    --destructive: 0 84.2% 60.2%;
+    --destructive: 0 76% 62%;    /* #ed5151 - Rouge */
     --destructive-foreground: 210 40% 98%;
+
+    /* Éléments UI */
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
 
     /* Bordures */
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
+    --ring: 217 93% 56%;
 
     /* Radius */
     --radius: 0.5rem;
@@ -75,21 +76,25 @@
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 217.2 91.2% 59.8%;
+    /* ✨ Couleurs SmartPlanning Dark Mode */
+    --primary: 217 96% 64%;      /* Bleu clair en dark */
     --primary-foreground: 222.2 47.4% 11.2%;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 217 95% 72%;    /* Bleu très clair */
+    --secondary-foreground: 222.2 47.4% 11.2%;
 
-    --accent: 217.2 32.6% 17.5%;
+    --accent: 217 93% 56%;       /* Bleu standard */
     --accent-foreground: 210 40% 98%;
 
-    --destructive: 0 62.8% 30.6%;
+    --destructive: 0 62% 69%;    /* Rouge plus clair */
     --destructive-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
 
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 48%;
+    --ring: 217 96% 64%;
   }
 }
 
@@ -154,6 +159,11 @@
   /* Badge standard */
   .badge-base {
     @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold;
+  }
+
+  /* ✨ SmartPlanning text glow effect */
+  .text-glow {
+    text-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
   }
 }
 
