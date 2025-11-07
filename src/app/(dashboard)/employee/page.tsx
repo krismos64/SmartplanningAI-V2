@@ -26,6 +26,7 @@ export const metadata: Metadata = {
   description: 'Consultez votre planning et gérez vos congés',
 }
 
+// eslint-disable-next-line @typescript-eslint/require-await
 export default async function EmployeeDashboardPage() {
   // TODO (SP-105) : Vérifier session et role EMPLOYEE
   // TODO (SP-106+) : Fetch data Prisma avec filtre employeeId

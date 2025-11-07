@@ -27,6 +27,7 @@ export const metadata: Metadata = {
   description: 'Vue d\'ensemble de votre organisation SmartPlanning',
 }
 
+// eslint-disable-next-line @typescript-eslint/require-await
 export default async function DirectorDashboardPage() {
   // TODO (SP-105) : Vérifier session et role DIRECTOR
   // TODO (SP-106+) : Fetch data avec Prisma
