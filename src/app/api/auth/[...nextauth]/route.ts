@@ -37,6 +37,7 @@
  * Retourne une réponse JSON indiquant que NextAuth n'est pas encore configuré.
  * Sera remplacé par handlers.GET de NextAuth au SP-105.
  */
+// eslint-disable-next-line @typescript-eslint/require-await
 export async function GET(request: Request) {
   return new Response(
     JSON.stringify({
@@ -60,6 +61,7 @@ export async function GET(request: Request) {
  * Retourne la même réponse que GET pour les requêtes POST.
  * Sera remplacé par handlers.POST de NextAuth au SP-105.
  */
+// eslint-disable-next-line @typescript-eslint/require-await
 export async function POST(request: Request) {
   return new Response(
     JSON.stringify({

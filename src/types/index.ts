@@ -64,7 +64,7 @@ export type {
  * - success : Opération réussie
  * - error : Erreur serveur
  */
-export type ApiResponse<T = any> =
+export type ApiResponse<T = unknown> =
   | {
       success: true
       data: T

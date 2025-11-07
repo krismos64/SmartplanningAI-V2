@@ -70,6 +70,7 @@ export type SessionUser = {
  * Placeholder pour la fonction auth()
  * Sera remplacée par NextAuth au SP-105
  */
+// eslint-disable-next-line @typescript-eslint/require-await
 export async function auth() {
   // Temporaire : retourne null
   // Sera remplacé par : return await nextAuthInstance.auth()
@@ -79,6 +80,7 @@ export async function auth() {
 /**
  * Placeholder pour signIn()
  */
+// eslint-disable-next-line @typescript-eslint/require-await
 export async function signIn() {
   throw new Error('NextAuth non encore implémenté - Voir SP-105')
 }
@@ -86,6 +88,7 @@ export async function signIn() {
 /**
  * Placeholder pour signOut()
  */
+// eslint-disable-next-line @typescript-eslint/require-await
 export async function signOut() {
   throw new Error('NextAuth non encore implémenté - Voir SP-105')
 }
@@ -94,9 +97,11 @@ export async function signOut() {
  * Placeholder pour handlers (GET/POST)
  */
 export const handlers = {
+  // eslint-disable-next-line @typescript-eslint/require-await
   GET: async () => {
     throw new Error('NextAuth non encore implémenté - Voir SP-105')
   },
+  // eslint-disable-next-line @typescript-eslint/require-await
   POST: async () => {
     throw new Error('NextAuth non encore implémenté - Voir SP-105')
   },

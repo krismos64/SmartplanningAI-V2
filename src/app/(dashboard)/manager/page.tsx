@@ -26,6 +26,7 @@ export const metadata: Metadata = {
   description: 'Gérez votre équipe SmartPlanning',
 }
 
+// eslint-disable-next-line @typescript-eslint/require-await
 export default async function ManagerDashboardPage() {
   // TODO (SP-105) : Vérifier session et role MANAGER
   // TODO (SP-106+) : Fetch data Prisma avec filtre teamId
