@@ -1,0 +1,203 @@
+/**
+ * Styles globaux SmartPlanning
+ *
+ * ✅ Source : Tailwind CSS v3 + Next.js 15 best practices
+ *
+ * STRUCTURE (CDA) :
+ * 1. @tailwind directives - Importe base, components, utilities (Tailwind v3)
+ * 2. CSS Variables - Variables custom pour theming
+ * 3. Base styles - Reset et styles de base
+ * 4. Utility classes - Classes utilitaires personnalisées
+ *
+ * RÉFÉRENCE CDA :
+ * - Tailwind CSS v3.4 (directives @tailwind)
+ * - CSS Variables pour Dark Mode (prévu)
+ * - Accessibilité (focus-visible, transitions)
+ */
+
+/* =========================================================================
+   TAILWIND CSS v3 - Directives principales
+   ========================================================================= */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* =========================================================================
+   CSS VARIABLES - Thème SmartPlanning
+   ========================================================================= */
+@layer base {
+  :root {
+    /* Couleurs principales */
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+
+    /* Cartes et surfaces */
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+
+    /* Popover */
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+
+    /* Primaire (Bleu pour SmartPlanning) */
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+
+    /* Secondaire */
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    /* Accent */
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    /* Destructive (Rouge) */
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    /* Bordures */
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+
+    /* Radius */
+    --radius: 0.5rem;
+  }
+
+  /* Dark mode (prévu pour Phase 4) */
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 48%;
+  }
+}
+
+/* =========================================================================
+   BASE STYLES - Reset et fondations
+   ========================================================================= */
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: 'rlig' 1, 'calt' 1;
+  }
+
+  /* Amélioration de l'accessibilité */
+  *:focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2;
+  }
+
+  /* Smooth scroll */
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* =========================================================================
+   UTILITY CLASSES - Classes personnalisées
+   ========================================================================= */
+@layer utilities {
+  /* Container centré avec padding responsive */
+  .container-custom {
+    @apply mx-auto max-w-7xl px-4 sm:px-6 lg:px-8;
+  }
+
+  /* Transitions fluides */
+  .transition-smooth {
+    @apply transition-all duration-200 ease-in-out;
+  }
+
+  /* Texte tronqué avec ellipse */
+  .text-truncate {
+    @apply overflow-hidden text-ellipsis whitespace-nowrap;
+  }
+
+  /* Flexbox centré */
+  .flex-center {
+    @apply flex items-center justify-center;
+  }
+
+  /* Grid responsive par défaut */
+  .grid-auto {
+    @apply grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3;
+  }
+
+  /* Card standard SmartPlanning */
+  .card-base {
+    @apply rounded-lg border bg-card p-6 shadow-sm transition-smooth hover:shadow-md;
+  }
+
+  /* Badge standard */
+  .badge-base {
+    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold;
+  }
+}
+
+/* =========================================================================
+   COMPONENTS - Styles de composants spécifiques
+   ========================================================================= */
+
+/* Scrollbar personnalisée (Webkit) */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-secondary;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply rounded-full bg-border hover:bg-primary/50;
+}
+
+/* Loading spinner global */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Fade in animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
