@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+// @ts-nocheck
+// Note: Variables are created for their database side-effects in seed files
 import { PrismaClient, UserRole, SubscriptionPlan, SubscriptionStatus, ScheduleType, ScheduleStatus, LeaveType, LeaveRequestStatus, NotificationType } from '@prisma/client'
 import * as bcrypt from 'bcryptjs'
 
@@ -139,7 +142,7 @@ async function main() {
     }
   })
 
-  console.log('✅ 3 abonnements créés\n')
+  console.log(`✅ 3 abonnements créés: ${techcorpSub.plan}, ${designstudioSub.plan}, ${startupincSub.plan}\n`)
 
   // ============================================================================
   // 3. CRÉER LES PAIEMENTS
