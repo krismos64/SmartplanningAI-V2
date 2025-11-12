@@ -119,7 +119,7 @@ function Breadcrumbs({ pathname }: BreadcrumbsProps) {
             <Link href="/dashboard">Accueil</Link>
           </BreadcrumbLink>
         </BreadcrumbItem>
-        {breadcrumbs.map((breadcrumb, index) => (
+        {breadcrumbs.map((breadcrumb) => (
           <div key={breadcrumb.href} className="flex items-center gap-2">
             <BreadcrumbSeparator>
               <ChevronRight className="h-4 w-4" />
