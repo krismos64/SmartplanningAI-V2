@@ -1,0 +1,6 @@
+# .mailmap - Force tous les commits à être attribués à krismos64
+# Format: Nom correct <email correct> Ancien nom <ancien email>
+
+# Map tous les commits à krismos64
+krismos64 <c.mostefaoui@yahoo.fr> claude <c.mostefaoui@yahoo.fr>
+krismos64 <c.mostefaoui@yahoo.fr> Claude <c.mostefaoui@yahoo.fr>
