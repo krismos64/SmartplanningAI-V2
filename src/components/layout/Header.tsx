@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
@@ -40,13 +40,14 @@ export function Header({ user, notificationsCount = 0 }: HeaderProps) {
   const [animationData, setAnimationData] = useState<any>(null)
 
   // Charger l'animation Lottie côté client uniquement
-  useState(() => {
-    if (typeof window !== 'undefined') {
-      import('@/public/animations/planning-animation.json').then((data) => {
-        setAnimationData(data.default)
+  useEffect(() => {
+    fetch('/animations/planning-animation.json')
+      .then((res) => res.json())
+      .then((data) => {
+        setAnimationData(data)
       })
-    }
-  })
+      .catch((err) => console.error('Failed to load Lottie animation:', err))
+  }, [])
 
   const userInitials = user.name
     .split(' ')
