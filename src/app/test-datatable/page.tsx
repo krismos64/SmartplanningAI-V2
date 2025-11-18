@@ -25,16 +25,19 @@ export default function TestDataTablePage() {
   // HANDLERS (Actions sur les lignes)
   // ===================================================================
   const handleView = (user: User) => {
+    // eslint-disable-next-line no-console
     console.log('🔍 View user:', user)
     // TODO Phase suivante : Ouvrir modal de détails
   }
 
   const handleEdit = (user: User) => {
+    // eslint-disable-next-line no-console
     console.log('✏️ Edit user:', user)
     // TODO Phase suivante : Ouvrir modal d'édition
   }
 
   const handleDelete = (user: User) => {
+    // eslint-disable-next-line no-console
     console.log('🗑️ Delete user:', user)
     // TODO Phase suivante : Ouvrir confirmation de suppression
   }
