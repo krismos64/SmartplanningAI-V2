@@ -17,6 +17,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings d'entreprise (mult
 - **UI Library** : React 19.0.0
 - **Language** : TypeScript 5.6.3
 - **Styling** : Tailwind CSS + Shadcn/ui
+- **Tables** : TanStack Table v8 + match-sorter-utils
 - **State Management** : Zustand (à venir)
 - **Forms** : React Hook Form + Zod
 - **Charts** : Recharts
@@ -43,6 +44,10 @@ Plateforme SaaS moderne de gestion intelligente des plannings d'entreprise (mult
 - **Monitoring** : À définir (Sentry/LogRocket)
 
 ## Fonctionnalités principales
+
+### Composants UI production-ready
+
+- **DataTable avancée** (SP-120) : Composant de tableau avec tri multi-colonnes, pagination, recherche fuzzy, sélection multi-rows, actions par ligne, responsive (table desktop / cards mobile)
 
 ### MVP (Phases 1-4)
 
@@ -224,11 +229,14 @@ Voir `/docs/database-schema.md` pour le détail complet.
 - SP-2 : Schéma Prisma
 - SP-3 : Migration init
 
-#### Phase 2 : Architecture 📋 (En cours)
+#### Phase 2 : Architecture ✅ (Terminée)
 
 - SP-4 : Architecture src/
 - SP-5 : NextAuth v5
 - SP-6 : Shadcn/ui
+- SP-107 : Composants UI base (Sidebar, Breadcrumb)
+- SP-118 : Système de layout
+- SP-120 : DataTable avancée production-ready ✅
 
 #### Phase 3 : Authentification 📋
 
@@ -276,6 +284,12 @@ Toute la documentation est centralisée dans le dossier `/docs` :
    - Détails par phase
    - Prochaines actions
    - Changelog
+
+6. **[DataTable avancée - Confluence](https://christophedev.atlassian.net/wiki/spaces/SP/pages/57409537/DataTable+avanc+e)**
+   - Documentation complète du composant DataTable
+   - Guide d'utilisation et props
+   - Responsive design et accessibilité
+   - [Décisions techniques](https://christophedev.atlassian.net/wiki/spaces/SP/pages/57901057/DataTable+D+cisions+techniques)
 
 ## Sécurité
 
