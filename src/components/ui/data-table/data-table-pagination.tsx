@@ -26,10 +26,10 @@ import { Button } from '@/components/ui/button'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import type { DataTablePaginationProps } from './data-table-types'
 
-export function DataTablePagination<TData>({
+export function DataTablePagination({
   table,
   pageSizeOptions = [10, 20, 50, 100],
-}: DataTablePaginationProps<TData>) {
+}: DataTablePaginationProps) {
   const pageIndex = table.getState().pagination.pageIndex
   const pageSize = table.getState().pagination.pageSize
   const pageCount = table.getPageCount()

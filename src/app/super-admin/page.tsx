@@ -30,7 +30,7 @@ export default function SuperAdminPage() {
           <CardContent className="space-y-6">
             <p className="text-muted-foreground">
               Cette interface sera développée dans la <strong>Phase 5</strong>{' '}
-              du projet (Epic "Administration SaaS").
+              du projet (Epic &ldquo;Administration SaaS&rdquo;).
             </p>
 
             <div>
@@ -45,11 +45,10 @@ export default function SuperAdminPage() {
                   avec pagination
                 </li>
                 <li>
-                  <strong>Logs d'accès</strong> : Conformité RGPD, audit trail
+                  <strong>Logs d&apos;accès</strong> : Conformité RGPD, audit trail
                 </li>
                 <li>
-                  <strong>Mode impersonate</strong> : Se connecter en tant
-                  qu'un utilisateur client
+                  <strong>Mode impersonate</strong> : Se connecter en tant qu&apos;un utilisateur client
                 </li>
                 <li>
                   <strong>Monitoring système</strong> : Health checks,
