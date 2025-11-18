@@ -49,6 +49,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { Checkbox } from '@/components/ui/checkbox'
 import { useMediaQuery } from '@/hooks/use-media-query'
 import { DataTableToolbar } from './data-table-toolbar'
 import { DataTablePagination } from './data-table-pagination'
@@ -161,15 +162,38 @@ export function DataTable<TData, TValue>({
 
       {/* Table (Desktop) ou Cards (Mobile) */}
       {isMobile ? (
-        // Mode MOBILE : Cards verticales
-        <DataTableCards
-          columns={columns}
-          data={data}
-          table={table}
-          onView={onView}
-          onEdit={onEdit}
-          onDelete={onDelete}
-        />
+        // Mode MOBILE : Cards verticales avec header Select All
+        <div className="space-y-4">
+          {/* Header Select All */}
+          <div className="flex items-center justify-between rounded-lg border bg-muted/50 p-3">
+            <div className="flex items-center gap-2">
+              <Checkbox
+                checked={
+                  table.getIsAllPageRowsSelected() ||
+                  (table.getIsSomePageRowsSelected() && 'indeterminate')
+                }
+                onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+                aria-label="Tout sélectionner"
+              />
+              <span className="text-sm font-medium">
+                Tout sélectionner
+              </span>
+            </div>
+            <span className="text-xs text-muted-foreground">
+              {table.getFilteredSelectedRowModel().rows.length} / {table.getFilteredRowModel().rows.length}
+            </span>
+          </div>
+
+          {/* Cards */}
+          <DataTableCards
+            columns={columns}
+            data={data}
+            table={table}
+            onView={onView}
+            onEdit={onEdit}
+            onDelete={onDelete}
+          />
+        </div>
       ) : (
         // Mode DESKTOP : Table classique
         <div className="rounded-md border">
