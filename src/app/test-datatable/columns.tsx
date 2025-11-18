@@ -124,7 +124,7 @@ export const columns: ColumnDef<User>[] = [
       )
     },
     cell: ({ row }) => {
-      const role = row.getValue('role') as string
+      const role = String(row.getValue('role'))
 
       // Couleurs par rôle
       const roleVariants: Record<
@@ -152,6 +152,7 @@ export const columns: ColumnDef<User>[] = [
       )
     },
     filterFn: (row, id, value) => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
       return value.includes(row.getValue(id))
     },
   },
@@ -174,7 +175,7 @@ export const columns: ColumnDef<User>[] = [
       )
     },
     cell: ({ row }) => {
-      const status = row.getValue('status') as string
+      const status = String(row.getValue('status'))
       const isActive = status === 'actif'
 
       return (
@@ -187,6 +188,7 @@ export const columns: ColumnDef<User>[] = [
       )
     },
     filterFn: (row, id, value) => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
       return value.includes(row.getValue(id))
     },
   },

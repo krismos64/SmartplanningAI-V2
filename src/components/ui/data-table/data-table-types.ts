@@ -63,7 +63,7 @@ export interface DataTableProps<TData, TValue = unknown> {
 /**
  * Props pour le composant DataTableToolbar
  */
-export interface DataTableToolbarProps<TData> {
+export interface DataTableToolbarProps {
   /** Instance TanStack Table */
   table: any // eslint-disable-line @typescript-eslint/no-explicit-any
 
@@ -77,7 +77,7 @@ export interface DataTableToolbarProps<TData> {
 /**
  * Props pour le composant DataTablePagination
  */
-export interface DataTablePaginationProps<TData> {
+export interface DataTablePaginationProps {
   /** Instance TanStack Table */
   table: any // eslint-disable-line @typescript-eslint/no-explicit-any
 
