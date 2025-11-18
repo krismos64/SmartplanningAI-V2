@@ -17,7 +17,11 @@ import { ArrowUpDown } from 'lucide-react'
 import { DataTableRowActions } from '@/components/ui/data-table/data-table-row-actions'
 import type { User } from './mock-data'
 
-export const columns: ColumnDef<User>[] = [
+export const getColumns = (
+  onView?: (user: User) => void,
+  onEdit?: (user: User) => void,
+  onDelete?: (user: User) => void
+): ColumnDef<User>[] => [
   // ===================================================================
   // COLONNE CHECKBOX (Sélection)
   // ===================================================================
@@ -231,7 +235,14 @@ export const columns: ColumnDef<User>[] = [
     id: 'actions',
     header: () => <div className="text-right">Actions</div>,
     cell: ({ row }) => {
-      return <DataTableRowActions row={row} />
+      return (
+        <DataTableRowActions
+          row={row}
+          onView={onView}
+          onEdit={onEdit}
+          onDelete={onDelete}
+        />
+      )
     },
   },
 ]
