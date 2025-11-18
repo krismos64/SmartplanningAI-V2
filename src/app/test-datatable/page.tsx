@@ -17,7 +17,7 @@
 'use client'
 
 import { DataTable } from '@/components/ui/data-table'
-import { columns } from './columns'
+import { getColumns } from './columns'
 import { mockUsers, type User } from './mock-data'
 
 export default function TestDataTablePage() {
@@ -61,7 +61,7 @@ export default function TestDataTablePage() {
 
       {/* DataTable */}
       <DataTable
-        columns={columns}
+        columns={getColumns(handleView, handleEdit, handleDelete)}
         data={mockUsers}
         onView={handleView}
         onEdit={handleEdit}
