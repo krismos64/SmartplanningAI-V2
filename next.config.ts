@@ -1,11 +1,14 @@
 import type { NextConfig } from 'next'
+import path from 'path'
 
 const nextConfig: NextConfig = {
   // Mode strict React
   reactStrictMode: true,
 
-  // Activer Turbopack en développement (plus rapide)
-  // Déjà activé via `npm run dev --turbopack`
+  // Configuration Turbopack - Définit le dossier racine du projet
+  turbopack: {
+    root: path.resolve(__dirname),
+  },
 
   // Optimisations TypeScript
   typescript: {

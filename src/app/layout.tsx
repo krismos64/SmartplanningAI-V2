@@ -20,7 +20,7 @@
  * - SEO-first approach pour référencement Google
  */
 
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Inter, Rajdhani } from 'next/font/google'
 import './globals.css'
 
@@ -72,6 +72,9 @@ const rajdhani = Rajdhani({
  * - Theme color pour PWA
  */
 export const metadata: Metadata = {
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_APP_URL || 'https://smartplanning.app'
+  ),
   title: {
     default: 'SmartPlanning - Gestion intelligente des plannings',
     template: '%s | SmartPlanning',
@@ -140,19 +143,30 @@ export const metadata: Metadata = {
     apple: '/apple-touch-icon.png',
   },
   manifest: '/site.webmanifest',
+}
 
-  // Couleur de thème (PWA)
+/**
+ * Viewport Configuration
+ *
+ * ✅ Source : Next.js 15 Viewport API
+ *
+ * IMPORTANT (Next.js 15+) :
+ * viewport et themeColor ont été déplacés de Metadata vers Viewport export
+ * pour améliorer les performances et suivre les nouvelles conventions.
+ *
+ * SEO & UX :
+ * - Responsive design pour tous les devices
+ * - Theme color adaptatif (light/dark mode)
+ * - Zoom autorisé jusqu'à 5x pour accessibilité
+ */
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
   themeColor: [
     { media: '(prefers-color-scheme: light)', color: '#3b82f6' },
     { media: '(prefers-color-scheme: dark)', color: '#1e40af' },
   ],
-
-  // Viewport responsive
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-    maximumScale: 5,
-  },
 }
 
 /**
