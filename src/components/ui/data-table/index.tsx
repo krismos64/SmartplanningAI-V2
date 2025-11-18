@@ -38,7 +38,7 @@ import {
   getPaginationRowModel,
   flexRender,
 } from '@tanstack/react-table'
-import type { SortingState, ColumnFiltersState, RowSelectionState } from '@tanstack/react-table'
+import type { SortingState, ColumnFiltersState, RowSelectionState, PaginationState } from '@tanstack/react-table'
 import { rankItem } from '@tanstack/match-sorter-utils'
 
 import {
@@ -88,6 +88,10 @@ export function DataTable<TData, TValue>({
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
+  const [pagination, setPagination] = useState<PaginationState>({
+    pageIndex: 0,
+    pageSize,
+  })
 
   // ===================================================================
   // RESPONSIVE (Détection mobile/desktop)
@@ -107,24 +111,13 @@ export function DataTable<TData, TValue>({
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     onRowSelectionChange: setRowSelection,
+    onPaginationChange: setPagination,
     globalFilterFn: fuzzyFilter,
     state: {
       sorting,
       columnFilters,
       rowSelection,
-      pagination: enablePagination
-        ? {
-            pageIndex: 0,
-            pageSize,
-          }
-        : undefined,
-    },
-    initialState: {
-      pagination: enablePagination
-        ? {
-            pageSize,
-          }
-        : undefined,
+      pagination,
     },
   })
 
