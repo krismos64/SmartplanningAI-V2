@@ -22,6 +22,7 @@
 
 import type { Metadata, Viewport } from 'next'
 import { Inter, Rajdhani } from 'next/font/google'
+import { ToastProvider } from '@/components/toast'
 import './globals.css'
 
 /**
@@ -199,6 +200,9 @@ export default function RootLayout({
           - Font Rajdhani appliquée par défaut (SmartPlanning branding)
         */}
         {children}
+
+        {/* Toast System - Sonner (SP-122) */}
+        <ToastProvider />
       </body>
     </html>
   )
