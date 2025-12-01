@@ -7,3 +7,5 @@ export * from "./Skeleton";
 export * from "./SkeletonText";
 export * from "./SkeletonCard";
 export * from "./SkeletonTable";
+export * from "./Spinner";
+export * from "./LoadingOverlay";
