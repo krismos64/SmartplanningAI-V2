@@ -1,38 +1,43 @@
+# ============================================
 # Dependencies
+# ============================================
 node_modules/
 .pnp
 .pnp.js
+package-lock.json
 
-# Testing
-coverage/
-
-# Next.js
+# ============================================
+# Next.js & React
+# ============================================
 .next/
 out/
-
-# Production
 build/
 dist/
+.turbo
+*.tsbuildinfo
+.swc/
 
-# Misc
-.DS_Store
-*.pem
+# ============================================
+# Environment Variables (SENSIBLE ⚠️)
+# ============================================
 .env
 .env.local
-.env.*.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env*.local
 
-# Debug
-npm-debug.log*
-yarn-debug.log*
-
-# IDE
-.vscode/
-.idea/
-
-# Prisma
+# ============================================
+# Database & Prisma
+# ============================================
 prisma/dev.db
+prisma/*.db
+prisma/*.db-journal
+prisma/migrations/*.sql
 
-# Logs (peuvent contenir données sensibles)
+# ============================================
+# Logs & Debug
+# ============================================
 logs/
 *.log
 npm-debug.log*
@@ -40,3 +45,62 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
+
+# ============================================
+# Testing & Coverage
+# ============================================
+coverage/
+.nyc_output/
+test-results/
+playwright-report/
+
+# ============================================
+# IDE & Editors
+# ============================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ============================================
+# Claude Code Configuration (LOCAL)
+# ============================================
+.claude/
+
+# ============================================
+# OS Files
+# ============================================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ============================================
+# Deployment & Hosting
+# ============================================
+.vercel
+.netlify
+
+# ============================================
+# Docker (local volumes & data)
+# ============================================
+docker/data/
+docker/volumes/
+
+# ============================================
+# Certificates & Keys (SENSIBLE ⚠️)
+# ============================================
+*.pem
+*.key
+*.cert
+*.crt
+credentials.json
+
+# ============================================
+# Temporary & Backup Files
+# ============================================
+*.tmp
+*.temp
+*.bak
+*.backup
+*~
