@@ -9,7 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { AlertTriangle, Info, CheckCircle } from "lucide-react";
+import { AlertTriangle, CheckCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 /**
@@ -105,25 +105,18 @@ const variantConfig = {
   },
 };
 
-export const ConfirmDialog = React.forwardRef<
-  React.ElementRef<typeof Dialog>,
-  ConfirmDialogProps
->(
-  (
-    {
-      open,
-      onOpenChange,
-      variant = "info",
-      title,
-      message,
-      confirmLabel = "Confirmer",
-      cancelLabel = "Annuler",
-      onConfirm,
-      onCancel,
-      isLoading = false,
-    },
-    ref
-  ) => {
+export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
+  open,
+  onOpenChange,
+  variant = "info",
+  title,
+  message,
+  confirmLabel = "Confirmer",
+  cancelLabel = "Annuler",
+  onConfirm,
+  onCancel,
+  isLoading = false,
+}) => {
     const config = variantConfig[variant];
     const Icon = config.icon;
     const cancelButtonRef = React.useRef<HTMLButtonElement>(null);
@@ -208,7 +201,4 @@ export const ConfirmDialog = React.forwardRef<
         </DialogContent>
       </Dialog>
     );
-  }
-);
-
-ConfirmDialog.displayName = "ConfirmDialog";
+};

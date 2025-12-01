@@ -85,27 +85,20 @@ const sizeClasses = {
   xl: "sm:max-w-4xl",
 };
 
-export const FormDialog = React.forwardRef<
-  React.ElementRef<typeof Dialog>,
-  FormDialogProps
->(
-  (
-    {
-      open,
-      onOpenChange,
-      title,
-      description,
-      children,
-      submitLabel = "Enregistrer",
-      cancelLabel = "Annuler",
-      onSubmit,
-      onCancel,
-      isSubmitting = false,
-      size = "md",
-      error,
-    },
-    ref
-  ) => {
+export const FormDialog: React.FC<FormDialogProps> = ({
+  open,
+  onOpenChange,
+  title,
+  description,
+  children,
+  submitLabel = "Enregistrer",
+  cancelLabel = "Annuler",
+  onSubmit,
+  onCancel,
+  isSubmitting = false,
+  size = "md",
+  error,
+}) => {
     const formRef = React.useRef<HTMLFormElement>(null);
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -220,7 +213,4 @@ export const FormDialog = React.forwardRef<
         </DialogContent>
       </Dialog>
     );
-  }
-);
-
-FormDialog.displayName = "FormDialog";
+};

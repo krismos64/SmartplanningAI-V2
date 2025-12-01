@@ -58,7 +58,15 @@ export interface SkeletonProps {
   enableAnimation?: boolean;
 }
 
-const variantConfig = {
+const variantConfig: Record<
+  string,
+  {
+    width?: number;
+    height?: number;
+    borderRadius?: number;
+    circle?: boolean;
+  }
+> = {
   text: {
     height: 16,
     borderRadius: 4,
@@ -100,7 +108,7 @@ export const Skeleton = React.forwardRef<HTMLSpanElement, SkeletonProps>(
     },
     ref
   ) => {
-    const config = variantConfig[variant];
+    const config = variantConfig[variant] || {};
 
     // Merge variant config with explicit props (explicit props take priority)
     const finalWidth = width ?? config.width;
