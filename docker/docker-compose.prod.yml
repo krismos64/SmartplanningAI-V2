@@ -39,7 +39,7 @@ services:
   # Avantage : intégration native avec GitHub Actions.
   # ----------------------------------------------
   app:
-    image: ghcr.io/krismos64/smartplanning:${IMAGE_TAG:-latest}
+    image: ghcr.io/krismos64/smartplanningai-v2:${IMAGE_TAG:-latest}
     container_name: smartplanning-app
     restart: always
     ports:
