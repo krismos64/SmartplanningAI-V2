@@ -186,22 +186,22 @@ jobs:
 
             # 📚 CDA : Arrêt gracieux des conteneurs actuels
             echo "⏹️ Arrêt des conteneurs..."
-            docker compose -f docker/docker-compose.prod.yml down
+            docker compose --env-file .env -f docker/docker-compose.prod.yml down
 
             # 📚 CDA : Démarrage avec la nouvelle image
             echo "▶️ Démarrage des nouveaux conteneurs..."
-            docker compose -f docker/docker-compose.prod.yml up -d
+            docker compose --env-file .env -f docker/docker-compose.prod.yml up -d
 
             # 📚 CDA : Attente que l'app soit prête
             echo "⏳ Attente du healthcheck..."
-            sleep 10
+            sleep 30
 
             # 📚 CDA : Vérification du healthcheck
             if curl -f http://localhost:3000/api/health > /dev/null 2>&1; then
               echo "✅ Application déployée avec succès !"
             else
               echo "❌ Healthcheck échoué - Vérifier les logs"
-              docker compose -f docker/docker-compose.prod.yml logs app --tail 50
+              docker compose --env-file .env -f docker/docker-compose.prod.yml logs app --tail 50
               exit 1
             fi
 
@@ -246,7 +246,8 @@ jobs:
             cd /var/www/smartplanning
 
             # 📚 CDA : Exécute les migrations dans le conteneur app
-            docker compose -f docker/docker-compose.prod.yml exec -T app npx prisma migrate deploy
+            # Utilise le chemin local node_modules pour éviter que npx télécharge une autre version
+            docker compose --env-file .env -f docker/docker-compose.prod.yml exec -T app node node_modules/prisma/build/index.js migrate deploy
 
             echo "✅ Migrations terminées !"
 
