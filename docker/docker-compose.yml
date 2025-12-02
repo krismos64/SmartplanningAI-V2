@@ -1,7 +1,7 @@
 version: '3.8'
 
 # ==============================================
-# SMARTPLANNING V2 - ENVIRONNEMENT DÉVELOPPEMENT
+# SMARTPLANNING  - ENVIRONNEMENT DÉVELOPPEMENT
 # ==============================================
 # Services :
 # - PostgreSQL 16 (base de données principale)

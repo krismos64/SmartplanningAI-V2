@@ -1,5 +1,5 @@
 # ==============================================
-# SMARTPLANNING V2 - DOCKERFILE DÉVELOPPEMENT
+# SMARTPLANNING - DOCKERFILE DÉVELOPPEMENT
 # ==============================================
 # Image optimisée pour le développement avec hot-reload
 # Usage : docker build -f docker/Dockerfile.dev -t smartplanning:dev .

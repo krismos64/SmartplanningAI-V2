@@ -1,5 +1,5 @@
 # ==============================================
-# SMARTPLANNING V2 - DOCKERFILE PRODUCTION
+# SMARTPLANNING  - DOCKERFILE PRODUCTION
 # ==============================================
 # Image multi-stage optimisée pour la production
 # Usage : docker build -f docker/Dockerfile -t smartplanning:latest .
