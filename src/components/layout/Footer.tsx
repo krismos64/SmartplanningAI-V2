@@ -37,7 +37,7 @@ export function Footer({ variant = 'dashboard' }: FooterProps) {
   // Version complète pour les pages publiques (landing, login, etc.)
   return (
     <footer className="border-t bg-background">
-      <div className="container py-8 px-6">
+      <div className="container px-6 py-8">
         <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
           {/* Logo & Tagline */}
           <div className="space-y-3">
@@ -52,7 +52,12 @@ export function Footer({ variant = 'dashboard' }: FooterProps) {
           <div className="space-y-3">
             <h4 className="text-sm font-medium">Liens utiles</h4>
             <nav className="flex flex-col space-y-2">
-              <Button variant="link" size="sm" asChild className="justify-start">
+              <Button
+                variant="link"
+                size="sm"
+                asChild
+                className="justify-start"
+              >
                 <Link href="/legal/cgu">Conditions générales</Link>
               </Button>
               <Button
@@ -65,10 +70,20 @@ export function Footer({ variant = 'dashboard' }: FooterProps) {
                   Politique de confidentialité
                 </Link>
               </Button>
-              <Button variant="link" size="sm" asChild className="justify-start">
+              <Button
+                variant="link"
+                size="sm"
+                asChild
+                className="justify-start"
+              >
                 <Link href="/contact">Nous contacter</Link>
               </Button>
-              <Button variant="link" size="sm" asChild className="justify-start">
+              <Button
+                variant="link"
+                size="sm"
+                asChild
+                className="justify-start"
+              >
                 <Link href="/docs">Documentation</Link>
               </Button>
             </nav>

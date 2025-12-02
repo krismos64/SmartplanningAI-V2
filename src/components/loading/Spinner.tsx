@@ -1,7 +1,7 @@
-"use client";
+'use client'
 
-import React from "react";
-import { cn } from "@/lib/utils";
+import React from 'react'
+import { cn } from '@/lib/utils'
 
 /**
  * Spinner - Loading spinner avec animation CSS pure
@@ -23,40 +23,41 @@ import { cn } from "@/lib/utils";
 
 export interface SpinnerProps {
   /** Taille du spinner */
-  size?: "sm" | "md" | "lg" | "xl";
+  size?: 'sm' | 'md' | 'lg' | 'xl'
 
   /** Variant de couleur */
-  variant?: "primary" | "white" | "current";
+  variant?: 'primary' | 'white' | 'current'
 
   /** Label accessible (sr-only par défaut) */
-  label?: string;
+  label?: string
 
   /** Afficher le label visuellement */
-  showLabel?: boolean;
+  showLabel?: boolean
 
   /** Classes CSS additionnelles */
-  className?: string;
+  className?: string
 }
 
 const sizeClasses = {
-  sm: "w-4 h-4 border-2",
-  md: "w-8 h-8 border-2",
-  lg: "w-12 h-12 border-[3px]",
-  xl: "w-16 h-16 border-4",
-};
+  sm: 'w-4 h-4 border-2',
+  md: 'w-8 h-8 border-2',
+  lg: 'w-12 h-12 border-[3px]',
+  xl: 'w-16 h-16 border-4',
+}
 
 const variantClasses = {
-  primary: "border-blue-200 dark:border-blue-900 border-t-blue-600 dark:border-t-blue-400",
-  white: "border-white/30 border-t-white",
-  current: "border-current/30 border-t-current",
-};
+  primary:
+    'border-blue-200 dark:border-blue-900 border-t-blue-600 dark:border-t-blue-400',
+  white: 'border-white/30 border-t-white',
+  current: 'border-current/30 border-t-current',
+}
 
 export const Spinner = React.forwardRef<HTMLDivElement, SpinnerProps>(
   (
     {
-      size = "md",
-      variant = "primary",
-      label = "Chargement...",
+      size = 'md',
+      variant = 'primary',
+      label = 'Chargement...',
       showLabel = false,
       className,
     },
@@ -65,7 +66,7 @@ export const Spinner = React.forwardRef<HTMLDivElement, SpinnerProps>(
     return (
       <div
         ref={ref}
-        className={cn("flex items-center justify-center gap-3", className)}
+        className={cn('flex items-center justify-center gap-3', className)}
         role="status"
         aria-live="polite"
         aria-label={label}
@@ -73,7 +74,7 @@ export const Spinner = React.forwardRef<HTMLDivElement, SpinnerProps>(
         {/* Spinner */}
         <div
           className={cn(
-            "animate-spin rounded-full",
+            'animate-spin rounded-full',
             sizeClasses[size],
             variantClasses[variant]
           )}
@@ -89,11 +90,11 @@ export const Spinner = React.forwardRef<HTMLDivElement, SpinnerProps>(
           <span className="sr-only">{label}</span>
         )}
       </div>
-    );
+    )
   }
-);
+)
 
-Spinner.displayName = "Spinner";
+Spinner.displayName = 'Spinner'
 
 /**
  * SpinnerDots - Loading spinner avec points animés
@@ -109,33 +110,33 @@ Spinner.displayName = "Spinner";
 
 export interface SpinnerDotsProps {
   /** Taille des points */
-  size?: "sm" | "md" | "lg";
+  size?: 'sm' | 'md' | 'lg'
 
   /** Variant de couleur */
-  variant?: "primary" | "white" | "current";
+  variant?: 'primary' | 'white' | 'current'
 
   /** Classes CSS additionnelles */
-  className?: string;
+  className?: string
 }
 
 const dotSizeClasses = {
-  sm: "w-1.5 h-1.5",
-  md: "w-2 h-2",
-  lg: "w-3 h-3",
-};
+  sm: 'w-1.5 h-1.5',
+  md: 'w-2 h-2',
+  lg: 'w-3 h-3',
+}
 
 const dotVariantClasses = {
-  primary: "bg-blue-600 dark:bg-blue-400",
-  white: "bg-white",
-  current: "bg-current",
-};
+  primary: 'bg-blue-600 dark:bg-blue-400',
+  white: 'bg-white',
+  current: 'bg-current',
+}
 
 export const SpinnerDots = React.forwardRef<HTMLDivElement, SpinnerDotsProps>(
-  ({ size = "md", variant = "primary", className }, ref) => {
+  ({ size = 'md', variant = 'primary', className }, ref) => {
     return (
       <div
         ref={ref}
-        className={cn("flex items-center gap-1.5", className)}
+        className={cn('flex items-center gap-1.5', className)}
         role="status"
         aria-label="Chargement..."
       >
@@ -144,20 +145,20 @@ export const SpinnerDots = React.forwardRef<HTMLDivElement, SpinnerDotsProps>(
           <div
             key={index}
             className={cn(
-              "rounded-full animate-pulse",
+              'animate-pulse rounded-full',
               dotSizeClasses[size],
               dotVariantClasses[variant]
             )}
             style={{
               animationDelay: `${index * 0.15}s`,
-              animationDuration: "1s",
+              animationDuration: '1s',
             }}
             aria-hidden="true"
           />
         ))}
       </div>
-    );
+    )
   }
-);
+)
 
-SpinnerDots.displayName = "SpinnerDots";
+SpinnerDots.displayName = 'SpinnerDots'

@@ -233,7 +233,9 @@ export function Sidebar({ user }: SidebarProps) {
                         <Icon className="h-5 w-5" />
                       </motion.div>
                       {!isCollapsed && (
-                        <span className="text-sm font-medium">{item.label}</span>
+                        <span className="text-sm font-medium">
+                          {item.label}
+                        </span>
                       )}
                     </motion.div>
                   </Link>
@@ -264,7 +266,7 @@ export function Sidebar({ user }: SidebarProps) {
           className={`flex items-center gap-3 ${isCollapsed ? 'justify-center' : ''}`}
         >
           <Avatar className="h-8 w-8">
-            <AvatarFallback className="bg-primary text-primary-foreground text-xs">
+            <AvatarFallback className="bg-primary text-xs text-primary-foreground">
               {userInitials}
             </AvatarFallback>
           </Avatar>
@@ -276,8 +278,8 @@ export function Sidebar({ user }: SidebarProps) {
               transition={{ duration: 0.2 }}
               className="flex flex-col overflow-hidden"
             >
-              <span className="text-sm font-medium truncate">{user.name}</span>
-              <span className="text-xs text-muted-foreground truncate">
+              <span className="truncate text-sm font-medium">{user.name}</span>
+              <span className="truncate text-xs text-muted-foreground">
                 {user.email}
               </span>
             </motion.div>

@@ -38,10 +38,7 @@ export default function RegisterPage() {
       <form className="space-y-4">
         {/* Nom */}
         <div className="space-y-2">
-          <label
-            htmlFor="name"
-            className="text-sm font-medium text-foreground"
-          >
+          <label htmlFor="name" className="text-sm font-medium text-foreground">
             Nom complet
           </label>
           <input
@@ -156,7 +153,10 @@ export default function RegisterPage() {
       {/* Link to login */}
       <p className="text-center text-sm text-muted-foreground">
         Vous avez déjà un compte ?{' '}
-        <Link href="/login" className="font-medium text-primary hover:underline">
+        <Link
+          href="/login"
+          className="font-medium text-primary hover:underline"
+        >
           Se connecter
         </Link>
       </p>

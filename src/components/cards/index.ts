@@ -29,14 +29,20 @@ export type {
   TeamMember,
   TeamManager,
   TeamStats,
-} from "./types";
+} from './types'
 
 // Config
-export { USER_STATUS_CONFIG, USER_ROLE_LABELS } from "./types";
+export { USER_STATUS_CONFIG, USER_ROLE_LABELS } from './types'
 
 // Composants
-export { UserCard, type UserCardProps } from "./UserCard";
-export { UserCardSkeleton, type UserCardSkeletonProps } from "./UserCardSkeleton";
-export { TeamCard, type TeamCardProps } from "./TeamCard";
-export { TeamCardSkeleton, type TeamCardSkeletonProps } from "./TeamCardSkeleton";
-export { AvatarStack, type AvatarStackProps } from "./AvatarStack";
+export { UserCard, type UserCardProps } from './UserCard'
+export {
+  UserCardSkeleton,
+  type UserCardSkeletonProps,
+} from './UserCardSkeleton'
+export { TeamCard, type TeamCardProps } from './TeamCard'
+export {
+  TeamCardSkeleton,
+  type TeamCardSkeletonProps,
+} from './TeamCardSkeleton'
+export { AvatarStack, type AvatarStackProps } from './AvatarStack'

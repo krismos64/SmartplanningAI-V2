@@ -1,10 +1,10 @@
-"use client";
+'use client'
 
-import React from "react";
-import { cn } from "@/lib/utils";
-import { Card } from "@/components/ui/card";
-import { Skeleton } from "@/components/loading";
-import { CardVariant } from "./types";
+import React from 'react'
+import { cn } from '@/lib/utils'
+import { Card } from '@/components/ui/card'
+import { Skeleton } from '@/components/loading'
+import { CardVariant } from './types'
 
 /**
  * TeamCardSkeleton - État de chargement pour TeamCard
@@ -17,24 +17,24 @@ import { CardVariant } from "./types";
 
 export interface TeamCardSkeletonProps {
   /** Variant d'affichage (doit correspondre au TeamCard) */
-  variant?: CardVariant;
+  variant?: CardVariant
 
   /** Classes CSS additionnelles */
-  className?: string;
+  className?: string
 }
 
 export const TeamCardSkeleton: React.FC<TeamCardSkeletonProps> = ({
-  variant = "compact",
+  variant = 'compact',
   className,
 }) => {
   // Variant COMPACT
-  if (variant === "compact") {
+  if (variant === 'compact') {
     return (
-      <Card className={cn("overflow-hidden", className)}>
+      <Card className={cn('overflow-hidden', className)}>
         <div className="flex border-l-4 border-muted">
           <div className="flex-1 p-3">
             {/* Ligne 1 : Nom + badge + actions */}
-            <div className="flex items-center justify-between gap-2 mb-2">
+            <div className="mb-2 flex items-center justify-between gap-2">
               <div className="flex items-center gap-2">
                 <Skeleton variant="text" width={120} height={16} />
                 <Skeleton
@@ -53,7 +53,7 @@ export const TeamCardSkeleton: React.FC<TeamCardSkeletonProps> = ({
             </div>
 
             {/* Ligne 2 : Manager */}
-            <div className="flex items-center gap-1.5 mb-2">
+            <div className="mb-2 flex items-center gap-1.5">
               <Skeleton
                 variant="custom"
                 width={14}
@@ -65,13 +65,13 @@ export const TeamCardSkeleton: React.FC<TeamCardSkeletonProps> = ({
 
             {/* Ligne 3 : AvatarStack */}
             <div className="flex items-center">
-              {[...Array(5)].map((_, i) => (
+              {Array.from({ length: 5 }).map((_, i) => (
                 <Skeleton
                   key={i}
                   variant="avatar"
                   width={32}
                   height={32}
-                  className={i > 0 ? "-ml-2" : ""}
+                  className={i > 0 ? '-ml-2' : ''}
                 />
               ))}
               <Skeleton
@@ -85,16 +85,16 @@ export const TeamCardSkeleton: React.FC<TeamCardSkeletonProps> = ({
           </div>
         </div>
       </Card>
-    );
+    )
   }
 
   // Variant DETAILED
   return (
-    <Card className={cn("overflow-hidden", className)}>
+    <Card className={cn('overflow-hidden', className)}>
       <div className="flex border-l-4 border-muted">
         <div className="flex-1 p-4">
           {/* Header */}
-          <div className="flex items-start justify-between gap-2 mb-3">
+          <div className="mb-3 flex items-start justify-between gap-2">
             <div className="flex-1">
               <Skeleton variant="title" width="60%" height={20} />
               <Skeleton
@@ -113,16 +113,21 @@ export const TeamCardSkeleton: React.FC<TeamCardSkeletonProps> = ({
           </div>
 
           {/* Manager */}
-          <div className="flex items-center gap-2 mb-4">
+          <div className="mb-4 flex items-center gap-2">
             <Skeleton variant="avatar" width={32} height={32} />
             <div>
               <Skeleton variant="text" width={50} height={12} />
-              <Skeleton variant="text" width={100} height={14} className="mt-1" />
+              <Skeleton
+                variant="text"
+                width={100}
+                height={14}
+                className="mt-1"
+              />
             </div>
           </div>
 
           {/* Stats */}
-          <div className="flex items-center gap-4 mb-4">
+          <div className="mb-4 flex items-center gap-4">
             <div className="flex items-center gap-1.5">
               <Skeleton
                 variant="custom"
@@ -143,16 +148,16 @@ export const TeamCardSkeleton: React.FC<TeamCardSkeletonProps> = ({
           </div>
 
           {/* AvatarStack */}
-          <div className="pt-3 border-t">
+          <div className="border-t pt-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center">
-                {[...Array(5)].map((_, i) => (
+                {Array.from({ length: 5 }).map((_, i) => (
                   <Skeleton
                     key={i}
                     variant="avatar"
                     width={40}
                     height={40}
-                    className={i > 0 ? "-ml-3" : ""}
+                    className={i > 0 ? '-ml-3' : ''}
                   />
                 ))}
               </div>
@@ -162,7 +167,7 @@ export const TeamCardSkeleton: React.FC<TeamCardSkeletonProps> = ({
         </div>
       </div>
     </Card>
-  );
-};
+  )
+}
 
-TeamCardSkeleton.displayName = "TeamCardSkeleton";
+TeamCardSkeleton.displayName = 'TeamCardSkeleton'

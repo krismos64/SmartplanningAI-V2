@@ -1,9 +1,9 @@
-"use client";
+'use client'
 
-import React from "react";
-import { cn } from "@/lib/utils";
-import { FormField } from "./FormField";
-import { ChevronDown } from "lucide-react";
+import React from 'react'
+import { cn } from '@/lib/utils'
+import { FormField } from './FormField'
+import { ChevronDown } from 'lucide-react'
 
 /**
  * FormSelect - Composant Select (dropdown) stylisé
@@ -35,54 +35,54 @@ import { ChevronDown } from "lucide-react";
 
 export interface FormSelectOption {
   /** Valeur de l'option */
-  value: string | number;
+  value: string | number
 
   /** Label affiché */
-  label: string;
+  label: string
 
   /** Option désactivée */
-  disabled?: boolean;
+  disabled?: boolean
 }
 
 export interface FormSelectOptGroup {
   /** Label du groupe */
-  label: string;
+  label: string
 
   /** Options du groupe */
-  options: FormSelectOption[];
+  options: FormSelectOption[]
 }
 
 export interface FormSelectProps
-  extends Omit<React.SelectHTMLAttributes<HTMLSelectElement>, "size"> {
+  extends Omit<React.SelectHTMLAttributes<HTMLSelectElement>, 'size'> {
   /** Label affiché au-dessus du champ */
-  label?: string;
+  label?: string
 
   /** Message d'erreur affiché sous le champ */
-  error?: string;
+  error?: string
 
   /** Indique si le champ est requis */
-  required?: boolean;
+  required?: boolean
 
   /** Texte d'aide affiché sous le champ */
-  helpText?: string;
+  helpText?: string
 
   /** Options simples du select */
-  options?: FormSelectOption[];
+  options?: FormSelectOption[]
 
   /** Options groupées (optgroup) */
-  optGroups?: FormSelectOptGroup[];
+  optGroups?: FormSelectOptGroup[]
 
   /** Texte du placeholder (option vide) */
-  placeholder?: string;
+  placeholder?: string
 
   /** Variante visuelle du champ */
-  variant?: "default" | "error" | "success";
+  variant?: 'default' | 'error' | 'success'
 
   /** Classes CSS pour le wrapper FormField */
-  wrapperClassName?: string;
+  wrapperClassName?: string
 
   /** Classes CSS pour le select */
-  selectClassName?: string;
+  selectClassName?: string
 }
 
 export const FormSelect = React.forwardRef<HTMLSelectElement, FormSelectProps>(
@@ -95,7 +95,7 @@ export const FormSelect = React.forwardRef<HTMLSelectElement, FormSelectProps>(
       options = [],
       optGroups = [],
       placeholder,
-      variant = "default",
+      variant = 'default',
       disabled,
       className,
       wrapperClassName,
@@ -105,55 +105,60 @@ export const FormSelect = React.forwardRef<HTMLSelectElement, FormSelectProps>(
     ref
   ) => {
     // Détermine la variante effective
-    const effectiveVariant = error ? "error" : variant;
+    const effectiveVariant = error ? 'error' : variant
 
     // Classes de base
     const baseClasses = cn(
       // Base
-      "w-full rounded-lg border transition-all duration-150",
-      "text-base text-gray-900 dark:text-gray-100",
-      "focus:outline-none focus:ring-2 focus:ring-offset-0",
-      "disabled:bg-gray-100 dark:disabled:bg-gray-800",
-      "disabled:cursor-not-allowed disabled:opacity-60",
-      "px-4 py-2.5 pr-10",
-      "appearance-none",
-      "cursor-pointer",
+      'w-full rounded-lg border transition-all duration-150',
+      'text-base text-gray-900 dark:text-gray-100',
+      'focus:outline-none focus:ring-2 focus:ring-offset-0',
+      'disabled:bg-gray-100 dark:disabled:bg-gray-800',
+      'disabled:cursor-not-allowed disabled:opacity-60',
+      'px-4 py-2.5 pr-10',
+      'appearance-none',
+      'cursor-pointer',
 
       // Variantes de couleur
-      effectiveVariant === "default" &&
+      effectiveVariant === 'default' &&
         !disabled &&
         cn(
-          "border-gray-300 dark:border-gray-600",
-          "bg-white dark:bg-gray-900",
-          "hover:border-gray-400 dark:hover:border-gray-500",
-          "focus:border-blue-500 dark:focus:border-blue-400",
-          "focus:ring-blue-200 dark:focus:ring-blue-900"
+          'border-gray-300 dark:border-gray-600',
+          'bg-white dark:bg-gray-900',
+          'hover:border-gray-400 dark:hover:border-gray-500',
+          'focus:border-blue-500 dark:focus:border-blue-400',
+          'focus:ring-blue-200 dark:focus:ring-blue-900'
         ),
 
-      effectiveVariant === "error" &&
+      effectiveVariant === 'error' &&
         !disabled &&
         cn(
-          "border-red-500 dark:border-red-400",
-          "bg-red-50 dark:bg-red-950/20",
-          "focus:border-red-500 dark:focus:border-red-400",
-          "focus:ring-red-200 dark:focus:ring-red-900"
+          'border-red-500 dark:border-red-400',
+          'bg-red-50 dark:bg-red-950/20',
+          'focus:border-red-500 dark:focus:border-red-400',
+          'focus:ring-red-200 dark:focus:ring-red-900'
         ),
 
-      effectiveVariant === "success" &&
+      effectiveVariant === 'success' &&
         !disabled &&
         cn(
-          "border-green-500 dark:border-green-400",
-          "bg-green-50 dark:bg-green-950/20",
-          "focus:border-green-500 dark:focus:border-green-400",
-          "focus:ring-green-200 dark:focus:ring-green-900"
+          'border-green-500 dark:border-green-400',
+          'bg-green-50 dark:bg-green-950/20',
+          'focus:border-green-500 dark:focus:border-green-400',
+          'focus:ring-green-200 dark:focus:ring-green-900'
         ),
 
       selectClassName
-    );
+    )
 
     const selectElement = (
       <div className="relative">
-        <select ref={ref} disabled={disabled} className={baseClasses} {...props}>
+        <select
+          ref={ref}
+          disabled={disabled}
+          className={baseClasses}
+          {...props}
+        >
           {/* Placeholder */}
           {placeholder && (
             <option value="" disabled>
@@ -189,24 +194,24 @@ export const FormSelect = React.forwardRef<HTMLSelectElement, FormSelectProps>(
         </select>
 
         {/* Icône chevron */}
-        <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+        <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2">
           <ChevronDown
             className={cn(
-              "w-5 h-5 transition-colors",
-              effectiveVariant === "default" &&
-                "text-gray-400 dark:text-gray-500",
-              effectiveVariant === "error" && "text-red-500 dark:text-red-400",
-              effectiveVariant === "success" &&
-                "text-green-500 dark:text-green-400"
+              'h-5 w-5 transition-colors',
+              effectiveVariant === 'default' &&
+                'text-gray-400 dark:text-gray-500',
+              effectiveVariant === 'error' && 'text-red-500 dark:text-red-400',
+              effectiveVariant === 'success' &&
+                'text-green-500 dark:text-green-400'
             )}
           />
         </div>
       </div>
-    );
+    )
 
     // Si pas de label/error/helpText, retourne juste le select
     if (!label && !error && !helpText) {
-      return selectElement;
+      return selectElement
     }
 
     // Sinon, wrappe avec FormField
@@ -220,8 +225,8 @@ export const FormSelect = React.forwardRef<HTMLSelectElement, FormSelectProps>(
       >
         {selectElement}
       </FormField>
-    );
+    )
   }
-);
+)
 
-FormSelect.displayName = "FormSelect";
+FormSelect.displayName = 'FormSelect'

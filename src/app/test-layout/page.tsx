@@ -86,7 +86,7 @@ export default function TestLayoutPage() {
                     'Dashboard SaaS global',
                     'Gestion des organisations clientes',
                     'Monitoring système',
-                    'Logs d\'accès (RGPD)',
+                    "Logs d'accès (RGPD)",
                     'Mode impersonate (Phase 5)',
                   ]}
                   menuItems={[
@@ -104,7 +104,7 @@ export default function TestLayoutPage() {
                   role="DIRECTOR"
                   description="Directeur d'une entreprise cliente"
                   features={[
-                    'Vue d\'ensemble de l\'organisation',
+                    "Vue d'ensemble de l'organisation",
                     'Gestion des collaborateurs',
                     'Gestion des équipes',
                     'Validation des plannings',
@@ -131,7 +131,7 @@ export default function TestLayoutPage() {
                   role="MANAGER"
                   description="Manager d'une équipe"
                   features={[
-                    'Vue d\'ensemble de l\'équipe',
+                    "Vue d'ensemble de l'équipe",
                     'Gestion des plannings équipe',
                     'Validation des congés',
                     'Gestion des incidents',
@@ -161,12 +161,7 @@ export default function TestLayoutPage() {
                     'Gestion de ses tâches',
                     'Consultation du profil',
                   ]}
-                  menuItems={[
-                    'Dashboard',
-                    'Plannings',
-                    'Congés',
-                    'Tâches',
-                  ]}
+                  menuItems={['Dashboard', 'Plannings', 'Congés', 'Tâches']}
                 />
               </TabsContent>
             </Tabs>

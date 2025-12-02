@@ -1,6 +1,6 @@
-"use client";
+'use client'
 
-import { toast, ExternalToast } from "sonner";
+import { toast, ExternalToast } from 'sonner'
 
 /**
  * useToast - Hook custom pour Sonner avec helpers TypeScript
@@ -32,25 +32,25 @@ import { toast, ExternalToast } from "sonner";
  * ```
  */
 
-export type ToastOptions = ExternalToast;
+export type ToastOptions = ExternalToast
 
 export interface ToastAction {
-  label: string;
-  onClick: () => void;
+  label: string
+  onClick: () => void
 }
 
 export interface PromiseMessages<T = unknown> {
-  loading: string;
-  success: string | ((data: T) => string);
-  error: string | ((error: Error) => string);
+  loading: string
+  success: string | ((data: T) => string)
+  error: string | ((error: Error) => string)
 }
 
 export interface PromiseData<T = unknown> {
-  loading?: string | React.ReactNode;
-  success?: string | React.ReactNode | ((data: T) => React.ReactNode);
-  error?: string | React.ReactNode | ((error: Error) => React.ReactNode);
-  description?: string | React.ReactNode;
-  duration?: number;
+  loading?: string | React.ReactNode
+  success?: string | React.ReactNode | ((data: T) => React.ReactNode)
+  error?: string | React.ReactNode | ((error: Error) => React.ReactNode)
+  description?: string | React.ReactNode
+  duration?: number
 }
 
 /**
@@ -65,7 +65,7 @@ export const useToast = () => {
      * @param options - Options additionnelles (description, duration, action, etc.)
      */
     success: (message: string | React.ReactNode, options?: ToastOptions) => {
-      return toast.success(message, options);
+      return toast.success(message, options)
     },
 
     /**
@@ -74,7 +74,7 @@ export const useToast = () => {
      * @param options - Options additionnelles
      */
     error: (message: string | React.ReactNode, options?: ToastOptions) => {
-      return toast.error(message, options);
+      return toast.error(message, options)
     },
 
     /**
@@ -83,7 +83,7 @@ export const useToast = () => {
      * @param options - Options additionnelles
      */
     warning: (message: string | React.ReactNode, options?: ToastOptions) => {
-      return toast.warning(message, options);
+      return toast.warning(message, options)
     },
 
     /**
@@ -92,7 +92,7 @@ export const useToast = () => {
      * @param options - Options additionnelles
      */
     info: (message: string | React.ReactNode, options?: ToastOptions) => {
-      return toast.info(message, options);
+      return toast.info(message, options)
     },
 
     /**
@@ -101,7 +101,7 @@ export const useToast = () => {
      * @param options - Options additionnelles
      */
     loading: (message: string | React.ReactNode, options?: ToastOptions) => {
-      return toast.loading(message, options);
+      return toast.loading(message, options)
     },
 
     /**
@@ -110,7 +110,7 @@ export const useToast = () => {
      * @param options - Options additionnelles
      */
     message: (message: string | React.ReactNode, options?: ToastOptions) => {
-      return toast(message, options);
+      return toast(message, options)
     },
 
     /**
@@ -122,7 +122,8 @@ export const useToast = () => {
       promise: Promise<T>,
       messages: PromiseMessages<T> | PromiseData<T>
     ) => {
-      return toast.promise(promise, messages as any);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
+      return toast.promise(promise, messages as unknown as Parameters<typeof toast.promise>[1])
     },
 
     /**
@@ -130,14 +131,14 @@ export const useToast = () => {
      * @param id - ID du toast à fermer (optionnel)
      */
     dismiss: (id?: string | number) => {
-      return toast.dismiss(id);
+      return toast.dismiss(id)
     },
 
     /**
      * Ferme tous les toasts actifs
      */
     dismissAll: () => {
-      return toast.dismiss();
+      return toast.dismiss()
     },
 
     /**
@@ -146,24 +147,24 @@ export const useToast = () => {
      * @param options - Options additionnelles
      */
     custom: (content: React.ReactNode, options?: ToastOptions) => {
-      return toast(content, options);
+      return toast(content, options)
     },
 
     /**
      * Récupère l'historique de tous les toasts
      */
     getHistory: () => {
-      return toast.getHistory?.() || [];
+      return toast.getHistory?.() || []
     },
 
     /**
      * Récupère les toasts actuellement actifs
      */
     getToasts: () => {
-      return toast.getToasts?.() || [];
+      return toast.getToasts?.() || []
     },
-  };
-};
+  }
+}
 
 /**
  * Helper pour créer un toast avec action button
@@ -182,8 +183,8 @@ export const toastWithAction = (
       label: action.label,
       onClick: action.onClick,
     },
-  });
-};
+  })
+}
 
 /**
  * Helper pour créer un toast avec description
@@ -199,8 +200,8 @@ export const toastWithDescription = (
   return toast(title, {
     ...options,
     description,
-  });
-};
+  })
+}
 
 /**
  * Helper pour créer un toast persistent (ne se ferme pas automatiquement)
@@ -214,5 +215,5 @@ export const toastPersistent = (
   return toast(message, {
     ...options,
     duration: Infinity,
-  });
-};
+  })
+}

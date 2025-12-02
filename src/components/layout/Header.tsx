@@ -37,16 +37,17 @@ interface HeaderProps {
 export function Header({ user, notificationsCount = 0 }: HeaderProps) {
   const router = useRouter()
   const { toggleSidebar } = useSidebar()
-  const [animationData, setAnimationData] = useState<any>(null)
+  // Type object pour les données d'animation Lottie
+  const [animationData, setAnimationData] = useState<object | null>(null)
 
   // Charger l'animation Lottie côté client uniquement
   useEffect(() => {
     fetch('/animations/planning-animation.json')
-      .then((res) => res.json())
-      .then((data) => {
+      .then((res) => res.json() as Promise<object>)
+      .then((data: object) => {
         setAnimationData(data)
       })
-      .catch((err) => console.error('Failed to load Lottie animation:', err))
+      .catch((err: unknown) => console.error('Failed to load Lottie animation:', err))
   }, [])
 
   const userInitials = user.name
@@ -113,12 +114,9 @@ export function Header({ user, notificationsCount = 0 }: HeaderProps) {
           {/* User dropdown menu */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                className="flex items-center gap-2 px-2"
-              >
+              <Button variant="ghost" className="flex items-center gap-2 px-2">
                 <Avatar className="h-8 w-8">
-                  <AvatarFallback className="bg-primary text-primary-foreground text-xs">
+                  <AvatarFallback className="bg-primary text-xs text-primary-foreground">
                     {userInitials}
                   </AvatarFallback>
                 </Avatar>
@@ -133,7 +131,9 @@ export function Header({ user, notificationsCount = 0 }: HeaderProps) {
             <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuLabel>
                 <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium leading-none">{user.name}</p>
+                  <p className="text-sm font-medium leading-none">
+                    {user.name}
+                  </p>
                   <p className="text-xs leading-none text-muted-foreground">
                     {user.email}
                   </p>

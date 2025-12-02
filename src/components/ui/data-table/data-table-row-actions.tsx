@@ -33,7 +33,7 @@ export function DataTableRowActions<TData>({
   onEdit,
   onDelete,
 }: DataTableRowActionsProps<TData>) {
-  const data = row.original as TData
+  const data = row.original
 
   return (
     <DropdownMenu>

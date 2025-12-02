@@ -3,5 +3,5 @@
  * Import unique : import { ConfirmDialog, FormDialog } from '@/components/modals'
  */
 
-export * from "./ConfirmDialog";
-export * from "./FormDialog";
+export * from './ConfirmDialog'
+export * from './FormDialog'

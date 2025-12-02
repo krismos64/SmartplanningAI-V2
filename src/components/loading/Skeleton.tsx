@@ -1,9 +1,9 @@
-"use client";
+'use client'
 
-import React from "react";
-import ReactSkeleton, { SkeletonTheme } from "react-loading-skeleton";
-import "react-loading-skeleton/dist/skeleton.css";
-import { cn } from "@/lib/utils";
+import React from 'react'
+import ReactSkeleton, { SkeletonTheme } from 'react-loading-skeleton'
+import 'react-loading-skeleton/dist/skeleton.css'
+import { cn } from '@/lib/utils'
 
 /**
  * Skeleton - Wrapper pour react-loading-skeleton avec theming cohérent
@@ -25,46 +25,46 @@ import { cn } from "@/lib/utils";
 
 export interface SkeletonProps {
   /** Variant prédéfini */
-  variant?: "text" | "title" | "avatar" | "button" | "input" | "custom";
+  variant?: 'text' | 'title' | 'avatar' | 'button' | 'input' | 'custom'
 
   /** Nombre de lignes */
-  count?: number;
+  count?: number
 
   /** Largeur (px ou %) */
-  width?: string | number;
+  width?: string | number
 
   /** Hauteur (px ou %) */
-  height?: string | number;
+  height?: string | number
 
   /** Border radius */
-  borderRadius?: string | number;
+  borderRadius?: string | number
 
   /** Skeleton circulaire */
-  circle?: boolean;
+  circle?: boolean
 
   /** Classes CSS additionnelles */
-  className?: string;
+  className?: string
 
   /** Inline (pas de line break après) */
-  inline?: boolean;
+  inline?: boolean
 
   /** Container className pour wrapper */
-  containerClassName?: string;
+  containerClassName?: string
 
   /** Durée de l'animation (secondes) */
-  duration?: number;
+  duration?: number
 
   /** Activer/désactiver l'animation */
-  enableAnimation?: boolean;
+  enableAnimation?: boolean
 }
 
 const variantConfig: Record<
   string,
   {
-    width?: number;
-    height?: number;
-    borderRadius?: number;
-    circle?: boolean;
+    width?: number
+    height?: number
+    borderRadius?: number
+    circle?: boolean
   }
 > = {
   text: {
@@ -89,12 +89,12 @@ const variantConfig: Record<
     borderRadius: 6,
   },
   custom: {},
-};
+}
 
 export const Skeleton = React.forwardRef<HTMLSpanElement, SkeletonProps>(
   (
     {
-      variant = "text",
+      variant = 'text',
       count,
       width,
       height,
@@ -108,13 +108,13 @@ export const Skeleton = React.forwardRef<HTMLSpanElement, SkeletonProps>(
     },
     ref
   ) => {
-    const config = variantConfig[variant] || {};
+    const config = variantConfig[variant] || {}
 
     // Merge variant config with explicit props (explicit props take priority)
-    const finalWidth = width ?? config.width;
-    const finalHeight = height ?? config.height;
-    const finalBorderRadius = borderRadius ?? config.borderRadius;
-    const finalCircle = circle ?? config.circle ?? false;
+    const finalWidth = width ?? config.width
+    const finalHeight = height ?? config.height
+    const finalBorderRadius = borderRadius ?? config.borderRadius
+    const finalCircle = circle ?? config.circle ?? false
 
     return (
       <span ref={ref}>
@@ -130,11 +130,11 @@ export const Skeleton = React.forwardRef<HTMLSpanElement, SkeletonProps>(
           enableAnimation={enableAnimation}
         />
       </span>
-    );
+    )
   }
-);
+)
 
-Skeleton.displayName = "Skeleton";
+Skeleton.displayName = 'Skeleton'
 
 /**
  * SkeletonProvider - Provider pour theming global des skeletons
@@ -148,9 +148,9 @@ Skeleton.displayName = "Skeleton";
  */
 
 export interface SkeletonProviderProps {
-  children: React.ReactNode;
-  baseColor?: string;
-  highlightColor?: string;
+  children: React.ReactNode
+  baseColor?: string
+  highlightColor?: string
 }
 
 export const SkeletonProvider: React.FC<SkeletonProviderProps> = ({
@@ -160,8 +160,8 @@ export const SkeletonProvider: React.FC<SkeletonProviderProps> = ({
 }) => {
   // Couleurs par défaut (light/dark mode)
   // Ces valeurs fonctionnent bien avec Tailwind
-  const defaultBaseColor = baseColor || undefined; // Utilise les valeurs par défaut de react-loading-skeleton
-  const defaultHighlightColor = highlightColor || undefined;
+  const defaultBaseColor = baseColor || undefined // Utilise les valeurs par défaut de react-loading-skeleton
+  const defaultHighlightColor = highlightColor || undefined
 
   return (
     <SkeletonTheme
@@ -170,5 +170,5 @@ export const SkeletonProvider: React.FC<SkeletonProviderProps> = ({
     >
       {children}
     </SkeletonTheme>
-  );
-};
+  )
+}

@@ -65,7 +65,9 @@ export const getColumns = (
         </Button>
       )
     },
-    cell: ({ row }) => <div className="font-mono text-xs">{row.getValue('id')}</div>,
+    cell: ({ row }) => (
+      <div className="font-mono text-xs">{row.getValue('id')}</div>
+    ),
   },
 
   // ===================================================================
@@ -85,7 +87,9 @@ export const getColumns = (
         </Button>
       )
     },
-    cell: ({ row }) => <div className="font-medium">{row.getValue('name')}</div>,
+    cell: ({ row }) => (
+      <div className="font-medium">{row.getValue('name')}</div>
+    ),
   },
 
   // ===================================================================
@@ -106,7 +110,9 @@ export const getColumns = (
       )
     },
     cell: ({ row }) => (
-      <div className="text-sm text-muted-foreground">{row.getValue('email')}</div>
+      <div className="text-sm text-muted-foreground">
+        {row.getValue('email')}
+      </div>
     ),
   },
 

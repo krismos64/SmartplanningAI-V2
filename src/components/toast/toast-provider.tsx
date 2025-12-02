@@ -1,6 +1,6 @@
-"use client";
+'use client'
 
-import { Toaster } from "sonner";
+import { Toaster } from 'sonner'
 
 /**
  * ToastProvider - Provider Next.js App Router pour Sonner
@@ -35,35 +35,35 @@ import { Toaster } from "sonner";
 export interface ToastProviderProps {
   /** Position des toasts */
   position?:
-    | "top-left"
-    | "top-center"
-    | "top-right"
-    | "bottom-left"
-    | "bottom-center"
-    | "bottom-right";
+    | 'top-left'
+    | 'top-center'
+    | 'top-right'
+    | 'bottom-left'
+    | 'bottom-center'
+    | 'bottom-right'
 
   /** Activer les couleurs riches (recommandé) */
-  richColors?: boolean;
+  richColors?: boolean
 
   /** Afficher le bouton de fermeture */
-  closeButton?: boolean;
+  closeButton?: boolean
 
   /** Expand on hover */
-  expand?: boolean;
+  expand?: boolean
 
   /** Theme (light, dark, system) */
-  theme?: "light" | "dark" | "system";
+  theme?: 'light' | 'dark' | 'system'
 
   /** Nombre maximum de toasts visibles */
-  visibleToasts?: number;
+  visibleToasts?: number
 }
 
 export function ToastProvider({
-  position = "top-right",
+  position = 'top-right',
   richColors = true,
   closeButton = true,
   expand = true,
-  theme = "system",
+  theme = 'system',
   visibleToasts = 5,
 }: ToastProviderProps = {}) {
   return (
@@ -76,13 +76,13 @@ export function ToastProvider({
       visibleToasts={visibleToasts}
       toastOptions={{
         classNames: {
-          toast: "font-sans",
-          title: "font-medium",
-          description: "text-sm opacity-90",
-          actionButton: "!bg-primary !text-primary-foreground",
-          cancelButton: "!bg-muted !text-muted-foreground",
+          toast: 'font-sans',
+          title: 'font-medium',
+          description: 'text-sm opacity-90',
+          actionButton: '!bg-primary !text-primary-foreground',
+          cancelButton: '!bg-muted !text-muted-foreground',
         },
       }}
     />
-  );
+  )
 }
