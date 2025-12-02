@@ -146,12 +146,16 @@ services:
     # 📚 CDA : appendonly = persistence sur disque
     # requirepass = mot de passe obligatoire (sécurité)
     command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+    environment:
+      # 📚 CDA : Variable pour le healthcheck (interpolée dans le conteneur)
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
     volumes:
       - redis_data:/data
     networks:
       - smartplanning-network
     healthcheck:
-      test: ['CMD', 'redis-cli', '-a', '${REDIS_PASSWORD}', 'ping']
+      # 📚 CDA : Utilise REDISCLI_AUTH pour éviter le warning password on CLI
+      test: ['CMD-SHELL', 'redis-cli -a $$REDIS_PASSWORD ping | grep PONG']
       interval: 10s
       timeout: 5s
       retries: 5
