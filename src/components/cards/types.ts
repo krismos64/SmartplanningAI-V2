@@ -9,8 +9,8 @@
  * - CardVariant : Variants d'affichage (compact/detailed)
  */
 
-import { UserRole } from "@prisma/client";
-import { LucideIcon } from "lucide-react";
+import { UserRole } from '@prisma/client'
+import { LucideIcon } from 'lucide-react'
 
 // ============================================================================
 // STATUTS UTILISATEUR
@@ -20,7 +20,7 @@ import { LucideIcon } from "lucide-react";
  * Statuts possibles d'un utilisateur
  * Utilisé pour le badge et l'indicateur visuel
  */
-export type UserStatus = "active" | "on_leave" | "absent" | "inactive";
+export type UserStatus = 'active' | 'on_leave' | 'absent' | 'inactive'
 
 /**
  * Configuration des statuts avec labels et couleurs Tailwind
@@ -28,34 +28,34 @@ export type UserStatus = "active" | "on_leave" | "absent" | "inactive";
 export const USER_STATUS_CONFIG: Record<
   UserStatus,
   {
-    label: string;
-    color: string;
-    dotColor: string;
+    label: string
+    color: string
+    dotColor: string
   }
 > = {
   active: {
-    label: "Actif",
+    label: 'Actif',
     color:
-      "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
-    dotColor: "bg-green-500",
+      'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
+    dotColor: 'bg-green-500',
   },
   on_leave: {
-    label: "Congé",
+    label: 'Congé',
     color:
-      "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400",
-    dotColor: "bg-yellow-500",
+      'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
+    dotColor: 'bg-yellow-500',
   },
   absent: {
-    label: "Absent",
-    color: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
-    dotColor: "bg-red-500",
+    label: 'Absent',
+    color: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
+    dotColor: 'bg-red-500',
   },
   inactive: {
-    label: "Inactif",
-    color: "bg-gray-100 text-gray-600 dark:bg-gray-800/50 dark:text-gray-400",
-    dotColor: "bg-gray-400",
+    label: 'Inactif',
+    color: 'bg-gray-100 text-gray-600 dark:bg-gray-800/50 dark:text-gray-400',
+    dotColor: 'bg-gray-400',
   },
-};
+}
 
 // ============================================================================
 // ACTIONS DROPDOWN
@@ -75,22 +75,22 @@ export const USER_STATUS_CONFIG: Record<
  */
 export interface CardAction {
   /** Texte affiché dans le menu */
-  label: string;
+  label: string
 
   /** Icône Lucide optionnelle */
-  icon?: LucideIcon;
+  icon?: LucideIcon
 
   /** Callback au clic */
-  onClick: () => void;
+  onClick: () => void
 
   /** Variant de style (destructive = rouge) */
-  variant?: "default" | "destructive";
+  variant?: 'default' | 'destructive'
 
   /** Désactiver l'action */
-  disabled?: boolean;
+  disabled?: boolean
 
   /** Ajouter un séparateur AVANT cette action */
-  separator?: boolean;
+  separator?: boolean
 }
 
 // ============================================================================
@@ -102,7 +102,7 @@ export interface CardAction {
  * - compact : Affichage en ligne, minimal
  * - detailed : Affichage complet avec toutes les infos
  */
-export type CardVariant = "compact" | "detailed";
+export type CardVariant = 'compact' | 'detailed'
 
 // ============================================================================
 // PROPS COMMUNES
@@ -113,16 +113,16 @@ export type CardVariant = "compact" | "detailed";
  */
 export interface BaseCardProps {
   /** Variant d'affichage */
-  variant?: CardVariant;
+  variant?: CardVariant
 
   /** Actions du dropdown menu */
-  actions?: CardAction[];
+  actions?: CardAction[]
 
   /** État de chargement */
-  isLoading?: boolean;
+  isLoading?: boolean
 
   /** Classes CSS additionnelles */
-  className?: string;
+  className?: string
 }
 
 // ============================================================================
@@ -134,11 +134,11 @@ export interface BaseCardProps {
  * Compatible avec le modèle Prisma User
  */
 export interface UserCardUser {
-  id: string;
-  name: string | null;
-  email: string;
-  image?: string | null;
-  role: UserRole;
+  id: string
+  name: string | null
+  email: string
+  image?: string | null
+  role: UserRole
 }
 
 /**
@@ -146,11 +146,11 @@ export interface UserCardUser {
  * Compatible avec le modèle Prisma Employee
  */
 export interface UserCardEmployee {
-  firstName: string;
-  lastName: string;
-  jobTitle?: string | null;
-  department?: string | null;
-  phone?: string | null;
+  firstName: string
+  lastName: string
+  jobTitle?: string | null
+  department?: string | null
+  phone?: string | null
 }
 
 // ============================================================================
@@ -162,37 +162,37 @@ export interface UserCardEmployee {
  * Compatible avec le modèle Prisma Team
  */
 export interface TeamCardTeam {
-  id: string;
-  name: string;
-  description?: string | null;
-  color: string;
+  id: string
+  name: string
+  description?: string | null
+  color: string
 }
 
 /**
  * Membre d'équipe simplifié pour AvatarStack
  */
 export interface TeamMember {
-  id: string;
-  name: string | null;
-  image?: string | null;
-  status?: UserStatus;
+  id: string
+  name: string | null
+  image?: string | null
+  status?: UserStatus
 }
 
 /**
  * Manager d'équipe simplifié
  */
 export interface TeamManager {
-  id: string;
-  name: string | null;
-  image?: string | null;
+  id: string
+  name: string | null
+  image?: string | null
 }
 
 /**
  * Statistiques d'équipe
  */
 export interface TeamStats {
-  activeCount?: number;
-  onLeaveCount?: number;
+  activeCount?: number
+  onLeaveCount?: number
 }
 
 // ============================================================================
@@ -203,8 +203,8 @@ export interface TeamStats {
  * Labels traduits pour les rôles utilisateur
  */
 export const USER_ROLE_LABELS: Record<UserRole, string> = {
-  SYSTEM_ADMIN: "Super Admin",
-  DIRECTOR: "Directeur",
-  MANAGER: "Manager",
-  EMPLOYEE: "Employé",
-};
+  SYSTEM_ADMIN: 'Super Admin',
+  DIRECTOR: 'Directeur',
+  MANAGER: 'Manager',
+  EMPLOYEE: 'Employé',
+}

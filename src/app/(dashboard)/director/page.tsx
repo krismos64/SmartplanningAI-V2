@@ -24,7 +24,7 @@ import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'Dashboard Directeur',
-  description: 'Vue d\'ensemble de votre organisation SmartPlanning',
+  description: "Vue d'ensemble de votre organisation SmartPlanning",
 }
 
 // eslint-disable-next-line @typescript-eslint/require-await
@@ -54,16 +54,12 @@ export default async function DirectorDashboardPage() {
             <span className="text-2xl">👥</span>
           </div>
           <p className="mt-2 text-3xl font-bold">42</p>
-          <p className="mt-1 text-xs text-muted-foreground">
-            +2 ce mois-ci
-          </p>
+          <p className="mt-1 text-xs text-muted-foreground">+2 ce mois-ci</p>
         </div>
 
         <div className="card-base">
           <div className="flex items-center justify-between">
-            <p className="text-sm font-medium text-muted-foreground">
-              Équipes
-            </p>
+            <p className="text-sm font-medium text-muted-foreground">Équipes</p>
             <span className="text-2xl">🔷</span>
           </div>
           <p className="mt-2 text-3xl font-bold">6</p>
@@ -80,9 +76,7 @@ export default async function DirectorDashboardPage() {
             <span className="text-2xl">✈️</span>
           </div>
           <p className="mt-2 text-3xl font-bold">8</p>
-          <p className="mt-1 text-xs text-muted-foreground">
-            À valider
-          </p>
+          <p className="mt-1 text-xs text-muted-foreground">À valider</p>
         </div>
 
         <div className="card-base border-primary">
@@ -117,15 +111,11 @@ export default async function DirectorDashboardPage() {
           </button>
           <button className="rounded-lg border border-border bg-white p-4 text-left hover:bg-secondary">
             <p className="mb-1 text-sm font-medium">Voir les plannings</p>
-            <p className="text-xs text-muted-foreground">
-              Calendrier global
-            </p>
+            <p className="text-xs text-muted-foreground">Calendrier global</p>
           </button>
           <button className="rounded-lg border border-border bg-white p-4 text-left hover:bg-secondary">
             <p className="mb-1 text-sm font-medium">Paramètres</p>
-            <p className="text-xs text-muted-foreground">
-              Configuration org.
-            </p>
+            <p className="text-xs text-muted-foreground">Configuration org.</p>
           </button>
         </div>
       </div>

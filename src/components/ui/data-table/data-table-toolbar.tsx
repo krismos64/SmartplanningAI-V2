@@ -21,11 +21,11 @@ import { Button } from '@/components/ui/button'
 import { X } from 'lucide-react'
 import type { DataTableToolbarProps } from './data-table-types'
 
-export function DataTableToolbar({
+export function DataTableToolbar<TData>({
   table,
   searchPlaceholder = 'Rechercher...',
   searchColumn,
-}: DataTableToolbarProps) {
+}: DataTableToolbarProps<TData>) {
   // Récupérer la colonne de recherche (première colonne par défaut)
   const column = searchColumn
     ? table.getColumn(searchColumn)

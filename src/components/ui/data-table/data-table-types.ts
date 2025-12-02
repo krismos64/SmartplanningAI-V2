@@ -14,6 +14,8 @@ import type {
   ColumnFiltersState,
   PaginationState,
   RowSelectionState,
+  Table,
+  Row,
 } from '@tanstack/react-table'
 
 /**
@@ -63,9 +65,9 @@ export interface DataTableProps<TData, TValue = unknown> {
 /**
  * Props pour le composant DataTableToolbar
  */
-export interface DataTableToolbarProps {
+export interface DataTableToolbarProps<TData> {
   /** Instance TanStack Table */
-  table: any // eslint-disable-line @typescript-eslint/no-explicit-any
+  table: Table<TData>
 
   /** Placeholder pour le champ de recherche */
   searchPlaceholder?: string
@@ -77,9 +79,9 @@ export interface DataTableToolbarProps {
 /**
  * Props pour le composant DataTablePagination
  */
-export interface DataTablePaginationProps {
+export interface DataTablePaginationProps<TData> {
   /** Instance TanStack Table */
-  table: any // eslint-disable-line @typescript-eslint/no-explicit-any
+  table: Table<TData>
 
   /** Options de tailles de page */
   pageSizeOptions?: number[]
@@ -90,7 +92,7 @@ export interface DataTablePaginationProps {
  */
 export interface DataTableRowActionsProps<TData> {
   /** Ligne du tableau (TanStack Table Row) */
-  row: any // eslint-disable-line @typescript-eslint/no-explicit-any
+  row: Row<TData>
 
   /** Callback View */
   onView?: (data: TData) => void
@@ -107,13 +109,13 @@ export interface DataTableRowActionsProps<TData> {
  */
 export interface DataTableCardsProps<TData> {
   /** Colonnes (pour extraire les définitions) */
-  columns: ColumnDef<TData, any>[] // eslint-disable-line @typescript-eslint/no-explicit-any
+  columns?: ColumnDef<TData, unknown>[]
 
   /** Données filtrées et triées */
-  data: TData[]
+  data?: TData[]
 
   /** Instance TanStack Table */
-  table: any // eslint-disable-line @typescript-eslint/no-explicit-any
+  table: Table<TData>
 
   /** Callback actions */
   onView?: (row: TData) => void

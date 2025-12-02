@@ -45,10 +45,12 @@ export default function SuperAdminPage() {
                   avec pagination
                 </li>
                 <li>
-                  <strong>Logs d&apos;accès</strong> : Conformité RGPD, audit trail
+                  <strong>Logs d&apos;accès</strong> : Conformité RGPD, audit
+                  trail
                 </li>
                 <li>
-                  <strong>Mode impersonate</strong> : Se connecter en tant qu&apos;un utilisateur client
+                  <strong>Mode impersonate</strong> : Se connecter en tant
+                  qu&apos;un utilisateur client
                 </li>
                 <li>
                   <strong>Monitoring système</strong> : Health checks,

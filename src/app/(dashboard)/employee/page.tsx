@@ -135,9 +135,7 @@ export default async function EmployeeDashboardPage() {
       {/* Mes demandes de congés */}
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="card-base">
-          <h2 className="mb-4 text-lg font-semibold">
-            Mes demandes de congés
-          </h2>
+          <h2 className="mb-4 text-lg font-semibold">Mes demandes de congés</h2>
           <div className="space-y-3">
             {[
               { dates: '23-27 Déc', status: 'Approuvé', color: 'green' },
@@ -150,9 +148,7 @@ export default async function EmployeeDashboardPage() {
               >
                 <div>
                   <p className="text-sm font-medium">{request.dates}</p>
-                  <p className="text-xs text-muted-foreground">
-                    Congés payés
-                  </p>
+                  <p className="text-xs text-muted-foreground">Congés payés</p>
                 </div>
                 <span
                   className={`badge-base ${

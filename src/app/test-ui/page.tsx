@@ -58,7 +58,7 @@ export default function TestUIPage() {
           <h1 className="mb-4 bg-gradient-to-r from-blue-600 via-blue-500 to-purple-600 bg-clip-text font-rajdhani text-5xl font-bold text-transparent">
             Test Shadcn/ui - SmartPlanning
           </h1>
-          <p className="text-muted-foreground text-lg">
+          <p className="text-lg text-muted-foreground">
             Validation des composants UI et du thème personnalisé
           </p>
         </div>
@@ -66,8 +66,12 @@ export default function TestUIPage() {
         {/* Tabs Navigation */}
         <Card className="animate-slide-up">
           <CardHeader>
-            <CardTitle className="font-rajdhani text-2xl">Navigation par onglets</CardTitle>
-            <CardDescription>Composant Tabs pour organiser le contenu</CardDescription>
+            <CardTitle className="font-rajdhani text-2xl">
+              Navigation par onglets
+            </CardTitle>
+            <CardDescription>
+              Composant Tabs pour organiser le contenu
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="components" className="w-full">
@@ -83,7 +87,9 @@ export default function TestUIPage() {
                 <Card>
                   <CardHeader>
                     <CardTitle className="font-rajdhani">Buttons</CardTitle>
-                    <CardDescription>Différentes variantes de boutons</CardDescription>
+                    <CardDescription>
+                      Différentes variantes de boutons
+                    </CardDescription>
                   </CardHeader>
                   <CardContent className="flex flex-wrap gap-4">
                     <Button>Primary</Button>
@@ -98,8 +104,12 @@ export default function TestUIPage() {
                 {/* Section Badges & Avatars */}
                 <Card>
                   <CardHeader>
-                    <CardTitle className="font-rajdhani">Badges & Avatars</CardTitle>
-                    <CardDescription>Statuts et profils utilisateurs</CardDescription>
+                    <CardTitle className="font-rajdhani">
+                      Badges & Avatars
+                    </CardTitle>
+                    <CardDescription>
+                      Statuts et profils utilisateurs
+                    </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-6">
                     {/* Badges */}
@@ -110,8 +120,12 @@ export default function TestUIPage() {
                         <Badge variant="secondary">Secondary</Badge>
                         <Badge variant="destructive">Destructive</Badge>
                         <Badge variant="outline">Outline</Badge>
-                        <Badge className="bg-green-500 hover:bg-green-600">Approuvé</Badge>
-                        <Badge className="bg-orange-500 hover:bg-orange-600">En attente</Badge>
+                        <Badge className="bg-green-500 hover:bg-green-600">
+                          Approuvé
+                        </Badge>
+                        <Badge className="bg-orange-500 hover:bg-orange-600">
+                          En attente
+                        </Badge>
                       </div>
                     </div>
 
@@ -121,12 +135,19 @@ export default function TestUIPage() {
                       <div className="flex flex-wrap gap-4">
                         <div className="flex items-center gap-3">
                           <Avatar>
-                            <AvatarImage src="https://github.com/shadcn.png" alt="User 1" />
+                            <AvatarImage
+                              src="https://github.com/shadcn.png"
+                              alt="User 1"
+                            />
                             <AvatarFallback>CN</AvatarFallback>
                           </Avatar>
                           <div>
-                            <p className="font-rajdhani text-sm font-semibold">Christophe</p>
-                            <p className="text-xs text-muted-foreground">Directeur</p>
+                            <p className="font-rajdhani text-sm font-semibold">
+                              Christophe
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              Directeur
+                            </p>
                           </div>
                         </div>
 
@@ -137,8 +158,12 @@ export default function TestUIPage() {
                             </AvatarFallback>
                           </Avatar>
                           <div>
-                            <p className="font-rajdhani text-sm font-semibold">John Doe</p>
-                            <p className="text-xs text-muted-foreground">Manager</p>
+                            <p className="font-rajdhani text-sm font-semibold">
+                              John Doe
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              Manager
+                            </p>
                           </div>
                         </div>
 
@@ -149,8 +174,12 @@ export default function TestUIPage() {
                             </AvatarFallback>
                           </Avatar>
                           <div>
-                            <p className="font-rajdhani text-sm font-semibold">Jane Smith</p>
-                            <p className="text-xs text-muted-foreground">Employé</p>
+                            <p className="font-rajdhani text-sm font-semibold">
+                              Jane Smith
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              Employé
+                            </p>
                           </div>
                         </div>
                       </div>
@@ -163,7 +192,9 @@ export default function TestUIPage() {
               <TabsContent value="forms" className="space-y-4">
                 <Card>
                   <CardHeader>
-                    <CardTitle className="font-rajdhani">Formulaire de connexion</CardTitle>
+                    <CardTitle className="font-rajdhani">
+                      Formulaire de connexion
+                    </CardTitle>
                     <CardDescription>
                       Exemple d&apos;utilisation des inputs et labels
                     </CardDescription>
@@ -184,7 +215,12 @@ export default function TestUIPage() {
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="name">Nom complet</Label>
-                      <Input id="name" type="text" placeholder="John Doe" className="w-full" />
+                      <Input
+                        id="name"
+                        type="text"
+                        placeholder="John Doe"
+                        className="w-full"
+                      />
                     </div>
                   </CardContent>
                   <CardFooter className="flex justify-between">
@@ -198,14 +234,18 @@ export default function TestUIPage() {
               <TabsContent value="data" className="space-y-4">
                 <Card>
                   <CardHeader>
-                    <CardTitle className="font-rajdhani">Table de données</CardTitle>
+                    <CardTitle className="font-rajdhani">
+                      Table de données
+                    </CardTitle>
                     <CardDescription>
                       Exemple de tableau avec les employés SmartPlanning
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
                     <Table>
-                      <TableCaption>Liste des employés - Données de test</TableCaption>
+                      <TableCaption>
+                        Liste des employés - Données de test
+                      </TableCaption>
                       <TableHeader>
                         <TableRow>
                           <TableHead className="w-[100px]">ID</TableHead>
@@ -218,7 +258,9 @@ export default function TestUIPage() {
                       <TableBody>
                         <TableRow>
                           <TableCell className="font-medium">EMP-001</TableCell>
-                          <TableCell className="font-rajdhani">Christophe M.</TableCell>
+                          <TableCell className="font-rajdhani">
+                            Christophe M.
+                          </TableCell>
                           <TableCell>Directeur</TableCell>
                           <TableCell>Direction</TableCell>
                           <TableCell className="text-right">
@@ -227,7 +269,9 @@ export default function TestUIPage() {
                         </TableRow>
                         <TableRow>
                           <TableCell className="font-medium">EMP-002</TableCell>
-                          <TableCell className="font-rajdhani">John Doe</TableCell>
+                          <TableCell className="font-rajdhani">
+                            John Doe
+                          </TableCell>
                           <TableCell>Manager</TableCell>
                           <TableCell>Engineering</TableCell>
                           <TableCell className="text-right">
@@ -236,7 +280,9 @@ export default function TestUIPage() {
                         </TableRow>
                         <TableRow>
                           <TableCell className="font-medium">EMP-003</TableCell>
-                          <TableCell className="font-rajdhani">Jane Smith</TableCell>
+                          <TableCell className="font-rajdhani">
+                            Jane Smith
+                          </TableCell>
                           <TableCell>Manager</TableCell>
                           <TableCell>Product</TableCell>
                           <TableCell className="text-right">
@@ -245,7 +291,9 @@ export default function TestUIPage() {
                         </TableRow>
                         <TableRow>
                           <TableCell className="font-medium">EMP-004</TableCell>
-                          <TableCell className="font-rajdhani">Bob Wilson</TableCell>
+                          <TableCell className="font-rajdhani">
+                            Bob Wilson
+                          </TableCell>
                           <TableCell>Employé</TableCell>
                           <TableCell>Engineering</TableCell>
                           <TableCell className="text-right">
@@ -254,7 +302,9 @@ export default function TestUIPage() {
                         </TableRow>
                         <TableRow>
                           <TableCell className="font-medium">EMP-005</TableCell>
-                          <TableCell className="font-rajdhani">Alice Brown</TableCell>
+                          <TableCell className="font-rajdhani">
+                            Alice Brown
+                          </TableCell>
                           <TableCell>Employé</TableCell>
                           <TableCell>Product</TableCell>
                           <TableCell className="text-right">
@@ -279,7 +329,8 @@ export default function TestUIPage() {
                   🎨 Thème SmartPlanning personnalisé
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  Couleurs : #2979f8 (Primary) • #1c62e3 (Secondary) • #ed5151 (Destructive)
+                  Couleurs : #2979f8 (Primary) • #1c62e3 (Secondary) • #ed5151
+                  (Destructive)
                 </p>
               </div>
               <div className="flex gap-2">
@@ -303,6 +354,6 @@ export default function TestUIPage() {
  */
 export const metadata = {
   title: 'Test UI Components - SmartPlanning',
-  description: 'Page de test pour valider l\'installation de Shadcn/ui',
+  description: "Page de test pour valider l'installation de Shadcn/ui",
   robots: { index: false, follow: false },
 }

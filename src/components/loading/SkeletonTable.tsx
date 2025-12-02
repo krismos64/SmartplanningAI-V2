@@ -1,8 +1,8 @@
-"use client";
+'use client'
 
-import React from "react";
-import { Skeleton } from "./Skeleton";
-import { cn } from "@/lib/utils";
+import React from 'react'
+import { Skeleton } from './Skeleton'
+import { cn } from '@/lib/utils'
 
 /**
  * SkeletonTable - Skeleton pour DataTable
@@ -23,19 +23,19 @@ import { cn } from "@/lib/utils";
 
 export interface SkeletonTableProps {
   /** Nombre de lignes de données */
-  rows?: number;
+  rows?: number
 
   /** Nombre de colonnes */
-  columns?: number;
+  columns?: number
 
   /** Afficher le header */
-  withHeader?: boolean;
+  withHeader?: boolean
 
   /** Afficher la colonne actions */
-  withActions?: boolean;
+  withActions?: boolean
 
   /** Classes CSS additionnelles */
-  className?: string;
+  className?: string
 }
 
 export const SkeletonTable: React.FC<SkeletonTableProps> = ({
@@ -45,13 +45,13 @@ export const SkeletonTable: React.FC<SkeletonTableProps> = ({
   withActions = false,
   className,
 }) => {
-  const totalColumns = withActions ? columns + 1 : columns;
+  const totalColumns = withActions ? columns + 1 : columns
 
   return (
     <div
       className={cn(
-        "rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden",
-        "bg-white dark:bg-gray-900",
+        'overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700',
+        'bg-white dark:bg-gray-900',
         className
       )}
       role="status"
@@ -61,7 +61,7 @@ export const SkeletonTable: React.FC<SkeletonTableProps> = ({
         <table className="w-full">
           {/* Header */}
           {withHeader && (
-            <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+            <thead className="border-b border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800">
               <tr>
                 {Array.from({ length: totalColumns }).map((_, colIndex) => (
                   <th key={colIndex} className="px-4 py-3 text-left">
@@ -71,8 +71,8 @@ export const SkeletonTable: React.FC<SkeletonTableProps> = ({
                         withActions && colIndex === totalColumns - 1
                           ? 80
                           : colIndex === 0
-                          ? "80%"
-                          : "70%"
+                            ? '80%'
+                            : '70%'
                       }
                       height={14}
                     />
@@ -87,15 +87,25 @@ export const SkeletonTable: React.FC<SkeletonTableProps> = ({
             {Array.from({ length: rows }).map((_, rowIndex) => (
               <tr
                 key={rowIndex}
-                className="border-b border-gray-200 dark:border-gray-700 last:border-0"
+                className="border-b border-gray-200 last:border-0 dark:border-gray-700"
               >
                 {Array.from({ length: totalColumns }).map((_, colIndex) => (
                   <td key={colIndex} className="px-4 py-3">
                     {withActions && colIndex === totalColumns - 1 ? (
                       // Colonne Actions : boutons
                       <div className="flex gap-2">
-                        <Skeleton variant="custom" width={32} height={32} circle />
-                        <Skeleton variant="custom" width={32} height={32} circle />
+                        <Skeleton
+                          variant="custom"
+                          width={32}
+                          height={32}
+                          circle
+                        />
+                        <Skeleton
+                          variant="custom"
+                          width={32}
+                          height={32}
+                          circle
+                        />
                       </div>
                     ) : (
                       // Colonnes normales : texte
@@ -103,10 +113,10 @@ export const SkeletonTable: React.FC<SkeletonTableProps> = ({
                         variant="text"
                         width={
                           colIndex === 0
-                            ? "90%"
+                            ? '90%'
                             : colIndex === 1
-                            ? "70%"
-                            : "60%"
+                              ? '70%'
+                              : '60%'
                         }
                         height={16}
                       />
@@ -119,7 +129,7 @@ export const SkeletonTable: React.FC<SkeletonTableProps> = ({
         </table>
       </div>
     </div>
-  );
-};
+  )
+}
 
-SkeletonTable.displayName = "SkeletonTable";
+SkeletonTable.displayName = 'SkeletonTable'

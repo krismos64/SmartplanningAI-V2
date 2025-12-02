@@ -1,15 +1,15 @@
-"use client";
+'use client'
 
-import React from "react";
-import { cn } from "@/lib/utils";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import React from 'react'
+import { cn } from '@/lib/utils'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { TeamMember, USER_STATUS_CONFIG } from "./types";
+} from '@/components/ui/tooltip'
+import { TeamMember, USER_STATUS_CONFIG } from './types'
 
 /**
  * AvatarStack - Affichage groupé d'avatars avec overlap
@@ -35,34 +35,34 @@ import { TeamMember, USER_STATUS_CONFIG } from "./types";
 
 export interface AvatarStackProps {
   /** Liste des membres à afficher */
-  members: TeamMember[];
+  members: TeamMember[]
 
   /** Nombre maximum d'avatars visibles (default: 5) */
-  max?: number;
+  max?: number
 
   /** Taille des avatars */
-  size?: "sm" | "md";
+  size?: 'sm' | 'md'
 
   /** Afficher les points de statut */
-  showStatus?: boolean;
+  showStatus?: boolean
 
   /** Classes CSS additionnelles */
-  className?: string;
+  className?: string
 }
 
 /**
  * Extrait les initiales d'un nom
  */
 function getInitials(name: string | null): string {
-  if (!name) return "?";
-  const parts = name.trim().split(" ").filter(Boolean);
-  if (parts.length === 0) return "?";
-  const first = parts[0] ?? "";
-  const last = parts[parts.length - 1] ?? "";
+  if (!name) return '?'
+  const parts = name.trim().split(' ').filter(Boolean)
+  if (parts.length === 0) return '?'
+  const first = parts[0] ?? ''
+  const last = parts[parts.length - 1] ?? ''
   if (parts.length === 1) {
-    return first.charAt(0).toUpperCase();
+    return first.charAt(0).toUpperCase()
   }
-  return (first.charAt(0) + last.charAt(0)).toUpperCase();
+  return (first.charAt(0) + last.charAt(0)).toUpperCase()
 }
 
 /**
@@ -70,61 +70,61 @@ function getInitials(name: string | null): string {
  */
 const SIZE_CONFIG = {
   sm: {
-    avatar: "h-8 w-8",
-    overlap: "-ml-2",
-    counter: "h-8 w-8 text-xs",
-    statusDot: "h-2 w-2 -bottom-0 -right-0",
+    avatar: 'h-8 w-8',
+    overlap: '-ml-2',
+    counter: 'h-8 w-8 text-xs',
+    statusDot: 'h-2 w-2 -bottom-0 -right-0',
   },
   md: {
-    avatar: "h-10 w-10",
-    overlap: "-ml-3",
-    counter: "h-10 w-10 text-sm",
-    statusDot: "h-2.5 w-2.5 -bottom-0.5 -right-0.5",
+    avatar: 'h-10 w-10',
+    overlap: '-ml-3',
+    counter: 'h-10 w-10 text-sm',
+    statusDot: 'h-2.5 w-2.5 -bottom-0.5 -right-0.5',
   },
-} as const;
+} as const
 
 /**
  * Obtient la config du statut avec fallback
  */
 function getStatusConfig(status: string | undefined) {
   if (!status || !(status in USER_STATUS_CONFIG)) {
-    return USER_STATUS_CONFIG.active;
+    return USER_STATUS_CONFIG.active
   }
-  return USER_STATUS_CONFIG[status as keyof typeof USER_STATUS_CONFIG];
+  return USER_STATUS_CONFIG[status as keyof typeof USER_STATUS_CONFIG]
 }
 
 export const AvatarStack = React.forwardRef<HTMLDivElement, AvatarStackProps>(
-  ({ members, max = 5, size = "sm", showStatus = false, className }, ref) => {
-    const config = SIZE_CONFIG[size];
-    const visibleMembers = members.slice(0, max);
-    const remainingCount = members.length - max;
+  ({ members, max = 5, size = 'sm', showStatus = false, className }, ref) => {
+    const config = SIZE_CONFIG[size]
+    const visibleMembers = members.slice(0, max)
+    const remainingCount = members.length - max
 
     return (
       <TooltipProvider delayDuration={300}>
-        <div ref={ref} className={cn("flex items-center", className)}>
+        <div ref={ref} className={cn('flex items-center', className)}>
           {visibleMembers.map((member, index) => (
             <Tooltip key={member.id}>
               <TooltipTrigger asChild>
                 <div
                   className={cn(
-                    "relative",
+                    'relative',
                     index > 0 && config.overlap,
-                    "transition-transform hover:z-10 hover:scale-110"
+                    'transition-transform hover:z-10 hover:scale-110'
                   )}
                 >
                   <Avatar
                     className={cn(
                       config.avatar,
-                      "border-2 border-background ring-0"
+                      'border-2 border-background ring-0'
                     )}
                   >
                     {member.image && (
                       <AvatarImage
                         src={member.image}
-                        alt={member.name || "Membre"}
+                        alt={member.name || 'Membre'}
                       />
                     )}
-                    <AvatarFallback className="bg-muted text-muted-foreground text-xs font-medium">
+                    <AvatarFallback className="bg-muted text-xs font-medium text-muted-foreground">
                       {getInitials(member.name)}
                     </AvatarFallback>
                   </Avatar>
@@ -133,7 +133,7 @@ export const AvatarStack = React.forwardRef<HTMLDivElement, AvatarStackProps>(
                   {showStatus && member.status && (
                     <span
                       className={cn(
-                        "absolute rounded-full border-2 border-background",
+                        'absolute rounded-full border-2 border-background',
                         config.statusDot,
                         getStatusConfig(member.status).dotColor
                       )}
@@ -143,7 +143,7 @@ export const AvatarStack = React.forwardRef<HTMLDivElement, AvatarStackProps>(
                 </div>
               </TooltipTrigger>
               <TooltipContent side="top" className="text-xs">
-                <p>{member.name || "Sans nom"}</p>
+                <p>{member.name || 'Sans nom'}</p>
                 {member.status && (
                   <p className="text-muted-foreground">
                     {getStatusConfig(member.status).label}
@@ -161,10 +161,10 @@ export const AvatarStack = React.forwardRef<HTMLDivElement, AvatarStackProps>(
                   className={cn(
                     config.overlap,
                     config.counter,
-                    "flex items-center justify-center rounded-full",
-                    "bg-muted text-muted-foreground font-medium",
-                    "border-2 border-background",
-                    "cursor-default"
+                    'flex items-center justify-center rounded-full',
+                    'bg-muted font-medium text-muted-foreground',
+                    'border-2 border-background',
+                    'cursor-default'
                   )}
                 >
                   +{remainingCount}
@@ -172,16 +172,16 @@ export const AvatarStack = React.forwardRef<HTMLDivElement, AvatarStackProps>(
               </TooltipTrigger>
               <TooltipContent side="top" className="text-xs">
                 <p>
-                  {remainingCount} autre{remainingCount > 1 ? "s" : ""} membre
-                  {remainingCount > 1 ? "s" : ""}
+                  {remainingCount} autre{remainingCount > 1 ? 's' : ''} membre
+                  {remainingCount > 1 ? 's' : ''}
                 </p>
               </TooltipContent>
             </Tooltip>
           )}
         </div>
       </TooltipProvider>
-    );
+    )
   }
-);
+)
 
-AvatarStack.displayName = "AvatarStack";
+AvatarStack.displayName = 'AvatarStack'

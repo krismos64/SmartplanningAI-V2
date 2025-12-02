@@ -38,7 +38,12 @@ import {
   getPaginationRowModel,
   flexRender,
 } from '@tanstack/react-table'
-import type { SortingState, ColumnFiltersState, RowSelectionState, PaginationState } from '@tanstack/react-table'
+import type {
+  SortingState,
+  ColumnFiltersState,
+  RowSelectionState,
+  PaginationState,
+} from '@tanstack/react-table'
 import { rankItem } from '@tanstack/match-sorter-utils'
 
 import {
@@ -60,8 +65,13 @@ import type { DataTableProps } from './data-table-types'
  * Fonction de filtre fuzzy avec match-sorter
  * Permet une recherche flexible (tolère les fautes de frappe)
  */
-const fuzzyFilter = (row: any, columnId: string, value: any, addMeta: any) => {
-  const itemRank = rankItem(row.getValue(columnId), value)
+const fuzzyFilter = (
+  row: { getValue: (columnId: string) => unknown },
+  columnId: string,
+  value: string,
+  addMeta: (meta: { itemRank: { passed: boolean } }) => void
+) => {
+  const itemRank = rankItem(row.getValue(columnId) as string, value)
   addMeta({ itemRank })
   return itemRank.passed
 }
@@ -108,7 +118,9 @@ export function DataTable<TData, TValue>({
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    getPaginationRowModel: enablePagination ? getPaginationRowModel() : undefined,
+    getPaginationRowModel: enablePagination
+      ? getPaginationRowModel()
+      : undefined,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     onRowSelectionChange: setRowSelection,
@@ -172,22 +184,21 @@ export function DataTable<TData, TValue>({
                   table.getIsAllPageRowsSelected() ||
                   (table.getIsSomePageRowsSelected() && 'indeterminate')
                 }
-                onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+                onCheckedChange={(value) =>
+                  table.toggleAllPageRowsSelected(!!value)
+                }
                 aria-label="Tout sélectionner"
               />
-              <span className="text-sm font-medium">
-                Tout sélectionner
-              </span>
+              <span className="text-sm font-medium">Tout sélectionner</span>
             </div>
             <span className="text-xs text-muted-foreground">
-              {table.getFilteredSelectedRowModel().rows.length} / {table.getFilteredRowModel().rows.length}
+              {table.getFilteredSelectedRowModel().rows.length} /{' '}
+              {table.getFilteredRowModel().rows.length}
             </span>
           </div>
 
           {/* Cards */}
           <DataTableCards
-            columns={columns}
-            data={data}
             table={table}
             onView={onView}
             onEdit={onEdit}

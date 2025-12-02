@@ -1,19 +1,19 @@
-"use client";
+'use client'
 
-import React from "react";
-import { cn } from "@/lib/utils";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
+import React from 'react'
+import { cn } from '@/lib/utils'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Badge } from '@/components/ui/badge'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Card } from "@/components/ui/card";
-import { MoreVertical, Mail, Phone } from "lucide-react";
+} from '@/components/ui/dropdown-menu'
+import { Card } from '@/components/ui/card'
+import { MoreVertical, Mail, Phone } from 'lucide-react'
 import {
   BaseCardProps,
   UserCardUser,
@@ -21,8 +21,8 @@ import {
   UserStatus,
   USER_STATUS_CONFIG,
   USER_ROLE_LABELS,
-} from "./types";
-import { UserCardSkeleton } from "./UserCardSkeleton";
+} from './types'
+import { UserCardSkeleton } from './UserCardSkeleton'
 
 /**
  * UserCard - Carte utilisateur avec variants compact/detailed
@@ -54,37 +54,37 @@ import { UserCardSkeleton } from "./UserCardSkeleton";
 
 export interface UserCardProps extends BaseCardProps {
   /** Données utilisateur (compatible Prisma User) */
-  user: UserCardUser;
+  user: UserCardUser
 
   /** Données employé optionnelles (pour variant detailed) */
-  employee?: UserCardEmployee;
+  employee?: UserCardEmployee
 
   /** Statut dynamique */
-  status?: UserStatus;
+  status?: UserStatus
 
   /** Carte sélectionnée (mode sélection) */
-  isSelected?: boolean;
+  isSelected?: boolean
 
   /** Callback de sélection (affiche checkbox si défini) */
-  onSelect?: (selected: boolean) => void;
+  onSelect?: (selected: boolean) => void
 
   /** Callback au clic sur la carte */
-  onClick?: () => void;
+  onClick?: () => void
 }
 
 /**
  * Extrait les initiales d'un nom
  */
 function getInitials(name: string | null): string {
-  if (!name) return "?";
-  const parts = name.trim().split(" ").filter(Boolean);
-  if (parts.length === 0) return "?";
-  const first = parts[0] ?? "";
-  const last = parts[parts.length - 1] ?? "";
+  if (!name) return '?'
+  const parts = name.trim().split(' ').filter(Boolean)
+  if (parts.length === 0) return '?'
+  const first = parts[0] ?? ''
+  const last = parts[parts.length - 1] ?? ''
   if (parts.length === 1) {
-    return first.charAt(0).toUpperCase();
+    return first.charAt(0).toUpperCase()
   }
-  return (first.charAt(0) + last.charAt(0)).toUpperCase();
+  return (first.charAt(0) + last.charAt(0)).toUpperCase()
 }
 
 /**
@@ -95,9 +95,9 @@ function getDisplayName(
   employee?: UserCardEmployee
 ): string {
   if (employee) {
-    return `${employee.firstName} ${employee.lastName}`;
+    return `${employee.firstName} ${employee.lastName}`
   }
-  return user.name || user.email;
+  return user.name || user.email
 }
 
 /**
@@ -105,16 +105,16 @@ function getDisplayName(
  */
 function getSubtitle(user: UserCardUser, employee?: UserCardEmployee): string {
   if (employee?.jobTitle) {
-    return employee.jobTitle;
+    return employee.jobTitle
   }
-  return USER_ROLE_LABELS[user.role] ?? user.role;
+  return USER_ROLE_LABELS[user.role] ?? user.role
 }
 
 /**
  * Obtient la config du statut avec fallback
  */
 function getStatusConfig(status: UserStatus) {
-  return USER_STATUS_CONFIG[status] ?? USER_STATUS_CONFIG.active;
+  return USER_STATUS_CONFIG[status] ?? USER_STATUS_CONFIG.active
 }
 
 export const UserCard = React.forwardRef<HTMLDivElement, UserCardProps>(
@@ -122,8 +122,8 @@ export const UserCard = React.forwardRef<HTMLDivElement, UserCardProps>(
     {
       user,
       employee,
-      status = "active",
-      variant = "compact",
+      status = 'active',
+      variant = 'compact',
       actions,
       isLoading,
       isSelected,
@@ -135,25 +135,25 @@ export const UserCard = React.forwardRef<HTMLDivElement, UserCardProps>(
   ) => {
     // État loading : afficher skeleton
     if (isLoading) {
-      return <UserCardSkeleton variant={variant} className={className} />;
+      return <UserCardSkeleton variant={variant} className={className} />
     }
 
-    const displayName = getDisplayName(user, employee);
-    const subtitle = getSubtitle(user, employee);
-    const statusConfig = getStatusConfig(status);
-    const isClickable = !!onClick;
-    const hasSelection = typeof onSelect === "function";
+    const displayName = getDisplayName(user, employee)
+    const subtitle = getSubtitle(user, employee)
+    const statusConfig = getStatusConfig(status)
+    const isClickable = !!onClick
+    const hasSelection = typeof onSelect === 'function'
 
     // Variant COMPACT
-    if (variant === "compact") {
+    if (variant === 'compact') {
       return (
         <Card
           ref={ref}
           className={cn(
-            "flex items-center gap-3 p-3",
-            "transition-all duration-200",
-            isClickable && "cursor-pointer hover:bg-accent/50",
-            isSelected && "ring-2 ring-primary ring-offset-2",
+            'flex items-center gap-3 p-3',
+            'transition-all duration-200',
+            isClickable && 'cursor-pointer hover:bg-accent/50',
+            isSelected && 'ring-2 ring-primary ring-offset-2',
             className
           )}
           onClick={onClick}
@@ -171,17 +171,15 @@ export const UserCard = React.forwardRef<HTMLDivElement, UserCardProps>(
           {/* Avatar */}
           <div className="relative flex-shrink-0">
             <Avatar className="h-10 w-10">
-              {user.image && (
-                <AvatarImage src={user.image} alt={displayName} />
-              )}
-              <AvatarFallback className="bg-primary/10 text-primary font-medium">
+              {user.image && <AvatarImage src={user.image} alt={displayName} />}
+              <AvatarFallback className="bg-primary/10 font-medium text-primary">
                 {getInitials(displayName)}
               </AvatarFallback>
             </Avatar>
             {/* Point statut */}
             <span
               className={cn(
-                "absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-background",
+                'absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-background',
                 statusConfig.dotColor
               )}
               aria-label={statusConfig.label}
@@ -189,15 +187,15 @@ export const UserCard = React.forwardRef<HTMLDivElement, UserCardProps>(
           </div>
 
           {/* Infos */}
-          <div className="flex-1 min-w-0">
-            <p className="font-medium text-sm truncate">{displayName}</p>
-            <p className="text-xs text-muted-foreground truncate">{subtitle}</p>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-medium">{displayName}</p>
+            <p className="truncate text-xs text-muted-foreground">{subtitle}</p>
           </div>
 
           {/* Badge statut */}
           <Badge
             variant="outline"
-            className={cn("text-xs flex-shrink-0", statusConfig.color)}
+            className={cn('flex-shrink-0 text-xs', statusConfig.color)}
           >
             {statusConfig.label}
           </Badge>
@@ -208,8 +206,8 @@ export const UserCard = React.forwardRef<HTMLDivElement, UserCardProps>(
               <DropdownMenuTrigger asChild>
                 <button
                   className={cn(
-                    "p-1 rounded-md hover:bg-accent",
-                    "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                    'rounded-md p-1 hover:bg-accent',
+                    'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2'
                   )}
                   onClick={(e) => e.stopPropagation()}
                   aria-label="Actions"
@@ -223,18 +221,16 @@ export const UserCard = React.forwardRef<HTMLDivElement, UserCardProps>(
                     {action.separator && index > 0 && <DropdownMenuSeparator />}
                     <DropdownMenuItem
                       onClick={(e) => {
-                        e.stopPropagation();
-                        action.onClick();
+                        e.stopPropagation()
+                        action.onClick()
                       }}
                       disabled={action.disabled}
                       className={cn(
-                        action.variant === "destructive" &&
-                          "text-destructive focus:text-destructive"
+                        action.variant === 'destructive' &&
+                          'text-destructive focus:text-destructive'
                       )}
                     >
-                      {action.icon && (
-                        <action.icon className="mr-2 h-4 w-4" />
-                      )}
+                      {action.icon && <action.icon className="mr-2 h-4 w-4" />}
                       {action.label}
                     </DropdownMenuItem>
                   </React.Fragment>
@@ -243,7 +239,7 @@ export const UserCard = React.forwardRef<HTMLDivElement, UserCardProps>(
             </DropdownMenu>
           )}
         </Card>
-      );
+      )
     }
 
     // Variant DETAILED
@@ -251,16 +247,16 @@ export const UserCard = React.forwardRef<HTMLDivElement, UserCardProps>(
       <Card
         ref={ref}
         className={cn(
-          "p-4",
-          "transition-all duration-200",
-          isClickable && "cursor-pointer hover:bg-accent/50",
-          isSelected && "ring-2 ring-primary ring-offset-2",
+          'p-4',
+          'transition-all duration-200',
+          isClickable && 'cursor-pointer hover:bg-accent/50',
+          isSelected && 'ring-2 ring-primary ring-offset-2',
           className
         )}
         onClick={onClick}
       >
         {/* Header avec checkbox et actions */}
-        <div className="flex items-start justify-between mb-4">
+        <div className="mb-4 flex items-start justify-between">
           <div className="flex items-center gap-3">
             {/* Checkbox sélection */}
             {hasSelection && (
@@ -278,14 +274,14 @@ export const UserCard = React.forwardRef<HTMLDivElement, UserCardProps>(
                 {user.image && (
                   <AvatarImage src={user.image} alt={displayName} />
                 )}
-                <AvatarFallback className="bg-primary/10 text-primary text-lg font-medium">
+                <AvatarFallback className="bg-primary/10 text-lg font-medium text-primary">
                   {getInitials(displayName)}
                 </AvatarFallback>
               </Avatar>
               {/* Point statut */}
               <span
                 className={cn(
-                  "absolute -bottom-0.5 -right-0.5 h-4 w-4 rounded-full border-2 border-background",
+                  'absolute -bottom-0.5 -right-0.5 h-4 w-4 rounded-full border-2 border-background',
                   statusConfig.dotColor
                 )}
                 aria-label={statusConfig.label}
@@ -299,8 +295,8 @@ export const UserCard = React.forwardRef<HTMLDivElement, UserCardProps>(
               <DropdownMenuTrigger asChild>
                 <button
                   className={cn(
-                    "p-1 rounded-md hover:bg-accent",
-                    "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                    'rounded-md p-1 hover:bg-accent',
+                    'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2'
                   )}
                   onClick={(e) => e.stopPropagation()}
                   aria-label="Actions"
@@ -314,18 +310,16 @@ export const UserCard = React.forwardRef<HTMLDivElement, UserCardProps>(
                     {action.separator && index > 0 && <DropdownMenuSeparator />}
                     <DropdownMenuItem
                       onClick={(e) => {
-                        e.stopPropagation();
-                        action.onClick();
+                        e.stopPropagation()
+                        action.onClick()
                       }}
                       disabled={action.disabled}
                       className={cn(
-                        action.variant === "destructive" &&
-                          "text-destructive focus:text-destructive"
+                        action.variant === 'destructive' &&
+                          'text-destructive focus:text-destructive'
                       )}
                     >
-                      {action.icon && (
-                        <action.icon className="mr-2 h-4 w-4" />
-                      )}
+                      {action.icon && <action.icon className="mr-2 h-4 w-4" />}
                       {action.label}
                     </DropdownMenuItem>
                   </React.Fragment>
@@ -336,12 +330,12 @@ export const UserCard = React.forwardRef<HTMLDivElement, UserCardProps>(
         </div>
 
         {/* Infos principales */}
-        <div className="space-y-1 mb-4">
+        <div className="mb-4 space-y-1">
           <div className="flex items-center justify-between gap-2">
-            <h3 className="font-semibold text-base truncate">{displayName}</h3>
+            <h3 className="truncate text-base font-semibold">{displayName}</h3>
             <Badge
               variant="outline"
-              className={cn("text-xs flex-shrink-0", statusConfig.color)}
+              className={cn('flex-shrink-0 text-xs', statusConfig.color)}
             >
               {statusConfig.label}
             </Badge>
@@ -369,14 +363,14 @@ export const UserCard = React.forwardRef<HTMLDivElement, UserCardProps>(
         </div>
 
         {/* Rôle */}
-        <div className="mt-4 pt-4 border-t">
+        <div className="mt-4 border-t pt-4">
           <Badge variant="secondary" className="text-xs">
             {USER_ROLE_LABELS[user.role]}
           </Badge>
         </div>
       </Card>
-    );
+    )
   }
-);
+)
 
-UserCard.displayName = "UserCard";
+UserCard.displayName = 'UserCard'

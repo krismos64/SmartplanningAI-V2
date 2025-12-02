@@ -81,7 +81,7 @@ export const metadata: Metadata = {
     template: '%s | SmartPlanning',
   },
   description:
-    'Solution SaaS de gestion de plannings d\'entreprise. Planification intelligente, gestion des équipes, suivi des congés. Optimisez la productivité de votre organisation.',
+    "Solution SaaS de gestion de plannings d'entreprise. Planification intelligente, gestion des équipes, suivi des congés. Optimisez la productivité de votre organisation.",
   keywords: [
     'planning',
     'gestion équipe',
@@ -91,7 +91,9 @@ export const metadata: Metadata = {
     'shifts',
     'organisation',
   ],
-  authors: [{ name: 'Christophe Dev', url: 'https://christophe-dev-freelance.fr' }],
+  authors: [
+    { name: 'Christophe Dev', url: 'https://christophe-dev-freelance.fr' },
+  ],
   creator: 'Christophe Dev',
   publisher: 'SmartPlanning SaaS',
 
@@ -102,7 +104,7 @@ export const metadata: Metadata = {
     url: 'https://smartplanning.app',
     title: 'SmartPlanning - Gestion intelligente des plannings',
     description:
-      'Solution SaaS de gestion de plannings d\'entreprise pour optimiser la productivité.',
+      "Solution SaaS de gestion de plannings d'entreprise pour optimiser la productivité.",
     siteName: 'SmartPlanning',
     images: [
       {
@@ -119,7 +121,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'SmartPlanning - Gestion intelligente des plannings',
     description:
-      'Solution SaaS de gestion de plannings d\'entreprise pour optimiser la productivité.',
+      "Solution SaaS de gestion de plannings d'entreprise pour optimiser la productivité.",
     images: ['/twitter-image.png'],
     creator: '@christophedev',
   },

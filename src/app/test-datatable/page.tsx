@@ -93,10 +93,9 @@ export default function TestDataTablePage() {
           Instructions développeur :
         </h3>
         <p className="mt-2 text-sm text-muted-foreground">
-          Les callbacks View/Edit/Delete affichent actuellement les données
-          dans la console (ouvrez DevTools avec F12). En production, vous
-          remplacerez ces console.log par des appels API et des modals
-          d&apos;édition.
+          Les callbacks View/Edit/Delete affichent actuellement les données dans
+          la console (ouvrez DevTools avec F12). En production, vous remplacerez
+          ces console.log par des appels API et des modals d&apos;édition.
         </p>
       </div>
     </div>

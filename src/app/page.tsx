@@ -145,7 +145,9 @@ export default function HomePage() {
                 </p>
               </div>
               <div className="card-base">
-                <h3 className="mb-2 text-xl font-semibold">Gestion des congés</h3>
+                <h3 className="mb-2 text-xl font-semibold">
+                  Gestion des congés
+                </h3>
                 <p className="text-muted-foreground">
                   Demandes, validations et suivi des congés simplifiés.
                 </p>
@@ -191,7 +193,9 @@ export default function HomePage() {
               <div className="card-base">
                 <h3 className="mb-2 text-xl font-bold">ENTERPRISE</h3>
                 <p className="mb-4 text-3xl font-bold">299€/mois</p>
-                <p className="text-sm text-muted-foreground">Employés illimités</p>
+                <p className="text-sm text-muted-foreground">
+                  Employés illimités
+                </p>
               </div>
             </div>
           </div>

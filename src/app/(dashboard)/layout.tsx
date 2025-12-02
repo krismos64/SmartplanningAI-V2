@@ -81,9 +81,7 @@ export default function DashboardLayout({
             <Link href="/" className="text-xl font-bold text-primary">
               SmartPlanning
             </Link>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Dashboard v2.0
-            </p>
+            <p className="mt-1 text-xs text-muted-foreground">Dashboard v2.0</p>
           </div>
 
           {/* Navigation */}

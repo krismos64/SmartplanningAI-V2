@@ -1,6 +1,6 @@
-"use client";
+'use client'
 
-import React from "react";
+import React from 'react'
 import {
   Dialog,
   DialogContent,
@@ -8,9 +8,9 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { AlertTriangle, CheckCircle } from "lucide-react";
-import { cn } from "@/lib/utils";
+} from '@/components/ui/dialog'
+import { AlertTriangle, CheckCircle } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 /**
  * ConfirmDialog - Modal de confirmation avec variants
@@ -38,167 +38,167 @@ import { cn } from "@/lib/utils";
  * ```
  */
 
-export type ConfirmDialogVariant = "danger" | "warning" | "info";
+export type ConfirmDialogVariant = 'danger' | 'warning' | 'info'
 
 export interface ConfirmDialogProps {
   /** Contrôle l'ouverture du dialog */
-  open: boolean;
+  open: boolean
 
   /** Callback appelé quand l'état open change */
-  onOpenChange: (open: boolean) => void;
+  onOpenChange: (open: boolean) => void
 
   /** Variant visuel du dialog */
-  variant?: ConfirmDialogVariant;
+  variant?: ConfirmDialogVariant
 
   /** Titre du dialog */
-  title: string;
+  title: string
 
   /** Message de confirmation */
-  message: string;
+  message: string
 
   /** Label du bouton de confirmation */
-  confirmLabel?: string;
+  confirmLabel?: string
 
   /** Label du bouton d'annulation */
-  cancelLabel?: string;
+  cancelLabel?: string
 
   /** Callback appelé lors de la confirmation */
-  onConfirm: () => void;
+  onConfirm: () => void
 
   /** Callback appelé lors de l'annulation */
-  onCancel?: () => void;
+  onCancel?: () => void
 
   /** État de chargement (désactive les boutons) */
-  isLoading?: boolean;
+  isLoading?: boolean
 }
 
 const variantConfig = {
   danger: {
     icon: AlertTriangle,
-    iconColor: "text-red-600 dark:text-red-400",
-    iconBg: "bg-red-100 dark:bg-red-950/30",
+    iconColor: 'text-red-600 dark:text-red-400',
+    iconBg: 'bg-red-100 dark:bg-red-950/30',
     confirmButton: cn(
-      "bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600",
-      "text-white font-medium",
-      "focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+      'bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600',
+      'text-white font-medium',
+      'focus:ring-2 focus:ring-red-500 focus:ring-offset-2'
     ),
   },
   warning: {
     icon: AlertTriangle,
-    iconColor: "text-amber-600 dark:text-amber-400",
-    iconBg: "bg-amber-100 dark:bg-amber-950/30",
+    iconColor: 'text-amber-600 dark:text-amber-400',
+    iconBg: 'bg-amber-100 dark:bg-amber-950/30',
     confirmButton: cn(
-      "bg-amber-600 hover:bg-amber-700 dark:bg-amber-500 dark:hover:bg-amber-600",
-      "text-white font-medium",
-      "focus:ring-2 focus:ring-amber-500 focus:ring-offset-2"
+      'bg-amber-600 hover:bg-amber-700 dark:bg-amber-500 dark:hover:bg-amber-600',
+      'text-white font-medium',
+      'focus:ring-2 focus:ring-amber-500 focus:ring-offset-2'
     ),
   },
   info: {
     icon: CheckCircle,
-    iconColor: "text-blue-600 dark:text-blue-400",
-    iconBg: "bg-blue-100 dark:bg-blue-950/30",
+    iconColor: 'text-blue-600 dark:text-blue-400',
+    iconBg: 'bg-blue-100 dark:bg-blue-950/30',
     confirmButton: cn(
-      "bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600",
-      "text-white font-medium",
-      "focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+      'bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600',
+      'text-white font-medium',
+      'focus:ring-2 focus:ring-blue-500 focus:ring-offset-2'
     ),
   },
-};
+}
 
 export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   open,
   onOpenChange,
-  variant = "info",
+  variant = 'info',
   title,
   message,
-  confirmLabel = "Confirmer",
-  cancelLabel = "Annuler",
+  confirmLabel = 'Confirmer',
+  cancelLabel = 'Annuler',
   onConfirm,
   onCancel,
   isLoading = false,
 }) => {
-    const config = variantConfig[variant];
-    const Icon = config.icon;
-    const cancelButtonRef = React.useRef<HTMLButtonElement>(null);
+  const config = variantConfig[variant]
+  const Icon = config.icon
+  const cancelButtonRef = React.useRef<HTMLButtonElement>(null)
 
-    const handleConfirm = () => {
-      onConfirm();
-    };
+  const handleConfirm = () => {
+    onConfirm()
+  }
 
-    const handleCancel = () => {
-      onCancel?.();
-      onOpenChange(false);
-    };
+  const handleCancel = () => {
+    onCancel?.()
+    onOpenChange(false)
+  }
 
-    return (
-      <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent
-          className="sm:max-w-md"
-          onOpenAutoFocus={(event) => {
-            // Focus le bouton Cancel par défaut (sécurité)
-            cancelButtonRef.current?.focus();
-            event.preventDefault();
-          }}
-        >
-          <DialogHeader>
-            <div className="flex items-start gap-4">
-              {/* Icône variant */}
-              <div
-                className={cn(
-                  "flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full",
-                  config.iconBg
-                )}
-              >
-                <Icon className={cn("h-6 w-6", config.iconColor)} />
-              </div>
-
-              {/* Titre */}
-              <div className="flex-1 space-y-1">
-                <DialogTitle className="text-left">{title}</DialogTitle>
-                <DialogDescription className="text-left">
-                  {message}
-                </DialogDescription>
-              </div>
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent
+        className="sm:max-w-md"
+        onOpenAutoFocus={(event) => {
+          // Focus le bouton Cancel par défaut (sécurité)
+          cancelButtonRef.current?.focus()
+          event.preventDefault()
+        }}
+      >
+        <DialogHeader>
+          <div className="flex items-start gap-4">
+            {/* Icône variant */}
+            <div
+              className={cn(
+                'flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full',
+                config.iconBg
+              )}
+            >
+              <Icon className={cn('h-6 w-6', config.iconColor)} />
             </div>
-          </DialogHeader>
 
-          <DialogFooter className="gap-2 sm:gap-0">
-            {/* Bouton Cancel */}
-            <button
-              ref={cancelButtonRef}
-              type="button"
-              onClick={handleCancel}
-              disabled={isLoading}
-              className={cn(
-                "inline-flex items-center justify-center rounded-md px-4 py-2",
-                "text-sm font-medium transition-colors",
-                "border border-gray-300 dark:border-gray-600",
-                "bg-white dark:bg-gray-900",
-                "text-gray-700 dark:text-gray-200",
-                "hover:bg-gray-50 dark:hover:bg-gray-800",
-                "focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2",
-                "disabled:opacity-50 disabled:cursor-not-allowed"
-              )}
-            >
-              {cancelLabel}
-            </button>
+            {/* Titre */}
+            <div className="flex-1 space-y-1">
+              <DialogTitle className="text-left">{title}</DialogTitle>
+              <DialogDescription className="text-left">
+                {message}
+              </DialogDescription>
+            </div>
+          </div>
+        </DialogHeader>
 
-            {/* Bouton Confirm */}
-            <button
-              type="button"
-              onClick={handleConfirm}
-              disabled={isLoading}
-              className={cn(
-                "inline-flex items-center justify-center rounded-md px-4 py-2",
-                "text-sm transition-colors",
-                "disabled:opacity-50 disabled:cursor-not-allowed",
-                config.confirmButton
-              )}
-            >
-              {isLoading ? "Chargement..." : confirmLabel}
-            </button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    );
-};
+        <DialogFooter className="gap-2 sm:gap-0">
+          {/* Bouton Cancel */}
+          <button
+            ref={cancelButtonRef}
+            type="button"
+            onClick={handleCancel}
+            disabled={isLoading}
+            className={cn(
+              'inline-flex items-center justify-center rounded-md px-4 py-2',
+              'text-sm font-medium transition-colors',
+              'border border-gray-300 dark:border-gray-600',
+              'bg-white dark:bg-gray-900',
+              'text-gray-700 dark:text-gray-200',
+              'hover:bg-gray-50 dark:hover:bg-gray-800',
+              'focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2',
+              'disabled:cursor-not-allowed disabled:opacity-50'
+            )}
+          >
+            {cancelLabel}
+          </button>
+
+          {/* Bouton Confirm */}
+          <button
+            type="button"
+            onClick={handleConfirm}
+            disabled={isLoading}
+            className={cn(
+              'inline-flex items-center justify-center rounded-md px-4 py-2',
+              'text-sm transition-colors',
+              'disabled:cursor-not-allowed disabled:opacity-50',
+              config.confirmButton
+            )}
+          >
+            {isLoading ? 'Chargement...' : confirmLabel}
+          </button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}

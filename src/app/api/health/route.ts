@@ -211,9 +211,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
  * @param status - Statut du health check
  * @returns number - Code HTTP
  */
-function getHttpStatus(
-  status: 'healthy' | 'degraded' | 'unhealthy'
-): number {
+function getHttpStatus(status: 'healthy' | 'degraded' | 'unhealthy'): number {
   switch (status) {
     case 'healthy':
       return 200

@@ -28,6 +28,17 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Badge } from '@/components/ui/badge'
 import { DataTableRowActions } from './data-table-row-actions'
 import type { DataTableCardsProps } from './data-table-types'
+import type { Row } from '@tanstack/react-table'
+
+// Interface pour les données de row génériques
+interface RowData {
+  id?: string | number
+  name?: string
+  email?: string
+  role?: string
+  status?: string
+  createdAt?: string | Date
+}
 
 export function DataTableCards<TData>({
   table,
@@ -35,7 +46,6 @@ export function DataTableCards<TData>({
   onEdit,
   onDelete,
 }: DataTableCardsProps<TData>) {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
   const rows = table.getRowModel().rows
 
   if (rows.length === 0) {
@@ -48,9 +58,8 @@ export function DataTableCards<TData>({
 
   return (
     <div className="space-y-4">
-      {/* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */}
-      {rows.map((row: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
-        const data = row.original as any // eslint-disable-line @typescript-eslint/no-explicit-any
+      {rows.map((row: Row<TData>) => {
+        const data = row.original as unknown as RowData
 
         return (
           <Card key={row.id}>
@@ -67,12 +76,12 @@ export function DataTableCards<TData>({
                 <div>
                   {/* Titre : Name */}
                   <CardTitle className="text-base">
-                    {data.name || 'Sans nom'}
+                    {data.name ?? 'Sans nom'}
                   </CardTitle>
 
                   {/* Description : Email */}
                   <CardDescription className="mt-1">
-                    {data.email || 'Pas d\'email'}
+                    {data.email ?? "Pas d'email"}
                   </CardDescription>
                 </div>
               </div>

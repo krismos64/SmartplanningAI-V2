@@ -1,5 +1,5 @@
-import React from "react";
-import { cn } from "@/lib/utils";
+import React from 'react'
+import { cn } from '@/lib/utils'
 
 /**
  * FormField - Wrapper générique pour tous les champs de formulaire
@@ -25,40 +25,36 @@ import { cn } from "@/lib/utils";
 
 export interface FormFieldProps {
   /** Label affiché au-dessus du champ */
-  label?: string;
+  label?: string
 
   /** Message d'erreur affiché sous le champ */
-  error?: string;
+  error?: string
 
   /** Indique si le champ est requis (affiche *) */
-  required?: boolean;
+  required?: boolean
 
   /** Texte d'aide affiché sous le champ (ou sous l'erreur) */
-  helpText?: string;
+  helpText?: string
 
   /** ID unique pour lier le label et le champ (génération auto si omis) */
-  id?: string;
+  id?: string
 
   /** Classes CSS supplémentaires pour le wrapper */
-  className?: string;
+  className?: string
 
   /** Contenu du champ (input, select, textarea, etc.) */
-  children: React.ReactNode;
+  children: React.ReactNode
 }
 
 export const FormField = React.forwardRef<HTMLDivElement, FormFieldProps>(
-  (
-    { label, error, required, helpText, id, className, children },
-    ref
-  ) => {
+  ({ label, error, required, helpText, id, className, children }, ref) => {
     // Génération d'un ID unique si non fourni
-    const fieldId =
-      id || `field-${Math.random().toString(36).substring(2, 9)}`;
-    const errorId = `${fieldId}-error`;
-    const helpId = `${fieldId}-help`;
+    const fieldId = id || `field-${Math.random().toString(36).substring(2, 9)}`
+    const errorId = `${fieldId}-error`
+    const helpId = `${fieldId}-help`
 
     return (
-      <div ref={ref} className={cn("flex flex-col gap-1.5", className)}>
+      <div ref={ref} className={cn('flex flex-col gap-1.5', className)}>
         {/* Label */}
         {label && (
           <label
@@ -83,19 +79,17 @@ export const FormField = React.forwardRef<HTMLDivElement, FormFieldProps>(
           {React.Children.map(children, (child) => {
             if (React.isValidElement(child)) {
               // Clone l'enfant et ajoute les props d'accessibilité
-              return React.cloneElement(child as React.ReactElement<any>, {
+              return React.cloneElement(child as React.ReactElement<Record<string, unknown>>, {
                 id: fieldId,
-                "aria-invalid": error ? "true" : "false",
-                "aria-describedby": cn(
-                  error && errorId,
-                  helpText && !error && helpId
-                )
-                  .split(" ")
-                  .filter(Boolean)
-                  .join(" ") || undefined,
-              });
+                'aria-invalid': error ? 'true' : 'false',
+                'aria-describedby':
+                  cn(error && errorId, helpText && !error && helpId)
+                    .split(' ')
+                    .filter(Boolean)
+                    .join(' ') || undefined,
+              })
             }
-            return child;
+            return child
           })}
         </div>
 
@@ -104,12 +98,9 @@ export const FormField = React.forwardRef<HTMLDivElement, FormFieldProps>(
           <p
             id={errorId}
             role="alert"
-            className="text-sm text-red-600 dark:text-red-400 flex items-start gap-1.5"
+            className="flex items-start gap-1.5 text-sm text-red-600 dark:text-red-400"
           >
-            <span
-              className="mt-0.5 flex-shrink-0"
-              aria-hidden="true"
-            >
+            <span className="mt-0.5 flex-shrink-0" aria-hidden="true">
               ⚠️
             </span>
             <span>{error}</span>
@@ -118,16 +109,13 @@ export const FormField = React.forwardRef<HTMLDivElement, FormFieldProps>(
 
         {/* Texte d'aide (affiché seulement si pas d'erreur) */}
         {helpText && !error && (
-          <p
-            id={helpId}
-            className="text-sm text-gray-500 dark:text-gray-400"
-          >
+          <p id={helpId} className="text-sm text-gray-500 dark:text-gray-400">
             {helpText}
           </p>
         )}
       </div>
-    );
+    )
   }
-);
+)
 
-FormField.displayName = "FormField";
+FormField.displayName = 'FormField'

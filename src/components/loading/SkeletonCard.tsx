@@ -1,8 +1,8 @@
-"use client";
+'use client'
 
-import React from "react";
-import { Skeleton } from "./Skeleton";
-import { cn } from "@/lib/utils";
+import React from 'react'
+import { Skeleton } from './Skeleton'
+import { cn } from '@/lib/utils'
 
 /**
  * SkeletonCard - Skeleton pour composant Card
@@ -23,34 +23,34 @@ import { cn } from "@/lib/utils";
 
 export interface SkeletonCardProps {
   /** Afficher le skeleton d'image */
-  withImage?: boolean;
+  withImage?: boolean
 
   /** Afficher le skeleton d'actions (footer) */
-  withActions?: boolean;
+  withActions?: boolean
 
   /** Nombre de lignes de description */
-  lines?: number;
+  lines?: number
 
   /** Classes CSS additionnelles */
-  className?: string;
+  className?: string
 
   /** Orientation de la card */
-  orientation?: "vertical" | "horizontal";
+  orientation?: 'vertical' | 'horizontal'
 }
 
 export const SkeletonCard: React.FC<SkeletonCardProps> = ({
   withImage = true,
   withActions = false,
   lines = 3,
-  orientation = "vertical",
+  orientation = 'vertical',
   className,
 }) => {
-  if (orientation === "horizontal") {
+  if (orientation === 'horizontal') {
     return (
       <div
         className={cn(
-          "flex gap-4 rounded-lg border border-gray-200 dark:border-gray-700 p-4",
-          "bg-white dark:bg-gray-900",
+          'flex gap-4 rounded-lg border border-gray-200 p-4 dark:border-gray-700',
+          'bg-white dark:bg-gray-900',
           className
         )}
         role="status"
@@ -59,7 +59,12 @@ export const SkeletonCard: React.FC<SkeletonCardProps> = ({
         {/* Image (gauche) */}
         {withImage && (
           <div className="flex-shrink-0">
-            <Skeleton variant="custom" width={120} height={120} borderRadius={8} />
+            <Skeleton
+              variant="custom"
+              width={120}
+              height={120}
+              borderRadius={8}
+            />
           </div>
         )}
 
@@ -74,7 +79,7 @@ export const SkeletonCard: React.FC<SkeletonCardProps> = ({
               <Skeleton
                 key={i}
                 variant="text"
-                width={i === lines - 1 ? "80%" : "100%"}
+                width={i === lines - 1 ? '80%' : '100%'}
               />
             ))}
           </div>
@@ -88,15 +93,15 @@ export const SkeletonCard: React.FC<SkeletonCardProps> = ({
           )}
         </div>
       </div>
-    );
+    )
   }
 
   // Vertical orientation (défaut)
   return (
     <div
       className={cn(
-        "rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden",
-        "bg-white dark:bg-gray-900",
+        'overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700',
+        'bg-white dark:bg-gray-900',
         className
       )}
       role="status"
@@ -105,12 +110,17 @@ export const SkeletonCard: React.FC<SkeletonCardProps> = ({
       {/* Image */}
       {withImage && (
         <div>
-          <Skeleton variant="custom" width="100%" height={200} borderRadius={0} />
+          <Skeleton
+            variant="custom"
+            width="100%"
+            height={200}
+            borderRadius={0}
+          />
         </div>
       )}
 
       {/* Contenu */}
-      <div className="p-4 space-y-3">
+      <div className="space-y-3 p-4">
         {/* Titre */}
         <Skeleton variant="title" width="70%" />
 
@@ -120,7 +130,7 @@ export const SkeletonCard: React.FC<SkeletonCardProps> = ({
             <Skeleton
               key={i}
               variant="text"
-              width={i === lines - 1 ? "60%" : "100%"}
+              width={i === lines - 1 ? '60%' : '100%'}
             />
           ))}
         </div>
@@ -134,7 +144,7 @@ export const SkeletonCard: React.FC<SkeletonCardProps> = ({
         )}
       </div>
     </div>
-  );
-};
+  )
+}
 
-SkeletonCard.displayName = "SkeletonCard";
+SkeletonCard.displayName = 'SkeletonCard'
