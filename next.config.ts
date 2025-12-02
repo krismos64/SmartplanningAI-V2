@@ -5,6 +5,9 @@ const nextConfig: NextConfig = {
   // Mode strict React
   reactStrictMode: true,
 
+  // Output standalone pour Docker (création d'un dossier .next/standalone)
+  output: 'standalone',
+
   // Configuration Turbopack - Définit le dossier racine du projet
   turbopack: {
     root: path.resolve(__dirname),
