@@ -17,6 +17,8 @@
 # - VPS_USER : Utilisateur SSH (ex: deploy)
 # - VPS_SSH_KEY : Clé SSH privée pour connexion
 # - VPS_SSH_PORT : Port SSH (default: 22)
+# NOTE: L'authentification GHCR est configurée de manière persistante sur le VPS
+#       via ~/.docker/config.json (pas besoin de secret GHCR_PAT)
 # ==============================================
 
 name: CD - Build & Deploy
@@ -174,9 +176,9 @@ jobs:
             # 📚 CDA : Se placer dans le dossier du projet
             cd /var/www/smartplanning
 
-            # 📚 CDA : Connexion au registry GitHub
-            # Le VPS a besoin d'un token pour pull les images privées
-            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            # 📚 CDA : L'authentification GHCR est persistante sur le VPS
+            # Configurée via : docker login ghcr.io (PAT stocké dans ~/.docker/config.json)
+            # Pas besoin de login à chaque déploiement
 
             # 📚 CDA : Pull de la nouvelle image
             echo "📦 Pull de la nouvelle image..."
