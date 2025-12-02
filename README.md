@@ -39,8 +39,10 @@ Plateforme SaaS moderne de gestion intelligente des plannings d'entreprise (mult
 ### DevOps
 
 - **Containerization** : Docker + Docker Compose
-- **CI/CD** : GitHub Actions (à venir)
-- **Hosting** : À définir (Vercel/Railway/DigitalOcean)
+- **CI/CD** : GitHub Actions ✅
+- **Hosting** : VPS OVH (Ubuntu 24.04 LTS) ✅
+- **SSL** : Let's Encrypt (auto-renew) ✅
+- **Reverse Proxy** : Nginx
 - **Monitoring** : À définir (Sentry/LogRocket)
 
 ## Fonctionnalités principales
@@ -382,17 +384,33 @@ git push origin feature/SP-XX-description
 - Commentaires JSDoc sur fonctions publiques
 - Tests obligatoires sur features critiques
 
-## Déploiement (à venir)
+## Déploiement
 
 ### Environnements
 
-- **Development** : Local Docker
-- **Staging** : À définir
-- **Production** : À définir (Vercel/Railway)
+- **Development** : Local Docker (localhost:3000)
+- **Production** : VPS OVH ✅
 
-### CI/CD
+### Infrastructure Production
 
-- GitHub Actions
-- Tests automatiques sur PR
+| Élément | Valeur |
+|---------|--------|
+| **URL** | https://smartplanning.fr |
+| **Serveur** | VPS OVH (4 vCores, 8GB RAM, 75GB SSD) |
+| **OS** | Ubuntu 24.04 LTS |
+| **IP** | 141.94.78.0 |
+| **SSL** | Let's Encrypt (auto-renew) |
+| **Reverse Proxy** | Nginx |
+| **Containers** | Docker Compose (app + PostgreSQL + Redis) |
+
+### CI/CD Pipeline
+
+```
+Push main → GitHub Actions → Build Docker → Push GHCR → Deploy VPS
+```
+
+- **CI** : Lint, Type-check, Tests, Build
+- **CD** : Build image Docker, Push sur ghcr.io, Deploy via SSH
+- Tests automatiques sur chaque PR
 - Déploiement automatique sur merge main
-- Rollback automatique si erreur
+- Migrations Prisma automatiques
