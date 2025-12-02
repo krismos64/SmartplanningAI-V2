@@ -1,0 +1,189 @@
+# ==============================================
+# SMARTPLANNING - DOCKER COMPOSE PRODUCTION
+# ==============================================
+# Configuration pour déploiement VPS OVH
+#
+# 📚 EXPLICATIONS CDA :
+# ---------------------
+# Docker Compose permet d'orchestrer plusieurs conteneurs Docker
+# qui fonctionnent ensemble. En production, on utilise une configuration
+# différente du développement pour :
+# - Utiliser des images pré-buildées (pas de build local)
+# - Sécuriser les mots de passe via variables d'environnement
+# - Configurer les healthchecks pour le monitoring
+# - Optimiser les ressources avec des limites de mémoire
+#
+# ARCHITECTURE :
+# --------------
+# [Nginx Proxy] → [App Next.js:3000] → [PostgreSQL:5432]
+#                                    → [Redis:6379]
+#
+# USAGE :
+# -------
+# Déploiement : docker compose -f docker/docker-compose.prod.yml up -d
+# Logs        : docker compose -f docker/docker-compose.prod.yml logs -f app
+# Arrêt       : docker compose -f docker/docker-compose.prod.yml down
+# ==============================================
+
+version: '3.8'
+
+services:
+  # ----------------------------------------------
+  # 🚀 APPLICATION NEXT.JS
+  # ----------------------------------------------
+  # Image buildée par GitHub Actions et pushée sur ghcr.io
+  # Le tag 'latest' est mis à jour à chaque push sur main
+  #
+  # 📚 CDA : L'image vient de GitHub Container Registry (ghcr.io)
+  # C'est un registre Docker privé associé à GitHub.
+  # Avantage : intégration native avec GitHub Actions.
+  # ----------------------------------------------
+  app:
+    image: ghcr.io/krismos64/smartplanning:${IMAGE_TAG:-latest}
+    container_name: smartplanning-app
+    restart: always
+    ports:
+      - '3000:3000'
+    environment:
+      # Base de données (Prisma)
+      DATABASE_URL: ${DATABASE_URL}
+
+      # NextAuth
+      NEXTAUTH_URL: ${NEXTAUTH_URL:-https://smartplanning.fr}
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
+
+      # Redis (cache et sessions)
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
+
+      # Email (Resend)
+      RESEND_API_KEY: ${RESEND_API_KEY}
+
+      # Stripe (paiements)
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
+      NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY}
+
+      # Mode production
+      NODE_ENV: production
+    networks:
+      - smartplanning-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    # 📚 CDA : Healthcheck = vérification périodique que l'app répond
+    # Si elle échoue 3x, Docker peut redémarrer le conteneur
+    healthcheck:
+      test: ['CMD', 'node', '-e', "require('http').get('http://localhost:3000/api/health', (r) => process.exit(r.statusCode === 200 ? 0 : 1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    # 📚 CDA : Limites de ressources pour éviter qu'un conteneur
+    # ne consomme toute la RAM du serveur
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
+
+  # ----------------------------------------------
+  # 🗄️ POSTGRESQL 16 (Base de données)
+  # ----------------------------------------------
+  # Base de données relationnelle principale
+  #
+  # 📚 CDA : PostgreSQL est un SGBD relationnel open-source.
+  # Volume = persistance des données sur le disque du VPS.
+  # Sans volume, les données seraient perdues au redémarrage !
+  # ----------------------------------------------
+  postgres:
+    image: postgres:16-alpine
+    container_name: smartplanning-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-smartplanning}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-smartplanning}
+      # 📚 CDA : scram-sha-256 = méthode d'authentification sécurisée
+      # Plus sûre que md5 (ancien standard)
+      POSTGRES_HOST_AUTH_METHOD: scram-sha-256
+    volumes:
+      # 📚 CDA : Volume nommé = Docker gère le stockage
+      # Les données persistent même si le conteneur est supprimé
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - smartplanning-network
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-smartplanning} -d ${POSTGRES_DB:-smartplanning}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+
+  # ----------------------------------------------
+  # 🔴 REDIS 7 (Cache et sessions)
+  # ----------------------------------------------
+  # Stockage clé-valeur en mémoire ultra-rapide
+  #
+  # 📚 CDA : Redis stocke les données en RAM = ultra rapide.
+  # Utilisé pour :
+  # - Cache des requêtes fréquentes
+  # - Sessions utilisateurs
+  # - Rate limiting (limitation des requêtes)
+  # - Files d'attente (jobs en arrière-plan)
+  # ----------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: smartplanning-redis
+    restart: always
+    # 📚 CDA : appendonly = persistence sur disque
+    # requirepass = mot de passe obligatoire (sécurité)
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - redis_data:/data
+    networks:
+      - smartplanning-network
+    healthcheck:
+      test: ['CMD', 'redis-cli', '-a', '${REDIS_PASSWORD}', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 128M
+
+# ----------------------------------------------
+# 📦 VOLUMES (Persistance des données)
+# ----------------------------------------------
+# 📚 CDA : Les volumes Docker permettent de persister
+# les données en dehors du cycle de vie des conteneurs.
+# Même si on fait "docker compose down", les données restent.
+# Pour tout supprimer : docker compose down -v (attention !)
+# ----------------------------------------------
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+# ----------------------------------------------
+# 🌐 NETWORK (Communication inter-conteneurs)
+# ----------------------------------------------
+# 📚 CDA : Le network Docker permet aux conteneurs
+# de communiquer entre eux par leur nom de service.
+# Ex: l'app peut joindre PostgreSQL via "postgres:5432"
+# C'est un réseau virtuel isolé = sécurité renforcée.
+# ----------------------------------------------
+networks:
+  smartplanning-network:
+    driver: bridge

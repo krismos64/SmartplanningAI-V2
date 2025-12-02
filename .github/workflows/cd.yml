@@ -1,0 +1,273 @@
+# ==============================================
+# SMARTPLANNING - PIPELINE CD (Continuous Deployment)
+# ==============================================
+# 📚 EXPLICATIONS CDA :
+# ---------------------
+# CD = Déploiement Continu. Ce pipeline :
+# 1. Build l'image Docker de production
+# 2. Push l'image sur GitHub Container Registry (ghcr.io)
+# 3. Se connecte au VPS OVH via SSH
+# 4. Pull la nouvelle image et redémarre les conteneurs
+#
+# DÉCLENCHEUR : Push sur la branche main uniquement
+# TEMPS D'EXÉCUTION ESTIMÉ : ~5-8 minutes
+#
+# PRÉREQUIS SECRETS GITHUB :
+# - VPS_HOST : IP ou domaine du VPS
+# - VPS_USER : Utilisateur SSH (ex: deploy)
+# - VPS_SSH_KEY : Clé SSH privée pour connexion
+# - VPS_SSH_PORT : Port SSH (default: 22)
+# ==============================================
+
+name: CD - Build & Deploy
+
+# ----------------------------------------------
+# 🎯 DÉCLENCHEUR
+# ----------------------------------------------
+# 📚 CDA : Uniquement sur push vers main
+# On ne déploie JAMAIS automatiquement depuis d'autres branches
+on:
+  push:
+    branches:
+      - main
+  # 📚 CDA : workflow_dispatch permet de lancer manuellement
+  # depuis l'interface GitHub (onglet Actions)
+  workflow_dispatch:
+    inputs:
+      deploy_environment:
+        description: 'Environnement de déploiement'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - production
+          - staging
+
+# ----------------------------------------------
+# 🔐 PERMISSIONS
+# ----------------------------------------------
+# 📚 CDA : Permissions nécessaires pour :
+# - contents: read = lire le code source
+# - packages: write = push l'image sur ghcr.io
+permissions:
+  contents: read
+  packages: write
+
+# ----------------------------------------------
+# 🔧 VARIABLES D'ENVIRONNEMENT
+# ----------------------------------------------
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+  # 📚 CDA : github.repository = "krismos64/smartplanning"
+  # Donc IMAGE_NAME = ghcr.io/krismos64/smartplanning
+
+# ----------------------------------------------
+# 📋 JOBS
+# ----------------------------------------------
+jobs:
+  # ============================================
+  # JOB 1 : BUILD & PUSH IMAGE DOCKER
+  # ============================================
+  # 📚 CDA : Construit l'image et la pousse sur le registry
+  build-and-push:
+    name: Build & Push Docker Image
+    runs-on: ubuntu-latest
+
+    outputs:
+      # 📚 CDA : Output = valeur transmise aux jobs suivants
+      image_tag: ${{ steps.meta.outputs.tags }}
+      image_digest: ${{ steps.build.outputs.digest }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 📚 CDA : QEMU permet de builder pour différentes architectures
+      # (arm64 pour Mac M1, amd64 pour serveurs Linux)
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      # 📚 CDA : BuildX = builder Docker avancé avec cache multi-layer
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # 📚 CDA : Connexion au GitHub Container Registry
+      # Utilise le token GitHub automatique (pas de secret à configurer)
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          # 📚 CDA : GITHUB_TOKEN est automatiquement fourni par GitHub
+          # Pas besoin de le créer manuellement
+
+      # 📚 CDA : Génère les tags et labels pour l'image
+      # - latest pour le dernier commit sur main
+      # - sha-xxxx pour identifier la version exacte
+      - name: Extract metadata for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=latest
+            type=sha,prefix=sha-
+            type=ref,event=branch
+
+      # 📚 CDA : Build multi-stage avec cache GitHub Actions
+      # Le cache accélère les builds suivants (~50% plus rapide)
+      - name: Build and push Docker image
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./docker/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          # 📚 CDA : platforms = architectures cibles
+          # amd64 = serveurs classiques, arm64 = Mac M1/M2
+          platforms: linux/amd64
+          # 📚 CDA : Cache GitHub Actions pour accélérer les builds
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          # 📚 CDA : Build args pour optimisations
+          build-args: |
+            NODE_ENV=production
+
+      # 📚 CDA : Résumé du build affiché dans GitHub Actions
+      - name: Image digest
+        run: echo "Image digest ${{ steps.build.outputs.digest }}"
+
+  # ============================================
+  # JOB 2 : DÉPLOIEMENT SUR VPS
+  # ============================================
+  # 📚 CDA : Se connecte au VPS et met à jour l'application
+  deploy:
+    name: Deploy to VPS
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    # 📚 CDA : Attend que l'image soit buildée et pushée
+    environment: production
+    # 📚 CDA : "environment" = protection supplémentaire
+    # Peut exiger une approbation manuelle dans les settings GitHub
+
+    steps:
+      # 📚 CDA : Connexion SSH au VPS et exécution des commandes
+      - name: Deploy to VPS via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_SSH_PORT || 22 }}
+          # 📚 CDA : Script exécuté sur le VPS
+          script: |
+            # ==============================================
+            # SCRIPT DE DÉPLOIEMENT SUR LE VPS
+            # ==============================================
+
+            echo "🚀 Début du déploiement SmartPlanning..."
+
+            # 📚 CDA : Se placer dans le dossier du projet
+            cd /var/www/smartplanning
+
+            # 📚 CDA : Connexion au registry GitHub
+            # Le VPS a besoin d'un token pour pull les images privées
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+            # 📚 CDA : Pull de la nouvelle image
+            echo "📦 Pull de la nouvelle image..."
+            docker pull ghcr.io/${{ github.repository }}:latest
+
+            # 📚 CDA : Arrêt gracieux des conteneurs actuels
+            echo "⏹️ Arrêt des conteneurs..."
+            docker compose -f docker/docker-compose.prod.yml down
+
+            # 📚 CDA : Démarrage avec la nouvelle image
+            echo "▶️ Démarrage des nouveaux conteneurs..."
+            docker compose -f docker/docker-compose.prod.yml up -d
+
+            # 📚 CDA : Attente que l'app soit prête
+            echo "⏳ Attente du healthcheck..."
+            sleep 10
+
+            # 📚 CDA : Vérification du healthcheck
+            if curl -f http://localhost:3000/api/health > /dev/null 2>&1; then
+              echo "✅ Application déployée avec succès !"
+            else
+              echo "❌ Healthcheck échoué - Vérifier les logs"
+              docker compose -f docker/docker-compose.prod.yml logs app --tail 50
+              exit 1
+            fi
+
+            # 📚 CDA : Nettoyage des anciennes images
+            echo "🧹 Nettoyage des anciennes images..."
+            docker image prune -f
+
+            echo "🎉 Déploiement terminé !"
+
+      # 📚 CDA : Notification de succès (optionnel)
+      # Peut être remplacé par Slack, Discord, email...
+      - name: Deployment Summary
+        run: |
+          echo "## Déploiement réussi ! 🚀" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Image:** ghcr.io/${{ github.repository }}:latest" >> $GITHUB_STEP_SUMMARY
+          echo "**Digest:** ${{ needs.build-and-push.outputs.image_digest }}" >> $GITHUB_STEP_SUMMARY
+          echo "**URL:** https://smartplanning.fr" >> $GITHUB_STEP_SUMMARY
+
+  # ============================================
+  # JOB 3 : MIGRATIONS DB (si nécessaire)
+  # ============================================
+  # 📚 CDA : Exécute les migrations Prisma après le déploiement
+  # Séparé pour pouvoir être désactivé si pas de changements DB
+  migrate:
+    name: Run Database Migrations
+    runs-on: ubuntu-latest
+    needs: deploy
+    if: ${{ github.event_name == 'push' }}
+    # 📚 CDA : N'exécute pas les migrations sur workflow_dispatch manuel
+
+    steps:
+      - name: Run Prisma migrations via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_SSH_PORT || 22 }}
+          script: |
+            echo "🗄️ Exécution des migrations Prisma..."
+            cd /var/www/smartplanning
+
+            # 📚 CDA : Exécute les migrations dans le conteneur app
+            docker compose -f docker/docker-compose.prod.yml exec -T app npx prisma migrate deploy
+
+            echo "✅ Migrations terminées !"
+
+# ==============================================
+# 📊 RÉSUMÉ DU PIPELINE CD
+# ==============================================
+# 📚 CDA :
+#
+# FLUX D'EXÉCUTION :
+# ┌─────────────────┐     ┌─────────────┐     ┌───────────┐
+# │  BUILD & PUSH   │ ──► │   DEPLOY    │ ──► │  MIGRATE  │
+# │  (Docker Image) │     │  (VPS SSH)  │     │  (Prisma) │
+# └─────────────────┘     └─────────────┘     └───────────┘
+#
+# SÉCURITÉ :
+# - Secrets GitHub pour les credentials VPS
+# - Token GitHub automatique pour le registry
+# - Environment "production" pour approbation optionnelle
+# - SSH avec clé privée (pas de mot de passe)
+#
+# ROLLBACK :
+# En cas de problème, vous pouvez revenir à une version précédente :
+# 1. Trouver le tag sha-xxxx de la version stable
+# 2. Sur le VPS : docker pull ghcr.io/krismos64/smartplanning:sha-xxxx
+# 3. Redémarrer : docker compose up -d
+# ==============================================

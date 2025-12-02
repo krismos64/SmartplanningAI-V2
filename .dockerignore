@@ -1,0 +1,161 @@
+# ==============================================
+# SMARTPLANNING - DOCKERIGNORE
+# ==============================================
+# 📚 EXPLICATIONS CDA :
+# ---------------------
+# Le fichier .dockerignore fonctionne comme .gitignore
+# mais pour les builds Docker. Il exclut des fichiers
+# du "contexte de build" envoyé au daemon Docker.
+#
+# POURQUOI C'EST IMPORTANT :
+# - Réduit la taille du contexte = build plus rapide
+# - Évite de copier des fichiers inutiles dans l'image
+# - Protège les secrets (.env) de se retrouver dans l'image
+# - Évite les conflits (node_modules local vs conteneur)
+#
+# RÈGLE D'OR : N'inclure QUE ce qui est nécessaire au build
+# ==============================================
+
+# ----------------------------------------------
+# 🔐 SECRETS ET CONFIGURATION SENSIBLE
+# ----------------------------------------------
+# 📚 CDA : CRITIQUE ! Les fichiers .env contiennent
+# des mots de passe, clés API, etc. Ne JAMAIS les
+# inclure dans une image Docker !
+.env
+.env.*
+.env.local
+.env.development
+.env.production
+.env.test
+*.pem
+*.key
+
+# ----------------------------------------------
+# 📁 DÉPENDANCES (reconstruites dans le conteneur)
+# ----------------------------------------------
+# 📚 CDA : On exclut node_modules car :
+# 1. Il sera recréé avec npm ci dans le Dockerfile
+# 2. Les binaires natifs diffèrent entre OS (Mac vs Linux)
+# 3. Ça représente des centaines de Mo inutiles
+node_modules/
+.pnpm-store/
+
+# ----------------------------------------------
+# 🔧 FICHIERS DE BUILD ET CACHE
+# ----------------------------------------------
+# 📚 CDA : Ces dossiers sont générés pendant le build.
+# Les inclure créerait des conflits avec le build Docker.
+.next/
+out/
+build/
+dist/
+.turbo/
+.vercel/
+.cache/
+
+# ----------------------------------------------
+# 🧪 TESTS ET QUALITÉ
+# ----------------------------------------------
+# 📚 CDA : Les tests ne sont pas exécutés en production.
+# Ils sont lancés dans le pipeline CI avant le build.
+coverage/
+.nyc_output/
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+__tests__/
+__mocks__/
+cypress/
+playwright/
+e2e/
+
+# ----------------------------------------------
+# 📝 DOCUMENTATION ET FICHIERS DE DEV
+# ----------------------------------------------
+# 📚 CDA : La documentation est utile pour les devs
+# mais inutile dans l'image de production.
+docs/
+*.md
+!README.md
+LICENSE
+CHANGELOG.md
+CONTRIBUTING.md
+
+# ----------------------------------------------
+# 🛠️ CONFIGURATION ÉDITEUR ET IDE
+# ----------------------------------------------
+# 📚 CDA : Fichiers spécifiques à l'environnement
+# du développeur, pas nécessaires en production.
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ----------------------------------------------
+# 🔍 GIT
+# ----------------------------------------------
+# 📚 CDA : L'historique Git n'a pas sa place
+# dans une image Docker de production.
+.git/
+.gitignore
+.gitattributes
+
+# ----------------------------------------------
+# 🐳 DOCKER (éviter la récursion)
+# ----------------------------------------------
+# 📚 CDA : On exclut les fichiers Docker eux-mêmes
+# pour éviter la "récursion" et alléger le contexte.
+docker/
+Dockerfile*
+docker-compose*
+.dockerignore
+
+# ----------------------------------------------
+# 📦 AUTRES FICHIERS INUTILES EN PRODUCTION
+# ----------------------------------------------
+# 📚 CDA : Fichiers de configuration de développement
+# qui n'ont pas d'utilité en production.
+.eslintrc*
+.eslintignore
+.prettierrc*
+.prettierignore
+.editorconfig
+tsconfig.tsbuildinfo
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm/
+*.tsbuildinfo
+
+# Storybook (si utilisé)
+.storybook/
+storybook-static/
+
+# Prisma migrations (copiées séparément si nécessaire)
+# prisma/migrations/
+
+# Fichiers temporaires
+tmp/
+temp/
+*.tmp
+*.temp
+
+# Archives
+*.zip
+*.tar.gz
+*.rar
+
+# ----------------------------------------------
+# 📊 RÉSUMÉ DES GAINS
+# ----------------------------------------------
+# 📚 CDA : En excluant ces fichiers, on passe d'un
+# contexte de build de ~500Mo à ~50Mo environ.
+# Cela accélère considérablement le build Docker
+# et réduit la taille finale de l'image.
+# ==============================================
