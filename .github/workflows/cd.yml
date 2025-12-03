@@ -1,8 +1,7 @@
 # ==============================================
 # SMARTPLANNING - PIPELINE CD (Continuous Deployment)
 # ==============================================
-# 📚 EXPLICATIONS CDA :
-# ---------------------
+
 # CD = Déploiement Continu. Ce pipeline :
 # 1. Build l'image Docker de production
 # 2. Push l'image sur GitHub Container Registry (ghcr.io)
@@ -24,15 +23,15 @@
 name: CD - Build & Deploy
 
 # ----------------------------------------------
-# 🎯 DÉCLENCHEUR
+# DÉCLENCHEUR
 # ----------------------------------------------
-# 📚 CDA : Uniquement sur push vers main
+# Uniquement sur push vers main
 # On ne déploie JAMAIS automatiquement depuis d'autres branches
 on:
   push:
     branches:
       - main
-  # 📚 CDA : workflow_dispatch permet de lancer manuellement
+  # workflow_dispatch permet de lancer manuellement
   # depuis l'interface GitHub (onglet Actions)
   workflow_dispatch:
     inputs:
@@ -46,9 +45,9 @@ on:
           - staging
 
 # ----------------------------------------------
-# 🔐 PERMISSIONS
+# PERMISSIONS
 # ----------------------------------------------
-# 📚 CDA : Permissions nécessaires pour :
+# Permissions nécessaires pour :
 # - contents: read = lire le code source
 # - packages: write = push l'image sur ghcr.io
 permissions:
@@ -56,7 +55,7 @@ permissions:
   packages: write
 
 # ----------------------------------------------
-# 🔧 VARIABLES D'ENVIRONNEMENT
+# VARIABLES D'ENVIRONNEMENT
 # ----------------------------------------------
 env:
   REGISTRY: ghcr.io
@@ -65,19 +64,19 @@ env:
   # Donc IMAGE_NAME = ghcr.io/krismos64/smartplanning
 
 # ----------------------------------------------
-# 📋 JOBS
+# JOBS
 # ----------------------------------------------
 jobs:
   # ============================================
   # JOB 1 : BUILD & PUSH IMAGE DOCKER
   # ============================================
-  # 📚 CDA : Construit l'image et la pousse sur le registry
+  # Construit l'image et la pousse sur le registry
   build-and-push:
     name: Build & Push Docker Image
     runs-on: ubuntu-latest
 
     outputs:
-      # 📚 CDA : Output = valeur transmise aux jobs suivants
+      # Output = valeur transmise aux jobs suivants
       image_tag: ${{ steps.meta.outputs.tags }}
       image_digest: ${{ steps.build.outputs.digest }}
 
@@ -85,16 +84,16 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 📚 CDA : QEMU permet de builder pour différentes architectures
+      # QEMU permet de builder pour différentes architectures
       # (arm64 pour Mac M1, amd64 pour serveurs Linux)
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
-      # 📚 CDA : BuildX = builder Docker avancé avec cache multi-layer
+      # BuildX = builder Docker avancé avec cache multi-layer
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      # 📚 CDA : Connexion au GitHub Container Registry
+      # Connexion au GitHub Container Registry
       # Utilise le token GitHub automatique (pas de secret à configurer)
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
@@ -105,7 +104,7 @@ jobs:
           # 📚 CDA : GITHUB_TOKEN est automatiquement fourni par GitHub
           # Pas besoin de le créer manuellement
 
-      # 📚 CDA : Génère les tags et labels pour l'image
+      # Génère les tags et labels pour l'image
       # - latest pour le dernier commit sur main
       # - sha-xxxx pour identifier la version exacte
       - name: Extract metadata for Docker
@@ -118,7 +117,7 @@ jobs:
             type=sha,prefix=sha-
             type=ref,event=branch
 
-      # 📚 CDA : Build multi-stage avec cache GitHub Actions
+      # Build multi-stage avec cache GitHub Actions
       # Le cache accélère les builds suivants (~50% plus rapide)
       - name: Build and push Docker image
         id: build
@@ -129,35 +128,35 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          # 📚 CDA : platforms = architectures cibles
+          # platforms = architectures cibles
           # amd64 = serveurs classiques, arm64 = Mac M1/M2
           platforms: linux/amd64
-          # 📚 CDA : Cache GitHub Actions pour accélérer les builds
+          # Cache GitHub Actions pour accélérer les builds
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          # 📚 CDA : Build args pour optimisations
+          # Build args pour optimisations
           build-args: |
             NODE_ENV=production
 
-      # 📚 CDA : Résumé du build affiché dans GitHub Actions
+      # Résumé du build affiché dans GitHub Actions
       - name: Image digest
         run: echo "Image digest ${{ steps.build.outputs.digest }}"
 
   # ============================================
   # JOB 2 : DÉPLOIEMENT SUR VPS
   # ============================================
-  # 📚 CDA : Se connecte au VPS et met à jour l'application
+  # Se connecte au VPS et met à jour l'application
   deploy:
     name: Deploy to VPS
     runs-on: ubuntu-latest
     needs: build-and-push
-    # 📚 CDA : Attend que l'image soit buildée et pushée
+    # Attend que l'image soit buildée et pushée
     environment: production
-    # 📚 CDA : "environment" = protection supplémentaire
+    # "environment" = protection supplémentaire
     # Peut exiger une approbation manuelle dans les settings GitHub
 
     steps:
-      # 📚 CDA : Connexion SSH au VPS et exécution des commandes
+      # Connexion SSH au VPS et exécution des commandes
       - name: Deploy to VPS via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -165,7 +164,7 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ secrets.VPS_SSH_PORT || 22 }}
-          # 📚 CDA : Script exécuté sur le VPS
+          # Script exécuté sur le VPS
           script: |
             # ==============================================
             # SCRIPT DE DÉPLOIEMENT SUR LE VPS
@@ -173,30 +172,30 @@ jobs:
 
             echo "🚀 Début du déploiement SmartPlanning..."
 
-            # 📚 CDA : Se placer dans le dossier du projet
+            # Se placer dans le dossier du projet
             cd /var/www/smartplanning
 
-            # 📚 CDA : L'authentification GHCR est persistante sur le VPS
+            # L'authentification GHCR est persistante sur le VPS
             # Configurée via : docker login ghcr.io (PAT stocké dans ~/.docker/config.json)
             # Pas besoin de login à chaque déploiement
 
-            # 📚 CDA : Pull de la nouvelle image
+            # Pull de la nouvelle image
             echo "📦 Pull de la nouvelle image..."
             docker pull ghcr.io/${{ github.repository }}:latest
 
-            # 📚 CDA : Arrêt gracieux des conteneurs actuels
+            # Arrêt gracieux des conteneurs actuels
             echo "⏹️ Arrêt des conteneurs..."
             docker compose --env-file .env -f docker/docker-compose.prod.yml down
 
-            # 📚 CDA : Démarrage avec la nouvelle image
+            # Démarrage avec la nouvelle image
             echo "▶️ Démarrage des nouveaux conteneurs..."
             docker compose --env-file .env -f docker/docker-compose.prod.yml up -d
 
-            # 📚 CDA : Attente que l'app soit prête
+            # Attente que l'app soit prête
             echo "⏳ Attente du healthcheck..."
             sleep 30
 
-            # 📚 CDA : Vérification du healthcheck
+            # Vérification du healthcheck
             if curl -f http://localhost:3000/api/health > /dev/null 2>&1; then
               echo "✅ Application déployée avec succès !"
             else
@@ -205,13 +204,13 @@ jobs:
               exit 1
             fi
 
-            # 📚 CDA : Nettoyage des anciennes images
+            # Nettoyage des anciennes images
             echo "🧹 Nettoyage des anciennes images..."
             docker image prune -f
 
             echo "🎉 Déploiement terminé !"
 
-      # 📚 CDA : Notification de succès (optionnel)
+      # Notification de succès (optionnel)
       # Peut être remplacé par Slack, Discord, email...
       - name: Deployment Summary
         run: |
@@ -224,14 +223,14 @@ jobs:
   # ============================================
   # JOB 3 : MIGRATIONS DB (si nécessaire)
   # ============================================
-  # 📚 CDA : Exécute les migrations Prisma après le déploiement
+  # Exécute les migrations Prisma après le déploiement
   # Séparé pour pouvoir être désactivé si pas de changements DB
   migrate:
     name: Run Database Migrations
     runs-on: ubuntu-latest
     needs: deploy
     if: ${{ github.event_name == 'push' }}
-    # 📚 CDA : N'exécute pas les migrations sur workflow_dispatch manuel
+    # N'exécute pas les migrations sur workflow_dispatch manuel
 
     steps:
       - name: Run Prisma migrations via SSH
@@ -245,16 +244,16 @@ jobs:
             echo "🗄️ Exécution des migrations Prisma..."
             cd /var/www/smartplanning
 
-            # 📚 CDA : Exécute les migrations dans le conteneur app
+            # Exécute les migrations dans le conteneur app
             # Utilise le chemin local node_modules pour éviter que npx télécharge une autre version
             docker compose --env-file .env -f docker/docker-compose.prod.yml exec -T app node node_modules/prisma/build/index.js migrate deploy
 
             echo "✅ Migrations terminées !"
 
 # ==============================================
-# 📊 RÉSUMÉ DU PIPELINE CD
+# RÉSUMÉ DU PIPELINE CD
 # ==============================================
-# 📚 CDA :
+#
 #
 # FLUX D'EXÉCUTION :
 # ┌─────────────────┐     ┌─────────────┐     ┌───────────┐
