@@ -74,17 +74,20 @@ const rajdhani = Rajdhani({
  */
 export const metadata: Metadata = {
   metadataBase: new URL(
-    process.env.NEXT_PUBLIC_APP_URL || 'https://smartplanning.app'
+    process.env.NEXT_PUBLIC_APP_URL || 'https://smartplanning.fr'
   ),
   title: {
     default: 'SmartPlanning - Gestion intelligente des plannings',
     template: '%s | SmartPlanning',
   },
   description:
-    "Solution SaaS de gestion de plannings d'entreprise. Planification intelligente, gestion des équipes, suivi des congés. Optimisez la productivité de votre organisation.",
+    "Solution SaaS de gestion des plannings d'entreprise. Automatisez vos plannings, gérez vos équipes et optimisez votre organisation. Bientôt disponible !",
   keywords: [
     'planning',
-    'gestion équipe',
+    'gestion',
+    'entreprise',
+    'RH',
+    'équipes',
     'SaaS',
     'ressources humaines',
     'congés',
@@ -101,10 +104,10 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'fr_FR',
-    url: 'https://smartplanning.app',
-    title: 'SmartPlanning - Gestion intelligente des plannings',
+    url: 'https://smartplanning.fr',
+    title: 'SmartPlanning - Bientôt disponible',
     description:
-      "Solution SaaS de gestion de plannings d'entreprise pour optimiser la productivité.",
+      'La solution intelligente de gestion des plannings arrive bientôt !',
     siteName: 'SmartPlanning',
     images: [
       {
@@ -119,9 +122,9 @@ export const metadata: Metadata = {
   // Twitter Cards
   twitter: {
     card: 'summary_large_image',
-    title: 'SmartPlanning - Gestion intelligente des plannings',
+    title: 'SmartPlanning - Bientôt disponible',
     description:
-      "Solution SaaS de gestion de plannings d'entreprise pour optimiser la productivité.",
+      'La solution intelligente de gestion des plannings arrive bientôt !',
     images: ['/twitter-image.png'],
     creator: '@christophedev',
   },
