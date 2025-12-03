@@ -1,8 +1,7 @@
 # ==============================================
 # SMARTPLANNING - PIPELINE CI (Continuous Integration)
 # ==============================================
-# 📚 EXPLICATIONS CDA :
-# ---------------------
+
 # CI = Intégration Continue. À chaque push ou PR, ce pipeline :
 # 1. Vérifie la qualité du code (lint, types)
 # 2. Lance les tests automatisés
@@ -15,15 +14,13 @@
 # - Push sur n'importe quelle branche
 # - Pull Request vers main
 #
-# TEMPS D'EXÉCUTION ESTIMÉ : ~3-5 minutes
-# ==============================================
 
 name: CI - Lint, Test & Build
 
 # ----------------------------------------------
-# 🎯 DÉCLENCHEURS (Quand le workflow s'exécute)
+# DÉCLENCHEURS (Quand le workflow s'exécute)
 # ----------------------------------------------
-# 📚 CDA : "on" définit les événements qui déclenchent le workflow
+# "on" définit les événements qui déclenchent le workflow
 # - push : à chaque commit poussé
 # - pull_request : à chaque PR ouverte/mise à jour
 on:
@@ -36,51 +33,51 @@ on:
       - develop
 
 # ----------------------------------------------
-# 🔐 PERMISSIONS
+# PERMISSIONS
 # ----------------------------------------------
-# 📚 CDA : Par sécurité, on limite les permissions au minimum.
+# Par sécurité, on limite les permissions au minimum.
 # contents: read = lecture seule du code source
 permissions:
   contents: read
 
 # ----------------------------------------------
-# 🔧 VARIABLES D'ENVIRONNEMENT GLOBALES
+# VARIABLES D'ENVIRONNEMENT GLOBALES
 # ----------------------------------------------
-# 📚 CDA : Ces variables sont accessibles dans tous les jobs
+# Ces variables sont accessibles dans tous les jobs
 env:
   NODE_VERSION: '20'
   PNPM_VERSION: '8'
 
 # ----------------------------------------------
-# 📋 JOBS (Tâches à exécuter)
+# JOBS (Tâches à exécuter)
 # ----------------------------------------------
 jobs:
   # ============================================
   # JOB 1 : LINT & TYPE-CHECK
   # ============================================
-  # 📚 CDA : Vérifie la syntaxe et les types TypeScript
+  # Vérifie la syntaxe et les types TypeScript
   # C'est la première ligne de défense contre les erreurs
   lint:
     name: Lint & Type Check
     runs-on: ubuntu-latest
-    # 📚 CDA : ubuntu-latest = machine virtuelle Linux fournie par GitHub
+    # ubuntu-latest = machine virtuelle Linux fournie par GitHub
     # C'est gratuit pour les repos publics (2000 min/mois pour privés)
 
     steps:
-      # 📚 CDA : checkout = récupérer le code source du repo
+      # checkout = récupérer le code source du repo
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 📚 CDA : Setup Node.js avec cache npm pour accélérer
+      # Setup Node.js avec cache npm pour accélérer
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-          # 📚 CDA : Le cache stocke node_modules entre les runs
+          # Le cache stocke node_modules entre les runs
           # Gain de temps : ~1-2 minutes par run
 
-      # 📚 CDA : npm ci = installation propre des dépendances
+      # npm ci = installation propre des dépendances
       # Contrairement à "npm install", ci :
       # - Supprime node_modules existant
       # - Installe exactement les versions du package-lock.json
@@ -88,11 +85,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # 📚 CDA : ESLint vérifie les règles de code (syntaxe, bonnes pratiques)
+      # ESLint vérifie les règles de code (syntaxe, bonnes pratiques)
       - name: Run ESLint
         run: npm run lint
 
-      # 📚 CDA : TypeScript vérifie les types sans transpiler
+      # TypeScript vérifie les types sans transpiler
       # Détecte les erreurs de typage avant le runtime
       - name: Run Type Check
         run: npm run type-check
@@ -100,13 +97,13 @@ jobs:
   # ============================================
   # JOB 2 : TESTS UNITAIRES
   # ============================================
-  # 📚 CDA : Exécute les tests Jest/Vitest
+  # Exécute les tests Jest/Vitest
   # Les tests valident que le code fonctionne comme prévu
   test:
     name: Unit Tests
     runs-on: ubuntu-latest
     needs: lint
-    # 📚 CDA : "needs: lint" = ce job attend que lint soit terminé
+    # "needs: lint" = ce job attend que lint soit terminé
     # Si lint échoue, les tests ne sont pas lancés (gain de temps)
 
     steps:
@@ -122,22 +119,22 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # 📚 CDA : Génère le Prisma Client nécessaire pour les tests
+      # Génère le Prisma Client nécessaire pour les tests
       - name: Generate Prisma Client
         run: npx prisma generate
 
-      # 📚 CDA : Lance les tests avec couverture de code
+      # Lance les tests avec couverture de code
       # La couverture indique quel % du code est testé
       - name: Run tests
         run: npm run test -- --coverage --passWithNoTests
         env:
-          # 📚 CDA : Variables nécessaires pour les tests
+          # Variables nécessaires pour les tests
           # On utilise une DB SQLite en mémoire pour les tests
           DATABASE_URL: 'file:./test.db'
           NEXTAUTH_SECRET: 'test-secret-for-ci'
           NEXTAUTH_URL: 'http://localhost:3000'
 
-      # 📚 CDA : Upload du rapport de couverture
+      # Upload du rapport de couverture
       # Visible dans l'onglet "Actions" de GitHub
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
@@ -150,13 +147,13 @@ jobs:
   # ============================================
   # JOB 3 : BUILD
   # ============================================
-  # 📚 CDA : Vérifie que l'application peut être buildée
+  # Vérifie que l'application peut être buildée
   # Détecte les erreurs de compilation Next.js
   build:
     name: Build Application
     runs-on: ubuntu-latest
     needs: [lint, test]
-    # 📚 CDA : Attend lint ET test avant de builder
+    # Attend lint ET test avant de builder
     # Le build est l'étape la plus longue, on l'exécute en dernier
 
     steps:
@@ -175,18 +172,18 @@ jobs:
       - name: Generate Prisma Client
         run: npx prisma generate
 
-      # 📚 CDA : Build Next.js en mode production
+      # Build Next.js en mode production
       # Crée le dossier .next avec l'application optimisée
       - name: Build Next.js application
         run: npm run build
         env:
-          # 📚 CDA : Variables minimales pour le build
+          # Variables minimales pour le build
           # Les vraies valeurs seront injectées en production
           DATABASE_URL: 'postgresql://fake:fake@localhost:5432/fake'
           NEXTAUTH_SECRET: 'build-secret'
           NEXTAUTH_URL: 'http://localhost:3000'
 
-      # 📚 CDA : Sauvegarde du build pour réutilisation
+      # Sauvegarde du build pour réutilisation
       # Utile si on veut déployer ce build exact
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
@@ -196,11 +193,10 @@ jobs:
             .next/
             !.next/cache/
           retention-days: 1
-
 # ==============================================
-# 📊 RÉSUMÉ DU PIPELINE CI
+# RÉSUMÉ DU PIPELINE CI
 # ==============================================
-# 📚 CDA :
+#
 #
 # FLUX D'EXÉCUTION :
 # ┌─────────┐     ┌─────────┐     ┌─────────┐
