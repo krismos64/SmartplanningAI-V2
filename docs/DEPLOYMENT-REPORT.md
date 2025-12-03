@@ -35,27 +35,27 @@ Mise en place d'un pipeline de déploiement continu (CI/CD) automatisé pour l'a
 
 ### 1.2 Stack technique
 
-| Composant | Technologie | Version |
-|-----------|-------------|---------|
-| Application | Next.js | 15.x |
-| Runtime | Node.js | 20 Alpine |
-| Base de données | PostgreSQL | 16 Alpine |
-| Cache/Sessions | Redis | 7 Alpine |
-| ORM | Prisma | 6.1.0 |
-| Conteneurisation | Docker | 24.x |
-| Orchestration | Docker Compose | 2.x |
-| CI/CD | GitHub Actions | - |
-| Registry | GitHub Container Registry (GHCR) | - |
-| VPS | OVH | Ubuntu 22.04 |
+| Composant        | Technologie                      | Version      |
+| ---------------- | -------------------------------- | ------------ |
+| Application      | Next.js                          | 15.x         |
+| Runtime          | Node.js                          | 20 Alpine    |
+| Base de données  | PostgreSQL                       | 16 Alpine    |
+| Cache/Sessions   | Redis                            | 7 Alpine     |
+| ORM              | Prisma                           | 6.1.0        |
+| Conteneurisation | Docker                           | 24.x         |
+| Orchestration    | Docker Compose                   | 2.x          |
+| CI/CD            | GitHub Actions                   | -            |
+| Registry         | GitHub Container Registry (GHCR) | -            |
+| VPS              | OVH                              | Ubuntu 22.04 |
 
 ### 1.3 URLs
 
-| Service | URL |
-|---------|-----|
-| Application (IP directe) | http://141.94.78.0:3000 |
-| Application (domaine) | https://smartplanning.fr (à configurer) |
-| Repository GitHub | https://github.com/krismos64/SmartplanningAI-V2 |
-| Container Registry | ghcr.io/krismos64/smartplanningai-v2 |
+| Service                  | URL                                             |
+| ------------------------ | ----------------------------------------------- |
+| Application (IP directe) | http://141.94.78.0:3000                         |
+| Application (domaine)    | https://smartplanning.fr (à configurer)         |
+| Repository GitHub        | https://github.com/krismos64/SmartplanningAI-V2 |
+| Container Registry       | ghcr.io/krismos64/smartplanningai-v2            |
 
 ---
 
@@ -109,19 +109,21 @@ Mise en place d'un pipeline de déploiement continu (CI/CD) automatisé pour l'a
 ### 3.1 Pipeline CI (`.github/workflows/ci.yml`)
 
 **Déclencheurs** :
+
 - Push sur `main` ou `develop`
 - Pull requests vers `main` ou `develop`
 
 **Jobs** :
 
-| Job | Description | Durée |
-|-----|-------------|-------|
-| `lint` | ESLint + Prettier | ~30s |
-| `type-check` | TypeScript strict | ~45s |
-| `test` | Vitest (tests unitaires) | ~30s |
-| `build` | Next.js production build | ~2min |
+| Job          | Description              | Durée |
+| ------------ | ------------------------ | ----- |
+| `lint`       | ESLint + Prettier        | ~30s  |
+| `type-check` | TypeScript strict        | ~45s  |
+| `test`       | Vitest (tests unitaires) | ~30s  |
+| `build`      | Next.js production build | ~2min |
 
 **Exemple de sortie** :
+
 ```
 ✓ ESLint: 0 errors, 0 warnings
 ✓ TypeScript: No errors
@@ -132,16 +134,17 @@ Mise en place d'un pipeline de déploiement continu (CI/CD) automatisé pour l'a
 ### 3.2 Pipeline CD (`.github/workflows/cd.yml`)
 
 **Déclencheurs** :
+
 - Push sur `main` uniquement
 - `workflow_dispatch` (déclenchement manuel)
 
 **Jobs** :
 
-| Job | Description | Durée |
-|-----|-------------|-------|
+| Job              | Description              | Durée   |
+| ---------------- | ------------------------ | ------- |
 | `build-and-push` | Build Docker + Push GHCR | ~3-4min |
-| `deploy` | SSH → Pull → Restart | ~1-2min |
-| `migrate` | Prisma migrations | ~30s |
+| `deploy`         | SSH → Pull → Restart     | ~1-2min |
+| `migrate`        | Prisma migrations        | ~30s    |
 
 **Flux détaillé** :
 
@@ -152,9 +155,9 @@ Mise en place d'un pipeline de déploiement continu (CI/CD) automatisé pour l'a
 - Setup Docker Buildx
 - Login to GHCR
 - Build & Push image avec tags:
-  - latest
-  - sha-{commit}
-  - main
+    - latest
+    - sha-{commit}
+    - main
 
 # 2. Deploy
 - SSH vers VPS
@@ -169,12 +172,12 @@ Mise en place d'un pipeline de déploiement continu (CI/CD) automatisé pour l'a
 
 ### 3.3 Secrets GitHub requis
 
-| Secret | Description | Exemple |
-|--------|-------------|---------|
-| `VPS_HOST` | IP ou domaine du VPS | `141.94.78.0` |
-| `VPS_USER` | Utilisateur SSH | `deploy` |
-| `VPS_SSH_KEY` | Clé privée SSH | `-----BEGIN OPENSSH...` |
-| `VPS_SSH_PORT` | Port SSH | `22` |
+| Secret         | Description          | Exemple                 |
+| -------------- | -------------------- | ----------------------- |
+| `VPS_HOST`     | IP ou domaine du VPS | `141.94.78.0`           |
+| `VPS_USER`     | Utilisateur SSH      | `deploy`                |
+| `VPS_SSH_KEY`  | Clé privée SSH       | `-----BEGIN OPENSSH...` |
+| `VPS_SSH_PORT` | Port SSH             | `22`                    |
 
 > **Note** : `GITHUB_TOKEN` est fourni automatiquement par GitHub Actions.
 
@@ -184,14 +187,14 @@ Mise en place d'un pipeline de déploiement continu (CI/CD) automatisé pour l'a
 
 ### 4.1 Spécifications serveur
 
-| Caractéristique | Valeur |
-|-----------------|--------|
-| Fournisseur | OVH |
-| IP | 141.94.78.0 |
-| OS | Ubuntu 22.04 LTS |
-| RAM | 4 GB |
-| CPU | 2 vCPU |
-| Stockage | 40 GB SSD |
+| Caractéristique | Valeur           |
+| --------------- | ---------------- |
+| Fournisseur     | OVH              |
+| IP              | 141.94.78.0      |
+| OS              | Ubuntu 22.04 LTS |
+| RAM             | 4 GB             |
+| CPU             | 2 vCPU           |
+| Stockage        | 40 GB SSD        |
 
 ### 4.2 Utilisateur déploiement
 
@@ -266,31 +269,31 @@ docker login ghcr.io -u krismos64 --password-stdin <<< "ghp_XXX"
 
 ### 5.1 Fichiers de workflow
 
-| Fichier | Rôle |
-|---------|------|
+| Fichier                    | Rôle                 |
+| -------------------------- | -------------------- |
 | `.github/workflows/ci.yml` | Intégration continue |
-| `.github/workflows/cd.yml` | Déploiement continu |
+| `.github/workflows/cd.yml` | Déploiement continu  |
 
 ### 5.2 Permissions
 
 ```yaml
 permissions:
-  contents: read      # Lire le code source
-  packages: write     # Push images sur GHCR
+  contents: read # Lire le code source
+  packages: write # Push images sur GHCR
 ```
 
 ### 5.3 Actions utilisées
 
-| Action | Version | Usage |
-|--------|---------|-------|
-| `actions/checkout` | v4 | Clone du repo |
-| `actions/setup-node` | v4 | Setup Node.js |
-| `docker/setup-qemu-action` | v3 | Support multi-arch |
-| `docker/setup-buildx-action` | v3 | Builder Docker avancé |
-| `docker/login-action` | v3 | Login GHCR |
-| `docker/metadata-action` | v5 | Tags et labels |
-| `docker/build-push-action` | v5 | Build & Push |
-| `appleboy/ssh-action` | v1.0.3 | SSH vers VPS |
+| Action                       | Version | Usage                 |
+| ---------------------------- | ------- | --------------------- |
+| `actions/checkout`           | v4      | Clone du repo         |
+| `actions/setup-node`         | v4      | Setup Node.js         |
+| `docker/setup-qemu-action`   | v3      | Support multi-arch    |
+| `docker/setup-buildx-action` | v3      | Builder Docker avancé |
+| `docker/login-action`        | v3      | Login GHCR            |
+| `docker/metadata-action`     | v5      | Tags et labels        |
+| `docker/build-push-action`   | v5      | Build & Push          |
+| `appleboy/ssh-action`        | v1.0.3  | SSH vers VPS          |
 
 ### 5.4 Cache et optimisations
 
@@ -380,11 +383,11 @@ networks:
 
 Tous les conteneurs communiquent via le réseau `smartplanning-network` :
 
-| Service | Hostname interne | Port |
-|---------|------------------|------|
-| App | `app` | 3000 |
-| PostgreSQL | `postgres` | 5432 |
-| Redis | `redis` | 6379 |
+| Service    | Hostname interne | Port |
+| ---------- | ---------------- | ---- |
+| App        | `app`            | 3000 |
+| PostgreSQL | `postgres`       | 5432 |
+| Redis      | `redis`          | 6379 |
 
 ---
 
@@ -401,6 +404,7 @@ Tous les conteneurs communiquent via le réseau `smartplanning-network` :
 **Schema** : `prisma/schema.prisma`
 
 **Commande de migration** :
+
 ```bash
 # Dans le conteneur app
 node node_modules/prisma/build/index.js migrate deploy
@@ -414,8 +418,8 @@ docker run --rm --network docker_smartplanning-network \
 
 ### 7.3 Migrations appliquées
 
-| Migration | Date | Description |
-|-----------|------|-------------|
+| Migration             | Date       | Description    |
+| --------------------- | ---------- | -------------- |
 | `20251104150848_init` | 04/11/2025 | Schéma initial |
 
 ---
@@ -437,11 +441,11 @@ headers: [
 
 ### 8.2 Secrets
 
-| Type | Stockage | Accès |
-|------|----------|-------|
-| Secrets GitHub | GitHub Secrets | CI/CD uniquement |
-| Secrets VPS | `/var/www/smartplanning/.env` | Fichier protégé (600) |
-| PAT GHCR | `~/.docker/config.json` | Utilisateur deploy |
+| Type           | Stockage                      | Accès                 |
+| -------------- | ----------------------------- | --------------------- |
+| Secrets GitHub | GitHub Secrets                | CI/CD uniquement      |
+| Secrets VPS    | `/var/www/smartplanning/.env` | Fichier protégé (600) |
+| PAT GHCR       | `~/.docker/config.json`       | Utilisateur deploy    |
 
 ### 8.3 Utilisateur non-root
 
@@ -468,6 +472,7 @@ USER nextjs
 **URL** : `GET /api/health`
 
 **Réponse** :
+
 ```json
 {
   "status": "healthy",
@@ -501,12 +506,14 @@ USER nextjs
 ### 9.2 Healthchecks Docker
 
 **App** :
+
 ```dockerfile
 HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
   CMD node -e "require('http').get('http://localhost:3000/api/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
 ```
 
 **PostgreSQL** :
+
 ```yaml
 healthcheck:
   test: ['CMD-SHELL', 'pg_isready -U smartplanning -d smartplanning']
@@ -516,6 +523,7 @@ healthcheck:
 ```
 
 **Redis** :
+
 ```yaml
 healthcheck:
   test: ['CMD-SHELL', 'redis-cli -a $$REDIS_PASSWORD ping | grep PONG']
@@ -548,8 +556,10 @@ curl http://localhost:3000/api/health
 **Cause** : Le `GITHUB_TOKEN` utilisé dans le workflow expire après l'exécution.
 
 **Solution** :
+
 - Créer un PAT avec scope `read:packages`
 - Configurer l'auth de manière persistante sur le VPS :
+
 ```bash
 docker login ghcr.io -u krismos64 --password-stdin <<< "ghp_XXX"
 ```
@@ -561,6 +571,7 @@ docker login ghcr.io -u krismos64 --password-stdin <<< "ghp_XXX"
 **Cause** : Le mode `standalone` de Next.js ne copie pas tous les `node_modules`.
 
 **Solution** : Ajouter explicitement Prisma dans le Dockerfile :
+
 ```dockerfile
 COPY --from=builder /app/node_modules/prisma ./node_modules/prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
@@ -573,6 +584,7 @@ COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 **Cause** : `${REDIS_PASSWORD}` n'était pas interpolé dans le contexte du healthcheck.
 
 **Solution** :
+
 ```yaml
 environment:
   REDIS_PASSWORD: ${REDIS_PASSWORD}
@@ -587,6 +599,7 @@ healthcheck:
 **Cause** : Le fichier `.env` était dans le répertoire parent.
 
 **Solution** : Utiliser `--env-file .env` explicitement :
+
 ```bash
 docker compose --env-file .env -f docker/docker-compose.prod.yml up -d
 ```
@@ -695,12 +708,12 @@ server {
 
 ### 12.2 Secrets à configurer
 
-| Secret | Service | Usage |
-|--------|---------|-------|
-| `STRIPE_SECRET_KEY` | Stripe | Paiements |
-| `STRIPE_WEBHOOK_SECRET` | Stripe | Webhooks |
-| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Stripe | Frontend |
-| `RESEND_API_KEY` | Resend | Emails transactionnels |
+| Secret                               | Service | Usage                  |
+| ------------------------------------ | ------- | ---------------------- |
+| `STRIPE_SECRET_KEY`                  | Stripe  | Paiements              |
+| `STRIPE_WEBHOOK_SECRET`              | Stripe  | Webhooks               |
+| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Stripe  | Frontend               |
+| `RESEND_API_KEY`                     | Resend  | Emails transactionnels |
 
 ### 12.3 Monitoring avancé (Optionnel)
 
@@ -721,14 +734,14 @@ docker exec smartplanning-postgres pg_dump -U smartplanning smartplanning > back
 
 ### A. Fichiers de configuration
 
-| Fichier | Chemin | Description |
-|---------|--------|-------------|
-| CI Workflow | `.github/workflows/ci.yml` | Pipeline d'intégration |
-| CD Workflow | `.github/workflows/cd.yml` | Pipeline de déploiement |
-| Dockerfile | `docker/Dockerfile` | Build de l'image |
-| Docker Compose | `docker/docker-compose.prod.yml` | Orchestration prod |
-| Next.js Config | `next.config.ts` | Configuration Next.js |
-| Prisma Schema | `prisma/schema.prisma` | Schéma de la BDD |
+| Fichier        | Chemin                           | Description             |
+| -------------- | -------------------------------- | ----------------------- |
+| CI Workflow    | `.github/workflows/ci.yml`       | Pipeline d'intégration  |
+| CD Workflow    | `.github/workflows/cd.yml`       | Pipeline de déploiement |
+| Dockerfile     | `docker/Dockerfile`              | Build de l'image        |
+| Docker Compose | `docker/docker-compose.prod.yml` | Orchestration prod      |
+| Next.js Config | `next.config.ts`                 | Configuration Next.js   |
+| Prisma Schema  | `prisma/schema.prisma`           | Schéma de la BDD        |
 
 ### B. Contacts et ressources
 
@@ -738,6 +751,3 @@ docker exec smartplanning-postgres pg_dump -U smartplanning smartplanning > back
 - **Documentation Docker** : https://docs.docker.com
 
 ---
-
-*Document généré le 2 décembre 2025*
-*SmartPlanning V2 - Rapport de déploiement*
