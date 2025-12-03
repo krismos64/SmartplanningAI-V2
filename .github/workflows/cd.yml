@@ -179,17 +179,21 @@ jobs:
             # Configurée via : docker login ghcr.io (PAT stocké dans ~/.docker/config.json)
             # Pas besoin de login à chaque déploiement
 
-            # Pull de la nouvelle image
-            echo "📦 Pull de la nouvelle image..."
-            docker pull ghcr.io/${{ github.repository }}:latest
+            # Pull forcé de la nouvelle image (bypass cache)
+            echo "📦 Pull de la nouvelle image (force)..."
+            docker pull --quiet ghcr.io/krismos64/smartplanningai-v2:latest
+
+            # Afficher le digest pour vérification
+            echo "📋 Image digest:"
+            docker images ghcr.io/krismos64/smartplanningai-v2:latest --format "{{.ID}} {{.CreatedAt}}"
 
             # Arrêt gracieux des conteneurs actuels
             echo "⏹️ Arrêt des conteneurs..."
-            docker compose --env-file .env -f docker/docker-compose.prod.yml down
+            docker compose --env-file .env -f docker/docker-compose.prod.yml down --remove-orphans
 
-            # Démarrage avec la nouvelle image
+            # Démarrage avec la nouvelle image (force pull)
             echo "▶️ Démarrage des nouveaux conteneurs..."
-            docker compose --env-file .env -f docker/docker-compose.prod.yml up -d
+            docker compose --env-file .env -f docker/docker-compose.prod.yml up -d --pull always
 
             # Attente que l'app soit prête
             echo "⏳ Attente du healthcheck..."
