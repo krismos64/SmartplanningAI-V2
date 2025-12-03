@@ -3,7 +3,6 @@
  *
  * ✅ SP-129 : Page temporaire professionnelle
  *
- * OBJECTIF (CDA) :
  * Page d'accueil "En construction" pour valider le déploiement.
  * Design moderne avec animation Lottie et Framer Motion.
  *
@@ -17,9 +16,9 @@
 
 'use client'
 
-import dynamic from 'next/dynamic'
 import { motion } from 'framer-motion'
-import { Calendar, Users, Palmtree, LayoutDashboard } from 'lucide-react'
+import { Calendar, LayoutDashboard, Palmtree, Users } from 'lucide-react'
+import dynamic from 'next/dynamic'
 
 /**
  * Import dynamique du Lottie Player (SSR disabled)
@@ -139,7 +138,7 @@ export default function ComingSoonPage() {
             className="mb-8 rounded-full bg-white/20 px-4 py-1.5 text-sm font-medium text-white backdrop-blur-sm"
             variants={itemVariants}
           >
-            Version 2.0 - En développement
+            En cours de développement
           </motion.span>
 
           {/* Lottie Animation */}
@@ -198,7 +197,7 @@ export default function ComingSoonPage() {
               <span className="relative inline-flex h-3 w-3 rounded-full bg-green-400" />
             </span>
             <span className="text-sm font-medium text-green-300">
-              Infrastructure opérationnelle
+              Infrastructure bientôt opérationnelle
             </span>
           </motion.div>
         </motion.div>
@@ -210,7 +209,7 @@ export default function ComingSoonPage() {
           © {new Date().getFullYear()} SmartPlanning - Tous droits réservés
         </p>
         <p className="mt-1 text-xs text-white/40">
-          Projet CDA - Christophe Dev
+          Projet Christophe Mostefaoui
         </p>
       </footer>
     </div>

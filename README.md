@@ -8,6 +8,8 @@ Plateforme SaaS moderne de gestion intelligente des plannings d'entreprise (mult
 - **Statut** : En développement actif
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
+- **URL Production** : https://smartplanning.fr
+- **Dernière mise à jour** : 3 décembre 2025
 
 ## Stack technique
 
@@ -50,6 +52,10 @@ Plateforme SaaS moderne de gestion intelligente des plannings d'entreprise (mult
 ### Composants UI production-ready
 
 - **DataTable avancée** (SP-120) : Composant de tableau avec tri multi-colonnes, pagination, recherche fuzzy, sélection multi-rows, actions par ligne, responsive (table desktop / cards mobile)
+- **Form System** (SP-119) : 7 composants formulaire avec React Hook Form + Zod, 23 schémas de validation
+- **Toast System** (SP-122) : Notifications avec Sonner, hook useToast()
+- **Modal System** (SP-121) : Modals et loading states
+- **Composants métier** (SP-123) : UserCard, TeamCard, AvatarStack
 
 ### MVP (Phases 1-4)
 
@@ -240,18 +246,31 @@ Voir `/docs/database-schema.md` pour le détail complet.
 - SP-118 : Système de layout
 - SP-120 : DataTable avancée production-ready ✅
 
-#### Phase 3 : Authentification 📋
+#### Phase 3 : Composants UI ✅ (Terminée - 2 décembre 2025)
+
+- SP-119 : Form System (7 composants + 23 schémas Zod) ✅
+- SP-121 : Modals et Loading States ✅
+- SP-122 : Toast System (Sonner) ✅
+- SP-123 : Composants métier (UserCard, TeamCard, AvatarStack) ✅
+
+#### Phase 3.5 : Qualité & Déploiement ✅ (Terminée - 3 décembre 2025)
+
+- SP-127 : Configuration VPS OVH ✅
+- SP-128 : Pipeline CI/CD GitHub Actions ✅
+- SP-129 : Page Coming Soon + Premier déploiement ✅
+
+#### Phase 4 : Authentification 📋 (À venir)
 
 - SP-7 : Pages login/register
 - SP-8 : Middleware protection routes
 - SP-9 : Gestion des 4 rôles (RBAC)
 
-#### Phase 4 : Dashboard 📋
+#### Phase 5 : Dashboard 📋
 
 - SP-10 : Layout dashboard + sidebar
 - SP-11 : Page d'accueil par rôle
 
-#### Phase 5+ : Planning, Congés, Notifications, Export... (À venir)
+#### Phase 6+ : Planning, Congés, Notifications, Export... (À venir)
 
 ## Documentation complète
 
@@ -399,9 +418,16 @@ git push origin feature/SP-XX-description
 | **Serveur** | VPS OVH (4 vCores, 8GB RAM, 75GB SSD) |
 | **OS** | Ubuntu 24.04 LTS |
 | **IP** | 141.94.78.0 |
-| **SSL** | Let's Encrypt (auto-renew) |
-| **Reverse Proxy** | Nginx |
-| **Containers** | Docker Compose (app + PostgreSQL + Redis) |
+| **SSL** | Let's Encrypt (auto-renew jusqu'au 2 mars 2026) |
+| **Reverse Proxy** | Nginx 1.24.0 |
+| **Containers** | Docker Compose (app + PostgreSQL 16 + Redis 7) |
+| **Registry** | GitHub Container Registry (ghcr.io) |
+
+### Connexion SSH
+
+```bash
+ssh -i ~/.ssh/smartplanning_deploy deploy@141.94.78.0
+```
 
 ### CI/CD Pipeline
 
@@ -409,8 +435,25 @@ git push origin feature/SP-XX-description
 Push main → GitHub Actions → Build Docker → Push GHCR → Deploy VPS
 ```
 
-- **CI** : Lint, Type-check, Tests, Build
-- **CD** : Build image Docker, Push sur ghcr.io, Deploy via SSH
+- **CI** (`.github/workflows/ci.yml`) : Lint, Type-check, Tests, Build
+- **CD** (`.github/workflows/cd.yml`) : Build image Docker, Push sur ghcr.io, Deploy via SSH
 - Tests automatiques sur chaque PR
 - Déploiement automatique sur merge main
 - Migrations Prisma automatiques
+- Healthcheck endpoint : `/api/health`
+
+### Scores Lighthouse (3 décembre 2025)
+
+| Métrique | Score |
+|----------|-------|
+| **Performance** | 86% |
+| **SEO** | 100% |
+| **Accessibilité** | 98% |
+| **Best Practices** | 96% |
+
+## Auteur
+
+**Christophe Mostefaoui** - Développeur Full-Stack MERN/Symfony
+
+- Portfolio : https://christophe-dev-freelance.fr
+- GitHub : https://github.com/krismos64
