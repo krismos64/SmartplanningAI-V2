@@ -1,5 +1,7 @@
 # SmartPlanning V2
 
+![CI](https://github.com/krismos64/SmartplanningAI-V2/actions/workflows/ci.yml/badge.svg)
+
 Plateforme SaaS moderne de gestion intelligente des plannings d'entreprise (multi-tenant).
 
 ## Informations projet
