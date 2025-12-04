@@ -1,0 +1,2 @@
+# Ce fichier permet de garder le dossier components/ dans Git
+# même s'il est vide. Les vrais tests seront ajoutés dans SP-126.
