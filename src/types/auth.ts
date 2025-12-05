@@ -55,11 +55,12 @@ declare module 'next-auth' {
 }
 
 /**
- * Extension du module next-auth/jwt
+ * Extension du module @auth/core/jwt
  *
  * Définit la structure du token JWT avec nos champs custom
+ * Note: NextAuth v5 utilise @auth/core/jwt au lieu de next-auth/jwt
  */
-declare module 'next-auth/jwt' {
+declare module '@auth/core/jwt' {
   /**
    * Interface JWT étendue
    *
