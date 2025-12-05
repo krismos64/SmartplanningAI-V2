@@ -7,6 +7,7 @@
  * @ticket SP-126
  */
 
+import React from 'react'
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen, setupUser } from '../../utils/test-utils'
 import { FormCheckbox } from '@/components/forms/FormCheckbox'
@@ -277,7 +278,7 @@ describe('FormCheckbox', () => {
       )
 
       const checkboxes = screen.getAllByRole('checkbox')
-      expect(checkboxes[0].id).not.toBe(checkboxes[1].id)
+      expect(checkboxes[0]?.id).not.toBe(checkboxes[1]?.id)
     })
 
     it('uses custom ID when provided', () => {
@@ -296,7 +297,7 @@ describe('FormCheckbox', () => {
 
   describe('forwardRef', () => {
     it('forwards ref to checkbox input element', () => {
-      const ref = { current: null } as React.RefObject<HTMLInputElement>
+      const ref = React.createRef<HTMLInputElement>()
 
       render(<FormCheckbox label="J'accepte" ref={ref} />)
 

@@ -7,6 +7,7 @@
  * @ticket SP-126
  */
 
+import React from 'react'
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen, setupUser } from '../../utils/test-utils'
 import { FormRadioGroup } from '@/components/forms/FormRadioGroup'
@@ -383,7 +384,7 @@ describe('FormRadioGroup', () => {
 
   describe('Default value', () => {
     it('sets defaultChecked on the correct radio', () => {
-      const { container } = render(
+      render(
         <FormRadioGroup
           name="employment"
           options={mockOptions}
@@ -421,7 +422,7 @@ describe('FormRadioGroup', () => {
 
   describe('forwardRef', () => {
     it('forwards ref to fieldset element', () => {
-      const ref = { current: null } as React.RefObject<HTMLFieldSetElement>
+      const ref = React.createRef<HTMLFieldSetElement>()
 
       render(
         <FormRadioGroup name="employment" options={mockOptions} ref={ref} />
