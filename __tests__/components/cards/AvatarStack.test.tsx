@@ -7,8 +7,9 @@
  * @ticket SP-126
  */
 
+import React from 'react'
 import { describe, it, expect } from 'vitest'
-import { render, screen, setupUser, waitFor } from '../../utils/test-utils'
+import { render, screen } from '../../utils/test-utils'
 import { AvatarStack } from '@/components/cards/AvatarStack'
 import {
   mockTeamMembers,
@@ -183,7 +184,7 @@ describe('AvatarStack', () => {
     })
 
     it('renders tooltip trigger for each avatar', () => {
-      const { container } = render(
+      render(
         <AvatarStack members={mockTeamMembers.slice(0, 3)} />
       )
 
@@ -207,7 +208,7 @@ describe('AvatarStack', () => {
 
   describe('forwardRef', () => {
     it('forwards ref to wrapper div', () => {
-      const ref = { current: null } as React.RefObject<HTMLDivElement>
+      const ref = React.createRef<HTMLDivElement>()
 
       render(<AvatarStack members={mockTeamMembers} ref={ref} />)
 

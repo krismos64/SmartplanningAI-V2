@@ -7,6 +7,7 @@
  * @ticket SP-126
  */
 
+import React from 'react'
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen, setupUser } from '../../utils/test-utils'
 import { FormSelect } from '@/components/forms/FormSelect'
@@ -316,7 +317,7 @@ describe('FormSelect', () => {
 
   describe('forwardRef', () => {
     it('forwards ref to select element', () => {
-      const ref = { current: null } as React.RefObject<HTMLSelectElement>
+      const ref = React.createRef<HTMLSelectElement>()
 
       render(<FormSelect options={mockOptions} ref={ref} />)
 

@@ -7,6 +7,7 @@
  * @ticket SP-126
  */
 
+import React from 'react'
 import { describe, it, expect } from 'vitest'
 import { render, screen } from '../../utils/test-utils'
 import { Spinner, SpinnerDots } from '@/components/loading/Spinner'
@@ -166,7 +167,7 @@ describe('Spinner', () => {
 
   describe('forwardRef', () => {
     it('forwards ref to wrapper div', () => {
-      const ref = { current: null } as React.RefObject<HTMLDivElement>
+      const ref = React.createRef<HTMLDivElement>()
 
       render(<Spinner ref={ref} />)
 
@@ -354,7 +355,7 @@ describe('SpinnerDots', () => {
 
   describe('forwardRef', () => {
     it('forwards ref to wrapper div', () => {
-      const ref = { current: null } as React.RefObject<HTMLDivElement>
+      const ref = React.createRef<HTMLDivElement>()
 
       render(<SpinnerDots ref={ref} />)
 

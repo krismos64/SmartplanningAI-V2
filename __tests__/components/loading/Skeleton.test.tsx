@@ -7,6 +7,7 @@
  * @ticket SP-126
  */
 
+import React from 'react'
 import { describe, it, expect } from 'vitest'
 import { render, screen } from '../../utils/test-utils'
 import { Skeleton, SkeletonProvider } from '@/components/loading/Skeleton'
@@ -189,7 +190,7 @@ describe('Skeleton', () => {
 
   describe('forwardRef', () => {
     it('forwards ref to span element', () => {
-      const ref = { current: null } as React.RefObject<HTMLSpanElement>
+      const ref = React.createRef<HTMLSpanElement>()
 
       render(<Skeleton ref={ref} />)
 
