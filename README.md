@@ -11,7 +11,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings d'entreprise (mult
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr
-- **Dernière mise à jour** : 3 décembre 2025
+- **Dernière mise à jour** : 5 décembre 2025
 
 ## Stack technique
 
@@ -261,6 +261,11 @@ Voir `/docs/database-schema.md` pour le détail complet.
 - SP-128 : Pipeline CI/CD GitHub Actions ✅
 - SP-129 : Page Coming Soon + Premier déploiement ✅
 
+#### Phase 3.6 : Tests ✅ (Terminée - 5 décembre 2025)
+
+- SP-125 : Configuration Vitest + MSW + Playwright ✅
+- SP-126 : Tests unitaires composants UI (474 tests, 83.83% coverage) ✅
+
 #### Phase 4 : Authentification 📋 (À venir)
 
 - SP-7 : Pages login/register
@@ -372,15 +377,50 @@ Jamais commiter :
 
 Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 
-## Tests (à venir)
+## Tests
 
-### Stratégie de tests
+### Infrastructure de test
 
-- **Unitaires** : Jest + React Testing Library
-- **E2E** : Playwright
-- **Intégration** : API Routes avec Supertest
-- **Accessibilité** : axe-core
-- **Performance** : Lighthouse CI
+- **Framework** : Vitest 2.1.8
+- **Testing Library** : React Testing Library + user-event
+- **Mocking** : MSW (Mock Service Worker) + vitest-mock-extended
+- **E2E** : Playwright (configuré)
+- **Coverage** : v8 provider
+
+### Couverture actuelle (5 décembre 2025)
+
+| Catégorie | Coverage | Tests |
+|-----------|----------|-------|
+| **Global** | **83.83%** | **474** |
+| loading | 100% | 152 |
+| modals | 100% | 52 |
+| cards | 77.09% | 88 |
+| forms | 76.65% | 170 |
+
+### Composants testés
+
+#### Forms (6 composants)
+- FormField, FormInput, FormCheckbox
+- FormSelect, FormTextarea, FormRadioGroup
+
+#### Cards (3 composants)
+- UserCard, TeamCard, AvatarStack
+
+#### Loading (6 composants)
+- Spinner, LoadingOverlay
+- Skeleton, SkeletonCard, SkeletonTable, SkeletonText
+
+#### Modals (2 composants)
+- ConfirmDialog, FormDialog
+
+### Scripts de test
+
+```bash
+npm run test             # Tests en mode watch
+npm run test -- --run    # Tests single run
+npm run test:coverage    # Tests avec coverage
+npm run test:e2e         # Tests E2E Playwright
+```
 
 ## Contribution
 
