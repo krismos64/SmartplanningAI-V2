@@ -157,7 +157,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
      * @param token - Token JWT existant
      * @param user - Utilisateur retourné par authorize() (uniquement au login)
      */
-    async jwt({ token, user }) {
+    jwt({ token, user }) {
       // Au premier login, user est défini
       if (user) {
         token.id = user.id
@@ -178,12 +178,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
      * @param session - Session existante
      * @param token - Token JWT décodé
      */
-    async session({ session, token }) {
+    session({ session, token }) {
       if (session.user && token) {
-        session.user.id = token.id as string
-        session.user.role = token.role as typeof session.user.role
-        session.user.companyId = token.companyId as string | null
-        session.user.emailVerified = token.emailVerified as Date | null
+        session.user.id = token.id
+        session.user.role = token.role
+        session.user.companyId = token.companyId
+        session.user.emailVerified = token.emailVerified
       }
 
       return session
@@ -196,14 +196,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
    * Pour logging ou analytics
    */
   events: {
-    async signIn({ user }) {
+    signIn({ user }) {
       // Log de connexion (peut être envoyé à un service externe)
       if (process.env.NODE_ENV === 'development') {
         // eslint-disable-next-line no-console
         console.log(`[AUTH] User signed in: ${user.email}`)
       }
     },
-    async signOut() {
+    signOut() {
       if (process.env.NODE_ENV === 'development') {
         // eslint-disable-next-line no-console
         console.log('[AUTH] User signed out')
