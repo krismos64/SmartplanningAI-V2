@@ -10,27 +10,21 @@
 import React, { type ReactElement, type ReactNode } from 'react'
 import { render, type RenderOptions } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { TooltipProvider } from '@/components/ui/tooltip'
 
 /**
  * AllProviders - Wrapper avec tous les providers de l'application
  *
  * Pour SmartPlanning, les providers sont :
- * - ToastProvider (rendu séparément dans le DOM, pas besoin de wrapper)
+ * - TooltipProvider (delayDuration=0 pour tests instantanés)
+ * - ToastProvider (rendu séparément dans le DOM via Sonner)
  * - Futurs providers (Auth, Theme, etc.) seront ajoutés ici
- *
- * NOTE: Le ToastProvider utilise Sonner qui injecte directement dans le DOM,
- * il n'a pas besoin d'être dans ce wrapper.
  */
 function AllProviders({ children }: { children: ReactNode }) {
   return (
-    <>
-      {/* Futurs providers seront ajoutés ici */}
-      {/* <ThemeProvider> */}
-      {/* <AuthProvider> */}
+    <TooltipProvider delayDuration={0}>
       {children}
-      {/* </AuthProvider> */}
-      {/* </ThemeProvider> */}
-    </>
+    </TooltipProvider>
   )
 }
 
