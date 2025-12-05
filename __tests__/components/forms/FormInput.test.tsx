@@ -7,6 +7,7 @@
  * @ticket SP-126
  */
 
+import React from 'react'
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen, setupUser } from '../../utils/test-utils'
 import { FormInput } from '@/components/forms/FormInput'
@@ -328,7 +329,7 @@ describe('FormInput', () => {
 
   describe('forwardRef', () => {
     it('forwards ref to input element', () => {
-      const ref = { current: null } as React.RefObject<HTMLInputElement>
+      const ref = React.createRef<HTMLInputElement>()
 
       render(<FormInput label="Email" ref={ref} />)
 

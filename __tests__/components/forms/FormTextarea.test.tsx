@@ -7,6 +7,7 @@
  * @ticket SP-126
  */
 
+import React from 'react'
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen, setupUser } from '../../utils/test-utils'
 import { FormTextarea } from '@/components/forms/FormTextarea'
@@ -285,7 +286,7 @@ describe('FormTextarea', () => {
 
   describe('forwardRef', () => {
     it('forwards ref to textarea element', () => {
-      const ref = { current: null } as React.RefObject<HTMLTextAreaElement>
+      const ref = React.createRef<HTMLTextAreaElement>()
 
       render(<FormTextarea ref={ref} />)
 

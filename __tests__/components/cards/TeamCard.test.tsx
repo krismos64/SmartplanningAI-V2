@@ -7,6 +7,7 @@
  * @ticket SP-126
  */
 
+import React from 'react'
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen, setupUser } from '../../utils/test-utils'
 import { TeamCard } from '@/components/cards/TeamCard'
@@ -187,7 +188,7 @@ describe('TeamCard', () => {
 
   describe('AvatarStack', () => {
     it('renders AvatarStack when members provided', () => {
-      const { container } = render(
+      render(
         <TeamCard team={mockTeamFrontend} members={mockTeamMembers} />
       )
 
@@ -361,7 +362,7 @@ describe('TeamCard', () => {
 
   describe('forwardRef', () => {
     it('forwards ref to card element', () => {
-      const ref = { current: null } as React.RefObject<HTMLDivElement>
+      const ref = React.createRef<HTMLDivElement>()
 
       render(<TeamCard team={mockTeamFrontend} members={[]} ref={ref} />)
 

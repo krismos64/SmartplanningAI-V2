@@ -46,7 +46,7 @@ describe('Prisma Mock - User Model', () => {
 
     expect(users).toEqual(mockUsers)
     expect(users).toHaveLength(1)
-    expect(users[0].email).toBe('admin@smartplanning.fr')
+    expect(users[0]?.email).toBe('admin@smartplanning.fr')
     expect(prismaMock.user.findMany).toHaveBeenCalledTimes(1)
   })
 
@@ -175,8 +175,8 @@ describe('Prisma Mock - Employee Model', () => {
     })
 
     expect(employees).toHaveLength(1)
-    expect(employees[0].firstName).toBe('Jean')
-    expect(employees[0].skills).toContain('TypeScript')
+    expect(employees[0]?.firstName).toBe('Jean')
+    expect(employees[0]?.skills).toContain('TypeScript')
   })
 })
 

@@ -7,6 +7,7 @@
  * @ticket SP-126
  */
 
+import React from 'react'
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen, setupUser } from '../../utils/test-utils'
 import { UserCard } from '@/components/cards/UserCard'
@@ -44,7 +45,7 @@ describe('UserCard', () => {
     })
 
     it('renders avatar with image src when provided', () => {
-      const { container } = render(<UserCard user={mockUserWithAvatar} />)
+      render(<UserCard user={mockUserWithAvatar} />)
 
       // Radix Avatar renders img only after successful load in browser
       // In tests, we verify the AvatarImage component receives the src
@@ -338,7 +339,7 @@ describe('UserCard', () => {
 
   describe('forwardRef', () => {
     it('forwards ref to card element', () => {
-      const ref = { current: null } as React.RefObject<HTMLDivElement>
+      const ref = React.createRef<HTMLDivElement>()
 
       render(<UserCard user={mockUser} ref={ref} />)
 

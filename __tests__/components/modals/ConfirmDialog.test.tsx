@@ -88,7 +88,7 @@ describe('ConfirmDialog', () => {
 
   describe('Variants', () => {
     it('renders with default info variant', () => {
-      const { container } = render(<ConfirmDialog {...defaultProps} />)
+      render(<ConfirmDialog {...defaultProps} />)
 
       // Info variant uses CheckCircle icon - verify dialog renders
       const dialog = screen.getByRole('dialog')

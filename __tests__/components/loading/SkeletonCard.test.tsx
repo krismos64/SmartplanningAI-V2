@@ -59,7 +59,7 @@ describe('SkeletonCard', () => {
 
   describe('Actions skeleton', () => {
     it('does not render actions by default', () => {
-      const { container } = render(<SkeletonCard />)
+      render(<SkeletonCard />)
 
       // Count skeletons - should not have extra for actions
       const card = screen.getByRole('status')
