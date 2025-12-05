@@ -25,7 +25,7 @@ export type {
   RegisterData,
   ResetPasswordData,
   EmailVerificationData,
-  AuthError,
+  AuthErrorCode,
   AuthContext,
 } from './auth'
 
