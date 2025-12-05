@@ -1,22 +1,11 @@
 /**
  * Types TypeScript pour l'authentification NextAuth v5
  *
- * ✅ Source : Documentation NextAuth v5 + Best practices TypeScript
+ * @description Extension des types NextAuth pour inclure les champs
+ * personnalisés SmartPlanning (role, companyId) dans Session et JWT.
  *
- * OBJECTIF (CDA) :
- * Étendre les types NextAuth par défaut pour inclure nos champs
- * personnalisés (role, companyId) dans la session et le JWT.
- *
- * PROBLÉMATIQUE :
- * NextAuth v5 ne connaît pas nos champs métier par défaut.
- * Il faut étendre les interfaces pour avoir l'autocomplétion TypeScript.
- *
- * SOLUTION :
- * Module augmentation de NextAuth avec nos types custom.
- *
- * RÉFÉRENCE CDA :
- * - Pattern officiel NextAuth v5 + TypeScript
- * - Respect du principe de type-safety
+ * @see https://authjs.dev/getting-started/typescript
+ * @ticket SP-108
  */
 
 import { DefaultSession } from 'next-auth'
@@ -24,22 +13,26 @@ import type { Session as NextAuthSession } from 'next-auth'
 import { UserRole } from '@prisma/client'
 
 /**
- * Extension du module next-auth pour ajouter nos types custom
+ * Extension du module next-auth
  *
- * Cela permet à TypeScript de connaître nos champs supplémentaires
- * dans session.user et JWT token
+ * Ajoute les champs métier SmartPlanning aux interfaces NextAuth
  */
 declare module 'next-auth' {
   /**
    * Interface Session étendue
    *
-   * Ajoute les champs métier SmartPlanning à la session utilisateur
+   * Contient les données utilisateur disponibles côté client
+   * via useSession() ou auth()
    */
   interface Session {
     user: {
+      /** ID unique de l'utilisateur (cuid) */
       id: string
+      /** Rôle dans l'application */
       role: UserRole
-      companyId: string
+      /** ID de l'entreprise (null pour SYSTEM_ADMIN) */
+      companyId: string | null
+      /** Date de vérification email */
       emailVerified: Date | null
     } & DefaultSession['user']
   }
@@ -47,34 +40,44 @@ declare module 'next-auth' {
   /**
    * Interface User étendue
    *
-   * Correspond au modèle Prisma User avec les champs essentiels
+   * Correspond au modèle Prisma User retourné par authorize()
    */
   interface User {
     id: string
     email: string
     name: string | null
     role: UserRole
-    companyId: string
+    companyId: string | null
     emailVerified: Date | null
     image: string | null
+    isActive: boolean
   }
 }
 
 /**
- * Extension du module next-auth/jwt pour le token JWT
- * Note: Désactivé temporairement - Next-Auth v5 a une structure différente
- * À réactiver après migration complète vers v5 stable
+ * Extension du module @auth/core/jwt
+ *
+ * Définit la structure du token JWT avec nos champs custom
+ * Note: NextAuth v5 utilise @auth/core/jwt au lieu de next-auth/jwt
  */
-/*
-declare module 'next-auth/jwt' {
+declare module '@auth/core/jwt' {
+  /**
+   * Interface JWT étendue
+   *
+   * Ces champs sont stockés dans le token JWT signé
+   * et disponibles dans les callbacks
+   */
   interface JWT {
+    /** ID utilisateur */
     id: string
+    /** Rôle utilisateur */
     role: UserRole
-    companyId: string
+    /** ID entreprise (null pour SYSTEM_ADMIN) */
+    companyId: string | null
+    /** Email vérifié */
     emailVerified: Date | null
   }
 }
-*/
 
 /**
  * Type pour les credentials de connexion
@@ -95,7 +98,7 @@ export type RegisterData = {
   email: string
   password: string
   name: string
-  companyName: string // Pour créer l'organisation en même temps
+  companyName: string
 }
 
 /**
@@ -116,22 +119,68 @@ export type EmailVerificationData = {
 }
 
 /**
- * Type pour les erreurs d'authentification
+ * Codes d'erreur d'authentification
+ *
+ * Utilisés pour les messages d'erreur localisés
  */
-export type AuthError =
+export type AuthErrorCode =
   | 'CredentialsSignin'
   | 'InvalidCredentials'
   | 'EmailNotVerified'
   | 'AccountDisabled'
   | 'CompanyInactive'
   | 'SessionExpired'
+  | 'AccessDenied'
   | 'UnknownError'
 
 /**
- * Type pour le contexte d'authentification (hooks, Server Components)
+ * Type pour le contexte d'authentification
+ *
+ * Utilisé dans les hooks et Server Components
  */
 export type AuthContext = {
   user: NextAuthSession['user'] | null
   isAuthenticated: boolean
   isLoading: boolean
 }
+
+/**
+ * Type pour les options de session NextAuth
+ */
+export type SessionStrategy = 'jwt' | 'database'
+
+/**
+ * Routes publiques (non protégées par le middleware)
+ */
+export const PUBLIC_ROUTES = [
+  '/',
+  '/login',
+  '/register',
+  '/forgot-password',
+  '/reset-password',
+  '/verify-email',
+  '/api/auth',
+] as const
+
+/**
+ * Routes d'authentification (redirections si déjà connecté)
+ */
+export const AUTH_ROUTES = ['/login', '/register'] as const
+
+/**
+ * Préfixe des routes API d'authentification
+ */
+export const AUTH_API_PREFIX = '/api/auth'
+
+/**
+ * Route par défaut après connexion
+ */
+export const DEFAULT_LOGIN_REDIRECT = '/app/dashboard'
+
+/**
+ * Routes exclues du middleware (invitations, etc.)
+ */
+export const MIDDLEWARE_EXCLUDED_ROUTES = [
+  '/app/invite',
+  '/app/join',
+] as const
