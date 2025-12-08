@@ -117,7 +117,7 @@ export function LoginForm() {
 
   return (
     <Form {...form}>
-      <form onSubmit={handleFormSubmit} className="space-y-4">
+      <form onSubmit={handleFormSubmit} className="space-y-4" noValidate>
         {/* Email Field */}
         <FormField
           control={form.control}
