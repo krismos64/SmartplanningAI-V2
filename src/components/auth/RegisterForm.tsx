@@ -139,7 +139,7 @@ export function RegisterForm() {
 
   return (
     <Form {...form}>
-      <form onSubmit={handleFormSubmit} className="space-y-4">
+      <form onSubmit={handleFormSubmit} className="space-y-4" noValidate>
         {/* Name Field */}
         <FormField
           control={form.control}
