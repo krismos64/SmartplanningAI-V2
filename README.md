@@ -11,7 +11,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings d'entreprise (mult
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr
-- **Dernière mise à jour** : 5 décembre 2025
+- **Dernière mise à jour** : 8 décembre 2025
 
 ## Stack technique
 
@@ -53,6 +53,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings d'entreprise (mult
 
 ### Composants UI production-ready
 
+- **Auth System** (SP-109) : LoginForm, RegisterForm avec React Hook Form + Zod, Server Actions, auto-login
 - **DataTable avancée** (SP-120) : Composant de tableau avec tri multi-colonnes, pagination, recherche fuzzy, sélection multi-rows, actions par ligne, responsive (table desktop / cards mobile)
 - **Form System** (SP-119) : 7 composants formulaire avec React Hook Form + Zod, 23 schémas de validation
 - **Toast System** (SP-122) : Notifications avec Sonner, hook useToast()
@@ -92,13 +93,18 @@ SmartplanningAI/
 │   │   ├── api/          # API Routes
 │   │   └── layout.tsx
 │   ├── components/       # Composants React réutilisables
-│   │   ├── ui/           # Shadcn components
-│   │   ├── auth/         # Composants authentification
-│   │   ├── dashboard/    # Composants dashboard
-│   │   └── planning/     # Composants planning
+│   │   ├── ui/           # Shadcn components (button, form, label...)
+│   │   ├── auth/         # LoginForm, RegisterForm
+│   │   ├── cards/        # UserCard, TeamCard, AvatarStack
+│   │   ├── forms/        # FormField, FormInput, FormSelect...
+│   │   ├── loading/      # Spinner, Skeleton, LoadingOverlay
+│   │   ├── modals/       # ConfirmDialog, FormDialog
+│   │   └── toast/        # Toast system (Sonner)
 │   ├── lib/              # Utilitaires et helpers
 │   │   ├── prisma.ts     # Client Prisma
 │   │   ├── auth.ts       # Configuration NextAuth
+│   │   ├── actions/      # Server Actions (registerAction)
+│   │   ├── validations/  # Schémas Zod (auth, user, employee...)
 │   │   └── utils.ts      # Fonctions utilitaires
 │   ├── types/            # Types TypeScript globaux
 │   ├── hooks/            # Custom React hooks
@@ -266,11 +272,17 @@ Voir `/docs/database-schema.md` pour le détail complet.
 - SP-125 : Configuration Vitest + MSW + Playwright ✅
 - SP-126 : Tests unitaires composants UI (474 tests, 83.83% coverage) ✅
 
-#### Phase 4 : Authentification 📋 (À venir)
+#### Phase 4 : Authentification ✅ (Terminée - 8 décembre 2025)
 
-- SP-7 : Pages login/register
-- SP-8 : Middleware protection routes
-- SP-9 : Gestion des 4 rôles (RBAC)
+- SP-109 : Pages d'authentification complètes ✅
+  - SP-136 : signupSchema Zod validation ✅
+  - SP-137 : LoginForm component ✅
+  - SP-138 : registerAction Server Action ✅
+  - SP-139 : RegisterForm component ✅
+  - SP-140 : Tests unitaires auth (34 tests) ✅
+  - SP-141 : Tests E2E auth (18 tests) ✅
+- SP-8 : Middleware protection routes ✅ (intégré)
+- SP-9 : Gestion des 4 rôles (RBAC) ✅ (intégré)
 
 #### Phase 5 : Dashboard 📋
 
@@ -387,17 +399,29 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 - **E2E** : Playwright (configuré)
 - **Coverage** : v8 provider
 
-### Couverture actuelle (5 décembre 2025)
+### Couverture actuelle (8 décembre 2025)
 
 | Catégorie | Coverage | Tests |
 |-----------|----------|-------|
-| **Global** | **83.83%** | **474** |
+| **Global** | **~85%** | **508** |
 | loading | 100% | 152 |
 | modals | 100% | 52 |
 | cards | 77.09% | 88 |
 | forms | 76.65% | 170 |
+| auth | ~95% | 34 |
+
+### Tests E2E
+
+| Suite | Tests |
+|-------|-------|
+| Auth (login/register) | 18 |
+| Smoke tests | 4 |
 
 ### Composants testés
+
+#### Auth (2 composants)
+- LoginForm (15 tests)
+- RegisterForm (19 tests)
 
 #### Forms (6 composants)
 - FormField, FormInput, FormCheckbox
