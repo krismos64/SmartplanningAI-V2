@@ -6,16 +6,29 @@
  * - Les matchers jest-dom pour les assertions DOM
  * - Le cleanup automatique après chaque test
  * - Le serveur MSW pour mocker les API
+ * - Les polyfills pour jsdom (ResizeObserver, etc.)
  *
  * @see https://testing-library.com/docs/react-testing-library/setup
  * @see https://mswjs.io/docs/integrations/node
- * @ticket SP-130, SP-131
+ * @ticket SP-130, SP-131, SP-140
  */
 
 import '@testing-library/jest-dom'
 import { cleanup } from '@testing-library/react'
-import { afterAll, afterEach, beforeAll } from 'vitest'
+import { afterAll, afterEach, beforeAll, vi } from 'vitest'
 import { server } from './mocks/server'
+
+/**
+ * Polyfills pour jsdom
+ *
+ * ResizeObserver n'est pas implémenté dans jsdom,
+ * mais est utilisé par les composants Radix UI.
+ */
+global.ResizeObserver = vi.fn().mockImplementation(() => ({
+  observe: vi.fn(),
+  unobserve: vi.fn(),
+  disconnect: vi.fn(),
+}))
 
 /**
  * MSW Server Lifecycle
