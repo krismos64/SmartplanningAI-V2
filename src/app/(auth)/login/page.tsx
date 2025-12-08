@@ -1,20 +1,17 @@
 /**
  * Login Page - Page de connexion
  *
- * ✅ Source : Next.js 15 + NextAuth patterns (Context7)
+ * @description Server Component avec metadata SEO.
+ * Le formulaire est géré par le Client Component LoginForm.
  *
- * OBJECTIF (CDA) :
- * Page de connexion pour utilisateurs existants.
- * Formulaire email/password avec validation côté client et serveur.
- *
- * RÉFÉRENCE CDA :
- * - Server Component avec metadata
- * - Form handling moderne (Server Actions - Phase 4)
- * - Validation côté client et serveur
+ * @ticket SP-137
+ * @see Context7 - Next.js 15 App Router patterns
  */
 
 import Link from 'next/link'
 import type { Metadata } from 'next'
+
+import { LoginForm } from '@/components/auth'
 
 export const metadata: Metadata = {
   title: 'Connexion',
@@ -34,58 +31,8 @@ export default function LoginPage() {
         </p>
       </div>
 
-      {/* Formulaire (placeholder pour SP-105) */}
-      <form className="space-y-4">
-        {/* Email */}
-        <div className="space-y-2">
-          <label
-            htmlFor="email"
-            className="text-sm font-medium text-foreground"
-          >
-            Email
-          </label>
-          <input
-            id="email"
-            type="email"
-            placeholder="vous@entreprise.com"
-            required
-            className="w-full rounded-lg border border-input bg-white px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-          />
-        </div>
-
-        {/* Password */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <label
-              htmlFor="password"
-              className="text-sm font-medium text-foreground"
-            >
-              Mot de passe
-            </label>
-            <Link
-              href="/reset-password"
-              className="text-xs text-primary hover:underline"
-            >
-              Mot de passe oublié ?
-            </Link>
-          </div>
-          <input
-            id="password"
-            type="password"
-            placeholder="••••••••"
-            required
-            className="w-full rounded-lg border border-input bg-white px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-          />
-        </div>
-
-        {/* Submit */}
-        <button
-          type="submit"
-          className="w-full rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-        >
-          Se connecter
-        </button>
-      </form>
+      {/* Login Form Component */}
+      <LoginForm />
 
       {/* Divider */}
       <div className="relative">
@@ -99,7 +46,7 @@ export default function LoginPage() {
         </div>
       </div>
 
-      {/* OAuth (prévu pour Phase 4) */}
+      {/* OAuth (prévu pour plus tard) */}
       <button
         type="button"
         disabled
@@ -122,17 +69,19 @@ export default function LoginPage() {
       </p>
 
       {/* Demo accounts (pour développement) */}
-      <div className="rounded-lg border border-dashed border-border bg-secondary/50 p-4">
-        <p className="mb-2 text-xs font-medium text-foreground">
-          🧪 Comptes de test (Phase 2)
-        </p>
-        <div className="space-y-1 text-xs text-muted-foreground">
-          <p>Director: john.doe@techcorp.com</p>
-          <p>Manager: jane.smith@techcorp.com</p>
-          <p>Employee: bob.wilson@techcorp.com</p>
-          <p className="mt-2 font-medium">Mot de passe : Password123!</p>
+      {process.env.NODE_ENV === 'development' && (
+        <div className="rounded-lg border border-dashed border-border bg-secondary/50 p-4">
+          <p className="mb-2 text-xs font-medium text-foreground">
+            🧪 Comptes de test
+          </p>
+          <div className="space-y-1 text-xs text-muted-foreground">
+            <p>Director: john.doe@techcorp.com</p>
+            <p>Manager: jane.smith@techcorp.com</p>
+            <p>Employee: bob.wilson@techcorp.com</p>
+            <p className="mt-2 font-medium">Mot de passe : Password123!</p>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }
