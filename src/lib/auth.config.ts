@@ -5,8 +5,14 @@
  * Cette config ne contient PAS le Prisma adapter car le middleware
  * s'exécute en Edge Runtime où Prisma n'est pas disponible.
  *
+ * Inclut la logique RBAC (Role-Based Access Control) pour :
+ * - Vérifier les permissions par rôle sur les routes protégées
+ * - Rediriger vers le dashboard approprié selon le rôle
+ * - Bloquer l'accès aux routes réservées à certains rôles
+ *
  * @see https://authjs.dev/guides/edge-compatibility
- * @ticket SP-108
+ * @see https://authjs.dev/guides/role-based-access-control
+ * @ticket SP-108, SP-110
  */
 
 import type { NextAuthConfig } from 'next-auth'
@@ -14,9 +20,14 @@ import {
   PUBLIC_ROUTES,
   AUTH_ROUTES,
   AUTH_API_PREFIX,
-  DEFAULT_LOGIN_REDIRECT,
   MIDDLEWARE_EXCLUDED_ROUTES,
+  ACCESS_DENIED_REDIRECT,
 } from '@/types/auth'
+import {
+  hasRequiredRole,
+  getRequiredRoleForRoute,
+  getDefaultDashboardForRole,
+} from '@/lib/permissions'
 
 /**
  * Configuration NextAuth partagée (Edge-compatible)
@@ -57,28 +68,81 @@ export const authConfig: NextAuthConfig = {
   /**
    * Callbacks
    *
-   * authorized : Exécuté par le middleware pour vérifier l'accès
+   * Inclut jwt et session pour que le middleware puisse accéder aux
+   * données utilisateur (role, companyId) depuis le token JWT.
    */
   callbacks: {
     /**
+     * Callback JWT
+     *
+     * Appelé à chaque création/mise à jour du token JWT.
+     * Ajoute nos champs custom au token.
+     *
+     * IMPORTANT: Ce callback doit être dans authConfig pour que le
+     * middleware puisse lire le rôle utilisateur.
+     */
+    jwt({ token, user }) {
+      // Au premier login, user est défini
+      if (user) {
+        token.id = user.id
+        token.role = user.role
+        token.companyId = user.companyId
+        token.emailVerified = user.emailVerified
+      }
+      return token
+    },
+
+    /**
+     * Callback Session
+     *
+     * Appelé à chaque accès à la session.
+     * Expose les données du token dans session.user.
+     *
+     * IMPORTANT: Ce callback doit être dans authConfig pour que le
+     * middleware puisse accéder à session.user.role.
+     */
+    session({ session, token }) {
+      if (session.user && token) {
+        session.user.id = token.id as string
+        session.user.role = token.role as import('@prisma/client').UserRole
+        session.user.companyId = token.companyId as string | null
+        session.user.emailVerified = token.emailVerified as Date | null
+      }
+      return session
+    },
+
+    /**
      * Callback authorized pour le middleware
      *
-     * Détermine si une requête est autorisée à accéder à une route
+     * Détermine si une requête est autorisée à accéder à une route.
+     * Implémente le RBAC (Role-Based Access Control) pour vérifier
+     * que l'utilisateur a les permissions nécessaires.
+     *
+     * Ordre de vérification :
+     * 1. Routes API auth → toujours accessibles
+     * 2. Routes exclues (invitations) → toujours accessibles
+     * 3. Routes publiques → toujours accessibles
+     * 4. Routes d'auth (login/register) → redirect si déjà connecté
+     * 5. Routes /app/* non authentifié → redirect vers login
+     * 6. RBAC : vérification du rôle requis pour la route
      *
      * @param auth - Session utilisateur (null si non connecté)
      * @param request - Requête Next.js
-     * @returns true si autorisé, false ou Response pour rediriger
+     * @returns true si autorisé, Response pour rediriger
+     *
+     * @ticket SP-108, SP-110
      */
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth
       const pathname = nextUrl.pathname
+      const userRole = auth?.user?.role
 
-      // Routes API auth : toujours accessibles
+      // 1. Routes API auth : toujours accessibles
       if (pathname.startsWith(AUTH_API_PREFIX)) {
         return true
       }
 
-      // Routes exclues du middleware (invitations, etc.)
+      // 2. Routes exclues du middleware (invitations, etc.)
       const isExcludedRoute = MIDDLEWARE_EXCLUDED_ROUTES.some((route) =>
         pathname.startsWith(route)
       )
@@ -86,21 +150,28 @@ export const authConfig: NextAuthConfig = {
         return true
       }
 
-      // Routes publiques : accessibles sans authentification
-      const isPublicRoute = PUBLIC_ROUTES.some(
-        (route) => pathname === route || pathname.startsWith(`${route}/`)
-      )
-
-      // Routes d'auth : si connecté, rediriger vers dashboard
+      // 3. Routes d'auth : si connecté, rediriger vers dashboard selon rôle
+      // IMPORTANT: Vérifié AVANT les routes publiques car /login et /register
+      // sont dans les deux listes
       const isAuthRoute = AUTH_ROUTES.some((route) => pathname.startsWith(route))
       if (isAuthRoute) {
         if (isLoggedIn) {
-          return Response.redirect(new URL(DEFAULT_LOGIN_REDIRECT, nextUrl))
+          // Redirection vers le dashboard approprié selon le rôle
+          const redirectUrl = getDefaultDashboardForRole(userRole)
+          return Response.redirect(new URL(redirectUrl, nextUrl))
         }
         return true
       }
 
-      // Routes /app/* : nécessitent authentification
+      // 4. Routes publiques : accessibles sans authentification
+      const isPublicRoute = PUBLIC_ROUTES.some(
+        (route) => pathname === route || pathname.startsWith(`${route}/`)
+      )
+      if (isPublicRoute) {
+        return true
+      }
+
+      // 5. Routes /app/* : nécessitent authentification
       const isAppRoute = pathname.startsWith('/app')
       if (isAppRoute && !isLoggedIn) {
         // Stocker l'URL de callback pour redirection après login
@@ -110,12 +181,23 @@ export const authConfig: NextAuthConfig = {
         )
       }
 
-      // Routes publiques ou autres : autorisées
-      if (isPublicRoute || !isAppRoute) {
+      // 6. RBAC : Vérification du rôle requis pour les routes protégées
+      if (isLoggedIn && isAppRoute) {
+        const requiredRole = getRequiredRoleForRoute(pathname)
+
+        // Si un rôle est requis et l'utilisateur n'a pas les permissions
+        if (requiredRole && !hasRequiredRole(userRole, requiredRole)) {
+          // Redirection silencieuse vers le dashboard par défaut
+          return Response.redirect(new URL(ACCESS_DENIED_REDIRECT, nextUrl))
+        }
+      }
+
+      // Routes non-/app/* : autorisées (pages publiques hors liste)
+      if (!isAppRoute) {
         return true
       }
 
-      // Par défaut : autorisé si connecté
+      // Par défaut : autorisé si connecté sur route /app/*
       return isLoggedIn
     },
   },

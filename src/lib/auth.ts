@@ -143,51 +143,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   ],
 
   /**
-   * Callbacks pour personnaliser JWT et Session
+   * Callbacks
+   *
+   * Note: Les callbacks jwt, session et authorized sont définis dans authConfig
+   * pour être partagés avec le middleware. On étend simplement ici.
    */
   callbacks: {
     ...authConfig.callbacks,
-
-    /**
-     * Callback JWT
-     *
-     * Appelé à chaque création/mise à jour du token JWT
-     * Ajoute nos champs custom au token
-     *
-     * @param token - Token JWT existant
-     * @param user - Utilisateur retourné par authorize() (uniquement au login)
-     */
-    jwt({ token, user }) {
-      // Au premier login, user est défini
-      if (user) {
-        token.id = user.id
-        token.role = user.role
-        token.companyId = user.companyId
-        token.emailVerified = user.emailVerified
-      }
-
-      return token
-    },
-
-    /**
-     * Callback Session
-     *
-     * Appelé à chaque accès à la session (côté client ou serveur)
-     * Expose les données du token dans session.user
-     *
-     * @param session - Session existante
-     * @param token - Token JWT décodé
-     */
-    session({ session, token }) {
-      if (session.user && token) {
-        session.user.id = token.id
-        session.user.role = token.role
-        session.user.companyId = token.companyId
-        session.user.emailVerified = token.emailVerified
-      }
-
-      return session
-    },
   },
 
   /**
