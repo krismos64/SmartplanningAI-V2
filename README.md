@@ -11,7 +11,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings d'entreprise (mult
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr
-- **Dernière mise à jour** : 8 décembre 2025
+- **Dernière mise à jour** : 9 décembre 2025 (SP-110 RBAC Middleware)
 
 ## Stack technique
 
@@ -88,8 +88,12 @@ Plateforme SaaS moderne de gestion intelligente des plannings d'entreprise (mult
 SmartplanningAI/
 ├── src/
 │   ├── app/              # Next.js 15 App Router
-│   │   ├── (auth)/       # Routes authentification
-│   │   ├── (dashboard)/  # Routes dashboard
+│   │   ├── (auth)/       # Routes publiques (login, register)
+│   │   ├── app/          # Routes protégées par rôle
+│   │   │   ├── dashboard/        # Dashboard EMPLOYEE (tous rôles)
+│   │   │   ├── manager/dashboard/  # Dashboard MANAGER+
+│   │   │   ├── director/dashboard/ # Dashboard DIRECTOR+
+│   │   │   └── admin/dashboard/    # Dashboard SYSTEM_ADMIN
 │   │   ├── api/          # API Routes
 │   │   └── layout.tsx
 │   ├── components/       # Composants React réutilisables
@@ -103,6 +107,8 @@ SmartplanningAI/
 │   ├── lib/              # Utilitaires et helpers
 │   │   ├── prisma.ts     # Client Prisma
 │   │   ├── auth.ts       # Configuration NextAuth
+│   │   ├── auth.config.ts # Config middleware + callbacks RBAC
+│   │   ├── permissions.ts # Système de permissions centralisé
 │   │   ├── actions/      # Server Actions (registerAction)
 │   │   ├── validations/  # Schémas Zod (auth, user, employee...)
 │   │   └── utils.ts      # Fonctions utilitaires
@@ -118,6 +124,10 @@ SmartplanningAI/
 │   ├── docker-setup.md
 │   ├── JIRA-SETUP.md
 │   └── ISSUES-TRACKING.md
+├── e2e/                  # Tests E2E Playwright
+│   └── specs/            # middleware-rbac.spec.ts, auth-flow.spec.ts
+├── __tests__/            # Tests unitaires Vitest
+│   └── lib/              # permissions.test.ts
 ├── docker-compose.yml    # Configuration Docker
 └── README.md             # Ce fichier
 ```
@@ -272,7 +282,7 @@ Voir `/docs/database-schema.md` pour le détail complet.
 - SP-125 : Configuration Vitest + MSW + Playwright ✅
 - SP-126 : Tests unitaires composants UI (474 tests, 83.83% coverage) ✅
 
-#### Phase 4 : Authentification ✅ (Terminée - 8 décembre 2025)
+#### Phase 4 : Authentification ✅ (Terminée - 9 décembre 2025)
 
 - SP-109 : Pages d'authentification complètes ✅
   - SP-136 : signupSchema Zod validation ✅
@@ -281,8 +291,14 @@ Voir `/docs/database-schema.md` pour le détail complet.
   - SP-139 : RegisterForm component ✅
   - SP-140 : Tests unitaires auth (34 tests) ✅
   - SP-141 : Tests E2E auth (18 tests) ✅
-- SP-8 : Middleware protection routes ✅ (intégré)
-- SP-9 : Gestion des 4 rôles (RBAC) ✅ (intégré)
+- SP-110 : Middleware RBAC & Protection routes ✅
+  - Middleware NextAuth v5 avec protection automatique ✅
+  - Hiérarchie 4 rôles : SYSTEM_ADMIN > DIRECTOR > MANAGER > EMPLOYEE ✅
+  - Dashboards par rôle : `/app/dashboard`, `/app/manager/dashboard`, `/app/director/dashboard`, `/app/admin/dashboard` ✅
+  - Redirections automatiques selon rôle ✅
+  - Système de permissions centralisé (`hasMinimumRole`, `canAccessRoute`) ✅
+  - 62 tests unitaires permissions ✅
+  - 27 tests E2E middleware RBAC ✅
 
 #### Phase 5 : Dashboard 📋
 
@@ -332,6 +348,26 @@ Toute la documentation est centralisée dans le dossier `/docs` :
    - [Décisions techniques](https://christophedev.atlassian.net/wiki/spaces/SP/pages/57901057/DataTable+D+cisions+techniques)
 
 ## Sécurité
+
+### Système RBAC (Role-Based Access Control)
+
+Le système de permissions est centralisé dans `src/lib/permissions.ts` :
+
+```typescript
+// Hiérarchie des rôles (du plus élevé au plus bas)
+SYSTEM_ADMIN > DIRECTOR > MANAGER > EMPLOYEE
+
+// Routes protégées par rôle minimum
+/app/admin/*      → SYSTEM_ADMIN uniquement
+/app/director/*   → DIRECTOR ou SYSTEM_ADMIN
+/app/manager/*    → MANAGER, DIRECTOR ou SYSTEM_ADMIN
+/app/*            → Tous les utilisateurs authentifiés
+```
+
+**Fonctions utilitaires :**
+- `hasMinimumRole(userRole, requiredRole)` : Vérifie si un rôle a le niveau minimum requis
+- `canAccessRoute(userRole, pathname)` : Vérifie si un rôle peut accéder à une route
+- `getRoleDashboardPath(role)` : Retourne le dashboard approprié selon le rôle
 
 ### Implémentation OWASP
 
@@ -399,22 +435,24 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 - **E2E** : Playwright (configuré)
 - **Coverage** : v8 provider
 
-### Couverture actuelle (8 décembre 2025)
+### Couverture actuelle (9 décembre 2025)
 
 | Catégorie | Coverage | Tests |
 |-----------|----------|-------|
-| **Global** | **~85%** | **508** |
+| **Global** | **~85%** | **597** |
 | loading | 100% | 152 |
 | modals | 100% | 52 |
 | cards | 77.09% | 88 |
 | forms | 76.65% | 170 |
 | auth | ~95% | 34 |
+| permissions | 100% | 62 |
 
 ### Tests E2E
 
 | Suite | Tests |
 |-------|-------|
 | Auth (login/register) | 18 |
+| Middleware RBAC | 27 |
 | Smoke tests | 4 |
 
 ### Composants testés
@@ -422,6 +460,9 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 #### Auth (2 composants)
 - LoginForm (15 tests)
 - RegisterForm (19 tests)
+
+#### Permissions (1 module)
+- permissions.ts (62 tests) : `hasMinimumRole`, `canAccessRoute`, `getRoleDashboardPath`, `ROLE_HIERARCHY`
 
 #### Forms (6 composants)
 - FormField, FormInput, FormCheckbox
