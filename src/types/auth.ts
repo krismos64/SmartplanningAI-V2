@@ -5,12 +5,25 @@
  * personnalisés SmartPlanning (role, companyId) dans Session et JWT.
  *
  * @see https://authjs.dev/getting-started/typescript
- * @ticket SP-108
+ * @ticket SP-108, SP-110
  */
 
 import { DefaultSession } from 'next-auth'
 import type { Session as NextAuthSession } from 'next-auth'
 import { UserRole } from '@prisma/client'
+
+// Réexport des fonctions et constantes RBAC depuis permissions.ts
+// pour un accès centralisé dans les composants auth
+export {
+  ROLE_HIERARCHY,
+  PROTECTED_ROUTES,
+  ROLE_LABELS,
+  ROLE_DESCRIPTIONS,
+  hasRequiredRole,
+  getRequiredRoleForRoute,
+  canAccessRoute,
+  getDefaultDashboardForRole,
+} from '@/lib/permissions'
 
 /**
  * Extension du module next-auth
@@ -180,7 +193,53 @@ export const DEFAULT_LOGIN_REDIRECT = '/app/dashboard'
 /**
  * Routes exclues du middleware (invitations, etc.)
  */
-export const MIDDLEWARE_EXCLUDED_ROUTES = [
-  '/app/invite',
-  '/app/join',
-] as const
+export const MIDDLEWARE_EXCLUDED_ROUTES = ['/app/invite', '/app/join'] as const
+
+// ============================================================================
+// CONSTANTES RBAC (SP-110)
+// ============================================================================
+
+/**
+ * Routes protégées par rôle minimum requis
+ *
+ * Mapping des préfixes de routes vers le rôle minimum nécessaire.
+ * Utilisé par le middleware pour vérifier les permissions.
+ *
+ * @example
+ * ROLE_PROTECTED_ROUTES['/app/admin'] // 'SYSTEM_ADMIN'
+ *
+ * @ticket SP-110
+ */
+export const ROLE_PROTECTED_ROUTES: Record<string, UserRole> = {
+  '/app/admin': 'SYSTEM_ADMIN',
+  '/app/director': 'DIRECTOR',
+  '/app/manager': 'MANAGER',
+} as const
+
+/**
+ * Dashboard par défaut selon le rôle de l'utilisateur
+ *
+ * Utilisé pour la redirection après connexion ou après accès refusé.
+ * Chaque rôle a son propre espace de travail.
+ *
+ * @example
+ * DEFAULT_REDIRECT_BY_ROLE['DIRECTOR'] // '/app/director/dashboard'
+ *
+ * @ticket SP-110
+ */
+export const DEFAULT_REDIRECT_BY_ROLE: Record<UserRole, string> = {
+  SYSTEM_ADMIN: '/app/admin/dashboard',
+  DIRECTOR: '/app/director/dashboard',
+  MANAGER: '/app/manager/dashboard',
+  EMPLOYEE: '/app/dashboard',
+} as const
+
+/**
+ * Route de redirection en cas d'accès refusé (rôle insuffisant)
+ *
+ * Redirige silencieusement l'utilisateur vers son dashboard
+ * au lieu d'afficher une page d'erreur 403.
+ *
+ * @ticket SP-110
+ */
+export const ACCESS_DENIED_REDIRECT = '/app/dashboard' as const
