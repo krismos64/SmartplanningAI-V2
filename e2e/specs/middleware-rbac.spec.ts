@@ -11,7 +11,7 @@
  * @see https://playwright.dev/docs/writing-tests
  */
 
-import { test, expect, type Page, type BrowserContext } from '@playwright/test'
+import { test, expect, type Page } from '@playwright/test'
 
 /**
  * Configuration des utilisateurs de test par role
@@ -53,16 +53,17 @@ async function loginAs(
   await page.getByPlaceholder('••••••••').fill(user.password)
   await page.getByRole('button', { name: 'Se connecter' }).click()
 
-  // Attendre que la connexion soit effective
-  await expect(page.getByText(/Connexion reussie/i)).toBeVisible({
+  // Attendre que la connexion soit effective (toast de succès)
+  await expect(page.getByText(/Connexion réussie/i)).toBeVisible({
     timeout: 10000,
   })
 }
 
 /**
- * Helper pour se deconnecter
+ * Helper pour se deconnecter (utilitaire pour tests futurs)
+ * @internal Non utilise actuellement - conserve pour extensibilite
  */
-async function logout(page: Page): Promise<void> {
+async function _logout(page: Page): Promise<void> {
   // Chercher le bouton de deconnexion (peut varier selon l'UI)
   const logoutButton = page.getByRole('button', { name: /deconnexion|logout/i })
   if (await logoutButton.isVisible({ timeout: 2000 }).catch(() => false)) {
@@ -75,6 +76,9 @@ async function logout(page: Page): Promise<void> {
     await page.goto('/login')
   }
 }
+
+// Export pour eviter erreur TS6133 (fonction reservee pour tests futurs)
+void _logout
 
 // ============================================================================
 // ROUTES PUBLIQUES
@@ -103,7 +107,7 @@ test.describe('Routes publiques', () => {
 
     await expect(page).toHaveURL('/register')
     await expect(
-      page.getByRole('heading', { name: /Creer votre compte/i })
+      page.getByRole('heading', { name: /Créer votre compte/i })
     ).toBeVisible()
   })
 })

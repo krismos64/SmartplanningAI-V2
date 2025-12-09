@@ -68,9 +68,49 @@ export const authConfig: NextAuthConfig = {
   /**
    * Callbacks
    *
-   * authorized : Exécuté par le middleware pour vérifier l'accès
+   * Inclut jwt et session pour que le middleware puisse accéder aux
+   * données utilisateur (role, companyId) depuis le token JWT.
    */
   callbacks: {
+    /**
+     * Callback JWT
+     *
+     * Appelé à chaque création/mise à jour du token JWT.
+     * Ajoute nos champs custom au token.
+     *
+     * IMPORTANT: Ce callback doit être dans authConfig pour que le
+     * middleware puisse lire le rôle utilisateur.
+     */
+    jwt({ token, user }) {
+      // Au premier login, user est défini
+      if (user) {
+        token.id = user.id
+        token.role = user.role
+        token.companyId = user.companyId
+        token.emailVerified = user.emailVerified
+      }
+      return token
+    },
+
+    /**
+     * Callback Session
+     *
+     * Appelé à chaque accès à la session.
+     * Expose les données du token dans session.user.
+     *
+     * IMPORTANT: Ce callback doit être dans authConfig pour que le
+     * middleware puisse accéder à session.user.role.
+     */
+    session({ session, token }) {
+      if (session.user && token) {
+        session.user.id = token.id as string
+        session.user.role = token.role as import('@prisma/client').UserRole
+        session.user.companyId = token.companyId as string | null
+        session.user.emailVerified = token.emailVerified as Date | null
+      }
+      return session
+    },
+
     /**
      * Callback authorized pour le middleware
      *
@@ -110,15 +150,9 @@ export const authConfig: NextAuthConfig = {
         return true
       }
 
-      // 3. Routes publiques : accessibles sans authentification
-      const isPublicRoute = PUBLIC_ROUTES.some(
-        (route) => pathname === route || pathname.startsWith(`${route}/`)
-      )
-      if (isPublicRoute) {
-        return true
-      }
-
-      // 4. Routes d'auth : si connecté, rediriger vers dashboard selon rôle
+      // 3. Routes d'auth : si connecté, rediriger vers dashboard selon rôle
+      // IMPORTANT: Vérifié AVANT les routes publiques car /login et /register
+      // sont dans les deux listes
       const isAuthRoute = AUTH_ROUTES.some((route) => pathname.startsWith(route))
       if (isAuthRoute) {
         if (isLoggedIn) {
@@ -126,6 +160,14 @@ export const authConfig: NextAuthConfig = {
           const redirectUrl = getDefaultDashboardForRole(userRole)
           return Response.redirect(new URL(redirectUrl, nextUrl))
         }
+        return true
+      }
+
+      // 4. Routes publiques : accessibles sans authentification
+      const isPublicRoute = PUBLIC_ROUTES.some(
+        (route) => pathname === route || pathname.startsWith(`${route}/`)
+      )
+      if (isPublicRoute) {
         return true
       }
 

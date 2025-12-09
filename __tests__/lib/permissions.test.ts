@@ -408,7 +408,6 @@ describe('Scénarios RBAC intégrés', () => {
 
   describe('escalade de privilèges (sécurité)', () => {
     it('ne devrait jamais permettre à un rôle inférieur d\'accéder aux routes supérieures', () => {
-      const roles: UserRole[] = ['EMPLOYEE', 'MANAGER', 'DIRECTOR', 'SYSTEM_ADMIN']
       const adminRoute = '/app/admin/users'
 
       // Seul SYSTEM_ADMIN peut accéder
