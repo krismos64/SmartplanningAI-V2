@@ -53,23 +53,22 @@ export function EmployeeLeaveBalance({
 }: EmployeeLeaveBalanceProps) {
   const chartData = formatChartData(leaveBalance)
 
-  // Couleurs : vert pour restants, gris pour utilises
+  // Couleurs : gris pour utilises, vert pour restants
   const chartColors = [
-    CHART_COLORS.neutral[0], // Utilises (gris)
-    CHART_COLORS.status.success, // Restants (vert)
+    CHART_COLORS.neutral, // Utilises (gris)
+    CHART_COLORS.success, // Restants (vert)
   ]
 
   // Pourcentage restant
-  const percentRemaining = leaveBalance.total > 0
-    ? Math.round((leaveBalance.remaining / leaveBalance.total) * 100)
-    : 0
+  const percentRemaining =
+    leaveBalance.total > 0
+      ? Math.round((leaveBalance.remaining / leaveBalance.total) * 100)
+      : 0
 
   return (
     <Card className={cn('overflow-hidden', className)}>
       <CardHeader className="pb-2">
-        <CardTitle className="text-base font-medium">
-          Solde de conges
-        </CardTitle>
+        <CardTitle className="text-base font-medium">Solde de conges</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="relative">
@@ -89,8 +88,8 @@ export function EmployeeLeaveBalance({
 
           {/* Label central */}
           {!isLoading && (
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="text-center -mt-8">
+            <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+              <div className="-mt-8 text-center">
                 <p className="text-2xl font-bold">{leaveBalance.remaining}</p>
                 <p className="text-xs text-muted-foreground">jours restants</p>
               </div>
@@ -106,7 +105,9 @@ export function EmployeeLeaveBalance({
           </div>
           <div>
             <p className="text-muted-foreground">Restants</p>
-            <p className="font-semibold text-green-600">{leaveBalance.remaining} j</p>
+            <p className="font-semibold text-green-600">
+              {leaveBalance.remaining} j
+            </p>
           </div>
           <div>
             <p className="text-muted-foreground">Total</p>
@@ -116,11 +117,11 @@ export function EmployeeLeaveBalance({
 
         {/* Barre de progression */}
         <div className="mt-4">
-          <div className="flex justify-between text-xs text-muted-foreground mb-1">
+          <div className="mb-1 flex justify-between text-xs text-muted-foreground">
             <span>{percentRemaining}% restants</span>
             <span>{100 - percentRemaining}% utilises</span>
           </div>
-          <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
+          <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
             <div
               className="h-full bg-green-500 transition-all duration-500"
               style={{ width: `${percentRemaining}%` }}
