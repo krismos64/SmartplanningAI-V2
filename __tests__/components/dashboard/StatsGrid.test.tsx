@@ -6,7 +6,7 @@
 
 import { describe, it, expect } from 'vitest'
 import { render, screen } from '@testing-library/react'
-import { Users, TrendingUp, DollarSign } from 'lucide-react'
+import { Users, DollarSign } from 'lucide-react'
 import { StatsGrid } from '@/components/dashboard/StatsGrid'
 import type { StatCardProps } from '@/types/dashboard'
 
