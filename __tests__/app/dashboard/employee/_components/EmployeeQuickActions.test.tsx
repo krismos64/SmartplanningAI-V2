@@ -82,7 +82,9 @@ describe('EmployeeQuickActions', () => {
     it('devrait afficher le badge avec le nombre de demandes', () => {
       render(<EmployeeQuickActions pendingRequests={3} />)
 
-      expect(screen.getByText('3')).toBeInTheDocument()
+      // Le nombre apparait dans le badge et dans le message
+      const elements = screen.getAllByText('3')
+      expect(elements.length).toBeGreaterThanOrEqual(1)
     })
 
     it('devrait afficher "9+" quand plus de 9 demandes', () => {
@@ -94,7 +96,9 @@ describe('EmployeeQuickActions', () => {
     it('devrait afficher le nombre exact jusqu\'a 9', () => {
       render(<EmployeeQuickActions pendingRequests={9} />)
 
-      expect(screen.getByText('9')).toBeInTheDocument()
+      // Le nombre apparait dans le badge et dans le message
+      const elements = screen.getAllByText('9')
+      expect(elements.length).toBeGreaterThanOrEqual(1)
     })
   })
 
@@ -112,7 +116,9 @@ describe('EmployeeQuickActions', () => {
     it('devrait afficher le message singulier pour 1 demande', () => {
       render(<EmployeeQuickActions pendingRequests={1} />)
 
-      expect(screen.getByText(/1/)).toBeInTheDocument()
+      // Le nombre 1 apparait dans le badge et dans le message
+      const elements = screen.getAllByText('1')
+      expect(elements.length).toBeGreaterThanOrEqual(1)
       expect(screen.getByText(/demande en attente de validation/)).toBeInTheDocument()
     })
 
@@ -125,8 +131,9 @@ describe('EmployeeQuickActions', () => {
     it('devrait mettre le nombre en surbrillance', () => {
       render(<EmployeeQuickActions pendingRequests={3} />)
 
-      const count = screen.getAllByText('3')[0]
-      expect(count).toHaveClass('text-orange-600')
+      // Le message info contient le nombre avec la classe text-orange-600
+      const highlightedCount = screen.getByText('3', { selector: '.text-orange-600' })
+      expect(highlightedCount).toBeInTheDocument()
     })
   })
 

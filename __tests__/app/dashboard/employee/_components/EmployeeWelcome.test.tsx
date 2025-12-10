@@ -144,7 +144,9 @@ describe('EmployeeWelcome', () => {
 
       render(<EmployeeWelcome userName="Jean" nextShift={nextShift} />)
 
-      expect(screen.getByText(/20/)).toBeInTheDocument()
+      // Utiliser getAllByText car le jour 20 peut apparaitre a plusieurs endroits
+      const elements = screen.getAllByText(/20/)
+      expect(elements.length).toBeGreaterThan(0)
     })
 
     it('devrait afficher "Aucun shift programme" si pas de prochain shift', () => {
