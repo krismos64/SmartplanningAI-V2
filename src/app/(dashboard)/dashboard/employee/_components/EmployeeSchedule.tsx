@@ -78,7 +78,10 @@ export function EmployeeSchedule({
           Mon planning cette semaine
         </CardTitle>
         <div className="text-sm text-muted-foreground">
-          Total : <span className="font-semibold text-foreground">{formatTotal(totalHours)}</span>
+          Total :{' '}
+          <span className="font-semibold text-foreground">
+            {formatTotal(totalHours)}
+          </span>
         </div>
       </CardHeader>
       <CardContent>
