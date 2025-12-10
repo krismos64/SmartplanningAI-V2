@@ -14,7 +14,10 @@
 import { Clock, Calendar, Plane, FileText } from 'lucide-react'
 import { StatsGrid } from '@/components/dashboard'
 import type { StatCardProps, TrendDirection } from '@/types/dashboard'
-import type { EmployeeStatsResult, TrendValue } from '@/lib/services/dashboard/types'
+import type {
+  EmployeeStatsResult,
+  TrendValue,
+} from '@/lib/services/dashboard/types'
 import { cn } from '@/lib/utils'
 
 export interface EmployeeStatsProps {
@@ -97,17 +100,18 @@ export function EmployeeStats({
       title: 'Demandes en attente',
       value: stats.pendingRequests,
       icon: FileText,
-      description: stats.pendingRequests > 0 ? 'En cours de traitement' : 'Aucune demande',
+      description:
+        stats.pendingRequests > 0 ? 'En cours de traitement' : 'Aucune demande',
     },
   ]
 
   return (
-    <div className={cn(className)} role="region" aria-label="Statistiques employee">
-      <StatsGrid
-        stats={statCards}
-        columns={4}
-        isLoading={isLoading}
-      />
+    <div
+      className={cn(className)}
+      role="region"
+      aria-label="Statistiques employee"
+    >
+      <StatsGrid stats={statCards} columns={4} isLoading={isLoading} />
     </div>
   )
 }
