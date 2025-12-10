@@ -11,7 +11,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings d'entreprise (mult
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr
-- **Dernière mise à jour** : 10 décembre 2025 (SP-144 Services Prisma Dashboard)
+- **Dernière mise à jour** : 10 décembre 2025 (SP-145 Dashboard Employee)
 
 ## Stack technique
 
@@ -62,6 +62,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings d'entreprise (mult
 - **Dashboard Components** (SP-142) : StatCard, TrendIndicator, StatsGrid avec types par rôle
 - **Charts Recharts** (SP-143) : AreaChartWidget, BarChartWidget, PieChartWidget avec tooltips Shadcn et dark mode
 - **Dashboard Services Prisma** (SP-144) : Services data layer par rôle (Employee, Manager, Director, Admin) avec architecture multi-tenant
+- **Dashboard Employee** (SP-145) : Page dashboard complète avec Server Components, redirection par rôle, 5 composants métier (Welcome, Stats, Schedule, LeaveBalance, QuickActions)
 
 ### MVP (Phases 1-4)
 
@@ -92,7 +93,10 @@ SmartplanningAI/
 ├── src/
 │   ├── app/              # Next.js 15 App Router
 │   │   ├── (auth)/       # Routes publiques (login, register)
-│   │   ├── app/          # Routes protégées par rôle
+│   │   ├── (dashboard)/  # Route group dashboards
+│   │   │   └── dashboard/        # /dashboard (redirect par rôle)
+│   │   │       └── employee/     # /dashboard/employee (page + composants)
+│   │   ├── app/          # Routes protégées par rôle (legacy)
 │   │   │   ├── dashboard/        # Dashboard EMPLOYEE (tous rôles)
 │   │   │   ├── manager/dashboard/  # Dashboard MANAGER+
 │   │   │   ├── director/dashboard/ # Dashboard DIRECTOR+
@@ -327,8 +331,18 @@ Voir `/docs/database-schema.md` pour le détail complet.
   - admin-stats.service.ts (KPIs plateforme, MRR, churn)
   - types.ts + index.ts (typage ServiceResult<T>)
   - 119 tests unitaires avec vitest-mock-extended
+- SP-145 : Dashboard Employee Page ✅
+  - /dashboard : Redirection automatique par rôle
+  - /dashboard/employee : Page complète Server Component
+  - EmployeeWelcome : Message contextuel + prochain shift
+  - EmployeeStats : 4 KPIs via StatsGrid
+  - EmployeeSchedule : BarChartWidget heures hebdomadaires
+  - EmployeeLeaveBalance : PieChartWidget solde congés
+  - EmployeeQuickActions : Boutons actions rapides
+  - Loading skeletons (global + employee)
+  - 91 tests unitaires
 - SP-10 : Layout dashboard + sidebar
-- SP-11 : Page d'accueil par rôle
+- SP-11 : Pages dashboard Manager/Director/Admin
 
 #### Phase 6+ : Planning, Congés, Notifications, Export... (À venir)
 
@@ -464,7 +478,7 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 
 | Catégorie | Coverage | Tests |
 |-----------|----------|-------|
-| **Global** | **~85%** | **872** |
+| **Global** | **~85%** | **963** |
 | loading | 100% | 152 |
 | modals | 100% | 52 |
 | cards | 77.09% | 88 |
@@ -474,6 +488,7 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 | dashboard components | 100% | 57 |
 | charts | 100% | 88 |
 | dashboard services | 100% | 119 |
+| dashboard employee | 100% | 91 |
 
 ### Tests E2E
 
@@ -523,6 +538,13 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 - director-stats.service.ts (métriques entreprise, équipes, performance)
 - admin-stats.service.ts (KPIs plateforme : MRR, churn, entreprises)
 - index.ts (barrel export centralisé)
+
+#### Dashboard Employee (5 composants - SP-145)
+- EmployeeWelcome (message bienvenue contextuel + prochain shift)
+- EmployeeStats (4 KPIs : heures, shifts, congés, demandes)
+- EmployeeSchedule (BarChartWidget heures hebdomadaires)
+- EmployeeLeaveBalance (PieChartWidget donut solde congés)
+- EmployeeQuickActions (boutons actions rapides avec badge)
 
 ### Scripts de test
 
