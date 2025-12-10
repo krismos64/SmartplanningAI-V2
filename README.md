@@ -11,7 +11,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings d'entreprise (mult
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr
-- **Dernière mise à jour** : 10 décembre 2025 (SP-145 Dashboard Employee)
+- **Dernière mise à jour** : 10 décembre 2025 (SP-147 Dashboard Director)
 
 ## Stack technique
 
@@ -63,6 +63,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings d'entreprise (mult
 - **Charts Recharts** (SP-143) : AreaChartWidget, BarChartWidget, PieChartWidget avec tooltips Shadcn et dark mode
 - **Dashboard Services Prisma** (SP-144) : Services data layer par rôle (Employee, Manager, Director, Admin) avec architecture multi-tenant
 - **Dashboard Employee** (SP-145) : Page dashboard complète avec Server Components, redirection par rôle, 5 composants métier (Welcome, Stats, Schedule, LeaveBalance, QuickActions)
+- **Dashboard Director** (SP-147) : Page dashboard directeur avec Server Components, RBAC, 6 composants métier (Welcome, Stats, TeamsChart, TrendsChart, PendingLeaves, QuickActions)
 
 ### MVP (Phases 1-4)
 
@@ -95,7 +96,8 @@ SmartplanningAI/
 │   │   ├── (auth)/       # Routes publiques (login, register)
 │   │   ├── (dashboard)/  # Route group dashboards
 │   │   │   └── dashboard/        # /dashboard (redirect par rôle)
-│   │   │       └── employee/     # /dashboard/employee (page + composants)
+│   │   │       ├── employee/     # /dashboard/employee (page + composants)
+│   │   │       └── director/     # /dashboard/director (page + composants)
 │   │   ├── app/          # Routes protégées par rôle (legacy)
 │   │   │   ├── dashboard/        # Dashboard EMPLOYEE (tous rôles)
 │   │   │   ├── manager/dashboard/  # Dashboard MANAGER+
@@ -341,8 +343,18 @@ Voir `/docs/database-schema.md` pour le détail complet.
   - EmployeeQuickActions : Boutons actions rapides
   - Loading skeletons (global + employee)
   - 91 tests unitaires
+- SP-147 : Dashboard Director Page ✅
+  - /dashboard/director : Page complète Server Component avec RBAC
+  - DirectorWelcome : Message contextuel + indicateur santé entreprise + alertes
+  - DirectorStats : 6 KPIs via StatsGrid (employés, équipes, congés, heures, présence, absences)
+  - DirectorTeamsChart : PieChartWidget répartition équipes avec légende
+  - DirectorTrendsChart : AreaChartWidget évolution effectifs 6 mois
+  - DirectorPendingLeaves : Liste congés en attente avec formatage dates FR
+  - DirectorQuickActions : 4 boutons actions rapides avec badge compteur
+  - Loading skeleton avec thème violet
+  - 87 tests unitaires
 - SP-10 : Layout dashboard + sidebar
-- SP-11 : Pages dashboard Manager/Director/Admin
+- SP-11 : Pages dashboard Manager/Admin
 
 #### Phase 6+ : Planning, Congés, Notifications, Export... (À venir)
 
@@ -478,7 +490,7 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 
 | Catégorie | Coverage | Tests |
 |-----------|----------|-------|
-| **Global** | **~85%** | **963** |
+| **Global** | **~85%** | **1050** |
 | loading | 100% | 152 |
 | modals | 100% | 52 |
 | cards | 77.09% | 88 |
@@ -489,6 +501,7 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 | charts | 100% | 88 |
 | dashboard services | 100% | 119 |
 | dashboard employee | 100% | 91 |
+| dashboard director | 100% | 87 |
 
 ### Tests E2E
 
@@ -545,6 +558,14 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 - EmployeeSchedule (BarChartWidget heures hebdomadaires)
 - EmployeeLeaveBalance (PieChartWidget donut solde congés)
 - EmployeeQuickActions (boutons actions rapides avec badge)
+
+#### Dashboard Director (6 composants - SP-147)
+- DirectorWelcome (message bienvenue + indicateur santé entreprise + alertes)
+- DirectorStats (6 KPIs : employés, équipes, congés, heures, présence, absences)
+- DirectorTeamsChart (PieChartWidget répartition équipes avec légende)
+- DirectorTrendsChart (AreaChartWidget évolution effectifs 6 mois avec %)
+- DirectorPendingLeaves (liste congés en attente avec dates FR + bouton voir plus)
+- DirectorQuickActions (4 boutons actions rapides avec badge compteur)
 
 ### Scripts de test
 
