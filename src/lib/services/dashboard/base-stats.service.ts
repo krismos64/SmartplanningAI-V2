@@ -137,7 +137,10 @@ export function getLastMonthsLabels(count: number = 6): string[] {
 
   for (let i = count - 1; i >= 0; i--) {
     const monthIndex = (now.getMonth() - i + 12) % 12
-    result.push(months[monthIndex])
+    const month = months[monthIndex]
+    if (month) {
+      result.push(month)
+    }
   }
 
   return result
@@ -162,8 +165,13 @@ export function calculateHoursBetween(
   startTime: string,
   endTime: string
 ): number {
-  const [startHour, startMin] = startTime.split(':').map(Number)
-  const [endHour, endMin] = endTime.split(':').map(Number)
+  const startParts = startTime.split(':').map(Number)
+  const endParts = endTime.split(':').map(Number)
+
+  const startHour = startParts[0] ?? 0
+  const startMin = startParts[1] ?? 0
+  const endHour = endParts[0] ?? 0
+  const endMin = endParts[1] ?? 0
 
   const startMinutes = startHour * 60 + startMin
   const endMinutes = endHour * 60 + endMin
