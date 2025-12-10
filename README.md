@@ -11,7 +11,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings d'entreprise (mult
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr
-- **Dernière mise à jour** : 10 décembre 2025 (SP-143 Charts Recharts)
+- **Dernière mise à jour** : 10 décembre 2025 (SP-144 Services Prisma Dashboard)
 
 ## Stack technique
 
@@ -61,6 +61,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings d'entreprise (mult
 - **Composants métier** (SP-123) : UserCard, TeamCard, AvatarStack
 - **Dashboard Components** (SP-142) : StatCard, TrendIndicator, StatsGrid avec types par rôle
 - **Charts Recharts** (SP-143) : AreaChartWidget, BarChartWidget, PieChartWidget avec tooltips Shadcn et dark mode
+- **Dashboard Services Prisma** (SP-144) : Services data layer par rôle (Employee, Manager, Director, Admin) avec architecture multi-tenant
 
 ### MVP (Phases 1-4)
 
@@ -114,6 +115,8 @@ SmartplanningAI/
 │   │   ├── auth.config.ts # Config middleware + callbacks RBAC
 │   │   ├── permissions.ts # Système de permissions centralisé
 │   │   ├── actions/      # Server Actions (registerAction)
+│   │   ├── services/     # Services métier
+│   │   │   └── dashboard/  # Services stats par rôle (SP-144)
 │   │   ├── validations/  # Schémas Zod (auth, user, employee...)
 │   │   └── utils.ts      # Fonctions utilitaires
 │   ├── types/            # Types TypeScript globaux
@@ -316,6 +319,14 @@ Voir `/docs/database-schema.md` pour le détail complet.
   - BarChartWidget (barres verticales/horizontales, stacked)
   - PieChartWidget (pie/donut avec labels pourcentage)
   - 88 tests unitaires
+- SP-144 : Services Prisma Dashboard ✅
+  - base-stats.service.ts (utilitaires partagés)
+  - employee-stats.service.ts (heures, congés, tendances)
+  - manager-stats.service.ts (équipe, couverture, demandes)
+  - director-stats.service.ts (métriques entreprise)
+  - admin-stats.service.ts (KPIs plateforme, MRR, churn)
+  - types.ts + index.ts (typage ServiceResult<T>)
+  - 119 tests unitaires avec vitest-mock-extended
 - SP-10 : Layout dashboard + sidebar
 - SP-11 : Page d'accueil par rôle
 
@@ -453,15 +464,16 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 
 | Catégorie | Coverage | Tests |
 |-----------|----------|-------|
-| **Global** | **~85%** | **871** |
+| **Global** | **~85%** | **872** |
 | loading | 100% | 152 |
 | modals | 100% | 52 |
 | cards | 77.09% | 88 |
 | forms | 76.65% | 170 |
 | auth | ~95% | 34 |
 | permissions | 100% | 62 |
-| dashboard | 100% | 186 |
+| dashboard components | 100% | 57 |
 | charts | 100% | 88 |
+| dashboard services | 100% | 119 |
 
 ### Tests E2E
 
@@ -502,6 +514,15 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 - AreaChartWidget (graphiques d'aire avec gradients SVG)
 - BarChartWidget (barres verticales/horizontales, stacked)
 - PieChartWidget (pie/donut avec labels pourcentage)
+
+#### Dashboard Services (7 modules - SP-144)
+- types.ts (typage ServiceResult<T>, params, résultats)
+- base-stats.service.ts (utilitaires partagés : calculs, dates, vérifications multi-tenant)
+- employee-stats.service.ts (heures travaillées, solde congés, tendances)
+- manager-stats.service.ts (taille équipe, demandes en attente, couverture)
+- director-stats.service.ts (métriques entreprise, équipes, performance)
+- admin-stats.service.ts (KPIs plateforme : MRR, churn, entreprises)
+- index.ts (barrel export centralisé)
 
 ### Scripts de test
 
