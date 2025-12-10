@@ -11,7 +11,11 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card'
 
 export default function EmployeeDashboardLoading() {
   return (
-    <div className="space-y-6" role="status" aria-label="Chargement du dashboard employe">
+    <div
+      className="space-y-6"
+      role="status"
+      aria-label="Chargement du dashboard employe"
+    >
       {/* Welcome skeleton */}
       <Card className="border-none bg-gradient-to-r from-primary/10 to-primary/5">
         <CardContent className="pt-6">
@@ -35,7 +39,12 @@ export default function EmployeeDashboardLoading() {
           <Card key={i}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <Skeleton variant="text" width={120} />
-              <Skeleton variant="avatar" width={32} height={32} borderRadius={8} />
+              <Skeleton
+                variant="avatar"
+                width={32}
+                height={32}
+                borderRadius={8}
+              />
             </CardHeader>
             <CardContent>
               <Skeleton variant="title" width={80} />
@@ -67,18 +76,17 @@ export default function EmployeeDashboardLoading() {
           </CardHeader>
           <CardContent>
             <div className="flex justify-center">
-              <Skeleton
-                width={160}
-                height={160}
-                circle
-                className="mx-auto"
-              />
+              <Skeleton width={160} height={160} circle className="mx-auto" />
             </div>
             <div className="mt-4 grid grid-cols-3 gap-2">
               {Array.from({ length: 3 }).map((_, i) => (
                 <div key={i} className="text-center">
                   <Skeleton variant="text" width={60} className="mx-auto" />
-                  <Skeleton variant="text" width={40} className="mx-auto mt-1" />
+                  <Skeleton
+                    variant="text"
+                    width={40}
+                    className="mx-auto mt-1"
+                  />
                 </div>
               ))}
             </div>
@@ -107,7 +115,9 @@ export default function EmployeeDashboardLoading() {
         </CardContent>
       </Card>
 
-      <span className="sr-only">Chargement du dashboard employe en cours...</span>
+      <span className="sr-only">
+        Chargement du dashboard employe en cours...
+      </span>
     </div>
   )
 }

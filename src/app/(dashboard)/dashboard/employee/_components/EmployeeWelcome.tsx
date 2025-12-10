@@ -99,15 +99,18 @@ export function EmployeeWelcome({
   const today = formatDate(new Date())
 
   return (
-    <Card className={cn('border-none bg-gradient-to-r from-primary/10 to-primary/5', className)}>
+    <Card
+      className={cn(
+        'border-none bg-gradient-to-r from-primary/10 to-primary/5',
+        className
+      )}
+    >
       <CardContent className="pt-6">
         <div className="space-y-1">
           <h1 className="text-2xl font-bold tracking-tight">
             {greeting}, {userName} !
           </h1>
-          <p className="text-muted-foreground">
-            {today}
-          </p>
+          <p className="text-muted-foreground">{today}</p>
         </div>
 
         {nextShift && (
@@ -131,7 +134,8 @@ export function EmployeeWelcome({
             <div>
               <p className="text-sm font-medium">Prochain shift</p>
               <p className="text-sm text-muted-foreground">
-                {formatShiftDate(nextShift.date)} - {nextShift.startTime} a {nextShift.endTime}
+                {formatShiftDate(nextShift.date)} - {nextShift.startTime} a{' '}
+                {nextShift.endTime}
               </p>
             </div>
           </div>

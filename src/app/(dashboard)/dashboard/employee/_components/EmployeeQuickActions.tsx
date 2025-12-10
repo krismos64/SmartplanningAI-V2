@@ -33,9 +33,7 @@ export function EmployeeQuickActions({
   return (
     <Card className={cn('overflow-hidden', className)}>
       <CardHeader className="pb-3">
-        <CardTitle className="text-base font-medium">
-          Actions rapides
-        </CardTitle>
+        <CardTitle className="text-base font-medium">Actions rapides</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="flex flex-wrap gap-3">
@@ -116,8 +114,13 @@ export function EmployeeQuickActions({
         {/* Message informatif si demandes en attente */}
         {pendingRequests > 0 && (
           <p className="mt-4 text-sm text-muted-foreground">
-            <span className="font-medium text-orange-600">{pendingRequests}</span>{' '}
-            {pendingRequests === 1 ? 'demande en attente' : 'demandes en attente'} de validation
+            <span className="font-medium text-orange-600">
+              {pendingRequests}
+            </span>{' '}
+            {pendingRequests === 1
+              ? 'demande en attente'
+              : 'demandes en attente'}{' '}
+            de validation
           </p>
         )}
       </CardContent>
