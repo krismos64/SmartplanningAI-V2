@@ -95,8 +95,8 @@ describe('manager-stats.service', () => {
     })
 
     it('devrait retourner les stats completes pour un manager valide', async () => {
-      // Mock verification manager
-      prismaMock.team.findUnique.mockResolvedValue({
+      // Mock verification manager (appelé 2 fois: verifyManagerOfTeam + verification companyId)
+      const teamMock = {
         id: 'team-1',
         managerId: 'emp-1',
         companyId: 'company-1',
@@ -105,12 +105,13 @@ describe('manager-stats.service', () => {
         color: '#3B82F6',
         createdAt: new Date(),
         updatedAt: new Date(),
-      })
+      }
+      prismaMock.team.findUnique.mockResolvedValue(teamMock)
 
       // Mock taille equipe
       prismaMock.employee.count.mockResolvedValue(5)
 
-      // Mock employes de l'equipe
+      // Mock employes de l'equipe (appelé plusieurs fois pour differentes fonctions)
       prismaMock.employee.findMany.mockResolvedValue([
         {
           id: 'emp-2',
@@ -134,6 +135,9 @@ describe('manager-stats.service', () => {
 
       // Mock demandes en attente
       prismaMock.leaveRequest.count.mockResolvedValue(2)
+
+      // Mock leaveRequest.findMany pour getLeaveRequestsTrend
+      prismaMock.leaveRequest.findMany.mockResolvedValue([])
 
       // Mock schedules
       prismaMock.schedule.count.mockResolvedValue(10)
@@ -176,7 +180,7 @@ describe('manager-stats.service', () => {
     })
 
     it('devrait calculer correctement le taux de couverture', async () => {
-      prismaMock.team.findUnique.mockResolvedValue({
+      const teamMock = {
         id: 'team-1',
         managerId: 'emp-1',
         companyId: 'company-1',
@@ -185,11 +189,13 @@ describe('manager-stats.service', () => {
         color: '#3B82F6',
         createdAt: new Date(),
         updatedAt: new Date(),
-      })
+      }
+      prismaMock.team.findUnique.mockResolvedValue(teamMock)
 
       prismaMock.employee.count.mockResolvedValue(5)
       prismaMock.employee.findMany.mockResolvedValue([])
       prismaMock.leaveRequest.count.mockResolvedValue(0)
+      prismaMock.leaveRequest.findMany.mockResolvedValue([])
 
       // 8 schedules confirmes sur 10 total = 80%
       prismaMock.schedule.count
@@ -209,7 +215,7 @@ describe('manager-stats.service', () => {
     })
 
     it('devrait retourner 100% de couverture si pas de schedules', async () => {
-      prismaMock.team.findUnique.mockResolvedValue({
+      const teamMock = {
         id: 'team-1',
         managerId: 'emp-1',
         companyId: 'company-1',
@@ -218,11 +224,13 @@ describe('manager-stats.service', () => {
         color: '#3B82F6',
         createdAt: new Date(),
         updatedAt: new Date(),
-      })
+      }
+      prismaMock.team.findUnique.mockResolvedValue(teamMock)
 
       prismaMock.employee.count.mockResolvedValue(5)
       prismaMock.employee.findMany.mockResolvedValue([])
       prismaMock.leaveRequest.count.mockResolvedValue(0)
+      prismaMock.leaveRequest.findMany.mockResolvedValue([])
       prismaMock.schedule.count.mockResolvedValue(0)
       prismaMock.schedule.findMany.mockResolvedValue([])
 
@@ -430,7 +438,7 @@ describe('manager-stats.service', () => {
 
   describe('Edge cases', () => {
     it('devrait gerer une equipe vide', async () => {
-      prismaMock.team.findUnique.mockResolvedValue({
+      const teamMock = {
         id: 'team-1',
         managerId: 'emp-1',
         companyId: 'company-1',
@@ -439,11 +447,13 @@ describe('manager-stats.service', () => {
         color: '#3B82F6',
         createdAt: new Date(),
         updatedAt: new Date(),
-      })
+      }
+      prismaMock.team.findUnique.mockResolvedValue(teamMock)
 
       prismaMock.employee.count.mockResolvedValue(0)
       prismaMock.employee.findMany.mockResolvedValue([])
       prismaMock.leaveRequest.count.mockResolvedValue(0)
+      prismaMock.leaveRequest.findMany.mockResolvedValue([])
       prismaMock.schedule.count.mockResolvedValue(0)
       prismaMock.schedule.findMany.mockResolvedValue([])
 
