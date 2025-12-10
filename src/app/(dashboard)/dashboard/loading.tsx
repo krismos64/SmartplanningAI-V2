@@ -10,7 +10,11 @@ import { Skeleton } from '@/components/loading'
 
 export default function DashboardLoading() {
   return (
-    <div className="space-y-6" role="status" aria-label="Chargement du dashboard">
+    <div
+      className="space-y-6"
+      role="status"
+      aria-label="Chargement du dashboard"
+    >
       {/* Header skeleton */}
       <div className="space-y-2">
         <Skeleton variant="title" width={250} />
@@ -20,10 +24,7 @@ export default function DashboardLoading() {
       {/* Stats cards skeleton */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div
-            key={i}
-            className="rounded-lg border bg-card p-6 shadow-sm"
-          >
+          <div key={i} className="rounded-lg border bg-card p-6 shadow-sm">
             <div className="flex items-center justify-between">
               <Skeleton variant="text" width={100} />
               <Skeleton variant="avatar" width={32} height={32} />
