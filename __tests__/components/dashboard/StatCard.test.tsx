@@ -6,7 +6,7 @@
 
 import { describe, it, expect } from 'vitest'
 import { render, screen } from '@testing-library/react'
-import { Users, TrendingUp } from 'lucide-react'
+import { Users } from 'lucide-react'
 import { StatCard } from '@/components/dashboard/StatCard'
 
 describe('StatCard', () => {
