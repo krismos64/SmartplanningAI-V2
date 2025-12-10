@@ -11,7 +11,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings d'entreprise (mult
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr
-- **Dernière mise à jour** : 9 décembre 2025 (SP-110 RBAC Middleware)
+- **Dernière mise à jour** : 10 décembre 2025 (SP-143 Charts Recharts)
 
 ## Stack technique
 
@@ -59,6 +59,8 @@ Plateforme SaaS moderne de gestion intelligente des plannings d'entreprise (mult
 - **Toast System** (SP-122) : Notifications avec Sonner, hook useToast()
 - **Modal System** (SP-121) : Modals et loading states
 - **Composants métier** (SP-123) : UserCard, TeamCard, AvatarStack
+- **Dashboard Components** (SP-142) : StatCard, TrendIndicator, StatsGrid avec types par rôle
+- **Charts Recharts** (SP-143) : AreaChartWidget, BarChartWidget, PieChartWidget avec tooltips Shadcn et dark mode
 
 ### MVP (Phases 1-4)
 
@@ -100,6 +102,8 @@ SmartplanningAI/
 │   │   ├── ui/           # Shadcn components (button, form, label...)
 │   │   ├── auth/         # LoginForm, RegisterForm
 │   │   ├── cards/        # UserCard, TeamCard, AvatarStack
+│   │   ├── charts/       # AreaChartWidget, BarChartWidget, PieChartWidget
+│   │   ├── dashboard/    # StatCard, TrendIndicator, StatsGrid
 │   │   ├── forms/        # FormField, FormInput, FormSelect...
 │   │   ├── loading/      # Spinner, Skeleton, LoadingOverlay
 │   │   ├── modals/       # ConfirmDialog, FormDialog
@@ -300,8 +304,18 @@ Voir `/docs/database-schema.md` pour le détail complet.
   - 62 tests unitaires permissions ✅
   - 27 tests E2E middleware RBAC ✅
 
-#### Phase 5 : Dashboard 📋
+#### Phase 5 : Dashboard 🚧 (En cours)
 
+- SP-142 : Infrastructure Dashboard ✅
+  - StatCard, TrendIndicator, StatsGrid (3 composants)
+  - Types TypeScript dashboard
+  - 186 tests unitaires
+- SP-143 : Composants Charts Recharts ✅
+  - ChartContainer (wrapper responsive + loading/empty states)
+  - AreaChartWidget (graphiques d'aire avec gradients)
+  - BarChartWidget (barres verticales/horizontales, stacked)
+  - PieChartWidget (pie/donut avec labels pourcentage)
+  - 88 tests unitaires
 - SP-10 : Layout dashboard + sidebar
 - SP-11 : Page d'accueil par rôle
 
@@ -435,17 +449,19 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 - **E2E** : Playwright (configuré)
 - **Coverage** : v8 provider
 
-### Couverture actuelle (9 décembre 2025)
+### Couverture actuelle (10 décembre 2025)
 
 | Catégorie | Coverage | Tests |
 |-----------|----------|-------|
-| **Global** | **~85%** | **597** |
+| **Global** | **~85%** | **871** |
 | loading | 100% | 152 |
 | modals | 100% | 52 |
 | cards | 77.09% | 88 |
 | forms | 76.65% | 170 |
 | auth | ~95% | 34 |
 | permissions | 100% | 62 |
+| dashboard | 100% | 186 |
+| charts | 100% | 88 |
 
 ### Tests E2E
 
@@ -477,6 +493,15 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 
 #### Modals (2 composants)
 - ConfirmDialog, FormDialog
+
+#### Dashboard (3 composants)
+- StatCard, TrendIndicator, StatsGrid
+
+#### Charts (4 composants)
+- ChartContainer (wrapper responsive avec loading/empty)
+- AreaChartWidget (graphiques d'aire avec gradients SVG)
+- BarChartWidget (barres verticales/horizontales, stacked)
+- PieChartWidget (pie/donut avec labels pourcentage)
 
 ### Scripts de test
 
