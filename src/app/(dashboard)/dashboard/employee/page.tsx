@@ -19,7 +19,8 @@ import { EmployeeQuickActions } from './_components/EmployeeQuickActions'
 
 export const metadata = {
   title: 'Mon Dashboard | SmartPlanning',
-  description: 'Tableau de bord employe - consultez vos heures, conges et planning',
+  description:
+    'Tableau de bord employe - consultez vos heures, conges et planning',
 }
 
 /**
@@ -27,7 +28,7 @@ export const metadata = {
  */
 function ErrorState({ message }: { message: string }) {
   return (
-    <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
+    <div className="flex min-h-[400px] flex-col items-center justify-center space-y-4">
       <div className="rounded-full bg-destructive/10 p-4">
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -47,7 +48,7 @@ function ErrorState({ message }: { message: string }) {
       </div>
       <div className="text-center">
         <h2 className="text-lg font-semibold">Erreur de chargement</h2>
-        <p className="text-sm text-muted-foreground mt-1">{message}</p>
+        <p className="mt-1 text-sm text-muted-foreground">{message}</p>
       </div>
     </div>
   )
@@ -58,8 +59,8 @@ function ErrorState({ message }: { message: string }) {
  */
 function NoEmployeeProfile() {
   return (
-    <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
-      <div className="rounded-full bg-warning/10 p-4">
+    <div className="flex min-h-[400px] flex-col items-center justify-center space-y-4">
+      <div className="bg-warning/10 rounded-full p-4">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 24 24"
@@ -68,7 +69,7 @@ function NoEmployeeProfile() {
           strokeWidth="2"
           strokeLinecap="round"
           strokeLinejoin="round"
-          className="h-8 w-8 text-warning"
+          className="text-warning h-8 w-8"
           aria-hidden="true"
         >
           <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
@@ -77,8 +78,8 @@ function NoEmployeeProfile() {
       </div>
       <div className="text-center">
         <h2 className="text-lg font-semibold">Profil employe non configure</h2>
-        <p className="text-sm text-muted-foreground mt-1">
-          Votre compte utilisateur n'est pas lie a un profil employe.
+        <p className="mt-1 text-sm text-muted-foreground">
+          Votre compte utilisateur n&apos;est pas lie a un profil employe.
         </p>
         <p className="text-sm text-muted-foreground">
           Contactez votre administrateur pour configurer votre profil.
@@ -135,7 +136,10 @@ export default async function EmployeeDashboardPage() {
 
   // Nom d'affichage : prenom de l'employe ou nom du compte
   const displayName =
-    user.employee.firstName || user.name || session.user.email?.split('@')[0] || 'Employe'
+    user.employee.firstName ||
+    user.name ||
+    session.user.email?.split('@')[0] ||
+    'Employe'
 
   return (
     <div className="space-y-6">
