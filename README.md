@@ -11,7 +11,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings d'entreprise (mult
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr
-- **Dernière mise à jour** : 11 décembre 2025 (SP-148 Dashboard Super Admin)
+- **Dernière mise à jour** : 11 décembre 2025 (SP-149 Tests E2E Dashboards)
 
 ## Stack technique
 
@@ -140,7 +140,9 @@ SmartplanningAI/
 │   ├── JIRA-SETUP.md
 │   └── ISSUES-TRACKING.md
 ├── e2e/                  # Tests E2E Playwright
-│   └── specs/            # middleware-rbac.spec.ts, auth-flow.spec.ts
+│   ├── fixtures/         # Fixtures auth par rôle (SP-149)
+│   ├── pages/            # Page Objects dashboards (SP-149)
+│   └── specs/            # middleware-rbac.spec.ts, auth.spec.ts, dashboard/*.spec.ts
 ├── __tests__/            # Tests unitaires Vitest
 │   └── lib/              # permissions.test.ts
 ├── docker-compose.yml    # Configuration Docker
@@ -366,6 +368,18 @@ Voir `/docs/database-schema.md` pour le détail complet.
   - AdminQuickActions : 4 boutons actions rapides avec badges compteurs
   - Loading skeleton avec thème rose
   - 115 tests unitaires
+- SP-149 : Tests E2E complets Dashboards ✅
+  - Fixtures d'authentification par rôle (e2e/fixtures/auth.fixture.ts)
+  - Page Objects pour 4 dashboards (e2e/pages/)
+  - 106 tests E2E (318 avec 3 navigateurs) répartis en 5 fichiers :
+    - employee.spec.ts (15 tests) : accès, bienvenue, stats, planning, actions
+    - manager.spec.ts (23 tests) : stats équipe, planning, demandes congés
+    - director.spec.ts (22 tests) : KPIs, graphiques, congés en attente
+    - super-admin.spec.ts (25 tests) : KPIs SaaS, MRR, entreprises
+    - rbac-protection.spec.ts (21 tests) : protection routes par rôle
+  - Tests multi-navigateurs : Chromium, Firefox, WebKit
+  - Tests responsivité : mobile (375px), tablette (768px)
+  - Tests accessibilité : titres, hiérarchie, sémantique
 - SP-10 : Layout dashboard + sidebar
 - SP-11 : Pages dashboard Manager
 
@@ -503,7 +517,7 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 
 | Catégorie | Coverage | Tests |
 |-----------|----------|-------|
-| **Global** | **~85%** | **1165** |
+| **Global** | **~85%** | **1271** |
 | loading | 100% | 152 |
 | modals | 100% | 52 |
 | cards | 77.09% | 88 |
@@ -524,6 +538,13 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 | Auth (login/register) | 18 |
 | Middleware RBAC | 27 |
 | Smoke tests | 4 |
+| **Dashboard Employee** | 15 |
+| **Dashboard Manager** | 23 |
+| **Dashboard Director** | 22 |
+| **Dashboard Super Admin** | 25 |
+| **RBAC Protection** | 21 |
+| **Total E2E** | **155** |
+| **Total avec 3 navigateurs** | **465** |
 
 ### Composants testés
 
