@@ -11,7 +11,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings d'entreprise (mult
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr
-- **Dernière mise à jour** : 10 décembre 2025 (SP-147 Dashboard Director)
+- **Dernière mise à jour** : 11 décembre 2025 (SP-148 Dashboard Super Admin)
 
 ## Stack technique
 
@@ -64,6 +64,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings d'entreprise (mult
 - **Dashboard Services Prisma** (SP-144) : Services data layer par rôle (Employee, Manager, Director, Admin) avec architecture multi-tenant
 - **Dashboard Employee** (SP-145) : Page dashboard complète avec Server Components, redirection par rôle, 5 composants métier (Welcome, Stats, Schedule, LeaveBalance, QuickActions)
 - **Dashboard Director** (SP-147) : Page dashboard directeur avec Server Components, RBAC, 6 composants métier (Welcome, Stats, TeamsChart, TrendsChart, PendingLeaves, QuickActions)
+- **Dashboard Super Admin** (SP-148) : Page dashboard admin SaaS avec Server Components, protection SYSTEM_ADMIN, 7 composants (Welcome, Stats, MrrChart, SignupsChart, PlansChart, RecentCompanies, QuickActions)
 
 ### MVP (Phases 1-4)
 
@@ -97,7 +98,8 @@ SmartplanningAI/
 │   │   ├── (dashboard)/  # Route group dashboards
 │   │   │   └── dashboard/        # /dashboard (redirect par rôle)
 │   │   │       ├── employee/     # /dashboard/employee (page + composants)
-│   │   │       └── director/     # /dashboard/director (page + composants)
+│   │   │       ├── director/     # /dashboard/director (page + composants)
+│   │   │       └── admin/        # /dashboard/admin (page + composants Super Admin)
 │   │   ├── app/          # Routes protégées par rôle (legacy)
 │   │   │   ├── dashboard/        # Dashboard EMPLOYEE (tous rôles)
 │   │   │   ├── manager/dashboard/  # Dashboard MANAGER+
@@ -353,8 +355,19 @@ Voir `/docs/database-schema.md` pour le détail complet.
   - DirectorQuickActions : 4 boutons actions rapides avec badge compteur
   - Loading skeleton avec thème violet
   - 87 tests unitaires
+- SP-148 : Dashboard Super Admin Page ✅
+  - /dashboard/admin : Page complète Server Component avec protection SYSTEM_ADMIN
+  - AdminWelcome : Message personnalisé + indicateur santé plateforme (MRR + churn)
+  - AdminStats : 6 KPIs SaaS via StatsGrid (entreprises, utilisateurs, MRR, abonnements, conversion, churn)
+  - AdminMrrChart : AreaChartWidget évolution entreprises avec % croissance
+  - AdminSignupsChart : BarChartWidget inscriptions mensuelles (calcul deltas)
+  - AdminPlansChart : PieChartWidget répartition plans avec légende détaillée
+  - AdminRecentCompanies : Server Component async Prisma (5 dernières inscriptions)
+  - AdminQuickActions : 4 boutons actions rapides avec badges compteurs
+  - Loading skeleton avec thème rose
+  - 115 tests unitaires
 - SP-10 : Layout dashboard + sidebar
-- SP-11 : Pages dashboard Manager/Admin
+- SP-11 : Pages dashboard Manager
 
 #### Phase 6+ : Planning, Congés, Notifications, Export... (À venir)
 
@@ -486,11 +499,11 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 - **E2E** : Playwright (configuré)
 - **Coverage** : v8 provider
 
-### Couverture actuelle (10 décembre 2025)
+### Couverture actuelle (11 décembre 2025)
 
 | Catégorie | Coverage | Tests |
 |-----------|----------|-------|
-| **Global** | **~85%** | **1050** |
+| **Global** | **~85%** | **1165** |
 | loading | 100% | 152 |
 | modals | 100% | 52 |
 | cards | 77.09% | 88 |
@@ -502,6 +515,7 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 | dashboard services | 100% | 119 |
 | dashboard employee | 100% | 91 |
 | dashboard director | 100% | 87 |
+| dashboard admin | 100% | 115 |
 
 ### Tests E2E
 
@@ -566,6 +580,15 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 - DirectorTrendsChart (AreaChartWidget évolution effectifs 6 mois avec %)
 - DirectorPendingLeaves (liste congés en attente avec dates FR + bouton voir plus)
 - DirectorQuickActions (4 boutons actions rapides avec badge compteur)
+
+#### Dashboard Super Admin (7 composants - SP-148)
+- AdminWelcome (message bienvenue + indicateur santé plateforme MRR/churn)
+- AdminStats (6 KPIs SaaS : entreprises, utilisateurs, MRR, abonnements, conversion, churn)
+- AdminMrrChart (AreaChartWidget évolution entreprises avec % croissance)
+- AdminSignupsChart (BarChartWidget inscriptions mensuelles avec calcul deltas)
+- AdminPlansChart (PieChartWidget répartition plans avec légende détaillée)
+- AdminRecentCompanies (Server Component async Prisma - 5 dernières inscriptions)
+- AdminQuickActions (4 boutons actions rapides avec badges compteurs)
 
 ### Scripts de test
 
