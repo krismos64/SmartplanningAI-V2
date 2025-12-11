@@ -11,7 +11,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings d'entreprise (mult
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr
-- **Dernière mise à jour** : 11 décembre 2025 (SP-149 Tests E2E Dashboards)
+- **Dernière mise à jour** : 11 décembre 2025 (SP-150 Infrastructure CRUD)
 
 ## Stack technique
 
@@ -122,13 +122,15 @@ SmartplanningAI/
 │   │   ├── auth.ts       # Configuration NextAuth
 │   │   ├── auth.config.ts # Config middleware + callbacks RBAC
 │   │   ├── permissions.ts # Système de permissions centralisé
-│   │   ├── actions/      # Server Actions (registerAction)
+│   │   ├── actions/      # Server Actions
+│   │   │   ├── auth-actions.ts   # Actions authentification
+│   │   │   └── crud-utils.ts     # Utilitaires CRUD génériques (SP-150)
 │   │   ├── services/     # Services métier
 │   │   │   └── dashboard/  # Services stats par rôle (SP-144)
-│   │   ├── validations/  # Schémas Zod (auth, user, employee...)
+│   │   ├── validations/  # Schémas Zod (auth, user, employee, company, team...)
 │   │   └── utils.ts      # Fonctions utilitaires
-│   ├── types/            # Types TypeScript globaux
-│   ├── hooks/            # Custom React hooks
+│   ├── types/            # Types TypeScript globaux (+ crud.ts SP-150)
+│   ├── hooks/            # Custom React hooks (+ useCrudMutation SP-150)
 │   └── middleware.ts     # Middleware NextAuth (protection routes)
 ├── prisma/
 │   ├── schema.prisma     # Schéma de base de données
@@ -317,7 +319,7 @@ Voir `/docs/database-schema.md` pour le détail complet.
   - 62 tests unitaires permissions ✅
   - 27 tests E2E middleware RBAC ✅
 
-#### Phase 5 : Dashboard 🚧 (En cours)
+#### Phase 5 : Dashboard & CRUD 🚧 (En cours)
 
 - SP-142 : Infrastructure Dashboard ✅
   - StatCard, TrendIndicator, StatsGrid (3 composants)
@@ -380,6 +382,21 @@ Voir `/docs/database-schema.md` pour le détail complet.
   - Tests multi-navigateurs : Chromium, Firefox, WebKit
   - Tests responsivité : mobile (375px), tablette (768px)
   - Tests accessibilité : titres, hiérarchie, sémantique
+- SP-113 : CRUD Users/Companies/Teams 🚧
+  - SP-150 : Infrastructure CRUD ✅
+    - Types génériques (`CrudActionResult<T>`, `PaginatedResult<T>`, `ListQueryParams`)
+    - Schémas Zod Company (create, update, filters) avec labels FR
+    - Schémas Zod Team (create, update, members, palette couleurs)
+    - Server Actions utilities (`withRoleCheck`, `validateData`, `handlePrismaError`)
+    - Helpers pagination et contrôle accès multi-tenant
+    - Hooks React (`useCrudMutation`, `useDeleteMutation`, `useRefreshList`)
+    - 8 fichiers, 1377 lignes de code
+  - SP-151 : CRUD Companies (à venir)
+  - SP-152 : CRUD Employees (à venir)
+  - SP-153 : CRUD Teams (à venir)
+  - SP-154 : Navigation Integration (à venir)
+  - SP-155 : Tests unitaires CRUD (à venir)
+  - SP-156 : Tests E2E CRUD (à venir)
 - SP-10 : Layout dashboard + sidebar
 - SP-11 : Pages dashboard Manager
 
@@ -593,6 +610,14 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 - EmployeeSchedule (BarChartWidget heures hebdomadaires)
 - EmployeeLeaveBalance (PieChartWidget donut solde congés)
 - EmployeeQuickActions (boutons actions rapides avec badge)
+
+#### CRUD Infrastructure (SP-150)
+- Types génériques : `CrudActionResult<T>`, `PaginatedResult<T>`, `ListQueryParams`, `FilterParams`
+- Types formulaires : `CompanyFormData`, `TeamFormData`, `UserFormData`
+- Schémas Zod Company : `createCompanySchema`, `updateCompanySchema`, `companyFiltersSchema`
+- Schémas Zod Team : `createTeamSchema`, `updateTeamSchema`, `teamMembersSchema`
+- Server Actions : `withRoleCheck`, `validateData`, `handlePrismaError`, `getPaginationParams`
+- Hooks React : `useCrudMutation`, `useDeleteMutation`, `useRefreshList`
 
 #### Dashboard Director (6 composants - SP-147)
 - DirectorWelcome (message bienvenue + indicateur santé entreprise + alertes)
