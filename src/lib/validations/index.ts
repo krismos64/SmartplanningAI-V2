@@ -1,6 +1,8 @@
 /**
- * Barrel export pour tous les schémas de validation
+ * Barrel export pour tous les schemas de validation
  * Import unique : import { loginSchema, createEmployeeSchema } from '@/lib/validations'
+ *
+ * @ticket SP-150
  */
 
 // Common schemas
@@ -14,3 +16,9 @@ export * from './auth'
 
 // Employee schemas
 export * from './employee'
+
+// Company schemas (SP-150)
+export * from './company'
+
+// Team schemas (SP-150)
+export * from './team'

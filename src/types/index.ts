@@ -54,6 +54,25 @@ export type {
 } from './prisma'
 
 // ============================================================================
+// TYPES CRUD GENERIQUES
+// ============================================================================
+export type {
+  CrudActionResult,
+  DeleteActionResult,
+  ListActionResult,
+  PaginatedResult,
+  ListQueryParams,
+  FilterParams,
+  CompanyFormData,
+  TeamFormData,
+  UserFormData,
+  WithId,
+  WithTimestamps,
+  WithCompany,
+  CrudOptions,
+} from './crud'
+
+// ============================================================================
 // TYPES GÉNÉRIQUES UTILITAIRES
 // ============================================================================
 
