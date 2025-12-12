@@ -47,7 +47,9 @@ export function Header({ user, notificationsCount = 0 }: HeaderProps) {
       .then((data: object) => {
         setAnimationData(data)
       })
-      .catch((err: unknown) => console.error('Failed to load Lottie animation:', err))
+      .catch((err: unknown) =>
+        console.error('Failed to load Lottie animation:', err)
+      )
   }, [])
 
   const userInitials = user.name

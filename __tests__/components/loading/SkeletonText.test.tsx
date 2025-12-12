@@ -110,7 +110,9 @@ describe('SkeletonText', () => {
 
   describe('Largeurs variables', () => {
     it('paragraph variant has varying widths', () => {
-      const { container } = render(<SkeletonText variant="paragraph" lines={5} />)
+      const { container } = render(
+        <SkeletonText variant="paragraph" lines={5} />
+      )
 
       // Multiple skeleton elements with different widths
       const skeletons = container.querySelectorAll('span')
@@ -131,7 +133,9 @@ describe('SkeletonText', () => {
 
   describe('Classes CSS', () => {
     it('accepts custom className', () => {
-      const { container } = render(<SkeletonText className="my-skeleton-text" />)
+      const { container } = render(
+        <SkeletonText className="my-skeleton-text" />
+      )
 
       const wrapper = container.querySelector('.my-skeleton-text')
       expect(wrapper).toBeInTheDocument()

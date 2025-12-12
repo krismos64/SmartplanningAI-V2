@@ -54,7 +54,9 @@ describe('DirectorTeamsChart', () => {
     })
 
     it('devrait afficher employe (singulier) si total = 1', () => {
-      const stats = [{ name: 'Equipe A', employees: 1, hoursWorked: 40, leaveRate: 0 }]
+      const stats = [
+        { name: 'Equipe A', employees: 1, hoursWorked: 40, leaveRate: 0 },
+      ]
 
       render(<DirectorTeamsChart teamStats={stats} />)
 
@@ -157,7 +159,10 @@ describe('DirectorTeamsChart', () => {
   describe('props', () => {
     it('devrait accepter className', () => {
       const { container } = render(
-        <DirectorTeamsChart teamStats={mockTeamStats} className="custom-class" />
+        <DirectorTeamsChart
+          teamStats={mockTeamStats}
+          className="custom-class"
+        />
       )
 
       expect(container.firstChild).toHaveClass('custom-class')

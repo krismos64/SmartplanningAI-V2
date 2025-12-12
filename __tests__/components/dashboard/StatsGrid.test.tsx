@@ -13,7 +13,12 @@ import type { StatCardProps } from '@/types/dashboard'
 const mockStats: StatCardProps[] = [
   { title: 'Utilisateurs', value: 1234 },
   { title: 'Revenus', value: '12 345 €', icon: DollarSign },
-  { title: 'Croissance', value: 15, unit: '%', trend: { value: 5, direction: 'up' } },
+  {
+    title: 'Croissance',
+    value: 15,
+    unit: '%',
+    trend: { value: 5, direction: 'up' },
+  },
   { title: 'Equipes', value: 8, icon: Users },
 ]
 
@@ -65,12 +70,16 @@ describe('StatsGrid', () => {
   describe('Empty state', () => {
     it('affiche un message quand stats est vide', () => {
       render(<StatsGrid stats={[]} />)
-      expect(screen.getByText('Aucune statistique disponible')).toBeInTheDocument()
+      expect(
+        screen.getByText('Aucune statistique disponible')
+      ).toBeInTheDocument()
     })
 
     it('affiche un message quand stats est undefined', () => {
       render(<StatsGrid stats={undefined as unknown as StatCardProps[]} />)
-      expect(screen.getByText('Aucune statistique disponible')).toBeInTheDocument()
+      expect(
+        screen.getByText('Aucune statistique disponible')
+      ).toBeInTheDocument()
     })
 
     it('a un role status pour l accessibilite', () => {
@@ -81,7 +90,10 @@ describe('StatsGrid', () => {
     it('contient aria-label descriptif', () => {
       render(<StatsGrid stats={[]} />)
       const element = screen.getByRole('status')
-      expect(element).toHaveAttribute('aria-label', 'Aucune statistique disponible')
+      expect(element).toHaveAttribute(
+        'aria-label',
+        'Aucune statistique disponible'
+      )
     })
   })
 
@@ -100,7 +112,9 @@ describe('StatsGrid', () => {
     })
 
     it('affiche columns skeletons si pas de stats', () => {
-      const { container } = render(<StatsGrid stats={[]} columns={3} isLoading />)
+      const { container } = render(
+        <StatsGrid stats={[]} columns={3} isLoading />
+      )
       const cards = container.querySelectorAll('[class*="card"]')
       expect(cards.length).toBe(3)
     })
@@ -161,7 +175,9 @@ describe('StatsGrid', () => {
     it('passe correctement les tendances aux StatCard', () => {
       render(<StatsGrid stats={mockStats} />)
       // La tendance du 3eme element
-      expect(screen.getByRole('status', { name: /Tendance/ })).toBeInTheDocument()
+      expect(
+        screen.getByRole('status', { name: /Tendance/ })
+      ).toBeInTheDocument()
     })
   })
 })

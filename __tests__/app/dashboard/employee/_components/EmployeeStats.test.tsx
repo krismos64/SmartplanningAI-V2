@@ -231,7 +231,9 @@ describe('EmployeeStats', () => {
       render(<EmployeeStats stats={mockStats} isLoading={true} />)
 
       // En mode loading, StatsGrid affiche des skeletons
-      expect(screen.getByLabelText('Chargement des statistiques')).toBeInTheDocument()
+      expect(
+        screen.getByLabelText('Chargement des statistiques')
+      ).toBeInTheDocument()
     })
   })
 

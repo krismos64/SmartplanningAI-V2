@@ -49,7 +49,9 @@ describe('AdminSignupsChart', () => {
       // Premier mois = 0 (pas de precedent)
       // 0 + 15 + 15 + 12 + 13 + 15 = 70
       expect(screen.getByText(/70/)).toBeInTheDocument()
-      expect(screen.getByText(/nouvelles entreprises sur 6 mois/)).toBeInTheDocument()
+      expect(
+        screen.getByText(/nouvelles entreprises sur 6 mois/)
+      ).toBeInTheDocument()
     })
 
     it('devrait rendre le chart avec les donnees', () => {
@@ -85,7 +87,9 @@ describe('AdminSignupsChart', () => {
       // Jan=0 (premier mois), Feb=0 (90-100<0 -> 0), Mar=5 (95-90)
       // Total = 5
       expect(screen.getByText(/5/)).toBeInTheDocument()
-      expect(screen.getByText(/nouvelles entreprises sur 6 mois/)).toBeInTheDocument()
+      expect(
+        screen.getByText(/nouvelles entreprises sur 6 mois/)
+      ).toBeInTheDocument()
     })
 
     it('devrait afficher 0 inscriptions si donnees identiques', () => {
@@ -101,7 +105,10 @@ describe('AdminSignupsChart', () => {
       // Le texte est split dans le DOM, utiliser une fonction
       expect(
         screen.getByText((_content, element) => {
-          return element?.tagName === 'P' && /^0\s+nouvelles entreprises/.test(element.textContent || '')
+          return (
+            element?.tagName === 'P' &&
+            /^0\s+nouvelles entreprises/.test(element.textContent || '')
+          )
         })
       ).toBeInTheDocument()
     })
@@ -133,7 +140,10 @@ describe('AdminSignupsChart', () => {
       // Le texte est split dans le DOM
       expect(
         screen.getByText((_content, element) => {
-          return element?.tagName === 'P' && /^0\s+nouvelles entreprises/.test(element.textContent || '')
+          return (
+            element?.tagName === 'P' &&
+            /^0\s+nouvelles entreprises/.test(element.textContent || '')
+          )
         })
       ).toBeInTheDocument()
     })
@@ -155,7 +165,9 @@ describe('AdminSignupsChart', () => {
 
       // Jan=0 (premier), Feb=10 (20-10), Mar=15 (35-20) = 25
       expect(screen.getByText(/25/)).toBeInTheDocument()
-      expect(screen.getByText(/nouvelles entreprises sur 6 mois/)).toBeInTheDocument()
+      expect(
+        screen.getByText(/nouvelles entreprises sur 6 mois/)
+      ).toBeInTheDocument()
     })
 
     it('devrait afficher 0 si aucune nouvelle inscription', () => {
@@ -170,7 +182,10 @@ describe('AdminSignupsChart', () => {
       // Le texte est split dans le DOM
       expect(
         screen.getByText((_content, element) => {
-          return element?.tagName === 'P' && /^0\s+nouvelles entreprises/.test(element.textContent || '')
+          return (
+            element?.tagName === 'P' &&
+            /^0\s+nouvelles entreprises/.test(element.textContent || '')
+          )
         })
       ).toBeInTheDocument()
     })

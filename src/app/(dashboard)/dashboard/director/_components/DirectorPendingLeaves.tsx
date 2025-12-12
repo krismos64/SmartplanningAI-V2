@@ -146,7 +146,8 @@ export function DirectorPendingLeaves({
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-medium">{leave.employeeName}</p>
                     <p className="text-xs text-muted-foreground">
-                      {leave.teamName} · {leaveTypeLabels[leave.type] ?? leave.type}
+                      {leave.teamName} ·{' '}
+                      {leaveTypeLabels[leave.type] ?? leave.type}
                     </p>
                   </div>
                   <div className="ml-4 text-right">

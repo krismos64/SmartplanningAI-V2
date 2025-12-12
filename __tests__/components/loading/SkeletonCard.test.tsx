@@ -27,7 +27,10 @@ describe('SkeletonCard', () => {
       render(<SkeletonCard />)
 
       const skeleton = screen.getByRole('status')
-      expect(skeleton).toHaveAttribute('aria-label', 'Chargement de la carte...')
+      expect(skeleton).toHaveAttribute(
+        'aria-label',
+        'Chargement de la carte...'
+      )
     })
   })
 
@@ -149,7 +152,9 @@ describe('SkeletonCard', () => {
 
   describe('Classes CSS', () => {
     it('accepts custom className', () => {
-      const { container } = render(<SkeletonCard className="my-skeleton-card" />)
+      const { container } = render(
+        <SkeletonCard className="my-skeleton-card" />
+      )
 
       const card = container.querySelector('.my-skeleton-card')
       expect(card).toBeInTheDocument()
@@ -185,9 +190,7 @@ describe('SkeletonCard', () => {
     })
 
     it('renders minimal version', () => {
-      const { container } = render(
-        <SkeletonCard withImage={false} lines={1} />
-      )
+      const { container } = render(<SkeletonCard withImage={false} lines={1} />)
 
       const skeletons = container.querySelectorAll('span')
       expect(skeletons.length).toBeGreaterThan(1)

@@ -42,7 +42,9 @@ describe('StatCard', () => {
     })
 
     it('n affiche pas d icone si non fournie', () => {
-      const { container } = render(<StatCard title="Utilisateurs" value={100} />)
+      const { container } = render(
+        <StatCard title="Utilisateurs" value={100} />
+      )
       const iconWrapper = container.querySelector('.rounded-md.bg-primary\\/10')
       expect(iconWrapper).not.toBeInTheDocument()
     })
@@ -182,7 +184,8 @@ describe('StatCard', () => {
     })
 
     it('gere un titre long', () => {
-      const longTitle = 'Ceci est un titre tres long pour tester le comportement'
+      const longTitle =
+        'Ceci est un titre tres long pour tester le comportement'
       render(<StatCard title={longTitle} value={100} />)
       expect(screen.getByText(longTitle)).toBeInTheDocument()
     })

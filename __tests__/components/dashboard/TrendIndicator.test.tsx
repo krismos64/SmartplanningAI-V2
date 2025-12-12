@@ -16,7 +16,9 @@ describe('TrendIndicator', () => {
     })
 
     it('affiche le label optionnel', () => {
-      render(<TrendIndicator value={12.5} direction="up" label="vs mois dernier" />)
+      render(
+        <TrendIndicator value={12.5} direction="up" label="vs mois dernier" />
+      )
       expect(screen.getByText('vs mois dernier')).toBeInTheDocument()
     })
 
@@ -26,7 +28,9 @@ describe('TrendIndicator', () => {
     })
 
     it('contient aria-label descriptif', () => {
-      render(<TrendIndicator value={12.5} direction="up" label="vs mois dernier" />)
+      render(
+        <TrendIndicator value={12.5} direction="up" label="vs mois dernier" />
+      )
       const element = screen.getByRole('status')
       expect(element).toHaveAttribute('aria-label')
       expect(element.getAttribute('aria-label')).toContain('Tendance')
@@ -35,13 +39,17 @@ describe('TrendIndicator', () => {
 
   describe('Direction up', () => {
     it('affiche l icone TrendingUp', () => {
-      const { container } = render(<TrendIndicator value={12.5} direction="up" />)
+      const { container } = render(
+        <TrendIndicator value={12.5} direction="up" />
+      )
       const svg = container.querySelector('svg')
       expect(svg).toBeInTheDocument()
     })
 
     it('applique les styles verts', () => {
-      const { container } = render(<TrendIndicator value={12.5} direction="up" />)
+      const { container } = render(
+        <TrendIndicator value={12.5} direction="up" />
+      )
       const wrapper = container.firstChild as HTMLElement
       expect(wrapper.className).toContain('text-emerald')
       expect(wrapper.className).toContain('bg-emerald')
@@ -55,7 +63,9 @@ describe('TrendIndicator', () => {
     })
 
     it('applique les styles rouges', () => {
-      const { container } = render(<TrendIndicator value={-5.3} direction="down" />)
+      const { container } = render(
+        <TrendIndicator value={-5.3} direction="down" />
+      )
       const wrapper = container.firstChild as HTMLElement
       expect(wrapper.className).toContain('text-red')
       expect(wrapper.className).toContain('bg-red')
@@ -69,7 +79,9 @@ describe('TrendIndicator', () => {
     })
 
     it('applique les styles gris', () => {
-      const { container } = render(<TrendIndicator value={0} direction="neutral" />)
+      const { container } = render(
+        <TrendIndicator value={0} direction="neutral" />
+      )
       const wrapper = container.firstChild as HTMLElement
       expect(wrapper.className).toContain('text-gray')
       expect(wrapper.className).toContain('bg-gray')
@@ -78,7 +90,9 @@ describe('TrendIndicator', () => {
 
   describe('Tailles', () => {
     it('applique la taille sm', () => {
-      const { container } = render(<TrendIndicator value={10} direction="up" size="sm" />)
+      const { container } = render(
+        <TrendIndicator value={10} direction="up" size="sm" />
+      )
       const wrapper = container.firstChild as HTMLElement
       expect(wrapper.className).toContain('text-xs')
     })
@@ -90,7 +104,9 @@ describe('TrendIndicator', () => {
     })
 
     it('applique la taille lg', () => {
-      const { container } = render(<TrendIndicator value={10} direction="up" size="lg" />)
+      const { container } = render(
+        <TrendIndicator value={10} direction="up" size="lg" />
+      )
       const wrapper = container.firstChild as HTMLElement
       expect(wrapper.className).toContain('text-base')
     })

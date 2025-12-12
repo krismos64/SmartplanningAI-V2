@@ -75,6 +75,8 @@ export async function verifyPassword(
  *
  * @note Normalement non nécessaire car hashPassword génère le salt
  */
-export async function generateSalt(rounds: number = SALT_ROUNDS): Promise<string> {
+export async function generateSalt(
+  rounds: number = SALT_ROUNDS
+): Promise<string> {
   return bcrypt.genSalt(rounds)
 }

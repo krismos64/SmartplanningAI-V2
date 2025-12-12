@@ -71,13 +71,15 @@ describe('FormCheckbox', () => {
   // MESSAGE D'ERREUR
   // =========================================================================
 
-  describe('Message d\'erreur', () => {
+  describe("Message d'erreur", () => {
     it('renders error message when error is provided', () => {
       render(
         <FormCheckbox label="J'accepte" error="Vous devez accepter les CGU" />
       )
 
-      expect(screen.getByText('Vous devez accepter les CGU')).toBeInTheDocument()
+      expect(
+        screen.getByText('Vous devez accepter les CGU')
+      ).toBeInTheDocument()
     })
 
     it('error message has role="alert"', () => {
@@ -98,7 +100,7 @@ describe('FormCheckbox', () => {
   // TEXTE D'AIDE
   // =========================================================================
 
-  describe('Texte d\'aide', () => {
+  describe("Texte d'aide", () => {
     it('renders help text when provided', () => {
       render(
         <FormCheckbox

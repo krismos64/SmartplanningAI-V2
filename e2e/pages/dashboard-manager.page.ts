@@ -57,14 +57,29 @@ export class DashboardManagerPage {
     this.teamSubtitle = page.locator('text=/Gerez votre equipe/i')
 
     // Stats Cards
-    this.membersCard = page.locator('text=Membres d\'equipe').locator('..').locator('..')
-    this.shiftsCard = page.locator('text=Shifts cette semaine').locator('..').locator('..')
-    this.pendingRequestsCard = page.locator('text=Demandes en attente').locator('..').locator('..')
+    this.membersCard = page
+      .locator("text=Membres d'equipe")
+      .locator('..')
+      .locator('..')
+    this.shiftsCard = page
+      .locator('text=Shifts cette semaine')
+      .locator('..')
+      .locator('..')
+    this.pendingRequestsCard = page
+      .locator('text=Demandes en attente')
+      .locator('..')
+      .locator('..')
 
     // Quick Actions
-    this.quickActionsSection = page.locator('text=Actions rapides').locator('..')
-    this.createShiftButton = page.getByRole('button', { name: /creer un shift/i })
-    this.validateLeavesButton = page.getByRole('button', { name: /valider des conges/i })
+    this.quickActionsSection = page
+      .locator('text=Actions rapides')
+      .locator('..')
+    this.createShiftButton = page.getByRole('button', {
+      name: /creer un shift/i,
+    })
+    this.validateLeavesButton = page.getByRole('button', {
+      name: /valider des conges/i,
+    })
     this.viewTeamButton = page.getByRole('button', { name: /vue equipe/i })
 
     // Team Schedule
@@ -72,8 +87,12 @@ export class DashboardManagerPage {
     this.scheduleRows = page.locator('tbody tr')
 
     // Leave Requests
-    this.leaveRequestsSection = page.locator('text=Demandes de conges a valider').locator('..')
-    this.leaveRequestItems = page.locator('[class*="flex items-center justify-between"]')
+    this.leaveRequestsSection = page
+      .locator('text=Demandes de conges a valider')
+      .locator('..')
+    this.leaveRequestItems = page.locator(
+      '[class*="flex items-center justify-between"]'
+    )
     this.approveButtons = page.getByRole('button', { name: /approuver/i })
     this.rejectButtons = page.getByRole('button', { name: /rejeter/i })
   }
@@ -112,7 +131,7 @@ export class DashboardManagerPage {
    * Verifie que les statistiques d'equipe sont affichees
    */
   async expectTeamStatsVisible(): Promise<void> {
-    await expect(this.page.locator('text=Membres d\'equipe')).toBeVisible()
+    await expect(this.page.locator("text=Membres d'equipe")).toBeVisible()
     await expect(this.page.locator('text=Shifts cette semaine')).toBeVisible()
     await expect(this.page.locator('text=Demandes en attente')).toBeVisible()
   }
@@ -121,7 +140,9 @@ export class DashboardManagerPage {
    * Verifie que le planning d'equipe est affiche
    */
   async expectTeamScheduleVisible(): Promise<void> {
-    await expect(this.page.locator('text=Planning de l\'equipe cette semaine')).toBeVisible()
+    await expect(
+      this.page.locator("text=Planning de l'equipe cette semaine")
+    ).toBeVisible()
     await expect(this.teamScheduleTable).toBeVisible()
   }
 
@@ -129,7 +150,9 @@ export class DashboardManagerPage {
    * Verifie que la section demandes de conges est affichee
    */
   async expectLeaveRequestsVisible(): Promise<void> {
-    await expect(this.page.locator('text=Demandes de conges a valider')).toBeVisible()
+    await expect(
+      this.page.locator('text=Demandes de conges a valider')
+    ).toBeVisible()
   }
 
   /**

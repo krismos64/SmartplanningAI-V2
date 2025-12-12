@@ -79,7 +79,7 @@ describe('FormField', () => {
   // MESSAGE D'ERREUR
   // =========================================================================
 
-  describe('Message d\'erreur', () => {
+  describe("Message d'erreur", () => {
     it('renders error message when error is provided', () => {
       render(
         <FormField label="Email" error="Email invalide">
@@ -115,10 +115,13 @@ describe('FormField', () => {
   // TEXTE D'AIDE
   // =========================================================================
 
-  describe('Texte d\'aide', () => {
+  describe("Texte d'aide", () => {
     it('renders help text when provided', () => {
       render(
-        <FormField label="Email" helpText="Nous ne partagerons jamais votre email">
+        <FormField
+          label="Email"
+          helpText="Nous ne partagerons jamais votre email"
+        >
           <input />
         </FormField>
       )
@@ -186,7 +189,9 @@ describe('FormField', () => {
       const errorId = input.getAttribute('aria-describedby')
 
       expect(errorId).toBeTruthy()
-      expect(document.getElementById(errorId!)).toHaveTextContent('Email invalide')
+      expect(document.getElementById(errorId!)).toHaveTextContent(
+        'Email invalide'
+      )
     })
 
     it('sets aria-describedby pointing to help text when no error', () => {

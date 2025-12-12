@@ -67,26 +67,56 @@ export class DashboardDirectorPage {
 
     // Stats Section
     this.statsSection = page.getByRole('region', { name: /statistiques/i })
-    this.totalEmployeesCard = page.locator('text=Employes').locator('..').locator('..')
-    this.teamsCountCard = page.locator('text=Equipes').locator('..').locator('..')
-    this.attendanceRateCard = page.locator('text=Taux presence').locator('..').locator('..')
-    this.pendingLeavesCard = page.locator('text=/Conges en attente|demandes/i').locator('..').locator('..')
+    this.totalEmployeesCard = page
+      .locator('text=Employes')
+      .locator('..')
+      .locator('..')
+    this.teamsCountCard = page
+      .locator('text=Equipes')
+      .locator('..')
+      .locator('..')
+    this.attendanceRateCard = page
+      .locator('text=Taux presence')
+      .locator('..')
+      .locator('..')
+    this.pendingLeavesCard = page
+      .locator('text=/Conges en attente|demandes/i')
+      .locator('..')
+      .locator('..')
 
     // Charts
-    this.teamsChartSection = page.locator('text=/Repartition|equipes/i').locator('..')
-    this.trendsChartSection = page.locator('text=/Evolution|effectifs/i').locator('..')
+    this.teamsChartSection = page
+      .locator('text=/Repartition|equipes/i')
+      .locator('..')
+    this.trendsChartSection = page
+      .locator('text=/Evolution|effectifs/i')
+      .locator('..')
 
     // Pending Leaves
-    this.pendingLeavesSection = page.locator('text=Conges en attente').locator('..')
+    this.pendingLeavesSection = page
+      .locator('text=Conges en attente')
+      .locator('..')
     this.leaveItems = page.locator('[data-testid="leave-item"]')
-    this.viewAllLeavesLink = page.getByRole('link', { name: /voir tout|voir tous/i })
+    this.viewAllLeavesLink = page.getByRole('link', {
+      name: /voir tout|voir tous/i,
+    })
 
     // Quick Actions
-    this.quickActionsSection = page.locator('text=Actions rapides').locator('..')
-    this.addTeamLink = page.getByRole('link', { name: /ajouter.*equipe|nouvelle equipe/i })
-    this.addEmployeeLink = page.getByRole('link', { name: /ajouter.*employe|nouvel employe/i })
-    this.viewLeavesLink = page.getByRole('link', { name: /gerer.*conges|voir.*conges/i })
-    this.viewStatsLink = page.getByRole('link', { name: /statistiques|rapports/i })
+    this.quickActionsSection = page
+      .locator('text=Actions rapides')
+      .locator('..')
+    this.addTeamLink = page.getByRole('link', {
+      name: /ajouter.*equipe|nouvelle equipe/i,
+    })
+    this.addEmployeeLink = page.getByRole('link', {
+      name: /ajouter.*employe|nouvel employe/i,
+    })
+    this.viewLeavesLink = page.getByRole('link', {
+      name: /gerer.*conges|voir.*conges/i,
+    })
+    this.viewStatsLink = page.getByRole('link', {
+      name: /statistiques|rapports/i,
+    })
 
     // States
     this.loadingIndicator = page.locator('[data-testid="loading"]')
@@ -147,10 +177,16 @@ export class DashboardDirectorPage {
     // Verifier au moins 4 KPIs visibles
     let visibleCount = 0
     for (const label of kpiLabels) {
-      const locator = typeof label === 'string'
-        ? this.page.locator(`text=${label}`)
-        : this.page.locator(`text=${label.source}`)
-      if (await locator.first().isVisible().catch(() => false)) {
+      const locator =
+        typeof label === 'string'
+          ? this.page.locator(`text=${label}`)
+          : this.page.locator(`text=${label.source}`)
+      if (
+        await locator
+          .first()
+          .isVisible()
+          .catch(() => false)
+      ) {
         visibleCount++
       }
     }
@@ -161,21 +197,27 @@ export class DashboardDirectorPage {
    * Verifie que le graphique equipes est affiche
    */
   async expectTeamsChartVisible(): Promise<void> {
-    await expect(this.page.locator('text=/Repartition.*equipes|equipes.*effectif/i')).toBeVisible()
+    await expect(
+      this.page.locator('text=/Repartition.*equipes|equipes.*effectif/i')
+    ).toBeVisible()
   }
 
   /**
    * Verifie que le graphique tendances est affiche
    */
   async expectTrendsChartVisible(): Promise<void> {
-    await expect(this.page.locator('text=/Evolution.*effectifs|tendances/i')).toBeVisible()
+    await expect(
+      this.page.locator('text=/Evolution.*effectifs|tendances/i')
+    ).toBeVisible()
   }
 
   /**
    * Verifie que la section conges en attente est affichee
    */
   async expectPendingLeavesVisible(): Promise<void> {
-    await expect(this.page.locator('text=/Conges en attente|demandes.*conges/i')).toBeVisible()
+    await expect(
+      this.page.locator('text=/Conges en attente|demandes.*conges/i')
+    ).toBeVisible()
   }
 
   /**
@@ -228,7 +270,11 @@ export class DashboardDirectorPage {
    * Recupere le nombre d'employes affiche
    */
   async getTotalEmployees(): Promise<string | null> {
-    const employeesText = this.page.locator('text=Employes').locator('..').locator('..').locator('p.text-2xl, p.text-3xl')
+    const employeesText = this.page
+      .locator('text=Employes')
+      .locator('..')
+      .locator('..')
+      .locator('p.text-2xl, p.text-3xl')
     if (await employeesText.isVisible()) {
       return await employeesText.textContent()
     }
@@ -239,7 +285,9 @@ export class DashboardDirectorPage {
    * Recupere le nombre de demandes de conges en attente
    */
   async getPendingLeavesCount(): Promise<string | null> {
-    const pendingText = this.page.locator('text=/\\d+.*demande|\\d+.*conge.*attente/i')
+    const pendingText = this.page.locator(
+      'text=/\\d+.*demande|\\d+.*conge.*attente/i'
+    )
     if (await pendingText.first().isVisible()) {
       return await pendingText.first().textContent()
     }
@@ -250,7 +298,9 @@ export class DashboardDirectorPage {
    * Recupere le taux de presence affiche
    */
   async getAttendanceRate(): Promise<string | null> {
-    const rateText = this.page.locator('text=/\\d+%.*presence|presence.*\\d+%/i')
+    const rateText = this.page.locator(
+      'text=/\\d+%.*presence|presence.*\\d+%/i'
+    )
     if (await rateText.first().isVisible()) {
       return await rateText.first().textContent()
     }

@@ -18,7 +18,9 @@ test.describe('Dashboard Employee - Tests E2E', () => {
   // ==========================================================================
 
   test.describe('Acces et redirection', () => {
-    test('devrait rediriger vers /login si non authentifie', async ({ page }) => {
+    test('devrait rediriger vers /login si non authentifie', async ({
+      page,
+    }) => {
       // Navigation sans authentification
       await page.goto('/dashboard/employee')
 
@@ -63,7 +65,7 @@ test.describe('Dashboard Employee - Tests E2E', () => {
       await expect(employeePage.locator('h1')).toBeVisible()
     })
 
-    test('devrait afficher l\'information du prochain shift', async ({
+    test("devrait afficher l'information du prochain shift", async ({
       employeePage,
     }) => {
       dashboardPage = new DashboardEmployeePage(employeePage)
@@ -73,7 +75,10 @@ test.describe('Dashboard Employee - Tests E2E', () => {
       // Verifier la presence d'info sur le prochain shift
       const shiftInfo = employeePage.locator('text=/prochain|shift|planning/i')
       // L'info peut etre presente ou non selon les donnees
-      const isVisible = await shiftInfo.first().isVisible().catch(() => false)
+      const isVisible = await shiftInfo
+        .first()
+        .isVisible()
+        .catch(() => false)
       expect(typeof isVisible).toBe('boolean')
     })
   })
@@ -91,16 +96,17 @@ test.describe('Dashboard Employee - Tests E2E', () => {
       await dashboardPage.waitForLoad()
 
       // Verifier la presence des stats
-      const statsLabels = [
-        /heures/i,
-        /conges/i,
-        /demandes/i,
-      ]
+      const statsLabels = [/heures/i, /conges/i, /demandes/i]
 
       let foundCount = 0
       for (const label of statsLabels) {
         const locator = employeePage.locator(`text=${label.source}`)
-        if (await locator.first().isVisible().catch(() => false)) {
+        if (
+          await locator
+            .first()
+            .isVisible()
+            .catch(() => false)
+        ) {
           foundCount++
         }
       }
@@ -133,8 +139,13 @@ test.describe('Dashboard Employee - Tests E2E', () => {
       await dashboardPage.waitForLoad()
 
       // La section planning devrait etre presente
-      const planningSection = employeePage.locator('text=/planning|semaine|schedule/i')
-      const isVisible = await planningSection.first().isVisible().catch(() => false)
+      const planningSection = employeePage.locator(
+        'text=/planning|semaine|schedule/i'
+      )
+      const isVisible = await planningSection
+        .first()
+        .isVisible()
+        .catch(() => false)
       expect(typeof isVisible).toBe('boolean')
     })
   })
@@ -153,7 +164,10 @@ test.describe('Dashboard Employee - Tests E2E', () => {
 
       // La section conges devrait etre presente
       const leaveSection = employeePage.locator('text=/conges|solde|balance/i')
-      const isVisible = await leaveSection.first().isVisible().catch(() => false)
+      const isVisible = await leaveSection
+        .first()
+        .isVisible()
+        .catch(() => false)
       expect(typeof isVisible).toBe('boolean')
     })
   })
@@ -171,8 +185,13 @@ test.describe('Dashboard Employee - Tests E2E', () => {
       await dashboardPage.waitForLoad()
 
       // La section actions rapides devrait etre presente
-      const actionsSection = employeePage.locator('text=/actions rapides|actions/i')
-      const isVisible = await actionsSection.first().isVisible().catch(() => false)
+      const actionsSection = employeePage.locator(
+        'text=/actions rapides|actions/i'
+      )
+      const isVisible = await actionsSection
+        .first()
+        .isVisible()
+        .catch(() => false)
       expect(typeof isVisible).toBe('boolean')
     })
 
@@ -199,7 +218,7 @@ test.describe('Dashboard Employee - Tests E2E', () => {
   // ==========================================================================
 
   test.describe('Responsivite', () => {
-    test('devrait s\'adapter a un ecran mobile', async ({ employeePage }) => {
+    test("devrait s'adapter a un ecran mobile", async ({ employeePage }) => {
       // Redimensionner a une taille mobile
       await employeePage.setViewportSize({ width: 375, height: 667 })
 
@@ -211,7 +230,7 @@ test.describe('Dashboard Employee - Tests E2E', () => {
       await dashboardPage.expectToBeVisible()
     })
 
-    test('devrait s\'adapter a une tablette', async ({ employeePage }) => {
+    test("devrait s'adapter a une tablette", async ({ employeePage }) => {
       // Redimensionner a une taille tablette
       await employeePage.setViewportSize({ width: 768, height: 1024 })
 

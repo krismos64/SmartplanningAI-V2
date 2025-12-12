@@ -145,7 +145,9 @@ describe('SkeletonTable', () => {
 
   describe('Classes CSS', () => {
     it('accepts custom className', () => {
-      const { container } = render(<SkeletonTable className="my-skeleton-table" />)
+      const { container } = render(
+        <SkeletonTable className="my-skeleton-table" />
+      )
 
       const wrapper = container.querySelector('.my-skeleton-table')
       expect(wrapper).toBeInTheDocument()

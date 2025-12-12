@@ -79,15 +79,18 @@ export const FormField = React.forwardRef<HTMLDivElement, FormFieldProps>(
           {React.Children.map(children, (child) => {
             if (React.isValidElement(child)) {
               // Clone l'enfant et ajoute les props d'accessibilité
-              return React.cloneElement(child as React.ReactElement<Record<string, unknown>>, {
-                id: fieldId,
-                'aria-invalid': error ? 'true' : 'false',
-                'aria-describedby':
-                  cn(error && errorId, helpText && !error && helpId)
-                    .split(' ')
-                    .filter(Boolean)
-                    .join(' ') || undefined,
-              })
+              return React.cloneElement(
+                child as React.ReactElement<Record<string, unknown>>,
+                {
+                  id: fieldId,
+                  'aria-invalid': error ? 'true' : 'false',
+                  'aria-describedby':
+                    cn(error && errorId, helpText && !error && helpId)
+                      .split(' ')
+                      .filter(Boolean)
+                      .join(' ') || undefined,
+                }
+              )
             }
             return child
           })}

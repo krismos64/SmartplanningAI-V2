@@ -18,7 +18,9 @@ test.describe('Dashboard Super Admin - Tests E2E', () => {
   // ==========================================================================
 
   test.describe('Acces et redirection', () => {
-    test('devrait rediriger vers /login si non authentifie', async ({ page }) => {
+    test('devrait rediriger vers /login si non authentifie', async ({
+      page,
+    }) => {
       await page.goto('/dashboard/admin')
       await expect(page).toHaveURL(/.*login.*/)
     })
@@ -55,13 +57,17 @@ test.describe('Dashboard Super Admin - Tests E2E', () => {
       await expect(welcomeHeading).toBeVisible()
     })
 
-    test('devrait afficher un resume de la plateforme', async ({ adminPage }) => {
+    test('devrait afficher un resume de la plateforme', async ({
+      adminPage,
+    }) => {
       dashboardPage = new DashboardAdminPage(adminPage)
       await dashboardPage.goto()
       await dashboardPage.waitForLoad()
 
       // Le dashboard devrait mentionner entreprises/utilisateurs/MRR
-      const platformInfo = adminPage.locator('text=/entreprises|utilisateurs|mrr/i')
+      const platformInfo = adminPage.locator(
+        'text=/entreprises|utilisateurs|mrr/i'
+      )
       await expect(platformInfo.first()).toBeVisible()
     })
   })
@@ -87,7 +93,9 @@ test.describe('Dashboard Super Admin - Tests E2E', () => {
       await expect(adminPage.locator('text=Utilisateurs')).toBeVisible()
     })
 
-    test('devrait afficher le KPI Abonnements actifs', async ({ adminPage }) => {
+    test('devrait afficher le KPI Abonnements actifs', async ({
+      adminPage,
+    }) => {
       dashboardPage = new DashboardAdminPage(adminPage)
       await dashboardPage.goto()
       await dashboardPage.waitForLoad()
@@ -137,7 +145,9 @@ test.describe('Dashboard Super Admin - Tests E2E', () => {
   // ==========================================================================
 
   test.describe('Section graphiques', () => {
-    test('devrait afficher le graphique Evolution MRR', async ({ adminPage }) => {
+    test('devrait afficher le graphique Evolution MRR', async ({
+      adminPage,
+    }) => {
       dashboardPage = new DashboardAdminPage(adminPage)
       await dashboardPage.goto()
       await dashboardPage.waitForLoad()
@@ -153,7 +163,9 @@ test.describe('Dashboard Super Admin - Tests E2E', () => {
       await dashboardPage.goto()
       await dashboardPage.waitForLoad()
 
-      await expect(adminPage.locator('text=Nouvelles inscriptions')).toBeVisible()
+      await expect(
+        adminPage.locator('text=Nouvelles inscriptions')
+      ).toBeVisible()
     })
 
     test('devrait afficher le graphique Repartition par plans', async ({
@@ -180,7 +192,9 @@ test.describe('Dashboard Super Admin - Tests E2E', () => {
       await dashboardPage.goto()
       await dashboardPage.waitForLoad()
 
-      const recentSection = adminPage.locator('text=/dernieres inscriptions|entreprises/i')
+      const recentSection = adminPage.locator(
+        'text=/dernieres inscriptions|entreprises/i'
+      )
       await expect(recentSection.first()).toBeVisible()
     })
 
@@ -199,7 +213,9 @@ test.describe('Dashboard Super Admin - Tests E2E', () => {
   // ==========================================================================
 
   test.describe('Actions rapides', () => {
-    test('devrait afficher la section actions rapides', async ({ adminPage }) => {
+    test('devrait afficher la section actions rapides', async ({
+      adminPage,
+    }) => {
       dashboardPage = new DashboardAdminPage(adminPage)
       await dashboardPage.goto()
       await dashboardPage.waitForLoad()
@@ -224,7 +240,7 @@ test.describe('Dashboard Super Admin - Tests E2E', () => {
   // ==========================================================================
 
   test.describe('Responsivite', () => {
-    test('devrait s\'adapter a un ecran mobile', async ({ adminPage }) => {
+    test("devrait s'adapter a un ecran mobile", async ({ adminPage }) => {
       await adminPage.setViewportSize({ width: 375, height: 667 })
 
       dashboardPage = new DashboardAdminPage(adminPage)
@@ -234,7 +250,7 @@ test.describe('Dashboard Super Admin - Tests E2E', () => {
       await dashboardPage.expectToBeVisible()
     })
 
-    test('devrait s\'adapter a une tablette', async ({ adminPage }) => {
+    test("devrait s'adapter a une tablette", async ({ adminPage }) => {
       await adminPage.setViewportSize({ width: 768, height: 1024 })
 
       dashboardPage = new DashboardAdminPage(adminPage)

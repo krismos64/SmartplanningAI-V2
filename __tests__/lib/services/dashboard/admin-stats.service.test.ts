@@ -29,7 +29,9 @@ import {
   getAdminQuickStats,
 } from '@/lib/services/dashboard/admin-stats.service'
 
-const prismaMock = prisma as unknown as ReturnType<typeof mockDeep<PrismaClient>>
+const prismaMock = prisma as unknown as ReturnType<
+  typeof mockDeep<PrismaClient>
+>
 
 describe('admin-stats.service', () => {
   beforeEach(() => {
@@ -238,7 +240,7 @@ describe('admin-stats.service', () => {
   // ==========================================================================
 
   describe('getAdminCompanyCountOnly', () => {
-    it('devrait retourner le nombre d\'entreprises avec tendance', async () => {
+    it("devrait retourner le nombre d'entreprises avec tendance", async () => {
       prismaMock.company.count
         .mockResolvedValueOnce(100)
         .mockResolvedValueOnce(80)
@@ -293,7 +295,7 @@ describe('admin-stats.service', () => {
       expect(result.data?.current).toBe(99)
     })
 
-    it('devrait retourner 0 si pas d\'abonnements', async () => {
+    it("devrait retourner 0 si pas d'abonnements", async () => {
       prismaMock.subscription.findMany.mockResolvedValue([])
 
       const result = await getAdminMRROnly()
@@ -329,7 +331,7 @@ describe('admin-stats.service', () => {
       expect(result.data).toBe(0)
     })
 
-    it('devrait retourner 0 si pas d\'entreprises', async () => {
+    it("devrait retourner 0 si pas d'entreprises", async () => {
       prismaMock.company.count.mockResolvedValue(0)
       prismaMock.subscription.count.mockResolvedValue(0)
 
@@ -437,7 +439,7 @@ describe('admin-stats.service', () => {
       expect(result.data?.revenueByPlan.length).toBeGreaterThanOrEqual(2)
     })
 
-    it('devrait traduire les statuts d\'abonnement en francais', async () => {
+    it("devrait traduire les statuts d'abonnement en francais", async () => {
       prismaMock.company.count.mockResolvedValue(10)
       prismaMock.user.count.mockResolvedValue(100)
       prismaMock.subscription.count.mockResolvedValue(10)

@@ -460,6 +460,7 @@ SYSTEM_ADMIN > DIRECTOR > MANAGER > EMPLOYEE
 ```
 
 **Fonctions utilitaires :**
+
 - `hasMinimumRole(userRole, requiredRole)` : Vérifie si un rôle a le niveau minimum requis
 - `canAccessRoute(userRole, pathname)` : Vérifie si un rôle peut accéder à une route
 - `getRoleDashboardPath(role)` : Retourne le dashboard approprié selon le rôle
@@ -532,70 +533,79 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 
 ### Couverture actuelle (11 décembre 2025)
 
-| Catégorie | Coverage | Tests |
-|-----------|----------|-------|
-| **Global** | **~85%** | **1271** |
-| loading | 100% | 152 |
-| modals | 100% | 52 |
-| cards | 77.09% | 88 |
-| forms | 76.65% | 170 |
-| auth | ~95% | 34 |
-| permissions | 100% | 62 |
-| dashboard components | 100% | 57 |
-| charts | 100% | 88 |
-| dashboard services | 100% | 119 |
-| dashboard employee | 100% | 91 |
-| dashboard director | 100% | 87 |
-| dashboard admin | 100% | 115 |
+| Catégorie            | Coverage | Tests    |
+| -------------------- | -------- | -------- |
+| **Global**           | **~85%** | **1271** |
+| loading              | 100%     | 152      |
+| modals               | 100%     | 52       |
+| cards                | 77.09%   | 88       |
+| forms                | 76.65%   | 170      |
+| auth                 | ~95%     | 34       |
+| permissions          | 100%     | 62       |
+| dashboard components | 100%     | 57       |
+| charts               | 100%     | 88       |
+| dashboard services   | 100%     | 119      |
+| dashboard employee   | 100%     | 91       |
+| dashboard director   | 100%     | 87       |
+| dashboard admin      | 100%     | 115      |
 
 ### Tests E2E
 
-| Suite | Tests |
-|-------|-------|
-| Auth (login/register) | 18 |
-| Middleware RBAC | 27 |
-| Smoke tests | 4 |
-| **Dashboard Employee** | 15 |
-| **Dashboard Manager** | 23 |
-| **Dashboard Director** | 22 |
-| **Dashboard Super Admin** | 25 |
-| **RBAC Protection** | 21 |
-| **Total E2E** | **155** |
+| Suite                        | Tests   |
+| ---------------------------- | ------- |
+| Auth (login/register)        | 18      |
+| Middleware RBAC              | 27      |
+| Smoke tests                  | 4       |
+| **Dashboard Employee**       | 15      |
+| **Dashboard Manager**        | 23      |
+| **Dashboard Director**       | 22      |
+| **Dashboard Super Admin**    | 25      |
+| **RBAC Protection**          | 21      |
+| **Total E2E**                | **155** |
 | **Total avec 3 navigateurs** | **465** |
 
 ### Composants testés
 
 #### Auth (2 composants)
+
 - LoginForm (15 tests)
 - RegisterForm (19 tests)
 
 #### Permissions (1 module)
+
 - permissions.ts (62 tests) : `hasMinimumRole`, `canAccessRoute`, `getRoleDashboardPath`, `ROLE_HIERARCHY`
 
 #### Forms (6 composants)
+
 - FormField, FormInput, FormCheckbox
 - FormSelect, FormTextarea, FormRadioGroup
 
 #### Cards (3 composants)
+
 - UserCard, TeamCard, AvatarStack
 
 #### Loading (6 composants)
+
 - Spinner, LoadingOverlay
 - Skeleton, SkeletonCard, SkeletonTable, SkeletonText
 
 #### Modals (2 composants)
+
 - ConfirmDialog, FormDialog
 
 #### Dashboard (3 composants)
+
 - StatCard, TrendIndicator, StatsGrid
 
 #### Charts (4 composants)
+
 - ChartContainer (wrapper responsive avec loading/empty)
 - AreaChartWidget (graphiques d'aire avec gradients SVG)
 - BarChartWidget (barres verticales/horizontales, stacked)
 - PieChartWidget (pie/donut avec labels pourcentage)
 
 #### Dashboard Services (7 modules - SP-144)
+
 - types.ts (typage ServiceResult<T>, params, résultats)
 - base-stats.service.ts (utilitaires partagés : calculs, dates, vérifications multi-tenant)
 - employee-stats.service.ts (heures travaillées, solde congés, tendances)
@@ -605,6 +615,7 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 - index.ts (barrel export centralisé)
 
 #### Dashboard Employee (5 composants - SP-145)
+
 - EmployeeWelcome (message bienvenue contextuel + prochain shift)
 - EmployeeStats (4 KPIs : heures, shifts, congés, demandes)
 - EmployeeSchedule (BarChartWidget heures hebdomadaires)
@@ -612,6 +623,7 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 - EmployeeQuickActions (boutons actions rapides avec badge)
 
 #### CRUD Infrastructure (SP-150)
+
 - Types génériques : `CrudActionResult<T>`, `PaginatedResult<T>`, `ListQueryParams`, `FilterParams`
 - Types formulaires : `CompanyFormData`, `TeamFormData`, `UserFormData`
 - Schémas Zod Company : `createCompanySchema`, `updateCompanySchema`, `companyFiltersSchema`
@@ -620,6 +632,7 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 - Hooks React : `useCrudMutation`, `useDeleteMutation`, `useRefreshList`
 
 #### Dashboard Director (6 composants - SP-147)
+
 - DirectorWelcome (message bienvenue + indicateur santé entreprise + alertes)
 - DirectorStats (6 KPIs : employés, équipes, congés, heures, présence, absences)
 - DirectorTeamsChart (PieChartWidget répartition équipes avec légende)
@@ -628,6 +641,7 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 - DirectorQuickActions (4 boutons actions rapides avec badge compteur)
 
 #### Dashboard Super Admin (7 composants - SP-148)
+
 - AdminWelcome (message bienvenue + indicateur santé plateforme MRR/churn)
 - AdminStats (6 KPIs SaaS : entreprises, utilisateurs, MRR, abonnements, conversion, churn)
 - AdminMrrChart (AreaChartWidget évolution entreprises avec % croissance)
@@ -677,16 +691,16 @@ git push origin feature/SP-XX-description
 
 ### Infrastructure Production
 
-| Élément | Valeur |
-|---------|--------|
-| **URL** | https://smartplanning.fr |
-| **Serveur** | VPS OVH (4 vCores, 8GB RAM, 75GB SSD) |
-| **OS** | Ubuntu 24.04 LTS |
-| **IP** | 141.94.78.0 |
-| **SSL** | Let's Encrypt (auto-renew jusqu'au 2 mars 2026) |
-| **Reverse Proxy** | Nginx 1.24.0 |
-| **Containers** | Docker Compose (app + PostgreSQL 16 + Redis 7) |
-| **Registry** | GitHub Container Registry (ghcr.io) |
+| Élément           | Valeur                                          |
+| ----------------- | ----------------------------------------------- |
+| **URL**           | https://smartplanning.fr                        |
+| **Serveur**       | VPS OVH (4 vCores, 8GB RAM, 75GB SSD)           |
+| **OS**            | Ubuntu 24.04 LTS                                |
+| **IP**            | 141.94.78.0                                     |
+| **SSL**           | Let's Encrypt (auto-renew jusqu'au 2 mars 2026) |
+| **Reverse Proxy** | Nginx 1.24.0                                    |
+| **Containers**    | Docker Compose (app + PostgreSQL 16 + Redis 7)  |
+| **Registry**      | GitHub Container Registry (ghcr.io)             |
 
 ### Connexion SSH
 
@@ -709,12 +723,12 @@ Push main → GitHub Actions → Build Docker → Push GHCR → Deploy VPS
 
 ### Scores Lighthouse (3 décembre 2025)
 
-| Métrique | Score |
-|----------|-------|
-| **Performance** | 86% |
-| **SEO** | 100% |
-| **Accessibilité** | 98% |
-| **Best Practices** | 96% |
+| Métrique           | Score |
+| ------------------ | ----- |
+| **Performance**    | 86%   |
+| **SEO**            | 100%  |
+| **Accessibilité**  | 98%   |
+| **Best Practices** | 96%   |
 
 ## Auteur
 

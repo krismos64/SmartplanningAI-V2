@@ -40,9 +40,7 @@ describe('AdminMrrChart', () => {
     it('devrait rendre le titre', () => {
       render(<AdminMrrChart companiesGrowth={mockCompaniesGrowth} />)
 
-      expect(
-        screen.getByText('Evolution des entreprises')
-      ).toBeInTheDocument()
+      expect(screen.getByText('Evolution des entreprises')).toBeInTheDocument()
     })
 
     it('devrait rendre le sous-titre', () => {
@@ -55,7 +53,10 @@ describe('AdminMrrChart', () => {
       render(<AdminMrrChart companiesGrowth={mockCompaniesGrowth} />)
 
       expect(screen.getByTestId('area-chart')).toBeInTheDocument()
-      expect(screen.getByTestId('area-chart')).toHaveAttribute('data-count', '6')
+      expect(screen.getByTestId('area-chart')).toHaveAttribute(
+        'data-count',
+        '6'
+      )
     })
   })
 

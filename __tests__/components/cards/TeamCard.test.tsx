@@ -43,7 +43,9 @@ describe('TeamCard', () => {
     })
 
     it('renders singular "membre" for 1 member', () => {
-      render(<TeamCard team={mockTeamFrontend} members={[mockTeamMembers[0]!]} />)
+      render(
+        <TeamCard team={mockTeamFrontend} members={[mockTeamMembers[0]!]} />
+      )
 
       expect(screen.getByText('1 membre')).toBeInTheDocument()
     })
@@ -75,15 +77,13 @@ describe('TeamCard', () => {
   describe('Variant detailed', () => {
     it('renders team description in detailed variant', () => {
       render(
-        <TeamCard
-          team={mockTeamFrontend}
-          members={[]}
-          variant="detailed"
-        />
+        <TeamCard team={mockTeamFrontend} members={[]} variant="detailed" />
       )
 
       expect(
-        screen.getByText('Développement des interfaces utilisateur React/Next.js')
+        screen.getByText(
+          'Développement des interfaces utilisateur React/Next.js'
+        )
       ).toBeInTheDocument()
     })
 
@@ -93,9 +93,7 @@ describe('TeamCard', () => {
       )
 
       // Should not have description paragraph
-      expect(
-        screen.queryByText(/Développement/)
-      ).not.toBeInTheDocument()
+      expect(screen.queryByText(/Développement/)).not.toBeInTheDocument()
     })
 
     it('renders manager with avatar in detailed variant', () => {
@@ -160,9 +158,7 @@ describe('TeamCard', () => {
     })
 
     it('falls back to members.length when totalMembers not provided', () => {
-      render(
-        <TeamCard team={mockTeamFrontend} members={mockTeamMembers} />
-      )
+      render(<TeamCard team={mockTeamFrontend} members={mockTeamMembers} />)
 
       expect(screen.getByText('5 membres')).toBeInTheDocument()
     })
@@ -188,15 +184,18 @@ describe('TeamCard', () => {
 
   describe('AvatarStack', () => {
     it('renders AvatarStack when members provided', () => {
-      render(
-        <TeamCard team={mockTeamFrontend} members={mockTeamMembers} />
-      )
+      render(<TeamCard team={mockTeamFrontend} members={mockTeamMembers} />)
 
       // AvatarStack renders avatars - look for the avatar stack initials
       // Members have initials like AM, JD, etc.
       const hasAvatarContent = mockTeamMembers.some((member) => {
         if (member.name) {
-          const initials = member.name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase()
+          const initials = member.name
+            .split(' ')
+            .map((n) => n[0])
+            .join('')
+            .slice(0, 2)
+            .toUpperCase()
           return screen.queryByText(initials) !== null
         }
         return false
@@ -317,8 +316,9 @@ describe('TeamCard', () => {
       )
 
       // Skeleton uses TeamCardSkeleton
-      const skeleton = container.querySelector('[class*="skeleton"]') ||
-                       container.querySelector('[class*="animate"]')
+      const skeleton =
+        container.querySelector('[class*="skeleton"]') ||
+        container.querySelector('[class*="animate"]')
       expect(
         skeleton || screen.queryByText('Équipe Frontend') === null
       ).toBeTruthy()

@@ -21,11 +21,7 @@ import { TooltipProvider } from '@/components/ui/tooltip'
  * - Futurs providers (Auth, Theme, etc.) seront ajoutés ici
  */
 function AllProviders({ children }: { children: ReactNode }) {
-  return (
-    <TooltipProvider delayDuration={0}>
-      {children}
-    </TooltipProvider>
-  )
+  return <TooltipProvider delayDuration={0}>{children}</TooltipProvider>
 }
 
 /**

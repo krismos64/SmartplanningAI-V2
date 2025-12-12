@@ -38,7 +38,9 @@ import {
   calculateWorkingDays,
 } from '@/lib/services/dashboard/base-stats.service'
 
-const prismaMock = prisma as unknown as ReturnType<typeof mockDeep<PrismaClient>>
+const prismaMock = prisma as unknown as ReturnType<
+  typeof mockDeep<PrismaClient>
+>
 
 describe('base-stats.service', () => {
   beforeEach(() => {
@@ -136,7 +138,9 @@ describe('base-stats.service', () => {
 
       const previousRange = getPreviousPeriod(currentRange)
 
-      expect(previousRange.to.getTime()).toBeLessThan(currentRange.from.getTime())
+      expect(previousRange.to.getTime()).toBeLessThan(
+        currentRange.from.getTime()
+      )
     })
 
     it('devrait avoir la meme duree que la periode courante', () => {
@@ -146,8 +150,10 @@ describe('base-stats.service', () => {
       }
 
       const previousRange = getPreviousPeriod(currentRange)
-      const currentDuration = currentRange.to.getTime() - currentRange.from.getTime()
-      const previousDuration = previousRange.to.getTime() - previousRange.from.getTime()
+      const currentDuration =
+        currentRange.to.getTime() - currentRange.from.getTime()
+      const previousDuration =
+        previousRange.to.getTime() - previousRange.from.getTime()
 
       // Tolerance d'une seconde
       expect(Math.abs(currentDuration - previousDuration)).toBeLessThan(1000)
@@ -168,14 +174,14 @@ describe('base-stats.service', () => {
       expect(weekStart.getDate()).toBe(9) // Lundi 9 juin
     })
 
-    it('devrait retourner la meme date si c\'est deja lundi', () => {
+    it("devrait retourner la meme date si c'est deja lundi", () => {
       const monday = new Date('2025-06-09') // Lundi
       const weekStart = getWeekStart(monday)
 
       expect(weekStart.getDate()).toBe(9)
     })
 
-    it('devrait avoir l\'heure a minuit', () => {
+    it("devrait avoir l'heure a minuit", () => {
       const date = new Date('2025-06-15T15:30:00')
       const weekStart = getWeekStart(date)
 
@@ -193,7 +199,7 @@ describe('base-stats.service', () => {
       expect(weekEnd.getDate()).toBe(15) // Dimanche 15 juin
     })
 
-    it('devrait avoir l\'heure a 23:59:59', () => {
+    it("devrait avoir l'heure a 23:59:59", () => {
       const date = new Date('2025-06-10')
       const weekEnd = getWeekEnd(date)
 
@@ -217,7 +223,7 @@ describe('base-stats.service', () => {
       expect(yearStart.getFullYear()).toBe(2025)
     })
 
-    it('devrait avoir l\'heure a minuit', () => {
+    it("devrait avoir l'heure a minuit", () => {
       const date = new Date('2025-06-15T15:30:00')
       const yearStart = getYearStart(date)
 
@@ -272,7 +278,7 @@ describe('base-stats.service', () => {
       expect(calculateHoursBetween('09:00', '12:30')).toBe(3.5)
     })
 
-    it('devrait calculer les quarts d\'heure', () => {
+    it("devrait calculer les quarts d'heure", () => {
       expect(calculateHoursBetween('09:00', '09:15')).toBe(0.25)
     })
 
@@ -465,7 +471,7 @@ describe('base-stats.service', () => {
       expect(result).toBe(false)
     })
 
-    it('devrait refuser si l\'utilisateur n\'existe pas', async () => {
+    it("devrait refuser si l'utilisateur n'existe pas", async () => {
       prismaMock.user.findUnique.mockResolvedValue(null)
 
       const result = await verifyCompanyAccess('invalid-user', 'company-1')
@@ -479,7 +485,7 @@ describe('base-stats.service', () => {
   // ==========================================================================
 
   describe('verifyEmployeeBelongsToCompany', () => {
-    it('devrait retourner true si l\'employe appartient a l\'entreprise', async () => {
+    it("devrait retourner true si l'employe appartient a l'entreprise", async () => {
       prismaMock.employee.findUnique.mockResolvedValue({
         id: 'emp-1',
         companyId: 'company-1',
@@ -504,7 +510,7 @@ describe('base-stats.service', () => {
       expect(result).toBe(true)
     })
 
-    it('devrait retourner false si l\'employe n\'appartient pas a l\'entreprise', async () => {
+    it("devrait retourner false si l'employe n'appartient pas a l'entreprise", async () => {
       prismaMock.employee.findUnique.mockResolvedValue({
         id: 'emp-1',
         companyId: 'company-1',
@@ -524,15 +530,21 @@ describe('base-stats.service', () => {
         updatedAt: new Date(),
       })
 
-      const result = await verifyEmployeeBelongsToCompany('emp-1', 'other-company')
+      const result = await verifyEmployeeBelongsToCompany(
+        'emp-1',
+        'other-company'
+      )
 
       expect(result).toBe(false)
     })
 
-    it('devrait retourner false si l\'employe n\'existe pas', async () => {
+    it("devrait retourner false si l'employe n'existe pas", async () => {
       prismaMock.employee.findUnique.mockResolvedValue(null)
 
-      const result = await verifyEmployeeBelongsToCompany('invalid-emp', 'company-1')
+      const result = await verifyEmployeeBelongsToCompany(
+        'invalid-emp',
+        'company-1'
+      )
 
       expect(result).toBe(false)
     })
@@ -543,7 +555,7 @@ describe('base-stats.service', () => {
   // ==========================================================================
 
   describe('verifyManagerOfTeam', () => {
-    it('devrait retourner true si l\'employe est manager de l\'equipe', async () => {
+    it("devrait retourner true si l'employe est manager de l'equipe", async () => {
       prismaMock.team.findUnique.mockResolvedValue({
         id: 'team-1',
         managerId: 'emp-1',
@@ -560,7 +572,7 @@ describe('base-stats.service', () => {
       expect(result).toBe(true)
     })
 
-    it('devrait retourner false si l\'employe n\'est pas manager', async () => {
+    it("devrait retourner false si l'employe n'est pas manager", async () => {
       prismaMock.team.findUnique.mockResolvedValue({
         id: 'team-1',
         managerId: 'other-emp',
@@ -577,7 +589,7 @@ describe('base-stats.service', () => {
       expect(result).toBe(false)
     })
 
-    it('devrait retourner false si l\'equipe n\'existe pas', async () => {
+    it("devrait retourner false si l'equipe n'existe pas", async () => {
       prismaMock.team.findUnique.mockResolvedValue(null)
 
       const result = await verifyManagerOfTeam('emp-1', 'invalid-team')
@@ -585,7 +597,7 @@ describe('base-stats.service', () => {
       expect(result).toBe(false)
     })
 
-    it('devrait retourner false si l\'equipe n\'a pas de manager', async () => {
+    it("devrait retourner false si l'equipe n'a pas de manager", async () => {
       prismaMock.team.findUnique.mockResolvedValue({
         id: 'team-1',
         managerId: null,

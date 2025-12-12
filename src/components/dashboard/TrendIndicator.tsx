@@ -88,7 +88,7 @@ export function TrendIndicator({
       <Icon className={sizeStyle.icon} aria-hidden="true" />
       <span>{formatTrend(value)}</span>
       {label && (
-        <span className="text-gray-500 dark:text-gray-400 font-normal">
+        <span className="font-normal text-gray-500 dark:text-gray-400">
           {label}
         </span>
       )}

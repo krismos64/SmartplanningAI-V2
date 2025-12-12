@@ -167,7 +167,9 @@ describe('getRequiredRoleForRoute', () => {
     })
 
     it('devrait retourner SYSTEM_ADMIN pour /app/admin/companies/123', () => {
-      expect(getRequiredRoleForRoute('/app/admin/companies/123')).toBe('SYSTEM_ADMIN')
+      expect(getRequiredRoleForRoute('/app/admin/companies/123')).toBe(
+        'SYSTEM_ADMIN'
+      )
     })
   })
 
@@ -177,11 +179,15 @@ describe('getRequiredRoleForRoute', () => {
     })
 
     it('devrait retourner DIRECTOR pour /app/director/dashboard', () => {
-      expect(getRequiredRoleForRoute('/app/director/dashboard')).toBe('DIRECTOR')
+      expect(getRequiredRoleForRoute('/app/director/dashboard')).toBe(
+        'DIRECTOR'
+      )
     })
 
     it('devrait retourner DIRECTOR pour /app/director/teams/settings', () => {
-      expect(getRequiredRoleForRoute('/app/director/teams/settings')).toBe('DIRECTOR')
+      expect(getRequiredRoleForRoute('/app/director/teams/settings')).toBe(
+        'DIRECTOR'
+      )
     })
   })
 
@@ -195,7 +201,9 @@ describe('getRequiredRoleForRoute', () => {
     })
 
     it('devrait retourner MANAGER pour /app/manager/team/leave-requests', () => {
-      expect(getRequiredRoleForRoute('/app/manager/team/leave-requests')).toBe('MANAGER')
+      expect(getRequiredRoleForRoute('/app/manager/team/leave-requests')).toBe(
+        'MANAGER'
+      )
     })
   })
 
@@ -336,11 +344,15 @@ describe('canAccessRoute', () => {
 
 describe('getDefaultDashboardForRole', () => {
   it('devrait retourner /app/admin/dashboard pour SYSTEM_ADMIN', () => {
-    expect(getDefaultDashboardForRole('SYSTEM_ADMIN')).toBe('/app/admin/dashboard')
+    expect(getDefaultDashboardForRole('SYSTEM_ADMIN')).toBe(
+      '/app/admin/dashboard'
+    )
   })
 
   it('devrait retourner /app/director/dashboard pour DIRECTOR', () => {
-    expect(getDefaultDashboardForRole('DIRECTOR')).toBe('/app/director/dashboard')
+    expect(getDefaultDashboardForRole('DIRECTOR')).toBe(
+      '/app/director/dashboard'
+    )
   })
 
   it('devrait retourner /app/manager/dashboard pour MANAGER', () => {
@@ -382,8 +394,8 @@ describe('Scénarios RBAC intégrés', () => {
     })
   })
 
-  describe('workflow d\'accès refusé', () => {
-    it('un EMPLOYEE essayant d\'accéder à /app/admin devrait être redirigé', () => {
+  describe("workflow d'accès refusé", () => {
+    it("un EMPLOYEE essayant d'accéder à /app/admin devrait être redirigé", () => {
       const userRole: UserRole = 'EMPLOYEE'
       const attemptedRoute = '/app/admin/users'
 
@@ -395,7 +407,7 @@ describe('Scénarios RBAC intégrés', () => {
       expect(canAccessRoute(fallbackRoute, userRole)).toBe(true)
     })
 
-    it('un MANAGER essayant d\'accéder à /app/director devrait être redirigé', () => {
+    it("un MANAGER essayant d'accéder à /app/director devrait être redirigé", () => {
       const userRole: UserRole = 'MANAGER'
       const attemptedRoute = '/app/director/settings'
 
@@ -407,7 +419,7 @@ describe('Scénarios RBAC intégrés', () => {
   })
 
   describe('escalade de privilèges (sécurité)', () => {
-    it('ne devrait jamais permettre à un rôle inférieur d\'accéder aux routes supérieures', () => {
+    it("ne devrait jamais permettre à un rôle inférieur d'accéder aux routes supérieures", () => {
       const adminRoute = '/app/admin/users'
 
       // Seul SYSTEM_ADMIN peut accéder

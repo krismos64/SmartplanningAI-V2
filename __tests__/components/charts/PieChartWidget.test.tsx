@@ -105,9 +105,7 @@ describe('PieChartWidget', () => {
     })
 
     it('accepte un nameKey personnalise', () => {
-      render(
-        <PieChartWidget data={mockData} dataKey="value" nameKey="label" />
-      )
+      render(<PieChartWidget data={mockData} dataKey="value" nameKey="label" />)
 
       const pie = screen.getByTestId('pie')
       expect(pie).toHaveAttribute('data-namekey', 'label')
@@ -226,7 +224,7 @@ describe('PieChartWidget', () => {
   // =========================================================================
 
   describe('Labels', () => {
-    it('n\'affiche pas les labels par defaut', () => {
+    it("n'affiche pas les labels par defaut", () => {
       render(<PieChartWidget data={mockData} dataKey="value" />)
 
       const pie = screen.getByTestId('pie')
@@ -260,7 +258,7 @@ describe('PieChartWidget', () => {
       expect(screen.queryByTestId('tooltip')).not.toBeInTheDocument()
     })
 
-    it('n\'affiche pas la legende par defaut', () => {
+    it("n'affiche pas la legende par defaut", () => {
       render(<PieChartWidget data={mockData} dataKey="value" />)
 
       expect(screen.queryByTestId('legend')).not.toBeInTheDocument()
@@ -285,13 +283,13 @@ describe('PieChartWidget', () => {
       expect(screen.queryByTestId('pie-chart')).not.toBeInTheDocument()
     })
 
-    it('affiche l\'etat vide sans donnees', () => {
+    it("affiche l'etat vide sans donnees", () => {
       render(<PieChartWidget data={[]} dataKey="value" />)
 
       expect(screen.getByTestId('chart-empty')).toBeInTheDocument()
     })
 
-    it('affiche un message personnalise pour l\'etat vide', () => {
+    it("affiche un message personnalise pour l'etat vide", () => {
       render(
         <PieChartWidget
           data={[]}
@@ -344,7 +342,11 @@ describe('PieChartWidget', () => {
 
     it('applique des classes CSS personnalisees', () => {
       render(
-        <PieChartWidget data={mockData} dataKey="value" className="custom-pie" />
+        <PieChartWidget
+          data={mockData}
+          dataKey="value"
+          className="custom-pie"
+        />
       )
 
       const container = screen.getByTestId('chart-container')

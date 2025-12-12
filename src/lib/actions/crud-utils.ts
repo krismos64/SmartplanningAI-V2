@@ -20,7 +20,11 @@ import { revalidatePath } from 'next/cache'
 
 import { auth } from '@/lib/auth'
 import { hasRequiredRole } from '@/lib/permissions'
-import type { CrudActionResult, PaginatedResult, ListQueryParams } from '@/types'
+import type {
+  CrudActionResult,
+  PaginatedResult,
+  ListQueryParams,
+} from '@/types'
 
 // ============================================================================
 // Types internes
@@ -75,7 +79,7 @@ export async function checkPermission(
 
     const userRole = session.user.role
 
-    if (!hasRequiredRole(userRole as UserRole, requiredRole)) {
+    if (!hasRequiredRole(userRole, requiredRole)) {
       return {
         success: false,
         error: "Vous n'avez pas les permissions nécessaires",
@@ -86,7 +90,7 @@ export async function checkPermission(
       success: true,
       data: {
         id: session.user.id,
-        role: userRole as UserRole,
+        role: userRole,
         companyId: session.user.companyId ?? null,
       },
     }

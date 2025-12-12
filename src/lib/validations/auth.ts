@@ -104,8 +104,7 @@ export const AUTH_ERROR_MESSAGES: Record<string, string> = {
   // Erreurs custom SmartPlanning (définies dans auth.ts authorize())
   AccountDisabled:
     'Votre compte a été désactivé. Contactez votre administrateur.',
-  CompanyInactive:
-    'Votre organisation a été désactivée. Contactez le support.',
+  CompanyInactive: 'Votre organisation a été désactivée. Contactez le support.',
 
   // Erreurs serveur
   Configuration: 'Erreur de configuration du serveur',
@@ -123,7 +122,9 @@ const DEFAULT_ERROR_MESSAGE = 'Une erreur est survenue. Veuillez réessayer.'
  * @param errorCode - Code d'erreur NextAuth ou custom
  * @returns Message d'erreur en français
  */
-export function getAuthErrorMessage(errorCode: string | null | undefined): string {
+export function getAuthErrorMessage(
+  errorCode: string | null | undefined
+): string {
   if (!errorCode) return DEFAULT_ERROR_MESSAGE
   return AUTH_ERROR_MESSAGES[errorCode] ?? DEFAULT_ERROR_MESSAGE
 }

@@ -27,10 +27,18 @@ describe('DirectorQuickActions', () => {
     it('devrait afficher les 4 boutons d action', () => {
       render(<DirectorQuickActions />)
 
-      expect(screen.getByRole('link', { name: /Gerer les equipes/ })).toBeInTheDocument()
-      expect(screen.getByRole('link', { name: /Tous les employes/ })).toBeInTheDocument()
-      expect(screen.getByRole('link', { name: /Conges en attente/ })).toBeInTheDocument()
-      expect(screen.getByRole('link', { name: /Parametres/ })).toBeInTheDocument()
+      expect(
+        screen.getByRole('link', { name: /Gerer les equipes/ })
+      ).toBeInTheDocument()
+      expect(
+        screen.getByRole('link', { name: /Tous les employes/ })
+      ).toBeInTheDocument()
+      expect(
+        screen.getByRole('link', { name: /Conges en attente/ })
+      ).toBeInTheDocument()
+      expect(
+        screen.getByRole('link', { name: /Parametres/ })
+      ).toBeInTheDocument()
     })
 
     it('devrait afficher le titre', () => {
@@ -117,13 +125,17 @@ describe('DirectorQuickActions', () => {
     it('devrait afficher le message si conges en attente (singulier)', () => {
       const { container } = render(<DirectorQuickActions pendingLeaves={1} />)
 
-      expect(container.textContent).toContain('demande de conges en attente de validation')
+      expect(container.textContent).toContain(
+        'demande de conges en attente de validation'
+      )
     })
 
     it('devrait afficher le message si conges en attente (pluriel)', () => {
       const { container } = render(<DirectorQuickActions pendingLeaves={5} />)
 
-      expect(container.textContent).toContain('demandes de conges en attente de validation')
+      expect(container.textContent).toContain(
+        'demandes de conges en attente de validation'
+      )
     })
 
     it('ne devrait pas afficher le message si 0 conges', () => {

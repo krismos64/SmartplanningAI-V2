@@ -290,8 +290,8 @@ function ToastActionTests() {
 
         <div className="rounded-lg bg-blue-50 p-4 dark:bg-blue-950/20">
           <p className="text-sm text-blue-900 dark:text-blue-100">
-            💡 <strong>Astuce :</strong> Le bouton &quot;Annuler&quot; apparaît dans le
-            toast. Vous avez 5 secondes pour annuler la suppression.
+            💡 <strong>Astuce :</strong> Le bouton &quot;Annuler&quot; apparaît
+            dans le toast. Vous avez 5 secondes pour annuler la suppression.
           </p>
         </div>
 
