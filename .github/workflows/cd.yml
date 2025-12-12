@@ -234,7 +234,7 @@ jobs:
           set -e
           echo "🗄️ Exécution des migrations Prisma..."
           cd /var/www/smartplanning
-          docker compose --env-file .env exec -T app node node_modules/prisma/build/index.js migrate deploy
+          docker compose --env-file .env exec -T app npx prisma migrate deploy
           echo "✅ Migrations terminées !"
           MIGRATE_SCRIPT
 
