@@ -198,9 +198,9 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
-      # Exécute les migrations Prisma pour créer le schéma de la DB de test
-      - name: Run database migrations
-        run: npx prisma migrate deploy
+      # Pousse le schéma Prisma vers la DB de test (crée les tables)
+      - name: Push database schema
+        run: npx prisma db push --skip-generate
         env:
           DATABASE_URL: 'postgresql://test:test@localhost:5432/smartplanning_test'
 
