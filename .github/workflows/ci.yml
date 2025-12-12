@@ -218,7 +218,7 @@ jobs:
       - name: Push database schema
         run: |
           echo "🔄 Pushing Prisma schema to test database..."
-          npx prisma db push --accept-data-loss --skip-generate
+          npx prisma db push --force-reset --accept-data-loss
           echo "✅ Schema pushed"
           echo "📋 Verifying tables were created..."
           npx prisma db execute --schema ./prisma/schema.prisma --stdin <<< "SELECT tablename FROM pg_tables WHERE schemaname = 'public' ORDER BY tablename;"
