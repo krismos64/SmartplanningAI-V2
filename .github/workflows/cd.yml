@@ -229,16 +229,13 @@ jobs:
           ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
 
       - name: Run Prisma migrations via SSH
-        continue-on-error: true
         run: |
           ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no -p ${{ secrets.VPS_SSH_PORT || 22 }} ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'MIGRATE_SCRIPT'
-          echo "🗄️ Vérification des migrations Prisma..."
+          set -e
+          echo "🗄️ Exécution des migrations Prisma..."
           cd /var/www/smartplanning
-          # Les migrations sont appliquées au démarrage de l'app via prisma generate
-          # ou manuellement si nécessaire
-          echo "ℹ️ Note: Les migrations doivent être exécutées manuellement si nécessaire"
-          echo "   Commande: docker exec smartplanning-app npx prisma migrate deploy"
-          echo "✅ Étape migrations terminée !"
+          docker compose --env-file .env exec -T app npx prisma migrate deploy
+          echo "✅ Migrations terminées !"
           MIGRATE_SCRIPT
 
 # ==============================================
