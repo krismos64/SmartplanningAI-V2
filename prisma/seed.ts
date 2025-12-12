@@ -259,6 +259,22 @@ async function main() {
   // ============================================================================
   console.log('👤 Création des utilisateurs et employés...')
 
+  // ========== SYSTEM ADMIN (Super Admin global) ==========
+  // Utilisateur requis pour les tests E2E RBAC
+  const systemAdmin = await prisma.user.create({
+    data: {
+      email: 'admin@smartplanning.io',
+      name: 'Super Admin',
+      password: hashedPassword,
+      emailVerified: new Date(),
+      role: UserRole.SYSTEM_ADMIN,
+      companyId: null, // System Admin n'appartient pas à une entreprise
+      isActive: true,
+      isEmailVerified: true,
+    },
+  })
+  console.log('   ✅ System Admin créé: admin@smartplanning.io')
+
   // ========== TECHCORP (10 users) ==========
 
   // DIRECTOR TechCorp
@@ -880,7 +896,7 @@ async function main() {
   console.log('   - 3 DIRECTOR (1 par organisation)')
   console.log('   - 6 MANAGER')
   console.log('   - 11 EMPLOYEE')
-  console.log('   - 0 SYSTEM_ADMIN (réservé à Christophe)\n')
+  console.log('   - 1 SYSTEM_ADMIN (admin@smartplanning.io)\n')
 
   // ============================================================================
   // 6. CRÉER LES PLANNINGS (SCHEDULES)
@@ -1540,7 +1556,7 @@ async function main() {
   console.log('   • 3 DIRECTOR (1 par organisation)')
   console.log('   • 6 MANAGER')
   console.log('   • 11 EMPLOYEE')
-  console.log('   • 0 SYSTEM_ADMIN (réservé à Christophe)\n')
+  console.log('   • 1 SYSTEM_ADMIN (admin@smartplanning.io)\n')
 
   console.log('💳 ABONNEMENTS & PAIEMENTS :')
   console.log('   • 3 abonnements Stripe créés')
