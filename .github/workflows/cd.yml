@@ -155,74 +155,41 @@ jobs:
 
     steps:
       # Connexion SSH au VPS et exécution des commandes
-      # Debug: vérifier que les secrets sont présents
-      - name: Verify secrets are set
+      # Créer le fichier de clé SSH
+      - name: Setup SSH key
         run: |
-          if [ -z "${{ secrets.VPS_HOST }}" ]; then echo "❌ VPS_HOST is empty"; exit 1; fi
-          if [ -z "${{ secrets.VPS_USER }}" ]; then echo "❌ VPS_USER is empty"; exit 1; fi
-          if [ -z "${{ secrets.VPS_SSH_KEY }}" ]; then echo "❌ VPS_SSH_KEY is empty"; exit 1; fi
-          echo "✅ All secrets are set"
-          echo "Host: ${{ secrets.VPS_HOST }}"
-          echo "User: ${{ secrets.VPS_USER }}"
-          echo "Key length: $(echo '${{ secrets.VPS_SSH_KEY }}' | wc -c) characters"
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
 
       - name: Deploy to VPS via SSH
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          port: ${{ secrets.VPS_SSH_PORT || 22 }}
-          debug: true
-          # Script exécuté sur le VPS
-          script: |
-            # ==============================================
-            # SCRIPT DE DÉPLOIEMENT SUR LE VPS
-            # ==============================================
-
-            echo "🚀 Début du déploiement SmartPlanning..."
-
-            # Se placer dans le dossier du projet
-            cd /var/www/smartplanning
-
-            # L'authentification GHCR est persistante sur le VPS
-            # Configurée via : docker login ghcr.io (PAT stocké dans ~/.docker/config.json)
-            # Pas besoin de login à chaque déploiement
-
-            # Pull forcé de la nouvelle image (bypass cache)
-            echo "📦 Pull de la nouvelle image (force)..."
-            docker pull --quiet ghcr.io/krismos64/smartplanningai-v2:latest
-
-            # Afficher le digest pour vérification
-            echo "📋 Image digest:"
-            docker images ghcr.io/krismos64/smartplanningai-v2:latest --format "{{.ID}} {{.CreatedAt}}"
-
-            # Arrêt gracieux des conteneurs actuels
-            echo "⏹️ Arrêt des conteneurs..."
-            docker compose --env-file .env -f docker/docker-compose.prod.yml down --remove-orphans
-
-            # Démarrage avec la nouvelle image (force pull)
-            echo "▶️ Démarrage des nouveaux conteneurs..."
-            docker compose --env-file .env -f docker/docker-compose.prod.yml up -d --pull always
-
-            # Attente que l'app soit prête
-            echo "⏳ Attente du healthcheck..."
-            sleep 30
-
-            # Vérification du healthcheck
-            if curl -f http://localhost:3000/api/health > /dev/null 2>&1; then
-              echo "✅ Application déployée avec succès !"
-            else
-              echo "❌ Healthcheck échoué - Vérifier les logs"
-              docker compose --env-file .env -f docker/docker-compose.prod.yml logs app --tail 50
-              exit 1
-            fi
-
-            # Nettoyage des anciennes images
-            echo "🧹 Nettoyage des anciennes images..."
-            docker image prune -f
-
-            echo "🎉 Déploiement terminé !"
+        run: |
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no -p ${{ secrets.VPS_SSH_PORT || 22 }} ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'DEPLOY_SCRIPT'
+          set -e
+          echo "🚀 Début du déploiement SmartPlanning..."
+          cd /var/www/smartplanning
+          echo "📦 Pull de la nouvelle image..."
+          docker pull --quiet ghcr.io/krismos64/smartplanningai-v2:latest
+          echo "📋 Image digest:"
+          docker images ghcr.io/krismos64/smartplanningai-v2:latest --format "{{.ID}} {{.CreatedAt}}"
+          echo "⏹️ Arrêt des conteneurs..."
+          docker compose --env-file .env -f docker/docker-compose.prod.yml down --remove-orphans
+          echo "▶️ Démarrage des nouveaux conteneurs..."
+          docker compose --env-file .env -f docker/docker-compose.prod.yml up -d --pull always
+          echo "⏳ Attente du healthcheck..."
+          sleep 30
+          if curl -f http://localhost:3000/api/health > /dev/null 2>&1; then
+            echo "✅ Application déployée avec succès !"
+          else
+            echo "❌ Healthcheck échoué - Vérifier les logs"
+            docker compose --env-file .env -f docker/docker-compose.prod.yml logs app --tail 50
+            exit 1
+          fi
+          echo "🧹 Nettoyage des anciennes images..."
+          docker image prune -f
+          echo "🎉 Déploiement terminé !"
+          DEPLOY_SCRIPT
 
       # Notification de succès (optionnel)
       # Peut être remplacé par Slack, Discord, email...
@@ -247,22 +214,22 @@ jobs:
     # N'exécute pas les migrations sur workflow_dispatch manuel
 
     steps:
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
+
       - name: Run Prisma migrations via SSH
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          port: ${{ secrets.VPS_SSH_PORT || 22 }}
-          script: |
-            echo "🗄️ Exécution des migrations Prisma..."
-            cd /var/www/smartplanning
-
-            # Exécute les migrations dans le conteneur app
-            # Utilise le chemin local node_modules pour éviter que npx télécharge une autre version
-            docker compose --env-file .env -f docker/docker-compose.prod.yml exec -T app node node_modules/prisma/build/index.js migrate deploy
-
-            echo "✅ Migrations terminées !"
+        run: |
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no -p ${{ secrets.VPS_SSH_PORT || 22 }} ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'MIGRATE_SCRIPT'
+          set -e
+          echo "🗄️ Exécution des migrations Prisma..."
+          cd /var/www/smartplanning
+          docker compose --env-file .env -f docker/docker-compose.prod.yml exec -T app node node_modules/prisma/build/index.js migrate deploy
+          echo "✅ Migrations terminées !"
+          MIGRATE_SCRIPT
 
 # ==============================================
 # RÉSUMÉ DU PIPELINE CD
