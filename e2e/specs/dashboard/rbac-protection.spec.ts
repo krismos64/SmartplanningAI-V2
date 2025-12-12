@@ -7,7 +7,7 @@
  * @ticket SP-149
  */
 
-import { test, expect, TEST_USERS, loginAs } from '../../fixtures/auth.fixture'
+import { test, expect, TEST_USERS } from '../../fixtures/auth.fixture'
 
 test.describe('RBAC Protection - Tests E2E', () => {
   // ==========================================================================
@@ -195,7 +195,7 @@ test.describe('RBAC Protection - Tests E2E', () => {
       page,
       loginAs,
     }) => {
-      await loginAs(page, TEST_USERS.EMPLOYEE)
+      await loginAs(page, TEST_USERS.EMPLOYEE!)
 
       // Le message de connexion reussie devrait apparaitre
       await expect(page.getByText(/connexion reussie/i)).toBeVisible()
@@ -205,11 +205,11 @@ test.describe('RBAC Protection - Tests E2E', () => {
       page,
       loginAs,
     }) => {
-      await loginAs(page, TEST_USERS.DIRECTOR)
+      await loginAs(page, TEST_USERS.DIRECTOR!)
 
       // Devrait etre sur le dashboard director
       await expect(page).toHaveURL(
-        new RegExp(`.*${TEST_USERS.DIRECTOR.expectedDashboard}.*`)
+        new RegExp(`.*${TEST_USERS.DIRECTOR!.expectedDashboard}.*`)
       )
     })
   })
