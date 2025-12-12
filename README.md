@@ -1,4 +1,4 @@
-# SmartPlanning V2
+# SmartPlanning
 
 ![CI](https://github.com/krismos64/SmartplanningAI-V2/actions/workflows/ci.yml/badge.svg)
 
