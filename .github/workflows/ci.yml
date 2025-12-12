@@ -169,9 +169,9 @@ jobs:
           POSTGRES_DB: smartplanning_test
         ports:
           - 5432:5432
-        # Health checks pour attendre que PostgreSQL soit prêt
+        # Health checks avec le bon utilisateur
         options: >-
-          --health-cmd pg_isready
+          --health-cmd "pg_isready -U test -d smartplanning_test"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
@@ -198,14 +198,21 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
+      # Vérifie la connexion à la DB
+      - name: Test database connection
+        run: |
+          echo "🔌 Testing database connection..."
+          npx prisma db execute --url "$DATABASE_URL" --stdin <<< "SELECT version();"
+          echo "✅ Database connection OK"
+        env:
+          DATABASE_URL: 'postgresql://test:test@localhost:5432/smartplanning_test'
+
       # Pousse le schéma Prisma vers la DB de test (crée les tables)
       - name: Push database schema
         run: |
           echo "🔄 Pushing Prisma schema to test database..."
-          npx prisma db push --accept-data-loss --force-reset
+          npx prisma db push --accept-data-loss
           echo "✅ Schema pushed successfully"
-          echo "📋 Listing tables..."
-          npx prisma db execute --url "$DATABASE_URL" --stdin <<< "SELECT tablename FROM pg_tables WHERE schemaname = 'public';"
         env:
           DATABASE_URL: 'postgresql://test:test@localhost:5432/smartplanning_test'
 
