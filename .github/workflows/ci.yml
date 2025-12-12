@@ -198,26 +198,30 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
+      # Crée le fichier .env pour que Prisma utilise la bonne DB
+      - name: Setup database environment
+        run: |
+          echo "DATABASE_URL=postgresql://test:test@localhost:5432/smartplanning_test" > .env
+          echo "NEXTAUTH_SECRET=test-secret-for-ci" >> .env
+          echo "NEXTAUTH_URL=http://localhost:3000" >> .env
+          cat .env
+          echo "✅ .env file created"
+
       # Vérifie la connexion à la DB
       - name: Test database connection
         run: |
           echo "🔌 Testing database connection..."
-          npx prisma db execute --url "$DATABASE_URL" --stdin <<< "SELECT version();"
+          npx prisma db execute --stdin <<< "SELECT version();"
           echo "✅ Database connection OK"
-        env:
-          DATABASE_URL: 'postgresql://test:test@localhost:5432/smartplanning_test'
 
       # Pousse le schéma Prisma vers la DB de test (crée les tables)
       - name: Push database schema
         run: |
           echo "🔄 Pushing Prisma schema to test database..."
-          echo "DATABASE_URL starts with: ${DATABASE_URL:0:30}..."
           npx prisma db push --accept-data-loss --skip-generate
           echo "✅ Schema pushed"
           echo "📋 Verifying tables were created..."
-          npx prisma db execute --url "$DATABASE_URL" --stdin <<< "SELECT COUNT(*) as table_count FROM pg_tables WHERE schemaname = 'public';"
-        env:
-          DATABASE_URL: 'postgresql://test:test@localhost:5432/smartplanning_test'
+          npx prisma db execute --stdin <<< "SELECT tablename FROM pg_tables WHERE schemaname = 'public' ORDER BY tablename;"
 
       # Seed de la base de données avec les données de test
       - name: Seed test database
@@ -225,28 +229,19 @@ jobs:
           echo "🌱 Seeding test database..."
           npx prisma db seed
           echo "✅ Seed completed"
-        env:
-          DATABASE_URL: 'postgresql://test:test@localhost:5432/smartplanning_test'
 
-      # Vérifie que les tables et utilisateurs de test existent
-      - name: Verify database state
+      # Vérifie que les utilisateurs de test existent
+      - name: Verify test users
         run: |
-          echo "📋 Listing all tables in database..."
-          npx prisma db execute --url "$DATABASE_URL" --stdin <<< "SELECT tablename FROM pg_tables WHERE schemaname = 'public' ORDER BY tablename;"
-          echo ""
           echo "🔍 Checking test users..."
-          npx prisma db execute --url "$DATABASE_URL" --stdin <<< "SELECT email, role FROM \"User\" LIMIT 5;"
-        env:
-          DATABASE_URL: 'postgresql://test:test@localhost:5432/smartplanning_test'
+          npx prisma db execute --stdin <<< "SELECT email, role FROM \"User\" LIMIT 5;"
 
       # Lance les tests E2E
       # Le webServer démarre automatiquement Next.js avant les tests
+      # Les variables sont déjà dans le fichier .env créé plus tôt
       - name: Run E2E tests
         run: npm run test:e2e
         env:
-          DATABASE_URL: 'postgresql://test:test@localhost:5432/smartplanning_test'
-          NEXTAUTH_SECRET: 'test-secret-for-ci'
-          NEXTAUTH_URL: 'http://localhost:3000'
           CI: true
 
       # Upload du rapport HTML Playwright
