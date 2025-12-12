@@ -65,21 +65,30 @@ export default defineConfig({
 
   /**
    * Projets de test par navigateur
+   * En CI : uniquement Chromium pour rapidité
+   * En local : tous les navigateurs
    */
-  projects: [
-    {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
-    },
-    {
-      name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
-    },
-    {
-      name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
-    },
-  ],
+  projects: process.env.CI
+    ? [
+        {
+          name: 'chromium',
+          use: { ...devices['Desktop Chrome'] },
+        },
+      ]
+    : [
+        {
+          name: 'chromium',
+          use: { ...devices['Desktop Chrome'] },
+        },
+        {
+          name: 'firefox',
+          use: { ...devices['Desktop Firefox'] },
+        },
+        {
+          name: 'webkit',
+          use: { ...devices['Desktop Safari'] },
+        },
+      ],
 
   /**
    * Configuration du serveur web Next.js
@@ -87,11 +96,14 @@ export default defineConfig({
    * - Démarre automatiquement avant les tests
    * - Réutilise le serveur existant en local
    * - Timeout de 2 minutes pour le build
+   * - En CI, hérite des variables d'environnement (DATABASE_URL, etc.)
    */
   webServer: {
     command: 'npm run dev',
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,
+    // Le webServer hérite automatiquement des env vars du process parent
+    // donc DATABASE_URL, NEXTAUTH_SECRET, etc. sont disponibles
   },
 })

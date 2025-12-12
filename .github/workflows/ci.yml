@@ -210,6 +210,20 @@ jobs:
         env:
           DATABASE_URL: 'postgresql://test:test@localhost:5432/smartplanning_test'
 
+      # Vérifie que les utilisateurs de test existent
+      - name: Verify test users exist
+        run: |
+          npx prisma db execute --stdin <<EOF
+          SELECT email, role FROM "User" WHERE email IN (
+            'admin@smartplanning.io',
+            'john.doe@techcorp.com',
+            'jane.smith@techcorp.com',
+            'bob.wilson@techcorp.com'
+          );
+          EOF
+        env:
+          DATABASE_URL: 'postgresql://test:test@localhost:5432/smartplanning_test'
+
       # Lance les tests E2E
       # Le webServer démarre automatiquement Next.js avant les tests
       - name: Run E2E tests
