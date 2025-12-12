@@ -96,7 +96,7 @@ describe('admin-stats.service', () => {
       ])
 
       // Mock groupBy pour revenue par plan
-      prismaMock.subscription.groupBy.mockResolvedValue([
+      (prismaMock.subscription.groupBy as jest.Mock).mockResolvedValue([
         { plan: 'STARTER', _count: 20 },
         { plan: 'BUSINESS', _count: 15 },
         { plan: 'ENTERPRISE', _count: 5 },
@@ -161,7 +161,7 @@ describe('admin-stats.service', () => {
         }),
       ])
 
-      prismaMock.subscription.groupBy.mockResolvedValue([])
+      (prismaMock.subscription.groupBy as jest.Mock).mockResolvedValue([])
 
       const result = await getAdminStats()
 
@@ -197,7 +197,7 @@ describe('admin-stats.service', () => {
         },
       ])
 
-      prismaMock.subscription.groupBy.mockResolvedValue([])
+      (prismaMock.subscription.groupBy as jest.Mock).mockResolvedValue([])
 
       const result = await getAdminStats()
 
@@ -213,7 +213,7 @@ describe('admin-stats.service', () => {
       prismaMock.user.count.mockResolvedValue(100)
       prismaMock.subscription.count.mockResolvedValue(10)
       prismaMock.subscription.findMany.mockResolvedValue([])
-      prismaMock.subscription.groupBy.mockResolvedValue([])
+      (prismaMock.subscription.groupBy as jest.Mock).mockResolvedValue([])
 
       const result = await getAdminStats()
 
@@ -394,7 +394,7 @@ describe('admin-stats.service', () => {
       prismaMock.user.count.mockResolvedValue(0)
       prismaMock.subscription.count.mockResolvedValue(0)
       prismaMock.subscription.findMany.mockResolvedValue([])
-      prismaMock.subscription.groupBy.mockResolvedValue([])
+      (prismaMock.subscription.groupBy as jest.Mock).mockResolvedValue([])
 
       const result = await getAdminStats()
 
@@ -410,7 +410,7 @@ describe('admin-stats.service', () => {
       prismaMock.user.count.mockResolvedValue(500)
       prismaMock.subscription.count.mockResolvedValue(45)
       prismaMock.subscription.findMany.mockResolvedValue([])
-      prismaMock.subscription.groupBy.mockResolvedValue([])
+      (prismaMock.subscription.groupBy as jest.Mock).mockResolvedValue([])
 
       const result = await getAdminStats()
 
@@ -427,7 +427,7 @@ describe('admin-stats.service', () => {
       prismaMock.subscription.findMany.mockResolvedValue([])
 
       // Seulement STARTER et BUSINESS ont des abonnements
-      prismaMock.subscription.groupBy.mockResolvedValue([
+      (prismaMock.subscription.groupBy as jest.Mock).mockResolvedValue([
         { plan: 'STARTER', _count: 3 },
         { plan: 'BUSINESS', _count: 2 },
       ] as any)
@@ -497,7 +497,7 @@ describe('admin-stats.service', () => {
         },
       ])
 
-      prismaMock.subscription.groupBy.mockResolvedValue([])
+      (prismaMock.subscription.groupBy as jest.Mock).mockResolvedValue([])
 
       const result = await getAdminStats()
 
@@ -531,7 +531,7 @@ describe('admin-stats.service', () => {
         },
       ])
 
-      prismaMock.subscription.groupBy.mockResolvedValue([])
+      (prismaMock.subscription.groupBy as jest.Mock).mockResolvedValue([])
 
       const result = await getAdminStats()
 
