@@ -213,14 +213,7 @@ jobs:
       # Vérifie que les utilisateurs de test existent
       - name: Verify test users exist
         run: |
-          npx prisma db execute --stdin <<EOF
-          SELECT email, role FROM "User" WHERE email IN (
-            'admin@smartplanning.io',
-            'john.doe@techcorp.com',
-            'jane.smith@techcorp.com',
-            'bob.wilson@techcorp.com'
-          );
-          EOF
+          echo "SELECT email, role FROM \"User\" LIMIT 10;" | npx prisma db execute --url "$DATABASE_URL" --stdin
         env:
           DATABASE_URL: 'postgresql://test:test@localhost:5432/smartplanning_test'
 
