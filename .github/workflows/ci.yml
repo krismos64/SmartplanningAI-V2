@@ -159,6 +159,23 @@ jobs:
     timeout-minutes: 60
     # Timeout de 60 minutes pour les tests E2E (plus longs que les unitaires)
 
+    # Service container PostgreSQL pour les tests E2E
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: smartplanning_test
+        ports:
+          - 5432:5432
+        # Health checks pour attendre que PostgreSQL soit prêt
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -181,12 +198,24 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
+      # Exécute les migrations Prisma pour créer le schéma de la DB de test
+      - name: Run database migrations
+        run: npx prisma migrate deploy
+        env:
+          DATABASE_URL: 'postgresql://test:test@localhost:5432/smartplanning_test'
+
+      # Seed de la base de données avec les données de test
+      - name: Seed test database
+        run: npx prisma db seed
+        env:
+          DATABASE_URL: 'postgresql://test:test@localhost:5432/smartplanning_test'
+
       # Lance les tests E2E
       # Le webServer démarre automatiquement Next.js avant les tests
       - name: Run E2E tests
         run: npm run test:e2e
         env:
-          DATABASE_URL: 'file:./test.db'
+          DATABASE_URL: 'postgresql://test:test@localhost:5432/smartplanning_test'
           NEXTAUTH_SECRET: 'test-secret-for-ci'
           NEXTAUTH_URL: 'http://localhost:3000'
           CI: true
