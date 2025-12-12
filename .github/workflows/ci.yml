@@ -214,6 +214,14 @@ jobs:
           npx prisma db execute --schema ./prisma/schema.prisma --stdin <<< "SELECT version();"
           echo "✅ Database connection OK"
 
+      # Test: créer une table manuellement pour vérifier la connexion
+      - name: Debug - Create test table manually
+        run: |
+          echo "🔧 Creating test table manually..."
+          npx prisma db execute --schema ./prisma/schema.prisma --stdin <<< "CREATE TABLE IF NOT EXISTS _test_table (id SERIAL PRIMARY KEY, name TEXT);"
+          echo "📋 Checking if test table exists..."
+          npx prisma db execute --schema ./prisma/schema.prisma --stdin <<< "SELECT tablename FROM pg_tables WHERE schemaname = 'public';"
+
       # Pousse le schéma Prisma vers la DB de test (crée les tables)
       - name: Push database schema
         run: |
