@@ -211,7 +211,7 @@ jobs:
       - name: Test database connection
         run: |
           echo "🔌 Testing database connection..."
-          npx prisma db execute --stdin <<< "SELECT version();"
+          npx prisma db execute --schema ./prisma/schema.prisma --stdin <<< "SELECT version();"
           echo "✅ Database connection OK"
 
       # Pousse le schéma Prisma vers la DB de test (crée les tables)
@@ -221,7 +221,7 @@ jobs:
           npx prisma db push --accept-data-loss --skip-generate
           echo "✅ Schema pushed"
           echo "📋 Verifying tables were created..."
-          npx prisma db execute --stdin <<< "SELECT tablename FROM pg_tables WHERE schemaname = 'public' ORDER BY tablename;"
+          npx prisma db execute --schema ./prisma/schema.prisma --stdin <<< "SELECT tablename FROM pg_tables WHERE schemaname = 'public' ORDER BY tablename;"
 
       # Seed de la base de données avec les données de test
       - name: Seed test database
@@ -234,7 +234,7 @@ jobs:
       - name: Verify test users
         run: |
           echo "🔍 Checking test users..."
-          npx prisma db execute --stdin <<< "SELECT email, role FROM \"User\" LIMIT 5;"
+          npx prisma db execute --schema ./prisma/schema.prisma --stdin <<< "SELECT email, role FROM \"User\" LIMIT 5;"
 
       # Lance les tests E2E
       # Le webServer démarre automatiquement Next.js avant les tests
