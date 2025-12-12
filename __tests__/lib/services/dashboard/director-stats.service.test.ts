@@ -121,7 +121,7 @@ describe('director-stats.service', () => {
       prismaMock.employee.findMany.mockResolvedValue([])
 
       // Mock distribution types conges
-      (prismaMock.leaveRequest.groupBy as jest.Mock).mockResolvedValue([
+      prismaMock.leaveRequest.groupBy.mockResolvedValue([
         { type: 'PAID_LEAVE', _count: 10 },
         { type: 'SICK_LEAVE', _count: 3 },
       ] as any)
@@ -174,7 +174,7 @@ describe('director-stats.service', () => {
       prismaMock.team.findMany.mockResolvedValue([])
       prismaMock.schedule.findMany.mockResolvedValue([])
       prismaMock.employee.findMany.mockResolvedValue([])
-      (prismaMock.leaveRequest.groupBy as jest.Mock).mockResolvedValue([])
+      prismaMock.leaveRequest.groupBy.mockResolvedValue([])
 
       const result = await getDirectorStats({
         userId: 'user-1',
@@ -209,7 +209,7 @@ describe('director-stats.service', () => {
       prismaMock.team.findMany.mockResolvedValue([])
       prismaMock.schedule.findMany.mockResolvedValue([])
       prismaMock.employee.findMany.mockResolvedValue([])
-      (prismaMock.leaveRequest.groupBy as jest.Mock).mockResolvedValue([])
+      prismaMock.leaveRequest.groupBy.mockResolvedValue([])
 
       const result = await getDirectorStats({
         userId: 'user-1',
@@ -455,7 +455,7 @@ describe('director-stats.service', () => {
       prismaMock.team.findMany.mockResolvedValue([])
       prismaMock.schedule.findMany.mockResolvedValue([])
       prismaMock.employee.findMany.mockResolvedValue([])
-      (prismaMock.leaveRequest.groupBy as jest.Mock).mockResolvedValue([])
+      prismaMock.leaveRequest.groupBy.mockResolvedValue([])
 
       const result = await getDirectorStats({
         userId: 'user-1',
@@ -492,7 +492,7 @@ describe('director-stats.service', () => {
       prismaMock.team.findMany.mockResolvedValue([])
       prismaMock.schedule.findMany.mockResolvedValue([])
       prismaMock.employee.findMany.mockResolvedValue([])
-      (prismaMock.leaveRequest.groupBy as jest.Mock).mockResolvedValue([])
+      prismaMock.leaveRequest.groupBy.mockResolvedValue([])
 
       const result = await getDirectorStats({
         userId: 'user-1',
@@ -529,7 +529,7 @@ describe('director-stats.service', () => {
       prismaMock.team.findMany.mockResolvedValue([])
       prismaMock.schedule.findMany.mockResolvedValue([])
       prismaMock.employee.findMany.mockResolvedValue([])
-      (prismaMock.leaveRequest.groupBy as jest.Mock).mockResolvedValue([
+      prismaMock.leaveRequest.groupBy.mockResolvedValue([
         { type: 'PAID_LEAVE', _count: 10 },
         { type: 'SICK_LEAVE', _count: 5 },
         { type: 'RTT', _count: 3 },
@@ -579,7 +579,7 @@ describe('director-stats.service', () => {
       prismaMock.team.findMany.mockResolvedValue([])
       prismaMock.schedule.findMany.mockResolvedValue([])
       prismaMock.employee.findMany.mockResolvedValue([])
-      (prismaMock.leaveRequest.groupBy as jest.Mock).mockResolvedValue([])
+      prismaMock.leaveRequest.groupBy.mockResolvedValue([])
 
       const result = await getDirectorStats({
         userId: 'user-1',
