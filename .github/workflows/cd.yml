@@ -155,6 +155,17 @@ jobs:
 
     steps:
       # Connexion SSH au VPS et exécution des commandes
+      # Debug: vérifier que les secrets sont présents
+      - name: Verify secrets are set
+        run: |
+          if [ -z "${{ secrets.VPS_HOST }}" ]; then echo "❌ VPS_HOST is empty"; exit 1; fi
+          if [ -z "${{ secrets.VPS_USER }}" ]; then echo "❌ VPS_USER is empty"; exit 1; fi
+          if [ -z "${{ secrets.VPS_SSH_KEY }}" ]; then echo "❌ VPS_SSH_KEY is empty"; exit 1; fi
+          echo "✅ All secrets are set"
+          echo "Host: ${{ secrets.VPS_HOST }}"
+          echo "User: ${{ secrets.VPS_USER }}"
+          echo "Key length: $(echo '${{ secrets.VPS_SSH_KEY }}' | wc -c) characters"
+
       - name: Deploy to VPS via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -162,6 +173,7 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ secrets.VPS_SSH_PORT || 22 }}
+          debug: true
           # Script exécuté sur le VPS
           script: |
             # ==============================================
