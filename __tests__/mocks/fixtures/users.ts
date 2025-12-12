@@ -160,7 +160,12 @@ export function createMockActions(
   return [
     { label: 'Voir profil', onClick: onView },
     { label: 'Modifier', onClick: onEdit },
-    { label: 'Supprimer', onClick: onDelete, variant: 'destructive', separator: true },
+    {
+      label: 'Supprimer',
+      onClick: onDelete,
+      variant: 'destructive',
+      separator: true,
+    },
   ]
 }
 

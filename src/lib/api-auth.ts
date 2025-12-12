@@ -52,7 +52,8 @@ export const API_ERROR_CODES = {
   INTERNAL_ERROR: 'INTERNAL_ERROR',
 } as const
 
-export type ApiErrorCode = (typeof API_ERROR_CODES)[keyof typeof API_ERROR_CODES]
+export type ApiErrorCode =
+  (typeof API_ERROR_CODES)[keyof typeof API_ERROR_CODES]
 
 /**
  * Vérifie l'authentification et retourne la session

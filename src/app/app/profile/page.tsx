@@ -15,7 +15,7 @@ export default async function ProfilePage() {
 
   return (
     <main className="min-h-screen p-8">
-      <h1 className="text-2xl font-bold mb-4">Mon Profil</h1>
+      <h1 className="mb-4 text-2xl font-bold">Mon Profil</h1>
       <div className="space-y-2">
         <p>
           <strong>Nom:</strong> {session?.user?.name || 'Non defini'}

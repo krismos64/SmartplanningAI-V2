@@ -136,9 +136,7 @@ describe('LoginForm', () => {
       await user.click(submitButton)
 
       await waitFor(() => {
-        expect(
-          screen.getByText(/mot de passe est requis/i)
-        ).toBeInTheDocument()
+        expect(screen.getByText(/mot de passe est requis/i)).toBeInTheDocument()
       })
     })
 

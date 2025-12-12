@@ -65,16 +65,28 @@ export class DashboardEmployeePage {
     this.statsCards = page.locator('[data-testid^="stat-card"]')
 
     // Schedule
-    this.scheduleSection = page.locator('text=Planning de la semaine').locator('..')
+    this.scheduleSection = page
+      .locator('text=Planning de la semaine')
+      .locator('..')
 
     // Leave balance
-    this.leaveBalanceSection = page.locator('text=Solde de conges').locator('..')
+    this.leaveBalanceSection = page
+      .locator('text=Solde de conges')
+      .locator('..')
 
     // Quick Actions
-    this.quickActionsSection = page.locator('text=Actions rapides').locator('..')
-    this.demandLeaveButton = page.getByRole('link', { name: /demander un conge/i })
-    this.viewScheduleButton = page.getByRole('link', { name: /voir mon planning/i })
-    this.viewPendingRequestsLink = page.getByRole('link', { name: /demandes en attente/i })
+    this.quickActionsSection = page
+      .locator('text=Actions rapides')
+      .locator('..')
+    this.demandLeaveButton = page.getByRole('link', {
+      name: /demander un conge/i,
+    })
+    this.viewScheduleButton = page.getByRole('link', {
+      name: /voir mon planning/i,
+    })
+    this.viewPendingRequestsLink = page.getByRole('link', {
+      name: /demandes en attente/i,
+    })
 
     // States
     this.loadingIndicator = page.locator('[data-testid="loading"]')
@@ -125,7 +137,9 @@ export class DashboardEmployeePage {
    */
   async expectStatsVisible(): Promise<void> {
     // Au moins 4 stats cards
-    const statsText = this.page.locator('text=/Heures cette semaine|Conges restants|Prochain shift|Demandes en attente/i')
+    const statsText = this.page.locator(
+      'text=/Heures cette semaine|Conges restants|Prochain shift|Demandes en attente/i'
+    )
     await expect(statsText.first()).toBeVisible()
   }
 
@@ -198,7 +212,9 @@ export class DashboardEmployeePage {
    * Recupere les heures travaillees cette semaine
    */
   async getWeeklyHours(): Promise<string | null> {
-    const hoursCard = this.page.locator('text=/\\d+h?\\s*(cette semaine|travaillees)/i')
+    const hoursCard = this.page.locator(
+      'text=/\\d+h?\\s*(cette semaine|travaillees)/i'
+    )
     if (await hoursCard.isVisible()) {
       return await hoursCard.textContent()
     }

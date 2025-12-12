@@ -21,20 +21,20 @@ Le VPS hébergeant SmartPlanning a été compromis et utilisé pour lancer une a
 
 ## 2. Timeline de l'Attaque
 
-| Heure (CET) | Événement |
-|-------------|-----------|
-| 2025-12-02 19:33 | Création de l'utilisateur `deploy` |
-| 2025-12-02 19:35 | Installation de Docker et containerd |
-| 2025-12-03 13:57-14:04 | Connexions SSH légitimes depuis 82.67.13.234 (IP de Christophe) |
-| 2025-12-03 14:03-14:04 | Premières connexions depuis IPs Azure (52.161.82.117, 64.236.137.131) |
-| 2025-12-04 14:45-14:47 | Connexions depuis IPs Azure/Microsoft |
+| Heure (CET)            | Événement                                                               |
+| ---------------------- | ----------------------------------------------------------------------- |
+| 2025-12-02 19:33       | Création de l'utilisateur `deploy`                                      |
+| 2025-12-02 19:35       | Installation de Docker et containerd                                    |
+| 2025-12-03 13:57-14:04 | Connexions SSH légitimes depuis 82.67.13.234 (IP de Christophe)         |
+| 2025-12-03 14:03-14:04 | Premières connexions depuis IPs Azure (52.161.82.117, 64.236.137.131)   |
+| 2025-12-04 14:45-14:47 | Connexions depuis IPs Azure/Microsoft                                   |
 | 2025-12-05 10:04-11:04 | **Nombreuses connexions SSH** depuis IPs différentes (Azure, Microsoft) |
-| 2025-12-05 11:03 | Création des conteneurs Docker SmartPlanning |
-| 2025-12-05 15:31 | **Création du fichier malveillant `/tmp/a`** |
-| 2025-12-05 15:46 | Modification du malware (probable exécution) |
-| 2025-12-05 16:03 | Derniers logs applicatifs avant blocage |
-| 2025-12-05 17:00:45 | **Attaque UDP flood détectée par OVH** |
-| 2025-12-05 17:00+ | VPS bloqué par OVH |
+| 2025-12-05 11:03       | Création des conteneurs Docker SmartPlanning                            |
+| 2025-12-05 15:31       | **Création du fichier malveillant `/tmp/a`**                            |
+| 2025-12-05 15:46       | Modification du malware (probable exécution)                            |
+| 2025-12-05 16:03       | Derniers logs applicatifs avant blocage                                 |
+| 2025-12-05 17:00:45    | **Attaque UDP flood détectée par OVH**                                  |
+| 2025-12-05 17:00+      | VPS bloqué par OVH                                                      |
 
 ---
 
@@ -58,6 +58,7 @@ Toutes les connexions utilisent la **même clé SSH ED25519** (`SHA256:iW6fTrwID
 ```
 
 **Observation** : Ces IPs appartiennent principalement à Microsoft Azure, ce qui suggère :
+
 - Un pipeline GitHub Actions compromis
 - Ou des serveurs cloud utilisés par l'attaquant pour masquer son origine
 
@@ -72,6 +73,7 @@ Packer: UPX (détecté dans les headers)
 ```
 
 **Caractéristiques du malware** :
+
 - Binaire ELF 32-bit pour Linux
 - Statiquement lié (aucune dépendance)
 - Packé avec UPX (obfuscation)
@@ -137,11 +139,13 @@ Plusieurs fichiers de logs système appartiennent à l'utilisateur `iperf3` au l
 ## 5. Impact
 
 ### 5.1 Impact Technique
+
 - **Disponibilité** : VPS bloqué pendant 7 jours
 - **Intégrité** : Malware déployé sur le serveur
 - **Confidentialité** : Token GitHub potentiellement compromis
 
 ### 5.2 Impact Business
+
 - SmartPlanning inaccessible du 5 au 12 décembre 2025
 - Réputation potentiellement affectée (IP blacklistée)
 - Temps de récupération et analyse
@@ -204,12 +208,14 @@ Plusieurs fichiers de logs système appartiennent à l'utilisateur `iperf3` au l
 ## 7. Indicateurs de Compromission (IOC)
 
 ### 7.1 Fichiers
-| Type | Valeur | Description |
-|------|--------|-------------|
-| Fichier | `/tmp/a` | Binaire malveillant UDP flooder |
-| Hash SHA256 | À calculer | Malware ELF packé UPX |
+
+| Type        | Valeur     | Description                     |
+| ----------- | ---------- | ------------------------------- |
+| Fichier     | `/tmp/a`   | Binaire malveillant UDP flooder |
+| Hash SHA256 | À calculer | Malware ELF packé UPX           |
 
 ### 7.2 IPs Suspectes (connexions SSH)
+
 - 52.225.29.97 (Azure)
 - 135.232.193.37, 135.232.232.68, 135.232.193.34 (Azure)
 - 9.234.149.183, 9.234.151.82 (IBM Cloud)
@@ -222,6 +228,7 @@ Plusieurs fichiers de logs système appartiennent à l'utilisateur `iperf3` au l
 **Note** : Ces IPs appartiennent à Microsoft Azure et peuvent être des runners GitHub Actions légitimes ou des machines cloud louées par l'attaquant.
 
 ### 7.3 Cible de l'Attaque
+
 - **IP cible** : 185.211.78.1:80
 - **Protocole** : UDP
 - **Débit** : 187Kpps / 5Mbps
@@ -265,4 +272,4 @@ dateTime srcIp:srcPort dstIp:dstPort protocol flags bytes reason
 
 **Document préparé pour la soutenance CDA - Décembre 2025**
 
-*Ce rapport démontre les compétences en analyse forensique, réponse aux incidents, et sécurisation d'infrastructure.*
+_Ce rapport démontre les compétences en analyse forensique, réponse aux incidents, et sécurisation d'infrastructure._

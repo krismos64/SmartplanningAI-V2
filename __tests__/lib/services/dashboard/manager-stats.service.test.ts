@@ -25,7 +25,9 @@ import {
   getManagerTodayAbsencesOnly,
 } from '@/lib/services/dashboard/manager-stats.service'
 
-const prismaMock = prisma as unknown as ReturnType<typeof mockDeep<PrismaClient>>
+const prismaMock = prisma as unknown as ReturnType<
+  typeof mockDeep<PrismaClient>
+>
 
 describe('manager-stats.service', () => {
   beforeEach(() => {
@@ -39,7 +41,7 @@ describe('manager-stats.service', () => {
   // ==========================================================================
 
   describe('getManagerStats', () => {
-    it('devrait retourner une erreur si le manager ne gere pas l\'equipe', async () => {
+    it("devrait retourner une erreur si le manager ne gere pas l'equipe", async () => {
       prismaMock.team.findUnique.mockResolvedValue({
         id: 'team-1',
         managerId: 'other-manager',
@@ -61,7 +63,7 @@ describe('manager-stats.service', () => {
       expect(result.error).toContain('Acces non autorise')
     })
 
-    it('devrait retourner une erreur si l\'equipe n\'appartient pas a l\'entreprise', async () => {
+    it("devrait retourner une erreur si l'equipe n'appartient pas a l'entreprise", async () => {
       prismaMock.team.findUnique
         .mockResolvedValueOnce({
           id: 'team-1',
@@ -369,7 +371,7 @@ describe('manager-stats.service', () => {
       expect(result.error).toContain('Acces non autorise')
     })
 
-    it('devrait retourner le nombre d\'absences du jour', async () => {
+    it("devrait retourner le nombre d'absences du jour", async () => {
       prismaMock.team.findUnique.mockResolvedValue({
         id: 'team-1',
         managerId: 'emp-1',

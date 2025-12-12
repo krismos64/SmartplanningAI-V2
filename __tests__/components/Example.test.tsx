@@ -25,7 +25,9 @@ describe('Test setup validation', () => {
         Click me
       </button>
     )
-    expect(screen.getByRole('button', { name: /test button/i })).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: /test button/i })
+    ).toBeInTheDocument()
   })
 
   it('should support jest-dom matchers', () => {

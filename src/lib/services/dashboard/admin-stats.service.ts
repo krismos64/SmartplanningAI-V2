@@ -76,8 +76,7 @@ export async function getAdminStats(): Promise<
       },
     }
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : 'Erreur inconnue'
+    const message = error instanceof Error ? error.message : 'Erreur inconnue'
     return {
       success: false,
       error: `Erreur lors de la recuperation des stats admin: ${message}`,
@@ -88,7 +87,9 @@ export async function getAdminStats(): Promise<
 /**
  * Compte le nombre total d'entreprises avec tendance
  */
-async function getTotalCompanies(): Promise<AdminStatsResult['totalCompanies']> {
+async function getTotalCompanies(): Promise<
+  AdminStatsResult['totalCompanies']
+> {
   const dateRange = getDefaultDateRange()
   const previousPeriod = getPreviousPeriod(dateRange)
 

@@ -157,7 +157,12 @@ describe('Spinner', () => {
       render(<Spinner className="mt-4" />)
 
       const spinner = screen.getByRole('status')
-      expect(spinner).toHaveClass('flex', 'items-center', 'justify-center', 'mt-4')
+      expect(spinner).toHaveClass(
+        'flex',
+        'items-center',
+        'justify-center',
+        'mt-4'
+      )
     })
   })
 

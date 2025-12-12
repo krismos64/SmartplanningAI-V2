@@ -79,10 +79,7 @@ export const TEST_USERS: Record<string, TestUser> = {
  * @param page - Instance Playwright Page
  * @param user - Utilisateur a authentifier
  */
-export async function loginAs(
-  page: Page,
-  user: TestUser
-): Promise<void> {
+export async function loginAs(page: Page, user: TestUser): Promise<void> {
   await page.goto('/login')
 
   // Remplir le formulaire

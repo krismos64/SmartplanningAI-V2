@@ -123,7 +123,10 @@ export const useToast = () => {
       messages: PromiseMessages<T> | PromiseData<T>
     ) => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
-      return toast.promise(promise, messages as unknown as Parameters<typeof toast.promise>[1])
+      return toast.promise(
+        promise,
+        messages as unknown as Parameters<typeof toast.promise>[1]
+      )
     },
 
     /**

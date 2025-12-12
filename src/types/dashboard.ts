@@ -212,7 +212,11 @@ export interface EmployeeStats {
 /**
  * Union des stats par role pour le typage generique
  */
-export type RoleStats = AdminStats | DirectorStats | ManagerStats | EmployeeStats
+export type RoleStats =
+  | AdminStats
+  | DirectorStats
+  | ManagerStats
+  | EmployeeStats
 
 /**
  * Configuration d'une carte de stat pour mapping KPI -> StatCard

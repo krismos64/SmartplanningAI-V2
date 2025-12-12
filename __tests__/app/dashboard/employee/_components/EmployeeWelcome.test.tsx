@@ -27,7 +27,7 @@ describe('EmployeeWelcome', () => {
   // ==========================================================================
 
   describe('rendu de base', () => {
-    it('devrait afficher le nom de l\'utilisateur', () => {
+    it("devrait afficher le nom de l'utilisateur", () => {
       vi.setSystemTime(new Date('2025-06-15T10:00:00'))
 
       render(<EmployeeWelcome userName="Jean" nextShift={null} />)

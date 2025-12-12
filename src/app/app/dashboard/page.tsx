@@ -16,11 +16,12 @@ export default async function EmployeeDashboardPage() {
 
   return (
     <main className="min-h-screen p-8">
-      <h1 className="text-2xl font-bold mb-4">Dashboard Employee</h1>
+      <h1 className="mb-4 text-2xl font-bold">Dashboard Employee</h1>
       <p className="text-gray-600">
-        Bienvenue, {session?.user?.name || session?.user?.email || 'Utilisateur'}
+        Bienvenue,{' '}
+        {session?.user?.name || session?.user?.email || 'Utilisateur'}
       </p>
-      <p className="text-sm text-gray-500 mt-2">
+      <p className="mt-2 text-sm text-gray-500">
         Role: {session?.user?.role || 'N/A'}
       </p>
     </main>

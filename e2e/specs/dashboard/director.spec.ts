@@ -18,7 +18,9 @@ test.describe('Dashboard Director - Tests E2E', () => {
   // ==========================================================================
 
   test.describe('Acces et redirection', () => {
-    test('devrait rediriger vers /login si non authentifie', async ({ page }) => {
+    test('devrait rediriger vers /login si non authentifie', async ({
+      page,
+    }) => {
       await page.goto('/dashboard/director')
       await expect(page).toHaveURL(/.*login.*/)
     })
@@ -46,7 +48,9 @@ test.describe('Dashboard Director - Tests E2E', () => {
   // ==========================================================================
 
   test.describe('Message de bienvenue', () => {
-    test('devrait afficher le message de bienvenue', async ({ directorPage }) => {
+    test('devrait afficher le message de bienvenue', async ({
+      directorPage,
+    }) => {
       dashboardPage = new DashboardDirectorPage(directorPage)
       await dashboardPage.goto()
       await dashboardPage.waitForLoad()
@@ -55,7 +59,7 @@ test.describe('Dashboard Director - Tests E2E', () => {
       await expect(welcomeHeading).toBeVisible()
     })
 
-    test('devrait afficher le nom de l\'entreprise ou un resume', async ({
+    test("devrait afficher le nom de l'entreprise ou un resume", async ({
       directorPage,
     }) => {
       dashboardPage = new DashboardDirectorPage(directorPage)
@@ -63,8 +67,13 @@ test.describe('Dashboard Director - Tests E2E', () => {
       await dashboardPage.waitForLoad()
 
       // Le dashboard devrait mentionner l'entreprise ou une vue globale
-      const companyInfo = directorPage.locator('text=/entreprise|vue globale|company/i')
-      const isVisible = await companyInfo.first().isVisible().catch(() => false)
+      const companyInfo = directorPage.locator(
+        'text=/entreprise|vue globale|company/i'
+      )
+      const isVisible = await companyInfo
+        .first()
+        .isVisible()
+        .catch(() => false)
       expect(typeof isVisible).toBe('boolean')
     })
   })
@@ -74,7 +83,7 @@ test.describe('Dashboard Director - Tests E2E', () => {
   // ==========================================================================
 
   test.describe('Section KPIs', () => {
-    test('devrait afficher le KPI nombre d\'employes', async ({
+    test("devrait afficher le KPI nombre d'employes", async ({
       directorPage,
     }) => {
       dashboardPage = new DashboardDirectorPage(directorPage)
@@ -85,7 +94,7 @@ test.describe('Dashboard Director - Tests E2E', () => {
       await expect(employeesKpi.first()).toBeVisible()
     })
 
-    test('devrait afficher le KPI nombre d\'equipes', async ({
+    test("devrait afficher le KPI nombre d'equipes", async ({
       directorPage,
     }) => {
       dashboardPage = new DashboardDirectorPage(directorPage)
@@ -104,7 +113,10 @@ test.describe('Dashboard Director - Tests E2E', () => {
       await dashboardPage.waitForLoad()
 
       const attendanceKpi = directorPage.locator('text=/presence|taux/i')
-      const isVisible = await attendanceKpi.first().isVisible().catch(() => false)
+      const isVisible = await attendanceKpi
+        .first()
+        .isVisible()
+        .catch(() => false)
       expect(typeof isVisible).toBe('boolean')
     })
 
@@ -126,7 +138,9 @@ test.describe('Dashboard Director - Tests E2E', () => {
       await dashboardPage.goto()
       await dashboardPage.waitForLoad()
 
-      const statsNumbers = directorPage.locator('[class*="text-2xl"], [class*="text-3xl"]')
+      const statsNumbers = directorPage.locator(
+        '[class*="text-2xl"], [class*="text-3xl"]'
+      )
       await expect(statsNumbers.first()).toBeVisible()
     })
   })
@@ -143,8 +157,13 @@ test.describe('Dashboard Director - Tests E2E', () => {
       await dashboardPage.goto()
       await dashboardPage.waitForLoad()
 
-      const teamsChart = directorPage.locator('text=/repartition|equipes.*effectif/i')
-      const isVisible = await teamsChart.first().isVisible().catch(() => false)
+      const teamsChart = directorPage.locator(
+        'text=/repartition|equipes.*effectif/i'
+      )
+      const isVisible = await teamsChart
+        .first()
+        .isVisible()
+        .catch(() => false)
       expect(typeof isVisible).toBe('boolean')
     })
 
@@ -155,8 +174,13 @@ test.describe('Dashboard Director - Tests E2E', () => {
       await dashboardPage.goto()
       await dashboardPage.waitForLoad()
 
-      const trendsChart = directorPage.locator('text=/evolution|tendances|croissance/i')
-      const isVisible = await trendsChart.first().isVisible().catch(() => false)
+      const trendsChart = directorPage.locator(
+        'text=/evolution|tendances|croissance/i'
+      )
+      const isVisible = await trendsChart
+        .first()
+        .isVisible()
+        .catch(() => false)
       expect(typeof isVisible).toBe('boolean')
     })
   })
@@ -173,7 +197,9 @@ test.describe('Dashboard Director - Tests E2E', () => {
       await dashboardPage.goto()
       await dashboardPage.waitForLoad()
 
-      const pendingSection = directorPage.locator('text=/conges en attente|demandes/i')
+      const pendingSection = directorPage.locator(
+        'text=/conges en attente|demandes/i'
+      )
       await expect(pendingSection.first()).toBeVisible()
     })
 
@@ -204,7 +230,7 @@ test.describe('Dashboard Director - Tests E2E', () => {
       await expect(actionsSection).toBeVisible()
     })
 
-    test('devrait avoir des liens d\'action', async ({ directorPage }) => {
+    test("devrait avoir des liens d'action", async ({ directorPage }) => {
       dashboardPage = new DashboardDirectorPage(directorPage)
       await dashboardPage.goto()
       await dashboardPage.waitForLoad()
@@ -221,7 +247,7 @@ test.describe('Dashboard Director - Tests E2E', () => {
   // ==========================================================================
 
   test.describe('Responsivite', () => {
-    test('devrait s\'adapter a un ecran mobile', async ({ directorPage }) => {
+    test("devrait s'adapter a un ecran mobile", async ({ directorPage }) => {
       await directorPage.setViewportSize({ width: 375, height: 667 })
 
       dashboardPage = new DashboardDirectorPage(directorPage)
@@ -231,7 +257,7 @@ test.describe('Dashboard Director - Tests E2E', () => {
       await dashboardPage.expectToBeVisible()
     })
 
-    test('devrait s\'adapter a une tablette', async ({ directorPage }) => {
+    test("devrait s'adapter a une tablette", async ({ directorPage }) => {
       await directorPage.setViewportSize({ width: 768, height: 1024 })
 
       dashboardPage = new DashboardDirectorPage(directorPage)

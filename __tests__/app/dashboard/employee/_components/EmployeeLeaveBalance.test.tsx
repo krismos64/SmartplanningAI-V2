@@ -16,7 +16,12 @@ import { EmployeeLeaveBalance } from '@/app/(dashboard)/dashboard/employee/_comp
 
 // Mock des composants charts
 vi.mock('@/components/charts', () => ({
-  PieChartWidget: ({ data, isLoading, emptyMessage, title }: {
+  PieChartWidget: ({
+    data,
+    isLoading,
+    emptyMessage,
+    title,
+  }: {
     data: unknown[]
     isLoading?: boolean
     emptyMessage?: string
@@ -26,9 +31,7 @@ vi.mock('@/components/charts', () => ({
       {isLoading && <span>Loading...</span>}
       {!isLoading && data.length === 0 && <span>{emptyMessage}</span>}
       {!isLoading && data.length > 0 && (
-        <span data-testid="chart-data">
-          {JSON.stringify(data)}
-        </span>
+        <span data-testid="chart-data">{JSON.stringify(data)}</span>
       )}
     </div>
   ),
@@ -175,7 +178,7 @@ describe('EmployeeLeaveBalance', () => {
   // ==========================================================================
 
   describe('etats', () => {
-    it('devrait afficher l\'etat de chargement', () => {
+    it("devrait afficher l'etat de chargement", () => {
       render(<EmployeeLeaveBalance leaveBalance={mockLeaveBalance} isLoading />)
 
       expect(screen.getByText('Loading...')).toBeInTheDocument()
@@ -243,7 +246,7 @@ describe('EmployeeLeaveBalance', () => {
       expect(screen.getByText('100% utilises')).toBeInTheDocument()
     })
 
-    it('devrait afficher 100% restants quand rien n\'est utilise', () => {
+    it("devrait afficher 100% restants quand rien n'est utilise", () => {
       const balance = { remaining: 25, used: 0, total: 25 }
 
       render(<EmployeeLeaveBalance leaveBalance={balance} />)

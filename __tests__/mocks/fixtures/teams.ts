@@ -160,14 +160,44 @@ export const mockTeamMembers: TeamMember[] = [
  * Grande liste de membres (pour tester AvatarStack avec +X)
  */
 export const mockLargeTeamMembers: TeamMember[] = [
-  { id: 'm1', name: 'Alice Martin', image: null, status: 'active' as UserStatus },
+  {
+    id: 'm1',
+    name: 'Alice Martin',
+    image: null,
+    status: 'active' as UserStatus,
+  },
   { id: 'm2', name: 'Bob Dupont', image: null, status: 'active' as UserStatus },
-  { id: 'm3', name: 'Claire Leroy', image: null, status: 'on_leave' as UserStatus },
-  { id: 'm4', name: 'David Garcia', image: null, status: 'active' as UserStatus },
+  {
+    id: 'm3',
+    name: 'Claire Leroy',
+    image: null,
+    status: 'on_leave' as UserStatus,
+  },
+  {
+    id: 'm4',
+    name: 'David Garcia',
+    image: null,
+    status: 'active' as UserStatus,
+  },
   { id: 'm5', name: 'Emma Petit', image: null, status: 'active' as UserStatus },
-  { id: 'm6', name: 'François Moreau', image: null, status: 'absent' as UserStatus },
-  { id: 'm7', name: 'Gaëlle Bernard', image: null, status: 'active' as UserStatus },
-  { id: 'm8', name: 'Hugo Rousseau', image: null, status: 'active' as UserStatus },
+  {
+    id: 'm6',
+    name: 'François Moreau',
+    image: null,
+    status: 'absent' as UserStatus,
+  },
+  {
+    id: 'm7',
+    name: 'Gaëlle Bernard',
+    image: null,
+    status: 'active' as UserStatus,
+  },
+  {
+    id: 'm8',
+    name: 'Hugo Rousseau',
+    image: null,
+    status: 'active' as UserStatus,
+  },
 ]
 
 // ============================================================================
@@ -233,7 +263,12 @@ export function createMockTeamActions(
   return [
     { label: 'Voir équipe', onClick: onView },
     { label: 'Modifier', onClick: onEdit },
-    { label: 'Supprimer', onClick: onDelete, variant: 'destructive', separator: true },
+    {
+      label: 'Supprimer',
+      onClick: onDelete,
+      variant: 'destructive',
+      separator: true,
+    },
   ]
 }
 

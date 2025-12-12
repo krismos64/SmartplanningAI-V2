@@ -99,8 +99,7 @@ export async function getManagerStats(
       },
     }
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : 'Erreur inconnue'
+    const message = error instanceof Error ? error.message : 'Erreur inconnue'
     return {
       success: false,
       error: `Erreur lors de la recuperation des stats manager: ${message}`,
@@ -275,7 +274,9 @@ async function getTeamPerformance(
       })
 
       const hoursWorked = schedules.reduce((total, schedule) => {
-        return total + calculateHoursBetween(schedule.startTime, schedule.endTime)
+        return (
+          total + calculateHoursBetween(schedule.startTime, schedule.endTime)
+        )
       }, 0)
 
       // Calculer les heures attendues sur la periode

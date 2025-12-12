@@ -57,7 +57,9 @@ vi.mock('sonner', () => ({
  * Helper pour récupérer les inputs du formulaire
  */
 function getFormInputs() {
-  const nameInput = screen.getByPlaceholderText(/jean dupont/i) as HTMLInputElement
+  const nameInput = screen.getByPlaceholderText(
+    /jean dupont/i
+  ) as HTMLInputElement
   const emailInput = screen.getByPlaceholderText(
     /jean@entreprise.com/i
   ) as HTMLInputElement

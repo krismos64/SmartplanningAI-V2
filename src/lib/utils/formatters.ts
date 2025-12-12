@@ -82,7 +82,10 @@ export function formatCurrency(value: number, decimals: number = 0): string {
  * formatHours(7.5) // "7h30"
  * formatHours(7.5, false) // "7,5h"
  */
-export function formatHours(hours: number, showMinutes: boolean = true): string {
+export function formatHours(
+  hours: number,
+  showMinutes: boolean = true
+): string {
   if (Number.isInteger(hours)) {
     return `${formatNumber(hours)}h`
   }

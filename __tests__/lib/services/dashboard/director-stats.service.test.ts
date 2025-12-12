@@ -27,7 +27,9 @@ import {
   getDirectorTeamDetails,
 } from '@/lib/services/dashboard/director-stats.service'
 
-const prismaMock = prisma as unknown as ReturnType<typeof mockDeep<PrismaClient>>
+const prismaMock = prisma as unknown as ReturnType<
+  typeof mockDeep<PrismaClient>
+>
 
 describe('director-stats.service', () => {
   beforeEach(() => {
@@ -247,7 +249,7 @@ describe('director-stats.service', () => {
       expect(result.error).toContain('Acces non autorise')
     })
 
-    it('devrait retourner le nombre d\'employes', async () => {
+    it("devrait retourner le nombre d'employes", async () => {
       prismaMock.user.findUnique.mockResolvedValue({
         id: 'user-1',
         role: 'DIRECTOR',
@@ -385,7 +387,7 @@ describe('director-stats.service', () => {
       expect(result.error).toContain('Equipe non trouvee')
     })
 
-    it('devrait retourner une erreur si equipe n\'appartient pas a l\'entreprise', async () => {
+    it("devrait retourner une erreur si equipe n'appartient pas a l'entreprise", async () => {
       prismaMock.user.findUnique.mockResolvedValue({
         id: 'user-1',
         role: 'DIRECTOR',

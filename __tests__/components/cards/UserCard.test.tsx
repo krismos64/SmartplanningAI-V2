@@ -99,7 +99,9 @@ describe('UserCard', () => {
     it('renders email in detailed variant', () => {
       render(<UserCard user={mockUser} variant="detailed" />)
 
-      expect(screen.getByText('jean.dupont@smartplanning.fr')).toBeInTheDocument()
+      expect(
+        screen.getByText('jean.dupont@smartplanning.fr')
+      ).toBeInTheDocument()
     })
 
     it('renders employee job title when provided', () => {
@@ -156,7 +158,9 @@ describe('UserCard', () => {
       const userNoName = { ...mockUser, name: null }
       render(<UserCard user={userNoName} />)
 
-      expect(screen.getByText('jean.dupont@smartplanning.fr')).toBeInTheDocument()
+      expect(
+        screen.getByText('jean.dupont@smartplanning.fr')
+      ).toBeInTheDocument()
     })
   })
 
@@ -239,7 +243,9 @@ describe('UserCard', () => {
     it('checkbox has accessible label', () => {
       render(<UserCard user={mockUser} onSelect={() => {}} />)
 
-      expect(screen.getByLabelText(/Sélectionner Jean Dupont/)).toBeInTheDocument()
+      expect(
+        screen.getByLabelText(/Sélectionner Jean Dupont/)
+      ).toBeInTheDocument()
     })
 
     it('does not render checkbox when no onSelect', () => {
@@ -265,7 +271,9 @@ describe('UserCard', () => {
     })
 
     it('has cursor-pointer when onClick is provided', () => {
-      const { container } = render(<UserCard user={mockUser} onClick={() => {}} />)
+      const { container } = render(
+        <UserCard user={mockUser} onClick={() => {}} />
+      )
 
       // Find the Card element
       const card = container.firstChild
@@ -293,8 +301,9 @@ describe('UserCard', () => {
       const { container } = render(<UserCard user={mockUser} isLoading />)
 
       // Skeleton uses UserCardSkeleton which has skeleton elements
-      const skeleton = container.querySelector('[class*="skeleton"]') ||
-                       container.querySelector('[class*="animate"]')
+      const skeleton =
+        container.querySelector('[class*="skeleton"]') ||
+        container.querySelector('[class*="animate"]')
       // If skeleton exists or we just don't render user content
       expect(
         skeleton || screen.queryByText('Jean Dupont') === null

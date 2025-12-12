@@ -18,7 +18,9 @@ test.describe('Dashboard Manager - Tests E2E', () => {
   // ==========================================================================
 
   test.describe('Acces et redirection', () => {
-    test('devrait rediriger vers /login si non authentifie', async ({ page }) => {
+    test('devrait rediriger vers /login si non authentifie', async ({
+      page,
+    }) => {
       await page.goto('/manager')
       await expect(page).toHaveURL(/.*login.*/)
     })
@@ -40,7 +42,9 @@ test.describe('Dashboard Manager - Tests E2E', () => {
       await dashboardPage.goto()
       await dashboardPage.waitForLoad()
 
-      await expect(managerPage.locator('h1')).toContainText(/dashboard manager/i)
+      await expect(managerPage.locator('h1')).toContainText(
+        /dashboard manager/i
+      )
     })
   })
 
@@ -48,15 +52,15 @@ test.describe('Dashboard Manager - Tests E2E', () => {
   // Tests des statistiques d'equipe
   // ==========================================================================
 
-  test.describe('Statistiques d\'equipe', () => {
-    test('devrait afficher le nombre de membres d\'equipe', async ({
+  test.describe("Statistiques d'equipe", () => {
+    test("devrait afficher le nombre de membres d'equipe", async ({
       managerPage,
     }) => {
       dashboardPage = new DashboardManagerPage(managerPage)
       await dashboardPage.goto()
       await dashboardPage.waitForLoad()
 
-      await expect(managerPage.locator('text=Membres d\'equipe')).toBeVisible()
+      await expect(managerPage.locator("text=Membres d'equipe")).toBeVisible()
     })
 
     test('devrait afficher le nombre de shifts cette semaine', async ({
@@ -66,15 +70,21 @@ test.describe('Dashboard Manager - Tests E2E', () => {
       await dashboardPage.goto()
       await dashboardPage.waitForLoad()
 
-      await expect(managerPage.locator('text=Shifts cette semaine')).toBeVisible()
+      await expect(
+        managerPage.locator('text=Shifts cette semaine')
+      ).toBeVisible()
     })
 
-    test('devrait afficher les demandes en attente', async ({ managerPage }) => {
+    test('devrait afficher les demandes en attente', async ({
+      managerPage,
+    }) => {
       dashboardPage = new DashboardManagerPage(managerPage)
       await dashboardPage.goto()
       await dashboardPage.waitForLoad()
 
-      await expect(managerPage.locator('text=Demandes en attente')).toBeVisible()
+      await expect(
+        managerPage.locator('text=Demandes en attente')
+      ).toBeVisible()
     })
 
     test('devrait afficher des valeurs numeriques dans les stats', async ({
@@ -142,14 +152,14 @@ test.describe('Dashboard Manager - Tests E2E', () => {
   // Tests du planning d'equipe
   // ==========================================================================
 
-  test.describe('Planning d\'equipe', () => {
+  test.describe("Planning d'equipe", () => {
     test('devrait afficher le titre du planning', async ({ managerPage }) => {
       dashboardPage = new DashboardManagerPage(managerPage)
       await dashboardPage.goto()
       await dashboardPage.waitForLoad()
 
       await expect(
-        managerPage.locator('text=Planning de l\'equipe cette semaine')
+        managerPage.locator("text=Planning de l'equipe cette semaine")
       ).toBeVisible()
     })
 
@@ -187,7 +197,9 @@ test.describe('Dashboard Manager - Tests E2E', () => {
       await dashboardPage.waitForLoad()
 
       // Verifier qu'il y a des badges (horaires, Remote, Conge)
-      const badges = managerPage.locator('[class*="badge"], [class*="bg-green"], [class*="bg-blue"], [class*="bg-red"]')
+      const badges = managerPage.locator(
+        '[class*="badge"], [class*="bg-green"], [class*="bg-blue"], [class*="bg-red"]'
+      )
       await expect(badges.first()).toBeVisible()
     })
   })
@@ -225,7 +237,9 @@ test.describe('Dashboard Manager - Tests E2E', () => {
       await dashboardPage.goto()
       await dashboardPage.waitForLoad()
 
-      const rejectButtons = managerPage.getByRole('button', { name: /rejeter/i })
+      const rejectButtons = managerPage.getByRole('button', {
+        name: /rejeter/i,
+      })
       await expect(rejectButtons.first()).toBeVisible()
     })
 
@@ -237,7 +251,9 @@ test.describe('Dashboard Manager - Tests E2E', () => {
       await dashboardPage.waitForLoad()
 
       // Les avatars avec initiales
-      const avatars = managerPage.locator('[class*="rounded-full"][class*="bg-secondary"]')
+      const avatars = managerPage.locator(
+        '[class*="rounded-full"][class*="bg-secondary"]'
+      )
       await expect(avatars.first()).toBeVisible()
     })
   })
@@ -247,7 +263,7 @@ test.describe('Dashboard Manager - Tests E2E', () => {
   // ==========================================================================
 
   test.describe('Responsivite', () => {
-    test('devrait s\'adapter a un ecran mobile', async ({ managerPage }) => {
+    test("devrait s'adapter a un ecran mobile", async ({ managerPage }) => {
       await managerPage.setViewportSize({ width: 375, height: 667 })
 
       dashboardPage = new DashboardManagerPage(managerPage)
@@ -277,7 +293,9 @@ test.describe('Dashboard Manager - Tests E2E', () => {
   // ==========================================================================
 
   test.describe('Accessibilite', () => {
-    test('devrait avoir un titre de page descriptif', async ({ managerPage }) => {
+    test('devrait avoir un titre de page descriptif', async ({
+      managerPage,
+    }) => {
       dashboardPage = new DashboardManagerPage(managerPage)
       await dashboardPage.goto()
       await dashboardPage.waitForLoad()

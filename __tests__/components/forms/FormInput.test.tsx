@@ -47,7 +47,9 @@ describe('FormInput', () => {
     it('renders placeholder correctly', () => {
       render(<FormInput placeholder="Entrez votre email" />)
 
-      expect(screen.getByPlaceholderText('Entrez votre email')).toBeInTheDocument()
+      expect(
+        screen.getByPlaceholderText('Entrez votre email')
+      ).toBeInTheDocument()
     })
   })
 
@@ -55,7 +57,7 @@ describe('FormInput', () => {
   // TYPES D'INPUT
   // =========================================================================
 
-  describe('Types d\'input', () => {
+  describe("Types d'input", () => {
     it('renders email type', () => {
       render(<FormInput type="email" label="Email" />)
 
@@ -63,7 +65,9 @@ describe('FormInput', () => {
     })
 
     it('renders password type', () => {
-      const { container } = render(<FormInput type="password" label="Mot de passe" />)
+      const { container } = render(
+        <FormInput type="password" label="Mot de passe" />
+      )
 
       // Password inputs don't have textbox role, use querySelector
       const passwordInput = container.querySelector('input[type="password"]')
@@ -99,7 +103,7 @@ describe('FormInput', () => {
       render(
         <FormInput
           label="Email"
-          leftIcon={<Mail data-testid="left-icon" className="w-4 h-4" />}
+          leftIcon={<Mail data-testid="left-icon" className="h-4 w-4" />}
         />
       )
 
@@ -110,7 +114,7 @@ describe('FormInput', () => {
       render(
         <FormInput
           label="Mot de passe"
-          rightIcon={<Eye data-testid="right-icon" className="w-4 h-4" />}
+          rightIcon={<Eye data-testid="right-icon" className="h-4 w-4" />}
         />
       )
 
@@ -121,8 +125,8 @@ describe('FormInput', () => {
       render(
         <FormInput
           label="Email"
-          leftIcon={<Mail data-testid="left-icon" className="w-4 h-4" />}
-          rightIcon={<Check data-testid="right-icon" className="w-4 h-4" />}
+          leftIcon={<Mail data-testid="left-icon" className="h-4 w-4" />}
+          rightIcon={<Check data-testid="right-icon" className="h-4 w-4" />}
         />
       )
 
@@ -214,7 +218,7 @@ describe('FormInput', () => {
   // TEXTE D'AIDE
   // =========================================================================
 
-  describe('Texte d\'aide', () => {
+  describe("Texte d'aide", () => {
     it('shows help text when provided', () => {
       render(<FormInput label="Email" helpText="Format: exemple@mail.com" />)
 
@@ -296,7 +300,9 @@ describe('FormInput', () => {
 
   describe('Accessibilité', () => {
     it('wrapper has aria-invalid="true" when error is present', () => {
-      const { container } = render(<FormInput label="Email" error="Email invalide" />)
+      const { container } = render(
+        <FormInput label="Email" error="Email invalide" />
+      )
 
       // FormField sets aria-invalid on the wrapper div, not the input
       const inputWrapper = container.querySelector('[aria-invalid]')
@@ -311,7 +317,9 @@ describe('FormInput', () => {
     })
 
     it('wrapper has aria-describedby linking to error message', () => {
-      const { container } = render(<FormInput label="Email" error="Email invalide" />)
+      const { container } = render(
+        <FormInput label="Email" error="Email invalide" />
+      )
 
       const inputWrapper = container.querySelector('[aria-describedby]')
       const describedBy = inputWrapper?.getAttribute('aria-describedby')
