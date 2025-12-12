@@ -200,20 +200,29 @@ jobs:
 
       # Pousse le schéma Prisma vers la DB de test (crée les tables)
       - name: Push database schema
-        run: npx prisma db push --skip-generate
+        run: |
+          echo "🔄 Pushing Prisma schema to test database..."
+          npx prisma db push --accept-data-loss --force-reset
+          echo "✅ Schema pushed successfully"
+          echo "📋 Listing tables..."
+          npx prisma db execute --url "$DATABASE_URL" --stdin <<< "SELECT tablename FROM pg_tables WHERE schemaname = 'public';"
         env:
           DATABASE_URL: 'postgresql://test:test@localhost:5432/smartplanning_test'
 
       # Seed de la base de données avec les données de test
       - name: Seed test database
-        run: npx prisma db seed
+        run: |
+          echo "🌱 Seeding test database..."
+          npx prisma db seed
+          echo "✅ Seed completed"
         env:
           DATABASE_URL: 'postgresql://test:test@localhost:5432/smartplanning_test'
 
       # Vérifie que les utilisateurs de test existent
       - name: Verify test users exist
         run: |
-          echo "SELECT email, role FROM \"User\" LIMIT 10;" | npx prisma db execute --url "$DATABASE_URL" --stdin
+          echo "🔍 Checking test users..."
+          npx prisma db execute --url "$DATABASE_URL" --stdin <<< "SELECT email, role FROM \"User\" LIMIT 10;"
         env:
           DATABASE_URL: 'postgresql://test:test@localhost:5432/smartplanning_test'
 
