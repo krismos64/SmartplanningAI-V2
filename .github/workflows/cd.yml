@@ -174,16 +174,16 @@ jobs:
           echo "📋 Image digest:"
           docker images ghcr.io/krismos64/smartplanningai-v2:latest --format "{{.ID}} {{.CreatedAt}}"
           echo "⏹️ Arrêt des conteneurs..."
-          docker compose --env-file .env -f docker/docker-compose.prod.yml down --remove-orphans
+          docker compose --env-file .env down --remove-orphans
           echo "▶️ Démarrage des nouveaux conteneurs..."
-          docker compose --env-file .env -f docker/docker-compose.prod.yml up -d --pull always
+          docker compose --env-file .env up -d --pull always
           echo "⏳ Attente du healthcheck..."
           sleep 30
           if curl -f http://localhost:3000/api/health > /dev/null 2>&1; then
             echo "✅ Application déployée avec succès !"
           else
             echo "❌ Healthcheck échoué - Vérifier les logs"
-            docker compose --env-file .env -f docker/docker-compose.prod.yml logs app --tail 50
+            docker compose --env-file .env logs app --tail 50
             exit 1
           fi
           echo "🧹 Nettoyage des anciennes images..."
@@ -227,7 +227,7 @@ jobs:
           set -e
           echo "🗄️ Exécution des migrations Prisma..."
           cd /var/www/smartplanning
-          docker compose --env-file .env -f docker/docker-compose.prod.yml exec -T app node node_modules/prisma/build/index.js migrate deploy
+          docker compose --env-file .env exec -T app node node_modules/prisma/build/index.js migrate deploy
           echo "✅ Migrations terminées !"
           MIGRATE_SCRIPT
 
