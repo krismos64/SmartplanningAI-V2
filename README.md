@@ -6,7 +6,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings d'entreprise (mult
 
 ## Informations projet
 
-- **Version** : 2.0.0 (Refonte complète)
+- **Version** : 2.0 (Refonte complète)
 - **Statut** : En développement actif
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
