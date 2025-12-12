@@ -133,7 +133,7 @@ export const test = base.extend<AuthFixtures>({
     const context = await browser.newContext()
     const page = await context.newPage()
 
-    await loginAs(page, TEST_USERS.EMPLOYEE)
+    await loginAs(page, TEST_USERS.EMPLOYEE!)
 
     await use(page)
 
@@ -147,7 +147,7 @@ export const test = base.extend<AuthFixtures>({
     const context = await browser.newContext()
     const page = await context.newPage()
 
-    await loginAs(page, TEST_USERS.MANAGER)
+    await loginAs(page, TEST_USERS.MANAGER!)
 
     await use(page)
 
@@ -161,7 +161,7 @@ export const test = base.extend<AuthFixtures>({
     const context = await browser.newContext()
     const page = await context.newPage()
 
-    await loginAs(page, TEST_USERS.DIRECTOR)
+    await loginAs(page, TEST_USERS.DIRECTOR!)
 
     await use(page)
 
@@ -175,7 +175,7 @@ export const test = base.extend<AuthFixtures>({
     const context = await browser.newContext()
     const page = await context.newPage()
 
-    await loginAs(page, TEST_USERS.SYSTEM_ADMIN)
+    await loginAs(page, TEST_USERS.SYSTEM_ADMIN!)
 
     await use(page)
 

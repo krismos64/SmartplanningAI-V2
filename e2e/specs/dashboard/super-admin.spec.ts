@@ -7,7 +7,7 @@
  * @ticket SP-149
  */
 
-import { test, expect, TEST_USERS } from '../../fixtures/auth.fixture'
+import { test, expect } from '../../fixtures/auth.fixture'
 import { DashboardAdminPage } from '../../pages'
 
 test.describe('Dashboard Super Admin - Tests E2E', () => {
