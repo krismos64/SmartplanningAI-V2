@@ -69,9 +69,15 @@ describe('FormSelect', () => {
     it('renders all options', () => {
       render(<FormSelect options={mockOptions} />)
 
-      expect(screen.getByRole('option', { name: 'Option 1' })).toBeInTheDocument()
-      expect(screen.getByRole('option', { name: 'Option 2' })).toBeInTheDocument()
-      expect(screen.getByRole('option', { name: 'Option 3' })).toBeInTheDocument()
+      expect(
+        screen.getByRole('option', { name: 'Option 1' })
+      ).toBeInTheDocument()
+      expect(
+        screen.getByRole('option', { name: 'Option 2' })
+      ).toBeInTheDocument()
+      expect(
+        screen.getByRole('option', { name: 'Option 3' })
+      ).toBeInTheDocument()
     })
   })
 
@@ -83,15 +89,23 @@ describe('FormSelect', () => {
     it('renders option groups', () => {
       render(<FormSelect optGroups={mockOptGroups} />)
 
-      expect(screen.getByRole('group', { name: 'Groupe A' })).toBeInTheDocument()
-      expect(screen.getByRole('group', { name: 'Groupe B' })).toBeInTheDocument()
+      expect(
+        screen.getByRole('group', { name: 'Groupe A' })
+      ).toBeInTheDocument()
+      expect(
+        screen.getByRole('group', { name: 'Groupe B' })
+      ).toBeInTheDocument()
     })
 
     it('renders options within groups', () => {
       render(<FormSelect optGroups={mockOptGroups} />)
 
-      expect(screen.getByRole('option', { name: 'Option A1' })).toBeInTheDocument()
-      expect(screen.getByRole('option', { name: 'Option B2' })).toBeInTheDocument()
+      expect(
+        screen.getByRole('option', { name: 'Option A1' })
+      ).toBeInTheDocument()
+      expect(
+        screen.getByRole('option', { name: 'Option B2' })
+      ).toBeInTheDocument()
     })
   })
 
@@ -208,7 +222,7 @@ describe('FormSelect', () => {
   // TEXTE D'AIDE
   // ===========================================================================
 
-  describe('Texte d\'aide', () => {
+  describe("Texte d'aide", () => {
     it('shows help text when provided', () => {
       render(
         <FormSelect
@@ -247,9 +261,7 @@ describe('FormSelect', () => {
       const user = setupUser()
       const handleChange = vi.fn()
 
-      render(
-        <FormSelect options={mockOptions} onChange={handleChange} />
-      )
+      render(<FormSelect options={mockOptions} onChange={handleChange} />)
 
       await user.selectOptions(screen.getByRole('combobox'), '2')
 

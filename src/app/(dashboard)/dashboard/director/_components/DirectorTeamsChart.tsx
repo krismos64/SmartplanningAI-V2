@@ -44,7 +44,10 @@ export function DirectorTeamsChart({
   const colors = getChartColors(chartData.length)
 
   // Calculer le total
-  const totalEmployees = teamStats.reduce((sum, team) => sum + team.employees, 0)
+  const totalEmployees = teamStats.reduce(
+    (sum, team) => sum + team.employees,
+    0
+  )
 
   // Verifier si donnees vides
   const isEmpty = chartData.length === 0
@@ -91,9 +94,11 @@ export function DirectorTeamsChart({
                   <span className="text-muted-foreground">{team.name}</span>
                 </div>
                 <span className="font-medium">
-                  {team.employees} ({totalEmployees > 0
+                  {team.employees} (
+                  {totalEmployees > 0
                     ? Math.round((team.employees / totalEmployees) * 100)
-                    : 0}%)
+                    : 0}
+                  %)
                 </span>
               </div>
             ))}

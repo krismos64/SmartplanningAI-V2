@@ -203,7 +203,8 @@ export async function registerAction(
     // Erreur générique pour l'utilisateur
     return {
       success: false,
-      error: "Une erreur est survenue lors de l'inscription. Veuillez réessayer.",
+      error:
+        "Une erreur est survenue lors de l'inscription. Veuillez réessayer.",
     }
   }
 }

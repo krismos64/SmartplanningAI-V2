@@ -137,14 +137,14 @@ describe('AvatarStack', () => {
       )
 
       // Status dot should be rendered
-      const statusDot = container.querySelector('.rounded-full.border-2.border-background')
+      const statusDot = container.querySelector(
+        '.rounded-full.border-2.border-background'
+      )
       expect(statusDot).toBeInTheDocument()
     })
 
     it('does not show status dots by default', () => {
-      const { container } = render(
-        <AvatarStack members={[mockMemberActive]} />
-      )
+      const { container } = render(<AvatarStack members={[mockMemberActive]} />)
 
       // Should only have avatar, not status dot
       const statusDots = container.querySelectorAll('[aria-label="Actif"]')
@@ -184,9 +184,7 @@ describe('AvatarStack', () => {
     })
 
     it('renders tooltip trigger for each avatar', () => {
-      render(
-        <AvatarStack members={mockTeamMembers.slice(0, 3)} />
-      )
+      render(<AvatarStack members={mockTeamMembers.slice(0, 3)} />)
 
       // Each avatar should be wrapped in a tooltip trigger
       // Look for the initials which indicate avatars are rendered

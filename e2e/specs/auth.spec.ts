@@ -54,7 +54,9 @@ test.describe('Login Page', () => {
     ).toBeVisible()
     await expect(page.getByPlaceholder('vous@entreprise.com')).toBeVisible()
     await expect(page.getByPlaceholder('••••••••')).toBeVisible()
-    await expect(page.getByRole('button', { name: 'Se connecter' })).toBeVisible()
+    await expect(
+      page.getByRole('button', { name: 'Se connecter' })
+    ).toBeVisible()
     await expect(page.getByText('Se souvenir de moi')).toBeVisible()
   })
 
@@ -179,7 +181,9 @@ test.describe('Register Page', () => {
     await expect(page.getByPlaceholder('Jean Dupont')).toBeVisible()
     await expect(page.getByPlaceholder('jean@entreprise.com')).toBeVisible()
     await expect(page.getByPlaceholder('Mon Entreprise SAS')).toBeVisible()
-    await expect(page.getByRole('button', { name: 'Créer mon compte' })).toBeVisible()
+    await expect(
+      page.getByRole('button', { name: 'Créer mon compte' })
+    ).toBeVisible()
   })
 
   test('should show validation errors for empty fields', async ({ page }) => {
@@ -213,7 +217,9 @@ test.describe('Register Page', () => {
 
     // Vérifier l'erreur de validation
     await expect(
-      page.getByText(/mots de passe ne correspondent pas|doivent être identiques/i)
+      page.getByText(
+        /mots de passe ne correspondent pas|doivent être identiques/i
+      )
     ).toBeVisible()
   })
 
@@ -284,9 +290,9 @@ test.describe('Register Page', () => {
     await page.getByRole('button', { name: 'Créer mon compte' }).click()
 
     // Attendre le toast de succès de création
-    await expect(
-      page.getByText(/Compte créé|succès|Bienvenue/i)
-    ).toBeVisible({ timeout: 15000 })
+    await expect(page.getByText(/Compte créé|succès|Bienvenue/i)).toBeVisible({
+      timeout: 15000,
+    })
 
     // Vérifier la redirection vers le dashboard (ou login si auto-login échoue)
     await page.waitForURL(/\/app\/dashboard|\/director|\/login/, {

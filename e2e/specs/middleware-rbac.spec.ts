@@ -72,7 +72,10 @@ async function _logout(page: Page): Promise<void> {
   } else {
     // Fallback: aller directement sur /api/auth/signout
     await page.goto('/api/auth/signout')
-    await page.getByRole('button', { name: /sign out/i }).click().catch(() => {})
+    await page
+      .getByRole('button', { name: /sign out/i })
+      .click()
+      .catch(() => {})
     await page.goto('/login')
   }
 }
@@ -368,7 +371,9 @@ test.describe('Scenarios avances', () => {
     await expect(page).toHaveURL(/\/login\?callbackUrl=/)
 
     // Se connecter
-    await page.getByPlaceholder('vous@entreprise.com').fill(TEST_USERS.EMPLOYEE.email)
+    await page
+      .getByPlaceholder('vous@entreprise.com')
+      .fill(TEST_USERS.EMPLOYEE.email)
     await page.getByPlaceholder('••••••••').fill(TEST_USERS.EMPLOYEE.password)
     await page.getByRole('button', { name: 'Se connecter' }).click()
 
@@ -409,6 +414,8 @@ test.describe('Scenarios avances', () => {
     await expect(page).toHaveURL('/app/dashboard')
 
     // Verifier qu'il n'y a pas de message d'erreur 403
-    await expect(page.getByText(/403|Forbidden|Acces refuse/i)).not.toBeVisible()
+    await expect(
+      page.getByText(/403|Forbidden|Acces refuse/i)
+    ).not.toBeVisible()
   })
 })

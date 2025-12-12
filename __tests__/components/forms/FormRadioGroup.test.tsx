@@ -19,8 +19,16 @@ const mockOptions = [
 ]
 
 const mockOptionsWithHelp = [
-  { value: 'full_time', label: 'Temps plein', helpText: '35h ou plus par semaine' },
-  { value: 'part_time', label: 'Temps partiel', helpText: 'Moins de 35h par semaine' },
+  {
+    value: 'full_time',
+    label: 'Temps plein',
+    helpText: '35h ou plus par semaine',
+  },
+  {
+    value: 'part_time',
+    label: 'Temps partiel',
+    helpText: 'Moins de 35h par semaine',
+  },
 ]
 
 describe('FormRadioGroup', () => {
@@ -210,9 +218,7 @@ describe('FormRadioGroup', () => {
         { value: 'c', label: 'Option C' },
       ]
 
-      render(
-        <FormRadioGroup name="employment" options={optionsWithDisabled} />
-      )
+      render(<FormRadioGroup name="employment" options={optionsWithDisabled} />)
 
       const radios = screen.getAllByRole('radio')
       expect(radios[0]).not.toBeDisabled()
@@ -241,11 +247,7 @@ describe('FormRadioGroup', () => {
 
     it('has aria-required="true" when required', () => {
       render(
-        <FormRadioGroup
-          name="employment"
-          options={mockOptions}
-          required
-        />
+        <FormRadioGroup name="employment" options={mockOptions} required />
       )
 
       expect(screen.getByRole('radiogroup')).toHaveAttribute(
@@ -259,7 +261,7 @@ describe('FormRadioGroup', () => {
   // TEXTE D'AIDE GLOBAL
   // ===========================================================================
 
-  describe('Texte d\'aide global', () => {
+  describe("Texte d'aide global", () => {
     it('shows help text when provided', () => {
       render(
         <FormRadioGroup

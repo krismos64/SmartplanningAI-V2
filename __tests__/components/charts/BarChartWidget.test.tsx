@@ -164,7 +164,7 @@ describe('BarChartWidget', () => {
       expect(screen.getByTestId('bar-expenses')).toBeInTheDocument()
     })
 
-    it('n\'empile pas les barres par defaut', () => {
+    it("n'empile pas les barres par defaut", () => {
       render(
         <BarChartWidget
           data={mockMultiSeriesData}
@@ -242,7 +242,11 @@ describe('BarChartWidget', () => {
 
     it('applique un rayon personnalise', () => {
       render(
-        <BarChartWidget data={mockSingleSeriesData} dataKey="value" radius={8} />
+        <BarChartWidget
+          data={mockSingleSeriesData}
+          dataKey="value"
+          radius={8}
+        />
       )
 
       const bar = screen.getByTestId('bar-value')
@@ -313,7 +317,7 @@ describe('BarChartWidget', () => {
       expect(screen.queryByTestId('bar-chart')).not.toBeInTheDocument()
     })
 
-    it('affiche l\'etat vide sans donnees', () => {
+    it("affiche l'etat vide sans donnees", () => {
       render(<BarChartWidget data={[]} dataKey="value" />)
 
       expect(screen.getByTestId('chart-empty')).toBeInTheDocument()

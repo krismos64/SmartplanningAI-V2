@@ -16,7 +16,12 @@ import { EmployeeSchedule } from '@/app/(dashboard)/dashboard/employee/_componen
 
 // Mock des composants charts pour eviter les erreurs Recharts
 vi.mock('@/components/charts', () => ({
-  BarChartWidget: ({ data, isLoading, emptyMessage, title }: {
+  BarChartWidget: ({
+    data,
+    isLoading,
+    emptyMessage,
+    title,
+  }: {
     data: unknown[]
     isLoading?: boolean
     emptyMessage?: string
@@ -26,9 +31,7 @@ vi.mock('@/components/charts', () => ({
       {isLoading && <span>Loading...</span>}
       {!isLoading && data.length === 0 && <span>{emptyMessage}</span>}
       {!isLoading && data.length > 0 && (
-        <span data-testid="chart-data">
-          {JSON.stringify(data)}
-        </span>
+        <span data-testid="chart-data">{JSON.stringify(data)}</span>
       )}
     </div>
   ),
@@ -153,7 +156,7 @@ describe('EmployeeSchedule', () => {
   // ==========================================================================
 
   describe('etats', () => {
-    it('devrait afficher l\'etat de chargement', () => {
+    it("devrait afficher l'etat de chargement", () => {
       render(<EmployeeSchedule weeklySchedule={mockWeeklySchedule} isLoading />)
 
       expect(screen.getByText('Loading...')).toBeInTheDocument()
@@ -162,7 +165,9 @@ describe('EmployeeSchedule', () => {
     it('devrait afficher le message vide quand pas de donnees', () => {
       render(<EmployeeSchedule weeklySchedule={[]} />)
 
-      expect(screen.getByText('Aucun shift planifie cette semaine')).toBeInTheDocument()
+      expect(
+        screen.getByText('Aucun shift planifie cette semaine')
+      ).toBeInTheDocument()
     })
   })
 
@@ -206,9 +211,7 @@ describe('EmployeeSchedule', () => {
     })
 
     it('devrait gerer une semaine incomplete', () => {
-      const schedule = [
-        { day: 'Lun', hours: 8 },
-      ]
+      const schedule = [{ day: 'Lun', hours: 8 }]
 
       render(<EmployeeSchedule weeklySchedule={schedule} />)
 

@@ -189,34 +189,21 @@ describe('DirectorPendingLeaves', () => {
 
   describe('etat vide', () => {
     it('devrait afficher Aucune demande en attente', () => {
-      render(
-        <DirectorPendingLeaves
-          pendingLeaves={[]}
-          totalPending={0}
-        />
-      )
+      render(<DirectorPendingLeaves pendingLeaves={[]} totalPending={0} />)
 
       expect(screen.getByText('Aucune demande en attente')).toBeInTheDocument()
     })
 
     it('devrait afficher le message de succes', () => {
-      render(
-        <DirectorPendingLeaves
-          pendingLeaves={[]}
-          totalPending={0}
-        />
-      )
+      render(<DirectorPendingLeaves pendingLeaves={[]} totalPending={0} />)
 
-      expect(screen.getByText('Toutes les demandes ont ete traitees')).toBeInTheDocument()
+      expect(
+        screen.getByText('Toutes les demandes ont ete traitees')
+      ).toBeInTheDocument()
     })
 
     it('ne devrait pas afficher de badge si 0 demandes', () => {
-      render(
-        <DirectorPendingLeaves
-          pendingLeaves={[]}
-          totalPending={0}
-        />
-      )
+      render(<DirectorPendingLeaves pendingLeaves={[]} totalPending={0} />)
 
       // Le badge avec le chiffre ne devrait pas etre present
       expect(screen.queryByText('0')).not.toBeInTheDocument()
@@ -236,7 +223,9 @@ describe('DirectorPendingLeaves', () => {
         />
       )
 
-      expect(screen.getByRole('link', { name: /Voir toutes les demandes \(10\)/ })).toBeInTheDocument()
+      expect(
+        screen.getByRole('link', { name: /Voir toutes les demandes \(10\)/ })
+      ).toBeInTheDocument()
     })
 
     it('ne devrait pas afficher le bouton si 5 demandes ou moins', () => {
@@ -247,7 +236,9 @@ describe('DirectorPendingLeaves', () => {
         />
       )
 
-      expect(screen.queryByRole('link', { name: /Voir toutes les demandes/ })).not.toBeInTheDocument()
+      expect(
+        screen.queryByRole('link', { name: /Voir toutes les demandes/ })
+      ).not.toBeInTheDocument()
     })
 
     it('devrait avoir le bon lien', () => {
@@ -258,7 +249,9 @@ describe('DirectorPendingLeaves', () => {
         />
       )
 
-      const link = screen.getByRole('link', { name: /Voir toutes les demandes/ })
+      const link = screen.getByRole('link', {
+        name: /Voir toutes les demandes/,
+      })
       expect(link).toHaveAttribute('href', '/leaves/pending')
     })
   })
@@ -277,7 +270,9 @@ describe('DirectorPendingLeaves', () => {
         />
       )
 
-      expect(container.querySelectorAll('.animate-pulse').length).toBeGreaterThan(0)
+      expect(
+        container.querySelectorAll('.animate-pulse').length
+      ).toBeGreaterThan(0)
     })
   })
 

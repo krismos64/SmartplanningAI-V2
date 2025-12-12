@@ -81,8 +81,7 @@ export async function getDirectorStats(
       },
     }
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : 'Erreur inconnue'
+    const message = error instanceof Error ? error.message : 'Erreur inconnue'
     return {
       success: false,
       error: `Erreur lors de la recuperation des stats director: ${message}`,
@@ -116,7 +115,9 @@ async function getTotalTeams(companyId: string): Promise<number> {
 /**
  * Compte les demandes de conges en attente (toute l'entreprise)
  */
-async function getPendingLeaveRequestsCount(companyId: string): Promise<number> {
+async function getPendingLeaveRequestsCount(
+  companyId: string
+): Promise<number> {
   return prisma.leaveRequest.count({
     where: {
       companyId,
@@ -170,7 +171,8 @@ async function getAverageAttendanceRate(
   })
 
   const employeesOnLeaveCount = employeesOnLeave.length
-  const presentRate = ((totalEmployees - employeesOnLeaveCount) / totalEmployees) * 100
+  const presentRate =
+    ((totalEmployees - employeesOnLeaveCount) / totalEmployees) * 100
 
   return Math.round(presentRate)
 }
@@ -211,7 +213,9 @@ async function getTeamStats(
       })
 
       const hoursWorked = schedules.reduce((total, schedule) => {
-        return total + calculateHoursBetween(schedule.startTime, schedule.endTime)
+        return (
+          total + calculateHoursBetween(schedule.startTime, schedule.endTime)
+        )
       }, 0)
 
       // Taux de conges de l'equipe

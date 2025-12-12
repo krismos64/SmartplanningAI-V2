@@ -175,13 +175,10 @@ describe('FormTextarea', () => {
   // TEXTE D'AIDE
   // ===========================================================================
 
-  describe('Texte d\'aide', () => {
+  describe("Texte d'aide", () => {
     it('shows help text when provided', () => {
       render(
-        <FormTextarea
-          label="Description"
-          helpText="Maximum 500 caractères"
-        />
+        <FormTextarea label="Description" helpText="Maximum 500 caractères" />
       )
 
       expect(screen.getByText('Maximum 500 caractères')).toBeInTheDocument()

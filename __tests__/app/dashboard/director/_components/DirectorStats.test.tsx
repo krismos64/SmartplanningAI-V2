@@ -138,7 +138,9 @@ describe('DirectorStats', () => {
     it('devrait avoir un aria-label', () => {
       render(<DirectorStats stats={mockStats} />)
 
-      expect(screen.getByLabelText('Statistiques entreprise')).toBeInTheDocument()
+      expect(
+        screen.getByLabelText('Statistiques entreprise')
+      ).toBeInTheDocument()
     })
   })
 
@@ -159,7 +161,9 @@ describe('DirectorStats', () => {
       render(<DirectorStats stats={mockStats} isLoading={true} />)
 
       // En mode loading, StatsGrid affiche des skeletons
-      expect(screen.getByLabelText('Chargement des statistiques')).toBeInTheDocument()
+      expect(
+        screen.getByLabelText('Chargement des statistiques')
+      ).toBeInTheDocument()
     })
   })
 

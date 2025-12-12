@@ -13,7 +13,14 @@
  */
 'use client'
 
-import { Users, Building, Clock, Calendar, TrendingUp, UserMinus } from 'lucide-react'
+import {
+  Users,
+  Building,
+  Clock,
+  Calendar,
+  TrendingUp,
+  UserMinus,
+} from 'lucide-react'
 import { StatsGrid } from '@/components/dashboard'
 import type { StatCardProps } from '@/types/dashboard'
 import type { DirectorStatsResult } from '@/lib/services/dashboard/types'

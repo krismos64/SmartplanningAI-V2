@@ -95,7 +95,11 @@ function LoginFormTest() {
     },
   })
 
-  const onSubmit = async (data: { email: string; password: string; rememberMe?: boolean }) => {
+  const onSubmit = async (data: {
+    email: string
+    password: string
+    rememberMe?: boolean
+  }) => {
     // eslint-disable-next-line no-console
     console.log('✅ Login Form Valid:', data)
     await new Promise((resolve) => setTimeout(resolve, 1000))
@@ -108,7 +112,10 @@ function LoginFormTest() {
         1️⃣ Login Form
       </h2>
 
-      <form onSubmit={(e) => void handleSubmit(onSubmit)(e)} className="max-w-md space-y-6">
+      <form
+        onSubmit={(e) => void handleSubmit(onSubmit)(e)}
+        className="max-w-md space-y-6"
+      >
         <FormInput
           label="Email"
           type="email"
@@ -169,7 +176,10 @@ function RegisterFormTest() {
         2️⃣ Register Form
       </h2>
 
-      <form onSubmit={(e) => void handleSubmit(onSubmit)(e)} className="max-w-2xl space-y-6">
+      <form
+        onSubmit={(e) => void handleSubmit(onSubmit)(e)}
+        className="max-w-2xl space-y-6"
+      >
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           <FormInput
             label="Prénom"
@@ -278,7 +288,10 @@ function EmployeeFormTest() {
         3️⃣ Create Employee Form
       </h2>
 
-      <form onSubmit={(e) => void handleSubmit(onSubmit)(e)} className="max-w-4xl space-y-6">
+      <form
+        onSubmit={(e) => void handleSubmit(onSubmit)(e)}
+        className="max-w-4xl space-y-6"
+      >
         {/* Infos personnelles */}
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           <FormInput
@@ -357,7 +370,9 @@ function EmployeeFormTest() {
             )}
             error={errors.employmentType?.message}
             value={employmentType}
-            onChange={(value) => setValue('employmentType', value as EmploymentType)}
+            onChange={(value) =>
+              setValue('employmentType', value as EmploymentType)
+            }
           />
 
           <FormSelect

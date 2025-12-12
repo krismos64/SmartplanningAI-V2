@@ -106,7 +106,8 @@ export function RegisterForm() {
         // Le compte est créé mais l'auto-login a échoué
         // Rediriger vers la page de login
         toast.info('Veuillez vous connecter', {
-          description: 'Votre compte a été créé. Connectez-vous pour continuer.',
+          description:
+            'Votre compte a été créé. Connectez-vous pour continuer.',
         })
         router.push('/login')
         return

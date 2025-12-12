@@ -182,7 +182,7 @@ describe('ChartContainer', () => {
       expect(empty).toHaveAttribute('aria-label', customMessage)
     })
 
-    it('applique la hauteur a l\'etat vide', () => {
+    it("applique la hauteur a l'etat vide", () => {
       render(
         <ChartContainer isEmpty height={350}>
           <div>Chart</div>

@@ -16,7 +16,13 @@ import type { AdminStatsResult } from '@/lib/services/dashboard/types'
 
 // Mock des composants
 vi.mock('@/components/dashboard', () => ({
-  StatsGrid: ({ stats, isLoading }: { stats: unknown[]; isLoading?: boolean }) => (
+  StatsGrid: ({
+    stats,
+    isLoading,
+  }: {
+    stats: unknown[]
+    isLoading?: boolean
+  }) => (
     <div data-testid="stats-grid" data-loading={isLoading}>
       {JSON.stringify(stats)}
     </div>

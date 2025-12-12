@@ -148,7 +148,16 @@ export function useCrudMutation<TInput, TOutput>(
 
       return result!
     },
-    [action, onSuccess, onError, successMessage, errorMessage, showToasts, toastHelpers, reset]
+    [
+      action,
+      onSuccess,
+      onError,
+      successMessage,
+      errorMessage,
+      showToasts,
+      toastHelpers,
+      reset,
+    ]
   )
 
   return {
@@ -270,7 +279,16 @@ export function useDeleteMutation(
 
       return result!
     },
-    [action, onSuccess, onError, successMessage, errorMessage, showToasts, toastHelpers, reset]
+    [
+      action,
+      onSuccess,
+      onError,
+      successMessage,
+      errorMessage,
+      showToasts,
+      toastHelpers,
+      reset,
+    ]
   )
 
   return {

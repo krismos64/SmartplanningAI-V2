@@ -129,7 +129,10 @@ describe('AreaChartWidget', () => {
       const areaRevenue = screen.getByTestId('area-revenue')
       const areaExpenses = screen.getByTestId('area-expenses')
 
-      expect(areaRevenue).toHaveAttribute('data-stroke', CHART_COLORS.primary[0])
+      expect(areaRevenue).toHaveAttribute(
+        'data-stroke',
+        CHART_COLORS.primary[0]
+      )
       expect(areaExpenses).toHaveAttribute(
         'data-stroke',
         CHART_COLORS.primary[1]
@@ -195,7 +198,7 @@ describe('AreaChartWidget', () => {
       expect(screen.queryByTestId('tooltip')).not.toBeInTheDocument()
     })
 
-    it('n\'affiche pas la legende par defaut', () => {
+    it("n'affiche pas la legende par defaut", () => {
       render(<AreaChartWidget data={mockSingleSeriesData} dataKey="value" />)
 
       expect(screen.queryByTestId('legend')).not.toBeInTheDocument()
@@ -271,14 +274,14 @@ describe('AreaChartWidget', () => {
       expect(screen.queryByTestId('area-chart')).not.toBeInTheDocument()
     })
 
-    it('affiche l\'etat vide sans donnees', () => {
+    it("affiche l'etat vide sans donnees", () => {
       render(<AreaChartWidget data={[]} dataKey="value" />)
 
       expect(screen.getByTestId('chart-empty')).toBeInTheDocument()
       expect(screen.queryByTestId('area-chart')).not.toBeInTheDocument()
     })
 
-    it('affiche un message personnalise pour l\'etat vide', () => {
+    it("affiche un message personnalise pour l'etat vide", () => {
       render(
         <AreaChartWidget
           data={[]}
@@ -315,7 +318,7 @@ describe('AreaChartWidget', () => {
       const chart = screen.getByTestId('area-chart')
       expect(chart).toHaveAttribute(
         'aria-label',
-        'Evolution du chiffre d\'affaires'
+        "Evolution du chiffre d'affaires"
       )
     })
   })

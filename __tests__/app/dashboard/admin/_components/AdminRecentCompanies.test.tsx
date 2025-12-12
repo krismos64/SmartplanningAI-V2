@@ -106,7 +106,9 @@ describe('AdminRecentCompanies', () => {
     it('devrait rendre le bouton Voir tout', async () => {
       await renderAdminRecentCompanies(mockCompanies)
 
-      expect(screen.getByRole('link', { name: /voir tout/i })).toBeInTheDocument()
+      expect(
+        screen.getByRole('link', { name: /voir tout/i })
+      ).toBeInTheDocument()
     })
 
     it('devrait avoir le lien vers /admin/companies', async () => {
@@ -293,7 +295,9 @@ describe('AdminRecentCompanies', () => {
     it('devrait toujours afficher le bouton Voir tout', async () => {
       await renderAdminRecentCompanies([])
 
-      expect(screen.getByRole('link', { name: /voir tout/i })).toBeInTheDocument()
+      expect(
+        screen.getByRole('link', { name: /voir tout/i })
+      ).toBeInTheDocument()
     })
   })
 

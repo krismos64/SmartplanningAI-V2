@@ -25,7 +25,9 @@ import {
   getEmployeeLeaveBalanceOnly,
 } from '@/lib/services/dashboard/employee-stats.service'
 
-const prismaMock = prisma as unknown as ReturnType<typeof mockDeep<PrismaClient>>
+const prismaMock = prisma as unknown as ReturnType<
+  typeof mockDeep<PrismaClient>
+>
 
 describe('employee-stats.service', () => {
   beforeEach(() => {
@@ -39,7 +41,7 @@ describe('employee-stats.service', () => {
   // ==========================================================================
 
   describe('getEmployeeStats', () => {
-    it('devrait retourner une erreur si l\'employe n\'appartient pas a l\'entreprise', async () => {
+    it("devrait retourner une erreur si l'employe n'appartient pas a l'entreprise", async () => {
       prismaMock.employee.findUnique.mockResolvedValue(null)
 
       const result = await getEmployeeStats({

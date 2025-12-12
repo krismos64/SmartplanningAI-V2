@@ -43,9 +43,10 @@ export function DirectorTrendsChart({
   // Calculer la croissance
   const firstCount = employeeGrowth[0]?.count ?? 0
   const lastCount = employeeGrowth[employeeGrowth.length - 1]?.count ?? 0
-  const growth = firstCount > 0
-    ? Math.round(((lastCount - firstCount) / firstCount) * 100)
-    : 0
+  const growth =
+    firstCount > 0
+      ? Math.round(((lastCount - firstCount) / firstCount) * 100)
+      : 0
 
   return (
     <Card className={cn('overflow-hidden', className)}>
@@ -55,15 +56,15 @@ export function DirectorTrendsChart({
             <CardTitle className="text-base font-medium">
               Evolution des effectifs
             </CardTitle>
-            <p className="text-sm text-muted-foreground">
-              6 derniers mois
-            </p>
+            <p className="text-sm text-muted-foreground">6 derniers mois</p>
           </div>
           {/* Indicateur de croissance */}
           <div
             className={cn(
               'flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium',
-              growth >= 0 ? 'bg-emerald-500/10 text-emerald-600' : 'bg-red-500/10 text-red-600'
+              growth >= 0
+                ? 'bg-emerald-500/10 text-emerald-600'
+                : 'bg-red-500/10 text-red-600'
             )}
           >
             {growth >= 0 ? (
@@ -95,7 +96,8 @@ export function DirectorTrendsChart({
                 <polyline points="6 9 12 15 18 9" />
               </svg>
             )}
-            {growth >= 0 ? '+' : ''}{growth}%
+            {growth >= 0 ? '+' : ''}
+            {growth}%
           </div>
         </div>
       </CardHeader>

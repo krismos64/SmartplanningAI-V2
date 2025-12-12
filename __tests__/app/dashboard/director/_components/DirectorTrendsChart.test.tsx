@@ -133,7 +133,12 @@ describe('DirectorTrendsChart', () => {
 
   describe('etat de chargement', () => {
     it('devrait afficher l etat de chargement', () => {
-      render(<DirectorTrendsChart employeeGrowth={mockEmployeeGrowth} isLoading={true} />)
+      render(
+        <DirectorTrendsChart
+          employeeGrowth={mockEmployeeGrowth}
+          isLoading={true}
+        />
+      )
 
       expect(screen.getByTestId('loading-chart')).toBeInTheDocument()
     })
@@ -146,7 +151,10 @@ describe('DirectorTrendsChart', () => {
   describe('props', () => {
     it('devrait accepter className', () => {
       const { container } = render(
-        <DirectorTrendsChart employeeGrowth={mockEmployeeGrowth} className="custom-class" />
+        <DirectorTrendsChart
+          employeeGrowth={mockEmployeeGrowth}
+          className="custom-class"
+        />
       )
 
       expect(container.firstChild).toHaveClass('custom-class')

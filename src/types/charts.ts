@@ -206,7 +206,13 @@ export type ChartProps = AreaChartProps | BarChartProps | PieChartProps
 /**
  * Type pour les couleurs du theme
  */
-export type ChartColorKey = 'primary' | 'secondary' | 'success' | 'warning' | 'danger' | 'neutral'
+export type ChartColorKey =
+  | 'primary'
+  | 'secondary'
+  | 'success'
+  | 'warning'
+  | 'danger'
+  | 'neutral'
 
 /**
  * Configuration d'une couleur avec variantes

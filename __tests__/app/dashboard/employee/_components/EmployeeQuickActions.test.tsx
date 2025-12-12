@@ -30,7 +30,7 @@ describe('EmployeeQuickActions', () => {
       expect(screen.getByText('Actions rapides')).toBeInTheDocument()
     })
 
-    it('devrait afficher les 3 boutons d\'actions', () => {
+    it("devrait afficher les 3 boutons d'actions", () => {
       render(<EmployeeQuickActions pendingRequests={0} />)
 
       expect(screen.getByText('Demander un conge')).toBeInTheDocument()
@@ -93,7 +93,7 @@ describe('EmployeeQuickActions', () => {
       expect(screen.getByText('9+')).toBeInTheDocument()
     })
 
-    it('devrait afficher le nombre exact jusqu\'a 9', () => {
+    it("devrait afficher le nombre exact jusqu'a 9", () => {
       render(<EmployeeQuickActions pendingRequests={9} />)
 
       // Le nombre apparait dans le badge et dans le message
@@ -119,20 +119,26 @@ describe('EmployeeQuickActions', () => {
       // Le nombre 1 apparait dans le badge et dans le message
       const elements = screen.getAllByText('1')
       expect(elements.length).toBeGreaterThanOrEqual(1)
-      expect(screen.getByText(/demande en attente de validation/)).toBeInTheDocument()
+      expect(
+        screen.getByText(/demande en attente de validation/)
+      ).toBeInTheDocument()
     })
 
     it('devrait afficher le message pluriel pour plusieurs demandes', () => {
       render(<EmployeeQuickActions pendingRequests={3} />)
 
-      expect(screen.getByText(/demandes en attente de validation/)).toBeInTheDocument()
+      expect(
+        screen.getByText(/demandes en attente de validation/)
+      ).toBeInTheDocument()
     })
 
     it('devrait mettre le nombre en surbrillance', () => {
       render(<EmployeeQuickActions pendingRequests={3} />)
 
       // Le message info contient le nombre avec la classe text-orange-600
-      const highlightedCount = screen.getByText('3', { selector: '.text-orange-600' })
+      const highlightedCount = screen.getByText('3', {
+        selector: '.text-orange-600',
+      })
       expect(highlightedCount).toBeInTheDocument()
     })
   })
@@ -153,7 +159,9 @@ describe('EmployeeQuickActions', () => {
     it('devrait avoir des boutons outline pour les autres actions', () => {
       render(<EmployeeQuickActions pendingRequests={0} />)
 
-      const planningButton = screen.getByRole('link', { name: /Voir mon planning/ })
+      const planningButton = screen.getByRole('link', {
+        name: /Voir mon planning/,
+      })
       const demandesButton = screen.getByRole('link', { name: /Mes demandes/ })
 
       expect(planningButton).toBeInTheDocument()
@@ -189,10 +197,7 @@ describe('EmployeeQuickActions', () => {
   describe('props', () => {
     it('devrait accepter className', () => {
       const { container } = render(
-        <EmployeeQuickActions
-          pendingRequests={0}
-          className="custom-class"
-        />
+        <EmployeeQuickActions pendingRequests={0} className="custom-class" />
       )
 
       expect(container.firstChild).toHaveClass('custom-class')
@@ -232,9 +237,15 @@ describe('EmployeeQuickActions', () => {
     it('chaque lien devrait avoir un texte accessible', () => {
       render(<EmployeeQuickActions pendingRequests={0} />)
 
-      expect(screen.getByRole('link', { name: /Demander un conge/ })).toBeInTheDocument()
-      expect(screen.getByRole('link', { name: /Voir mon planning/ })).toBeInTheDocument()
-      expect(screen.getByRole('link', { name: /Mes demandes/ })).toBeInTheDocument()
+      expect(
+        screen.getByRole('link', { name: /Demander un conge/ })
+      ).toBeInTheDocument()
+      expect(
+        screen.getByRole('link', { name: /Voir mon planning/ })
+      ).toBeInTheDocument()
+      expect(
+        screen.getByRole('link', { name: /Mes demandes/ })
+      ).toBeInTheDocument()
     })
   })
 })

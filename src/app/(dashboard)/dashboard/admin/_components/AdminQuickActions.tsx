@@ -42,7 +42,10 @@ export function AdminQuickActions({
         <div className="flex flex-wrap gap-3">
           {/* Creer une entreprise */}
           <Button variant="default" asChild>
-            <Link href="/admin/companies/new" className="flex items-center gap-2">
+            <Link
+              href="/admin/companies/new"
+              className="flex items-center gap-2"
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
@@ -101,7 +104,10 @@ export function AdminQuickActions({
 
           {/* Gerer les abonnements */}
           <Button variant="outline" asChild>
-            <Link href="/admin/subscriptions" className="flex items-center gap-2">
+            <Link
+              href="/admin/subscriptions"
+              className="flex items-center gap-2"
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"

@@ -47,7 +47,10 @@ export async function getEmployeeStats(
 
   try {
     // Verification de l'acces multi-tenant
-    const hasAccess = await verifyEmployeeBelongsToCompany(employeeId, companyId)
+    const hasAccess = await verifyEmployeeBelongsToCompany(
+      employeeId,
+      companyId
+    )
     if (!hasAccess) {
       return {
         success: false,
@@ -84,8 +87,7 @@ export async function getEmployeeStats(
       },
     }
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : 'Erreur inconnue'
+    const message = error instanceof Error ? error.message : 'Erreur inconnue'
     return {
       success: false,
       error: `Erreur lors de la recuperation des stats employe: ${message}`,
@@ -300,7 +302,10 @@ export async function getEmployeeHoursOnly(
   companyId: string
 ): Promise<ServiceResult<{ current: number; trend: number }>> {
   try {
-    const hasAccess = await verifyEmployeeBelongsToCompany(employeeId, companyId)
+    const hasAccess = await verifyEmployeeBelongsToCompany(
+      employeeId,
+      companyId
+    )
     if (!hasAccess) {
       return { success: false, error: 'Acces non autorise' }
     }
@@ -331,7 +336,10 @@ export async function getEmployeeLeaveBalanceOnly(
   companyId: string
 ): Promise<ServiceResult<{ remaining: number; total: number }>> {
   try {
-    const hasAccess = await verifyEmployeeBelongsToCompany(employeeId, companyId)
+    const hasAccess = await verifyEmployeeBelongsToCompany(
+      employeeId,
+      companyId
+    )
     if (!hasAccess) {
       return { success: false, error: 'Acces non autorise' }
     }

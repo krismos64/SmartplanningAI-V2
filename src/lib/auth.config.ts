@@ -153,7 +153,9 @@ export const authConfig: NextAuthConfig = {
       // 3. Routes d'auth : si connecté, rediriger vers dashboard selon rôle
       // IMPORTANT: Vérifié AVANT les routes publiques car /login et /register
       // sont dans les deux listes
-      const isAuthRoute = AUTH_ROUTES.some((route) => pathname.startsWith(route))
+      const isAuthRoute = AUTH_ROUTES.some((route) =>
+        pathname.startsWith(route)
+      )
       if (isAuthRoute) {
         if (isLoggedIn) {
           // Redirection vers le dashboard approprié selon le rôle

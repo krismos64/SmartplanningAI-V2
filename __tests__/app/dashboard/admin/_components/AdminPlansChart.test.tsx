@@ -204,7 +204,9 @@ describe('AdminPlansChart', () => {
         />
       )
 
-      expect(screen.getByText(/0 abonnements.*0.*€|0 abonnements.*0.*EUR/)).toBeInTheDocument()
+      expect(
+        screen.getByText(/0 abonnements.*0.*€|0 abonnements.*0.*EUR/)
+      ).toBeInTheDocument()
     })
   })
 

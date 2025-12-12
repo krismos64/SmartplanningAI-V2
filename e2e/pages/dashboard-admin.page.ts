@@ -71,29 +71,62 @@ export class DashboardAdminPage {
 
     // Stats Section - 6 KPIs SaaS
     this.statsSection = page.getByRole('region', { name: /statistiques/i })
-    this.totalCompaniesCard = page.locator('text=Entreprises').locator('..').locator('..')
-    this.totalUsersCard = page.locator('text=Utilisateurs').locator('..').locator('..')
-    this.activeSubscriptionsCard = page.locator('text=Abonnements actifs').locator('..').locator('..')
+    this.totalCompaniesCard = page
+      .locator('text=Entreprises')
+      .locator('..')
+      .locator('..')
+    this.totalUsersCard = page
+      .locator('text=Utilisateurs')
+      .locator('..')
+      .locator('..')
+    this.activeSubscriptionsCard = page
+      .locator('text=Abonnements actifs')
+      .locator('..')
+      .locator('..')
     this.mrrCard = page.locator('text=MRR').locator('..').locator('..')
-    this.conversionRateCard = page.locator('text=Taux conversion').locator('..').locator('..')
-    this.churnRateCard = page.locator('text=Taux churn').locator('..').locator('..')
+    this.conversionRateCard = page
+      .locator('text=Taux conversion')
+      .locator('..')
+      .locator('..')
+    this.churnRateCard = page
+      .locator('text=Taux churn')
+      .locator('..')
+      .locator('..')
 
     // Charts
-    this.mrrChartSection = page.locator('text=/Evolution MRR|MRR.*mois/i').locator('..')
-    this.signupsChartSection = page.locator('text=/Nouvelles inscriptions|inscriptions/i').locator('..')
-    this.plansChartSection = page.locator('text=/Repartition.*plans|revenus.*plan/i').locator('..')
+    this.mrrChartSection = page
+      .locator('text=/Evolution MRR|MRR.*mois/i')
+      .locator('..')
+    this.signupsChartSection = page
+      .locator('text=/Nouvelles inscriptions|inscriptions/i')
+      .locator('..')
+    this.plansChartSection = page
+      .locator('text=/Repartition.*plans|revenus.*plan/i')
+      .locator('..')
 
     // Recent Companies
-    this.recentCompaniesSection = page.locator('text=/Dernieres inscriptions|entreprises recentes/i').locator('..')
+    this.recentCompaniesSection = page
+      .locator('text=/Dernieres inscriptions|entreprises recentes/i')
+      .locator('..')
     this.companyItems = page.locator('[data-testid="company-item"]')
     this.viewAllCompaniesLink = page.getByRole('link', { name: /voir tout/i })
 
     // Quick Actions
-    this.quickActionsSection = page.locator('text=Actions rapides').locator('..')
-    this.viewCompaniesLink = page.getByRole('link', { name: /gerer.*entreprises|voir.*entreprises/i })
-    this.viewUsersLink = page.getByRole('link', { name: /gerer.*utilisateurs|voir.*utilisateurs/i })
-    this.viewSubscriptionsLink = page.getByRole('link', { name: /gerer.*abonnements|voir.*abonnements/i })
-    this.platformSettingsLink = page.getByRole('link', { name: /parametres|configuration/i })
+    this.quickActionsSection = page
+      .locator('text=Actions rapides')
+      .locator('..')
+    this.viewCompaniesLink = page.getByRole('link', {
+      name: /gerer.*entreprises|voir.*entreprises/i,
+    })
+    this.viewUsersLink = page.getByRole('link', {
+      name: /gerer.*utilisateurs|voir.*utilisateurs/i,
+    })
+    this.viewSubscriptionsLink = page.getByRole('link', {
+      name: /gerer.*abonnements|voir.*abonnements/i,
+    })
+    this.platformSettingsLink = page.getByRole('link', {
+      name: /parametres|configuration/i,
+    })
 
     // States
     this.loadingIndicator = page.locator('[data-testid="loading"]')
@@ -153,7 +186,12 @@ export class DashboardAdminPage {
     let visibleCount = 0
     for (const label of kpiLabels) {
       const locator = this.page.locator(`text=${label}`)
-      if (await locator.first().isVisible().catch(() => false)) {
+      if (
+        await locator
+          .first()
+          .isVisible()
+          .catch(() => false)
+      ) {
         visibleCount++
       }
     }
@@ -164,28 +202,36 @@ export class DashboardAdminPage {
    * Verifie que le graphique MRR est affiche
    */
   async expectMrrChartVisible(): Promise<void> {
-    await expect(this.page.locator('text=/Evolution.*MRR|MRR/i').first()).toBeVisible()
+    await expect(
+      this.page.locator('text=/Evolution.*MRR|MRR/i').first()
+    ).toBeVisible()
   }
 
   /**
    * Verifie que le graphique inscriptions est affiche
    */
   async expectSignupsChartVisible(): Promise<void> {
-    await expect(this.page.locator('text=/Nouvelles inscriptions|inscriptions/i')).toBeVisible()
+    await expect(
+      this.page.locator('text=/Nouvelles inscriptions|inscriptions/i')
+    ).toBeVisible()
   }
 
   /**
    * Verifie que le graphique plans est affiche
    */
   async expectPlansChartVisible(): Promise<void> {
-    await expect(this.page.locator('text=/Repartition|plans|revenus/i').first()).toBeVisible()
+    await expect(
+      this.page.locator('text=/Repartition|plans|revenus/i').first()
+    ).toBeVisible()
   }
 
   /**
    * Verifie que la section dernieres entreprises est affichee
    */
   async expectRecentCompaniesVisible(): Promise<void> {
-    await expect(this.page.locator('text=/Dernieres inscriptions|entreprises/i').first()).toBeVisible()
+    await expect(
+      this.page.locator('text=/Dernieres inscriptions|entreprises/i').first()
+    ).toBeVisible()
   }
 
   /**
@@ -238,7 +284,11 @@ export class DashboardAdminPage {
    * Recupere le nombre total d'entreprises affiche
    */
   async getTotalCompanies(): Promise<string | null> {
-    const companiesText = this.page.locator('text=Entreprises').locator('..').locator('..').locator('[class*="text-2xl"], [class*="text-3xl"]')
+    const companiesText = this.page
+      .locator('text=Entreprises')
+      .locator('..')
+      .locator('..')
+      .locator('[class*="text-2xl"], [class*="text-3xl"]')
     if (await companiesText.first().isVisible()) {
       return await companiesText.first().textContent()
     }
@@ -249,7 +299,11 @@ export class DashboardAdminPage {
    * Recupere le MRR affiche
    */
   async getMrr(): Promise<string | null> {
-    const mrrText = this.page.locator('text=MRR').locator('..').locator('..').locator('[class*="text-2xl"], [class*="text-3xl"]')
+    const mrrText = this.page
+      .locator('text=MRR')
+      .locator('..')
+      .locator('..')
+      .locator('[class*="text-2xl"], [class*="text-3xl"]')
     if (await mrrText.first().isVisible()) {
       return await mrrText.first().textContent()
     }
@@ -260,7 +314,11 @@ export class DashboardAdminPage {
    * Recupere le taux de churn affiche
    */
   async getChurnRate(): Promise<string | null> {
-    const churnText = this.page.locator('text=Taux churn').locator('..').locator('..').locator('[class*="text-2xl"], [class*="text-3xl"]')
+    const churnText = this.page
+      .locator('text=Taux churn')
+      .locator('..')
+      .locator('..')
+      .locator('[class*="text-2xl"], [class*="text-3xl"]')
     if (await churnText.first().isVisible()) {
       return await churnText.first().textContent()
     }
@@ -286,7 +344,9 @@ export class DashboardAdminPage {
    */
   async expectChurnHealthIndicator(): Promise<void> {
     // Le churn devrait avoir un indicateur de sante
-    const healthIndicator = this.page.locator('text=/Retention saine|Attention requise/i')
+    const healthIndicator = this.page.locator(
+      'text=/Retention saine|Attention requise/i'
+    )
     await expect(healthIndicator).toBeVisible()
   }
 }

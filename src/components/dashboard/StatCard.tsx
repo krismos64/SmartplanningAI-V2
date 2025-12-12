@@ -54,7 +54,7 @@ export function StatCard({
           <Skeleton className="h-8 w-8 rounded-md" />
         </CardHeader>
         <CardContent>
-          <Skeleton className="h-8 w-32 mb-2" />
+          <Skeleton className="mb-2 h-8 w-32" />
           <Skeleton className="h-4 w-20" />
         </CardContent>
       </Card>
@@ -62,7 +62,12 @@ export function StatCard({
   }
 
   return (
-    <Card className={cn('overflow-hidden transition-shadow hover:shadow-md', className)}>
+    <Card
+      className={cn(
+        'overflow-hidden transition-shadow hover:shadow-md',
+        className
+      )}
+    >
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium text-muted-foreground">
           {title}
