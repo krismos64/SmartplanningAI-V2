@@ -76,6 +76,8 @@ COPY --from=builder /app/prisma ./prisma
 
 # Copier les dépendances de Prisma CLI nécessaires pour les migrations
 COPY --from=builder /app/node_modules/effect ./node_modules/effect
+COPY --from=builder /app/node_modules/fast-check ./node_modules/fast-check
+COPY --from=builder /app/node_modules/pure-rand ./node_modules/pure-rand
 
 # Changer les permissions
 RUN chown -R nextjs:nodejs /app
