@@ -157,57 +157,18 @@ export async function getDatabaseStats(): Promise<DatabaseStats> {
     isConnected: await checkConnection(),
   }
 
-  try {
-    // Récupérer les métriques du pool (si disponible en dev)
-    // Note : $metrics nécessite previewFeatures = ["metrics"] dans schema.prisma
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
-    const prismaWithMetrics = prisma as any
-
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    if (
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      prismaWithMetrics.$metrics &&
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      typeof prismaWithMetrics.$metrics.json === 'function'
-    ) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-      const metrics = await prismaWithMetrics.$metrics.json()
-
-      // Parser les métriques pour extraire les infos du pool
-      // Note : Structure peut varier selon version Prisma
-      if (metrics && typeof metrics === 'object') {
-        stats.poolSize = extractPoolMetric(metrics, 'pool_size')
-        stats.activeConnections = extractPoolMetric(
-          metrics,
-          'active_connections'
-        )
-        stats.idleConnections = extractPoolMetric(metrics, 'idle_connections')
-        stats.waitingRequests = extractPoolMetric(metrics, 'waiting_requests')
-      }
-    }
-  } catch (error) {
-    console.warn('⚠️ Impossible de récupérer les métriques:', error)
-    // On continue même si les métriques ne sont pas dispo
-  }
+  // NOTE: Prisma metrics API ($metrics) was removed in Prisma 5+
+  // This project uses Prisma 6.1.0, so metrics are not available
+  // Keeping this function for compatibility but not attempting to fetch metrics
+  //
+  // For production monitoring, consider using:
+  // - PostgreSQL pg_stat_activity views
+  // - External monitoring tools (Datadog, New Relic, etc.)
+  // - Database connection pooler metrics (PgBouncer, etc.)
 
   return stats
 }
 
-/**
- * Helper pour extraire une métrique spécifique du JSON
- * (fonction interne)
- */
-function extractPoolMetric(
-  metrics: unknown,
-  metricName: string
-): number | undefined {
-  // Implémentation simplifiée - à adapter selon structure réelle
-  if (metrics && typeof metrics === 'object' && metricName in metrics) {
-    const value = (metrics as Record<string, unknown>)[metricName]
-    return typeof value === 'number' ? value : undefined
-  }
-  return undefined
-}
 
 /**
  * Gère les erreurs Prisma de manière centralisée
