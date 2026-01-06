@@ -190,9 +190,9 @@ services:
     cap_add:
       - SETGID
       - SETUID
-    # 📚 CDA : appendonly = persistence sur disque
+    # 📚 CDA : appendonly désactivé (Redis = cache/sessions uniquement, pas de données critiques)
     # requirepass = mot de passe obligatoire (sécurité)
-    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+    command: redis-server --requirepass ${REDIS_PASSWORD} --appendonly no
     environment:
       # 📚 CDA : Variable pour le healthcheck (interpolée dans le conteneur)
       REDIS_PASSWORD: ${REDIS_PASSWORD}
