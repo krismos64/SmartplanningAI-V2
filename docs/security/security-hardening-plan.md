@@ -51,8 +51,14 @@ Voir : `docs/security/incident-2025-12-15-cryptominer.md`
 
 ## Phase 2 : Blocage des IPs Malveillantes
 
-**Statut** : EN COURS
+**Statut** : TERMINÉ ✅
 **Priorité** : CRITIQUE
+**Date de complétion** : 6 janvier 2026
+
+⚠️ **NOTE IMPORTANTE - Configuration UFW** :
+UFW DOIT être configuré avec `allow outgoing` (pas `deny outgoing`) pour être compatible avec Docker. La configuration `deny outgoing` bloque le trafic Docker interne et empêche Nginx de communiquer avec les conteneurs.
+
+**Référence incident** : `docs/security/incident-2026-01-06-ufw-docker.md`
 
 ### 2.1 IPs à Bloquer
 
@@ -156,13 +162,36 @@ failregex = ^<HOST> .* "POST / HTTP.* (499|500)
 ignoreregex =
 ```
 
-### 2.4 Checklist
+### 2.4 Configuration UFW Correcte
 
-- [ ] Exécuter les commandes iptables sur le VPS
-- [ ] Installer fail2ban si non présent
-- [ ] Créer les fichiers de configuration fail2ban
-- [ ] Redémarrer fail2ban
-- [ ] Vérifier que les règles sont actives
+**Configuration recommandée** :
+```bash
+# CORRECT : Compatible Docker
+sudo ufw default deny incoming
+sudo ufw default allow outgoing  # ← Important pour Docker !
+sudo ufw default deny routed
+
+# Ports essentiels
+sudo ufw allow 22/tcp   # SSH
+sudo ufw allow 80/tcp   # HTTP
+sudo ufw allow 443/tcp  # HTTPS
+```
+
+⚠️ **NE PAS UTILISER** :
+```bash
+# INCORRECT : Bloque Docker
+sudo ufw default deny outgoing  # ❌ Incompatible avec Docker
+```
+
+### 2.5 Checklist
+
+- [x] Exécuter les commandes iptables sur le VPS
+- [x] Installer fail2ban
+- [x] Créer les fichiers de configuration fail2ban
+- [x] Redémarrer fail2ban
+- [x] Vérifier que les règles sont actives
+- [x] Configurer UFW avec `allow outgoing`
+- [x] Bloquer les 5 IPs malveillantes identifiées
 
 ---
 
@@ -652,6 +681,7 @@ log "Check de sécurité terminé - OK"
 
 | Date | Version | Modification |
 |------|---------|--------------|
+| 06/01/2026 | 1.1 | Phase 2 terminée + Fix critique UFW Docker compatibility |
 | 15/12/2025 | 1.0 | Création initiale du document |
 
 ---
