@@ -305,25 +305,10 @@ ufw --force reset
 log_info "Configuration des règles par défaut..."
 # ENTRANT : Tout bloquer par défaut
 ufw default deny incoming
-# SORTANT : Tout bloquer par défaut (on autorisera spécifiquement)
-ufw default deny outgoing
-
-log_info "Autorisation du trafic sortant essentiel..."
-
-# DNS (nécessaire pour résoudre les noms de domaine)
-ufw allow out 53/tcp comment 'DNS TCP'
-ufw allow out 53/udp comment 'DNS UDP'
-
-# HTTP/HTTPS (nécessaire pour apt, GitHub, ghcr.io, etc.)
-ufw allow out 80/tcp comment 'HTTP (apt, wget, curl)'
-ufw allow out 443/tcp comment 'HTTPS (GitHub, ghcr.io)'
-
-# NTP (synchronisation de l'heure)
-ufw allow out 123/udp comment 'NTP (time sync)'
-
-# SMTP (envoi d'emails - optionnel, peut être commenté si non utilisé)
-ufw allow out 25/tcp comment 'SMTP (mail)'
-ufw allow out 587/tcp comment 'SMTP submission'
+# SORTANT : Tout autoriser (nécessaire pour Docker et connexions locales)
+# ⚠️  IMPORTANT: "deny outgoing" bloque le trafic Docker interne et localhost
+# Ce qui empêche Nginx de communiquer avec les conteneurs Docker !
+ufw default allow outgoing
 
 log_info "Autorisation du trafic entrant..."
 
@@ -337,9 +322,13 @@ ufw allow in 443/tcp comment 'HTTPS'
 # PostgreSQL (si accès externe nécessaire - À COMMENTER EN PRODUCTION)
 # ufw allow in 5432/tcp comment 'PostgreSQL'
 
-log_info "Autorisation du trafic loopback (localhost)..."
+log_info "Autorisation du trafic loopback et Docker..."
+# Interface loopback (localhost) - Bidirectionnel
 ufw allow in on lo
 ufw allow out on lo
+
+# Note: Le trafic Docker fonctionne avec "allow outgoing" par défaut
+# Docker gère ses propres règles iptables pour l'isolation réseau
 
 log_warning "⚠️  IMPORTANT: UFW sera activé à la fin du script"
 log_warning "⚠️  Assurez-vous d'avoir une session SSH active avant d'activer UFW"

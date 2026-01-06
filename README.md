@@ -10,8 +10,9 @@ Plateforme SaaS moderne de gestion intelligente des plannings d'entreprise (mult
 - **Statut** : En développement actif
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
-- **URL Production** : https://smartplanning.fr
-- **Dernière mise à jour** : 6 janvier 2026 (SP-158 Phase 4 - VPS sécurisé et déploiement automatisé).
+- **URL Production** : https://smartplanning.fr ✅
+- **Dernière mise à jour** : 6 janvier 2026
+- **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
 
@@ -442,6 +443,17 @@ Toute la documentation est centralisée dans le dossier `/docs` :
    - Responsive design et accessibilité
    - [Décisions techniques](https://christophedev.atlassian.net/wiki/spaces/SP/pages/57901057/DataTable+D+cisions+techniques)
 
+7. **[Guide de déploiement](/.github/DEPLOY.md)**
+   - Configuration VPS complète
+   - Script de sécurisation automatisé
+   - Résolution des problèmes UFW + Docker
+   - Maintenance et monitoring
+
+8. **Documentation sécurité (/docs/security/)**
+   - [Plan de sécurisation complet](docs/security/security-hardening-plan.md)
+   - [Incident UFW + Docker](docs/security/incident-2026-01-06-ufw-docker.md)
+   - [Docker hardening](docs/security/docker-hardening-2026-01-05.md)
+
 ## Sécurité
 
 ### Système RBAC (Role-Based Access Control)
@@ -684,10 +696,20 @@ git push origin feature/SP-XX-description
 
 ## Déploiement
 
+### Guide complet
+
+📚 **Voir le guide de déploiement détaillé** : [`.github/DEPLOY.md`](.github/DEPLOY.md)
+
+Le guide inclut :
+- Configuration initiale du VPS (script automatisé)
+- Configuration UFW compatible Docker ⚠️
+- Résolution des problèmes courants
+- Maintenance et monitoring
+
 ### Environnements
 
 - **Development** : Local Docker (localhost:3000)
-- **Production** : VPS OVH ✅
+- **Production** : VPS OVH ✅ (Déployé le 6 janvier 2026)
 
 ### Infrastructure Production
 
@@ -699,6 +721,7 @@ git push origin feature/SP-XX-description
 | **IP**            | 51.77.146.72 (smartplanning.fr)                  |
 | **SSL**           | Let's Encrypt (auto-renew jusqu'au 2 mars 2026) |
 | **Reverse Proxy** | Nginx 1.24.0                                    |
+| **Firewall**      | UFW (allow outgoing - compatible Docker)        |
 | **Containers**    | Docker Compose (app + PostgreSQL 16 + Redis 7)  |
 | **Registry**      | GitHub Container Registry (ghcr.io)             |
 
@@ -717,9 +740,25 @@ Push main → GitHub Actions → Build Docker → Push GHCR → Deploy VPS
 - **CI** (`.github/workflows/ci.yml`) : Lint, Type-check, Tests, Build
 - **CD** (`.github/workflows/cd.yml`) : Build image Docker, Push sur ghcr.io, Deploy via SSH
 - Tests automatiques sur chaque PR
-- Déploiement automatique sur merge main
+- Déploiement automatique sur merge main ✅
 - Migrations Prisma automatiques
-- Healthcheck endpoint : `/api/health`
+- Healthcheck endpoint : `/api/health` ✅
+
+### Sécurité Infrastructure
+
+| Élément             | Status |
+| ------------------- | ------ |
+| Docker Hardening    | ✅     |
+| UFW Firewall        | ✅     |
+| Fail2ban            | ✅     |
+| SSH Key Auth        | ✅     |
+| IPs malveillantes   | ✅ (5 IPs bloquées) |
+| SSL/TLS             | ✅     |
+
+**Documentation sécurité** :
+- [Plan de sécurisation](docs/security/security-hardening-plan.md)
+- [Script de sécurisation VPS](scripts/secure-vps-part1.sh)
+- [Incident UFW + Docker](docs/security/incident-2026-01-06-ufw-docker.md)
 
 ### Scores Lighthouse (3 décembre 2025)
 
