@@ -696,7 +696,7 @@ git push origin feature/SP-XX-description
 | **URL**           | https://smartplanning.fr                        |
 | **Serveur**       | VPS OVH (4 vCores, 8GB RAM, 75GB SSD)           |
 | **OS**            | Ubuntu 24.04 LTS                                |
-| **IP**            | 141.94.78.0                                     |
+| **IP**            | 51.77.146.72 (smartplanning.fr)                  |
 | **SSL**           | Let's Encrypt (auto-renew jusqu'au 2 mars 2026) |
 | **Reverse Proxy** | Nginx 1.24.0                                    |
 | **Containers**    | Docker Compose (app + PostgreSQL 16 + Redis 7)  |
@@ -705,7 +705,7 @@ git push origin feature/SP-XX-description
 ### Connexion SSH
 
 ```bash
-ssh -i ~/.ssh/smartplanning_deploy deploy@141.94.78.0
+ssh -i ~/.ssh/smartplanning_deploy deploy@smartplanning.fr
 ```
 
 ### CI/CD Pipeline
