@@ -21,7 +21,7 @@ test.describe('Dashboard Director - Tests E2E', () => {
     test('devrait rediriger vers /login si non authentifie', async ({
       page,
     }) => {
-      await page.goto('/dashboard/director')
+      await page.goto('/app/director/dashboard')
       await expect(page).toHaveURL(/.*login.*/)
     })
 
@@ -35,11 +35,11 @@ test.describe('Dashboard Director - Tests E2E', () => {
       await dashboardPage.expectToBeVisible()
     })
 
-    test('devrait rediriger /dashboard vers /dashboard/director pour un director', async ({
+    test('devrait rediriger /app/dashboard vers /app/director/dashboard pour un director', async ({
       directorPage,
     }) => {
-      await directorPage.goto('/dashboard')
-      await expect(directorPage).toHaveURL(/.*dashboard\/director.*/)
+      await directorPage.goto('/app/dashboard')
+      await expect(directorPage).toHaveURL(/.*app\/director\/dashboard.*/)
     })
   })
 

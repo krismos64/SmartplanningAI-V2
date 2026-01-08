@@ -22,7 +22,7 @@ import {
   getPaginationParams,
   formatPaginatedResult,
   handlePrismaError,
-} from './crud-utils'
+} from './crud-helpers'
 import {
   createEmployeeSchema,
   updateEmployeeSchema,

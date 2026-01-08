@@ -21,7 +21,7 @@ test.describe('Dashboard Super Admin - Tests E2E', () => {
     test('devrait rediriger vers /login si non authentifie', async ({
       page,
     }) => {
-      await page.goto('/dashboard/admin')
+      await page.goto('/app/admin/dashboard')
       await expect(page).toHaveURL(/.*login.*/)
     })
 
@@ -35,11 +35,11 @@ test.describe('Dashboard Super Admin - Tests E2E', () => {
       await dashboardPage.expectToBeVisible()
     })
 
-    test('devrait rediriger /dashboard vers /dashboard/admin pour un admin', async ({
+    test('devrait rediriger /app/dashboard vers /app/admin/dashboard pour un admin', async ({
       adminPage,
     }) => {
-      await adminPage.goto('/dashboard')
-      await expect(adminPage).toHaveURL(/.*dashboard\/admin.*/)
+      await adminPage.goto('/app/dashboard')
+      await expect(adminPage).toHaveURL(/.*app\/admin\/dashboard.*/)
     })
   })
 

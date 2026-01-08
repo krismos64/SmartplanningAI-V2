@@ -162,7 +162,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       // Log de connexion (peut être envoyé à un service externe)
       if (process.env.NODE_ENV === 'development') {
         // eslint-disable-next-line no-console
-        console.log(`[AUTH] User signed in: ${user.email}`)
+        console.log(`[AUTH] User signed in: ${user?.email}`)
       }
     },
     signOut() {
