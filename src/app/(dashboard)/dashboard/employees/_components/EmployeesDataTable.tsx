@@ -41,7 +41,10 @@ import {
   toggleEmployeeStatus,
   getTeamsForSelect,
 } from '@/lib/actions/employees'
-import type { EmployeeWithCounts, EmployeeFilters as EmployeeFiltersType } from '@/lib/validations/employee'
+import type {
+  EmployeeWithCounts,
+  EmployeeFilters as EmployeeFiltersType,
+} from '@/lib/validations/employee'
 
 // ============================================================================
 // Types
@@ -64,7 +67,8 @@ export function EmployeesDataTable({ userRole }: EmployeesDataTableProps) {
   const [totalCount, setTotalCount] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
   const [filters, setFilters] = useState<EmployeeFiltersType>({})
-  const [deleteEmployee, setDeleteEmployee] = useState<EmployeeWithCounts | null>(null)
+  const [deleteEmployee, setDeleteEmployee] =
+    useState<EmployeeWithCounts | null>(null)
   const [teams, setTeams] = useState<{ id: string; name: string }[]>([])
 
   // Pagination TanStack
@@ -85,7 +89,7 @@ export function EmployeesDataTable({ userRole }: EmployeesDataTableProps) {
         console.error('Erreur chargement equipes:', error)
       }
     }
-    loadTeams()
+    void loadTeams()
   }, [])
 
   // Chargement des donnees
@@ -103,7 +107,7 @@ export function EmployeesDataTable({ userRole }: EmployeesDataTableProps) {
       )
 
       if (result.success && result.data) {
-        setData(result.data.data as EmployeeWithCounts[])
+        setData(result.data.data)
         setTotalCount(result.data.total)
       }
     } catch (error) {
@@ -115,7 +119,7 @@ export function EmployeesDataTable({ userRole }: EmployeesDataTableProps) {
 
   // Effet pour charger les donnees
   useEffect(() => {
-    fetchData()
+    void fetchData()
   }, [fetchData])
 
   // Handlers actions
@@ -138,13 +142,15 @@ export function EmployeesDataTable({ userRole }: EmployeesDataTableProps) {
   }, [])
 
   const handleToggleStatus = useCallback(
-    async (employee: EmployeeWithCounts) => {
-      try {
-        await toggleEmployeeStatus(employee.id, !employee.isActive)
-        fetchData()
-      } catch (error) {
-        console.error('Erreur toggle status:', error)
-      }
+    (employee: EmployeeWithCounts) => {
+      void (async () => {
+        try {
+          await toggleEmployeeStatus(employee.id, !employee.isActive)
+          await fetchData()
+        } catch (error) {
+          console.error('Erreur toggle status:', error)
+        }
+      })()
     },
     [fetchData]
   )
@@ -152,18 +158,16 @@ export function EmployeesDataTable({ userRole }: EmployeesDataTableProps) {
   // MANAGER ne peut pas supprimer, seulement desactiver
   const canDelete = userRole !== 'MANAGER'
 
-  // Colonnes avec actions
-  const columns = useMemo(
-    () =>
-      createEmployeeColumns({
-        onView: handleView,
-        onEdit: handleEdit,
-        onDelete: canDelete ? handleDelete : undefined,
-        onToggleStatus: handleToggleStatus,
-        canDelete,
-      }),
-    [handleView, handleEdit, handleDelete, handleToggleStatus, canDelete]
-  )
+  // Colonnes avec actions - wrap handlers to avoid promise issues
+  const columns = useMemo(() => {
+    return createEmployeeColumns({
+      onView: handleView,
+      onEdit: handleEdit,
+      onDelete: canDelete ? handleDelete : undefined,
+      onToggleStatus: handleToggleStatus,
+      canDelete,
+    })
+  }, [handleView, handleEdit, handleDelete, handleToggleStatus, canDelete])
 
   // Configuration TanStack Table
   const table = useReactTable({
@@ -199,17 +203,17 @@ export function EmployeesDataTable({ userRole }: EmployeesDataTableProps) {
             <Button
               variant="outline"
               size="sm"
-              onClick={fetchData}
+              onClick={() => void fetchData()}
               disabled={isLoading}
             >
               <RefreshCw
-                className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`}
+                className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`}
               />
               Actualiser
             </Button>
             <Button asChild>
               <Link href="/dashboard/employees/new">
-                <Plus className="h-4 w-4 mr-2" />
+                <Plus className="mr-2 h-4 w-4" />
                 Nouvel employe
               </Link>
             </Button>
@@ -319,7 +323,7 @@ export function EmployeesDataTable({ userRole }: EmployeesDataTableProps) {
         employee={deleteEmployee}
         open={!!deleteEmployee}
         onOpenChange={(open) => !open && setDeleteEmployee(null)}
-        onSuccess={fetchData}
+        onSuccess={() => void fetchData()}
       />
     </TooltipProvider>
   )

@@ -61,9 +61,9 @@ export function DeleteEmployeeDialog({
   })
 
   // Handler de confirmation
-  const handleConfirm = async () => {
+  const handleConfirm = () => {
     if (!employee) return
-    await deleteMutation.mutate(employee.id)
+    void deleteMutation.mutate(employee.id)
   }
 
   if (!employee) return null
@@ -92,10 +92,10 @@ export function DeleteEmployeeDialog({
 
               {hasRelations && (
                 <div className="rounded-md bg-destructive/10 p-3 text-sm">
-                  <p className="font-medium text-destructive mb-2">
+                  <p className="mb-2 font-medium text-destructive">
                     Attention : Cet employe a des donnees liees
                   </p>
-                  <ul className="list-disc list-inside space-y-1 text-muted-foreground">
+                  <ul className="list-inside list-disc space-y-1 text-muted-foreground">
                     {hasSchedules && (
                       <li>
                         {employee._count?.schedules} planning
@@ -105,14 +105,16 @@ export function DeleteEmployeeDialog({
                     {hasLeaveRequests && (
                       <li>
                         {employee._count?.leaveRequests} demande
-                        {(employee._count?.leaveRequests ?? 0) > 1 ? 's' : ''} de
-                        conge
+                        {(employee._count?.leaveRequests ?? 0) > 1
+                          ? 's'
+                          : ''}{' '}
+                        de conge
                       </li>
                     )}
                   </ul>
                   <p className="mt-2 text-xs">
-                    Conseil : Desactivez l&apos;employe plutot que de le supprimer
-                    pour conserver l&apos;historique.
+                    Conseil : Desactivez l&apos;employe plutot que de le
+                    supprimer pour conserver l&apos;historique.
                   </p>
                 </div>
               )}

@@ -83,7 +83,7 @@ export default async function EmployeeDetailPage({
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="sm" asChild>
             <Link href="/dashboard/employees">
-              <ArrowLeft className="h-4 w-4 mr-2" />
+              <ArrowLeft className="mr-2 h-4 w-4" />
               Retour
             </Link>
           </Button>
@@ -117,7 +117,7 @@ export default async function EmployeeDetailPage({
           </Badge>
           <Button asChild>
             <Link href={`/dashboard/employees/${employee.id}/edit`}>
-              <Pencil className="h-4 w-4 mr-2" />
+              <Pencil className="mr-2 h-4 w-4" />
               Modifier
             </Link>
           </Button>
@@ -214,7 +214,9 @@ export default async function EmployeeDetailPage({
           <CardContent className="space-y-4">
             {employee.hireDate && (
               <div>
-                <p className="text-sm text-muted-foreground">Date d&apos;embauche</p>
+                <p className="text-sm text-muted-foreground">
+                  Date d&apos;embauche
+                </p>
                 <p className="font-medium">
                   {format(new Date(employee.hireDate), 'dd MMMM yyyy', {
                     locale: fr,

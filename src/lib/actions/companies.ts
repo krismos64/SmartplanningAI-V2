@@ -160,8 +160,7 @@ export async function listCompanies(
     const validFilters = filtersValidation.success ? filtersValidation.data : {}
 
     // Construit la clause WHERE
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const where: any = {}
+    const where: Record<string, unknown> = {}
 
     // Filtre par recherche textuelle
     if (validFilters.search) {

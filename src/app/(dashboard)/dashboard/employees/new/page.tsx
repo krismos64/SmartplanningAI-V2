@@ -56,7 +56,7 @@ export default async function NewEmployeePage() {
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="sm" asChild>
             <Link href="/dashboard/employees">
-              <ArrowLeft className="h-4 w-4 mr-2" />
+              <ArrowLeft className="mr-2 h-4 w-4" />
               Retour
             </Link>
           </Button>
@@ -65,7 +65,9 @@ export default async function NewEmployeePage() {
               <UserPlus className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold tracking-tight">Nouvel employe</h1>
+              <h1 className="text-2xl font-bold tracking-tight">
+                Nouvel employe
+              </h1>
               <p className="text-sm text-muted-foreground">
                 Creer un nouveau profil employe
               </p>

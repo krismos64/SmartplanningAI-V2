@@ -134,7 +134,7 @@ export function EmployeeFilters({
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       {/* Recherche textuelle */}
-      <div className="relative flex-1 max-w-sm">
+      <div className="relative max-w-sm flex-1">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           placeholder="Rechercher un employe..."
@@ -212,7 +212,9 @@ export function EmployeeFilters({
 
         {/* Filtre actif/inactif */}
         <Select
-          value={filters.isActive === undefined ? 'all' : String(filters.isActive)}
+          value={
+            filters.isActive === undefined ? 'all' : String(filters.isActive)
+          }
           onValueChange={handleActiveChange}
           disabled={disabled}
         >
@@ -235,7 +237,7 @@ export function EmployeeFilters({
             disabled={disabled}
             className="h-9 px-2"
           >
-            <X className="h-4 w-4 mr-1" />
+            <X className="mr-1 h-4 w-4" />
             Reinitialiser
           </Button>
         )}
