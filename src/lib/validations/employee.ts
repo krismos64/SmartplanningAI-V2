@@ -1,21 +1,269 @@
-import { z } from 'zod'
-import {
-  emailSchema,
-  phoneSchema,
-  nameSchema,
-  dateSchema,
-  optionalDateSchema,
-  optionalAmountSchema,
-} from './common'
-
 /**
- * Schémas de validation pour les formulaires Employee
- * Create, Update, Assign to Department
+ * Schemas de validation Zod pour Employee
+ *
+ * @description Validation des formulaires de creation et modification d'employes.
+ * Gere les champs RH, planning et competences.
+ * Aligne avec le schema Prisma Employee.
+ *
+ * @ticket SP-152
+ * @see Context7 - Zod safeParse refine validation patterns
  */
 
-// ============================================
-// ENUMS (synchronisés avec Prisma)
-// ============================================
+import { z } from 'zod'
+import { nameSchema, phoneSchema, optionalDateSchema } from './common'
+
+// ============================================================================
+// Enums pour les departements
+// ============================================================================
+
+/**
+ * Departements disponibles
+ * Liste des departements types pour une entreprise
+ */
+export const departmentEnum = z.enum([
+  'DIRECTION',
+  'RESSOURCES_HUMAINES',
+  'COMMERCIAL',
+  'MARKETING',
+  'TECHNIQUE',
+  'PRODUCTION',
+  'LOGISTIQUE',
+  'FINANCE',
+  'JURIDIQUE',
+  'SUPPORT',
+  'AUTRE',
+])
+
+export type Department = z.infer<typeof departmentEnum>
+
+/**
+ * Labels francais pour les departements
+ */
+export const departmentLabels: Record<Department, string> = {
+  DIRECTION: 'Direction',
+  RESSOURCES_HUMAINES: 'Ressources Humaines',
+  COMMERCIAL: 'Commercial',
+  MARKETING: 'Marketing',
+  TECHNIQUE: 'Technique',
+  PRODUCTION: 'Production',
+  LOGISTIQUE: 'Logistique',
+  FINANCE: 'Finance',
+  JURIDIQUE: 'Juridique',
+  SUPPORT: 'Support',
+  AUTRE: 'Autre',
+}
+
+// ============================================================================
+// Schema de base Employee
+// ============================================================================
+
+/**
+ * Schema de base pour les champs Employee
+ *
+ * Valide les donnees communes a la creation et la modification
+ * Aligne avec le modele Prisma Employee
+ */
+export const employeeBaseSchema = z.object({
+  /** Prenom de l'employe (2-50 caracteres) */
+  firstName: nameSchema,
+
+  /** Nom de l'employe (2-50 caracteres) */
+  lastName: nameSchema,
+
+  /** Intitule du poste (optionnel, max 100 caracteres) */
+  jobTitle: z
+    .string()
+    .max(100, "L'intitulé du poste ne peut pas dépasser 100 caractères")
+    .trim()
+    .optional()
+    .or(z.literal('')),
+
+  /** Departement (optionnel) */
+  department: departmentEnum.optional().or(z.literal('')),
+
+  /** Telephone de contact */
+  phone: phoneSchema,
+
+  /** Date d'embauche (optionnel) */
+  hireDate: optionalDateSchema,
+
+  /** Heures hebdomadaires contractuelles (1-60) */
+  weeklyHours: z
+    .number({
+      invalid_type_error: 'Les heures doivent être un nombre',
+    })
+    .min(1, 'Minimum 1 heure par semaine')
+    .max(60, 'Maximum 60 heures par semaine')
+    .default(35),
+
+  /** Competences (tableau de strings) */
+  skills: z.array(z.string().trim()).default([]),
+})
+
+// ============================================================================
+// Schema de creation Employee
+// ============================================================================
+
+/**
+ * Schema pour la creation d'un Employee
+ *
+ * Herite du schema de base avec relations obligatoires
+ */
+export const createEmployeeSchema = employeeBaseSchema.extend({
+  /** ID de l'utilisateur associe (optionnel pour creation sans compte) */
+  userId: z.string().cuid('ID utilisateur invalide').optional(),
+
+  /** ID de l'entreprise (obligatoire) */
+  companyId: z.string().cuid("ID d'entreprise invalide"),
+
+  /** ID de l'equipe (optionnel, mais obligatoire pour MANAGER) */
+  teamId: z.string().cuid("ID d'équipe invalide").optional().or(z.literal('')),
+
+  /** Employe actif par defaut */
+  isActive: z.boolean().default(true),
+})
+
+export type CreateEmployeeInput = z.infer<typeof createEmployeeSchema>
+
+// ============================================================================
+// Schema de modification Employee
+// ============================================================================
+
+/**
+ * Schema pour la modification d'un Employee
+ *
+ * Tous les champs sont optionnels sauf l'ID
+ */
+export const updateEmployeeSchema = employeeBaseSchema.partial().extend({
+  /** ID de l'Employee a modifier (requis) */
+  id: z.string().cuid("ID d'employé invalide"),
+
+  /** ID de l'equipe (peut etre change) */
+  teamId: z
+    .string()
+    .cuid("ID d'équipe invalide")
+    .optional()
+    .nullable()
+    .or(z.literal('')),
+
+  /** Statut actif/inactif */
+  isActive: z.boolean().optional(),
+})
+
+export type UpdateEmployeeInput = z.infer<typeof updateEmployeeSchema>
+
+// ============================================================================
+// Schema de filtrage Employee (pour les listes avec RBAC)
+// ============================================================================
+
+/**
+ * Schema pour les filtres de recherche Employee
+ *
+ * Utilise dans les Server Actions de listing
+ * Les filtres companyId et teamId sont appliques automatiquement selon le role
+ */
+export const employeeFiltersSchema = z.object({
+  /** Recherche textuelle (nom, prenom, poste) */
+  search: z.string().optional(),
+
+  /** Filtrer par equipe */
+  teamId: z.string().cuid().optional(),
+
+  /** Filtrer par entreprise (SUPER_ADMIN uniquement) */
+  companyId: z.string().cuid().optional(),
+
+  /** Filtrer par departement */
+  department: departmentEnum.optional(),
+
+  /** Filtrer par statut actif */
+  isActive: z.boolean().optional(),
+
+  /** Filtrer par competence */
+  skill: z.string().optional(),
+})
+
+export type EmployeeFilters = z.infer<typeof employeeFiltersSchema>
+
+// ============================================================================
+// Types pour l'affichage
+// ============================================================================
+
+/**
+ * Options pour les selects de departement
+ */
+export const departmentOptions = Object.entries(departmentLabels).map(
+  ([value, label]) => ({
+    value: value as Department,
+    label,
+  })
+)
+
+/**
+ * Heures hebdomadaires pre-definies
+ */
+export const weeklyHoursOptions = [
+  { value: 35, label: '35h (Temps plein)' },
+  { value: 39, label: '39h (Temps plein majoré)' },
+  { value: 28, label: '28h (80%)' },
+  { value: 24.5, label: '24.5h (70%)' },
+  { value: 17.5, label: '17.5h (Mi-temps)' },
+]
+
+// ============================================================================
+// Types avec relations (pour les reponses Server Actions)
+// ============================================================================
+
+/**
+ * Type Employee avec compteurs pour l'affichage liste
+ */
+export interface EmployeeWithCounts {
+  id: string
+  userId: string | null
+  firstName: string
+  lastName: string
+  jobTitle: string | null
+  department: string | null
+  phone: string | null
+  hireDate: Date | null
+  weeklyHours: number
+  skills: string[]
+  companyId: string
+  teamId: string | null
+  isActive: boolean
+  createdAt: Date
+  updatedAt: Date
+  user?: {
+    id: string
+    name: string | null
+    email: string
+    image: string | null
+  } | null
+  company?: {
+    id: string
+    name: string
+  }
+  team?: {
+    id: string
+    name: string
+  } | null
+  _count?: {
+    schedules: number
+    leaveRequests: number
+  }
+}
+
+// ============================================================================
+// Compatibilite avec anciens types (test-forms.tsx)
+// ============================================================================
+
+/**
+ * @deprecated Utiliser CreateEmployeeInput a la place
+ */
+export type CreateEmployeeFormData = CreateEmployeeInput
+
+/**
+ * Types d'emploi (pour compatibilite)
+ */
 export const employmentTypeEnum = z.enum([
   'FULL_TIME',
   'PART_TIME',
@@ -25,6 +273,9 @@ export const employmentTypeEnum = z.enum([
 
 export type EmploymentType = z.infer<typeof employmentTypeEnum>
 
+/**
+ * Types de contrat (pour compatibilite)
+ */
 export const contractTypeEnum = z.enum([
   'CDI',
   'CDD',
@@ -34,197 +285,22 @@ export const contractTypeEnum = z.enum([
   'INTERN',
 ])
 
-// ============================================
-// CREATE EMPLOYEE FORM
-// ============================================
-export const createEmployeeSchema = z
-  .object({
-    // Informations personnelles
-    firstName: nameSchema,
-    lastName: nameSchema,
-    email: emailSchema,
-    phone: phoneSchema,
+export type ContractType = z.infer<typeof contractTypeEnum>
 
-    // Affectation
-    departmentId: z.string().min(1, 'Le département est requis'),
-    position: z
-      .string()
-      .min(2, 'Le poste doit contenir au moins 2 caractères')
-      .max(100, 'Le poste doit contenir maximum 100 caractères')
-      .trim(),
-
-    // Type d'emploi et contrat
-    employmentType: employmentTypeEnum,
-    contractType: contractTypeEnum,
-
-    // Dates
-    startDate: dateSchema,
-    endDate: optionalDateSchema,
-
-    // Salaire et horaires
-    salary: optionalAmountSchema,
-    workingHours: z
-      .number({
-        invalid_type_error: "Le nombre d'heures doit être un nombre",
-        required_error: "Le nombre d'heures est requis",
-      })
-      .min(1, "Le nombre d'heures doit être au minimum 1h/semaine")
-      .max(168, "Le nombre d'heures ne peut pas dépasser 168h/semaine"),
-  })
-  .refine(
-    (data) => {
-      // Si CDD, INTERIM ou APPRENTICE, la date de fin est obligatoire
-      if (
-        ['CDD', 'INTERIM', 'APPRENTICE'].includes(data.contractType) &&
-        !data.endDate
-      ) {
-        return false
-      }
-      return true
-    },
-    {
-      message: 'La date de fin est obligatoire pour ce type de contrat',
-      path: ['endDate'],
-    }
-  )
-  .refine(
-    (data) => {
-      // La date de fin doit être postérieure à la date de début
-      if (data.endDate && data.startDate) {
-        const start = new Date(data.startDate)
-        const end = new Date(data.endDate)
-        return end > start
-      }
-      return true
-    },
-    {
-      message: 'La date de fin doit être postérieure à la date de début',
-      path: ['endDate'],
-    }
-  )
-
-export type CreateEmployeeFormData = z.infer<typeof createEmployeeSchema>
-
-// ============================================
-// UPDATE EMPLOYEE FORM
-// ============================================
-export const updateEmployeeSchema = z
-  .object({
-    // Informations personnelles
-    firstName: nameSchema,
-    lastName: nameSchema,
-    email: emailSchema,
-    phone: phoneSchema,
-
-    // Affectation
-    departmentId: z.string().min(1, 'Le département est requis'),
-    position: z
-      .string()
-      .min(2, 'Le poste doit contenir au moins 2 caractères')
-      .max(100, 'Le poste doit contenir maximum 100 caractères')
-      .trim(),
-
-    // Type d'emploi et contrat
-    employmentType: employmentTypeEnum,
-    contractType: contractTypeEnum,
-
-    // Dates
-    startDate: dateSchema,
-    endDate: optionalDateSchema,
-
-    // Salaire et horaires
-    salary: optionalAmountSchema,
-    workingHours: z
-      .number({
-        invalid_type_error: "Le nombre d'heures doit être un nombre",
-        required_error: "Le nombre d'heures est requis",
-      })
-      .min(1, "Le nombre d'heures doit être au minimum 1h/semaine")
-      .max(168, "Le nombre d'heures ne peut pas dépasser 168h/semaine"),
-
-    // Statut actif/inactif
-    isActive: z.boolean().default(true),
-  })
-  .refine(
-    (data) => {
-      if (
-        ['CDD', 'INTERIM', 'APPRENTICE'].includes(data.contractType) &&
-        !data.endDate
-      ) {
-        return false
-      }
-      return true
-    },
-    {
-      message: 'La date de fin est obligatoire pour ce type de contrat',
-      path: ['endDate'],
-    }
-  )
-  .refine(
-    (data) => {
-      if (data.endDate && data.startDate) {
-        const start = new Date(data.startDate)
-        const end = new Date(data.endDate)
-        return end > start
-      }
-      return true
-    },
-    {
-      message: 'La date de fin doit être postérieure à la date de début',
-      path: ['endDate'],
-    }
-  )
-
-export type UpdateEmployeeFormData = z.infer<typeof updateEmployeeSchema>
-
-// ============================================
-// ASSIGN EMPLOYEE TO SHIFT FORM
-// ============================================
-export const assignShiftSchema = z
-  .object({
-    employeeId: z.string().min(1, "L'employé est requis"),
-    shiftId: z.string().min(1, 'Le créneau est requis'),
-    date: dateSchema,
-    notes: z
-      .string()
-      .max(500, 'Les notes ne peuvent pas dépasser 500 caractères')
-      .trim()
-      .optional()
-      .or(z.literal('')),
-  })
-  .refine(
-    (data) => {
-      // La date ne peut pas être dans le passé (plus de 24h)
-      const shiftDate = new Date(data.date)
-      const yesterday = new Date()
-      yesterday.setDate(yesterday.getDate() - 1)
-      return shiftDate >= yesterday
-    },
-    {
-      message: "Impossible d'affecter un créneau dans le passé",
-      path: ['date'],
-    }
-  )
-
-export type AssignShiftFormData = z.infer<typeof assignShiftSchema>
-
-// ============================================
-// LABELS TRADUITS POUR LES ENUMS
-// ============================================
-export const employmentTypeLabels: Record<
-  z.infer<typeof employmentTypeEnum>,
-  string
-> = {
+/**
+ * Labels pour les types d'emploi
+ */
+export const employmentTypeLabels: Record<EmploymentType, string> = {
   FULL_TIME: 'Temps plein',
   PART_TIME: 'Temps partiel',
   TEMPORARY: 'Temporaire',
   INTERN: 'Stagiaire',
 }
 
-export const contractTypeLabels: Record<
-  z.infer<typeof contractTypeEnum>,
-  string
-> = {
+/**
+ * Labels pour les types de contrat
+ */
+export const contractTypeLabels: Record<ContractType, string> = {
   CDI: 'CDI - Contrat à durée indéterminée',
   CDD: 'CDD - Contrat à durée déterminée',
   INTERIM: 'Intérim',

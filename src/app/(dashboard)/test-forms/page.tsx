@@ -8,17 +8,16 @@ import {
   registerSchema,
   type RegisterFormData,
   createEmployeeSchema,
-  type CreateEmployeeFormData,
-  type EmploymentType,
-  employmentTypeLabels,
-  contractTypeLabels,
+  type CreateEmployeeInput,
+  departmentLabels,
+  weeklyHoursOptions,
+  type Department,
 } from '@/lib/validations'
 import {
   FormInput,
   FormTextarea,
   FormSelect,
   FormCheckbox,
-  FormRadioGroup,
   FormDatePicker,
 } from '@/components/forms'
 import { Mail, Lock, User, Briefcase, Phone } from 'lucide-react'
@@ -261,31 +260,35 @@ function EmployeeFormTest() {
     setValue,
     watch,
     formState: { errors, isSubmitting },
-  } = useForm<CreateEmployeeFormData>({
+  } = useForm({
     resolver: zodResolver(createEmployeeSchema),
     mode: 'onBlur',
     defaultValues: {
-      workingHours: 35,
+      firstName: '',
+      lastName: '',
+      weeklyHours: 35,
+      companyId: 'cltest123456789012345678', // ID factice pour le test
+      skills: [] as string[],
+      isActive: true,
     },
   })
 
-  const startDate = watch('startDate')
-  const endDate = watch('endDate')
-  const employmentType = watch('employmentType')
+  const hireDate = watch('hireDate') as string | undefined
+  const department = watch('department') as Department | undefined
 
-  const onSubmit = async (data: CreateEmployeeFormData) => {
+  const onSubmit = async (data: CreateEmployeeInput) => {
     // eslint-disable-next-line no-console
     console.log('✅ Employee Form Valid:', data)
     await new Promise((resolve) => setTimeout(resolve, 1000))
     alert(
-      `Employé créé !\n${data.firstName} ${data.lastName} - ${data.position}`
+      `Employé créé !\n${data.firstName} ${data.lastName} - ${data.jobTitle || 'Sans poste'}`
     )
   }
 
   return (
     <section className="rounded-lg bg-white p-8 shadow-lg dark:bg-gray-900">
       <h2 className="mb-6 text-2xl font-bold text-gray-900 dark:text-gray-100">
-        3️⃣ Create Employee Form
+        3️⃣ Create Employee Form (SP-152)
       </h2>
 
       <form
@@ -311,15 +314,6 @@ function EmployeeFormTest() {
           />
 
           <FormInput
-            label="Email"
-            type="email"
-            required
-            error={errors.email?.message}
-            leftIcon={<Mail className="h-4 w-4" />}
-            {...register('email')}
-          />
-
-          <FormInput
             label="Téléphone"
             type="tel"
             placeholder="0612345678"
@@ -328,108 +322,56 @@ function EmployeeFormTest() {
             helpText="Format: 0612345678 ou +33612345678"
             {...register('phone')}
           />
+
+          <FormInput
+            label="Intitulé du poste"
+            error={errors.jobTitle?.message}
+            leftIcon={<Briefcase className="h-4 w-4" />}
+            placeholder="Ex: Développeur Full-Stack"
+            {...register('jobTitle')}
+          />
         </div>
 
-        {/* Affectation */}
+        {/* Département */}
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           <FormSelect
             label="Département"
-            required
             placeholder="Sélectionner un département"
-            options={[
-              { value: '1', label: 'Ressources Humaines' },
-              { value: '2', label: 'Informatique' },
-              { value: '3', label: 'Commercial' },
-              { value: '4', label: 'Production' },
-            ]}
-            error={errors.departmentId?.message}
-            {...register('departmentId')}
+            options={Object.entries(departmentLabels).map(([value, label]) => ({
+              value,
+              label,
+            }))}
+            error={errors.department?.message}
+            value={department || ''}
+            onChange={(e) => setValue('department', (e.target?.value || e) as unknown as Department)}
           />
 
-          <FormInput
-            label="Poste"
-            required
-            error={errors.position?.message}
-            leftIcon={<Briefcase className="h-4 w-4" />}
-            placeholder="Ex: Développeur Full-Stack"
-            {...register('position')}
-          />
-        </div>
-
-        {/* Type emploi + contrat */}
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-          <FormRadioGroup
-            name="employmentType"
-            label="Type d'emploi"
-            required
-            options={Object.entries(employmentTypeLabels).map(
-              ([value, label]) => ({
-                value,
-                label,
-              })
-            )}
-            error={errors.employmentType?.message}
-            value={employmentType}
-            onChange={(value) =>
-              setValue('employmentType', value as EmploymentType)
-            }
-          />
-
-          <FormSelect
-            label="Type de contrat"
-            required
-            placeholder="Sélectionner un type de contrat"
-            options={Object.entries(contractTypeLabels).map(
-              ([value, label]) => ({
-                value,
-                label,
-              })
-            )}
-            error={errors.contractType?.message}
-            {...register('contractType')}
-          />
-        </div>
-
-        {/* Dates */}
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           <FormDatePicker
-            label="Date de début"
-            required
-            value={startDate ? new Date(startDate) : undefined}
+            label="Date d'embauche"
+            value={hireDate ? new Date(hireDate) : undefined}
             onChange={(date) =>
-              setValue('startDate', date?.toISOString() || '')
+              setValue('hireDate', date?.toISOString().split('T')[0] || '')
             }
-            error={errors.startDate?.message}
-          />
-
-          <FormDatePicker
-            label="Date de fin (optionnelle)"
-            value={endDate ? new Date(endDate) : undefined}
-            onChange={(date) => setValue('endDate', date?.toISOString() || '')}
-            minDate={startDate ? new Date(startDate) : undefined}
-            error={errors.endDate?.message}
-            helpText="Obligatoire pour CDD, Intérim, Apprentissage"
+            error={errors.hireDate?.message}
           />
         </div>
 
-        {/* Salaire + heures */}
+        {/* Heures */}
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-          <FormInput
-            label="Salaire mensuel brut (optionnel)"
-            type="number"
-            placeholder="2500"
-            error={errors.salary?.message}
-            {...register('salary', { valueAsNumber: true })}
+          <FormSelect
+            label="Heures hebdomadaires"
+            required
+            options={weeklyHoursOptions.map((opt) => ({
+              value: String(opt.value),
+              label: opt.label,
+            }))}
+            error={errors.weeklyHours?.message}
+            onChange={(value) => setValue('weeklyHours', Number(value))}
           />
 
-          <FormInput
-            label="Heures de travail / semaine"
-            type="number"
-            required
-            min={1}
-            max={168}
-            error={errors.workingHours?.message}
-            {...register('workingHours', { valueAsNumber: true })}
+          <FormCheckbox
+            label="Employé actif"
+            {...register('isActive')}
           />
         </div>
 
