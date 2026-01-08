@@ -72,7 +72,7 @@ export const FormTextarea = React.forwardRef<
       autoResize,
       maxLength,
       disabled,
-      className,
+      className: _className,
       wrapperClassName,
       textareaClassName,
       value,

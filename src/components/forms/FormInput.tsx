@@ -79,7 +79,7 @@ export const FormInput = React.forwardRef<HTMLInputElement, FormInputProps>(
       variant = 'default',
       type = 'text',
       disabled,
-      className,
+      className: _className,
       wrapperClassName,
       inputClassName,
       ...props

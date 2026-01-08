@@ -86,7 +86,7 @@ async function getAuthenticatedUser(): Promise<AccessCheckResult> {
       }
     }
 
-    const role = session.user.role as UserRole
+    const role = session.user.role
 
     // Verifie que le role est autorise
     if (!ALLOWED_ROLES.includes(role)) {
@@ -123,7 +123,7 @@ async function getAuthenticatedUser(): Promise<AccessCheckResult> {
       if (managedTeamIds.length === 0) {
         return {
           success: false,
-          error: "Vous ne gérez aucune équipe",
+          error: 'Vous ne gérez aucune équipe',
         }
       }
     }
@@ -157,10 +157,8 @@ async function getAuthenticatedUser(): Promise<AccessCheckResult> {
 function buildRBACWhereClause(
   user: AuthenticatedUser,
   filters: EmployeeFilters
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-): any {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const where: any = {}
+): Record<string, unknown> {
+  const where: Record<string, unknown> = {}
 
   // Filtre RBAC selon le role
   switch (user.role) {
@@ -481,7 +479,8 @@ export async function createEmployee(
         if (validData.companyId !== user.companyId) {
           return {
             success: false,
-            error: "Vous ne pouvez créer des employés que dans votre entreprise",
+            error:
+              'Vous ne pouvez créer des employés que dans votre entreprise',
           }
         }
         break
@@ -498,7 +497,7 @@ export async function createEmployee(
         if (!user.managedTeamIds.includes(validData.teamId)) {
           return {
             success: false,
-            error: "Vous ne pouvez créer des employés que dans vos équipes",
+            error: 'Vous ne pouvez créer des employés que dans vos équipes',
             field: 'teamId',
           }
         }
@@ -510,7 +509,7 @@ export async function createEmployee(
         if (!team) {
           return {
             success: false,
-            error: "Équipe non trouvée",
+            error: 'Équipe non trouvée',
             field: 'teamId',
           }
         }
@@ -748,7 +747,8 @@ export async function deleteEmployee(id: string): Promise<DeleteActionResult> {
   if (user.role === 'MANAGER') {
     return {
       success: false,
-      error: 'Vous ne pouvez pas supprimer des employés. Désactivez-les à la place.',
+      error:
+        'Vous ne pouvez pas supprimer des employés. Désactivez-les à la place.',
     }
   }
 
@@ -889,7 +889,9 @@ export async function toggleEmployeeStatus(
  */
 export async function getEmployeesByTeam(
   teamId: string
-): Promise<CrudActionResult<Pick<EmployeeWithCounts, 'id' | 'firstName' | 'lastName'>[]>> {
+): Promise<
+  CrudActionResult<Pick<EmployeeWithCounts, 'id' | 'firstName' | 'lastName'>[]>
+> {
   const authResult = await getAuthenticatedUser()
 
   if (!authResult.success) {
@@ -975,8 +977,7 @@ export async function getTeamsForSelect(): Promise<
   const user = authResult.user
 
   try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const where: any = {}
+    const where: Record<string, unknown> = {}
 
     switch (user.role) {
       case 'SYSTEM_ADMIN':

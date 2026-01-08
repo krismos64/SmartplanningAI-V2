@@ -16,7 +16,6 @@ import { ArrowLeft, UserCog } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { EmployeeForm } from '@/components/admin/employees'
 import { getEmployee, getTeamsForSelect } from '@/lib/actions/employees'
-import type { EmployeeWithCounts } from '@/lib/validations/employee'
 
 interface EditEmployeePageProps {
   params: Promise<{ id: string }>
@@ -61,7 +60,7 @@ export default async function EditEmployeePage({
     notFound()
   }
 
-  const employee = result.data as EmployeeWithCounts
+  const employee = result.data
 
   // Charger les equipes disponibles
   const teamsResult = await getTeamsForSelect()
@@ -77,7 +76,7 @@ export default async function EditEmployeePage({
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="sm" asChild>
             <Link href={`/dashboard/employees/${employee.id}`}>
-              <ArrowLeft className="h-4 w-4 mr-2" />
+              <ArrowLeft className="mr-2 h-4 w-4" />
               Retour
             </Link>
           </Button>

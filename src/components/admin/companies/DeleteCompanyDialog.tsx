@@ -59,9 +59,9 @@ export function DeleteCompanyDialog({
   })
 
   // Handler de confirmation
-  const handleConfirm = async () => {
+  const handleConfirm = () => {
     if (!company) return
-    await deleteMutation.mutate(company.id)
+    void deleteMutation.mutate(company.id)
   }
 
   if (!company) return null
@@ -91,10 +91,10 @@ export function DeleteCompanyDialog({
 
               {hasRelations && (
                 <div className="rounded-md bg-destructive/10 p-3 text-sm">
-                  <p className="font-medium text-destructive mb-2">
+                  <p className="mb-2 font-medium text-destructive">
                     Cette action supprimera également :
                   </p>
-                  <ul className="list-disc list-inside space-y-1 text-muted-foreground">
+                  <ul className="list-inside list-disc space-y-1 text-muted-foreground">
                     {company._count.users > 0 && (
                       <li>
                         {company._count.users} utilisateur

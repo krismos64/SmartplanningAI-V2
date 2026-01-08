@@ -97,7 +97,7 @@ export const FormSelect = React.forwardRef<HTMLSelectElement, FormSelectProps>(
       placeholder,
       variant = 'default',
       disabled,
-      className,
+      className: _className,
       wrapperClassName,
       selectClassName,
       ...props
