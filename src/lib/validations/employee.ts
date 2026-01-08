@@ -251,3 +251,60 @@ export interface EmployeeWithCounts {
     leaveRequests: number
   }
 }
+
+// ============================================================================
+// Compatibilite avec anciens types (test-forms.tsx)
+// ============================================================================
+
+/**
+ * @deprecated Utiliser CreateEmployeeInput a la place
+ */
+export type CreateEmployeeFormData = CreateEmployeeInput
+
+/**
+ * Types d'emploi (pour compatibilite)
+ */
+export const employmentTypeEnum = z.enum([
+  'FULL_TIME',
+  'PART_TIME',
+  'TEMPORARY',
+  'INTERN',
+])
+
+export type EmploymentType = z.infer<typeof employmentTypeEnum>
+
+/**
+ * Types de contrat (pour compatibilite)
+ */
+export const contractTypeEnum = z.enum([
+  'CDI',
+  'CDD',
+  'INTERIM',
+  'FREELANCE',
+  'APPRENTICE',
+  'INTERN',
+])
+
+export type ContractType = z.infer<typeof contractTypeEnum>
+
+/**
+ * Labels pour les types d'emploi
+ */
+export const employmentTypeLabels: Record<EmploymentType, string> = {
+  FULL_TIME: 'Temps plein',
+  PART_TIME: 'Temps partiel',
+  TEMPORARY: 'Temporaire',
+  INTERN: 'Stagiaire',
+}
+
+/**
+ * Labels pour les types de contrat
+ */
+export const contractTypeLabels: Record<ContractType, string> = {
+  CDI: 'CDI - Contrat à durée indéterminée',
+  CDD: 'CDD - Contrat à durée déterminée',
+  INTERIM: 'Intérim',
+  FREELANCE: 'Freelance / Indépendant',
+  APPRENTICE: 'Apprentissage',
+  INTERN: 'Stage',
+}
