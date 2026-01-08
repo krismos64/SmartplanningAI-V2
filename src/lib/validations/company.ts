@@ -17,11 +17,12 @@ import { phoneSchema, siretSchema, urlSchema } from './common'
 
 /**
  * Plans d'abonnement disponibles
+ * Synchronisé avec enum SubscriptionPlan Prisma
  */
 export const subscriptionPlanEnum = z.enum([
   'FREE',
   'STARTER',
-  'PROFESSIONAL',
+  'BUSINESS',
   'ENTERPRISE',
 ])
 
@@ -29,12 +30,13 @@ export type SubscriptionPlan = z.infer<typeof subscriptionPlanEnum>
 
 /**
  * Statuts d'abonnement
+ * Synchronisé avec enum SubscriptionStatus Prisma
  */
 export const subscriptionStatusEnum = z.enum([
-  'ACTIVE',
   'TRIAL',
+  'ACTIVE',
   'PAST_DUE',
-  'CANCELLED',
+  'CANCELED',
   'EXPIRED',
 ])
 
@@ -169,7 +171,7 @@ export type CompanyFilters = z.infer<typeof companyFiltersSchema>
 export const subscriptionPlanLabels: Record<SubscriptionPlan, string> = {
   FREE: 'Gratuit',
   STARTER: 'Starter',
-  PROFESSIONAL: 'Professionnel',
+  BUSINESS: 'Business',
   ENTERPRISE: 'Entreprise',
 }
 
@@ -177,9 +179,9 @@ export const subscriptionPlanLabels: Record<SubscriptionPlan, string> = {
  * Labels francais pour les statuts d'abonnement
  */
 export const subscriptionStatusLabels: Record<SubscriptionStatus, string> = {
-  ACTIVE: 'Actif',
   TRIAL: "Période d'essai",
+  ACTIVE: 'Actif',
   PAST_DUE: 'Paiement en retard',
-  CANCELLED: 'Annulé',
+  CANCELED: 'Annulé',
   EXPIRED: 'Expiré',
 }
