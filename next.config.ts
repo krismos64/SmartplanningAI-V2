@@ -1,6 +1,18 @@
 import type { NextConfig } from 'next'
 import path from 'path'
 
+/**
+ * Next.js Configuration
+ *
+ * Note sur SRI (Subresource Integrity) :
+ * - SRI n'est PAS compatible avec Turbopack (limitation documentée)
+ * - SRI fonctionne uniquement avec webpack (utilisé en production/build)
+ * - En dev avec Turbopack, SRI est désactivé automatiquement
+ *
+ * @see Context7 - Next.js CSP/SRI documentation
+ */
+const isDev = process.env.NODE_ENV === 'development'
+
 const nextConfig: NextConfig = {
   // Mode strict React
   reactStrictMode: true,
@@ -14,10 +26,16 @@ const nextConfig: NextConfig = {
   },
 
   // Subresource Integrity (SRI) - Vérifie l'intégrité des scripts
+  // Désactivé en dev car incompatible avec Turbopack
+  // Activé en production (build utilise webpack)
   experimental: {
-    sri: {
-      algorithm: 'sha256',
-    },
+    ...(isDev
+      ? {}
+      : {
+          sri: {
+            algorithm: 'sha256',
+          },
+        }),
   },
 
   // Optimisations TypeScript
