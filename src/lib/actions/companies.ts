@@ -269,10 +269,7 @@ export async function getCompany(
     })
 
     if (!company) {
-      return {
-        success: false,
-        error: 'Entreprise non trouvée',
-      }
+      throw new Error('Entreprise non trouvée')
     }
 
     return company
@@ -386,10 +383,7 @@ export async function updateCompany(
     })
 
     if (!existing) {
-      return {
-        success: false,
-        error: 'Entreprise non trouvée',
-      }
+      throw new Error('Entreprise non trouvée')
     }
 
     // Si le nom change, génère un nouveau slug

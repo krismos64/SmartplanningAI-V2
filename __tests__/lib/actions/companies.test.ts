@@ -40,8 +40,12 @@ import {
 // Fixtures
 // ============================================================================
 
+// CUID valide pour les tests (format: c + 24 caractères alphanumériques)
+const MOCK_COMPANY_ID = 'cltest00000000000000001'
+const MOCK_NONEXISTENT_ID = 'cltest00000000000000099'
+
 const mockCompany = {
-  id: 'company-1',
+  id: MOCK_COMPANY_ID,
   name: 'Acme Corp',
   slug: 'acme-corp',
   logo: null,
@@ -167,11 +171,11 @@ describe('getCompany', () => {
   it('should return company details by ID', async () => {
     prismaMock.company.findUnique.mockResolvedValue(mockCompanyWithCounts)
 
-    const result = await getCompany('company-1')
+    const result = await getCompany(MOCK_COMPANY_ID)
 
     expect(result.success).toBe(true)
     if (result.success) {
-      expect(result.data.id).toBe('company-1')
+      expect(result.data.id).toBe(MOCK_COMPANY_ID)
       expect(result.data.name).toBe('Acme Corp')
     }
   })
@@ -179,7 +183,7 @@ describe('getCompany', () => {
   it('should return error for non-existent company', async () => {
     prismaMock.company.findUnique.mockResolvedValue(null)
 
-    const result = await getCompany('non-existent')
+    const result = await getCompany(MOCK_NONEXISTENT_ID)
 
     expect(result.success).toBe(false)
     if (!result.success) {
@@ -282,9 +286,11 @@ describe('updateCompany', () => {
     prismaMock.company.findUnique.mockResolvedValue(mockCompany)
     prismaMock.company.update.mockResolvedValue(mockCompanyWithCounts)
 
+    // On ne change pas le nom pour éviter la génération de slug
+    // (il y a un test spécifique pour le changement de nom)
     const result = await updateCompany({
-      id: 'company-1',
-      name: 'Updated Acme Corp',
+      id: MOCK_COMPANY_ID,
+      email: 'updated@acme.com',
     })
 
     expect(result.success).toBe(true)
@@ -295,7 +301,7 @@ describe('updateCompany', () => {
     prismaMock.company.findUnique.mockResolvedValue(null)
 
     const result = await updateCompany({
-      id: 'non-existent',
+      id: MOCK_NONEXISTENT_ID,
       name: 'Updated Name',
     })
 
@@ -316,7 +322,7 @@ describe('updateCompany', () => {
     })
 
     await updateCompany({
-      id: 'company-1',
+      id: MOCK_COMPANY_ID,
       name: 'New Company Name',
     })
 
@@ -334,7 +340,7 @@ describe('updateCompany', () => {
     prismaMock.company.update.mockResolvedValue(mockCompanyWithCounts)
 
     await updateCompany({
-      id: 'company-1',
+      id: MOCK_COMPANY_ID,
       email: '',
       phone: '',
     })
@@ -366,18 +372,18 @@ describe('deleteCompany', () => {
     })
     prismaMock.company.delete.mockResolvedValue(mockCompany)
 
-    const result = await deleteCompany('company-1')
+    const result = await deleteCompany(MOCK_COMPANY_ID)
 
     expect(result.success).toBe(true)
     expect(prismaMock.company.delete).toHaveBeenCalledWith({
-      where: { id: 'company-1' },
+      where: { id: MOCK_COMPANY_ID },
     })
   })
 
   it('should return error for non-existent company', async () => {
     prismaMock.company.findUnique.mockResolvedValue(null)
 
-    const result = await deleteCompany('non-existent')
+    const result = await deleteCompany(MOCK_NONEXISTENT_ID)
 
     expect(result.success).toBe(false)
     if (!result.success) {
@@ -401,7 +407,7 @@ describe('toggleCompanyStatus', () => {
       isActive: true,
     })
 
-    const result = await toggleCompanyStatus('company-1', true)
+    const result = await toggleCompanyStatus(MOCK_COMPANY_ID, true)
 
     expect(result.success).toBe(true)
     expect(prismaMock.company.update).toHaveBeenCalledWith(
@@ -417,7 +423,7 @@ describe('toggleCompanyStatus', () => {
       isActive: false,
     })
 
-    const result = await toggleCompanyStatus('company-1', false)
+    const result = await toggleCompanyStatus(MOCK_COMPANY_ID, false)
 
     expect(result.success).toBe(true)
     expect(prismaMock.company.update).toHaveBeenCalledWith(
