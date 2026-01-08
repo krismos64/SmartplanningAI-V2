@@ -8,7 +8,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { prismaMock } from '@/__tests__/mocks/prisma'
+import { prismaMock } from '../../mocks/prisma'
 
 // Mock auth pour RBAC
 vi.mock('@/lib/auth', () => ({
