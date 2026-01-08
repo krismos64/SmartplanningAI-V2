@@ -5,9 +5,10 @@
  * - 3 navigateurs : Chromium, Firefox, WebKit
  * - webServer : démarre Next.js automatiquement
  * - Traces et screenshots sur échec
+ * - Timeouts adaptés pour CI
  *
  * @see https://playwright.dev/docs/test-configuration
- * @ticket SP-133
+ * @ticket SP-133, SP-113
  */
 
 import { defineConfig, devices } from '@playwright/test'
@@ -20,8 +21,9 @@ export default defineConfig({
 
   /**
    * Exécution parallèle des tests
+   * Désactivé en CI pour plus de stabilité avec la base de données partagée
    */
-  fullyParallel: true,
+  fullyParallel: !process.env.CI,
 
   /**
    * Échoue si test.only() est présent en CI
@@ -29,19 +31,34 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
 
   /**
-   * Retries : 2 en CI, 0 en local
+   * Retries : 2 en CI pour gérer les flaky tests, 0 en local
    */
   retries: process.env.CI ? 2 : 0,
 
   /**
-   * Workers : 1 en CI (stabilité), illimité en local
+   * Workers : 1 en CI (stabilité avec DB partagée), auto en local
    */
   workers: process.env.CI ? 1 : undefined,
 
   /**
-   * Reporters : HTML + liste console
+   * Timeout global par test : 60s en CI, 30s en local
    */
-  reporter: [['html', { open: 'never' }], ['list']],
+  timeout: process.env.CI ? 60_000 : 30_000,
+
+  /**
+   * Timeout pour les assertions expect() : 15s en CI, 5s en local
+   */
+  expect: {
+    timeout: process.env.CI ? 15_000 : 5_000,
+  },
+
+  /**
+   * Reporters : HTML + liste console
+   * En CI, ajoute aussi le reporter blob pour les artifacts
+   */
+  reporter: process.env.CI
+    ? [['html', { open: 'never' }], ['list'], ['blob']]
+    : [['html', { open: 'never' }], ['list']],
 
   /**
    * Configuration globale des tests
@@ -61,34 +78,44 @@ export default defineConfig({
      * Screenshot : uniquement sur échec
      */
     screenshot: 'only-on-failure',
+
+    /**
+     * Video : enregistré sur premier retry en CI pour debug
+     */
+    video: process.env.CI ? 'on-first-retry' : 'off',
+
+    /**
+     * Timeouts d'action (click, fill, etc.) : 15s en CI, 10s en local
+     */
+    actionTimeout: process.env.CI ? 15_000 : 10_000,
+
+    /**
+     * Timeout de navigation : 30s en CI, 15s en local
+     */
+    navigationTimeout: process.env.CI ? 30_000 : 15_000,
   },
 
   /**
    * Projets de test par navigateur
-   * En CI : uniquement Chromium pour rapidité
-   * En local : tous les navigateurs
+   *
+   * Les 3 navigateurs sont toujours disponibles.
+   * En CI, on utilise --project=<browser> pour sélectionner le navigateur
+   * via la matrice GitHub Actions.
    */
-  projects: process.env.CI
-    ? [
-        {
-          name: 'chromium',
-          use: { ...devices['Desktop Chrome'] },
-        },
-      ]
-    : [
-        {
-          name: 'chromium',
-          use: { ...devices['Desktop Chrome'] },
-        },
-        {
-          name: 'firefox',
-          use: { ...devices['Desktop Firefox'] },
-        },
-        {
-          name: 'webkit',
-          use: { ...devices['Desktop Safari'] },
-        },
-      ],
+  projects: [
+    {
+      name: 'chromium',
+      use: { ...devices['Desktop Chrome'] },
+    },
+    {
+      name: 'firefox',
+      use: { ...devices['Desktop Firefox'] },
+    },
+    {
+      name: 'webkit',
+      use: { ...devices['Desktop Safari'] },
+    },
+  ],
 
   /**
    * Configuration du serveur web Next.js
@@ -102,7 +129,7 @@ export default defineConfig({
     command: 'npm run dev',
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
-    timeout: 120 * 1000,
+    timeout: 120_000,
     // Le webServer hérite automatiquement des env vars du process parent
     // donc DATABASE_URL, NEXTAUTH_SECRET, etc. sont disponibles
   },
