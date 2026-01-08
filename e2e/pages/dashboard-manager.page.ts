@@ -105,7 +105,7 @@ export class DashboardManagerPage {
    * Navigue vers le dashboard manager
    */
   async goto(): Promise<void> {
-    await this.page.goto('/manager')
+    await this.page.goto('/app/manager/dashboard')
   }
 
   /**

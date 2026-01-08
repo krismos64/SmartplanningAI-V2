@@ -141,7 +141,7 @@ export class DashboardAdminPage {
    * Navigue vers le dashboard admin
    */
   async goto(): Promise<void> {
-    await this.page.goto('/dashboard/admin')
+    await this.page.goto('/app/admin/dashboard')
   }
 
   /**
