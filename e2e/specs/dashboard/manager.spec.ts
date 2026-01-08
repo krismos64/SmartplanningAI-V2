@@ -21,7 +21,7 @@ test.describe('Dashboard Manager - Tests E2E', () => {
     test('devrait rediriger vers /login si non authentifie', async ({
       page,
     }) => {
-      await page.goto('/manager')
+      await page.goto('/app/manager/dashboard')
       await expect(page).toHaveURL(/.*login.*/)
     })
 

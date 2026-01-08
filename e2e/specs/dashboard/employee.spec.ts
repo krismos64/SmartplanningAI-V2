@@ -22,20 +22,20 @@ test.describe('Dashboard Employee - Tests E2E', () => {
       page,
     }) => {
       // Navigation sans authentification
-      await page.goto('/dashboard/employee')
+      await page.goto('/app/dashboard')
 
       // Devrait etre redirige vers login
       await expect(page).toHaveURL(/.*login.*/)
     })
 
-    test('devrait rediriger /dashboard vers /dashboard/employee pour un employe', async ({
+    test('devrait rester sur /app/dashboard pour un employe', async ({
       employeePage,
     }) => {
       // Navigation vers dashboard generique
-      await employeePage.goto('/dashboard')
+      await employeePage.goto('/app/dashboard')
 
-      // Devrait etre redirige vers employee dashboard
-      await expect(employeePage).toHaveURL(/.*dashboard\/employee.*/)
+      // Un employee reste sur /app/dashboard
+      await expect(employeePage).toHaveURL(/.*app\/dashboard.*/)
     })
 
     test('devrait acceder au dashboard avec authentification employee', async ({

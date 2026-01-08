@@ -12,13 +12,13 @@
 
 import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/prisma'
+import { withRoleCheck } from './crud-utils'
 import {
-  withRoleCheck,
   validateData,
   getPaginationParams,
   formatPaginatedResult,
   handlePrismaError,
-} from './crud-utils'
+} from './crud-helpers'
 import {
   createCompanySchema,
   updateCompanySchema,

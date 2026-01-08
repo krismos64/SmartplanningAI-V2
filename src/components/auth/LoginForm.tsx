@@ -6,7 +6,7 @@
  * - NextAuth signIn avec redirect: false
  * - Gestion des erreurs avec getAuthErrorMessage()
  * - Toast notification (Sonner)
- * - Redirect vers /app/dashboard après succès
+ * - Redirect vers le dashboard approprié selon le rôle après succès
  *
  * @ticket SP-137
  * @see Context7 - NextAuth v5 signIn pattern, React Hook Form
@@ -17,7 +17,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { signIn } from 'next-auth/react'
+import { signIn, getSession } from 'next-auth/react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Loader2, Eye, EyeOff } from 'lucide-react'
@@ -28,6 +28,7 @@ import {
   type LoginFormData,
   getAuthErrorMessage,
 } from '@/lib/validations'
+import { getDefaultDashboardForRole } from '@/lib/permissions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -88,13 +89,18 @@ export function LoginForm() {
       }
 
       if (result?.ok) {
-        // Succès : afficher toast et rediriger
+        // Succès : afficher toast et rediriger vers le bon dashboard selon le rôle
         toast.success('Connexion réussie', {
           description: 'Redirection vers le tableau de bord...',
         })
 
-        // Utiliser router.push pour la redirection côté client
-        router.push('/app/dashboard')
+        // Récupérer la session pour obtenir le rôle de l'utilisateur
+        const session = await getSession()
+        const userRole = session?.user?.role
+        const dashboardUrl = getDefaultDashboardForRole(userRole)
+
+        // Utiliser router.push pour la redirection côté client vers le bon dashboard
+        router.push(dashboardUrl)
         router.refresh() // Force le rafraîchissement pour mettre à jour la session
       }
     } catch {

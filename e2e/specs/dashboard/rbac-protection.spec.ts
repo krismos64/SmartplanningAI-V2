@@ -15,41 +15,41 @@ test.describe('RBAC Protection - Tests E2E', () => {
   // ==========================================================================
 
   test.describe('Employee RBAC', () => {
-    test('Employee devrait acceder a /dashboard/employee', async ({
+    test('Employee devrait acceder a /app/dashboard', async ({
       employeePage,
     }) => {
-      await employeePage.goto('/dashboard/employee')
+      await employeePage.goto('/app/dashboard')
 
       // Devrait rester sur employee dashboard
-      await expect(employeePage).toHaveURL(/.*dashboard\/employee.*/)
+      await expect(employeePage).toHaveURL(/.*app\/dashboard.*/)
       await expect(employeePage.locator('h1')).toBeVisible()
     })
 
-    test('Employee NE devrait PAS acceder a /manager', async ({
+    test('Employee NE devrait PAS acceder a /app/manager', async ({
       employeePage,
     }) => {
-      await employeePage.goto('/manager')
+      await employeePage.goto('/app/manager/dashboard')
 
       // Devrait etre redirige vers son dashboard ou page d'erreur
-      await expect(employeePage).not.toHaveURL(/.*\/manager$/)
+      await expect(employeePage).not.toHaveURL(/.*\/app\/manager.*/)
     })
 
-    test('Employee NE devrait PAS acceder a /dashboard/director', async ({
+    test('Employee NE devrait PAS acceder a /app/director', async ({
       employeePage,
     }) => {
-      await employeePage.goto('/dashboard/director')
+      await employeePage.goto('/app/director/dashboard')
 
       // Devrait etre redirige
-      await expect(employeePage).not.toHaveURL(/.*dashboard\/director.*/)
+      await expect(employeePage).not.toHaveURL(/.*app\/director.*/)
     })
 
-    test('Employee NE devrait PAS acceder a /dashboard/admin', async ({
+    test('Employee NE devrait PAS acceder a /app/admin', async ({
       employeePage,
     }) => {
-      await employeePage.goto('/dashboard/admin')
+      await employeePage.goto('/app/admin/dashboard')
 
       // Devrait etre redirige
-      await expect(employeePage).not.toHaveURL(/.*dashboard\/admin.*/)
+      await expect(employeePage).not.toHaveURL(/.*app\/admin.*/)
     })
   })
 
@@ -58,29 +58,29 @@ test.describe('RBAC Protection - Tests E2E', () => {
   // ==========================================================================
 
   test.describe('Manager RBAC', () => {
-    test('Manager devrait acceder a /manager', async ({ managerPage }) => {
-      await managerPage.goto('/manager')
+    test('Manager devrait acceder a /app/manager', async ({ managerPage }) => {
+      await managerPage.goto('/app/manager/dashboard')
 
-      await expect(managerPage).toHaveURL(/.*manager.*/)
+      await expect(managerPage).toHaveURL(/.*app\/manager.*/)
       await expect(managerPage.locator('h1')).toBeVisible()
     })
 
-    test('Manager NE devrait PAS acceder a /dashboard/director', async ({
+    test('Manager NE devrait PAS acceder a /app/director', async ({
       managerPage,
     }) => {
-      await managerPage.goto('/dashboard/director')
+      await managerPage.goto('/app/director/dashboard')
 
       // Devrait etre redirige vers son dashboard
-      await expect(managerPage).not.toHaveURL(/.*dashboard\/director.*/)
+      await expect(managerPage).not.toHaveURL(/.*app\/director.*/)
     })
 
-    test('Manager NE devrait PAS acceder a /dashboard/admin', async ({
+    test('Manager NE devrait PAS acceder a /app/admin', async ({
       managerPage,
     }) => {
-      await managerPage.goto('/dashboard/admin')
+      await managerPage.goto('/app/admin/dashboard')
 
       // Devrait etre redirige
-      await expect(managerPage).not.toHaveURL(/.*dashboard\/admin.*/)
+      await expect(managerPage).not.toHaveURL(/.*app\/admin.*/)
     })
   })
 
@@ -89,22 +89,22 @@ test.describe('RBAC Protection - Tests E2E', () => {
   // ==========================================================================
 
   test.describe('Director RBAC', () => {
-    test('Director devrait acceder a /dashboard/director', async ({
+    test('Director devrait acceder a /app/director', async ({
       directorPage,
     }) => {
-      await directorPage.goto('/dashboard/director')
+      await directorPage.goto('/app/director/dashboard')
 
-      await expect(directorPage).toHaveURL(/.*dashboard\/director.*/)
+      await expect(directorPage).toHaveURL(/.*app\/director.*/)
       await expect(directorPage.locator('h1')).toBeVisible()
     })
 
-    test('Director NE devrait PAS acceder a /dashboard/admin', async ({
+    test('Director NE devrait PAS acceder a /app/admin', async ({
       directorPage,
     }) => {
-      await directorPage.goto('/dashboard/admin')
+      await directorPage.goto('/app/admin/dashboard')
 
       // Devrait etre redirige
-      await expect(directorPage).not.toHaveURL(/.*dashboard\/admin.*/)
+      await expect(directorPage).not.toHaveURL(/.*app\/admin.*/)
     })
   })
 
@@ -113,45 +113,45 @@ test.describe('RBAC Protection - Tests E2E', () => {
   // ==========================================================================
 
   test.describe('System Admin RBAC', () => {
-    test('Admin devrait acceder a /dashboard/admin', async ({ adminPage }) => {
-      await adminPage.goto('/dashboard/admin')
+    test('Admin devrait acceder a /app/admin', async ({ adminPage }) => {
+      await adminPage.goto('/app/admin/dashboard')
 
-      await expect(adminPage).toHaveURL(/.*dashboard\/admin.*/)
+      await expect(adminPage).toHaveURL(/.*app\/admin.*/)
       await expect(adminPage.locator('h1')).toBeVisible()
     })
 
-    test('Admin devrait etre redirige vers /dashboard/admin depuis /dashboard', async ({
+    test('Admin devrait etre redirige vers /app/admin/dashboard depuis /app/dashboard', async ({
       adminPage,
     }) => {
-      await adminPage.goto('/dashboard')
+      await adminPage.goto('/app/dashboard')
 
       // Devrait etre redirige vers admin dashboard
-      await expect(adminPage).toHaveURL(/.*dashboard\/admin.*/)
+      await expect(adminPage).toHaveURL(/.*app\/admin\/dashboard.*/)
     })
   })
 
   // ==========================================================================
-  // Tests de redirection generique /dashboard
+  // Tests de redirection generique /app/dashboard
   // ==========================================================================
 
-  test.describe('Redirection /dashboard selon role', () => {
-    test('Employee redirige vers /dashboard/employee', async ({
+  test.describe('Redirection /app/dashboard selon role', () => {
+    test('Employee reste sur /app/dashboard', async ({
       employeePage,
     }) => {
-      await employeePage.goto('/dashboard')
-      await expect(employeePage).toHaveURL(/.*dashboard\/employee.*/)
+      await employeePage.goto('/app/dashboard')
+      await expect(employeePage).toHaveURL(/.*app\/dashboard.*/)
     })
 
-    test('Director redirige vers /dashboard/director', async ({
+    test('Director redirige vers /app/director/dashboard', async ({
       directorPage,
     }) => {
-      await directorPage.goto('/dashboard')
-      await expect(directorPage).toHaveURL(/.*dashboard\/director.*/)
+      await directorPage.goto('/app/dashboard')
+      await expect(directorPage).toHaveURL(/.*app\/director\/dashboard.*/)
     })
 
-    test('Admin redirige vers /dashboard/admin', async ({ adminPage }) => {
-      await adminPage.goto('/dashboard')
-      await expect(adminPage).toHaveURL(/.*dashboard\/admin.*/)
+    test('Admin redirige vers /app/admin/dashboard', async ({ adminPage }) => {
+      await adminPage.goto('/app/dashboard')
+      await expect(adminPage).toHaveURL(/.*app\/admin\/dashboard.*/)
     })
   })
 
@@ -160,28 +160,23 @@ test.describe('RBAC Protection - Tests E2E', () => {
   // ==========================================================================
 
   test.describe('Protection sans authentification', () => {
-    test('/dashboard redirige vers /login', async ({ page }) => {
-      await page.goto('/dashboard')
+    test('/app/dashboard redirige vers /login', async ({ page }) => {
+      await page.goto('/app/dashboard')
       await expect(page).toHaveURL(/.*login.*/)
     })
 
-    test('/dashboard/employee redirige vers /login', async ({ page }) => {
-      await page.goto('/dashboard/employee')
+    test('/app/manager/dashboard redirige vers /login', async ({ page }) => {
+      await page.goto('/app/manager/dashboard')
       await expect(page).toHaveURL(/.*login.*/)
     })
 
-    test('/manager redirige vers /login', async ({ page }) => {
-      await page.goto('/manager')
+    test('/app/director/dashboard redirige vers /login', async ({ page }) => {
+      await page.goto('/app/director/dashboard')
       await expect(page).toHaveURL(/.*login.*/)
     })
 
-    test('/dashboard/director redirige vers /login', async ({ page }) => {
-      await page.goto('/dashboard/director')
-      await expect(page).toHaveURL(/.*login.*/)
-    })
-
-    test('/dashboard/admin redirige vers /login', async ({ page }) => {
-      await page.goto('/dashboard/admin')
+    test('/app/admin/dashboard redirige vers /login', async ({ page }) => {
+      await page.goto('/app/admin/dashboard')
       await expect(page).toHaveURL(/.*login.*/)
     })
   })
