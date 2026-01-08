@@ -273,8 +273,8 @@ function EmployeeFormTest() {
     },
   })
 
-  const hireDate = watch('hireDate') as string | undefined
-  const department = watch('department') as Department | undefined
+  const hireDate = watch('hireDate')
+  const department = watch('department')
 
   const onSubmit = async (data: CreateEmployeeInput) => {
     // eslint-disable-next-line no-console
@@ -343,7 +343,12 @@ function EmployeeFormTest() {
             }))}
             error={errors.department?.message}
             value={department || ''}
-            onChange={(e) => setValue('department', (e.target?.value || e) as unknown as Department)}
+            onChange={(e) =>
+              setValue(
+                'department',
+                (e.target?.value || e) as unknown as Department
+              )
+            }
           />
 
           <FormDatePicker
@@ -369,10 +374,7 @@ function EmployeeFormTest() {
             onChange={(value) => setValue('weeklyHours', Number(value))}
           />
 
-          <FormCheckbox
-            label="Employé actif"
-            {...register('isActive')}
-          />
+          <FormCheckbox label="Employé actif" {...register('isActive')} />
         </div>
 
         <button

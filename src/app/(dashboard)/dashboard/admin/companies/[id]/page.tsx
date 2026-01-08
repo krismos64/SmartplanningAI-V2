@@ -46,7 +46,9 @@ export async function generateMetadata({
   }
 }
 
-export default async function EditCompanyPage({ params }: EditCompanyPageProps) {
+export default async function EditCompanyPage({
+  params,
+}: EditCompanyPageProps) {
   const session = await auth()
 
   if (!session?.user) {
@@ -96,16 +98,24 @@ export default async function EditCompanyPage({ params }: EditCompanyPageProps) 
             {company.isActive ? 'Actif' : 'Inactif'}
           </Badge>
           <Badge variant="outline">
-            {subscriptionPlanLabels[company.subscriptionPlan as SubscriptionPlan]}
+            {
+              subscriptionPlanLabels[
+                company.subscriptionPlan as SubscriptionPlan
+              ]
+            }
           </Badge>
           <Badge variant="outline">
-            {subscriptionStatusLabels[company.subscriptionStatus as SubscriptionStatus]}
+            {
+              subscriptionStatusLabels[
+                company.subscriptionStatus as SubscriptionStatus
+              ]
+            }
           </Badge>
         </div>
       </div>
 
       {/* Stats rapides */}
-      <div className="grid grid-cols-3 gap-4 max-w-lg">
+      <div className="grid max-w-lg grid-cols-3 gap-4">
         <div className="rounded-lg border bg-card p-3 text-center">
           <p className="text-2xl font-bold">{company._count.users}</p>
           <p className="text-xs text-muted-foreground">Utilisateurs</p>

@@ -157,15 +157,15 @@ export function createCompanyColumns(
       accessorKey: 'subscriptionPlan',
       header: 'Plan',
       cell: ({ row }) => {
-        const plan = row.getValue('subscriptionPlan') as SubscriptionPlan
+        const plan = row.original.subscriptionPlan as SubscriptionPlan
         return (
           <Badge variant={planBadgeVariants[plan]}>
             {subscriptionPlanLabels[plan]}
           </Badge>
         )
       },
-      filterFn: (row, id, value) => {
-        return value.includes(row.getValue(id))
+      filterFn: (row, _id, value: string[]) => {
+        return value.includes(row.original.subscriptionPlan)
       },
     },
 
@@ -174,15 +174,15 @@ export function createCompanyColumns(
       accessorKey: 'subscriptionStatus',
       header: 'Statut',
       cell: ({ row }) => {
-        const status = row.getValue('subscriptionStatus') as SubscriptionStatus
+        const status = row.original.subscriptionStatus as SubscriptionStatus
         return (
           <Badge variant={statusBadgeVariants[status]}>
             {subscriptionStatusLabels[status]}
           </Badge>
         )
       },
-      filterFn: (row, id, value) => {
-        return value.includes(row.getValue(id))
+      filterFn: (row, _id, value: string[]) => {
+        return value.includes(row.original.subscriptionStatus)
       },
     },
 
@@ -235,7 +235,7 @@ export function createCompanyColumns(
       accessorKey: 'createdAt',
       header: 'Créée le',
       cell: ({ row }) => {
-        const date = row.getValue('createdAt') as Date
+        const date = row.original.createdAt
         return (
           <span className="text-sm text-muted-foreground">
             {format(new Date(date), 'dd MMM yyyy', { locale: fr })}
@@ -249,7 +249,7 @@ export function createCompanyColumns(
       accessorKey: 'isActive',
       header: 'Actif',
       cell: ({ row }) => {
-        const isActive = row.getValue('isActive') as boolean
+        const isActive = row.original.isActive
         return (
           <Badge variant={isActive ? 'default' : 'secondary'}>
             {isActive ? 'Actif' : 'Inactif'}

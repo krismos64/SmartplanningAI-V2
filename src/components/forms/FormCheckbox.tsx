@@ -54,7 +54,7 @@ export const FormCheckbox = React.forwardRef<
       error,
       helpText,
       disabled,
-      className,
+      className: _className,
       wrapperClassName,
       checkboxClassName,
       labelClassName,

@@ -169,7 +169,6 @@ export async function getDatabaseStats(): Promise<DatabaseStats> {
   return stats
 }
 
-
 /**
  * Gère les erreurs Prisma de manière centralisée
  *

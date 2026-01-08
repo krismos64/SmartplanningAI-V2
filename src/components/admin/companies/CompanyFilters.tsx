@@ -67,7 +67,8 @@ export function CompanyFilters({
     (value: string) => {
       onFiltersChange({
         ...filters,
-        subscriptionPlan: value === 'all' ? undefined : (value as SubscriptionPlan),
+        subscriptionPlan:
+          value === 'all' ? undefined : (value as SubscriptionPlan),
       })
     },
     [filters, onFiltersChange]
@@ -78,7 +79,8 @@ export function CompanyFilters({
     (value: string) => {
       onFiltersChange({
         ...filters,
-        subscriptionStatus: value === 'all' ? undefined : (value as SubscriptionStatus),
+        subscriptionStatus:
+          value === 'all' ? undefined : (value as SubscriptionStatus),
       })
     },
     [filters, onFiltersChange]
@@ -110,7 +112,7 @@ export function CompanyFilters({
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       {/* Recherche textuelle */}
-      <div className="relative flex-1 max-w-sm">
+      <div className="relative max-w-sm flex-1">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           placeholder="Rechercher une entreprise..."
@@ -157,19 +159,21 @@ export function CompanyFilters({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Tous statuts</SelectItem>
-            {(Object.keys(subscriptionStatusLabels) as SubscriptionStatus[]).map(
-              (status) => (
-                <SelectItem key={status} value={status}>
-                  {subscriptionStatusLabels[status]}
-                </SelectItem>
-              )
-            )}
+            {(
+              Object.keys(subscriptionStatusLabels) as SubscriptionStatus[]
+            ).map((status) => (
+              <SelectItem key={status} value={status}>
+                {subscriptionStatusLabels[status]}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
 
         {/* Filtre actif/inactif */}
         <Select
-          value={filters.isActive === undefined ? 'all' : String(filters.isActive)}
+          value={
+            filters.isActive === undefined ? 'all' : String(filters.isActive)
+          }
           onValueChange={handleActiveChange}
           disabled={disabled}
         >
@@ -192,7 +196,7 @@ export function CompanyFilters({
             disabled={disabled}
             className="h-9 px-2"
           >
-            <X className="h-4 w-4 mr-1" />
+            <X className="mr-1 h-4 w-4" />
             Réinitialiser
           </Button>
         )}

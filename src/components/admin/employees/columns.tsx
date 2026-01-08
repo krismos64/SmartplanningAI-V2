@@ -42,10 +42,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import {
-  departmentLabels,
-  type Department,
-} from '@/lib/validations/employee'
+import { departmentLabels, type Department } from '@/lib/validations/employee'
 import type { EmployeeWithCounts } from '@/lib/validations/employee'
 
 // ============================================================================
@@ -165,12 +162,12 @@ export function createEmployeeColumns(
       accessorKey: 'jobTitle',
       header: 'Poste',
       cell: ({ row }) => {
-        const jobTitle = row.getValue('jobTitle') as string | null
+        const jobTitle = row.original.jobTitle
         return (
           <div className="flex items-center gap-2">
             <Briefcase className="h-4 w-4 text-muted-foreground" />
             <span className="text-sm">
-              {jobTitle || <span className="text-muted-foreground">-</span>}
+              {jobTitle ?? <span className="text-muted-foreground">-</span>}
             </span>
           </div>
         )
@@ -182,7 +179,7 @@ export function createEmployeeColumns(
       accessorKey: 'department',
       header: 'Departement',
       cell: ({ row }) => {
-        const department = row.getValue('department') as Department | null
+        const department = row.original.department as Department | null
         if (!department) {
           return <span className="text-muted-foreground">-</span>
         }
@@ -192,8 +189,8 @@ export function createEmployeeColumns(
           </Badge>
         )
       },
-      filterFn: (row, id, value) => {
-        return value.includes(row.getValue(id))
+      filterFn: (row, _id, value: string[]) => {
+        return value.includes(row.original.department ?? '')
       },
     },
 
@@ -219,7 +216,7 @@ export function createEmployeeColumns(
       accessorKey: 'phone',
       header: 'Telephone',
       cell: ({ row }) => {
-        const phone = row.getValue('phone') as string | null
+        const phone = row.original.phone
         if (!phone) {
           return <span className="text-muted-foreground">-</span>
         }
@@ -242,12 +239,8 @@ export function createEmployeeColumns(
       accessorKey: 'weeklyHours',
       header: 'Heures/sem',
       cell: ({ row }) => {
-        const hours = row.getValue('weeklyHours') as number
-        return (
-          <span className="text-sm font-medium">
-            {hours}h
-          </span>
-        )
+        const hours = row.original.weeklyHours
+        return <span className="text-sm font-medium">{hours}h</span>
       },
     },
 
@@ -256,7 +249,7 @@ export function createEmployeeColumns(
       accessorKey: 'hireDate',
       header: 'Embauche',
       cell: ({ row }) => {
-        const date = row.getValue('hireDate') as Date | null
+        const date = row.original.hireDate
         if (!date) {
           return <span className="text-muted-foreground">-</span>
         }
@@ -273,7 +266,7 @@ export function createEmployeeColumns(
       accessorKey: 'isActive',
       header: 'Statut',
       cell: ({ row }) => {
-        const isActive = row.getValue('isActive') as boolean
+        const isActive = row.original.isActive
         return (
           <Badge variant={isActive ? 'default' : 'secondary'}>
             {isActive ? 'Actif' : 'Inactif'}

@@ -74,22 +74,31 @@ interface EmployeeFormProps {
 
 // Schema simplifie pour le formulaire
 const employeeFormSchema = z.object({
-  firstName: z.string().min(2, 'Le prenom doit contenir au moins 2 caracteres').max(50),
-  lastName: z.string().min(2, 'Le nom doit contenir au moins 2 caracteres').max(50),
+  firstName: z
+    .string()
+    .min(2, 'Le prenom doit contenir au moins 2 caracteres')
+    .max(50),
+  lastName: z
+    .string()
+    .min(2, 'Le nom doit contenir au moins 2 caracteres')
+    .max(50),
   jobTitle: z.string().max(100).optional().or(z.literal('')),
-  department: z.enum([
-    'DIRECTION',
-    'RESSOURCES_HUMAINES',
-    'COMMERCIAL',
-    'MARKETING',
-    'TECHNIQUE',
-    'PRODUCTION',
-    'LOGISTIQUE',
-    'FINANCE',
-    'JURIDIQUE',
-    'SUPPORT',
-    'AUTRE',
-  ]).optional().or(z.literal('')),
+  department: z
+    .enum([
+      'DIRECTION',
+      'RESSOURCES_HUMAINES',
+      'COMMERCIAL',
+      'MARKETING',
+      'TECHNIQUE',
+      'PRODUCTION',
+      'LOGISTIQUE',
+      'FINANCE',
+      'JURIDIQUE',
+      'SUPPORT',
+      'AUTRE',
+    ])
+    .optional()
+    .or(z.literal('')),
   phone: z.string().optional().or(z.literal('')),
   hireDate: z.string().optional().or(z.literal('')),
   weeklyHours: z.number().min(1).max(60),
@@ -168,13 +177,18 @@ export function EmployeeForm({
 
   // Pour MANAGER: pre-selectionner une equipe s'il n'en a qu'une
   useEffect(() => {
-    if (!isEditing && userRole === 'MANAGER' && teams.length === 1 && teams[0]) {
+    if (
+      !isEditing &&
+      userRole === 'MANAGER' &&
+      teams.length === 1 &&
+      teams[0]
+    ) {
       form.setValue('teamId', teams[0].id)
     }
   }, [isEditing, userRole, teams, form])
 
   // Soumission du formulaire
-  const onSubmit = async (data: EmployeeFormValues) => {
+  const onSubmit = (data: EmployeeFormValues) => {
     // Nettoyer les champs vides
     const cleanedData = {
       firstName: data.firstName,
@@ -190,9 +204,9 @@ export function EmployeeForm({
     }
 
     if (isEditing && employee) {
-      await updateMutation.mutate({ id: employee.id, ...cleanedData })
+      void updateMutation.mutate({ id: employee.id, ...cleanedData })
     } else {
-      await createMutation.mutate({ companyId, ...cleanedData })
+      void createMutation.mutate({ companyId, ...cleanedData })
     }
   }
 
@@ -201,7 +215,10 @@ export function EmployeeForm({
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+      <form
+        onSubmit={(e) => void form.handleSubmit(onSubmit)(e)}
+        className="space-y-8"
+      >
         {/* Informations personnelles */}
         <Card>
           <CardHeader>
@@ -348,16 +365,17 @@ export function EmployeeForm({
               name="teamId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>
-                    Equipe {isTeamRequired && '*'}
-                  </FormLabel>
+                  <FormLabel>Equipe {isTeamRequired && '*'}</FormLabel>
                   <FormControl>
                     <div className="relative">
-                      <Users className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground z-10" />
+                      <Users className="absolute left-3 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                       <Select
                         onValueChange={field.onChange}
                         value={field.value || ''}
-                        disabled={isPending || (userRole === 'MANAGER' && teams.length === 1)}
+                        disabled={
+                          isPending ||
+                          (userRole === 'MANAGER' && teams.length === 1)
+                        }
                       >
                         <SelectTrigger className="pl-10">
                           <SelectValue placeholder="Selectionner une equipe" />
@@ -415,7 +433,7 @@ export function EmployeeForm({
                     <FormLabel>Heures hebdomadaires *</FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <Clock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground z-10" />
+                        <Clock className="absolute left-3 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                         <Select
                           onValueChange={(v) => field.onChange(Number(v))}
                           value={String(field.value)}
@@ -426,7 +444,10 @@ export function EmployeeForm({
                           </SelectTrigger>
                           <SelectContent>
                             {weeklyHoursOptions.map((opt) => (
-                              <SelectItem key={opt.value} value={String(opt.value)}>
+                              <SelectItem
+                                key={opt.value}
+                                value={String(opt.value)}
+                              >
                                 {opt.label}
                               </SelectItem>
                             ))}
@@ -489,7 +510,7 @@ export function EmployeeForm({
                 : 'Creation...'
               : isEditing
                 ? 'Modifier'
-                : 'Creer l\'employe'}
+                : "Creer l'employe"}
           </Button>
         </div>
       </form>

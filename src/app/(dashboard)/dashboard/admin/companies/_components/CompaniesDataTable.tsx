@@ -54,7 +54,9 @@ export function CompaniesDataTable() {
   const [totalCount, setTotalCount] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
   const [filters, setFilters] = useState<CompanyFiltersType>({})
-  const [deleteCompany, setDeleteCompany] = useState<CompanyWithCounts | null>(null)
+  const [deleteCompany, setDeleteCompany] = useState<CompanyWithCounts | null>(
+    null
+  )
 
   // Pagination TanStack
   const [pagination, setPagination] = useState<PaginationState>({
@@ -89,7 +91,7 @@ export function CompaniesDataTable() {
 
   // Effet pour charger les données
   useEffect(() => {
-    fetchData()
+    void fetchData()
   }, [fetchData])
 
   // Handlers actions
@@ -112,13 +114,15 @@ export function CompaniesDataTable() {
   }, [])
 
   const handleToggleStatus = useCallback(
-    async (company: CompanyWithCounts) => {
-      try {
-        await toggleCompanyStatus(company.id, !company.isActive)
-        fetchData()
-      } catch (error) {
-        console.error('Erreur toggle status:', error)
-      }
+    (company: CompanyWithCounts) => {
+      void (async () => {
+        try {
+          await toggleCompanyStatus(company.id, !company.isActive)
+          await fetchData()
+        } catch (error) {
+          console.error('Erreur toggle status:', error)
+        }
+      })()
     },
     [fetchData]
   )
@@ -169,17 +173,17 @@ export function CompaniesDataTable() {
             <Button
               variant="outline"
               size="sm"
-              onClick={fetchData}
+              onClick={() => void fetchData()}
               disabled={isLoading}
             >
               <RefreshCw
-                className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`}
+                className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`}
               />
               Actualiser
             </Button>
             <Button asChild>
               <Link href="/dashboard/admin/companies/new">
-                <Plus className="h-4 w-4 mr-2" />
+                <Plus className="mr-2 h-4 w-4" />
                 Nouvelle entreprise
               </Link>
             </Button>
@@ -287,7 +291,7 @@ export function CompaniesDataTable() {
         company={deleteCompany}
         open={!!deleteCompany}
         onOpenChange={(open) => !open && setDeleteCompany(null)}
-        onSuccess={fetchData}
+        onSuccess={() => void fetchData()}
       />
     </TooltipProvider>
   )

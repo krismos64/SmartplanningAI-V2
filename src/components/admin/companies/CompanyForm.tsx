@@ -66,13 +66,22 @@ interface CompanyFormProps {
 
 // Schéma simplifié pour le formulaire
 const companyFormSchema = z.object({
-  name: z.string().min(2, "Le nom doit contenir au moins 2 caractères").max(100),
-  email: z.string().email("Email invalide").optional().or(z.literal('')),
+  name: z
+    .string()
+    .min(2, 'Le nom doit contenir au moins 2 caractères')
+    .max(100),
+  email: z.string().email('Email invalide').optional().or(z.literal('')),
   phone: z.string().optional().or(z.literal('')),
   address: z.string().optional().or(z.literal('')),
   timezone: z.string(),
   subscriptionPlan: z.enum(['FREE', 'STARTER', 'BUSINESS', 'ENTERPRISE']),
-  subscriptionStatus: z.enum(['TRIAL', 'ACTIVE', 'PAST_DUE', 'CANCELED', 'EXPIRED']),
+  subscriptionStatus: z.enum([
+    'TRIAL',
+    'ACTIVE',
+    'PAST_DUE',
+    'CANCELED',
+    'EXPIRED',
+  ]),
   isActive: z.boolean(),
 })
 
@@ -82,7 +91,11 @@ type CompanyFormValues = z.infer<typeof companyFormSchema>
 // Composant
 // ============================================================================
 
-export function CompanyForm({ company, onSuccess, onCancel }: CompanyFormProps) {
+export function CompanyForm({
+  company,
+  onSuccess,
+  onCancel,
+}: CompanyFormProps) {
   const router = useRouter()
   const isEditing = !!company
 
@@ -135,17 +148,20 @@ export function CompanyForm({ company, onSuccess, onCancel }: CompanyFormProps) 
   })
 
   // Soumission du formulaire
-  const onSubmit = async (data: CompanyFormValues) => {
+  const onSubmit = (data: CompanyFormValues) => {
     if (isEditing && company) {
-      await updateMutation.mutate({ id: company.id, ...data })
+      void updateMutation.mutate({ id: company.id, ...data })
     } else {
-      await createMutation.mutate(data)
+      void createMutation.mutate(data)
     }
   }
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+      <form
+        onSubmit={(e) => void form.handleSubmit(onSubmit)(e)}
+        className="space-y-8"
+      >
         {/* Informations générales */}
         <Card>
           <CardHeader>
@@ -257,7 +273,7 @@ export function CompanyForm({ company, onSuccess, onCancel }: CompanyFormProps) 
                   <FormLabel>Fuseau horaire</FormLabel>
                   <FormControl>
                     <div className="relative">
-                      <Clock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground z-10" />
+                      <Clock className="absolute left-3 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                       <Select
                         onValueChange={field.onChange}
                         defaultValue={field.value}
@@ -317,7 +333,9 @@ export function CompanyForm({ company, onSuccess, onCancel }: CompanyFormProps) 
                       </SelectTrigger>
                       <SelectContent>
                         {(
-                          Object.keys(subscriptionPlanLabels) as SubscriptionPlan[]
+                          Object.keys(
+                            subscriptionPlanLabels
+                          ) as SubscriptionPlan[]
                         ).map((plan) => (
                           <SelectItem key={plan} value={plan}>
                             {subscriptionPlanLabels[plan]}
@@ -327,7 +345,8 @@ export function CompanyForm({ company, onSuccess, onCancel }: CompanyFormProps) 
                     </Select>
                   </FormControl>
                   <FormDescription>
-                    FREE: 5 employés | STARTER: 20 employés | BUSINESS: 100 employés
+                    FREE: 5 employés | STARTER: 20 employés | BUSINESS: 100
+                    employés
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -375,10 +394,12 @@ export function CompanyForm({ company, onSuccess, onCancel }: CompanyFormProps) 
               render={({ field }) => (
                 <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                   <div className="space-y-0.5">
-                    <FormLabel className="text-base">Entreprise active</FormLabel>
+                    <FormLabel className="text-base">
+                      Entreprise active
+                    </FormLabel>
                     <FormDescription>
-                      Désactiver l&apos;entreprise bloque l&apos;accès de tous ses
-                      utilisateurs
+                      Désactiver l&apos;entreprise bloque l&apos;accès de tous
+                      ses utilisateurs
                     </FormDescription>
                   </div>
                   <FormControl>
@@ -411,7 +432,7 @@ export function CompanyForm({ company, onSuccess, onCancel }: CompanyFormProps) 
                 : 'Création...'
               : isEditing
                 ? 'Modifier'
-                : 'Créer l\'entreprise'}
+                : "Créer l'entreprise"}
           </Button>
         </div>
       </form>
