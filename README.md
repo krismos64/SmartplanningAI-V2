@@ -1,6 +1,7 @@
 # SmartPlanning
 
-![CI](https://github.com/krismos64/SmartplanningAI-V2/actions/workflows/ci.yml/badge.svg)
+[![CI - Lint, Test & Build](https://github.com/krismos64/SmartplanningAI-V2/actions/workflows/ci.yml/badge.svg)](https://github.com/krismos64/SmartplanningAI-V2/actions/workflows/ci.yml)
+[![CD - Build & Deploy](https://github.com/krismos64/SmartplanningAI-V2/actions/workflows/cd.yml/badge.svg)](https://github.com/krismos64/SmartplanningAI-V2/actions/workflows/cd.yml)
 
 Plateforme SaaS moderne de gestion intelligente des plannings d'entreprise (multi-tenant).
 
@@ -734,12 +735,23 @@ ssh -i ~/.ssh/smartplanning_deploy deploy@smartplanning.fr
 ### CI/CD Pipeline
 
 ```
-Push main → GitHub Actions → Build Docker → Push GHCR → Deploy VPS
+Push feature → Tests unitaires (~3-5 min)
+PR vers main → Tests unitaires + E2E multi-navigateurs (~15-20 min)
+Merge main → Build Docker → Push GHCR → Deploy VPS (~8-10 min)
 ```
 
-- **CI** (`.github/workflows/ci.yml`) : Lint, Type-check, Tests, Build
+**Stratégie optimisée (SP-113)** :
+
+| Scénario | Tests Unit | Tests E2E | Déploiement | Temps |
+|----------|------------|-----------|-------------|-------|
+| Push feature branch | ✅ | ❌ | ❌ | ~3-5 min |
+| PR vers main | ✅ | ✅ (3 navigateurs) | ❌ | ~15-20 min |
+| Merge sur main | ✅ | ❌ | ✅ | ~8-10 min |
+
+- **CI** (`.github/workflows/ci.yml`) : Lint, Type-check, Tests unitaires, Build, Tests E2E (PR uniquement)
 - **CD** (`.github/workflows/cd.yml`) : Build image Docker, Push sur ghcr.io, Deploy via SSH
-- Tests automatiques sur chaque PR
+- Tests unitaires sur tous les push (~1300 tests Vitest)
+- Tests E2E sur PR vers main (~165 tests Playwright, 3 navigateurs en parallèle)
 - Déploiement automatique sur merge main ✅
 - Migrations Prisma automatiques
 - Healthcheck endpoint : `/api/health` ✅
