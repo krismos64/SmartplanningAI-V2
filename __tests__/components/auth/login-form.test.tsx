@@ -21,8 +21,10 @@ import { LoginForm } from '@/components/auth/LoginForm'
 
 // Mock next-auth/react
 const mockSignIn = vi.fn()
+const mockGetSession = vi.fn()
 vi.mock('next-auth/react', () => ({
   signIn: (...args: unknown[]) => mockSignIn(...args),
+  getSession: () => mockGetSession(),
 }))
 
 // Mock next/navigation
@@ -297,6 +299,7 @@ describe('LoginForm', () => {
     it('shows toast success and redirects on successful login', async () => {
       const user = setupUser()
       mockSignIn.mockResolvedValue({ ok: true, error: null })
+      mockGetSession.mockResolvedValue({ user: { role: 'EMPLOYEE' } })
 
       render(<LoginForm />)
 
