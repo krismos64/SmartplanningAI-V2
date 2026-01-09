@@ -13,13 +13,14 @@
 # │ Scénario              │ Unit Tests │ E2E Tests │ Temps estimé  │
 # ├─────────────────────────────────────────────────────────────────┤
 # │ Push feature branch   │     ✅     │    ❌     │   ~3-5 min    │
-# │ PR vers main          │     ✅     │    ✅     │   ~15-20 min  │
+# │ PR vers main          │     ✅     │    ✅     │   ~8-10 min   │
 # │ Merge sur main        │     ✅     │    ❌     │   ~3-5 min    │
 # └─────────────────────────────────────────────────────────────────┘
 #
-# Cette optimisation réduit le temps de CI de ~18min à ~5min pour
-# le développement quotidien, tout en garantissant une validation
-# E2E complète avant chaque mise en production.
+# STRATÉGIE NAVIGATEURS E2E :
+# - CI : Chromium uniquement (stabilité, ~65% des utilisateurs)
+# - Local : Chromium + Firefox + WebKit (tests complets)
+# - Justification : WebKit/Firefox sur Linux CI sont instables
 #
 # @ticket SP-113, SP-134
 
@@ -123,32 +124,30 @@ jobs:
           retention-days: 7
 
   # ============================================
-  # JOB 3 : TESTS E2E (Playwright)
+  # JOB 3 : TESTS E2E (Playwright - Chromium)
   # ============================================
   # Exécuté UNIQUEMENT sur Pull Request vers main
-  # Utilise une matrice pour paralléliser les tests par navigateur
+  # Utilise Chromium uniquement pour la stabilité en CI
   #
-  # NOTE IMPORTANTE (SP-134) :
-  # Il existe un problème connu avec Prisma/PostgreSQL en CI :
-  # - prisma db push et prisma db seed s'exécutent avec "success"
-  # - mais les données ne sont pas réellement persistées dans le container PostgreSQL
-  # continue-on-error: true permet de diagnostiquer sans bloquer le pipeline
-  # TODO: Investiguer la connexion Prisma/PostgreSQL dans les GitHub Actions
+  # POURQUOI CHROMIUM UNIQUEMENT ?
+  # - WebKit sur Linux CI est une version limitée (pas macOS)
+  # - Firefox a des comportements asynchrones différents
+  # - Chromium représente ~65% des utilisateurs (Chrome + Edge)
+  # - Les tests multi-navigateurs sont exécutés manuellement avant releases
+  #
+  # NOTE (SP-134) : Problème connu Prisma/PostgreSQL en CI
+  # - prisma db push/seed s'exécutent avec "success"
+  # - mais les données ne persistent pas toujours dans le container
+  # - continue-on-error: true permet de diagnostiquer sans bloquer
   test-e2e:
-    name: E2E Tests (${{ matrix.browser }})
+    name: E2E Tests (Chromium)
     runs-on: ubuntu-latest
     needs: lint
     # ⚡ OPTIMISATION : E2E uniquement sur PR vers main
     if: github.event_name == 'pull_request' && github.base_ref == 'main'
-    # Permet de continuer même si les tests échouent (diagnostic du problème Prisma)
+    # Permet de continuer même si les tests échouent (diagnostic)
     continue-on-error: true
-    timeout-minutes: 30
-
-    # Stratégie de parallélisation par navigateur
-    strategy:
-      fail-fast: false
-      matrix:
-        browser: [chromium, firefox, webkit]
+    timeout-minutes: 20
 
     # Service container PostgreSQL pour les tests E2E
     services:
@@ -182,9 +181,9 @@ jobs:
       - name: Generate Prisma Client
         run: npx prisma generate
 
-      # Installe uniquement le navigateur nécessaire pour ce job
-      - name: Install Playwright browser (${{ matrix.browser }})
-        run: npx playwright install --with-deps ${{ matrix.browser }}
+      # Installe uniquement Chromium (optimisation CI)
+      - name: Install Playwright Chromium
+        run: npx playwright install chromium --with-deps
 
       - name: Setup database environment
         run: |
@@ -212,9 +211,9 @@ jobs:
           echo "🔍 Checking test users..."
           npx prisma db execute --schema ./prisma/schema.prisma --stdin <<< "SELECT email, role FROM \"User\" LIMIT 5;" || echo "⚠️ Could not verify users"
 
-      # Lance les tests E2E pour ce navigateur spécifique
-      - name: Run E2E tests (${{ matrix.browser }})
-        run: npx playwright test --project=${{ matrix.browser }}
+      # Lance les tests E2E sur Chromium uniquement
+      - name: Run E2E tests (Chromium)
+        run: npx playwright test --project=chromium
         env:
           CI: true
 
@@ -223,7 +222,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
-          name: playwright-report-${{ matrix.browser }}
+          name: playwright-report
           path: playwright-report/
           retention-days: 7
 
@@ -232,7 +231,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: failure()
         with:
-          name: test-results-${{ matrix.browser }}
+          name: test-results
           path: test-results/
           retention-days: 7
 
@@ -306,10 +305,10 @@ jobs:
 #                             │
 #              ┌──────────────┴──────────────┐
 #              ▼                             ▼
-#     ┌────────────────┐     ┌──────────────────────────────────┐
-#     │  TEST (Unit)   │     │         TEST-E2E (Matrix)        │
-#     │   (Vitest)     │     │  chromium │ firefox │ webkit     │
-#     └────────┬───────┘     └──────────────────────────────────┘
+#     ┌────────────────┐          ┌─────────────────────┐
+#     │  TEST (Unit)   │          │  TEST-E2E           │
+#     │   (Vitest)     │          │  (Chromium only)    │
+#     └────────┬───────┘          └─────────────────────┘
 #              │
 #              ▼
 #     ┌─────────────────┐
@@ -318,11 +317,12 @@ jobs:
 #
 # TESTS :
 # - Unit tests : Vitest + RTL (~1300 tests)
-# - E2E tests : Playwright (~165 tests, 3 navigateurs en parallèle)
+# - E2E tests : Playwright Chromium (~165 tests)
 #
 # BONNES PRATIQUES APPLIQUÉES :
 # - Tests E2E uniquement sur PR vers main (optimisation temps CI)
-# - Matrice navigateurs pour parallélisation E2E
+# - Chromium uniquement en CI (stabilité, représente 65% utilisateurs)
+# - Multi-navigateurs disponibles en local pour tests complets
 # - Jobs séquentiels avec "needs" (fail fast)
 # - Cache npm pour accélérer les runs
 # - Artefacts pour traçabilité (coverage, playwright-report)
