@@ -2,12 +2,13 @@
  * Configuration Playwright pour tests E2E
  *
  * Ce fichier configure Playwright pour les tests end-to-end :
- * - 3 navigateurs : Chromium, Firefox, WebKit
+ * - Navigateurs : Chromium (CI) / Chromium + Firefox + WebKit (local)
  * - webServer : démarre Next.js automatiquement
  * - Traces et screenshots sur échec
+ * - Timeouts adaptés pour CI
  *
  * @see https://playwright.dev/docs/test-configuration
- * @ticket SP-133
+ * @ticket SP-133, SP-113
  */
 
 import { defineConfig, devices } from '@playwright/test'
@@ -20,8 +21,9 @@ export default defineConfig({
 
   /**
    * Exécution parallèle des tests
+   * Désactivé en CI pour plus de stabilité avec la base de données partagée
    */
-  fullyParallel: true,
+  fullyParallel: !process.env.CI,
 
   /**
    * Échoue si test.only() est présent en CI
@@ -29,19 +31,34 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
 
   /**
-   * Retries : 2 en CI, 0 en local
+   * Retries : 2 en CI pour gérer les flaky tests, 0 en local
    */
   retries: process.env.CI ? 2 : 0,
 
   /**
-   * Workers : 1 en CI (stabilité), illimité en local
+   * Workers : 1 en CI (stabilité avec DB partagée), auto en local
    */
   workers: process.env.CI ? 1 : undefined,
 
   /**
-   * Reporters : HTML + liste console
+   * Timeout global par test : 60s en CI, 30s en local
    */
-  reporter: [['html', { open: 'never' }], ['list']],
+  timeout: process.env.CI ? 60_000 : 30_000,
+
+  /**
+   * Timeout pour les assertions expect() : 15s en CI, 5s en local
+   */
+  expect: {
+    timeout: process.env.CI ? 15_000 : 5_000,
+  },
+
+  /**
+   * Reporters : HTML + liste console
+   * En CI, ajoute aussi le reporter blob pour les artifacts
+   */
+  reporter: process.env.CI
+    ? [['html', { open: 'never' }], ['list'], ['blob']]
+    : [['html', { open: 'never' }], ['list']],
 
   /**
    * Configuration globale des tests
@@ -61,21 +78,58 @@ export default defineConfig({
      * Screenshot : uniquement sur échec
      */
     screenshot: 'only-on-failure',
+
+    /**
+     * Video : enregistré sur premier retry en CI pour debug
+     */
+    video: process.env.CI ? 'on-first-retry' : 'off',
+
+    /**
+     * Timeouts d'action (click, fill, etc.) : 15s en CI, 10s en local
+     */
+    actionTimeout: process.env.CI ? 15_000 : 10_000,
+
+    /**
+     * Timeout de navigation : 30s en CI, 15s en local
+     */
+    navigationTimeout: process.env.CI ? 30_000 : 15_000,
   },
 
   /**
-   * Projets de test par navigateur
-   * En CI : uniquement Chromium pour rapidité
-   * En local : tous les navigateurs
+   * ============================================================
+   * CONFIGURATION DES NAVIGATEURS
+   * ============================================================
+   *
+   * Stratégie de test multi-navigateurs :
+   *
+   * - CI (GitHub Actions) : Chromium uniquement
+   *   → Stabilité maximale (WebKit Linux est instable)
+   *   → Chromium représente ~65% des utilisateurs (Chrome + Edge)
+   *   → Temps de CI réduit (~8 min au lieu de ~25 min)
+   *
+   * - Local (développement) : Chromium + Firefox + WebKit
+   *   → Tests complets sur les 3 moteurs de rendu
+   *   → Détection des incompatibilités navigateur
+   *   → Exécution manuelle avant chaque release majeure
+   *
+   * Justification technique :
+   * WebKit sur Linux CI utilise une version limitée (pas de vrais APIs Safari).
+   * Les tests WebKit fiables nécessitent macOS, non disponible sur GitHub Actions free tier.
+   * Firefox a des comportements asynchrones différents qui causent des flaky tests en CI.
+   *
+   * @see https://playwright.dev/docs/browsers
+   * ============================================================
    */
   projects: process.env.CI
     ? [
+        // CI : Chromium uniquement pour la stabilité
         {
           name: 'chromium',
           use: { ...devices['Desktop Chrome'] },
         },
       ]
     : [
+        // Local : tous les navigateurs pour tests complets
         {
           name: 'chromium',
           use: { ...devices['Desktop Chrome'] },
@@ -102,7 +156,7 @@ export default defineConfig({
     command: 'npm run dev',
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
-    timeout: 120 * 1000,
+    timeout: 120_000,
     // Le webServer hérite automatiquement des env vars du process parent
     // donc DATABASE_URL, NEXTAUTH_SECRET, etc. sont disponibles
   },
