@@ -3,21 +3,7 @@
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import {
-  Home,
-  Calendar,
-  Brain,
-  Plane,
-  ClipboardList,
-  Users,
-  BarChart,
-  Settings,
-  Building,
-  Activity,
-  AlertCircle,
-  ChevronLeft,
-  ChevronRight,
-} from 'lucide-react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 import {
   Sidebar as SidebarPrimitive,
@@ -27,6 +13,9 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarGroup,
+  SidebarGroupLabel,
+  SidebarGroupContent,
   useSidebar,
 } from '@/components/ui/sidebar'
 import {
@@ -37,6 +26,12 @@ import {
 } from '@/components/ui/tooltip'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import {
+  getNavigationForRole,
+  type NavItem,
+  type NavSection,
+} from '@/config/navigation'
+import { ROLE_LABELS } from '@/lib/permissions'
 
 type UserRole = 'SYSTEM_ADMIN' | 'DIRECTOR' | 'MANAGER' | 'EMPLOYEE'
 
@@ -49,122 +44,12 @@ interface SidebarProps {
   }
 }
 
-interface MenuItem {
-  id: string
-  label: string
-  icon: typeof Home
-  href: string
-  roles: UserRole[] | 'ALL'
-}
-
-const menuItems: MenuItem[] = [
-  {
-    id: 'dashboard',
-    label: 'Dashboard',
-    icon: Home,
-    href: '/app/dashboard',
-    roles: ['DIRECTOR', 'MANAGER', 'EMPLOYEE'],
-  },
-  // SYSTEM_ADMIN specific items
-  {
-    id: 'admin-dashboard',
-    label: 'Dashboard SaaS',
-    icon: Activity,
-    href: '/app/admin/dashboard',
-    roles: ['SYSTEM_ADMIN'],
-  },
-  {
-    id: 'companies',
-    label: 'Entreprises',
-    icon: Building,
-    href: '/app/admin/companies',
-    roles: ['SYSTEM_ADMIN'],
-  },
-  {
-    id: 'monitoring',
-    label: 'Monitoring',
-    icon: Activity,
-    href: '/app/admin/monitoring',
-    roles: ['SYSTEM_ADMIN'],
-  },
-  {
-    id: 'logs',
-    label: 'Logs système',
-    icon: AlertCircle,
-    href: '/app/admin/logs',
-    roles: ['SYSTEM_ADMIN'],
-  },
-  // DIRECTOR items
-  {
-    id: 'team',
-    label: 'Collaborateurs',
-    icon: Users,
-    href: '/team',
-    roles: ['DIRECTOR'],
-  },
-  {
-    id: 'schedules',
-    label: 'Plannings',
-    icon: Calendar,
-    href: '/schedules',
-    roles: ['DIRECTOR', 'MANAGER', 'EMPLOYEE'],
-  },
-  {
-    id: 'leaves',
-    label: 'Congés',
-    icon: Plane,
-    href: '/leaves',
-    roles: ['DIRECTOR', 'MANAGER', 'EMPLOYEE'],
-  },
-  {
-    id: 'tasks',
-    label: 'Tâches',
-    icon: ClipboardList,
-    href: '/tasks',
-    roles: ['DIRECTOR', 'MANAGER', 'EMPLOYEE'],
-  },
-  {
-    id: 'stats',
-    label: 'Statistiques',
-    icon: BarChart,
-    href: '/stats',
-    roles: ['DIRECTOR', 'MANAGER'],
-  },
-  {
-    id: 'incidents',
-    label: 'Incidents',
-    icon: AlertCircle,
-    href: '/incidents',
-    roles: ['DIRECTOR', 'MANAGER'],
-  },
-  {
-    id: 'ai-planning',
-    label: 'IA Planning',
-    icon: Brain,
-    href: '/ai-planning',
-    roles: ['DIRECTOR', 'MANAGER'],
-  },
-  {
-    id: 'settings',
-    label: 'Paramètres',
-    icon: Settings,
-    href: '/settings',
-    roles: ['DIRECTOR'],
-  },
-]
-
-function getMenuItemsByRole(role: UserRole): MenuItem[] {
-  return menuItems.filter(
-    (item) => item.roles === 'ALL' || item.roles.includes(role)
-  )
-}
-
 export function Sidebar({ user }: SidebarProps) {
   const pathname = usePathname()
   const { state, toggleSidebar } = useSidebar()
   const isCollapsed = state === 'collapsed'
 
-  const filteredMenuItems = getMenuItemsByRole(user.role)
+  const sections = getNavigationForRole(user.role)
   const userInitials = user.name
     .split(' ')
     .map((n) => n[0])
@@ -187,7 +72,7 @@ export function Sidebar({ user }: SidebarProps) {
             >
               <span className="text-lg font-semibold">SmartPlanning</span>
               <span className="text-xs text-muted-foreground">
-                {getRoleLabel(user.role)}
+                {ROLE_LABELS[user.role]}
               </span>
             </motion.div>
           )}
@@ -196,6 +81,7 @@ export function Sidebar({ user }: SidebarProps) {
             size="icon"
             onClick={toggleSidebar}
             className={isCollapsed ? 'mx-auto' : ''}
+            aria-label={isCollapsed ? 'Ouvrir le menu' : 'Fermer le menu'}
           >
             {isCollapsed ? (
               <ChevronRight className="h-4 w-4" />
@@ -208,56 +94,14 @@ export function Sidebar({ user }: SidebarProps) {
 
       {/* Content */}
       <SidebarContent className="px-2 py-4">
-        <SidebarMenu>
-          {filteredMenuItems.map((item, index) => {
-            const Icon = item.icon
-            const isActive =
-              pathname === item.href || pathname.startsWith(`${item.href}/`)
-
-            const menuButton = (
-              <SidebarMenuItem key={item.id}>
-                <SidebarMenuButton asChild isActive={isActive}>
-                  <Link href={item.href}>
-                    <motion.div
-                      className="flex w-full items-center gap-3"
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.05 }}
-                      whileHover={{ scale: 1.02, x: 4 }}
-                      whileTap={{ scale: 0.98 }}
-                    >
-                      <motion.div
-                        whileHover={{ rotate: 5 }}
-                        transition={{ duration: 0.2 }}
-                      >
-                        <Icon className="h-5 w-5" />
-                      </motion.div>
-                      {!isCollapsed && (
-                        <span className="text-sm font-medium">
-                          {item.label}
-                        </span>
-                      )}
-                    </motion.div>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            )
-
-            // Show tooltip only when collapsed
-            if (isCollapsed) {
-              return (
-                <TooltipProvider key={item.id} delayDuration={0}>
-                  <Tooltip>
-                    <TooltipTrigger asChild>{menuButton}</TooltipTrigger>
-                    <TooltipContent side="right">{item.label}</TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              )
-            }
-
-            return menuButton
-          })}
-        </SidebarMenu>
+        {sections.map((section) => (
+          <SidebarSection
+            key={section.id}
+            section={section}
+            pathname={pathname}
+            isCollapsed={isCollapsed}
+          />
+        ))}
       </SidebarContent>
 
       {/* Footer */}
@@ -290,17 +134,108 @@ export function Sidebar({ user }: SidebarProps) {
   )
 }
 
-function getRoleLabel(role: UserRole): string {
-  switch (role) {
-    case 'SYSTEM_ADMIN':
-      return 'Super Administrateur'
-    case 'DIRECTOR':
-      return 'Directeur'
-    case 'MANAGER':
-      return 'Manager'
-    case 'EMPLOYEE':
-      return 'Employé'
-    default:
-      return 'Utilisateur'
+interface SidebarSectionProps {
+  section: NavSection
+  pathname: string
+  isCollapsed: boolean
+}
+
+function SidebarSection({
+  section,
+  pathname,
+  isCollapsed,
+}: SidebarSectionProps) {
+  return (
+    <SidebarGroup>
+      {section.title && !isCollapsed && (
+        <SidebarGroupLabel className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+          {section.title}
+        </SidebarGroupLabel>
+      )}
+      <SidebarGroupContent>
+        <SidebarMenu>
+          {section.items.map((item, index) => (
+            <SidebarNavItem
+              key={item.id}
+              item={item}
+              index={index}
+              pathname={pathname}
+              isCollapsed={isCollapsed}
+            />
+          ))}
+        </SidebarMenu>
+      </SidebarGroupContent>
+    </SidebarGroup>
+  )
+}
+
+interface SidebarNavItemProps {
+  item: NavItem
+  index: number
+  pathname: string
+  isCollapsed: boolean
+}
+
+function SidebarNavItem({
+  item,
+  index,
+  pathname,
+  isCollapsed,
+}: SidebarNavItemProps) {
+  const Icon = item.icon
+  const isActive =
+    pathname === item.href || pathname.startsWith(`${item.href}/`)
+
+  const menuButton = (
+    <SidebarMenuItem>
+      <SidebarMenuButton asChild isActive={isActive}>
+        <Link href={item.href}>
+          <motion.div
+            className="flex w-full items-center gap-3"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: index * 0.03 }}
+            whileHover={{ scale: 1.02, x: 4 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            <motion.div
+              whileHover={{ rotate: 5 }}
+              transition={{ duration: 0.2 }}
+            >
+              <Icon className="h-5 w-5" />
+            </motion.div>
+            {!isCollapsed && (
+              <span className="text-sm font-medium">{item.label}</span>
+            )}
+            {!isCollapsed && item.badge !== undefined && item.badge > 0 && (
+              <span className="ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">
+                {item.badge > 9 ? '9+' : item.badge}
+              </span>
+            )}
+          </motion.div>
+        </Link>
+      </SidebarMenuButton>
+    </SidebarMenuItem>
+  )
+
+  // Show tooltip only when collapsed
+  if (isCollapsed) {
+    return (
+      <TooltipProvider key={item.id} delayDuration={0}>
+        <Tooltip>
+          <TooltipTrigger asChild>{menuButton}</TooltipTrigger>
+          <TooltipContent side="right">
+            <p className="font-medium">{item.label}</p>
+            {item.description && (
+              <p className="text-xs text-muted-foreground">
+                {item.description}
+              </p>
+            )}
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    )
   }
+
+  return menuButton
 }

@@ -36,6 +36,7 @@ import {
   EmployeeFilters,
   DeleteEmployeeDialog,
 } from '@/components/admin/employees'
+import { EmptyEmployees } from '@/components/empty-states'
 import {
   listEmployees,
   toggleEmployeeStatus,
@@ -279,11 +280,8 @@ export function EmployeesDataTable({ userRole }: EmployeesDataTableProps) {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell
-                    colSpan={columns.length}
-                    className="h-24 text-center"
-                  >
-                    Aucun employe trouve.
+                  <TableCell colSpan={columns.length} className="p-0">
+                    <EmptyEmployees canCreate={true} />
                   </TableCell>
                 </TableRow>
               )}

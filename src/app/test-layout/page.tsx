@@ -10,11 +10,12 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { DashboardLayout } from '@/components/layout/DashboardLayout'
+import type { UserRole } from '@prisma/client'
 
-type UserRole = 'SUPER_ADMIN' | 'DIRECTOR' | 'MANAGER' | 'EMPLOYEE'
+type TestUserRole = 'SYSTEM_ADMIN' | 'DIRECTOR' | 'MANAGER' | 'EMPLOYEE'
 
 const mockUsers: Record<
-  UserRole,
+  TestUserRole,
   {
     id: string
     name: string
@@ -23,11 +24,11 @@ const mockUsers: Record<
     organizationId?: string
   }
 > = {
-  SUPER_ADMIN: {
+  SYSTEM_ADMIN: {
     id: '1',
     name: 'Christophe Mostefaoui',
     email: 'admin@smartplanning.com',
-    role: 'SUPER_ADMIN',
+    role: 'SYSTEM_ADMIN',
   },
   DIRECTOR: {
     id: '2',
@@ -53,7 +54,7 @@ const mockUsers: Record<
 }
 
 export default function TestLayoutPage() {
-  const [selectedRole, setSelectedRole] = useState<UserRole>('DIRECTOR')
+  const [selectedRole, setSelectedRole] = useState<TestUserRole>('DIRECTOR')
 
   return (
     <DashboardLayout user={mockUsers[selectedRole]} notificationsCount={3}>
@@ -68,19 +69,19 @@ export default function TestLayoutPage() {
           <CardContent>
             <Tabs
               value={selectedRole}
-              onValueChange={(value) => setSelectedRole(value as UserRole)}
+              onValueChange={(value) => setSelectedRole(value as TestUserRole)}
             >
               <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="SUPER_ADMIN">Super Admin</TabsTrigger>
+                <TabsTrigger value="SYSTEM_ADMIN">System Admin</TabsTrigger>
                 <TabsTrigger value="DIRECTOR">Directeur</TabsTrigger>
                 <TabsTrigger value="MANAGER">Manager</TabsTrigger>
                 <TabsTrigger value="EMPLOYEE">Employé</TabsTrigger>
               </TabsList>
 
-              {/* SUPER_ADMIN */}
-              <TabsContent value="SUPER_ADMIN" className="space-y-4">
+              {/* SYSTEM_ADMIN */}
+              <TabsContent value="SYSTEM_ADMIN" className="space-y-4">
                 <RoleDescription
-                  role="SUPER_ADMIN"
+                  role="SYSTEM_ADMIN"
                   description="Propriétaire du SaaS (Christophe)"
                   features={[
                     'Dashboard SaaS global',

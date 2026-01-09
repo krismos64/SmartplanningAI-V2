@@ -35,6 +35,7 @@ import {
   CompanyFilters,
   DeleteCompanyDialog,
 } from '@/components/admin/companies'
+import { EmptyCompanies } from '@/components/empty-states'
 import {
   listCompanies,
   toggleCompanyStatus,
@@ -247,11 +248,8 @@ export function CompaniesDataTable() {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell
-                    colSpan={columns.length}
-                    className="h-24 text-center"
-                  >
-                    Aucune entreprise trouvée.
+                  <TableCell colSpan={columns.length} className="p-0">
+                    <EmptyCompanies />
                   </TableCell>
                 </TableRow>
               )}

@@ -12,11 +12,12 @@ import { Metadata } from 'next'
 import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { Suspense } from 'react'
-import { Users } from 'lucide-react'
+import { AlertCircle } from 'lucide-react'
 
 import { listTeams } from '@/lib/actions/teams'
 import { TeamsDataTable } from '@/components/teams'
 import { Skeleton } from '@/components/ui/skeleton'
+import { EmptyTeams } from '@/components/empty-states'
 
 export const metadata: Metadata = {
   title: 'Gestion des équipes | SmartPlanning',
@@ -43,7 +44,7 @@ async function TeamsContent() {
   if (!result.success) {
     return (
       <div className="flex flex-col items-center justify-center gap-4 py-12">
-        <Users className="h-12 w-12 text-muted-foreground" />
+        <AlertCircle className="h-12 w-12 text-muted-foreground" />
         <p className="text-muted-foreground">
           Erreur lors du chargement des équipes
         </p>
@@ -53,6 +54,11 @@ async function TeamsContent() {
   }
 
   const teams = result.data?.data ?? []
+
+  // Afficher l'empty state si aucune équipe
+  if (teams.length === 0) {
+    return <EmptyTeams />
+  }
 
   return <TeamsDataTable teams={teams} showCreateButton />
 }
