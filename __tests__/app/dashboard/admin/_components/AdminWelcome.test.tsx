@@ -10,7 +10,7 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
-import { AdminWelcome } from '@/app/(dashboard)/dashboard/admin/_components/AdminWelcome'
+import { AdminWelcome } from '@/app/app/admin/dashboard/_components/AdminWelcome'
 
 describe('AdminWelcome', () => {
   beforeEach(() => {

@@ -11,7 +11,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
-import { EmployeeWelcome } from '@/app/(dashboard)/dashboard/employee/_components/EmployeeWelcome'
+import { EmployeeWelcome } from '@/app/app/dashboard/_components/EmployeeWelcome'
 
 describe('EmployeeWelcome', () => {
   beforeEach(() => {

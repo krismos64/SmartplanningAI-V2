@@ -13,8 +13,8 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
-import { DirectorPendingLeaves } from '@/app/(dashboard)/dashboard/director/_components/DirectorPendingLeaves'
-import type { PendingLeaveItem } from '@/app/(dashboard)/dashboard/director/_components/DirectorPendingLeaves'
+import { DirectorPendingLeaves } from '@/app/app/director/dashboard/_components/DirectorPendingLeaves'
+import type { PendingLeaveItem } from '@/app/app/director/dashboard/_components/DirectorPendingLeaves'
 
 // Mock des donnees de test
 const mockPendingLeaves: PendingLeaveItem[] = [

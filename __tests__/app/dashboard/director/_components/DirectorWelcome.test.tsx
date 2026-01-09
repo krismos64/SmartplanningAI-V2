@@ -11,7 +11,7 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
-import { DirectorWelcome } from '@/app/(dashboard)/dashboard/director/_components/DirectorWelcome'
+import { DirectorWelcome } from '@/app/app/director/dashboard/_components/DirectorWelcome'
 
 describe('DirectorWelcome', () => {
   beforeEach(() => {

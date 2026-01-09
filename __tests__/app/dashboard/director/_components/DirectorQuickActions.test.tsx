@@ -12,7 +12,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
-import { DirectorQuickActions } from '@/app/(dashboard)/dashboard/director/_components/DirectorQuickActions'
+import { DirectorQuickActions } from '@/app/app/director/dashboard/_components/DirectorQuickActions'
 
 describe('DirectorQuickActions', () => {
   beforeEach(() => {
