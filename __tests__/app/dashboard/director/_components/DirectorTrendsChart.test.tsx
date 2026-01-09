@@ -11,7 +11,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
-import { DirectorTrendsChart } from '@/app/(dashboard)/dashboard/director/_components/DirectorTrendsChart'
+import { DirectorTrendsChart } from '@/app/app/director/dashboard/_components/DirectorTrendsChart'
 import type { DirectorStatsResult } from '@/lib/services/dashboard/types'
 
 // Mock de AreaChartWidget

@@ -35,7 +35,7 @@ const renderAdminRecentCompanies = async (mockData: unknown[]) => {
 
   // Import dynamique apres setup du mock
   const { AdminRecentCompanies } = await import(
-    '@/app/(dashboard)/dashboard/admin/_components/AdminRecentCompanies'
+    '@/app/app/admin/dashboard/_components/AdminRecentCompanies'
   )
 
   // Render le Server Component
