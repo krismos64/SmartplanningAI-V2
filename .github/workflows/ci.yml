@@ -212,11 +212,11 @@ jobs:
         env:
           DATABASE_URL: postgresql://test:test@localhost:5432/smartplanning_test
 
-      - name: Push database schema
+      - name: Apply database migrations
         run: |
-          echo "🔄 Pushing Prisma schema to test database..."
-          npx prisma db push --force-reset --accept-data-loss
-          echo "📋 Listing tables after push..."
+          echo "🔄 Applying Prisma migrations to test database..."
+          npx prisma migrate deploy
+          echo "📋 Listing tables after migration..."
           npx prisma db execute --schema ./prisma/schema.prisma --stdin <<< "SELECT tablename FROM pg_tables WHERE schemaname = 'public';"
         env:
           DATABASE_URL: postgresql://test:test@localhost:5432/smartplanning_test
