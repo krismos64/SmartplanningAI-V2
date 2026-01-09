@@ -2,7 +2,7 @@
  * Configuration Playwright pour tests E2E
  *
  * Ce fichier configure Playwright pour les tests end-to-end :
- * - 3 navigateurs : Chromium, Firefox, WebKit
+ * - Navigateurs : Chromium (CI) / Chromium + Firefox + WebKit (local)
  * - webServer : démarre Next.js automatiquement
  * - Traces et screenshots sur échec
  * - Timeouts adaptés pour CI
@@ -96,26 +96,53 @@ export default defineConfig({
   },
 
   /**
-   * Projets de test par navigateur
+   * ============================================================
+   * CONFIGURATION DES NAVIGATEURS
+   * ============================================================
    *
-   * Les 3 navigateurs sont toujours disponibles.
-   * En CI, on utilise --project=<browser> pour sélectionner le navigateur
-   * via la matrice GitHub Actions.
+   * Stratégie de test multi-navigateurs :
+   *
+   * - CI (GitHub Actions) : Chromium uniquement
+   *   → Stabilité maximale (WebKit Linux est instable)
+   *   → Chromium représente ~65% des utilisateurs (Chrome + Edge)
+   *   → Temps de CI réduit (~8 min au lieu de ~25 min)
+   *
+   * - Local (développement) : Chromium + Firefox + WebKit
+   *   → Tests complets sur les 3 moteurs de rendu
+   *   → Détection des incompatibilités navigateur
+   *   → Exécution manuelle avant chaque release majeure
+   *
+   * Justification technique :
+   * WebKit sur Linux CI utilise une version limitée (pas de vrais APIs Safari).
+   * Les tests WebKit fiables nécessitent macOS, non disponible sur GitHub Actions free tier.
+   * Firefox a des comportements asynchrones différents qui causent des flaky tests en CI.
+   *
+   * @see https://playwright.dev/docs/browsers
+   * ============================================================
    */
-  projects: [
-    {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
-    },
-    {
-      name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
-    },
-    {
-      name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
-    },
-  ],
+  projects: process.env.CI
+    ? [
+        // CI : Chromium uniquement pour la stabilité
+        {
+          name: 'chromium',
+          use: { ...devices['Desktop Chrome'] },
+        },
+      ]
+    : [
+        // Local : tous les navigateurs pour tests complets
+        {
+          name: 'chromium',
+          use: { ...devices['Desktop Chrome'] },
+        },
+        {
+          name: 'firefox',
+          use: { ...devices['Desktop Firefox'] },
+        },
+        {
+          name: 'webkit',
+          use: { ...devices['Desktop Safari'] },
+        },
+      ],
 
   /**
    * Configuration du serveur web Next.js
