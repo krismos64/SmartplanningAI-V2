@@ -116,7 +116,7 @@ function Breadcrumbs({ pathname }: BreadcrumbsProps) {
       <BreadcrumbList>
         <BreadcrumbItem>
           <BreadcrumbLink asChild>
-            <Link href="/dashboard">Accueil</Link>
+            <Link href="/app/dashboard">Accueil</Link>
           </BreadcrumbLink>
         </BreadcrumbItem>
         {breadcrumbs.map((breadcrumb) => (
