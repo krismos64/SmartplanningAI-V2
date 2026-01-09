@@ -24,7 +24,7 @@ export default async function AppLayout({
     id: session.user.id,
     name: session.user.name || session.user.email?.split('@')[0] || 'Utilisateur',
     email: session.user.email || '',
-    role: session.user.role as 'SUPER_ADMIN' | 'DIRECTOR' | 'MANAGER' | 'EMPLOYEE',
+    role: session.user.role as 'SYSTEM_ADMIN' | 'DIRECTOR' | 'MANAGER' | 'EMPLOYEE',
     organizationId: session.user.companyId || undefined,
   }
 
