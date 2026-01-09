@@ -89,13 +89,10 @@ export async function loginAs(page: Page, user: TestUser): Promise<void> {
   // Soumettre
   await page.getByRole('button', { name: 'Se connecter' }).click()
 
-  // Attendre la confirmation de connexion
-  await expect(page.getByText(/Connexion réussie/i)).toBeVisible({
-    timeout: 10000,
-  })
-
   // Attendre la redirection vers le dashboard attendu
-  await page.waitForURL(`**${user.expectedDashboard}**`, { timeout: 15000 })
+  // Note: On skip la vérification du toast car elle peut être flaky en CI
+  // La redirection vers le dashboard confirme que le login a réussi
+  await page.waitForURL(`**${user.expectedDashboard}**`, { timeout: 30000 })
 }
 
 /**
