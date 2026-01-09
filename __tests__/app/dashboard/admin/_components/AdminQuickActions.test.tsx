@@ -11,7 +11,7 @@
 
 import { describe, it, expect } from 'vitest'
 import { render, screen } from '@testing-library/react'
-import { AdminQuickActions } from '@/app/(dashboard)/dashboard/admin/_components/AdminQuickActions'
+import { AdminQuickActions } from '@/app/app/admin/dashboard/_components/AdminQuickActions'
 
 describe('AdminQuickActions', () => {
   // ==========================================================================

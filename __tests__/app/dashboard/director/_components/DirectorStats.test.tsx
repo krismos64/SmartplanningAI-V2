@@ -11,7 +11,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
-import { DirectorStats } from '@/app/(dashboard)/dashboard/director/_components/DirectorStats'
+import { DirectorStats } from '@/app/app/director/dashboard/_components/DirectorStats'
 import type { DirectorStatsResult } from '@/lib/services/dashboard/types'
 
 // Mock des donnees de test

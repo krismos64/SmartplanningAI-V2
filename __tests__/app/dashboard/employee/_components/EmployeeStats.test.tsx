@@ -12,7 +12,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
-import { EmployeeStats } from '@/app/(dashboard)/dashboard/employee/_components/EmployeeStats'
+import { EmployeeStats } from '@/app/app/dashboard/_components/EmployeeStats'
 import type { EmployeeStatsResult } from '@/lib/services/dashboard/types'
 
 // Mock des donnees de test

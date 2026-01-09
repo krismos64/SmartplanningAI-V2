@@ -12,7 +12,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
-import { EmployeeLeaveBalance } from '@/app/(dashboard)/dashboard/employee/_components/EmployeeLeaveBalance'
+import { EmployeeLeaveBalance } from '@/app/app/dashboard/_components/EmployeeLeaveBalance'
 
 // Mock des composants charts
 vi.mock('@/components/charts', () => ({

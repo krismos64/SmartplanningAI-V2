@@ -11,7 +11,7 @@
 
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
-import { AdminStats } from '@/app/(dashboard)/dashboard/admin/_components/AdminStats'
+import { AdminStats } from '@/app/app/admin/dashboard/_components/AdminStats'
 import type { AdminStatsResult } from '@/lib/services/dashboard/types'
 
 // Mock des composants
