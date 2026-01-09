@@ -21,7 +21,7 @@ import { Header } from './Header'
 import { Sidebar } from './Sidebar'
 import { Footer } from './Footer'
 
-type UserRole = 'SUPER_ADMIN' | 'DIRECTOR' | 'MANAGER' | 'EMPLOYEE'
+type UserRole = 'SYSTEM_ADMIN' | 'DIRECTOR' | 'MANAGER' | 'EMPLOYEE'
 
 interface DashboardLayoutProps {
   children: React.ReactNode
@@ -116,7 +116,7 @@ function Breadcrumbs({ pathname }: BreadcrumbsProps) {
       <BreadcrumbList>
         <BreadcrumbItem>
           <BreadcrumbLink asChild>
-            <Link href="/dashboard">Accueil</Link>
+            <Link href="/app/dashboard">Accueil</Link>
           </BreadcrumbLink>
         </BreadcrumbItem>
         {breadcrumbs.map((breadcrumb) => (

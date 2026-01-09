@@ -128,7 +128,7 @@ export function EmployeeForm({
     successMessage: 'Employe cree avec succes',
     onSuccess: () => {
       onSuccess?.()
-      router.push('/dashboard/employees')
+      router.push('/app/dashboard/employees')
       router.refresh()
     },
   })
@@ -138,7 +138,7 @@ export function EmployeeForm({
     successMessage: 'Employe modifie avec succes',
     onSuccess: () => {
       onSuccess?.()
-      router.push('/dashboard/employees')
+      router.push('/app/dashboard/employees')
       router.refresh()
     },
   })

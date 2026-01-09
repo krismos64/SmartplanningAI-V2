@@ -29,7 +29,7 @@ export default async function NewCompanyPage() {
   }
 
   if (!hasRequiredRole(session.user.role, 'SYSTEM_ADMIN')) {
-    redirect('/dashboard')
+    redirect('/app/dashboard')
   }
 
   return (
@@ -37,7 +37,7 @@ export default async function NewCompanyPage() {
       {/* Header avec navigation */}
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" asChild>
-          <Link href="/dashboard/admin/companies">
+          <Link href="/app/admin/companies">
             <ArrowLeft className="h-5 w-5" />
             <span className="sr-only">Retour à la liste</span>
           </Link>
