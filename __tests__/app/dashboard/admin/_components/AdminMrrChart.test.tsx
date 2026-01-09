@@ -11,7 +11,7 @@
 
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
-import { AdminMrrChart } from '@/app/(dashboard)/dashboard/admin/_components/AdminMrrChart'
+import { AdminMrrChart } from '@/app/app/admin/dashboard/_components/AdminMrrChart'
 
 // Mock du composant AreaChartWidget
 vi.mock('@/components/charts', () => ({
