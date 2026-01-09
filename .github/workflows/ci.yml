@@ -231,8 +231,8 @@ jobs:
       - name: Verify test users exist
         run: |
           echo "🔍 Checking test users..."
-          npx prisma db execute --schema ./prisma/schema.prisma --stdin <<< "SELECT email, role FROM \"User\" LIMIT 5;"
-          USER_COUNT=$(npx prisma db execute --schema ./prisma/schema.prisma --stdin <<< "SELECT COUNT(*) FROM \"User\";" 2>/dev/null || echo "0")
+          npx prisma db execute --schema ./prisma/schema.prisma --stdin <<< "SELECT email, role FROM users LIMIT 5;"
+          USER_COUNT=$(npx prisma db execute --schema ./prisma/schema.prisma --stdin <<< "SELECT COUNT(*) FROM users;" 2>/dev/null || echo "0")
           echo "📊 User count: $USER_COUNT"
           if [ "$USER_COUNT" = "0" ]; then
             echo "❌ ERROR: No users found in database. E2E tests will fail."
