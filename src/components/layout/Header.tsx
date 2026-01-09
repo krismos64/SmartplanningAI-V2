@@ -22,7 +22,7 @@ import { useSidebar } from '@/components/ui/sidebar'
 // Dynamic import du composant Lottie pour éviter les erreurs SSR
 const Lottie = dynamic(() => import('lottie-react'), { ssr: false })
 
-type UserRole = 'SUPER_ADMIN' | 'DIRECTOR' | 'MANAGER' | 'EMPLOYEE'
+type UserRole = 'SYSTEM_ADMIN' | 'DIRECTOR' | 'MANAGER' | 'EMPLOYEE'
 
 interface HeaderProps {
   user: {
@@ -170,7 +170,7 @@ export function Header({ user, notificationsCount = 0 }: HeaderProps) {
 
 function getRoleLabel(role: UserRole): string {
   switch (role) {
-    case 'SUPER_ADMIN':
+    case 'SYSTEM_ADMIN':
       return 'Super Admin'
     case 'DIRECTOR':
       return 'Directeur'
@@ -178,5 +178,7 @@ function getRoleLabel(role: UserRole): string {
       return 'Manager'
     case 'EMPLOYEE':
       return 'Employé'
+    default:
+      return 'Utilisateur'
   }
 }
