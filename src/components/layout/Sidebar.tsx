@@ -62,7 +62,7 @@ const menuItems: MenuItem[] = [
     id: 'dashboard',
     label: 'Dashboard',
     icon: Home,
-    href: '/dashboard',
+    href: '/app/dashboard',
     roles: ['DIRECTOR', 'MANAGER', 'EMPLOYEE'],
   },
   // SUPER_ADMIN specific items
