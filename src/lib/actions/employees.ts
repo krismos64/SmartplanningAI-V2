@@ -565,7 +565,7 @@ export async function createEmployee(
     })
 
     // Revalide le cache
-    revalidatePath('/dashboard/employees')
+    revalidatePath('/app/dashboard/employees')
 
     return {
       success: true,
@@ -700,8 +700,8 @@ export async function updateEmployee(
     })
 
     // Revalide le cache
-    revalidatePath('/dashboard/employees')
-    revalidatePath(`/dashboard/employees/${id}`)
+    revalidatePath('/app/dashboard/employees')
+    revalidatePath(`/app/dashboard/employees/${id}`)
 
     return {
       success: true,
@@ -777,7 +777,7 @@ export async function deleteEmployee(id: string): Promise<DeleteActionResult> {
     })
 
     // Revalide le cache
-    revalidatePath('/dashboard/employees')
+    revalidatePath('/app/dashboard/employees')
 
     return { success: true }
   } catch (error) {
@@ -860,8 +860,8 @@ export async function toggleEmployeeStatus(
       },
     })
 
-    revalidatePath('/dashboard/employees')
-    revalidatePath(`/dashboard/employees/${id}`)
+    revalidatePath('/app/dashboard/employees')
+    revalidatePath(`/app/dashboard/employees/${id}`)
 
     return {
       success: true,
