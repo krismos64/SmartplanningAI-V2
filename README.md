@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings d'entreprise (mult
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 6 janvier 2026
+- **Dernière mise à jour** : 9 janvier 2026
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -80,6 +80,12 @@ Plateforme SaaS moderne de gestion intelligente des plannings d'entreprise (mult
 - Système de notifications temps réel
 - Export PDF/Excel des plannings
 - Analytics et rapports
+
+### CRUD Opérationnels
+
+- **Entreprises** (SYSTEM_ADMIN) : Liste, création, édition, suppression avec filtres
+- **Collaborateurs** (DIRECTOR, MANAGER) : Gestion complète avec permissions RBAC
+- **Équipes** (DIRECTOR) : CRUD + gestion des membres
 
 ### Fonctionnalités avancées (Post-MVP)
 
@@ -384,7 +390,7 @@ Voir `/docs/database-schema.md` pour le détail complet.
   - Tests multi-navigateurs : Chromium, Firefox, WebKit
   - Tests responsivité : mobile (375px), tablette (768px)
   - Tests accessibilité : titres, hiérarchie, sémantique
-- SP-113 : CRUD Users/Companies/Teams 🚧
+- SP-113 : CRUD Users/Companies/Teams ✅
   - SP-150 : Infrastructure CRUD ✅
     - Types génériques (`CrudActionResult<T>`, `PaginatedResult<T>`, `ListQueryParams`)
     - Schémas Zod Company (create, update, filters) avec labels FR
@@ -393,16 +399,42 @@ Voir `/docs/database-schema.md` pour le détail complet.
     - Helpers pagination et contrôle accès multi-tenant
     - Hooks React (`useCrudMutation`, `useDeleteMutation`, `useRefreshList`)
     - 8 fichiers, 1377 lignes de code
-  - SP-151 : CRUD Companies (à venir)
-  - SP-152 : CRUD Employees (à venir)
-  - SP-153 : CRUD Teams (à venir)
-  - SP-154 : Navigation Integration (à venir)
-  - SP-155 : Tests unitaires CRUD (à venir)
+  - SP-151 : CRUD Companies (SYSTEM_ADMIN) ✅
+    - `/app/admin/companies` : Liste paginée avec DataTable
+    - `/app/admin/companies/new` : Formulaire création
+    - `/app/admin/companies/[id]` : Vue détail + édition
+    - Server Actions : listCompanies, createCompany, updateCompany, deleteCompany
+    - Filtres : statut, plan, recherche
+  - SP-152 : CRUD Employees (DIRECTOR, MANAGER) ✅
+    - `/app/dashboard/employees` : Liste paginée avec DataTable + filtres
+    - `/app/dashboard/employees/new` : Formulaire création
+    - `/app/dashboard/employees/[id]` : Vue détail
+    - `/app/dashboard/employees/[id]/edit` : Édition
+    - Server Actions : listEmployees, createEmployee, updateEmployee, deleteEmployee, toggleStatus
+    - RBAC : DIRECTOR peut supprimer, MANAGER peut désactiver uniquement
+  - SP-153 : CRUD Teams (DIRECTOR) ✅
+    - `/app/director/teams` : Liste avec cartes équipes
+    - `/app/director/teams/new` : Formulaire création
+    - `/app/director/teams/[id]` : Vue détail équipe
+    - `/app/director/teams/[id]/edit` : Édition équipe
+    - `/app/director/teams/[id]/members` : Gestion des membres
+    - Server Actions : listTeams, createTeam, updateTeam, deleteTeam, addMember, removeMember
+  - SP-154 : Navigation Integration ✅
+    - Configuration navigation par rôle
+    - Sidebar dynamique avec liens CRUD
+    - Breadcrumbs avec détection d'ID (CUID, UUID, numeric)
+    - Empty States components (EmptyCompanies, EmptyEmployees, EmptyTeams)
+  - SP-155 : Tests unitaires CRUD 🚧 (En cours - 1374 tests)
   - SP-156 : Tests E2E CRUD (à venir)
 - SP-10 : Layout dashboard + sidebar
 - SP-11 : Pages dashboard Manager
 
-#### Phase 6+ : Planning, Congés, Notifications, Export... (À venir)
+#### Phase 6 : Planning & Congés (À venir)
+
+- SP-114 : Gestion plannings (drag & drop, shifts, affectations)
+- SP-115 : Workflow congés (demandes, validation, calendrier)
+
+#### Phase 7+ : Notifications, Export, IA... (À venir)
 
 ## Documentation complète
 
@@ -544,11 +576,11 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 - **E2E** : Playwright (configuré)
 - **Coverage** : v8 provider
 
-### Couverture actuelle (11 décembre 2025)
+### Couverture actuelle (9 janvier 2026)
 
 | Catégorie            | Coverage | Tests    |
 | -------------------- | -------- | -------- |
-| **Global**           | **~85%** | **1271** |
+| **Global**           | **~55%** | **1374** |
 | loading              | 100%     | 152      |
 | modals               | 100%     | 52       |
 | cards                | 77.09%   | 88       |
