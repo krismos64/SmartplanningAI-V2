@@ -28,7 +28,7 @@ export default async function EmployeesPage() {
   // Seuls SYSTEM_ADMIN, DIRECTOR et MANAGER ont acces
   const role = session.user.role as string
   if (!['SYSTEM_ADMIN', 'DIRECTOR', 'MANAGER'].includes(role)) {
-    redirect('/dashboard')
+    redirect('/app/dashboard')
   }
 
   // Determiner le role pour le RBAC

@@ -38,7 +38,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 
-type UserRole = 'SUPER_ADMIN' | 'DIRECTOR' | 'MANAGER' | 'EMPLOYEE'
+type UserRole = 'SYSTEM_ADMIN' | 'DIRECTOR' | 'MANAGER' | 'EMPLOYEE'
 
 interface SidebarProps {
   user: {
@@ -62,37 +62,37 @@ const menuItems: MenuItem[] = [
     id: 'dashboard',
     label: 'Dashboard',
     icon: Home,
-    href: '/dashboard',
+    href: '/app/dashboard',
     roles: ['DIRECTOR', 'MANAGER', 'EMPLOYEE'],
   },
-  // SUPER_ADMIN specific items
+  // SYSTEM_ADMIN specific items
   {
-    id: 'super-admin',
+    id: 'admin-dashboard',
     label: 'Dashboard SaaS',
     icon: Activity,
-    href: '/super-admin',
-    roles: ['SUPER_ADMIN'],
+    href: '/app/admin/dashboard',
+    roles: ['SYSTEM_ADMIN'],
   },
   {
-    id: 'organizations',
-    label: 'Organisations',
+    id: 'companies',
+    label: 'Entreprises',
     icon: Building,
-    href: '/super-admin/organizations',
-    roles: ['SUPER_ADMIN'],
+    href: '/app/admin/companies',
+    roles: ['SYSTEM_ADMIN'],
   },
   {
     id: 'monitoring',
     label: 'Monitoring',
     icon: Activity,
-    href: '/super-admin/monitoring',
-    roles: ['SUPER_ADMIN'],
+    href: '/app/admin/monitoring',
+    roles: ['SYSTEM_ADMIN'],
   },
   {
     id: 'logs',
     label: 'Logs système',
     icon: AlertCircle,
-    href: '/super-admin/logs',
-    roles: ['SUPER_ADMIN'],
+    href: '/app/admin/logs',
+    roles: ['SYSTEM_ADMIN'],
   },
   // DIRECTOR items
   {
@@ -292,7 +292,7 @@ export function Sidebar({ user }: SidebarProps) {
 
 function getRoleLabel(role: UserRole): string {
   switch (role) {
-    case 'SUPER_ADMIN':
+    case 'SYSTEM_ADMIN':
       return 'Super Administrateur'
     case 'DIRECTOR':
       return 'Directeur'
@@ -300,5 +300,7 @@ function getRoleLabel(role: UserRole): string {
       return 'Manager'
     case 'EMPLOYEE':
       return 'Employé'
+    default:
+      return 'Utilisateur'
   }
 }

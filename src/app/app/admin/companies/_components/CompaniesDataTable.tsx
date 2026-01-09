@@ -97,14 +97,14 @@ export function CompaniesDataTable() {
   // Handlers actions
   const handleView = useCallback(
     (company: CompanyWithCounts) => {
-      router.push(`/dashboard/admin/companies/${company.id}`)
+      router.push(`/app/admin/companies/${company.id}`)
     },
     [router]
   )
 
   const handleEdit = useCallback(
     (company: CompanyWithCounts) => {
-      router.push(`/dashboard/admin/companies/${company.id}`)
+      router.push(`/app/admin/companies/${company.id}`)
     },
     [router]
   )
@@ -182,7 +182,7 @@ export function CompaniesDataTable() {
               Actualiser
             </Button>
             <Button asChild>
-              <Link href="/dashboard/admin/companies/new">
+              <Link href="/app/admin/companies/new">
                 <Plus className="mr-2 h-4 w-4" />
                 Nouvelle entreprise
               </Link>
