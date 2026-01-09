@@ -12,7 +12,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
-import { EmployeeQuickActions } from '@/app/(dashboard)/dashboard/employee/_components/EmployeeQuickActions'
+import { EmployeeQuickActions } from '@/app/app/dashboard/_components/EmployeeQuickActions'
 
 describe('EmployeeQuickActions', () => {
   beforeEach(() => {

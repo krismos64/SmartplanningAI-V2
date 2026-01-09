@@ -12,7 +12,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
-import { DirectorTeamsChart } from '@/app/(dashboard)/dashboard/director/_components/DirectorTeamsChart'
+import { DirectorTeamsChart } from '@/app/app/director/dashboard/_components/DirectorTeamsChart'
 import type { DirectorStatsResult } from '@/lib/services/dashboard/types'
 
 // Mock de PieChartWidget
