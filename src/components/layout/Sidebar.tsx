@@ -10,6 +10,7 @@ import {
   Plane,
   ClipboardList,
   Users,
+  UsersRound,
   BarChart,
   Settings,
   Building,
@@ -96,10 +97,17 @@ const menuItems: MenuItem[] = [
   },
   // DIRECTOR items
   {
-    id: 'team',
+    id: 'employees',
     label: 'Collaborateurs',
     icon: Users,
-    href: '/team',
+    href: '/app/dashboard/employees',
+    roles: ['DIRECTOR', 'MANAGER'],
+  },
+  {
+    id: 'teams',
+    label: 'Équipes',
+    icon: UsersRound,
+    href: '/app/director/teams',
     roles: ['DIRECTOR'],
   },
   {
