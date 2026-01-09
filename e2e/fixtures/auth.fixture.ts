@@ -89,10 +89,17 @@ export async function loginAs(page: Page, user: TestUser): Promise<void> {
   // Soumettre
   await page.getByRole('button', { name: 'Se connecter' }).click()
 
-  // Attendre la redirection vers le dashboard attendu
-  // Note: On skip la vérification du toast car elle peut être flaky en CI
-  // La redirection vers le dashboard confirme que le login a réussi
-  await page.waitForURL(`**${user.expectedDashboard}**`, { timeout: 30000 })
+  // Attendre la redirection vers un dashboard (pattern permissif)
+  // Note: Le login peut rediriger vers /app/dashboard d'abord, puis le middleware
+  // redirige vers le dashboard spécifique au rôle. On accepte les deux.
+  await page.waitForURL(/\/app\/(dashboard|director|manager|admin|employee)/, {
+    timeout: 30000,
+  })
+
+  // Si on n'est pas encore sur le bon dashboard, attendre la redirection finale
+  if (!page.url().includes(user.expectedDashboard)) {
+    await page.waitForURL(`**${user.expectedDashboard}**`, { timeout: 15000 })
+  }
 }
 
 /**
