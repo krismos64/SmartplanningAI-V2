@@ -12,7 +12,7 @@ export default function SuperAdminPage() {
     id: '1',
     name: 'Christophe Mostefaoui',
     email: 'admin@smartplanning.com',
-    role: 'SUPER_ADMIN' as const,
+    role: 'SYSTEM_ADMIN' as const,
   }
 
   return (
