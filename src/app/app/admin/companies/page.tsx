@@ -27,7 +27,7 @@ export default async function CompaniesPage() {
   }
 
   if (!hasRequiredRole(session.user.role, 'SYSTEM_ADMIN')) {
-    redirect('/dashboard')
+    redirect('/app/dashboard')
   }
 
   return (

@@ -32,7 +32,7 @@ export default async function NewEmployeePage() {
   // Seuls SYSTEM_ADMIN, DIRECTOR et MANAGER ont acces
   const role = session.user.role as string
   if (!['SYSTEM_ADMIN', 'DIRECTOR', 'MANAGER'].includes(role)) {
-    redirect('/dashboard')
+    redirect('/app/dashboard')
   }
 
   // Charger les equipes disponibles
@@ -46,7 +46,7 @@ export default async function NewEmployeePage() {
   if (role === 'SYSTEM_ADMIN' && !companyId) {
     // Pour l'instant, rediriger vers la liste
     // TODO: Ajouter un select entreprise dans le formulaire
-    redirect('/dashboard/employees')
+    redirect('/app/dashboard/employees')
   }
 
   return (
@@ -55,7 +55,7 @@ export default async function NewEmployeePage() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="sm" asChild>
-            <Link href="/dashboard/employees">
+            <Link href="/app/dashboard/employees">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Retour
             </Link>

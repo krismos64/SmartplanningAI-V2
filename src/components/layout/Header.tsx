@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
+import { signOut } from 'next-auth/react'
 import { Menu, Bell, LogOut, User, Settings } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
@@ -22,7 +22,7 @@ import { useSidebar } from '@/components/ui/sidebar'
 // Dynamic import du composant Lottie pour éviter les erreurs SSR
 const Lottie = dynamic(() => import('lottie-react'), { ssr: false })
 
-type UserRole = 'SUPER_ADMIN' | 'DIRECTOR' | 'MANAGER' | 'EMPLOYEE'
+type UserRole = 'SYSTEM_ADMIN' | 'DIRECTOR' | 'MANAGER' | 'EMPLOYEE'
 
 interface HeaderProps {
   user: {
@@ -35,7 +35,6 @@ interface HeaderProps {
 }
 
 export function Header({ user, notificationsCount = 0 }: HeaderProps) {
-  const router = useRouter()
   const { toggleSidebar } = useSidebar()
   // Type object pour les données d'animation Lottie
   const [animationData, setAnimationData] = useState<object | null>(null)
@@ -59,9 +58,8 @@ export function Header({ user, notificationsCount = 0 }: HeaderProps) {
     .toUpperCase()
     .slice(0, 2)
 
-  const handleLogout = () => {
-    // TODO: Implémenter la logique de déconnexion (next-auth signOut)
-    router.push('/login')
+  const handleLogout = async () => {
+    await signOut({ callbackUrl: '/login' })
   }
 
   return (
@@ -80,7 +78,7 @@ export function Header({ user, notificationsCount = 0 }: HeaderProps) {
           </Button>
 
           {/* Logo + Animation Lottie */}
-          <Link href="/dashboard" className="flex items-center gap-2">
+          <Link href="/app/dashboard" className="flex items-center gap-2">
             {animationData && (
               <div className="h-10 w-10">
                 <Lottie
@@ -172,7 +170,7 @@ export function Header({ user, notificationsCount = 0 }: HeaderProps) {
 
 function getRoleLabel(role: UserRole): string {
   switch (role) {
-    case 'SUPER_ADMIN':
+    case 'SYSTEM_ADMIN':
       return 'Super Admin'
     case 'DIRECTOR':
       return 'Directeur'
@@ -180,5 +178,7 @@ function getRoleLabel(role: UserRole): string {
       return 'Manager'
     case 'EMPLOYEE':
       return 'Employé'
+    default:
+      return 'Utilisateur'
   }
 }

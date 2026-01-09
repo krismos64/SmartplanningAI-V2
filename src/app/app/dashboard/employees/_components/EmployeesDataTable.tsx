@@ -125,14 +125,14 @@ export function EmployeesDataTable({ userRole }: EmployeesDataTableProps) {
   // Handlers actions
   const handleView = useCallback(
     (employee: EmployeeWithCounts) => {
-      router.push(`/dashboard/employees/${employee.id}`)
+      router.push(`/app/dashboard/employees/${employee.id}`)
     },
     [router]
   )
 
   const handleEdit = useCallback(
     (employee: EmployeeWithCounts) => {
-      router.push(`/dashboard/employees/${employee.id}/edit`)
+      router.push(`/app/dashboard/employees/${employee.id}/edit`)
     },
     [router]
   )
@@ -212,7 +212,7 @@ export function EmployeesDataTable({ userRole }: EmployeesDataTableProps) {
               Actualiser
             </Button>
             <Button asChild>
-              <Link href="/dashboard/employees/new">
+              <Link href="/app/dashboard/employees/new">
                 <Plus className="mr-2 h-4 w-4" />
                 Nouvel employe
               </Link>

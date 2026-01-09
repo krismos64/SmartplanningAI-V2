@@ -64,7 +64,7 @@ export default async function EmployeeDetailPage({
   // Seuls SYSTEM_ADMIN, DIRECTOR et MANAGER ont acces
   const role = session.user.role as string
   if (!['SYSTEM_ADMIN', 'DIRECTOR', 'MANAGER'].includes(role)) {
-    redirect('/dashboard')
+    redirect('/app/dashboard')
   }
 
   // Charger l'employe
@@ -82,7 +82,7 @@ export default async function EmployeeDetailPage({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="sm" asChild>
-            <Link href="/dashboard/employees">
+            <Link href="/app/dashboard/employees">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Retour
             </Link>
@@ -116,7 +116,7 @@ export default async function EmployeeDetailPage({
             {employee.isActive ? 'Actif' : 'Inactif'}
           </Badge>
           <Button asChild>
-            <Link href={`/dashboard/employees/${employee.id}/edit`}>
+            <Link href={`/app/dashboard/employees/${employee.id}/edit`}>
               <Pencil className="mr-2 h-4 w-4" />
               Modifier
             </Link>
