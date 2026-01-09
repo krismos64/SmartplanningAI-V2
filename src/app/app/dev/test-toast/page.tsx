@@ -469,6 +469,7 @@ function ToastControlTests() {
 
   const showActive = () => {
     const active = getToasts()
+    // eslint-disable-next-line no-console
     console.log('Toasts actifs :', active)
     success(`${active.length} toast(s) actif(s) (voir console)`)
   }

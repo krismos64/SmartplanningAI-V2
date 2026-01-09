@@ -143,7 +143,9 @@ export async function withRoleCheck<T>(
 export async function validateDataAsync<T>(
   schema: z.ZodSchema<T>,
   data: unknown
-): Promise<{ success: true; data: T } | { success: false; error: string; field?: string }> {
+): Promise<
+  { success: true; data: T } | { success: false; error: string; field?: string }
+> {
   const result = await schema.safeParseAsync(data)
 
   if (!result.success) {
