@@ -5,7 +5,7 @@
 # CI = Intégration Continue. À chaque push ou PR, ce pipeline :
 # 1. Vérifie la qualité du code (lint, types)
 # 2. Lance les tests unitaires (Vitest)
-# 3. Lance les tests E2E (Playwright) - UNIQUEMENT sur PR vers main
+# 3. Lance les tests E2E (Playwright) - sur PR vers main OU push direct sur main
 # 4. Vérifie que le build fonctionne
 #
 # STRATÉGIE D'OPTIMISATION (SP-113) :
@@ -14,8 +14,13 @@
 # ├─────────────────────────────────────────────────────────────────┤
 # │ Push feature branch   │     ✅     │    ❌     │   ~3-5 min    │
 # │ PR vers main          │     ✅     │    ✅     │   ~8-10 min   │
-# │ Merge sur main        │     ✅     │    ❌     │   ~3-5 min    │
+# │ Push direct main      │     ✅     │    ✅     │   ~8-10 min   │
 # └─────────────────────────────────────────────────────────────────┘
+#
+# POURQUOI E2E SUR PUSH DIRECT MAIN ?
+# - Sécurité : même sans PR, les tests E2E valident le code avant déploiement
+# - Le CD (déploiement) attend que le CI complet réussisse
+# - Garantit qu'aucun code non testé n'arrive en production
 #
 # STRATÉGIE NAVIGATEURS E2E :
 # - CI : Chromium uniquement (stabilité, ~65% des utilisateurs)
@@ -126,27 +131,33 @@ jobs:
   # ============================================
   # JOB 3 : TESTS E2E (Playwright - Chromium)
   # ============================================
-  # Exécuté UNIQUEMENT sur Pull Request vers main
-  # Utilise Chromium uniquement pour la stabilité en CI
+  # Exécuté sur :
+  # - Pull Request vers main (validation avant merge)
+  # - Push direct sur main (sécurité avant déploiement)
+  #
+  # POURQUOI CETTE DOUBLE CONDITION ?
+  # - PR vers main : workflow classique avec review
+  # - Push direct main : filet de sécurité, les E2E doivent passer
+  #   avant que le CD (déploiement) ne se déclenche
   #
   # POURQUOI CHROMIUM UNIQUEMENT ?
   # - WebKit sur Linux CI est une version limitée (pas macOS)
   # - Firefox a des comportements asynchrones différents
   # - Chromium représente ~65% des utilisateurs (Chrome + Edge)
   # - Les tests multi-navigateurs sont exécutés manuellement avant releases
-  #
-  # NOTE (SP-134) : Problème connu Prisma/PostgreSQL en CI
-  # - prisma db push/seed s'exécutent avec "success"
-  # - mais les données ne persistent pas toujours dans le container
-  # - continue-on-error: true permet de diagnostiquer sans bloquer
   test-e2e:
     name: E2E Tests (Chromium)
     runs-on: ubuntu-latest
     needs: lint
-    # ⚡ OPTIMISATION : E2E uniquement sur PR vers main
-    if: github.event_name == 'pull_request' && github.base_ref == 'main'
-    # Permet de continuer même si les tests échouent (diagnostic)
-    continue-on-error: true
+    # ⚡ E2E sur PR vers main OU push direct sur main
+    # Condition expliquée :
+    # - (pull_request ET base_ref == main) : PR qui cible main
+    # - OU (push ET ref == refs/heads/main) : push direct sur main
+    if: |
+      (github.event_name == 'pull_request' && github.base_ref == 'main') ||
+      (github.event_name == 'push' && github.ref == 'refs/heads/main')
+    # ⚠️ IMPORTANT : pas de continue-on-error !
+    # Les tests E2E DOIVENT passer pour que le CD se déclenche
     timeout-minutes: 20
 
     # Service container PostgreSQL pour les tests E2E
@@ -329,8 +340,9 @@ jobs:
 #                    ┌─────────────────┐
 #                    │      BUILD      │
 #                    └─────────────────┘
+#                    ⏱️ ~5 min | E2E: ❌
 #
-# FLUX D'EXÉCUTION (PR vers main) :
+# FLUX D'EXÉCUTION (PR vers main OU Push direct main) :
 #
 #                    ┌──────────────────┐
 #                    │       LINT       │
@@ -342,18 +354,31 @@ jobs:
 #     │  TEST (Unit)   │          │  TEST-E2E           │
 #     │   (Vitest)     │          │  (Chromium only)    │
 #     └────────┬───────┘          └─────────────────────┘
-#              │
-#              ▼
-#     ┌─────────────────┐
-#     │      BUILD      │
-#     └─────────────────┘
+#              │                           │
+#              ▼                           │
+#     ┌─────────────────┐                  │
+#     │      BUILD      │ ◄────────────────┘
+#     └─────────────────┘   (E2E doit réussir)
+#                    ⏱️ ~10 min | E2E: ✅
+#
+#                             │
+#                             ▼ (si push sur main)
+#                    ┌─────────────────┐
+#                    │   CD PIPELINE   │
+#                    │  (Déploiement)  │
+#                    └─────────────────┘
 #
 # TESTS :
-# - Unit tests : Vitest + RTL (~1300 tests)
-# - E2E tests : Playwright Chromium (~165 tests)
+# - Unit tests : Vitest + RTL (~1374 tests)
+# - E2E tests : Playwright Chromium (~214 tests)
+#
+# SÉCURITÉ DU DÉPLOIEMENT :
+# - Le CD ne se déclenche que si le CI complet réussit
+# - Les tests E2E sont obligatoires sur main (pas de continue-on-error)
+# - Même un push direct sur main passe par les E2E avant déploiement
 #
 # BONNES PRATIQUES APPLIQUÉES :
-# - Tests E2E uniquement sur PR vers main (optimisation temps CI)
+# - Tests E2E sur PR vers main ET push direct main (double sécurité)
 # - Chromium uniquement en CI (stabilité, représente 65% utilisateurs)
 # - Multi-navigateurs disponibles en local pour tests complets
 # - Jobs séquentiels avec "needs" (fail fast)
