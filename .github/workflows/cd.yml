@@ -1,15 +1,26 @@
 # ==============================================
 # SMARTPLANNING - PIPELINE CD (Continuous Deployment)
 # ==============================================
-
+#
 # CD = Déploiement Continu. Ce pipeline :
 # 1. Build l'image Docker de production
 # 2. Push l'image sur GitHub Container Registry (ghcr.io)
 # 3. Se connecte au VPS OVH via SSH
 # 4. Pull la nouvelle image et redémarre les conteneurs
 #
-# DÉCLENCHEUR : Push sur la branche main uniquement
+# DÉCLENCHEUR : Après succès du CI sur la branche main
 # TEMPS D'EXÉCUTION ESTIMÉ : ~5-8 minutes
+#
+# ⚠️ SÉCURITÉ IMPORTANTE :
+# Le CD ne se déclenche QUE si le workflow CI réussit complètement.
+# Cela inclut :
+# - Lint & Type Check ✅
+# - Tests unitaires (1374 tests) ✅
+# - Tests E2E Playwright (214 tests) ✅
+# - Build Next.js ✅
+#
+# Ainsi, même un push direct sur main sans PR passe par les tests E2E
+# avant d'être déployé en production.
 #
 # PRÉREQUIS SECRETS GITHUB :
 # - VPS_HOST : IP ou domaine du VPS
@@ -217,12 +228,18 @@ jobs:
   # ============================================
   # Exécute les migrations Prisma après le déploiement
   # Séparé pour pouvoir être désactivé si pas de changements DB
+  #
+  # POURQUOI workflow_run ET PAS workflow_dispatch ?
+  # - workflow_run : déclenché automatiquement après CI → migrations auto
+  # - workflow_dispatch : déploiement manuel → pas de migrations auto
+  #   (évite d'exécuter des migrations non prévues lors d'un redéploiement manuel)
   migrate:
     name: Run Database Migrations
     runs-on: ubuntu-latest
     needs: deploy
-    if: ${{ github.event_name == 'push' }}
+    if: ${{ github.event_name == 'workflow_run' }}
     # N'exécute pas les migrations sur workflow_dispatch manuel
+    # Car un déploiement manuel est souvent un rollback ou un redémarrage
 
     steps:
       - name: Setup SSH key
@@ -246,18 +263,38 @@ jobs:
 # RÉSUMÉ DU PIPELINE CD
 # ==============================================
 #
+# CHAÎNE DE SÉCURITÉ COMPLÈTE (CI → CD) :
+# ┌─────────────────────────────────────────────────────────────────────┐
+# │                        PIPELINE CI                                   │
+# │  ┌──────────┐   ┌──────────┐   ┌──────────────┐   ┌───────────┐    │
+# │  │   LINT   │──►│  TESTS   │──►│  TESTS E2E   │──►│   BUILD   │    │
+# │  │ TypeCheck│   │  UNIT    │   │  (Chromium)  │   │  Next.js  │    │
+# │  └──────────┘   │  1374+   │   │    214+      │   └───────────┘    │
+# │                 └──────────┘   └──────────────┘                     │
+# └─────────────────────────────────────────────────────────────────────┘
+#                                    │
+#                                    │ workflow_run (success)
+#                                    ▼
+# ┌─────────────────────────────────────────────────────────────────────┐
+# │                        PIPELINE CD                                   │
+# │  ┌─────────────────┐     ┌─────────────┐     ┌───────────┐         │
+# │  │  BUILD & PUSH   │ ──► │   DEPLOY    │ ──► │  MIGRATE  │         │
+# │  │  (Docker Image) │     │  (VPS SSH)  │     │  (Prisma) │         │
+# │  └─────────────────┘     └─────────────┘     └───────────┘         │
+# └─────────────────────────────────────────────────────────────────────┘
 #
-# FLUX D'EXÉCUTION :
-# ┌─────────────────┐     ┌─────────────┐     ┌───────────┐
-# │  BUILD & PUSH   │ ──► │   DEPLOY    │ ──► │  MIGRATE  │
-# │  (Docker Image) │     │  (VPS SSH)  │     │  (Prisma) │
-# └─────────────────┘     └─────────────┘     └───────────┘
+# POURQUOI CETTE DOUBLE SÉCURITÉ ?
+# ────────────────────────────────
+# 1. Les tests E2E sont OBLIGATOIRES sur main (PR ou push direct)
+# 2. Le CD ne se déclenche QUE si le CI complet réussit
+# 3. Aucun code non testé ne peut atteindre la production
+# 4. Même un hotfix direct sur main passe par tous les tests
 #
 # SÉCURITÉ :
 # - Secrets GitHub pour les credentials VPS
 # - Token GitHub automatique pour le registry
-# - Environment "production" pour approbation optionnelle
 # - SSH avec clé privée (pas de mot de passe)
+# - workflow_run garantit l'exécution séquentielle CI → CD
 #
 # ROLLBACK :
 # En cas de problème, vous pouvez revenir à une version précédente :
