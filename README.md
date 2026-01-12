@@ -424,8 +424,13 @@ Voir `/docs/database-schema.md` pour le détail complet.
     - Sidebar dynamique avec liens CRUD
     - Breadcrumbs avec détection d'ID (CUID, UUID, numeric)
     - Empty States components (EmptyCompanies, EmptyEmployees, EmptyTeams)
-  - SP-155 : Tests unitaires CRUD 🚧 (En cours - 1374 tests)
-  - SP-156 : Tests E2E CRUD (à venir)
+  - SP-155 : Tests unitaires CRUD ✅ (296 tests)
+  - SP-156 : Tests E2E CRUD ✅ (59 tests - 177 avec 3 navigateurs)
+    - Page Objects : CompanyListPage, CompanyFormPage, EmployeeListPage, EmployeeFormPage, TeamListPage, TeamFormPage, TeamMembersPage
+    - companies.spec.ts (18 tests) : CRUD + RBAC restrictions
+    - employees.spec.ts (18 tests) : CRUD + permissions MANAGER/EMPLOYEE
+    - teams.spec.ts (15 tests) : CRUD + gestion membres
+    - empty-states.spec.ts (8 tests) : États vides + accessibilité
 - SP-10 : Layout dashboard + sidebar
 - SP-11 : Pages dashboard Manager
 
@@ -576,7 +581,7 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 - **E2E** : Playwright (configuré)
 - **Coverage** : v8 provider
 
-### Couverture actuelle (9 janvier 2026)
+### Couverture actuelle (12 janvier 2026)
 
 | Catégorie            | Coverage | Tests    |
 | -------------------- | -------- | -------- |
@@ -606,8 +611,12 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 | **Dashboard Director**       | 22      |
 | **Dashboard Super Admin**    | 25      |
 | **RBAC Protection**          | 21      |
-| **Total E2E**                | **155** |
-| **Total avec 3 navigateurs** | **465** |
+| **CRUD Companies**           | 18      |
+| **CRUD Employees**           | 18      |
+| **CRUD Teams**               | 15      |
+| **Empty States**             | 8       |
+| **Total E2E**                | **214** |
+| **Total avec 3 navigateurs** | **642** |
 
 ### Composants testés
 
