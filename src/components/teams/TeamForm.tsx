@@ -282,15 +282,17 @@ export function TeamForm({
                     <div className="relative">
                       <User className="absolute left-3 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                       <Select
-                        onValueChange={field.onChange}
-                        value={field.value || ''}
+                        onValueChange={(val) =>
+                          field.onChange(val === '__none__' ? '' : val)
+                        }
+                        value={field.value || '__none__'}
                         disabled={isPending}
                       >
                         <SelectTrigger className="pl-10">
                           <SelectValue placeholder="Sélectionner un manager (optionnel)" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">Aucun manager</SelectItem>
+                          <SelectItem value="__none__">Aucun manager</SelectItem>
                           {managers.map((manager) => (
                             <SelectItem key={manager.id} value={manager.id}>
                               {manager.firstName} {manager.lastName}

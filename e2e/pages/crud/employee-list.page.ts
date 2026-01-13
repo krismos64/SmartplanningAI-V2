@@ -62,10 +62,10 @@ export class EmployeeListPage {
     this.page = page
 
     // Header
-    this.pageTitle = page.getByRole('heading', { name: /employes|collaborateurs/i })
-    this.totalCount = page.locator('text=/\\d+ employe|\\d+ collaborateur/i')
+    this.pageTitle = page.getByRole('heading', { name: /employ/i })
+    this.totalCount = page.locator('text=/\\d+ employ/i')
     this.newEmployeeButton = page.getByRole('link', {
-      name: /nouvel employe|nouveau collaborateur|ajouter/i,
+      name: /nouvel employ/i,
     })
     this.refreshButton = page.getByRole('button', { name: /actualiser/i })
 
@@ -79,10 +79,10 @@ export class EmployeeListPage {
     this.table = page.locator('table')
     this.tableRows = page.locator('table tbody tr')
     this.emptyMessage = page.locator('text=/aucun employe|aucun collaborateur/i')
-    this.loadingIndicator = page.locator('text=Chargement...')
+    this.loadingIndicator = page.locator('text=Chargement...').first()
 
     // Pagination
-    this.prevPageButton = page.getByRole('button', { name: /précédent/i })
+    this.prevPageButton = page.getByRole('button', { name: /précédent|precedent/i })
     this.nextPageButton = page.getByRole('button', { name: /suivant/i })
   }
 

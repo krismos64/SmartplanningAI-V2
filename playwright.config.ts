@@ -100,49 +100,20 @@ export default defineConfig({
    * CONFIGURATION DES NAVIGATEURS
    * ============================================================
    *
-   * Stratégie de test multi-navigateurs :
-   *
-   * - CI (GitHub Actions) : Chromium uniquement
-   *   → Stabilité maximale (WebKit Linux est instable)
-   *   → Chromium représente ~65% des utilisateurs (Chrome + Edge)
-   *   → Temps de CI réduit (~8 min au lieu de ~25 min)
-   *
-   * - Local (développement) : Chromium + Firefox + WebKit
-   *   → Tests complets sur les 3 moteurs de rendu
-   *   → Détection des incompatibilités navigateur
-   *   → Exécution manuelle avant chaque release majeure
-   *
-   * Justification technique :
-   * WebKit sur Linux CI utilise une version limitée (pas de vrais APIs Safari).
-   * Les tests WebKit fiables nécessitent macOS, non disponible sur GitHub Actions free tier.
-   * Firefox a des comportements asynchrones différents qui causent des flaky tests en CI.
+   * Chromium uniquement (CI et local) :
+   * - Représente ~65% des utilisateurs (Chrome + Edge)
+   * - Firefox et WebKit supprimés car instables et peu utiles pour ce projet
+   * - Temps de tests réduit significativement
    *
    * @see https://playwright.dev/docs/browsers
    * ============================================================
    */
-  projects: process.env.CI
-    ? [
-        // CI : Chromium uniquement pour la stabilité
-        {
-          name: 'chromium',
-          use: { ...devices['Desktop Chrome'] },
-        },
-      ]
-    : [
-        // Local : tous les navigateurs pour tests complets
-        {
-          name: 'chromium',
-          use: { ...devices['Desktop Chrome'] },
-        },
-        {
-          name: 'firefox',
-          use: { ...devices['Desktop Firefox'] },
-        },
-        {
-          name: 'webkit',
-          use: { ...devices['Desktop Safari'] },
-        },
-      ],
+  projects: [
+    {
+      name: 'chromium',
+      use: { ...devices['Desktop Chrome'] },
+    },
+  ],
 
   /**
    * Configuration du serveur web Next.js

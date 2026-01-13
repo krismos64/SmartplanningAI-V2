@@ -78,7 +78,7 @@ export class CompanyListPage {
     this.table = page.locator('table')
     this.tableRows = page.locator('table tbody tr')
     this.emptyMessage = page.locator('text=Aucune entreprise trouvée')
-    this.loadingIndicator = page.locator('text=Chargement...')
+    this.loadingIndicator = page.locator('text=Chargement...').first()
 
     // Pagination
     this.prevPageButton = page.getByRole('button', { name: /précédent/i })

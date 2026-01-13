@@ -41,16 +41,16 @@ export class TeamListPage {
     this.page = page
 
     // Header
-    this.pageTitle = page.getByRole('heading', { name: /equipes/i })
-    this.description = page.locator('text=/gerez vos equipes/i')
+    this.pageTitle = page.getByRole('heading', { name: /équipes|equipes/i })
+    this.description = page.locator('text=/gérez vos équipes|gerez vos equipes/i')
     this.newTeamButton = page.getByRole('link', {
-      name: /nouvelle equipe|creer.*equipe/i,
+      name: /nouvelle équipe|nouvelle equipe|créer.*équipe|creer.*equipe/i,
     })
 
     // Contenu
     this.teamsContainer = page.locator('[data-testid="teams-container"]')
     this.teamCards = page.locator('[data-testid="team-card"]')
-    this.emptyMessage = page.locator('text=/aucune equipe/i')
+    this.emptyMessage = page.locator('text=/aucune équipe|aucune equipe/i')
     this.loadingIndicator = page.locator('[data-testid="loading"]')
   }
 

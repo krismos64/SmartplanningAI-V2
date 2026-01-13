@@ -113,7 +113,7 @@ export class CompanyFormPage {
 
     // Actions
     this.submitButton = page.getByRole('button', {
-      name: /creer|enregistrer|sauvegarder/i,
+      name: /créer|creer|enregistrer|sauvegarder|modifier/i,
     })
     this.cancelButton = page.getByRole('button', { name: /annuler/i })
 

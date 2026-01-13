@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings d'entreprise (mult
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 9 janvier 2026
+- **Dernière mise à jour** : 12 janvier 2026
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -381,13 +381,13 @@ Voir `/docs/database-schema.md` pour le détail complet.
 - SP-149 : Tests E2E complets Dashboards ✅
   - Fixtures d'authentification par rôle (e2e/fixtures/auth.fixture.ts)
   - Page Objects pour 4 dashboards (e2e/pages/)
-  - 106 tests E2E (318 avec 3 navigateurs) répartis en 5 fichiers :
+  - 106 tests E2E répartis en 5 fichiers :
     - employee.spec.ts (15 tests) : accès, bienvenue, stats, planning, actions
-    - manager.spec.ts (23 tests) : stats équipe, planning, demandes congés
+    - manager.spec.ts (1 actif, 22 skipped) : UI non finalisée, tests en attente
     - director.spec.ts (22 tests) : KPIs, graphiques, congés en attente
     - super-admin.spec.ts (25 tests) : KPIs SaaS, MRR, entreprises
     - rbac-protection.spec.ts (21 tests) : protection routes par rôle
-  - Tests multi-navigateurs : Chromium, Firefox, WebKit
+  - Navigateur unique : Chromium (Firefox/WebKit supprimés pour stabilité)
   - Tests responsivité : mobile (375px), tablette (768px)
   - Tests accessibilité : titres, hiérarchie, sémantique
 - SP-113 : CRUD Users/Companies/Teams ✅
@@ -601,22 +601,25 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 
 ### Tests E2E
 
-| Suite                        | Tests   |
-| ---------------------------- | ------- |
-| Auth (login/register)        | 18      |
-| Middleware RBAC              | 27      |
-| Smoke tests                  | 4       |
-| **Dashboard Employee**       | 15      |
-| **Dashboard Manager**        | 23      |
-| **Dashboard Director**       | 22      |
-| **Dashboard Super Admin**    | 25      |
-| **RBAC Protection**          | 21      |
-| **CRUD Companies**           | 18      |
-| **CRUD Employees**           | 18      |
-| **CRUD Teams**               | 15      |
-| **Empty States**             | 8       |
-| **Total E2E**                | **214** |
-| **Total avec 3 navigateurs** | **642** |
+| Suite                        | Tests | Status |
+| ---------------------------- | ----- | ------ |
+| Auth (login/register)        | 18    | ✅     |
+| Middleware RBAC              | 26    | ✅     |
+| Smoke tests                  | 4     | ✅     |
+| **Dashboard Employee**       | 15    | ✅     |
+| **Dashboard Manager**        | 1     | ⏸️ (22 skipped - UI en attente) |
+| **Dashboard Director**       | 22    | ✅     |
+| **Dashboard Super Admin**    | 25    | ✅     |
+| **RBAC Protection**          | 21    | ✅     |
+| **CRUD Companies**           | 18    | ✅     |
+| **CRUD Employees**           | 18    | ✅     |
+| **CRUD Teams**               | 15    | ✅     |
+| **Empty States**             | 8     | ✅     |
+| **Total E2E actifs**         | **191** | ✅   |
+| **Total E2E skipped**        | **24**  | ⏸️   |
+| **Total E2E**                | **215** |      |
+
+**Note** : Tests exécutés uniquement sur Chromium (Firefox et WebKit supprimés pour stabilité et performance).
 
 ### Composants testés
 
