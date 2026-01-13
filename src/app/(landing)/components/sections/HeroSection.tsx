@@ -1,0 +1,174 @@
+'use client'
+
+/**
+ * HeroSection Component
+ * Main hero section with headline, CTA, and illustration
+ */
+
+import { useRef } from 'react'
+import Link from 'next/link'
+import Image from 'next/image'
+import { motion, useScroll, useTransform } from 'framer-motion'
+import { ArrowRight, PlayCircle } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { fadeInUp, staggerContainer, scaleIn, floatAnimation, floatTransition, glowPulse, glowPulseTransition } from '../../animations'
+import { ScrollIndicator, FloatingCheck, FloatingBell } from '../index'
+
+export function HeroSection() {
+  const heroRef = useRef(null)
+  const { scrollYProgress } = useScroll({
+    target: heroRef,
+    offset: ['start start', 'end start'],
+  })
+
+  const heroOpacity = useTransform(scrollYProgress, [0, 0.5], [1, 0])
+  const heroScale = useTransform(scrollYProgress, [0, 0.5], [1, 0.95])
+  const heroY = useTransform(scrollYProgress, [0, 0.5], [0, 100])
+
+  return (
+    <section
+      ref={heroRef}
+      className="relative flex min-h-screen items-center pb-20 pt-40"
+    >
+      <motion.div
+        style={{ opacity: heroOpacity, scale: heroScale, y: heroY }}
+        className="container-custom"
+      >
+        <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
+          {/* Left Content */}
+          <motion.div
+            variants={staggerContainer}
+            initial="hidden"
+            animate="visible"
+            className="text-center lg:text-left"
+          >
+            {/* Badge */}
+            <motion.div variants={fadeInUp} className="mb-6 inline-block">
+              <span className="inline-flex items-center gap-2 rounded-full border border-blue-500/20 bg-blue-500/10 px-4 py-2 text-sm text-blue-400">
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-blue-400 opacity-75" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-blue-400" />
+                </span>
+                Nouvelle version disponible
+              </span>
+            </motion.div>
+
+            {/* Headline */}
+            <motion.h1
+              variants={fadeInUp}
+              className="mb-6 text-4xl font-bold leading-[1.1] sm:text-5xl lg:text-6xl xl:text-7xl"
+            >
+              Planifiez{' '}
+              <span className="relative">
+                <span className="relative z-10 bg-gradient-to-r from-blue-400 via-cyan-400 to-emerald-400 bg-clip-text text-transparent">
+                  intelligemment
+                </span>
+                <span className="absolute bottom-2 left-0 h-3 w-full -rotate-1 bg-gradient-to-r from-blue-500/30 to-cyan-500/30" />
+              </span>
+              <br />
+              votre équipe
+            </motion.h1>
+
+            {/* Subheadline */}
+            <motion.p
+              variants={fadeInUp}
+              className="mx-auto mb-8 max-w-xl text-lg text-white/60 sm:text-xl lg:mx-0"
+            >
+              La solution SaaS qui révolutionne la gestion des plannings
+              d&apos;entreprise. Automatisez, optimisez et simplifiez votre
+              organisation.
+            </motion.p>
+
+            {/* CTA Buttons */}
+            <motion.div
+              variants={fadeInUp}
+              className="flex flex-col justify-center gap-4 sm:flex-row lg:justify-start"
+            >
+              <Button
+                size="lg"
+                className="h-14 border-0 bg-gradient-to-r from-blue-500 to-cyan-400 px-8 text-base text-white shadow-xl shadow-blue-500/25 hover:from-blue-600 hover:to-cyan-500"
+                asChild
+              >
+                <Link href="/register">
+                  Démarrer gratuitement
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Link>
+              </Button>
+              <Button
+                size="lg"
+                variant="outline"
+                className="h-14 border-white/20 px-8 text-base text-white hover:bg-white/10"
+              >
+                <PlayCircle className="mr-2 h-5 w-5" />
+                Voir la démo
+              </Button>
+            </motion.div>
+          </motion.div>
+
+          {/* Right Content - Welcome Illustration */}
+          <motion.div
+            variants={scaleIn}
+            initial="hidden"
+            animate="visible"
+            className="relative flex items-center justify-center"
+          >
+            {/* Glow Effect */}
+            <div className="absolute inset-0 rounded-3xl bg-gradient-to-r from-blue-500/20 to-cyan-500/20 blur-3xl" />
+
+            {/* Welcome Image */}
+            <motion.div
+              animate={floatAnimation}
+              transition={floatTransition}
+              className="relative"
+            >
+              <Image
+                src="/images/logo-smartplanning.webp"
+                alt="Bienvenue sur SmartPlanning - Illustration avec personnage et robot IA"
+                width={500}
+                height={400}
+                className="relative z-10 drop-shadow-2xl"
+                priority
+              />
+            </motion.div>
+
+            {/* Floating Elements */}
+            <FloatingCheck />
+            <FloatingBell />
+          </motion.div>
+        </div>
+
+        {/* Centered Logo at bottom of Hero */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8, y: 30 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.6, ease: 'easeOut' }}
+          className="mt-16 flex justify-center lg:mt-24"
+        >
+          <motion.div
+            className="relative"
+            animate={{ y: [0, -8, 0] }}
+            transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+            whileHover={{ scale: 1.05 }}
+          >
+            {/* Glow effect */}
+            <motion.div
+              className="absolute inset-0 rounded-3xl bg-gradient-to-r from-blue-500/30 via-cyan-400/30 to-purple-500/30 blur-3xl"
+              animate={glowPulse}
+              transition={glowPulseTransition}
+            />
+            <Image
+              src="/images/logo-sp.png"
+              alt="SmartPlanning"
+              width={220}
+              height={140}
+              className="relative z-10 drop-shadow-2xl"
+            />
+          </motion.div>
+        </motion.div>
+      </motion.div>
+
+      {/* Scroll Indicator */}
+      <ScrollIndicator />
+    </section>
+  )
+}

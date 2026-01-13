@@ -1,0 +1,129 @@
+'use client'
+
+/**
+ * PricingSection Component
+ * Pricing plans with feature comparison
+ */
+
+import Link from 'next/link'
+import { motion } from 'framer-motion'
+import { Check } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
+import { fadeInUp, staggerContainer } from '../../animations'
+import { pricingPlans } from '../../data'
+import { SectionLogo } from '../SectionLogo'
+
+export function PricingSection() {
+  return (
+    <section
+      id="pricing"
+      className="bg-gradient-to-b from-transparent via-purple-950/10 to-transparent py-24 lg:py-32"
+    >
+      <div className="container-custom">
+        {/* Section Header */}
+        <motion.div
+          variants={staggerContainer}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          className="mb-16 text-center lg:mb-24"
+        >
+          <motion.span
+            variants={fadeInUp}
+            className="mb-6 inline-block rounded-full border border-emerald-500/20 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-400"
+          >
+            Tarification
+          </motion.span>
+          <motion.h2
+            variants={fadeInUp}
+            className="mb-6 text-3xl font-bold sm:text-4xl lg:text-5xl"
+          >
+            Des plans adaptés à{' '}
+            <span className="bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
+              votre croissance
+            </span>
+          </motion.h2>
+          <motion.p
+            variants={fadeInUp}
+            className="mx-auto max-w-2xl text-lg text-white/60"
+          >
+            Commencez gratuitement, évoluez quand vous êtes prêt. Pas de
+            surprise, pas de frais cachés.
+          </motion.p>
+        </motion.div>
+
+        {/* Pricing Cards */}
+        <motion.div
+          variants={staggerContainer}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          className="grid gap-8 lg:grid-cols-3"
+        >
+          {pricingPlans.map((plan, i) => (
+            <motion.div
+              key={i}
+              variants={fadeInUp}
+              whileHover={{ y: -5 }}
+              className={cn(
+                'relative rounded-2xl p-8',
+                plan.popular
+                  ? 'border-2 border-cyan-500/50 bg-gradient-to-b from-cyan-500/10 to-transparent'
+                  : 'border border-white/10 bg-white/[0.02]'
+              )}
+            >
+              {/* Popular Badge */}
+              {plan.popular && (
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                  <span className="rounded-full bg-gradient-to-r from-cyan-500 to-blue-500 px-4 py-1 text-sm font-semibold text-white">
+                    Le plus populaire
+                  </span>
+                </div>
+              )}
+
+              {/* Plan Info */}
+              <div className="mb-6">
+                <h3 className="mb-2 text-xl font-semibold">{plan.name}</h3>
+                <p className="text-sm text-white/50">{plan.description}</p>
+              </div>
+
+              {/* Price */}
+              <div className="mb-6">
+                <span className="text-4xl font-bold">{plan.price}</span>
+                {plan.period && (
+                  <span className="text-white/50">{plan.period}</span>
+                )}
+              </div>
+
+              {/* Features */}
+              <ul className="mb-8 space-y-3">
+                {plan.features.map((feature, j) => (
+                  <li key={j} className="flex items-center gap-3">
+                    <Check className="h-5 w-5 text-cyan-400" />
+                    <span className="text-white/70">{feature}</span>
+                  </li>
+                ))}
+              </ul>
+
+              {/* CTA */}
+              <Button
+                className={cn(
+                  'w-full',
+                  plan.popular
+                    ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white hover:from-cyan-600 hover:to-blue-600'
+                    : 'border border-white/10 bg-white/5 text-white hover:bg-white/10'
+                )}
+                asChild
+              >
+                <Link href="/register">{plan.cta}</Link>
+              </Button>
+            </motion.div>
+          ))}
+        </motion.div>
+
+        <SectionLogo />
+      </div>
+    </section>
+  )
+}
