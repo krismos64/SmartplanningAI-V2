@@ -24,11 +24,10 @@ function FloatingElement({
   colorTo,
   shadowColor,
 }: FloatingElementProps) {
-  const animation = position === 'top-right' ? floatingElement1 : floatingElement2
+  const animation =
+    position === 'top-right' ? floatingElement1 : floatingElement2
   const positionClasses =
-    position === 'top-right'
-      ? '-right-2 top-4'
-      : '-left-2 bottom-4'
+    position === 'top-right' ? '-right-2 top-4' : '-left-2 bottom-4'
 
   return (
     <motion.div

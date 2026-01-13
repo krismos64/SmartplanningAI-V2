@@ -11,7 +11,15 @@ import Image from 'next/image'
 import { motion, useScroll, useTransform } from 'framer-motion'
 import { ArrowRight, PlayCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { fadeInUp, staggerContainer, scaleIn, floatAnimation, floatTransition, glowPulse, glowPulseTransition } from '../../animations'
+import {
+  fadeInUp,
+  staggerContainer,
+  scaleIn,
+  floatAnimation,
+  floatTransition,
+  glowPulse,
+  glowPulseTransition,
+} from '../../animations'
 import { ScrollIndicator, FloatingCheck, FloatingBell } from '../index'
 
 export function HeroSection() {

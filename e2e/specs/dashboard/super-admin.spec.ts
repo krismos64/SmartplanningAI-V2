@@ -136,7 +136,8 @@ test.describe('Dashboard Super Admin - Tests E2E', () => {
       await dashboardPage.goto()
       await dashboardPage.waitForLoad()
 
-      await expect(adminPage.locator('text=Taux churn')).toBeVisible()
+      // Use .first() to handle potential duplicates in the UI
+      await expect(adminPage.locator('text=Taux churn').first()).toBeVisible()
     })
 
     test('devrait afficher des valeurs numeriques formatees', async ({

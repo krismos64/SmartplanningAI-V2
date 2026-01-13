@@ -58,7 +58,9 @@ export function HowItWorksSection() {
 
               {/* Content */}
               <h3 className="mb-3 text-xl font-semibold">{step.title}</h3>
-              <p className="mx-auto max-w-xs text-white/50">{step.description}</p>
+              <p className="mx-auto max-w-xs text-white/50">
+                {step.description}
+              </p>
             </motion.div>
           ))}
         </motion.div>

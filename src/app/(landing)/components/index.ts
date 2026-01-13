@@ -3,7 +3,11 @@
  */
 
 export { SectionLogo } from './SectionLogo'
-export { SectionHeader, SECTION_COLORS, type SectionColor } from './SectionHeader'
+export {
+  SectionHeader,
+  SECTION_COLORS,
+  type SectionColor,
+} from './SectionHeader'
 export { AnimatedCounter } from './AnimatedCounter'
 export { FAQItem } from './FAQItem'
 export { AnimatedBackground } from './AnimatedBackground'

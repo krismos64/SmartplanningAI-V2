@@ -104,7 +104,11 @@ export function VideoSection() {
                     >
                       <motion.span
                         animate={{ scale: [1, 1.05, 1] }}
-                        transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+                        transition={{
+                          duration: 2,
+                          repeat: Infinity,
+                          ease: 'easeInOut',
+                        }}
                         className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-red-500 to-pink-500 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-red-500/30"
                       >
                         <YoutubeIcon className="h-4 w-4" />

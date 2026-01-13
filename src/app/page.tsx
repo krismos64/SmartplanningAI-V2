@@ -15,10 +15,7 @@
 import { useEffect, useState } from 'react'
 
 // Components
-import {
-  AnimatedBackground,
-  TopBanner,
-} from './(landing)/components'
+import { AnimatedBackground, TopBanner } from './(landing)/components'
 import {
   Header,
   HeroSection,

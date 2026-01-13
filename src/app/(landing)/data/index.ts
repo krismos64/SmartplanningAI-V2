@@ -397,8 +397,7 @@ export const benefits: Benefit[] = [
     id: 'productivity',
     icon: TrendingUp,
     title: 'Productivité accrue',
-    description:
-      "Concentrez-vous sur l'essentiel, l'outil gère la complexité.",
+    description: "Concentrez-vous sur l'essentiel, l'outil gère la complexité.",
     color: 'from-indigo-500 to-blue-400',
   },
 ]

@@ -74,9 +74,7 @@ export function Header({ isScrolled }: HeaderProps) {
               className="border-0 bg-gradient-to-r from-blue-500 to-cyan-400 text-white shadow-lg shadow-blue-500/25 hover:from-blue-600 hover:to-cyan-500"
               asChild
             >
-              <Link href="/register">
-                Essai gratuit
-              </Link>
+              <Link href="/register">Essai gratuit</Link>
             </Button>
           </div>
 
@@ -158,7 +156,10 @@ export function Header({ isScrolled }: HeaderProps) {
                     className="h-14 w-full border-2 border-white bg-transparent text-base font-semibold text-white hover:bg-white hover:text-[#030712]"
                     asChild
                   >
-                    <Link href="/login" onClick={() => setIsMobileMenuOpen(false)}>
+                    <Link
+                      href="/login"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
                       Connexion
                     </Link>
                   </Button>
@@ -167,7 +168,10 @@ export function Header({ isScrolled }: HeaderProps) {
                     className="h-14 w-full bg-gradient-to-r from-blue-500 to-cyan-400 text-base font-semibold text-white shadow-lg shadow-blue-500/25"
                     asChild
                   >
-                    <Link href="/register" onClick={() => setIsMobileMenuOpen(false)}>
+                    <Link
+                      href="/register"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
                       Essai gratuit
                     </Link>
                   </Button>

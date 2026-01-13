@@ -99,8 +99,9 @@ test.describe('Smoke Tests', () => {
     await expect(page.getByText(/Planifiez/i).first()).toBeVisible()
 
     // Vérifie que les features sont présentes (h3 headings)
+    // Note: Feature titles updated after landing page refactor
     await expect(
-      page.getByRole('heading', { name: 'Plannings automatisés' })
+      page.getByRole('heading', { name: 'Espaces dédiés' })
     ).toBeVisible()
     await expect(
       page.getByRole('heading', { name: 'Multi-équipes' })

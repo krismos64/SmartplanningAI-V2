@@ -292,7 +292,9 @@ export function TeamForm({
                           <SelectValue placeholder="Sélectionner un manager (optionnel)" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="__none__">Aucun manager</SelectItem>
+                          <SelectItem value="__none__">
+                            Aucun manager
+                          </SelectItem>
                           {managers.map((manager) => (
                             <SelectItem key={manager.id} value={manager.id}>
                               {manager.firstName} {manager.lastName}
