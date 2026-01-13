@@ -55,8 +55,7 @@ export function CTASection() {
               </Button>
               <Button
                 size="lg"
-                variant="outline"
-                className="h-14 border-white/30 px-8 text-base text-white hover:bg-white/10"
+                className="h-14 border-2 border-white bg-transparent px-8 text-base font-semibold text-white hover:bg-white hover:text-blue-600"
               >
                 Demander une démo
               </Button>

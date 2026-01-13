@@ -7,6 +7,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Calendar, Menu, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -92,41 +93,85 @@ export function Header({ isScrolled }: HeaderProps) {
           </button>
         </nav>
 
-        {/* Mobile Menu */}
+        {/* Mobile Menu - Fullscreen overlay */}
         <AnimatePresence>
           {isMobileMenuOpen && (
             <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="overflow-hidden lg:hidden"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="fixed inset-0 top-0 z-40 flex flex-col bg-[#030712] lg:hidden"
             >
-              <div className="flex flex-col gap-4 pb-6 pt-6">
-                {navLinks.map((link) => (
-                  <a
+              {/* Close button - Fixed top right, more prominent */}
+              <motion.button
+                initial={{ opacity: 0, rotate: -90 }}
+                animate={{ opacity: 1, rotate: 0 }}
+                transition={{ duration: 0.3, delay: 0.1 }}
+                className="absolute right-4 top-4 z-50 flex h-12 w-12 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white backdrop-blur-sm transition-all hover:border-cyan-400/50 hover:bg-cyan-400/20 hover:text-cyan-400"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <X className="h-6 w-6" />
+              </motion.button>
+
+              {/* Logo at top center */}
+              <motion.div
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4 }}
+                className="mt-8 flex justify-center"
+              >
+                <Image
+                  src="/images/logo-sp.png"
+                  alt="SmartPlanning"
+                  width={280}
+                  height={180}
+                  className="drop-shadow-2xl"
+                />
+              </motion.div>
+
+              {/* Menu content centered */}
+              <div className="flex flex-1 flex-col items-center justify-center gap-8 px-6">
+                {navLinks.map((link, index) => (
+                  <motion.a
                     key={link.href}
                     href={link.href}
-                    className="text-lg text-white/70 transition-colors hover:text-white"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                    className="text-2xl font-medium text-white transition-colors hover:text-cyan-400"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     {link.label}
-                  </a>
+                  </motion.a>
                 ))}
-                <div className="mt-4 flex flex-col gap-3">
+
+                {/* CTA Buttons */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: navLinks.length * 0.1 }}
+                  className="mt-8 flex w-full max-w-xs flex-col gap-4"
+                >
                   <Button
-                    variant="outline"
-                    className="w-full border-white/20 text-white"
+                    size="lg"
+                    className="h-14 w-full border-2 border-white bg-transparent text-base font-semibold text-white hover:bg-white hover:text-[#030712]"
                     asChild
                   >
-                    <Link href="/login">Connexion</Link>
+                    <Link href="/login" onClick={() => setIsMobileMenuOpen(false)}>
+                      Connexion
+                    </Link>
                   </Button>
                   <Button
-                    className="w-full bg-gradient-to-r from-blue-500 to-cyan-400"
+                    size="lg"
+                    className="h-14 w-full bg-gradient-to-r from-blue-500 to-cyan-400 text-base font-semibold text-white shadow-lg shadow-blue-500/25"
                     asChild
                   >
-                    <Link href="/register">Essai gratuit</Link>
+                    <Link href="/register" onClick={() => setIsMobileMenuOpen(false)}>
+                      Essai gratuit
+                    </Link>
                   </Button>
-                </div>
+                </motion.div>
               </div>
             </motion.div>
           )}

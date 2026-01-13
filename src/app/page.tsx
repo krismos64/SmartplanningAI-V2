@@ -22,8 +22,10 @@ import {
 import {
   Header,
   HeroSection,
+  VideoSection,
   FeaturesSection,
   HowItWorksSection,
+  BenefitsSection,
   StatsSection,
   PricingSection,
   FAQSection,
@@ -55,8 +57,10 @@ export default function LandingPage() {
 
       {/* Sections */}
       <HeroSection />
+      <VideoSection />
       <FeaturesSection />
       <HowItWorksSection />
+      <BenefitsSection />
       <StatsSection />
       <PricingSection />
       <FAQSection />

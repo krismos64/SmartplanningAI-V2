@@ -3,6 +3,7 @@
 /**
  * PricingSection Component
  * Pricing plans with feature comparison
+ * Refactored to use SectionHeader component
  */
 
 import Link from 'next/link'
@@ -12,7 +13,7 @@ import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { fadeInUp, staggerContainer } from '../../animations'
 import { pricingPlans } from '../../data'
-import { SectionLogo } from '../SectionLogo'
+import { SectionLogo, SectionHeader } from '../index'
 
 export function PricingSection() {
   return (
@@ -21,37 +22,15 @@ export function PricingSection() {
       className="bg-gradient-to-b from-transparent via-purple-950/10 to-transparent py-24 lg:py-32"
     >
       <div className="container-custom">
-        {/* Section Header */}
-        <motion.div
-          variants={staggerContainer}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          className="mb-16 text-center lg:mb-24"
-        >
-          <motion.span
-            variants={fadeInUp}
-            className="mb-6 inline-block rounded-full border border-emerald-500/20 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-400"
-          >
-            Tarification
-          </motion.span>
-          <motion.h2
-            variants={fadeInUp}
-            className="mb-6 text-3xl font-bold sm:text-4xl lg:text-5xl"
-          >
-            Des plans adaptés à{' '}
-            <span className="bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
-              votre croissance
-            </span>
-          </motion.h2>
-          <motion.p
-            variants={fadeInUp}
-            className="mx-auto max-w-2xl text-lg text-white/60"
-          >
-            Commencez gratuitement, évoluez quand vous êtes prêt. Pas de
-            surprise, pas de frais cachés.
-          </motion.p>
-        </motion.div>
+        {/* Section Header - Using reusable component */}
+        <SectionHeader
+          badge="Tarification"
+          color="emerald"
+          title="Des plans adaptés à"
+          titleHighlight="votre croissance"
+          description="Commencez gratuitement, évoluez quand vous êtes prêt. Pas de surprise, pas de frais cachés."
+          marginBottom="mb-16 lg:mb-24"
+        />
 
         {/* Pricing Cards */}
         <motion.div
@@ -59,15 +38,15 @@ export function PricingSection() {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
-          className="grid gap-8 lg:grid-cols-3"
+          className="mx-auto grid max-w-md gap-8 md:max-w-none md:grid-cols-2 lg:grid-cols-3"
         >
-          {pricingPlans.map((plan, i) => (
+          {pricingPlans.map((plan) => (
             <motion.div
-              key={i}
+              key={plan.name}
               variants={fadeInUp}
               whileHover={{ y: -5 }}
               className={cn(
-                'relative rounded-2xl p-8',
+                'relative mx-auto w-full max-w-sm rounded-2xl p-6 sm:p-8 md:mx-0 md:max-w-none',
                 plan.popular
                   ? 'border-2 border-cyan-500/50 bg-gradient-to-b from-cyan-500/10 to-transparent'
                   : 'border border-white/10 bg-white/[0.02]'
@@ -98,8 +77,8 @@ export function PricingSection() {
 
               {/* Features */}
               <ul className="mb-8 space-y-3">
-                {plan.features.map((feature, j) => (
-                  <li key={j} className="flex items-center gap-3">
+                {plan.features.map((feature) => (
+                  <li key={feature} className="flex items-center gap-3">
                     <Check className="h-5 w-5 text-cyan-400" />
                     <span className="text-white/70">{feature}</span>
                   </li>

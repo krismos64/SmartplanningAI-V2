@@ -3,6 +3,7 @@
 /**
  * FAQSection Component
  * Frequently asked questions with accordion
+ * Refactored to use centralized SECTION_COLORS
  */
 
 import { useState } from 'react'
@@ -10,12 +11,14 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 import { fadeInUp, staggerContainer } from '../../animations'
 import { faqs } from '../../data'
-import { FAQItem, SectionLogo } from '../index'
+import { FAQItem, SectionLogo, SECTION_COLORS } from '../index'
 
 export function FAQSection() {
   const [openFAQ, setOpenFAQ] = useState<number | null>(null)
+  const colors = SECTION_COLORS.cyan
 
   return (
     <section
@@ -34,7 +37,12 @@ export function FAQSection() {
           >
             <motion.span
               variants={fadeInUp}
-              className="mb-6 inline-block rounded-full border border-cyan-500/20 bg-cyan-500/10 px-4 py-2 text-sm text-cyan-400"
+              className={cn(
+                'mb-6 inline-block rounded-full border px-4 py-2 text-sm',
+                colors.border,
+                colors.bg,
+                colors.text
+              )}
             >
               FAQ
             </motion.span>
@@ -43,7 +51,12 @@ export function FAQSection() {
               className="mb-6 text-3xl font-bold sm:text-4xl lg:text-5xl"
             >
               Questions{' '}
-              <span className="bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
+              <span
+                className={cn(
+                  'bg-gradient-to-r bg-clip-text text-transparent',
+                  colors.gradient
+                )}
+              >
                 fréquentes
               </span>
             </motion.h2>
@@ -75,13 +88,13 @@ export function FAQSection() {
             viewport={{ once: true }}
             className="space-y-4"
           >
-            {faqs.map((faq, i) => (
-              <motion.div key={i} variants={fadeInUp}>
+            {faqs.map((faq, index) => (
+              <motion.div key={faq.question} variants={fadeInUp}>
                 <FAQItem
                   question={faq.question}
                   answer={faq.answer}
-                  isOpen={openFAQ === i}
-                  onClick={() => setOpenFAQ(openFAQ === i ? null : i)}
+                  isOpen={openFAQ === index}
+                  onClick={() => setOpenFAQ(openFAQ === index ? null : index)}
                 />
               </motion.div>
             ))}

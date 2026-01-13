@@ -3,41 +3,29 @@
 /**
  * HowItWorksSection Component
  * Steps showing how the product works
+ * Refactored to use SectionHeader component
  */
 
 import { motion } from 'framer-motion'
 import { fadeInUp, staggerContainer } from '../../animations'
 import { steps } from '../../data'
-import { SectionLogo } from '../SectionLogo'
+import { SectionLogo, SectionHeader } from '../index'
 
 export function HowItWorksSection() {
   return (
-    <section className="bg-gradient-to-b from-transparent via-blue-950/20 to-transparent py-24 lg:py-32">
+    <section
+      id="how-it-works"
+      className="bg-gradient-to-b from-transparent via-blue-950/20 to-transparent py-24 lg:py-32"
+    >
       <div className="container-custom">
-        {/* Section Header */}
-        <motion.div
-          variants={staggerContainer}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          className="mb-16 text-center lg:mb-24"
-        >
-          <motion.span
-            variants={fadeInUp}
-            className="mb-6 inline-block rounded-full border border-purple-500/20 bg-purple-500/10 px-4 py-2 text-sm text-purple-400"
-          >
-            Comment ça marche
-          </motion.span>
-          <motion.h2
-            variants={fadeInUp}
-            className="mb-6 text-3xl font-bold sm:text-4xl lg:text-5xl"
-          >
-            Démarrez en{' '}
-            <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-              3 étapes simples
-            </span>
-          </motion.h2>
-        </motion.div>
+        {/* Section Header - Using reusable component */}
+        <SectionHeader
+          badge="Comment ça marche"
+          color="purple"
+          title="Démarrez en"
+          titleHighlight="3 étapes simples"
+          marginBottom="mb-16 lg:mb-24"
+        />
 
         {/* Steps */}
         <motion.div
@@ -47,14 +35,14 @@ export function HowItWorksSection() {
           viewport={{ once: true }}
           className="grid gap-8 md:grid-cols-3"
         >
-          {steps.map((step, i) => (
+          {steps.map((step, index) => (
             <motion.div
-              key={i}
+              key={step.number}
               variants={fadeInUp}
               className="relative text-center"
             >
               {/* Connector Line */}
-              {i < steps.length - 1 && (
+              {index < steps.length - 1 && (
                 <div className="absolute left-1/2 top-16 hidden h-0.5 w-full bg-gradient-to-r from-purple-500/50 to-transparent md:block" />
               )}
 
@@ -70,9 +58,7 @@ export function HowItWorksSection() {
 
               {/* Content */}
               <h3 className="mb-3 text-xl font-semibold">{step.title}</h3>
-              <p className="mx-auto max-w-xs text-white/50">
-                {step.description}
-              </p>
+              <p className="mx-auto max-w-xs text-white/50">{step.description}</p>
             </motion.div>
           ))}
         </motion.div>

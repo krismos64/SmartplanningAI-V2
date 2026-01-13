@@ -6,13 +6,26 @@
 import {
   Calendar,
   Users,
+  Users2,
   Palmtree,
   LayoutDashboard,
+  LayoutGrid,
   Bell,
   FileSpreadsheet,
   Zap,
   Clock,
   Shield,
+  FileDown,
+  CheckSquare,
+  AlertTriangle,
+  UserCog,
+  Sparkles,
+  ShieldCheck,
+  Monitor,
+  Headphones,
+  FolderX,
+  MessageSquare,
+  TrendingUp,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -25,6 +38,7 @@ export interface Feature {
   title: string
   description: string
   color: string
+  comingSoon?: boolean
 }
 
 export interface Step {
@@ -56,12 +70,29 @@ export interface FAQ {
   answer: string
 }
 
+export interface Benefit {
+  id: string
+  icon: LucideIcon
+  title: string
+  description: string
+  color: string
+}
+
+export interface VideoFeature {
+  id: string
+  title: string
+  description: string
+}
+
 // ============================================================================
 // NAV LINKS
 // ============================================================================
 
 export const navLinks = [
+  { href: '#demo', label: 'Démo' },
   { href: '#features', label: 'Fonctionnalités' },
+  { href: '#how-it-works', label: 'Comment ça marche' },
+  { href: '#benefits', label: 'Avantages' },
   { href: '#pricing', label: 'Tarifs' },
   { href: '#faq', label: 'FAQ' },
   { href: '#contact', label: 'Contact' },
@@ -73,10 +104,10 @@ export const navLinks = [
 
 export const features: Feature[] = [
   {
-    icon: Calendar,
-    title: 'Plannings automatisés',
+    icon: UserCog,
+    title: 'Espaces dédiés',
     description:
-      'Création intelligente de plannings optimisés grâce à notre algorithme IA avancé.',
+      'Connexion sécurisée avec espaces personnalisés pour managers, employés et directeurs.',
     color: 'from-blue-500 to-cyan-400',
   },
   {
@@ -100,18 +131,61 @@ export const features: Feature[] = [
     color: 'from-orange-500 to-amber-400',
   },
   {
+    icon: CheckSquare,
+    title: 'Gestion des tâches',
+    description:
+      'Todolist intégrée pour organiser et suivre les tâches de chaque employé.',
+    color: 'from-cyan-500 to-blue-400',
+  },
+  {
+    icon: AlertTriangle,
+    title: 'Suivi des incidents',
+    description:
+      'Tracez et gérez les incidents employés avec historique complet et rapports.',
+    color: 'from-rose-500 to-red-400',
+  },
+  {
+    icon: FileDown,
+    title: 'Exports PDF',
+    description:
+      'Exportez vos plannings et congés en PDF pour une consultation hors ligne.',
+    color: 'from-indigo-500 to-violet-400',
+  },
+  {
     icon: Bell,
     title: 'Notifications temps réel',
     description:
       'Alertes instantanées pour les changements de planning et événements importants.',
-    color: 'from-rose-500 to-red-400',
+    color: 'from-amber-500 to-orange-400',
   },
   {
-    icon: FileSpreadsheet,
-    title: 'Export & Import',
+    icon: ShieldCheck,
+    title: 'Sécurité des données RH',
     description:
-      'Compatibilité Excel, PDF et intégrations avec vos outils existants.',
-    color: 'from-indigo-500 to-violet-400',
+      'Données cryptées et protégées. Conformité RGPD stricte, hébergement sécurisé en France. Confidentialité garantie.',
+    color: 'from-green-500 to-emerald-400',
+  },
+  {
+    icon: Monitor,
+    title: 'Interface multi-appareils',
+    description:
+      'Gérez vos plannings depuis ordinateur, tablette ou smartphone. Synchronisation en temps réel sur tous vos appareils.',
+    color: 'from-sky-500 to-blue-400',
+  },
+  {
+    icon: Headphones,
+    title: 'Support réactif France',
+    description:
+      'Assistance en France avec réponse garantie sous 24h. Équipe dédiée pour résoudre vos problèmes rapidement.',
+    color: 'from-pink-500 to-rose-400',
+  },
+  {
+    icon: Sparkles,
+    title: 'Plannings IA',
+    description:
+      'Création intelligente de plannings optimisés grâce à notre algorithme IA avancé.',
+    color: 'from-violet-500 to-purple-400',
+    comingSoon: true,
   },
 ]
 
@@ -122,23 +196,23 @@ export const features: Feature[] = [
 export const steps: Step[] = [
   {
     number: '01',
-    title: 'Créez votre entreprise',
+    title: 'Inscrivez votre entreprise',
     description:
-      'Inscription gratuite en 2 minutes. Configurez vos équipes et vos paramètres.',
+      'Le directeur crée son compte, enregistre ses managers et configure ses équipes. Accès complet à toutes les données.',
     icon: Zap,
   },
   {
     number: '02',
-    title: 'Importez vos données',
+    title: 'Organisez vos équipes',
     description:
-      'Ajoutez vos employés manuellement ou importez depuis Excel/CSV.',
-    icon: FileSpreadsheet,
+      'Les managers gèrent leurs employés et créent les plannings de leurs équipes. Chaque rôle a son espace dédié.',
+    icon: Users,
   },
   {
     number: '03',
-    title: 'Planifiez intelligemment',
+    title: 'Simplifiez le quotidien',
     description:
-      'Laissez notre IA générer des plannings optimisés ou créez-les manuellement.',
+      'Les employés consultent leur planning et font leurs demandes de congés. Tout est centralisé et accessible.',
     icon: Calendar,
   },
 ]
@@ -148,10 +222,10 @@ export const steps: Step[] = [
 // ============================================================================
 
 export const stats: Stat[] = [
-  { value: 99.9, suffix: '%', label: 'Disponibilité', icon: Clock },
-  { value: 24, suffix: '/7', label: 'Support', icon: Bell },
-  { value: 256, suffix: '-bit', label: 'Chiffrement', icon: Shield },
-  { value: 100, suffix: '%', label: 'RGPD', icon: Users },
+  { value: 24, suffix: 'h', label: 'Réponse support', icon: Clock },
+  { value: 3, suffix: '', label: 'Rôles distincts', icon: Users },
+  { value: 100, suffix: '%', label: 'Conforme RGPD', icon: Shield },
+  { value: 100, suffix: '%', label: 'Hébergé en France', icon: Zap },
 ]
 
 // ============================================================================
@@ -273,4 +347,81 @@ export const socialLinks = [
   { href: '#', label: 'Twitter', icon: 'Twitter' },
   { href: '#', label: 'LinkedIn', icon: 'Linkedin' },
   { href: '#', label: 'GitHub', icon: 'Github' },
+]
+
+// ============================================================================
+// BENEFITS (Why SmartPlanning section)
+// ============================================================================
+
+export const benefits: Benefit[] = [
+  {
+    id: 'time-saving',
+    icon: Clock,
+    title: 'Gain de temps',
+    description:
+      'Créez vos plannings en quelques clics au lieu de plusieurs heures.',
+    color: 'from-blue-500 to-cyan-400',
+  },
+  {
+    id: 'no-excel',
+    icon: FolderX,
+    title: 'Fini les fichiers Excel',
+    description:
+      'Plus de tableaux complexes à gérer, tout est automatisé et centralisé.',
+    color: 'from-rose-500 to-pink-400',
+  },
+  {
+    id: 'communication',
+    icon: Users2,
+    title: 'Communication fluide',
+    description:
+      'Managers et équipes connectés en temps réel, notifications instantanées.',
+    color: 'from-purple-500 to-violet-400',
+  },
+  {
+    id: 'centralized',
+    icon: LayoutGrid,
+    title: 'Tout centralisé',
+    description:
+      'Plannings, congés, tâches et incidents sur une seule plateforme.',
+    color: 'from-emerald-500 to-teal-400',
+  },
+  {
+    id: 'coordination',
+    icon: MessageSquare,
+    title: 'Meilleure coordination',
+    description:
+      'Visibilité totale sur les équipes pour une organisation optimale.',
+    color: 'from-amber-500 to-orange-400',
+  },
+  {
+    id: 'productivity',
+    icon: TrendingUp,
+    title: 'Productivité accrue',
+    description:
+      "Concentrez-vous sur l'essentiel, l'outil gère la complexité.",
+    color: 'from-indigo-500 to-blue-400',
+  },
+]
+
+// ============================================================================
+// VIDEO FEATURES (Demo section)
+// ============================================================================
+
+export const videoFeatures: VideoFeature[] = [
+  {
+    id: 'intuitive',
+    title: 'Interface intuitive',
+    description: 'Découvrez la simplicité de notre dashboard',
+  },
+  {
+    id: 'key-features',
+    title: 'Fonctionnalités clés',
+    description: 'Plannings, congés, équipes en un clic',
+  },
+  {
+    id: 'results',
+    title: 'Résultats concrets',
+    description: 'Gagnez du temps dès le premier jour',
+  },
 ]

@@ -76,7 +76,7 @@ const nextConfig: NextConfig = {
       base-uri 'self';
       form-action 'self';
       frame-ancestors 'none';
-      frame-src 'self' https://vercel.live;
+      frame-src 'self' https://vercel.live https://www.youtube.com https://youtube.com https://www.youtube-nocookie.com;
       connect-src 'self' https://vercel.live https://*.pusher.com wss://*.pusher.com;
       upgrade-insecure-requests;
     `

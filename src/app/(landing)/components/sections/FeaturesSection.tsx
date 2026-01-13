@@ -3,50 +3,50 @@
 /**
  * FeaturesSection Component
  * Grid of feature cards
+ * Refactored to use SectionHeader component
  */
 
+import dynamic from 'next/dynamic'
 import { motion } from 'framer-motion'
 import { ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { fadeInUp, staggerContainer } from '../../animations'
 import { features } from '../../data'
-import { SectionLogo } from '../SectionLogo'
+import { SectionLogo, SectionHeader } from '../index'
+
+// Import Lottie dynamically to avoid SSR issues
+const Lottie = dynamic(() => import('lottie-react'), { ssr: false })
+
+// Import animation data
+import planningAnimation from '../../../../../public/animations/planning-animation.json'
 
 export function FeaturesSection() {
   return (
     <section id="features" className="py-24 lg:py-32">
       <div className="container-custom">
-        {/* Section Header */}
+        {/* Lottie Animation */}
         <motion.div
-          variants={staggerContainer}
-          initial="hidden"
-          whileInView="visible"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="mb-16 text-center lg:mb-24"
+          className="mx-auto mb-6 flex justify-center"
         >
-          <motion.span
-            variants={fadeInUp}
-            className="mb-6 inline-block rounded-full border border-blue-500/20 bg-blue-500/10 px-4 py-2 text-sm text-blue-400"
-          >
-            Fonctionnalités
-          </motion.span>
-          <motion.h2
-            variants={fadeInUp}
-            className="mb-6 text-3xl font-bold sm:text-4xl lg:text-5xl"
-          >
-            Tout ce dont vous avez besoin pour{' '}
-            <span className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
-              planifier efficacement
-            </span>
-          </motion.h2>
-          <motion.p
-            variants={fadeInUp}
-            className="mx-auto max-w-2xl text-lg text-white/60"
-          >
-            Des outils puissants conçus pour simplifier la gestion de vos
-            équipes et optimiser votre organisation.
-          </motion.p>
+          <Lottie
+            animationData={planningAnimation}
+            loop={true}
+            className="h-40 w-40 md:h-48 md:w-48"
+          />
         </motion.div>
+
+        {/* Section Header - Using reusable component */}
+        <SectionHeader
+          badge="Fonctionnalités"
+          color="blue"
+          title="Tout ce dont vous avez besoin pour"
+          titleHighlight="planifier efficacement"
+          description="Des outils puissants conçus pour simplifier la gestion de vos équipes et optimiser votre organisation."
+          marginBottom="mb-8"
+        />
 
         {/* Features Grid */}
         <motion.div
@@ -56,13 +56,25 @@ export function FeaturesSection() {
           viewport={{ once: true }}
           className="grid gap-6 md:grid-cols-2 lg:grid-cols-3"
         >
-          {features.map((feature, i) => (
+          {features.map((feature) => (
             <motion.div
-              key={i}
+              key={feature.title}
               variants={fadeInUp}
               whileHover={{ y: -5, transition: { duration: 0.2 } }}
-              className="group relative overflow-hidden rounded-2xl border border-white/5 bg-white/[0.02] p-8 transition-all hover:border-white/10"
+              className={cn(
+                'group relative overflow-hidden rounded-2xl border bg-white/[0.02] p-8 transition-all hover:border-white/10',
+                feature.comingSoon
+                  ? 'border-violet-500/30 bg-violet-500/5'
+                  : 'border-white/5'
+              )}
             >
+              {/* Coming Soon Badge */}
+              {feature.comingSoon && (
+                <div className="absolute right-4 top-4 rounded-full bg-gradient-to-r from-violet-500 to-purple-500 px-3 py-1 text-xs font-semibold text-white">
+                  À venir
+                </div>
+              )}
+
               {/* Icon */}
               <div
                 className={cn(

@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings d'entreprise (mult
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 12 janvier 2026
+- **Dernière mise à jour** : 13 janvier 2026
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -86,6 +86,27 @@ Plateforme SaaS moderne de gestion intelligente des plannings d'entreprise (mult
 - **Entreprises** (SYSTEM_ADMIN) : Liste, création, édition, suppression avec filtres
 - **Collaborateurs** (DIRECTOR, MANAGER) : Gestion complète avec permissions RBAC
 - **Équipes** (DIRECTOR) : CRUD + gestion des membres
+
+### Landing Page (Refonte complète - 13 janvier 2026)
+
+- **Architecture modulaire** : Composants réutilisables avec séparation des préoccupations
+- **SectionHeader** : Composant unifié pour tous les headers de section (6 variantes de couleurs)
+- **Animations Framer Motion** : Variants centralisés (fadeInUp, staggerContainer, float, glow)
+- **Données centralisées** : `data/index.ts` avec types TypeScript (features, benefits, pricing, FAQs)
+- **Sections** :
+  - Hero : Animation parallaxe au scroll, logo animé, CTA responsive
+  - Vidéo YouTube : Embed avec miniature custom, badge animé
+  - Fonctionnalités : 12 cartes avec animation Lottie, badge "À venir" pour IA
+  - Comment ça marche : 3 étapes avec connecteurs animés
+  - Avantages : Grille 6 bénéfices + image avant/après
+  - Statistiques : 4 KPIs avec compteurs animés
+  - Tarification : 3 plans responsive avec badge "populaire"
+  - FAQ : Accordion avec sticky sidebar
+  - CTA : Section finale avec gradient
+  - Footer : Liens, newsletter, réseaux sociaux (LinkedIn, Instagram, TikTok)
+- **Navigation** : 7 liens avec scroll smooth, menu mobile fullscreen animé
+- **SEO** : Meta tags, Open Graph, sémantique HTML5
+- **Performance** : Dynamic imports (Lottie), images optimisées Next.js
 
 ### Fonctionnalités avancées (Post-MVP)
 

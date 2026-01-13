@@ -21,9 +21,10 @@ export function HeroSection() {
     offset: ['start start', 'end start'],
   })
 
-  const heroOpacity = useTransform(scrollYProgress, [0, 0.5], [1, 0])
-  const heroScale = useTransform(scrollYProgress, [0, 0.5], [1, 0.95])
-  const heroY = useTransform(scrollYProgress, [0, 0.5], [0, 100])
+  // More gradual fade out - starts later and ends later for smoother transition
+  const heroOpacity = useTransform(scrollYProgress, [0, 0.3, 0.8], [1, 1, 0])
+  const heroScale = useTransform(scrollYProgress, [0, 0.8], [1, 0.98])
+  const heroY = useTransform(scrollYProgress, [0, 0.8], [0, 50])
 
   return (
     <section
@@ -34,13 +35,45 @@ export function HeroSection() {
         style={{ opacity: heroOpacity, scale: heroScale, y: heroY }}
         className="container-custom"
       >
-        <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
-          {/* Left Content */}
+        {/* Mobile: flex column (image → text → buttons) | Desktop: grid 2 cols */}
+        <div className="flex flex-col items-center gap-8 lg:grid lg:grid-cols-2 lg:items-center lg:gap-20">
+          {/* Image - First on mobile, second on desktop */}
+          <motion.div
+            variants={scaleIn}
+            initial="hidden"
+            animate="visible"
+            className="relative flex items-center justify-center lg:order-2"
+          >
+            {/* Glow Effect */}
+            <div className="absolute inset-0 rounded-3xl bg-gradient-to-r from-blue-500/20 to-cyan-500/20 blur-3xl" />
+
+            {/* Welcome Image */}
+            <motion.div
+              animate={floatAnimation}
+              transition={floatTransition}
+              className="relative"
+            >
+              <Image
+                src="/images/logo-smartplanning.webp"
+                alt="Bienvenue sur SmartPlanning - Illustration avec personnage et robot IA"
+                width={500}
+                height={400}
+                className="relative z-10 drop-shadow-2xl"
+                priority
+              />
+            </motion.div>
+
+            {/* Floating Elements */}
+            <FloatingCheck />
+            <FloatingBell />
+          </motion.div>
+
+          {/* Text Content - Second on mobile, first on desktop */}
           <motion.div
             variants={staggerContainer}
             initial="hidden"
             animate="visible"
-            className="text-center lg:text-left"
+            className="text-center lg:order-1 lg:text-left"
           >
             {/* Badge */}
             <motion.div variants={fadeInUp} className="mb-6 inline-block">
@@ -72,17 +105,17 @@ export function HeroSection() {
             {/* Subheadline */}
             <motion.p
               variants={fadeInUp}
-              className="mx-auto mb-8 max-w-xl text-lg text-white/60 sm:text-xl lg:mx-0"
+              className="mx-auto max-w-xl text-lg text-white/60 sm:text-xl lg:mx-0"
             >
               La solution SaaS qui révolutionne la gestion des plannings
               d&apos;entreprise. Automatisez, optimisez et simplifiez votre
               organisation.
             </motion.p>
 
-            {/* CTA Buttons */}
+            {/* CTA Buttons - Desktop only (inside text block) */}
             <motion.div
               variants={fadeInUp}
-              className="flex flex-col justify-center gap-4 sm:flex-row lg:justify-start"
+              className="mt-8 hidden gap-4 sm:flex sm:flex-row sm:justify-center lg:justify-start"
             >
               <Button
                 size="lg"
@@ -96,8 +129,7 @@ export function HeroSection() {
               </Button>
               <Button
                 size="lg"
-                variant="outline"
-                className="h-14 border-white/20 px-8 text-base text-white hover:bg-white/10"
+                className="h-14 border-2 border-white bg-transparent px-8 text-base font-semibold text-white hover:bg-white hover:text-[#030712]"
               >
                 <PlayCircle className="mr-2 h-5 w-5" />
                 Voir la démo
@@ -105,35 +137,30 @@ export function HeroSection() {
             </motion.div>
           </motion.div>
 
-          {/* Right Content - Welcome Illustration */}
+          {/* CTA Buttons - Mobile only (after text) */}
           <motion.div
-            variants={scaleIn}
+            variants={fadeInUp}
             initial="hidden"
             animate="visible"
-            className="relative flex items-center justify-center"
+            className="flex w-full flex-col gap-4 px-4 sm:hidden"
           >
-            {/* Glow Effect */}
-            <div className="absolute inset-0 rounded-3xl bg-gradient-to-r from-blue-500/20 to-cyan-500/20 blur-3xl" />
-
-            {/* Welcome Image */}
-            <motion.div
-              animate={floatAnimation}
-              transition={floatTransition}
-              className="relative"
+            <Button
+              size="lg"
+              className="h-14 w-full border-0 bg-gradient-to-r from-blue-500 to-cyan-400 px-8 text-base text-white shadow-xl shadow-blue-500/25 hover:from-blue-600 hover:to-cyan-500"
+              asChild
             >
-              <Image
-                src="/images/logo-smartplanning.webp"
-                alt="Bienvenue sur SmartPlanning - Illustration avec personnage et robot IA"
-                width={500}
-                height={400}
-                className="relative z-10 drop-shadow-2xl"
-                priority
-              />
-            </motion.div>
-
-            {/* Floating Elements */}
-            <FloatingCheck />
-            <FloatingBell />
+              <Link href="/register">
+                Démarrer gratuitement
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Link>
+            </Button>
+            <Button
+              size="lg"
+              className="h-14 w-full border-2 border-white bg-transparent px-8 text-base font-semibold text-white hover:bg-white hover:text-[#030712]"
+            >
+              <PlayCircle className="mr-2 h-5 w-5" />
+              Voir la démo
+            </Button>
           </motion.div>
         </div>
 
