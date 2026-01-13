@@ -11,7 +11,6 @@ import {
   LayoutDashboard,
   LayoutGrid,
   Bell,
-  FileSpreadsheet,
   Zap,
   Clock,
   Shield,
