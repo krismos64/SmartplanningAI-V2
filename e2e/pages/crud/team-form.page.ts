@@ -52,18 +52,18 @@ export class TeamFormPage {
 
     // Titre
     this.pageTitle = page.getByRole('heading', {
-      name: /nouvelle equipe|modifier.*equipe|edition/i,
+      name: /nouvelle équipe|nouvelle equipe|modifier.*équipe|modifier.*equipe|edition/i,
     })
 
-    // Champs
-    this.nameInput = page.getByLabel(/nom.*equipe|nom/i)
+    // Champs - utiliser un sélecteur plus précis pour éviter les doublons
+    this.nameInput = page.getByRole('textbox', { name: /nom de l'équipe|nom de l.équipe/i })
     this.descriptionInput = page.getByLabel(/description/i)
     this.colorSelect = page.getByRole('combobox', { name: /couleur/i })
     this.managerSelect = page.getByRole('combobox', { name: /manager|responsable/i })
 
     // Actions
     this.submitButton = page.getByRole('button', {
-      name: /creer|enregistrer|sauvegarder/i,
+      name: /créer|creer|modifier|enregistrer|sauvegarder/i,
     })
     this.cancelButton = page.getByRole('button', { name: /annuler/i })
 

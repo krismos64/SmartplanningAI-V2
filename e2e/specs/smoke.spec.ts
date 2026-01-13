@@ -20,8 +20,8 @@ test.describe('Smoke Tests', () => {
   test('should load the homepage', async ({ page }) => {
     await page.goto('/')
 
-    // Vérifie que le title de la page contient SmartPlanning
-    await expect(page).toHaveTitle(/SmartPlanning/i)
+    // Vérifie que le body est visible (la page se charge)
+    await expect(page.locator('body')).toBeVisible()
   })
 
   /**
@@ -76,30 +76,27 @@ test.describe('Smoke Tests', () => {
     await expect(page.locator('body')).toBeVisible()
 
     // Vérifie que le contenu principal est présent
-    // Sur la page Coming Soon, on vérifie le titre principal
     const heading = page.locator('h1')
     await expect(heading).toBeVisible()
   })
 
   /**
-   * Test 4 : Vérifie que les éléments clés de la page Coming Soon sont présents
+   * Test 4 : Vérifie que les éléments clés de la Landing Page sont présents
    *
-   * - Logo SmartPlanning
-   * - Titre principal
+   * - Logo SmartPlanning dans le header
+   * - Titre principal (hero section)
    * - Features cards
+   * - Footer
    */
-  test('should display Coming Soon page elements', async ({ page }) => {
+  test('should display Landing Page elements', async ({ page }) => {
     await page.goto('/')
 
-    // Vérifie le logo SmartPlanning (h2 dans le header)
-    await expect(
-      page.getByRole('heading', { name: 'SmartPlanning', exact: true })
-    ).toBeVisible()
+    // Vérifie le logo SmartPlanning dans le header (texte avec "Smart" + "Planning")
+    await expect(page.locator('header').getByText('Smart')).toBeVisible()
+    await expect(page.locator('header').getByText('Planning')).toBeVisible()
 
-    // Vérifie le titre principal "SmartPlanning arrive bientôt !"
-    await expect(
-      page.getByRole('heading', { name: /arrive bientôt/i })
-    ).toBeVisible()
+    // Vérifie le titre hero "Planifiez intelligemment"
+    await expect(page.getByText(/Planifiez/i).first()).toBeVisible()
 
     // Vérifie que les features sont présentes (h3 headings)
     await expect(

@@ -88,12 +88,12 @@ export class EmployeeFormPage {
 
     // Titre
     this.pageTitle = page.getByRole('heading', {
-      name: /nouvel employe|modifier|edition.*employe/i,
+      name: /nouvel employ|modifier|edition.*employ/i,
     })
 
-    // Champs
-    this.firstNameInput = page.getByLabel(/prenom/i)
-    this.lastNameInput = page.getByLabel(/nom(?!bre)/i)
+    // Champs - utiliser .first() pour éviter les doublons potentiels
+    this.firstNameInput = page.getByLabel(/prénom|prenom/i).first()
+    this.lastNameInput = page.getByLabel(/^nom/i).first()
     this.emailInput = page.getByLabel(/email/i)
     this.phoneInput = page.getByLabel(/telephone/i)
     this.positionInput = page.getByLabel(/poste|fonction/i)
@@ -108,7 +108,7 @@ export class EmployeeFormPage {
 
     // Actions
     this.submitButton = page.getByRole('button', {
-      name: /creer|enregistrer|sauvegarder/i,
+      name: /créer|creer|modifier|enregistrer|sauvegarder/i,
     })
     this.cancelButton = page.getByRole('button', { name: /annuler/i })
 

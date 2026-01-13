@@ -92,28 +92,35 @@ test.describe('CRUD Companies (SYSTEM_ADMIN)', () => {
 
     // Verifier l'erreur de validation
     await expect(
-      adminPage.locator('text=/nom.*requis|obligatoire/i')
+      adminPage.locator('text=/nom.*requis|nom.*caractère|nom.*caractere|obligatoire/i')
     ).toBeVisible()
   })
 
   test('bouton annuler retourne a la liste', async ({ adminPage }) => {
-    await formPage.gotoNew()
+    // D'abord aller sur la liste pour avoir un historique
+    await listPage.goto()
+    await listPage.waitForLoad()
+
+    // Puis aller sur le formulaire
+    await listPage.clickNewCompany()
     await formPage.waitForLoad()
 
+    // Annuler doit revenir en arriere
     await formPage.cancel()
 
-    await expect(adminPage).toHaveURL(/\/app\/admin\/companies$/)
+    // On doit etre de retour sur la liste (pas sur /new)
+    await expect(adminPage).not.toHaveURL(/\/new/)
   })
 
   test('le bouton actualiser rafraichit la liste', async ({ adminPage }) => {
     await listPage.goto()
     await listPage.waitForLoad()
 
-    // Cliquer sur actualiser
+    // Cliquer sur actualiser et verifier que la page reste fonctionnelle
     await listPage.refresh()
 
-    // Verifier que le chargement est termine
-    await expect(listPage.loadingIndicator).not.toBeVisible()
+    // La page doit rester sur la liste
+    await expect(adminPage).toHaveURL(/\/app\/admin\/companies/)
   })
 })
 

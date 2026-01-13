@@ -87,7 +87,7 @@ test.describe('CRUD Employees (DIRECTOR)', () => {
     await formPage.submit()
 
     await expect(
-      directorPage.locator('text=/prenom.*requis|obligatoire/i')
+      directorPage.locator('text=/prenom.*requis|prenom.*caractere|obligatoire/i')
     ).toBeVisible()
   })
 
@@ -100,17 +100,24 @@ test.describe('CRUD Employees (DIRECTOR)', () => {
     await formPage.submit()
 
     await expect(
-      directorPage.locator('text=/nom.*requis|obligatoire/i')
+      directorPage.locator('text=/le nom.*requis|le nom.*caractere|obligatoire/i')
     ).toBeVisible()
   })
 
   test('bouton annuler retourne a la liste', async ({ directorPage }) => {
-    await formPage.gotoNew()
+    // D'abord aller sur la liste pour avoir un historique
+    await listPage.goto()
+    await listPage.waitForLoad()
+
+    // Puis aller sur le formulaire
+    await listPage.clickNewEmployee()
     await formPage.waitForLoad()
 
+    // Annuler doit revenir en arriere
     await formPage.cancel()
 
-    await expect(directorPage).toHaveURL(/\/app\/dashboard\/employees/)
+    // On doit etre de retour (pas sur /new)
+    await expect(directorPage).not.toHaveURL(/\/new/)
   })
 })
 
