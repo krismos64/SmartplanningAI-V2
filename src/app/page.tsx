@@ -14,6 +14,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { motion, useInView, useScroll, useTransform } from 'framer-motion'
 import {
   Calendar,
@@ -24,7 +25,6 @@ import {
   FileSpreadsheet,
   ChevronRight,
   Check,
-  Star,
   Menu,
   X,
   ArrowRight,
@@ -147,10 +147,10 @@ const steps = [
 ]
 
 const stats = [
-  { value: 500, suffix: '+', label: 'Entreprises', icon: Shield },
-  { value: 50000, suffix: '+', label: 'Employés gérés', icon: Users },
   { value: 99.9, suffix: '%', label: 'Disponibilité', icon: Clock },
   { value: 24, suffix: '/7', label: 'Support', icon: Bell },
+  { value: 256, suffix: '-bit', label: 'Chiffrement', icon: Shield },
+  { value: 100, suffix: '%', label: 'RGPD', icon: Users },
 ]
 
 const pricingPlans = [
@@ -204,36 +204,6 @@ const pricingPlans = [
   },
 ]
 
-const testimonials = [
-  {
-    quote:
-      'SmartPlanning a transformé notre gestion des plannings. Nous gagnons 10h par semaine !',
-    author: 'Marie Dupont',
-    role: 'DRH',
-    company: 'TechCorp France',
-    avatar: 'MD',
-    rating: 5,
-  },
-  {
-    quote:
-      'Interface intuitive, équipe réactive. La meilleure solution de planning que nous ayons testée.',
-    author: 'Jean Martin',
-    role: 'Directeur Opérations',
-    company: 'Retail Plus',
-    avatar: 'JM',
-    rating: 5,
-  },
-  {
-    quote:
-      "L'IA de planification nous a permis de réduire les conflits de 80%. Impressionnant !",
-    author: 'Sophie Bernard',
-    role: 'Manager',
-    company: 'HealthCare Pro',
-    avatar: 'SB',
-    rating: 5,
-  },
-]
-
 const faqs = [
   {
     question: "Comment fonctionne l'essai gratuit ?",
@@ -260,15 +230,6 @@ const faqs = [
     answer:
       'Support email pour tous, chat en direct et téléphone pour Pro, et un manager dédié pour Enterprise.',
   },
-]
-
-const trustedLogos = [
-  'TechCorp',
-  'InnovateLab',
-  'DigitalFirst',
-  'CloudSync',
-  'DataFlow',
-  'SmartSolutions',
 ]
 
 // ============================================================================
@@ -626,49 +587,19 @@ export default function LandingPage() {
                   Voir la démo
                 </Button>
               </motion.div>
-
-              {/* Social Proof */}
-              <motion.div
-                variants={fadeInUp}
-                className="mt-10 flex items-center justify-center gap-4 lg:justify-start"
-              >
-                <div className="flex -space-x-3">
-                  {['MD', 'JM', 'SB', 'PL'].map((initials, i) => (
-                    <div
-                      key={i}
-                      className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-[#030712] bg-gradient-to-br from-blue-500 to-purple-500 text-xs font-semibold"
-                    >
-                      {initials}
-                    </div>
-                  ))}
-                </div>
-                <div className="text-left">
-                  <div className="flex items-center gap-1">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <Star
-                        key={i}
-                        className="h-4 w-4 fill-yellow-400 text-yellow-400"
-                      />
-                    ))}
-                  </div>
-                  <p className="text-sm text-white/60">
-                    Rejoint par 500+ entreprises
-                  </p>
-                </div>
-              </motion.div>
             </motion.div>
 
-            {/* Right Content - Dashboard Mockup */}
+            {/* Right Content - Welcome Illustration */}
             <motion.div
               variants={scaleIn}
               initial="hidden"
               animate="visible"
-              className="relative"
+              className="relative flex items-center justify-center"
             >
               {/* Glow Effect */}
               <div className="absolute inset-0 rounded-3xl bg-gradient-to-r from-blue-500/20 to-cyan-500/20 blur-3xl" />
 
-              {/* Main Dashboard Card */}
+              {/* Welcome Image */}
               <motion.div
                 animate={{
                   y: [0, -10, 0],
@@ -680,93 +611,14 @@ export default function LandingPage() {
                 }}
                 className="relative"
               >
-                <div className="relative rounded-2xl border border-white/10 bg-[#0a1628]/80 p-6 shadow-2xl backdrop-blur-xl">
-                  {/* Window Controls */}
-                  <div className="mb-6 flex items-center gap-2">
-                    <div className="h-3 w-3 rounded-full bg-red-500" />
-                    <div className="h-3 w-3 rounded-full bg-yellow-500" />
-                    <div className="h-3 w-3 rounded-full bg-green-500" />
-                    <span className="ml-4 text-xs text-white/40">
-                      SmartPlanning Dashboard
-                    </span>
-                  </div>
-
-                  {/* Mock Calendar Grid */}
-                  <div className="mb-6 grid grid-cols-7 gap-2">
-                    {['L', 'M', 'M', 'J', 'V', 'S', 'D'].map((day, i) => (
-                      <div
-                        key={i}
-                        className="py-2 text-center text-xs text-white/40"
-                      >
-                        {day}
-                      </div>
-                    ))}
-                    {Array.from({ length: 35 }).map((_, i) => (
-                      <motion.div
-                        key={i}
-                        initial={{ opacity: 0, scale: 0.5 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: i * 0.02 }}
-                        className={cn(
-                          'flex aspect-square items-center justify-center rounded-lg text-xs',
-                          i % 7 === 5 || i % 7 === 6
-                            ? 'bg-white/5 text-white/30'
-                            : i === 12 || i === 18 || i === 25
-                              ? 'bg-gradient-to-br from-blue-500 to-cyan-400 font-semibold text-white'
-                              : i === 15 || i === 22
-                                ? 'border border-purple-500/50 bg-purple-500/30 text-purple-300'
-                                : 'bg-white/5 text-white/60 hover:bg-white/10'
-                        )}
-                      >
-                        {(i % 31) + 1}
-                      </motion.div>
-                    ))}
-                  </div>
-
-                  {/* Team Cards */}
-                  <div className="space-y-3">
-                    {[
-                      {
-                        name: 'Équipe Production',
-                        count: 12,
-                        color: 'from-blue-500 to-blue-600',
-                      },
-                      {
-                        name: 'Équipe Support',
-                        count: 8,
-                        color: 'from-purple-500 to-purple-600',
-                      },
-                      {
-                        name: 'Équipe Logistique',
-                        count: 15,
-                        color: 'from-emerald-500 to-emerald-600',
-                      },
-                    ].map((team, i) => (
-                      <motion.div
-                        key={i}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.5 + i * 0.1 }}
-                        className="flex items-center justify-between rounded-xl border border-white/5 bg-white/5 p-3"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div
-                            className={cn(
-                              'h-8 w-2 rounded-full bg-gradient-to-b',
-                              team.color
-                            )}
-                          />
-                          <span className="text-sm text-white/80">
-                            {team.name}
-                          </span>
-                        </div>
-                        <span className="text-xs text-white/40">
-                          {team.count} membres
-                        </span>
-                      </motion.div>
-                    ))}
-                  </div>
-                </div>
+                <Image
+                  src="/images/logo-smartplanning.webp"
+                  alt="Bienvenue sur SmartPlanning - Illustration avec personnage et robot IA"
+                  width={500}
+                  height={400}
+                  className="relative z-10 drop-shadow-2xl"
+                  priority
+                />
               </motion.div>
 
               {/* Floating Elements */}
@@ -781,7 +633,7 @@ export default function LandingPage() {
                   ease: 'easeInOut',
                   delay: 0.5,
                 }}
-                className="absolute -right-6 -top-6 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 p-4 shadow-xl shadow-emerald-500/30"
+                className="absolute -right-2 top-4 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 p-4 shadow-xl shadow-emerald-500/30"
               >
                 <Check className="h-6 w-6 text-white" />
               </motion.div>
@@ -797,7 +649,7 @@ export default function LandingPage() {
                   ease: 'easeInOut',
                   delay: 1,
                 }}
-                className="absolute -bottom-4 -left-4 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-500 p-4 shadow-xl shadow-blue-500/30"
+                className="absolute -left-2 bottom-4 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-500 p-4 shadow-xl shadow-blue-500/30"
               >
                 <Bell className="h-6 w-6 text-white" />
               </motion.div>
@@ -821,43 +673,6 @@ export default function LandingPage() {
             <ChevronDown className="h-5 w-5 text-white/40" />
           </motion.div>
         </motion.div>
-      </section>
-
-      {/* Trusted By Section */}
-      <section className="border-y border-white/5 py-16">
-        <div className="container-custom">
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            className="mb-10 text-center"
-          >
-            <p className="text-sm uppercase tracking-wider text-white/40">
-              Ils nous font confiance
-            </p>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            className="flex flex-wrap items-center justify-center gap-8 md:gap-16"
-          >
-            {trustedLogos.map((logo, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-                whileHover={{ scale: 1.05 }}
-                className="cursor-default text-xl font-bold text-white/20 transition-colors hover:text-white/50"
-              >
-                {logo}
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
       </section>
 
       {/* Features Section */}
@@ -1137,82 +952,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Testimonials Section */}
-      <section className="py-24 lg:py-32">
-        <div className="container-custom">
-          {/* Section Header */}
-          <motion.div
-            variants={staggerContainer}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            className="mb-16 text-center lg:mb-24"
-          >
-            <motion.span
-              variants={fadeInUp}
-              className="mb-6 inline-block rounded-full border border-amber-500/20 bg-amber-500/10 px-4 py-2 text-sm text-amber-400"
-            >
-              Témoignages
-            </motion.span>
-            <motion.h2
-              variants={fadeInUp}
-              className="mb-6 text-3xl font-bold sm:text-4xl lg:text-5xl"
-            >
-              Ce qu&apos;en disent{' '}
-              <span className="bg-gradient-to-r from-amber-400 to-orange-400 bg-clip-text text-transparent">
-                nos clients
-              </span>
-            </motion.h2>
-          </motion.div>
-
-          {/* Testimonials Grid */}
-          <motion.div
-            variants={staggerContainer}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            className="grid gap-8 md:grid-cols-3"
-          >
-            {testimonials.map((testimonial, i) => (
-              <motion.div
-                key={i}
-                variants={fadeInUp}
-                whileHover={{ y: -5 }}
-                className="rounded-2xl border border-white/5 bg-white/[0.02] p-8 transition-all hover:border-white/10"
-              >
-                {/* Stars */}
-                <div className="mb-6 flex gap-1">
-                  {Array.from({ length: testimonial.rating }).map((_, j) => (
-                    <Star
-                      key={j}
-                      className="h-5 w-5 fill-amber-400 text-amber-400"
-                    />
-                  ))}
-                </div>
-
-                {/* Quote */}
-                <p className="mb-8 leading-relaxed text-white/80">
-                  &ldquo;{testimonial.quote}&rdquo;
-                </p>
-
-                {/* Author */}
-                <div className="flex items-center gap-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-500 text-sm font-semibold">
-                    {testimonial.avatar}
-                  </div>
-                  <div>
-                    <p className="font-semibold">{testimonial.author}</p>
-                    <p className="text-sm text-white/50">
-                      {testimonial.role}, {testimonial.company}
-                    </p>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
-      </section>
-
       {/* FAQ Section */}
       <section
         id="faq"
@@ -1311,8 +1050,8 @@ export default function LandingPage() {
                 votre gestion des plannings ?
               </h2>
               <p className="mx-auto mb-10 max-w-2xl text-lg text-white/80">
-                Rejoignez plus de 500 entreprises qui ont déjà simplifié leur
-                organisation avec SmartPlanning.
+                Commencez dès maintenant à simplifier votre organisation avec
+                SmartPlanning. Essai gratuit, sans engagement.
               </p>
               <div className="flex flex-col justify-center gap-4 sm:flex-row">
                 <Button
