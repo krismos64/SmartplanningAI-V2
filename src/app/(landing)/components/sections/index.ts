@@ -2,7 +2,11 @@
  * Section components barrel file
  */
 
-export { Header } from './Header'
+// Re-export shared components from components/layout
+export { LandingHeader as Header } from '@/components/layout/LandingHeader'
+export { LandingFooter as Footer } from '@/components/layout/LandingFooter'
+
+// Section components
 export { HeroSection } from './HeroSection'
 export { VideoSection } from './VideoSection'
 export { FeaturesSection } from './FeaturesSection'
@@ -12,4 +16,3 @@ export { StatsSection } from './StatsSection'
 export { PricingSection } from './PricingSection'
 export { FAQSection } from './FAQSection'
 export { CTASection } from './CTASection'
-export { Footer } from './Footer'

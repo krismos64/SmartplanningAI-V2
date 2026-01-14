@@ -3,6 +3,7 @@
  *
  * @description Server Component avec metadata SEO.
  * Le formulaire est géré par le Client Component RegisterForm.
+ * Design dark cohérent avec la landing page.
  *
  * @ticket SP-139
  * @see Context7 - Next.js 15 App Router patterns
@@ -23,34 +24,34 @@ export default function RegisterPage() {
     <div className="space-y-6">
       {/* Header */}
       <div className="text-center">
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">
+        <h1 className="text-2xl font-bold tracking-tight text-white">
           Créer votre compte
         </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
+        <p className="mt-2 text-sm text-white/60">
           Commencez gratuitement, sans carte bancaire
         </p>
       </div>
 
       {/* Register Form Component */}
-      <RegisterForm />
+      <RegisterForm variant="dark" />
 
       {/* Link to login */}
-      <p className="text-center text-sm text-muted-foreground">
+      <p className="text-center text-sm text-white/60">
         Vous avez déjà un compte ?{' '}
         <Link
           href="/login"
-          className="font-medium text-primary hover:underline"
+          className="font-medium text-cyan-400 transition-colors hover:text-cyan-300 hover:underline"
         >
           Se connecter
         </Link>
       </p>
 
       {/* Info plan FREE */}
-      <div className="rounded-lg border border-border bg-secondary/50 p-4">
-        <p className="mb-1 text-xs font-medium text-foreground">
+      <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-4">
+        <p className="mb-1 text-xs font-medium text-emerald-400">
           ✨ Plan FREE inclus
         </p>
-        <p className="text-xs text-muted-foreground">
+        <p className="text-xs text-white/60">
           Jusqu&apos;à 5 employés, fonctionnalités complètes, sans limite de
           temps. Pas de carte bancaire requise.
         </p>

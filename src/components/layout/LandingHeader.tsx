@@ -1,8 +1,11 @@
 'use client'
 
 /**
- * Header Component
- * Navigation header with logo and menu
+ * LandingHeader Component
+ * Navigation header for public pages (landing, auth)
+ *
+ * @description Header avec logo, navigation et CTA pour pages publiques
+ * Réutilisable entre landing page et pages d'authentification
  */
 
 import { useState } from 'react'
@@ -12,13 +15,32 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Calendar, Menu, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { navLinks } from '../../data'
 
-interface HeaderProps {
-  isScrolled: boolean
+// Navigation links for landing page
+const navLinks = [
+  { href: '/#demo', label: 'Démo' },
+  { href: '/#features', label: 'Fonctionnalités' },
+  { href: '/#how-it-works', label: 'Comment ça marche' },
+  { href: '/#benefits', label: 'Avantages' },
+  { href: '/#pricing', label: 'Tarifs' },
+  { href: '/#faq', label: 'FAQ' },
+  { href: '/#contact', label: 'Contact' },
+]
+
+interface LandingHeaderProps {
+  /** Whether the page has been scrolled (for background change) */
+  isScrolled?: boolean
+  /** Whether to show navigation links (false for auth pages) */
+  showNavLinks?: boolean
+  /** Whether the header is fixed or static */
+  isFixed?: boolean
 }
 
-export function Header({ isScrolled }: HeaderProps) {
+export function LandingHeader({
+  isScrolled = false,
+  showNavLinks = true,
+  isFixed = true,
+}: LandingHeaderProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   return (
@@ -27,8 +49,9 @@ export function Header({ isScrolled }: HeaderProps) {
       animate={{ y: 0 }}
       transition={{ duration: 0.6, ease: 'easeOut' }}
       className={cn(
-        'fixed left-0 right-0 top-8 z-50 transition-all duration-500',
-        isScrolled
+        'left-0 right-0 z-50 transition-all duration-500',
+        isFixed ? 'fixed top-8' : 'relative top-0',
+        isScrolled || !isFixed
           ? 'border-b border-white/5 bg-[#030712]/80 py-4 backdrop-blur-xl'
           : 'bg-transparent py-6'
       )}
@@ -43,23 +66,25 @@ export function Header({ isScrolled }: HeaderProps) {
                 <Calendar className="h-6 w-6 text-white" />
               </div>
             </div>
-            <span className="text-xl font-bold tracking-tight">
+            <span className="text-xl font-bold tracking-tight text-white">
               Smart<span className="text-cyan-400">Planning</span>
             </span>
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden items-center gap-8 lg:flex">
-            {navLinks.map((link) => (
-              <a
-                key={link.href}
-                href={link.href}
-                className="text-sm text-white/70 transition-colors hover:text-white"
-              >
-                {link.label}
-              </a>
-            ))}
-          </div>
+          {showNavLinks && (
+            <div className="hidden items-center gap-8 lg:flex">
+              {navLinks.map((link) => (
+                <a
+                  key={link.href}
+                  href={link.href}
+                  className="text-sm text-white/70 transition-colors hover:text-white"
+                >
+                  {link.label}
+                </a>
+              ))}
+            </div>
+          )}
 
           {/* CTA Buttons */}
           <div className="hidden items-center gap-4 lg:flex">
@@ -82,6 +107,7 @@ export function Header({ isScrolled }: HeaderProps) {
           <button
             className="rounded-lg p-2 text-white/80 transition-colors hover:bg-white/10 lg:hidden"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            aria-label={isMobileMenuOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
           >
             {isMobileMenuOpen ? (
               <X className="h-6 w-6" />
@@ -101,13 +127,14 @@ export function Header({ isScrolled }: HeaderProps) {
               transition={{ duration: 0.3 }}
               className="fixed inset-0 top-0 z-40 flex flex-col bg-[#030712] lg:hidden"
             >
-              {/* Close button - Fixed top right, more prominent */}
+              {/* Close button - Fixed top right */}
               <motion.button
                 initial={{ opacity: 0, rotate: -90 }}
                 animate={{ opacity: 1, rotate: 0 }}
                 transition={{ duration: 0.3, delay: 0.1 }}
                 className="absolute right-4 top-4 z-50 flex h-12 w-12 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white backdrop-blur-sm transition-all hover:border-cyan-400/50 hover:bg-cyan-400/20 hover:text-cyan-400"
                 onClick={() => setIsMobileMenuOpen(false)}
+                aria-label="Fermer le menu"
               >
                 <X className="h-6 w-6" />
               </motion.button>
@@ -130,25 +157,28 @@ export function Header({ isScrolled }: HeaderProps) {
 
               {/* Menu content centered */}
               <div className="flex flex-1 flex-col items-center justify-center gap-8 px-6">
-                {navLinks.map((link, index) => (
-                  <motion.a
-                    key={link.href}
-                    href={link.href}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                    className="text-2xl font-medium text-white transition-colors hover:text-cyan-400"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    {link.label}
-                  </motion.a>
-                ))}
+                {showNavLinks &&
+                  navLinks.map((link, index) => (
+                    <motion.a
+                      key={link.href}
+                      href={link.href}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                      className="text-2xl font-medium text-white transition-colors hover:text-cyan-400"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      {link.label}
+                    </motion.a>
+                  ))}
 
                 {/* CTA Buttons */}
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: navLinks.length * 0.1 }}
+                  transition={{
+                    delay: showNavLinks ? navLinks.length * 0.1 : 0,
+                  }}
                   className="mt-8 flex w-full max-w-xs flex-col gap-4"
                 >
                   <Button

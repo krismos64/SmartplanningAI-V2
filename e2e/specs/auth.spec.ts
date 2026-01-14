@@ -241,8 +241,9 @@ test.describe('Register Page', () => {
     await page.getByRole('button', { name: 'Créer mon compte' }).click()
 
     // Vérifier l'erreur - le champ acceptTerms est requis
+    // On utilise le message d'erreur exact pour éviter le conflit avec le lien CGU du footer
     await expect(
-      page.getByText(/accepter les conditions|terms|CGU/i)
+      page.getByText(/Vous devez accepter les conditions/i)
     ).toBeVisible()
   })
 

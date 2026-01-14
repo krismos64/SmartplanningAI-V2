@@ -7,6 +7,7 @@
  * - Gestion des erreurs avec getAuthErrorMessage()
  * - Toast notification (Sonner)
  * - Redirect vers le dashboard approprié selon le rôle après succès
+ * - Support variant dark pour design landing page
  *
  * @ticket SP-137
  * @see Context7 - NextAuth v5 signIn pattern, React Hook Form
@@ -40,6 +41,12 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
+import { cn } from '@/lib/utils'
+
+interface LoginFormProps {
+  /** Design variant - 'light' for dashboard, 'dark' for landing/auth */
+  variant?: 'light' | 'dark'
+}
 
 /**
  * LoginForm Component
@@ -47,7 +54,8 @@ import {
  * Formulaire de connexion avec validation côté client et gestion NextAuth.
  * Utilise signIn('credentials', { redirect: false }) pour gérer les erreurs manuellement.
  */
-export function LoginForm() {
+export function LoginForm({ variant = 'light' }: LoginFormProps) {
+  const isDark = variant === 'dark'
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
@@ -121,6 +129,20 @@ export function LoginForm() {
     void form.handleSubmit(onSubmit)(e)
   }
 
+  // Classes conditionnelles pour le mode dark
+  const labelClass = cn(isDark && 'text-white/80')
+  const inputClass = cn(
+    isDark &&
+      'border-white/20 bg-white/5 text-white placeholder:text-white/40 focus:border-cyan-500/50 focus:ring-cyan-500/20'
+  )
+  const linkClass = cn(
+    'text-xs',
+    isDark
+      ? 'text-cyan-400 hover:text-cyan-300'
+      : 'text-primary hover:underline'
+  )
+  const iconClass = cn(isDark ? 'text-white/50' : 'text-muted-foreground')
+
   return (
     <Form {...form}>
       <form onSubmit={handleFormSubmit} className="space-y-4" noValidate>
@@ -130,13 +152,14 @@ export function LoginForm() {
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email</FormLabel>
+              <FormLabel className={labelClass}>Email</FormLabel>
               <FormControl>
                 <Input
                   type="email"
                   placeholder="vous@entreprise.com"
                   autoComplete="email"
                   disabled={isLoading}
+                  className={inputClass}
                   {...field}
                 />
               </FormControl>
@@ -152,10 +175,10 @@ export function LoginForm() {
           render={({ field }) => (
             <FormItem>
               <div className="flex items-center justify-between">
-                <FormLabel>Mot de passe</FormLabel>
+                <FormLabel className={labelClass}>Mot de passe</FormLabel>
                 <Link
                   href="/reset-password"
-                  className="text-xs text-primary hover:underline"
+                  className={linkClass}
                   tabIndex={-1}
                 >
                   Mot de passe oublié ?
@@ -168,13 +191,17 @@ export function LoginForm() {
                     placeholder="••••••••"
                     autoComplete="current-password"
                     disabled={isLoading}
+                    className={inputClass}
                     {...field}
                   />
                   <Button
                     type="button"
                     variant="ghost"
                     size="icon"
-                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                    className={cn(
+                      'absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent',
+                      isDark && 'hover:text-white'
+                    )}
                     onClick={() => setShowPassword(!showPassword)}
                     tabIndex={-1}
                     aria-label={
@@ -184,9 +211,9 @@ export function LoginForm() {
                     }
                   >
                     {showPassword ? (
-                      <EyeOff className="h-4 w-4 text-muted-foreground" />
+                      <EyeOff className={cn('h-4 w-4', iconClass)} />
                     ) : (
-                      <Eye className="h-4 w-4 text-muted-foreground" />
+                      <Eye className={cn('h-4 w-4', iconClass)} />
                     )}
                   </Button>
                 </div>
@@ -207,9 +234,14 @@ export function LoginForm() {
                   checked={field.value}
                   onCheckedChange={field.onChange}
                   disabled={isLoading}
+                  className={cn(
+                    isDark && 'border-white/30 data-[state=checked]:bg-cyan-500'
+                  )}
                 />
               </FormControl>
-              <FormLabel className="cursor-pointer text-sm font-normal">
+              <FormLabel
+                className={cn('cursor-pointer text-sm font-normal', labelClass)}
+              >
                 Se souvenir de moi
               </FormLabel>
             </FormItem>
@@ -217,7 +249,15 @@ export function LoginForm() {
         />
 
         {/* Submit Button */}
-        <Button type="submit" className="w-full" disabled={isLoading}>
+        <Button
+          type="submit"
+          className={cn(
+            'w-full',
+            isDark &&
+              'bg-gradient-to-r from-blue-500 to-cyan-400 text-white shadow-lg shadow-blue-500/25 hover:from-blue-600 hover:to-cyan-500'
+          )}
+          disabled={isLoading}
+        >
           {isLoading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />

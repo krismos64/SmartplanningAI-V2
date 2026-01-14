@@ -1,13 +1,36 @@
 'use client'
 
 /**
- * Footer Component
- * Site footer with links and social media
+ * LandingFooter Component
+ * Footer for public pages (landing, auth)
+ *
+ * @description Footer avec liens, réseaux sociaux et newsletter
+ * Réutilisable entre landing page et pages d'authentification
  */
 
 import Link from 'next/link'
 import { Calendar, Mail, Linkedin, Instagram } from 'lucide-react'
-import { footerLinks } from '../../data'
+
+// Footer links
+const footerLinks = {
+  product: [
+    { href: '/#features', label: 'Fonctionnalités' },
+    { href: '/#pricing', label: 'Tarifs' },
+    { href: '#', label: 'Intégrations' },
+    { href: '#', label: 'Changelog' },
+  ],
+  company: [
+    { href: '#', label: 'À propos' },
+    { href: '#', label: 'Blog' },
+    { href: '#', label: 'Carrières' },
+    { href: '/#contact', label: 'Contact' },
+  ],
+  legal: [
+    { href: '/privacy', label: 'Confidentialité' },
+    { href: '/terms', label: 'CGU' },
+    { href: '#', label: 'Mentions légales' },
+  ],
+}
 
 // TikTok icon (not available in lucide-react)
 const TikTokIcon = ({ className }: { className?: string }) => (
@@ -21,9 +44,9 @@ const TikTokIcon = ({ className }: { className?: string }) => (
   </svg>
 )
 
-export function Footer() {
+export function LandingFooter() {
   return (
-    <footer id="contact" className="border-t border-white/5 py-16">
+    <footer id="contact" className="border-t border-white/5 bg-[#030712] py-16">
       <div className="container-custom">
         <div className="mb-16 grid grid-cols-2 gap-8 md:grid-cols-4 lg:grid-cols-5 lg:gap-12">
           {/* Brand */}
@@ -32,7 +55,7 @@ export function Footer() {
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-cyan-400">
                 <Calendar className="h-5 w-5 text-white" />
               </div>
-              <span className="text-lg font-bold">
+              <span className="text-lg font-bold text-white">
                 Smart<span className="text-cyan-400">Planning</span>
               </span>
             </Link>
@@ -66,7 +89,7 @@ export function Footer() {
 
           {/* Product Links */}
           <div>
-            <h4 className="mb-4 font-semibold">Produit</h4>
+            <h4 className="mb-4 font-semibold text-white">Produit</h4>
             <ul className="space-y-3">
               {footerLinks.product.map((link) => (
                 <li key={link.label}>
@@ -83,7 +106,7 @@ export function Footer() {
 
           {/* Company Links */}
           <div>
-            <h4 className="mb-4 font-semibold">Entreprise</h4>
+            <h4 className="mb-4 font-semibold text-white">Entreprise</h4>
             <ul className="space-y-3">
               {footerLinks.company.map((link) => (
                 <li key={link.label}>
@@ -100,7 +123,7 @@ export function Footer() {
 
           {/* Legal Links */}
           <div>
-            <h4 className="mb-4 font-semibold">Légal</h4>
+            <h4 className="mb-4 font-semibold text-white">Légal</h4>
             <ul className="space-y-3">
               {footerLinks.legal.map((link) => (
                 <li key={link.label}>
@@ -117,7 +140,7 @@ export function Footer() {
 
           {/* Newsletter */}
           <div>
-            <h4 className="mb-4 font-semibold">Newsletter</h4>
+            <h4 className="mb-4 font-semibold text-white">Newsletter</h4>
             <p className="mb-4 text-sm text-white/50">
               Recevez nos actualités et conseils.
             </p>
@@ -127,7 +150,10 @@ export function Footer() {
                 placeholder="Email"
                 className="flex-1 rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-sm text-white placeholder:text-white/30 focus:border-cyan-500/50 focus:outline-none"
               />
-              <button className="rounded-lg bg-gradient-to-r from-blue-500 to-cyan-400 p-2 text-white">
+              <button
+                type="submit"
+                className="rounded-lg bg-gradient-to-r from-blue-500 to-cyan-400 p-2 text-white transition-opacity hover:opacity-90"
+              >
                 <Mail className="h-5 w-5" />
               </button>
             </form>
