@@ -24,7 +24,7 @@ const navLinks = [
   { href: '/#benefits', label: 'Avantages' },
   { href: '/#pricing', label: 'Tarifs' },
   { href: '/#faq', label: 'FAQ' },
-  { href: '/#contact', label: 'Contact' },
+  { href: '/a-propos', label: 'À propos' },
 ]
 
 interface LandingHeaderProps {
@@ -144,28 +144,28 @@ export function LandingHeader({
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4 }}
-                className="mt-8 flex justify-center"
+                className="mt-6 flex justify-center"
               >
                 <Image
                   src="/images/logo-sp.png"
                   alt="SmartPlanning"
-                  width={280}
-                  height={180}
+                  width={200}
+                  height={130}
                   className="drop-shadow-2xl"
                 />
               </motion.div>
 
               {/* Menu content centered */}
-              <div className="flex flex-1 flex-col items-center justify-center gap-8 px-6">
+              <div className="flex flex-1 flex-col items-center justify-center gap-4 px-6 py-4">
                 {showNavLinks &&
                   navLinks.map((link, index) => (
                     <motion.a
                       key={link.href}
                       href={link.href}
-                      initial={{ opacity: 0, y: 20 }}
+                      initial={{ opacity: 0, y: 15 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.1 }}
-                      className="text-2xl font-medium text-white transition-colors hover:text-cyan-400"
+                      transition={{ delay: index * 0.05 }}
+                      className="text-lg font-medium text-white transition-colors hover:text-cyan-400"
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
                       {link.label}
@@ -174,16 +174,16 @@ export function LandingHeader({
 
                 {/* CTA Buttons */}
                 <motion.div
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={{ opacity: 0, y: 15 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{
-                    delay: showNavLinks ? navLinks.length * 0.1 : 0,
+                    delay: showNavLinks ? navLinks.length * 0.05 : 0,
                   }}
-                  className="mt-8 flex w-full max-w-xs flex-col gap-4"
+                  className="mt-4 flex w-full max-w-xs flex-col gap-3"
                 >
                   <Button
-                    size="lg"
-                    className="h-14 w-full border-2 border-white bg-transparent text-base font-semibold text-white hover:bg-white hover:text-[#030712]"
+                    size="default"
+                    className="h-12 w-full border-2 border-white bg-transparent text-sm font-semibold text-white hover:bg-white hover:text-[#030712]"
                     asChild
                   >
                     <Link
@@ -194,8 +194,8 @@ export function LandingHeader({
                     </Link>
                   </Button>
                   <Button
-                    size="lg"
-                    className="h-14 w-full bg-gradient-to-r from-blue-500 to-cyan-400 text-base font-semibold text-white shadow-lg shadow-blue-500/25"
+                    size="default"
+                    className="h-12 w-full bg-gradient-to-r from-blue-500 to-cyan-400 text-sm font-semibold text-white shadow-lg shadow-blue-500/25"
                     asChild
                   >
                     <Link

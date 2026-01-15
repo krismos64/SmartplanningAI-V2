@@ -20,7 +20,7 @@ const footerLinks = {
     { href: '#', label: 'Changelog' },
   ],
   company: [
-    { href: '#', label: 'À propos' },
+    { href: '/a-propos', label: 'À propos' },
     { href: '#', label: 'Blog' },
     { href: '#', label: 'Carrières' },
     { href: '/#contact', label: 'Contact' },
