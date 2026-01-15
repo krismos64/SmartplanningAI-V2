@@ -44,11 +44,7 @@ export function LegalSection({
           level === 3 && 'text-lg text-white/80'
         )}
       >
-        {number && (
-          <span className="mr-3 text-cyan-400">
-            {number}
-          </span>
-        )}
+        {number && <span className="mr-3 text-cyan-400">{number}</span>}
         {title}
       </HeadingTag>
       <div className="space-y-4 text-white/70">{children}</div>
@@ -146,14 +142,7 @@ export function LegalHighlight({
  * Séparateur visuel entre les sections
  */
 export function LegalDivider({ className }: { className?: string }) {
-  return (
-    <hr
-      className={cn(
-        'my-12 border-t border-white/10',
-        className
-      )}
-    />
-  )
+  return <hr className={cn('my-12 border-t border-white/10', className)} />
 }
 
 /**
@@ -180,9 +169,7 @@ export function LegalContact({
         className
       )}
     >
-      {title && (
-        <h4 className="mb-4 font-semibold text-white">{title}</h4>
-      )}
+      {title && <h4 className="mb-4 font-semibold text-white">{title}</h4>}
       <div className="space-y-2 text-sm text-white/70">
         {email && (
           <p>

@@ -51,17 +51,18 @@ export default function MentionsLegalesPage() {
   return (
     <LegalPageLayout
       title="Mentions Légales"
+      subtitle="Informations légales obligatoires conformément à la LCEN (Loi pour la Confiance dans l'Économie Numérique)."
       lastUpdated="15 janvier 2026"
       tableOfContents={tableOfContents}
     >
       {/* Section 1 - Éditeur du site */}
-      <LegalSection id="editeur" title="Éditeur du site" number={1}>
+      <LegalSection id="editeur" title="Éditeur du site" number="1">
         <LegalParagraph>
           Le présent site SmartPlanning est édité par :
         </LegalParagraph>
 
-        <LegalHighlight title="Informations de l'éditeur">
-          <div className="space-y-2 text-gray-300">
+        <LegalHighlight type="info">
+          <div className="space-y-2">
             <p>
               <strong className="text-white">Raison sociale :</strong>{' '}
               SmartPlanning
@@ -97,11 +98,11 @@ export default function MentionsLegalesPage() {
       <LegalDivider />
 
       {/* Section 2 - Hébergeur */}
-      <LegalSection id="hebergeur" title="Hébergeur" number={2}>
+      <LegalSection id="hebergeur" title="Hébergeur" number="2">
         <LegalParagraph>Le site SmartPlanning est hébergé par :</LegalParagraph>
 
-        <LegalHighlight title="Informations de l'hébergeur">
-          <div className="space-y-2 text-gray-300">
+        <LegalHighlight type="info">
+          <div className="space-y-2">
             <p>
               <strong className="text-white">Raison sociale :</strong> OVH SAS
             </p>
@@ -134,14 +135,14 @@ export default function MentionsLegalesPage() {
       <LegalSection
         id="directeur"
         title="Directeur de la publication"
-        number={3}
+        number="3"
       >
         <LegalParagraph>
           Le directeur de la publication du site SmartPlanning est :
         </LegalParagraph>
 
-        <LegalHighlight title="Directeur de la publication">
-          <div className="space-y-2 text-gray-300">
+        <LegalHighlight type="info">
+          <div className="space-y-2">
             <p>
               <strong className="text-white">Nom :</strong> Christophe
               Mostefaoui
@@ -165,18 +166,19 @@ export default function MentionsLegalesPage() {
         <LegalParagraph>
           En tant que directeur de la publication, il est responsable du contenu
           publié sur le site conformément à la loi n° 2004-575 du 21 juin 2004
-          pour la confiance dans l'économie numérique (LCEN).
+          pour la confiance dans l&apos;économie numérique (LCEN).
         </LegalParagraph>
       </LegalSection>
 
       <LegalDivider />
 
       {/* Section 4 - Propriété intellectuelle */}
-      <LegalSection id="propriete" title="Propriété intellectuelle" number={4}>
+      <LegalSection id="propriete" title="Propriété intellectuelle" number="4">
         <LegalParagraph>
-          L'ensemble du contenu présent sur le site SmartPlanning est protégé
-          par les dispositions du Code de la Propriété Intellectuelle français
-          et les conventions internationales relatives au droit d'auteur.
+          L&apos;ensemble du contenu présent sur le site SmartPlanning est
+          protégé par les dispositions du Code de la Propriété Intellectuelle
+          français et les conventions internationales relatives au droit
+          d&apos;auteur.
         </LegalParagraph>
 
         <LegalParagraph>Sont notamment protégés :</LegalParagraph>
@@ -193,35 +195,35 @@ export default function MentionsLegalesPage() {
           ]}
         />
 
-        <LegalHighlight title="Important" variant="warning">
-          <p className="text-gray-300">
-            Toute reproduction, représentation, modification, publication,
-            adaptation de tout ou partie des éléments du site, quel que soit le
-            moyen ou le procédé utilisé, est interdite sauf autorisation écrite
-            préalable de SmartPlanning.
+        <LegalHighlight type="warning">
+          <p>
+            <strong>Important :</strong> Toute reproduction, représentation,
+            modification, publication, adaptation de tout ou partie des éléments
+            du site, quel que soit le moyen ou le procédé utilisé, est interdite
+            sauf autorisation écrite préalable de SmartPlanning.
           </p>
         </LegalHighlight>
 
         <LegalParagraph>
-          Toute exploitation non autorisée du site ou de l'un quelconque des
-          éléments qu'il contient sera considérée comme constitutive d'une
-          contrefaçon et poursuivie conformément aux articles L.335-2 et
-          suivants du Code de la Propriété Intellectuelle.
+          Toute exploitation non autorisée du site ou de l&apos;un quelconque
+          des éléments qu&apos;il contient sera considérée comme constitutive
+          d&apos;une contrefaçon et poursuivie conformément aux articles L.335-2
+          et suivants du Code de la Propriété Intellectuelle.
         </LegalParagraph>
       </LegalSection>
 
       <LegalDivider />
 
       {/* Section 5 - Protection des données */}
-      <LegalSection id="donnees" title="Protection des données" number={5}>
+      <LegalSection id="donnees" title="Protection des données" number="5">
         <LegalParagraph>
-          SmartPlanning s'engage à protéger les données personnelles de ses
+          SmartPlanning s&apos;engage à protéger les données personnelles de ses
           utilisateurs conformément au Règlement Général sur la Protection des
           Données (RGPD) et à la loi Informatique et Libertés.
         </LegalParagraph>
 
         <LegalParagraph>
-          Pour plus d'informations sur la collecte et le traitement de vos
+          Pour plus d&apos;informations sur la collecte et le traitement de vos
           données personnelles, veuillez consulter notre{' '}
           <a
             href="/confidentialite"
@@ -232,8 +234,8 @@ export default function MentionsLegalesPage() {
           .
         </LegalParagraph>
 
-        <LegalHighlight title="Délégué à la Protection des Données (DPO)">
-          <div className="space-y-2 text-gray-300">
+        <LegalHighlight type="info">
+          <div className="space-y-2">
             <p>
               <strong className="text-white">Contact DPO :</strong>{' '}
               <a
@@ -245,19 +247,20 @@ export default function MentionsLegalesPage() {
             </p>
             <p>
               <strong className="text-white">Déclaration CNIL :</strong>{' '}
-              Conformément au RGPD, la déclaration préalable à la CNIL n'est
-              plus obligatoire. SmartPlanning tient un registre des activités de
-              traitement.
+              Conformément au RGPD, la déclaration préalable à la CNIL
+              n&apos;est plus obligatoire. SmartPlanning tient un registre des
+              activités de traitement.
             </p>
           </div>
         </LegalHighlight>
 
         <LegalParagraph>
-          Vous disposez d'un droit d'accès, de rectification, d'effacement, de
-          limitation, de portabilité et d'opposition sur vos données
-          personnelles. Pour exercer ces droits, contactez-nous à l'adresse{' '}
+          Vous disposez d&apos;un droit d&apos;accès, de rectification,
+          d&apos;effacement, de limitation, de portabilité et d&apos;opposition
+          sur vos données personnelles. Pour exercer ces droits, contactez-nous
+          à l&apos;adresse{' '}
           <a
-            href="mailto:dpo@smartplanning.fr"
+            href="mailto:contact@smartplanning.fr"
             className="text-cyan-400 transition-colors hover:text-cyan-300"
           >
             contact@smartplanning.fr
@@ -269,16 +272,16 @@ export default function MentionsLegalesPage() {
       <LegalDivider />
 
       {/* Section 6 - Cookies */}
-      <LegalSection id="cookies" title="Cookies" number={6}>
+      <LegalSection id="cookies" title="Cookies" number="6">
         <LegalParagraph>
-          Le site SmartPlanning utilise des cookies pour améliorer l'expérience
-          utilisateur, réaliser des statistiques de visites et assurer le bon
-          fonctionnement de certaines fonctionnalités.
+          Le site SmartPlanning utilise des cookies pour améliorer
+          l&apos;expérience utilisateur, réaliser des statistiques de visites et
+          assurer le bon fonctionnement de certaines fonctionnalités.
         </LegalParagraph>
 
         <LegalParagraph>
-          Pour plus d'informations sur l'utilisation des cookies et vos options
-          de paramétrage, veuillez consulter notre{' '}
+          Pour plus d&apos;informations sur l&apos;utilisation des cookies et
+          vos options de paramétrage, veuillez consulter notre{' '}
           <a
             href="/cookies"
             className="text-cyan-400 underline transition-colors hover:text-cyan-300"
@@ -288,8 +291,9 @@ export default function MentionsLegalesPage() {
           .
         </LegalParagraph>
 
+        <LegalParagraph>Types de cookies utilisés :</LegalParagraph>
+
         <LegalList
-          title="Types de cookies utilisés"
           items={[
             'Cookies essentiels (fonctionnement du site)',
             'Cookies analytiques (statistiques de visite)',
@@ -305,13 +309,13 @@ export default function MentionsLegalesPage() {
       <LegalSection
         id="responsabilite"
         title="Limitation de responsabilité"
-        number={7}
+        number="7"
       >
         <LegalParagraph>
-          SmartPlanning s'efforce d'assurer au mieux de ses possibilités
-          l'exactitude et la mise à jour des informations diffusées sur son
-          site, dont il se réserve le droit de corriger, à tout moment et sans
-          préavis, le contenu.
+          SmartPlanning s&apos;efforce d&apos;assurer au mieux de ses
+          possibilités l&apos;exactitude et la mise à jour des informations
+          diffusées sur son site, dont il se réserve le droit de corriger, à
+          tout moment et sans préavis, le contenu.
         </LegalParagraph>
 
         <LegalParagraph>
@@ -328,13 +332,14 @@ export default function MentionsLegalesPage() {
           ]}
         />
 
-        <LegalHighlight title="Disponibilité du service">
-          <p className="text-gray-300">
-            SmartPlanning met tout en œuvre pour offrir aux utilisateurs une
-            disponibilité maximale de ses services. Toutefois, il ne saurait
-            être tenu responsable des éventuelles indisponibilités liées à des
-            opérations de maintenance, des mises à jour, ou des circonstances
-            indépendantes de sa volonté (pannes, coupures de réseau, etc.).
+        <LegalHighlight type="important">
+          <p>
+            <strong>Disponibilité du service :</strong> SmartPlanning met tout
+            en œuvre pour offrir aux utilisateurs une disponibilité maximale de
+            ses services. Toutefois, il ne saurait être tenu responsable des
+            éventuelles indisponibilités liées à des opérations de maintenance,
+            des mises à jour, ou des circonstances indépendantes de sa volonté
+            (pannes, coupures de réseau, etc.).
           </p>
         </LegalHighlight>
       </LegalSection>
@@ -342,15 +347,16 @@ export default function MentionsLegalesPage() {
       <LegalDivider />
 
       {/* Section 8 - Liens hypertextes */}
-      <LegalSection id="liens" title="Liens hypertextes" number={8}>
+      <LegalSection id="liens" title="Liens hypertextes" number="8">
         <LegalParagraph>
           Le site SmartPlanning peut contenir des liens hypertextes vers
-          d'autres sites internet. SmartPlanning n'exerce aucun contrôle sur ces
-          sites externes et décline toute responsabilité quant à leur contenu.
+          d&apos;autres sites internet. SmartPlanning n&apos;exerce aucun
+          contrôle sur ces sites externes et décline toute responsabilité quant
+          à leur contenu.
         </LegalParagraph>
 
         <LegalParagraph>
-          L'insertion de liens hypertextes vers le site SmartPlanning est
+          L&apos;insertion de liens hypertextes vers le site SmartPlanning est
           autorisée sous réserve de :
         </LegalParagraph>
 
@@ -364,41 +370,44 @@ export default function MentionsLegalesPage() {
         />
 
         <LegalParagraph>
-          SmartPlanning se réserve le droit de demander la suppression d'un lien
-          qu'il estime non conforme à ses valeurs ou portant préjudice à son
-          image.
+          SmartPlanning se réserve le droit de demander la suppression d&apos;un
+          lien qu&apos;il estime non conforme à ses valeurs ou portant préjudice
+          à son image.
         </LegalParagraph>
       </LegalSection>
 
       <LegalDivider />
 
       {/* Section 9 - Droit applicable */}
-      <LegalSection id="droit" title="Droit applicable" number={9}>
+      <LegalSection id="droit" title="Droit applicable" number="9">
         <LegalParagraph>
           Les présentes mentions légales sont régies par le droit français.
         </LegalParagraph>
 
         <LegalParagraph>
-          En cas de litige, et après une tentative de recherche d'une solution
-          amiable, compétence expresse est attribuée aux tribunaux français
-          compétents, nonobstant pluralité de défendeurs ou appel en garantie,
-          même pour les procédures d'urgence ou les procédures conservatoires en
-          référé ou par requête.
+          En cas de litige, et après une tentative de recherche d&apos;une
+          solution amiable, compétence expresse est attribuée aux tribunaux
+          français compétents, nonobstant pluralité de défendeurs ou appel en
+          garantie, même pour les procédures d&apos;urgence ou les procédures
+          conservatoires en référé ou par requête.
         </LegalParagraph>
 
-        <LegalHighlight title="Textes de référence">
-          <div className="space-y-1 text-sm text-gray-300">
+        <LegalHighlight type="info">
+          <div className="space-y-1 text-sm">
+            <p>
+              <strong>Textes de référence :</strong>
+            </p>
             <p>
               • Loi n° 2004-575 du 21 juin 2004 pour la confiance dans
-              l'économie numérique (LCEN)
+              l&apos;économie numérique (LCEN)
             </p>
             <p>
               • Règlement (UE) 2016/679 relatif à la protection des données
               personnelles (RGPD)
             </p>
             <p>
-              • Loi n° 78-17 du 6 janvier 1978 relative à l'informatique, aux
-              fichiers et aux libertés
+              • Loi n° 78-17 du 6 janvier 1978 relative à l&apos;informatique,
+              aux fichiers et aux libertés
             </p>
             <p>• Code de la Propriété Intellectuelle</p>
             <p>• Code Civil</p>
@@ -409,7 +418,7 @@ export default function MentionsLegalesPage() {
       <LegalDivider />
 
       {/* Section 10 - Contact */}
-      <LegalSection id="contact" title="Contact" number={10}>
+      <LegalSection id="contact" title="Contact" number="10">
         <LegalParagraph>
           Pour toute question concernant ces mentions légales ou pour exercer
           vos droits, vous pouvez nous contacter :

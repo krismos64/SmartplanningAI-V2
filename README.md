@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings d'entreprise (mult
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 15 janvier 2026
+- **Dernière mise à jour** : 15 janvier 2026 (Pages légales + À propos)
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -108,6 +108,42 @@ Plateforme SaaS moderne de gestion intelligente des plannings d'entreprise (mult
 - **SEO** : Meta tags, Open Graph, sémantique HTML5
 - **Performance** : Dynamic imports (Lottie), images optimisées Next.js
 
+### Page À propos (15 janvier 2026)
+
+- **URL** : `/a-propos`
+- **Architecture** : Route group `(about)` avec composants dédiés
+- **Composants** :
+  - `AboutContent` : Contenu principal avec sections animées
+  - `ValueCard` : Cartes valeurs (Simplicité, Proximité, Fiabilité)
+  - `TargetCard` : Cartes cibles (TPE, PME, Grandes entreprises)
+  - `StructuredData` : JSON-LD pour SEO et LLMs
+- **SEO avancé** : Optimisation pour moteurs de recherche ET LLMs (ChatGPT, Claude, Perplexity)
+- **Design** : Cohérent avec la landing page (dark theme, animations Framer Motion)
+
+### Pages Légales RGPD (14-15 janvier 2026)
+
+- **Architecture** : Route group `(legal)` avec composants réutilisables
+- **5 pages complètes** :
+  - `/mentions-legales` : Mentions légales obligatoires
+  - `/cgu` : Conditions Générales d'Utilisation
+  - `/cgv` : Conditions Générales de Vente
+  - `/confidentialite` : Politique de Confidentialité RGPD
+  - `/cookies` : Politique Cookies détaillée
+- **Composants réutilisables** :
+  - `LegalPageLayout` : Layout unifié avec table des matières sticky
+  - `LegalSection` : Sections numérotées avec ancres
+  - `LegalParagraph`, `LegalList`, `LegalHighlight`, `LegalDivider`, `LegalContact`
+- **Design** : Dark theme cohérent, glassmorphism, animations Framer Motion
+- **SEO** : Metadata Next.js, Open Graph, balises sémantiques
+- **Tickets Jira** : SP-279 à SP-285
+
+### Bannière Cookies (À venir - 16 janvier 2026)
+
+- Bandeau de consentement RGPD
+- Gestion des préférences par catégorie
+- Cookie `cookie-consent` pour mémorisation
+- Intégration avec la page `/cookies`
+
 ### Pages d'authentification (Refonte - 14 janvier 2026)
 
 - **Design dark unifié** : Background #030712 avec animations identiques à la landing
@@ -134,6 +170,22 @@ SmartplanningAI/
 ├── src/
 │   ├── app/              # Next.js 15 App Router
 │   │   ├── (auth)/       # Routes publiques (login, register)
+│   │   ├── (about)/      # Page À propos (/a-propos)
+│   │   │   ├── a-propos/         # Page principale + AboutContent + StructuredData
+│   │   │   ├── components/       # ValueCard, TargetCard
+│   │   │   └── data.ts           # Données valeurs et cibles
+│   │   ├── (landing)/    # Landing page et composants
+│   │   │   ├── animations/       # Variants Framer Motion
+│   │   │   ├── components/       # Composants sections
+│   │   │   ├── data/             # Features, benefits, pricing, FAQs
+│   │   │   └── styles/           # CSS modules
+│   │   ├── (legal)/      # Pages légales RGPD
+│   │   │   ├── mentions-legales/ # Mentions légales
+│   │   │   ├── cgu/              # CGU
+│   │   │   ├── cgv/              # CGV
+│   │   │   ├── confidentialite/  # Politique confidentialité
+│   │   │   ├── cookies/          # Politique cookies
+│   │   │   └── components/       # LegalPageLayout, LegalSection...
 │   │   ├── (dashboard)/  # Route group dashboards
 │   │   │   └── dashboard/        # /dashboard (redirect par rôle)
 │   │   │       ├── employee/     # /dashboard/employee (page + composants)
@@ -524,6 +576,14 @@ Toute la documentation est centralisée dans le dossier `/docs` :
    - [Incident UFW + Docker](docs/security/incident-2026-01-06-ufw-docker.md)
    - [Docker hardening](docs/security/docker-hardening-2026-01-05.md)
 
+9. **Pages Légales & À propos**
+   - `/mentions-legales` : Informations légales obligatoires
+   - `/cgu` : Conditions Générales d'Utilisation
+   - `/cgv` : Conditions Générales de Vente
+   - `/confidentialite` : Politique de Confidentialité RGPD
+   - `/cookies` : Politique Cookies détaillée
+   - `/a-propos` : Présentation de SmartPlanning
+
 ## Sécurité
 
 ### Système RBAC (Role-Based Access Control)
@@ -592,14 +652,34 @@ Jamais commiter :
 
 ### Optimisations automatiques
 
-- Meta tags dynamiques
+- Meta tags dynamiques (Next.js Metadata API)
 - Open Graph et Twitter Cards
 - Sitemap.xml généré
 - Robots.txt configuré
 - Balises sémantiques HTML5
-- Schema.org JSON-LD
+- Schema.org JSON-LD (Organization, AboutPage)
 - Canonical URLs
 - Performance optimisée (Core Web Vitals)
+
+### Pages optimisées SEO
+
+| Page | Meta Title | Meta Description | Structured Data |
+|------|-----------|------------------|-----------------|
+| Landing | ✅ | ✅ | Organization |
+| À propos | ✅ | ✅ | AboutPage + Organization |
+| Mentions légales | ✅ | ✅ | - |
+| CGU | ✅ | ✅ | - |
+| CGV | ✅ | ✅ | - |
+| Confidentialité | ✅ | ✅ | - |
+| Cookies | ✅ | ✅ | - |
+| Login/Register | ✅ | ✅ | - |
+
+### Optimisation LLMs
+
+La page À propos est optimisée pour être indexée par les LLMs (ChatGPT, Claude, Perplexity) avec :
+- Keywords riches et contextuels
+- Structured Data JSON-LD étendu
+- Descriptions longues pour Open Graph
 
 Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 

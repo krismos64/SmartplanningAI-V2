@@ -74,8 +74,9 @@ export function LegalPageLayout({
 
         for (let i = sections.length - 1; i >= 0; i--) {
           const section = sections[i]
-          if (section && section.offsetTop <= scrollPosition) {
-            setActiveSection(tableOfContents[i].id)
+          const tocItem = tableOfContents[i]
+          if (section && tocItem && section.offsetTop <= scrollPosition) {
+            setActiveSection(tocItem.id)
             break
           }
         }
@@ -144,7 +145,7 @@ export function LegalPageLayout({
       </motion.header>
 
       {/* Contenu principal */}
-      <main className="relative pt-32 pb-20">
+      <main className="relative pb-20 pt-32">
         <div className="container-custom">
           <div className="flex flex-col lg:flex-row lg:gap-12">
             {/* Sidebar - Table des matières (desktop) */}

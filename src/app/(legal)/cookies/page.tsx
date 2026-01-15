@@ -69,7 +69,7 @@ export default function CookiesPage() {
           Un cookie est un petit fichier texte déposé sur votre terminal
           (ordinateur, tablette, smartphone) lors de votre visite sur un site
           web. Il permet au site de mémoriser des informations sur votre visite,
-          comme votre langue préférée et d'autres paramètres.
+          comme votre langue préférée et d&apos;autres paramètres.
         </LegalParagraph>
         <LegalParagraph>
           Les cookies peuvent être déposés par le site que vous visitez
@@ -78,9 +78,10 @@ export default function CookiesPage() {
         </LegalParagraph>
         <LegalHighlight type="info">
           <strong>Technologies similaires :</strong> En plus des cookies, nous
-          pouvons utiliser d'autres technologies de traçage comme le stockage
-          local (localStorage), les pixels espions ou les identifiants
-          d'appareil. Cette politique couvre l'ensemble de ces technologies.
+          pouvons utiliser d&apos;autres technologies de traçage comme le
+          stockage local (localStorage), les pixels espions ou les identifiants
+          d&apos;appareil. Cette politique couvre l&apos;ensemble de ces
+          technologies.
         </LegalHighlight>
       </LegalSection>
 
@@ -99,26 +100,26 @@ export default function CookiesPage() {
           items={[
             <span key="fonctionnement">
               <strong>Assurer le bon fonctionnement</strong> du site et de
-              l'application (cookies essentiels)
+              l&apos;application (cookies essentiels)
             </span>,
             <span key="preferences">
               <strong>Mémoriser vos préférences</strong> et personnaliser votre
               expérience (cookies fonctionnels)
             </span>,
             <span key="analyse">
-              <strong>Analyser l'utilisation</strong> de notre plateforme pour
-              l'améliorer (cookies analytiques)
+              <strong>Analyser l&apos;utilisation</strong> de notre plateforme
+              pour l&apos;améliorer (cookies analytiques)
             </span>,
             <span key="marketing">
-              <strong>Mesurer l'efficacité</strong> de nos campagnes marketing
-              (cookies marketing)
+              <strong>Mesurer l&apos;efficacité</strong> de nos campagnes
+              marketing (cookies marketing)
             </span>,
           ]}
         />
         <LegalParagraph>
           Certains cookies sont indispensables au fonctionnement du site et ne
-          peuvent pas être désactivés. D'autres nécessitent votre consentement
-          préalable.
+          peuvent pas être désactivés. D&apos;autres nécessitent votre
+          consentement préalable.
         </LegalParagraph>
       </LegalSection>
 
@@ -207,15 +208,16 @@ export default function CookiesPage() {
         number="4"
       >
         <LegalParagraph>
-          Ces cookies nous permettent de mesurer l'audience de notre site et de
-          comprendre comment les visiteurs l'utilisent. Les données collectées
-          sont anonymisées et utilisées uniquement à des fins statistiques.
+          Ces cookies nous permettent de mesurer l&apos;audience de notre site
+          et de comprendre comment les visiteurs l&apos;utilisent. Les données
+          collectées sont anonymisées et utilisées uniquement à des fins
+          statistiques.
         </LegalParagraph>
 
         <LegalHighlight type="warning">
           <strong>Consentement requis :</strong> Ces cookies ne sont déposés
-          qu'après avoir obtenu votre consentement via notre bandeau de gestion
-          des cookies.
+          qu&apos;après avoir obtenu votre consentement via notre bandeau de
+          gestion des cookies.
         </LegalHighlight>
 
         <div className="my-6 overflow-x-auto">
@@ -248,7 +250,9 @@ export default function CookiesPage() {
               <tr className="border-b border-white/5">
                 <td className="px-4 py-3 font-mono text-cyan-400">_ga_*</td>
                 <td className="px-4 py-3">Google Analytics</td>
-                <td className="px-4 py-3">Conservation de l'état de session</td>
+                <td className="px-4 py-3">
+                  Conservation de l&apos;état de session
+                </td>
                 <td className="px-4 py-3">2 ans</td>
               </tr>
               <tr className="border-b border-white/5">
@@ -270,7 +274,7 @@ export default function CookiesPage() {
         <LegalParagraph>
           <strong>Note :</strong> Nous avons configuré Google Analytics en mode
           &quot;anonymisation IP&quot; pour renforcer la protection de votre vie
-          privée. Aucune donnée personnelle identifiante n'est transmise à
+          privée. Aucune donnée personnelle identifiante n&apos;est transmise à
           Google.
         </LegalParagraph>
       </LegalSection>
@@ -328,7 +332,7 @@ export default function CookiesPage() {
                   calendar-view
                 </td>
                 <td className="px-4 py-3">
-                  Préférence d'affichage du calendrier
+                  Préférence d&apos;affichage du calendrier
                 </td>
                 <td className="px-4 py-3">12 mois</td>
               </tr>
@@ -351,18 +355,18 @@ export default function CookiesPage() {
         number="6"
       >
         <LegalParagraph>
-          Ces cookies sont utilisés pour mesurer l'efficacité de nos campagnes
-          publicitaires et pour vous proposer des publicités pertinentes sur
-          d'autres sites.
+          Ces cookies sont utilisés pour mesurer l&apos;efficacité de nos
+          campagnes publicitaires et pour vous proposer des publicités
+          pertinentes sur d&apos;autres sites.
         </LegalParagraph>
 
         <LegalHighlight type="warning">
           <strong>Consentement requis :</strong> Ces cookies ne sont déposés
-          qu'avec votre consentement explicite.
+          qu&apos;avec votre consentement explicite.
         </LegalHighlight>
 
         <LegalParagraph>
-          <strong>Note :</strong> À ce jour, SmartPlanning n'utilise pas de
+          <strong>Note :</strong> À ce jour, SmartPlanning n&apos;utilise pas de
           cookies publicitaires pour le ciblage. Si cela devait changer, cette
           politique serait mise à jour et votre consentement serait
           préalablement recueilli.
@@ -410,7 +414,9 @@ export default function CookiesPage() {
               </tr>
               <tr className="border-b border-white/5">
                 <td className="px-4 py-3 font-semibold text-white">Google</td>
-                <td className="px-4 py-3">Analytics et mesure d'audience</td>
+                <td className="px-4 py-3">
+                  Analytics et mesure d&apos;audience
+                </td>
                 <td className="px-4 py-3">
                   <a
                     href="https://policies.google.com/privacy"
@@ -428,7 +434,7 @@ export default function CookiesPage() {
 
         <LegalParagraph>
           Nous vous invitons à consulter les politiques de confidentialité de
-          ces services tiers pour plus d'informations sur leurs pratiques.
+          ces services tiers pour plus d&apos;informations sur leurs pratiques.
         </LegalParagraph>
       </LegalSection>
 
@@ -452,13 +458,14 @@ export default function CookiesPage() {
               navigateur
             </span>,
             <span key="essentiels">
-              <strong>Cookies essentiels :</strong> Jusqu'à 12 mois
+              <strong>Cookies essentiels :</strong> Jusqu&apos;à 12 mois
             </span>,
             <span key="analytiques">
-              <strong>Cookies analytiques :</strong> Jusqu'à 13 mois maximum
+              <strong>Cookies analytiques :</strong> Jusqu&apos;à 13 mois
+              maximum
             </span>,
             <span key="fonctionnels">
-              <strong>Cookies fonctionnels :</strong> Jusqu'à 12 mois
+              <strong>Cookies fonctionnels :</strong> Jusqu&apos;à 12 mois
             </span>,
             <span key="consentement">
               <strong>Cookie de consentement :</strong> 12 mois (pour mémoriser
@@ -467,7 +474,7 @@ export default function CookiesPage() {
           ]}
         />
         <LegalParagraph>
-          À l'expiration de ces délais, les cookies sont automatiquement
+          À l&apos;expiration de ces délais, les cookies sont automatiquement
           supprimés ou votre consentement vous sera redemandé.
         </LegalParagraph>
       </LegalSection>
@@ -516,8 +523,9 @@ export default function CookiesPage() {
 
         <LegalHighlight type="info">
           <strong>Rappel :</strong> Le refus des cookies non essentiels
-          n'affecte pas votre accès au Service. Seules certaines fonctionnalités
-          de personnalisation ou de mesure d'audience seront désactivées.
+          n&apos;affecte pas votre accès au Service. Seules certaines
+          fonctionnalités de personnalisation ou de mesure d&apos;audience
+          seront désactivées.
         </LegalHighlight>
       </LegalSection>
 
@@ -587,7 +595,7 @@ export default function CookiesPage() {
         <LegalHighlight type="warning">
           <strong>Attention :</strong> Si vous configurez votre navigateur pour
           refuser tous les cookies, vous pourriez ne pas être en mesure
-          d'utiliser certaines fonctionnalités du site nécessitant une
+          d&apos;utiliser certaines fonctionnalités du site nécessitant une
           authentification.
         </LegalHighlight>
       </LegalSection>
@@ -628,7 +636,7 @@ export default function CookiesPage() {
         />
 
         <LegalParagraph className="mt-6">
-          Pour plus d'informations sur la protection de vos données
+          Pour plus d&apos;informations sur la protection de vos données
           personnelles, consultez notre{' '}
           <a href="/confidentialite" className="text-cyan-400 hover:underline">
             Politique de Confidentialité
@@ -643,8 +651,8 @@ export default function CookiesPage() {
       <div className="mt-12 rounded-lg border border-white/10 bg-white/5 p-6">
         <p className="text-center text-sm text-white/60">
           En continuant à naviguer sur SmartPlanning après avoir été informé de
-          l'utilisation des cookies, vous acceptez leur utilisation conformément
-          à cette politique.
+          l&apos;utilisation des cookies, vous acceptez leur utilisation
+          conformément à cette politique.
         </p>
         <p className="mt-4 text-center text-xs text-white/40">
           Dernière mise à jour : 15 janvier 2026 | Version 1.0
