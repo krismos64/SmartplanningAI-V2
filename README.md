@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings d'entreprise (mult
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 13 janvier 2026
+- **Dernière mise à jour** : 15 janvier 2026
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -108,6 +108,16 @@ Plateforme SaaS moderne de gestion intelligente des plannings d'entreprise (mult
 - **SEO** : Meta tags, Open Graph, sémantique HTML5
 - **Performance** : Dynamic imports (Lottie), images optimisées Next.js
 
+### Pages d'authentification (Refonte - 14 janvier 2026)
+
+- **Design dark unifié** : Background #030712 avec animations identiques à la landing
+- **Composants partagés** : LandingHeader et LandingFooter réutilisés (DRY)
+- **Glassmorphism** : Cards avec bg-white/5, border-white/10, backdrop-blur-xl
+- **Inputs dark mode** : Bordures white/20, fond white/5, texte blanc
+- **Boutons gradient** : from-blue-500 to-cyan-400 avec shadow glow
+- **Support variant** : LoginForm et RegisterForm acceptent variant="dark" | "light"
+- **Tests** : 34 tests unitaires + 20 tests E2E passent
+
 ### Fonctionnalités avancées (Post-MVP)
 
 - Notifications push et email
@@ -138,11 +148,12 @@ SmartplanningAI/
 │   │   └── layout.tsx
 │   ├── components/       # Composants React réutilisables
 │   │   ├── ui/           # Shadcn components (button, form, label...)
-│   │   ├── auth/         # LoginForm, RegisterForm
+│   │   ├── auth/         # LoginForm, RegisterForm (variant dark/light)
 │   │   ├── cards/        # UserCard, TeamCard, AvatarStack
 │   │   ├── charts/       # AreaChartWidget, BarChartWidget, PieChartWidget
 │   │   ├── dashboard/    # StatCard, TrendIndicator, StatsGrid
 │   │   ├── forms/        # FormField, FormInput, FormSelect...
+│   │   ├── layout/       # LandingHeader, LandingFooter (partagés)
 │   │   ├── loading/      # Spinner, Skeleton, LoadingOverlay
 │   │   ├── modals/       # ConfirmDialog, FormDialog
 │   │   └── toast/        # Toast system (Sonner)
@@ -624,7 +635,7 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 
 | Suite                        | Tests | Status |
 | ---------------------------- | ----- | ------ |
-| Auth (login/register)        | 18    | ✅     |
+| Auth (login/register)        | 20    | ✅     |
 | Middleware RBAC              | 26    | ✅     |
 | Smoke tests                  | 4     | ✅     |
 | **Dashboard Employee**       | 15    | ✅     |
@@ -636,9 +647,9 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 | **CRUD Employees**           | 18    | ✅     |
 | **CRUD Teams**               | 15    | ✅     |
 | **Empty States**             | 8     | ✅     |
-| **Total E2E actifs**         | **191** | ✅   |
+| **Total E2E actifs**         | **193** | ✅   |
 | **Total E2E skipped**        | **24**  | ⏸️   |
-| **Total E2E**                | **215** |      |
+| **Total E2E**                | **217** |      |
 
 **Note** : Tests exécutés uniquement sur Chromium (Firefox et WebKit supprimés pour stabilité et performance).
 
