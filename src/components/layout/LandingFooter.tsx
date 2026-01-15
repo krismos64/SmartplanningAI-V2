@@ -26,9 +26,11 @@ const footerLinks = {
     { href: '/#contact', label: 'Contact' },
   ],
   legal: [
-    { href: '/privacy', label: 'Confidentialité' },
-    { href: '/terms', label: 'CGU' },
-    { href: '#', label: 'Mentions légales' },
+    { href: '/cgu', label: 'CGU' },
+    { href: '/cgv', label: 'CGV' },
+    { href: '/confidentialite', label: 'Confidentialité' },
+    { href: '/mentions-legales', label: 'Mentions légales' },
+    { href: '/cookies', label: 'Politique cookies' },
   ],
 }
 
