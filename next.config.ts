@@ -25,6 +25,10 @@ const nextConfig: NextConfig = {
     root: path.resolve(__dirname),
   },
 
+  // Packages serveur à inclure dans le build standalone
+  // bcryptjs est nécessaire pour l'authentification
+  serverExternalPackages: ['bcryptjs'],
+
   // Subresource Integrity (SRI) - Vérifie l'intégrité des scripts
   // Désactivé en dev car incompatible avec Turbopack
   // Activé en production (build utilise webpack)
