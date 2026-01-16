@@ -137,12 +137,14 @@ test.describe('Umami Analytics - Intégration RGPD', () => {
     let umamiScript = page.locator('script[data-website-id]')
     await expect(umamiScript).toHaveCount(0)
 
-    // Modifie les préférences via le lien dans le footer
+    // Modifie les préférences via le bouton dans le footer
     const cookieSettingsLink = page.locator(
-      'button:has-text("Gérer les cookies"), a:has-text("Cookies")'
+      '[data-testid="cookie-settings-footer"], button:has-text("Paramètres des cookies")'
     )
 
     if ((await cookieSettingsLink.count()) > 0) {
+      // Scroll vers le footer pour que le bouton soit visible
+      await cookieSettingsLink.first().scrollIntoViewIfNeeded()
       await cookieSettingsLink.first().click()
 
       // Accepte analytics cette fois

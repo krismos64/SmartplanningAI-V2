@@ -152,11 +152,12 @@ export class ConsentFixture {
   }
 
   /**
-   * Ouvre les paramètres de cookies
+   * Ouvre les paramètres de cookies depuis la bannière
    */
   async openSettings(): Promise<void> {
+    // Cibler spécifiquement le bouton dans la bannière (pas celui du footer)
     const settingsButton = this.page.locator(
-      '[data-testid="cookie-settings"], button:has-text("Personnaliser"), button:has-text("Paramètres")'
+      '[data-testid="cookie-banner"] [data-testid="cookie-settings"], [data-testid="cookie-banner"] button:has-text("Personnaliser")'
     )
     await settingsButton.first().click()
   }

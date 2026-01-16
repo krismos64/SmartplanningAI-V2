@@ -136,6 +136,8 @@ export function CookiePreferencesModal() {
                 </div>
                 <Switch
                   id={`cookie-${category.id}`}
+                  data-testid={`cookie-${category.id}-toggle`}
+                  data-category={category.id}
                   checked={isChecked}
                   onCheckedChange={(checked) =>
                     handleToggle(category.id, checked)
@@ -159,6 +161,7 @@ export function CookiePreferencesModal() {
               variant="outline"
               onClick={handleRejectAll}
               aria-label="Refuser tous les cookies non essentiels"
+              data-testid="cookie-modal-reject-all"
             >
               Tout refuser
             </Button>
@@ -166,12 +169,14 @@ export function CookiePreferencesModal() {
               variant="secondary"
               onClick={handleAcceptAll}
               aria-label="Accepter tous les cookies"
+              data-testid="cookie-modal-accept-all"
             >
               Tout accepter
             </Button>
             <Button
               onClick={handleSave}
               aria-label="Sauvegarder mes préférences de cookies"
+              data-testid="cookie-save"
             >
               Sauvegarder mes choix
             </Button>

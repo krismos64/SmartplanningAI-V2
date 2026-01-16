@@ -72,6 +72,7 @@ export function CookieSettingsButton({
       onClick={handleClick}
       className={cn('gap-2', className)}
       aria-label="Ouvrir les paramètres des cookies"
+      data-testid="cookie-settings-footer"
     >
       <Settings className="h-4 w-4" aria-hidden="true" />
       <span>Paramètres des cookies</span>

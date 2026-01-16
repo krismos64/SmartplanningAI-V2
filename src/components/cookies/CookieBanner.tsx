@@ -53,6 +53,7 @@ export function CookieBanner({ onConsentChange }: CookieBannerProps) {
       aria-modal="false"
       aria-label="Paramètres des cookies"
       aria-describedby="cookie-banner-description"
+      data-testid="cookie-banner"
       className="fixed bottom-0 left-0 right-0 z-50 p-4 md:p-6"
     >
       <div className="mx-auto max-w-4xl rounded-xl border border-white/10 bg-slate-900/95 p-4 shadow-2xl backdrop-blur-md md:p-6">
@@ -92,6 +93,7 @@ export function CookieBanner({ onConsentChange }: CookieBannerProps) {
                 onClick={handleRejectAll}
                 className="border-white/20 bg-transparent text-white hover:bg-white/10 hover:text-white"
                 aria-label="Refuser tous les cookies non essentiels"
+                data-testid="cookie-reject-all"
               >
                 Tout refuser
               </Button>
@@ -101,6 +103,7 @@ export function CookieBanner({ onConsentChange }: CookieBannerProps) {
                 onClick={openPreferences}
                 className="text-slate-300 hover:bg-white/10 hover:text-white"
                 aria-label="Personnaliser les préférences de cookies"
+                data-testid="cookie-settings"
               >
                 Personnaliser
               </Button>
@@ -109,6 +112,7 @@ export function CookieBanner({ onConsentChange }: CookieBannerProps) {
                 onClick={handleAcceptAll}
                 className="bg-primary text-white hover:bg-primary/90"
                 aria-label="Accepter tous les cookies"
+                data-testid="cookie-accept-all"
               >
                 Tout accepter
               </Button>
