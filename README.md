@@ -629,10 +629,12 @@ SYSTEM_ADMIN > DIRECTOR > MANAGER > EMPLOYEE
 - Protection CSRF (NextAuth)
 - Cookies httpOnly + secure + sameSite
 - Rate limiting sur les endpoints critiques
-- Hashage des mots de passe (bcrypt)
+- Hashage des mots de passe (bcryptjs via `serverExternalPackages`)
 - Variables d'environnement sécurisées (.env.local)
 - Gestion des permissions RBAC stricte
 - Audit logs (ActivityLog)
+- Content Security Policy (CSP) avec headers sécurisés
+- SRI (Subresource Integrity) activé en production
 
 ### Variables d'environnement sensibles
 
@@ -661,10 +663,11 @@ Jamais commiter :
 
 SmartPlanning utilise **Umami** comme solution d'analytics privacy-friendly et RGPD-compliant :
 
-- **Self-hosted** : Déployé sur le VPS OVH (Docker)
-- **Accès dashboard** : `https://smartplanning.fr/analytics`
+- **Self-hosted** : Déployé sur le VPS OVH (Docker + PostgreSQL dédié)
+- **Accès dashboard** : `https://analytics.smartplanning.fr`
 - **Tracking conditionnel** : Script chargé uniquement si consentement analytics accepté
 - **Events custom** : Hook `useUmamiTrack()` pour tracker les conversions
+- **Intégration RGPD** : Respecte le consentement cookies (catégorie "analytics")
 
 ```tsx
 // Exemple d'utilisation
@@ -939,6 +942,7 @@ Le guide inclut :
 | **Reverse Proxy** | Nginx 1.24.0                                    |
 | **Firewall**      | UFW (allow outgoing - compatible Docker)        |
 | **Containers**    | Docker Compose (app + PostgreSQL 16 + Redis 7)  |
+| **Analytics**     | Umami (analytics.smartplanning.fr)              |
 | **Registry**      | GitHub Container Registry (ghcr.io)             |
 
 ### Connexion SSH

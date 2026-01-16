@@ -22,7 +22,7 @@ test.describe('RBAC Protection - Tests E2E', () => {
 
       // Devrait rester sur employee dashboard
       await expect(employeePage).toHaveURL(/.*app\/dashboard.*/)
-      await expect(employeePage.locator('h1')).toBeVisible()
+      await expect(employeePage.locator('h1').first()).toBeVisible()
     })
 
     test('Employee NE devrait PAS acceder a /app/manager', async ({
@@ -62,7 +62,7 @@ test.describe('RBAC Protection - Tests E2E', () => {
       await managerPage.goto('/app/manager/dashboard')
 
       await expect(managerPage).toHaveURL(/.*app\/manager.*/)
-      await expect(managerPage.locator('h1')).toBeVisible()
+      await expect(managerPage.locator('h1').first()).toBeVisible()
     })
 
     test('Manager NE devrait PAS acceder a /app/director', async ({
@@ -95,7 +95,7 @@ test.describe('RBAC Protection - Tests E2E', () => {
       await directorPage.goto('/app/director/dashboard')
 
       await expect(directorPage).toHaveURL(/.*app\/director.*/)
-      await expect(directorPage.locator('h1')).toBeVisible()
+      await expect(directorPage.locator('h1').first()).toBeVisible()
     })
 
     test('Director NE devrait PAS acceder a /app/admin', async ({
@@ -117,7 +117,7 @@ test.describe('RBAC Protection - Tests E2E', () => {
       await adminPage.goto('/app/admin/dashboard')
 
       await expect(adminPage).toHaveURL(/.*app\/admin.*/)
-      await expect(adminPage.locator('h1')).toBeVisible()
+      await expect(adminPage.locator('h1').first()).toBeVisible()
     })
 
     // NOTE: La redirection automatique n'est pas implémentée pour l'instant
