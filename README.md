@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings d'entreprise (mult
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 15 janvier 2026 (Pages légales + À propos)
+- **Dernière mise à jour** : 16 janvier 2026 (Bannière Cookies RGPD)
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -137,12 +137,20 @@ Plateforme SaaS moderne de gestion intelligente des plannings d'entreprise (mult
 - **SEO** : Metadata Next.js, Open Graph, balises sémantiques
 - **Tickets Jira** : SP-279 à SP-285
 
-### Bannière Cookies (À venir - 16 janvier 2026)
+### Bannière Cookies RGPD ✅ (SP-283 - 16 janvier 2026)
 
-- Bandeau de consentement RGPD
-- Gestion des préférences par catégorie
-- Cookie `cookie-consent` pour mémorisation
-- Intégration avec la page `/cookies`
+- **Bannière de consentement** : Design glassmorphism fixe en bas de page
+- **Modal de préférences** : Choix granulaire par catégorie (essentiels, analytics, marketing)
+- **3 catégories de cookies** :
+  - Essentiels : Toujours actifs (authentification, sécurité)
+  - Analytics : Google Analytics, suivi anonyme
+  - Marketing : Publicités ciblées, réseaux sociaux
+- **Persistance** : Cookie HTTP `cookie-consent` (365 jours, SameSite=Lax)
+- **Bouton d'accès** : `CookieSettingsButton` intégré au footer
+- **Context React** : État partagé via `CookieConsentProvider`
+- **Hook** : `useCookieConsent()` pour utilisation standalone
+- **Intégration** : Lien vers la page `/cookies` pour détails
+- **Tests** : 7 tests unitaires + 18 tests E2E
 
 ### Pages d'authentification (Refonte - 14 janvier 2026)
 
@@ -203,6 +211,7 @@ SmartplanningAI/
 │   │   ├── auth/         # LoginForm, RegisterForm (variant dark/light)
 │   │   ├── cards/        # UserCard, TeamCard, AvatarStack
 │   │   ├── charts/       # AreaChartWidget, BarChartWidget, PieChartWidget
+│   │   ├── cookies/      # CookieBanner, CookiePreferencesModal, CookieSettingsButton, CookieConsentProvider
 │   │   ├── dashboard/    # StatCard, TrendIndicator, StatsGrid
 │   │   ├── forms/        # FormField, FormInput, FormSelect...
 │   │   ├── layout/       # LandingHeader, LandingFooter (partagés)
@@ -693,11 +702,11 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 - **E2E** : Playwright (configuré)
 - **Coverage** : v8 provider
 
-### Couverture actuelle (12 janvier 2026)
+### Couverture actuelle (16 janvier 2026)
 
 | Catégorie            | Coverage | Tests    |
 | -------------------- | -------- | -------- |
-| **Global**           | **~55%** | **1374** |
+| **Global**           | **~55%** | **1457** |
 | loading              | 100%     | 152      |
 | modals               | 100%     | 52       |
 | cards                | 77.09%   | 88       |
@@ -710,6 +719,7 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 | dashboard employee   | 100%     | 91       |
 | dashboard director   | 100%     | 87       |
 | dashboard admin      | 100%     | 115      |
+| cookies              | 100%     | 83       |
 
 ### Tests E2E
 
@@ -727,9 +737,10 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 | **CRUD Employees**           | 18    | ✅     |
 | **CRUD Teams**               | 15    | ✅     |
 | **Empty States**             | 8     | ✅     |
-| **Total E2E actifs**         | **193** | ✅   |
+| **Cookies RGPD**             | 18    | ✅     |
+| **Total E2E actifs**         | **211** | ✅   |
 | **Total E2E skipped**        | **24**  | ⏸️   |
-| **Total E2E**                | **217** |      |
+| **Total E2E**                | **235** |      |
 
 **Note** : Tests exécutés uniquement sur Chromium (Firefox et WebKit supprimés pour stabilité et performance).
 
@@ -819,6 +830,15 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 - AdminRecentCompanies (Server Component async Prisma - 5 dernières inscriptions)
 - AdminQuickActions (4 boutons actions rapides avec badges compteurs)
 
+#### Cookies RGPD (4 composants + 1 hook + 1 lib - SP-283)
+
+- CookieBanner (bannière consentement glassmorphism)
+- CookiePreferencesModal (modal choix granulaire avec switches)
+- CookieSettingsButton (bouton d'accès aux paramètres)
+- CookieConsentProvider (Context React pour état partagé)
+- useCookieConsent (hook standalone pour tests)
+- lib/cookies.ts (gestion cookie HTTP, préférences, types)
+
 ### Scripts de test
 
 ```bash
@@ -906,8 +926,8 @@ Merge main → Build Docker → Push GHCR → Deploy VPS (~8-10 min)
 
 - **CI** (`.github/workflows/ci.yml`) : Lint, Type-check, Tests unitaires, Build, Tests E2E (PR uniquement)
 - **CD** (`.github/workflows/cd.yml`) : Build image Docker, Push sur ghcr.io, Deploy via SSH
-- Tests unitaires sur tous les push (~1300 tests Vitest)
-- Tests E2E sur PR vers main (~165 tests Playwright, 3 navigateurs en parallèle)
+- Tests unitaires sur tous les push (~1457 tests Vitest)
+- Tests E2E sur PR vers main (~211 tests Playwright actifs)
 - Déploiement automatique sur merge main ✅
 - Migrations Prisma automatiques
 - Healthcheck endpoint : `/api/health` ✅
