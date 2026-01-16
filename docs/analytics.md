@@ -133,19 +133,19 @@ track('event-name') // Silencieusement ignoré si pas de consentement
 
 Accès : `https://analytics.smartplanning.fr`
 
-### Identifiants (SP-345 déploiement 16/01/2026)
+### Identifiants
 
-- **Login** : `krismos`
-- **Password** : stocké dans gestionnaire de mots de passe
-- **Website ID** : `3a177239-31b0-4201-a1cb-e9938326d52b`
+> **Les credentials sont stockés dans `docs/analytics.credentials.md`** (fichier local, ignoré par git).
+> Ce fichier contient : login, password, Website ID, secrets VPS, etc.
 
-### Premier accès (déjà fait)
+### Configuration initiale (SP-345 - 16/01/2026)
 
-1. ~~Login : `admin` / `umami`~~
-2. ~~**Changer le mot de passe immédiatement !**~~
-3. ~~Créer le site "SmartPlanning"~~
-4. ~~Récupérer le Website ID~~
-5. ~~Configurer `NEXT_PUBLIC_UMAMI_WEBSITE_ID`~~
+- [x] Déploiement container Umami sur VPS
+- [x] Configuration sous-domaine `analytics.smartplanning.fr`
+- [x] Certificat SSL Let's Encrypt
+- [x] Changement mot de passe admin par défaut
+- [x] Création du website "SmartPlanning"
+- [x] Configuration des variables d'environnement production
 
 ### Métriques disponibles
 
