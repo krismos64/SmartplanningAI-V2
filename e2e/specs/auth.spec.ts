@@ -10,7 +10,7 @@
  * @see Playwright documentation
  */
 
-import { test, expect } from '@playwright/test'
+import { test, expect } from '../fixtures/consent.fixture'
 
 /**
  * Configuration des données de test

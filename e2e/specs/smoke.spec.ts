@@ -8,7 +8,7 @@
  * @ticket SP-133
  */
 
-import { test, expect } from '@playwright/test'
+import { test, expect } from '../fixtures/consent.fixture'
 
 test.describe('Smoke Tests', () => {
   /**

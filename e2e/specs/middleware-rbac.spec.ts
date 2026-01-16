@@ -11,7 +11,8 @@
  * @see https://playwright.dev/docs/writing-tests
  */
 
-import { test, expect, type Page } from '@playwright/test'
+import { test, expect } from '../fixtures/consent.fixture'
+import type { Page } from '@playwright/test'
 
 /**
  * Configuration des utilisateurs de test par role

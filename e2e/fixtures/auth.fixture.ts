@@ -8,6 +8,7 @@
  */
 
 import { test as base, Page, expect } from '@playwright/test'
+import { setConsentCookie } from './consent.fixture'
 
 // =============================================================================
 // Types
@@ -132,9 +133,11 @@ export async function logout(page: Page): Promise<void> {
 export const test = base.extend<AuthFixtures>({
   /**
    * Page pre-authentifiee en tant qu'Employee
+   * Note: Le cookie de consentement est pre-configure pour eviter la banniere
    */
   employeePage: async ({ browser }, use) => {
     const context = await browser.newContext()
+    await setConsentCookie(context)
     const page = await context.newPage()
 
     await loginAs(page, TEST_USERS.EMPLOYEE!)
@@ -146,9 +149,11 @@ export const test = base.extend<AuthFixtures>({
 
   /**
    * Page pre-authentifiee en tant que Manager
+   * Note: Le cookie de consentement est pre-configure pour eviter la banniere
    */
   managerPage: async ({ browser }, use) => {
     const context = await browser.newContext()
+    await setConsentCookie(context)
     const page = await context.newPage()
 
     await loginAs(page, TEST_USERS.MANAGER!)
@@ -160,9 +165,11 @@ export const test = base.extend<AuthFixtures>({
 
   /**
    * Page pre-authentifiee en tant que Director
+   * Note: Le cookie de consentement est pre-configure pour eviter la banniere
    */
   directorPage: async ({ browser }, use) => {
     const context = await browser.newContext()
+    await setConsentCookie(context)
     const page = await context.newPage()
 
     await loginAs(page, TEST_USERS.DIRECTOR!)
@@ -174,9 +181,11 @@ export const test = base.extend<AuthFixtures>({
 
   /**
    * Page pre-authentifiee en tant que System Admin
+   * Note: Le cookie de consentement est pre-configure pour eviter la banniere
    */
   adminPage: async ({ browser }, use) => {
     const context = await browser.newContext()
+    await setConsentCookie(context)
     const page = await context.newPage()
 
     await loginAs(page, TEST_USERS.SYSTEM_ADMIN!)
