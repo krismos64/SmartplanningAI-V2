@@ -39,8 +39,8 @@ SmartPlanning utilise **Umami** comme solution d'analytics, une alternative priv
 # Website ID (récupérer dans le dashboard Umami)
 NEXT_PUBLIC_UMAMI_WEBSITE_ID="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 
-# URL du script (reverse proxy)
-NEXT_PUBLIC_UMAMI_SCRIPT_URL="/analytics/script.js"
+# URL du script (sous-domaine dédié)
+NEXT_PUBLIC_UMAMI_SCRIPT_URL="https://analytics.smartplanning.fr/script.js"
 
 # Domaines autorisés pour le tracking
 NEXT_PUBLIC_UMAMI_DOMAINS="smartplanning.fr"
@@ -131,15 +131,21 @@ track('event-name') // Silencieusement ignoré si pas de consentement
 
 ## Dashboard Umami
 
-Accès : `https://smartplanning.fr/analytics`
+Accès : `https://analytics.smartplanning.fr`
 
-### Premier accès
+### Identifiants (SP-345 déploiement 16/01/2026)
 
-1. Login : `admin` / `umami`
-2. **Changer le mot de passe immédiatement !**
-3. Créer le site "SmartPlanning"
-4. Récupérer le Website ID
-5. Configurer `NEXT_PUBLIC_UMAMI_WEBSITE_ID`
+- **Login** : `krismos`
+- **Password** : stocké dans gestionnaire de mots de passe
+- **Website ID** : `3a177239-31b0-4201-a1cb-e9938326d52b`
+
+### Premier accès (déjà fait)
+
+1. ~~Login : `admin` / `umami`~~
+2. ~~**Changer le mot de passe immédiatement !**~~
+3. ~~Créer le site "SmartPlanning"~~
+4. ~~Récupérer le Website ID~~
+5. ~~Configurer `NEXT_PUBLIC_UMAMI_WEBSITE_ID`~~
 
 ### Métriques disponibles
 
@@ -184,7 +190,7 @@ npx playwright test e2e/specs/analytics.spec.ts
 
 1. Vérifier le consentement : `localStorage.getItem('cookie-consent')`
 2. Vérifier la config : `process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID`
-3. Vérifier le proxy Nginx : `curl -I https://smartplanning.fr/analytics/script.js`
+3. Vérifier le script : `curl -I https://analytics.smartplanning.fr/script.js`
 
 ### Les events ne sont pas enregistrés
 
