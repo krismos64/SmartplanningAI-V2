@@ -23,6 +23,7 @@
 import type { Metadata, Viewport } from 'next'
 import { Inter, Rajdhani } from 'next/font/google'
 import { ToastProvider } from '@/components/toast'
+import { CookieConsentProvider } from '@/components/cookies'
 import './globals.css'
 
 /**
@@ -198,16 +199,19 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="min-h-screen bg-background font-rajdhani antialiased">
-        {/*
-          Structure sémantique HTML5
-          - <main> sera fourni par les layouts enfants
-          - Permet l'accessibilité (lecteurs d'écran)
-          - Font Rajdhani appliquée par défaut (SmartPlanning branding)
-        */}
-        {children}
+        {/* Cookie Consent RGPD (SP-283) - Provider enveloppe tout le contenu */}
+        <CookieConsentProvider>
+          {/*
+            Structure sémantique HTML5
+            - <main> sera fourni par les layouts enfants
+            - Permet l'accessibilité (lecteurs d'écran)
+            - Font Rajdhani appliquée par défaut (SmartPlanning branding)
+          */}
+          {children}
 
-        {/* Toast System - Sonner (SP-122) */}
-        <ToastProvider />
+          {/* Toast System - Sonner (SP-122) */}
+          <ToastProvider />
+        </CookieConsentProvider>
       </body>
     </html>
   )

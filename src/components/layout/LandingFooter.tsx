@@ -10,6 +10,7 @@
 
 import Link from 'next/link'
 import { Calendar, Mail, Linkedin, Instagram } from 'lucide-react'
+import { CookieSettingsButton } from '@/components/cookies'
 
 // Footer links
 const footerLinks = {
@@ -168,10 +169,16 @@ export function LandingFooter() {
             &copy; {new Date().getFullYear()} SmartPlanning. Tous droits
             réservés.
           </p>
-          <p className="flex items-center gap-2 text-sm text-white/40">
-            Made in France
-            <span className="text-base">🇫🇷</span>
-          </p>
+          <div className="flex items-center gap-4">
+            <CookieSettingsButton
+              variant="link"
+              className="h-auto p-0 text-sm text-white/40 hover:text-white"
+            />
+            <p className="flex items-center gap-2 text-sm text-white/40">
+              Made in France
+              <span className="text-base">🇫🇷</span>
+            </p>
+          </div>
         </div>
       </div>
     </footer>
