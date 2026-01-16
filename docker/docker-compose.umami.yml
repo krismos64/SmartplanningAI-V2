@@ -1,0 +1,82 @@
+# ==============================================
+# SMARTPLANNING - DOCKER COMPOSE UMAMI ANALYTICS
+# ==============================================
+# Configuration pour Umami Analytics (SP-345)
+# À utiliser avec docker-compose.prod.yml sur le VPS OVH
+#
+# USAGE :
+# -------
+# Déploiement : docker compose -f docker/docker-compose.prod.yml -f docker/docker-compose.umami.yml up -d
+# Logs        : docker compose -f docker/docker-compose.prod.yml -f docker/docker-compose.umami.yml logs -f umami
+# Arrêt       : docker compose -f docker/docker-compose.prod.yml -f docker/docker-compose.umami.yml down
+#
+# PRÉREQUIS :
+# -----------
+# 1. Créer la base umami dans PostgreSQL :
+#    docker exec -it smartplanning-postgres psql -U smartplanning -c "CREATE DATABASE umami;"
+#
+# 2. Générer UMAMI_APP_SECRET :
+#    openssl rand -base64 32
+#
+# 3. Ajouter les variables dans .env du VPS :
+#    UMAMI_APP_SECRET=<valeur_générée>
+#
+# ARCHITECTURE :
+# --------------
+# [Nginx /analytics] → [Umami:3001] → [PostgreSQL:5432/umami]
+#
+# ==============================================
+
+version: '3.8'
+
+services:
+  # ----------------------------------------------
+  # UMAMI ANALYTICS
+  # ----------------------------------------------
+  # Solution analytics open-source privacy-friendly
+  # Alternative RGPD-compliant à Google Analytics
+  #
+  # Dashboard : https://smartplanning.fr/analytics
+  # Login initial : admin / umami (À CHANGER !)
+  # ----------------------------------------------
+  umami:
+    image: ghcr.io/umami-software/umami:postgresql-latest
+    container_name: smartplanning-umami
+    restart: always
+    ports:
+      - '3001:3000'
+    environment:
+      # Connexion à la base PostgreSQL existante (base dédiée umami)
+      DATABASE_URL: postgresql://${POSTGRES_USER:-smartplanning}:${POSTGRES_PASSWORD}@postgres:5432/umami
+      DATABASE_TYPE: postgresql
+      # Secret pour les sessions (générer avec: openssl rand -base64 32)
+      APP_SECRET: ${UMAMI_APP_SECRET}
+      # BASE_PATH requis pour fonctionner sur /analytics
+      BASE_PATH: /analytics
+      # Désactive la télémétrie Umami (privacy)
+      DISABLE_TELEMETRY: 1
+      # Désactive les mises à jour automatiques
+      DISABLE_UPDATES: 1
+    networks:
+      - smartplanning-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD', 'wget', '-q', '--spider', 'http://localhost:3000/api/heartbeat']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+
+# Utilise le network existant de docker-compose.prod.yml
+networks:
+  smartplanning-network:
+    external: true
+    name: docker_smartplanning-network

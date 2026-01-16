@@ -5,6 +5,7 @@
  * uniquement si l'utilisateur a donné son consentement.
  *
  * @see SP-283 - Bannière Cookies : Consent manager avec choix granulaire
+ * @see SP-345 - Intégration Umami Analytics
  */
 
 import { isCategoryAccepted } from './cookie-consent'
@@ -93,16 +94,37 @@ export function removeAnalyticsCookies(): void {
 /**
  * Applique les préférences de cookies (charge ou supprime les scripts)
  *
- * @description À appeler après chaque modification du consentement
+ * @description À appeler après chaque modification du consentement.
+ * Dispatch également un event custom pour notifier les composants
+ * qui écoutent les changements (ex: UmamiAnalytics).
  */
 export function applyConsentPreferences(): void {
   if (!isClient) return
 
   if (isCategoryAccepted('analytics')) {
     loadAnalyticsScripts()
+    // Note: Umami est chargé via le composant UmamiAnalytics
+    // qui écoute l'event cookie-consent-changed
   } else {
     removeAnalyticsCookies()
+    // Note: Umami ne crée pas de cookies côté client (privacy-first)
   }
+
+  // Notifie les composants du changement de consentement
+  notifyConsentChange()
+}
+
+/**
+ * Dispatch un event custom pour notifier les changements de consentement
+ *
+ * @description Permet aux composants comme UmamiAnalytics de réagir
+ * dynamiquement aux modifications de préférences sans refresh.
+ *
+ * @see SP-345 - Intégration Umami Analytics
+ */
+export function notifyConsentChange(): void {
+  if (!isClient) return
+  window.dispatchEvent(new CustomEvent('cookie-consent-changed'))
 }
 
 // Déclaration globale pour TypeScript
