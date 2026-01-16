@@ -8,8 +8,8 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { render, screen, waitFor } from '@testing-library/react'
-import { UmamiAnalytics } from '@/components/analytics/UmamiAnalytics'
+import { render, screen, waitFor, cleanup, act } from '@testing-library/react'
+import type { ComponentType } from 'react'
 
 // Mock du module cookies
 const mockIsCategoryAccepted = vi.fn()
@@ -39,18 +39,28 @@ vi.mock('next/script', () => ({
 }))
 
 describe('UmamiAnalytics', () => {
-  const originalEnv = { ...process.env }
+  let UmamiAnalytics: ComponentType<{ disabled?: boolean }>
 
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks()
-    // Configure les variables d'environnement pour les tests
+    cleanup()
+
+    // Reset modules pour que les variables d'env soient réévaluées
+    vi.resetModules()
+
+    // Configure les variables d'environnement AVANT l'import
     vi.stubEnv('NEXT_PUBLIC_UMAMI_WEBSITE_ID', 'test-website-id-123')
     vi.stubEnv('NEXT_PUBLIC_UMAMI_SCRIPT_URL', '/analytics/script.js')
     vi.stubEnv('NEXT_PUBLIC_UMAMI_DOMAINS', 'smartplanning.fr')
+
+    // Import dynamique après configuration des env vars
+    const module = await import('@/components/analytics/UmamiAnalytics')
+    UmamiAnalytics = module.UmamiAnalytics
   })
 
   afterEach(() => {
     vi.unstubAllEnvs()
+    cleanup()
   })
 
   it('ne charge pas le script si le consentement analytics est refusé', async () => {
@@ -92,7 +102,9 @@ describe('UmamiAnalytics', () => {
 
     // Simule un changement de consentement
     mockIsCategoryAccepted.mockReturnValue(true)
-    window.dispatchEvent(new CustomEvent('cookie-consent-changed'))
+    act(() => {
+      window.dispatchEvent(new CustomEvent('cookie-consent-changed'))
+    })
 
     await waitFor(() => {
       expect(screen.getByTestId('umami-script')).toBeInTheDocument()

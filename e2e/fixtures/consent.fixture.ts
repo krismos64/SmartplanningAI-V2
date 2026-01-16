@@ -7,7 +7,7 @@
  * @ticket SP-283
  */
 
-import { test as base, BrowserContext } from '@playwright/test'
+import { test as base, BrowserContext, Page } from '@playwright/test'
 
 // =============================================================================
 // Cookie Consent Configuration
@@ -95,3 +95,101 @@ export const test = base.extend({
 })
 
 export { expect } from '@playwright/test'
+
+// =============================================================================
+// ConsentFixture Class - Helper pour tests analytics
+// =============================================================================
+
+/**
+ * Classe helper pour interagir avec la bannière de consentement dans les tests
+ *
+ * @example
+ * ```ts
+ * const consent = new ConsentFixture(page)
+ * await consent.waitForBanner()
+ * await consent.acceptAll()
+ * ```
+ */
+export class ConsentFixture {
+  constructor(private page: Page) {}
+
+  /**
+   * Attend que la bannière de consentement soit visible
+   */
+  async waitForBanner(): Promise<void> {
+    await this.page
+      .locator('[data-testid="cookie-banner"]')
+      .waitFor({ state: 'visible', timeout: 10000 })
+  }
+
+  /**
+   * Attend que la bannière soit masquée
+   */
+  async waitForBannerHidden(): Promise<void> {
+    await this.page
+      .locator('[data-testid="cookie-banner"]')
+      .waitFor({ state: 'hidden', timeout: 5000 })
+  }
+
+  /**
+   * Accepte tous les cookies
+   */
+  async acceptAll(): Promise<void> {
+    const acceptButton = this.page.locator(
+      '[data-testid="cookie-accept-all"], button:has-text("Accepter tout")'
+    )
+    await acceptButton.first().click()
+  }
+
+  /**
+   * Refuse tous les cookies optionnels
+   */
+  async rejectAll(): Promise<void> {
+    const rejectButton = this.page.locator(
+      '[data-testid="cookie-reject-all"], button:has-text("Refuser"), button:has-text("Essentiels uniquement")'
+    )
+    await rejectButton.first().click()
+  }
+
+  /**
+   * Ouvre les paramètres de cookies
+   */
+  async openSettings(): Promise<void> {
+    const settingsButton = this.page.locator(
+      '[data-testid="cookie-settings"], button:has-text("Personnaliser"), button:has-text("Paramètres")'
+    )
+    await settingsButton.first().click()
+  }
+
+  /**
+   * Définit la préférence pour une catégorie de cookies
+   */
+  async setCategoryPreference(
+    category: 'analytics' | 'functional' | 'marketing',
+    enabled: boolean
+  ): Promise<void> {
+    const toggle = this.page.locator(
+      `[data-testid="cookie-${category}-toggle"], input[name="${category}"], [data-category="${category}"]`
+    )
+
+    if ((await toggle.count()) > 0) {
+      const isChecked = await toggle
+        .first()
+        .isChecked()
+        .catch(() => false)
+      if (isChecked !== enabled) {
+        await toggle.first().click()
+      }
+    }
+  }
+
+  /**
+   * Sauvegarde les préférences personnalisées
+   */
+  async savePreferences(): Promise<void> {
+    const saveButton = this.page.locator(
+      '[data-testid="cookie-save"], button:has-text("Sauvegarder"), button:has-text("Enregistrer")'
+    )
+    await saveButton.first().click()
+  }
+}

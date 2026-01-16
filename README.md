@@ -593,6 +593,13 @@ Toute la documentation est centralisée dans le dossier `/docs` :
    - `/cookies` : Politique Cookies détaillée
    - `/a-propos` : Présentation de SmartPlanning
 
+10. **[Umami Analytics](/docs/analytics.md)**
+    - Configuration self-hosted (Docker + Nginx)
+    - Composant UmamiAnalytics (chargement conditionnel)
+    - Hook useUmamiTrack (events custom)
+    - Intégration RGPD et consentement cookies
+    - Dashboard et métriques
+
 ## Sécurité
 
 ### Système RBAC (Role-Based Access Control)
@@ -650,12 +657,37 @@ Jamais commiter :
 - React.memo sur composants lourds
 - Suspense boundaries
 
+### Analytics - Umami ✅ (SP-345 - 16 janvier 2026)
+
+SmartPlanning utilise **Umami** comme solution d'analytics privacy-friendly et RGPD-compliant :
+
+- **Self-hosted** : Déployé sur le VPS OVH (Docker)
+- **Accès dashboard** : `https://smartplanning.fr/analytics`
+- **Tracking conditionnel** : Script chargé uniquement si consentement analytics accepté
+- **Events custom** : Hook `useUmamiTrack()` pour tracker les conversions
+
+```tsx
+// Exemple d'utilisation
+import { useUmamiTrack } from '@/hooks/useUmamiTrack'
+
+function CTAButton() {
+  const { track } = useUmamiTrack()
+
+  const handleClick = () => {
+    track('cta-click', { location: 'hero' })
+  }
+
+  return <button onClick={handleClick}>S'inscrire</button>
+}
+```
+
+📚 **Documentation complète** : [`/docs/analytics.md`](/docs/analytics.md)
+
 ### Monitoring (à venir)
 
 - Sentry pour les erreurs
 - LogRocket pour le comportement utilisateur
 - Lighthouse CI pour les performances
-- Analytics personnalisés
 
 ## SEO
 
@@ -720,6 +752,7 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 | dashboard director   | 100%     | 87       |
 | dashboard admin      | 100%     | 115      |
 | cookies              | 100%     | 83       |
+| analytics            | 100%     | 13       |
 
 ### Tests E2E
 
@@ -738,9 +771,10 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 | **CRUD Teams**               | 15    | ✅     |
 | **Empty States**             | 8     | ✅     |
 | **Cookies RGPD**             | 18    | ✅     |
-| **Total E2E actifs**         | **211** | ✅   |
+| **Analytics Umami**          | 8     | ✅     |
+| **Total E2E actifs**         | **219** | ✅   |
 | **Total E2E skipped**        | **24**  | ⏸️   |
-| **Total E2E**                | **235** |      |
+| **Total E2E**                | **243** |      |
 
 **Note** : Tests exécutés uniquement sur Chromium (Firefox et WebKit supprimés pour stabilité et performance).
 
@@ -838,6 +872,11 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 - CookieConsentProvider (Context React pour état partagé)
 - useCookieConsent (hook standalone pour tests)
 - lib/cookies.ts (gestion cookie HTTP, préférences, types)
+
+#### Analytics Umami (1 composant + 1 hook - SP-345)
+
+- UmamiAnalytics (chargement conditionnel script basé sur consentement)
+- useUmamiTrack (hook pour tracking events custom avec vérification RGPD)
 
 ### Scripts de test
 
