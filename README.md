@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings d'entreprise (mult
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 16 janvier 2026 (Bannière Cookies RGPD)
+- **Dernière mise à jour** : 17 janvier 2026 (Fix Umami Analytics Docker)
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -659,7 +659,7 @@ Jamais commiter :
 - React.memo sur composants lourds
 - Suspense boundaries
 
-### Analytics - Umami ✅ (SP-345 - 16 janvier 2026)
+### Analytics - Umami ✅ (SP-345 - 16-17 janvier 2026)
 
 SmartPlanning utilise **Umami** comme solution d'analytics privacy-friendly et RGPD-compliant :
 
@@ -668,6 +668,11 @@ SmartPlanning utilise **Umami** comme solution d'analytics privacy-friendly et R
 - **Tracking conditionnel** : Script chargé uniquement si consentement analytics accepté
 - **Events custom** : Hook `useUmamiTrack()` pour tracker les conversions
 - **Intégration RGPD** : Respecte le consentement cookies (catégorie "analytics")
+
+**Architecture** :
+- `UmamiAnalyticsWrapper` : Server Component qui injecte la config au runtime
+- `UmamiAnalytics` : Client Component avec chargement conditionnel
+- **Config hardcodée** : Les valeurs Umami sont intégrées en fallback pour contourner la limitation des `NEXT_PUBLIC_*` au build-time Docker
 
 ```tsx
 // Exemple d'utilisation
