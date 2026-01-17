@@ -72,7 +72,7 @@ const nextConfig: NextConfig = {
     // Pour une sécurité maximale, implémenter un middleware avec nonce (voir Context7)
     const cspHeader = `
       default-src 'self';
-      script-src 'self' 'unsafe-eval' 'unsafe-inline' https://vercel.live;
+      script-src 'self' 'unsafe-eval' 'unsafe-inline' https://analytics.smartplanning.fr;
       style-src 'self' 'unsafe-inline';
       img-src 'self' blob: data: https:;
       font-src 'self' data:;
@@ -80,8 +80,8 @@ const nextConfig: NextConfig = {
       base-uri 'self';
       form-action 'self';
       frame-ancestors 'none';
-      frame-src 'self' https://vercel.live https://www.youtube.com https://youtube.com https://www.youtube-nocookie.com;
-      connect-src 'self' https://vercel.live https://*.pusher.com wss://*.pusher.com;
+      frame-src 'self' https://www.youtube.com https://youtube.com https://www.youtube-nocookie.com;
+      connect-src 'self' https://*.pusher.com wss://*.pusher.com https://analytics.smartplanning.fr;
       upgrade-insecure-requests;
     `
       .replace(/\s{2,}/g, ' ')
