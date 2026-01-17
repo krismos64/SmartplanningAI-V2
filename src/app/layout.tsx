@@ -24,7 +24,7 @@ import type { Metadata, Viewport } from 'next'
 import { Inter, Rajdhani } from 'next/font/google'
 import { ToastProvider } from '@/components/toast'
 import { CookieConsentProvider } from '@/components/cookies'
-import { UmamiAnalytics } from '@/components/analytics'
+import { UmamiAnalyticsWrapper } from '@/components/analytics'
 import './globals.css'
 
 /**
@@ -214,7 +214,7 @@ export default function RootLayout({
           <ToastProvider />
 
           {/* Umami Analytics - Privacy-friendly (SP-345) */}
-          <UmamiAnalytics />
+          <UmamiAnalyticsWrapper />
         </CookieConsentProvider>
       </body>
     </html>

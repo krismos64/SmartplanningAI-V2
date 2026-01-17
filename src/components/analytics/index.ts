@@ -8,5 +8,6 @@
  */
 
 export { UmamiAnalytics } from './UmamiAnalytics'
+export { UmamiAnalyticsWrapper } from './UmamiAnalyticsWrapper'
 export { useUmamiTrack } from '@/hooks/useUmamiTrack'
 export type { UmamiEventData, UseUmamiTrackReturn } from '@/hooks/useUmamiTrack'
