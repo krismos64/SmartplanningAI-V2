@@ -57,6 +57,7 @@ export async function verifyConnection(): Promise<boolean> {
 
     const transport = getTransporter()
     await transport.verify()
+    // eslint-disable-next-line no-console
     console.info('[Email] Connexion SMTP vérifiée avec succès')
     return true
   } catch (error) {
@@ -74,6 +75,7 @@ export function closeTransporter(): void {
   if (transporter) {
     transporter.close()
     transporter = null
+    // eslint-disable-next-line no-console
     console.info('[Email] Transporter fermé')
   }
 }

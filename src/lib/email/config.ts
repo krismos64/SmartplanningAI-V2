@@ -90,5 +90,9 @@ export function getBaseUrl(): string {
  * @returns Email du destinataire des notifications
  */
 export function getContactEmail(): string {
-  return process.env.CONTACT_EMAIL || process.env.SMTP_USER || 'contact@smartplanning.fr'
+  return (
+    process.env.CONTACT_EMAIL ||
+    process.env.SMTP_USER ||
+    'contact@smartplanning.fr'
+  )
 }

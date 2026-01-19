@@ -175,8 +175,7 @@ export async function verifyEmailAction(data: {
     if (!verificationToken) {
       return {
         success: false,
-        error:
-          'Ce lien de vérification est invalide ou a déjà été utilisé.',
+        error: 'Ce lien de vérification est invalide ou a déjà été utilisé.',
       }
     }
 

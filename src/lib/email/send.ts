@@ -49,7 +49,10 @@ const INITIAL_RETRY_DELAY = 1000
 export async function sendEmail(options: EmailOptions): Promise<EmailResult> {
   // Vérification de la configuration
   if (!isEmailConfigured()) {
-    console.warn('[Email] Service non configuré, email ignoré:', options.subject)
+    console.warn(
+      '[Email] Service non configuré, email ignoré:',
+      options.subject
+    )
     return {
       success: false,
       error: 'Service email non configuré',
@@ -72,7 +75,7 @@ export async function sendEmail(options: EmailOptions): Promise<EmailResult> {
       const transporter = getTransporter()
       const from = getEmailFrom()
 
-      const info = await transporter.sendMail({
+      const info = (await transporter.sendMail({
         from,
         to: options.to,
         subject: options.subject,
@@ -80,9 +83,12 @@ export async function sendEmail(options: EmailOptions): Promise<EmailResult> {
         text: options.text || stripHtml(options.html),
         replyTo: options.replyTo,
         attachments: options.attachments,
-      })
+      })) as { messageId: string }
 
-      console.info(`[Email] Envoi réussi à ${options.to} - MessageId: ${info.messageId}`)
+      // eslint-disable-next-line no-console
+      console.info(
+        `[Email] Envoi réussi à ${options.to} - MessageId: ${info.messageId}`
+      )
 
       return {
         success: true,
@@ -109,11 +115,14 @@ export async function sendEmail(options: EmailOptions): Promise<EmailResult> {
     }
   }
 
-  console.error(`[Email] Échec définitif pour ${options.to}:`, lastError?.message)
+  console.error(
+    `[Email] Échec définitif pour ${options.to}:`,
+    lastError?.message
+  )
 
   return {
     success: false,
-    error: lastError?.message || 'Erreur inconnue lors de l\'envoi',
+    error: lastError?.message || "Erreur inconnue lors de l'envoi",
   }
 }
 
@@ -123,7 +132,9 @@ export async function sendEmail(options: EmailOptions): Promise<EmailResult> {
  * @param emailsList - Liste des emails à envoyer
  * @returns Tableau des résultats d'envoi
  */
-export async function sendEmails(emailsList: EmailOptions[]): Promise<EmailResult[]> {
+export async function sendEmails(
+  emailsList: EmailOptions[]
+): Promise<EmailResult[]> {
   return Promise.all(emailsList.map(sendEmail))
 }
 
@@ -132,7 +143,9 @@ export async function sendEmails(emailsList: EmailOptions[]): Promise<EmailResul
  */
 function isAuthError(error: Error): boolean {
   const authErrors = ['EAUTH', 'Invalid login', 'authentication failed']
-  return authErrors.some((msg) => error.message.toLowerCase().includes(msg.toLowerCase()))
+  return authErrors.some((msg) =>
+    error.message.toLowerCase().includes(msg.toLowerCase())
+  )
 }
 
 /**

@@ -180,7 +180,10 @@ export async function registerAction(
       // Logger l'erreur mais ne pas bloquer l'inscription
       if (process.env.NODE_ENV === 'development') {
         // eslint-disable-next-line no-console
-        console.error('[registerAction] Failed to send welcome email:', emailError)
+        console.error(
+          '[registerAction] Failed to send welcome email:',
+          emailError
+        )
       }
     }
 
