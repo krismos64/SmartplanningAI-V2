@@ -1,0 +1,5 @@
+# Ce dossier contiendra les templates React Email
+# Structure :
+# - components/ : Composants réutilisables (Layout, Header, Footer, Button)
+# - styles/ : Constantes de style (couleurs, typo SmartPlanning)
+# - templates/ : Templates d'emails (Welcome, Reset, Contact, etc.)
