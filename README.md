@@ -104,6 +104,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
   - FAQ : Accordion avec sticky sidebar
   - CTA : Section finale avec gradient
   - Footer : Liens, newsletter, réseaux sociaux (LinkedIn, Instagram, TikTok)
+- **Contact** : Formulaire avec React Hook Form + Zod, animations Framer Motion
 - **Navigation** : 7 liens avec scroll smooth, menu mobile fullscreen animé
 - **SEO** : Meta tags, Open Graph, sémantique HTML5
 - **Performance** : Dynamic imports (Lottie), images optimisées Next.js
@@ -195,6 +196,16 @@ Système complet d'envoi d'emails transactionnels avec React Email et Nodemailer
   - Transaction atomique Prisma pour validation
   - Protection contre l'énumération de comptes
   - 10 tests unitaires
+
+### Formulaire de Contact (SP-287 - 19 janvier 2026)
+
+- **Composant ContactForm** : Formulaire complet avec React Hook Form + Zod
+- **Validation** : Schéma Zod pour nom, email, sujet, message (messages FR)
+- **Accessibilité** : aria-labels, aria-required, aria-invalid, aria-describedby, role="alert"
+- **UX** : États loading/success, toast notifications (Sonner), reset après succès
+- **Design** : Glassmorphism, animations Framer Motion, responsive
+- **ContactSection** : Intégration landing page avec infos contact (email, localisation, disponibilité 24/24)
+- **Tests** : 41 tests unitaires (20 validation Zod + 21 composant)
 
 ### Fonctionnalités avancées (Post-MVP)
 
@@ -791,7 +802,7 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 
 | Catégorie            | Coverage | Tests    |
 | -------------------- | -------- | -------- |
-| **Global**           | **~55%** | **1537** |
+| **Global**           | **~55%** | **1591** |
 | loading              | 100%     | 152      |
 | modals               | 100%     | 52       |
 | cards                | 77.09%   | 88       |
@@ -807,6 +818,7 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 | cookies              | 100%     | 83       |
 | analytics            | 100%     | 13       |
 | emails (Sprint 9)    | 100%     | 37       |
+| contact (SP-287)     | 100%     | 41       |
 
 ### Tests E2E
 
@@ -1020,7 +1032,7 @@ Merge main → Build Docker → Push GHCR → Deploy VPS (~8-10 min)
 
 - **CI** (`.github/workflows/ci.yml`) : Lint, Type-check, Tests unitaires, Build, Tests E2E (PR uniquement)
 - **CD** (`.github/workflows/cd.yml`) : Build image Docker, Push sur ghcr.io, Deploy via SSH
-- Tests unitaires sur tous les push (~1537 tests Vitest)
+- Tests unitaires sur tous les push (~1591 tests Vitest)
 - Tests E2E sur PR vers main (~211 tests Playwright actifs)
 - Déploiement automatique sur merge main ✅
 - Migrations Prisma automatiques
