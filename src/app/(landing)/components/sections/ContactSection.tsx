@@ -8,7 +8,7 @@
  */
 
 import { motion } from 'framer-motion'
-import { Mail, Clock, MapPin, Phone } from 'lucide-react'
+import { Mail, Clock, MapPin } from 'lucide-react'
 import { SectionHeader } from '../SectionHeader'
 import { ContactForm } from '@/components/public/ContactForm'
 import { fadeInUp, staggerContainer } from '../../animations'
@@ -22,21 +22,15 @@ const contactInfo = [
     href: 'mailto:contact@smartplanning.fr',
   },
   {
-    icon: Phone,
-    label: 'Téléphone',
-    value: '+33 6 00 00 00 00',
-    href: 'tel:+33600000000',
-  },
-  {
     icon: MapPin,
-    label: 'Adresse',
-    value: 'Lyon, France',
+    label: 'Localisation',
+    value: 'France',
     href: null,
   },
   {
     icon: Clock,
     label: 'Disponibilité',
-    value: 'Lun - Ven, 9h - 18h',
+    value: '24/24 par email, réponse sous 24h',
     href: null,
   },
 ]
@@ -98,21 +92,6 @@ export function ContactSection() {
                 </motion.div>
               ))}
             </div>
-
-            {/* Additional info */}
-            <motion.div
-              variants={fadeInUp}
-              className="rounded-2xl border border-white/10 bg-gradient-to-br from-blue-500/10 to-cyan-500/10 p-6"
-            >
-              <h3 className="mb-3 text-lg font-semibold text-white">
-                Besoin d&apos;une démo personnalisée ?
-              </h3>
-              <p className="text-white/70">
-                Nous proposons des démonstrations gratuites et personnalisées de
-                SmartPlanning. Contactez-nous pour planifier un rendez-vous avec
-                notre équipe.
-              </p>
-            </motion.div>
 
             {/* Response time */}
             <motion.div
