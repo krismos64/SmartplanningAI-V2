@@ -8,11 +8,37 @@
  * - SMTP_HOST : Serveur SMTP (smtp.hostinger.com)
  * - SMTP_PORT : Port SMTP (587 pour TLS)
  * - SMTP_USER : Email d'authentification
- * - SMTP_PASSWORD : Mot de passe SMTP
- * - SMTP_FROM : Adresse d'expédition formatée
+ * - SMTP_PASSWORD : Mot de passe SMTP (attention: pas SMTP_PASS)
+ * - SMTP_FROM : Adresse d'expédition formatée (attention: pas EMAIL_FROM)
+ * - CONTACT_EMAIL : Email de contact (attention: pas EMAIL_CONTACT)
  */
 
 import type { SmtpConfig } from './types'
+
+/**
+ * Vérifie les noms de variables obsolètes et affiche un warning
+ * Appelé une seule fois au démarrage
+ */
+let deprecationWarningShown = false
+
+export function checkDeprecatedEnvVars(): void {
+  if (deprecationWarningShown) return
+  deprecationWarningShown = true
+
+  const deprecatedMappings = [
+    { old: 'SMTP_PASS', new: 'SMTP_PASSWORD' },
+    { old: 'EMAIL_FROM', new: 'SMTP_FROM' },
+    { old: 'EMAIL_CONTACT', new: 'CONTACT_EMAIL' },
+  ]
+
+  for (const { old, new: newVar } of deprecatedMappings) {
+    if (process.env[old] && !process.env[newVar]) {
+      console.warn(
+        `[Email] ⚠️ Variable "${old}" détectée mais "${newVar}" attendue. Renommez la variable dans votre .env`
+      )
+    }
+  }
+}
 
 /**
  * Vérifie que toutes les variables d'environnement SMTP sont définies
@@ -20,6 +46,9 @@ import type { SmtpConfig } from './types'
  * @returns true si la configuration est complète
  */
 export function isEmailConfigured(): boolean {
+  // Vérifier les variables obsolètes au premier appel
+  checkDeprecatedEnvVars()
+
   return !!(
     process.env.SMTP_HOST &&
     process.env.SMTP_PORT &&

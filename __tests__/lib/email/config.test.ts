@@ -234,4 +234,76 @@ describe('email/config', () => {
       expect(getContactEmail()).toBe('contact@smartplanning.fr')
     })
   })
+
+  // ==========================================================================
+  // checkDeprecatedEnvVars
+  // ==========================================================================
+
+  describe('checkDeprecatedEnvVars', () => {
+    it('devrait afficher un warning si SMTP_PASS est utilisé au lieu de SMTP_PASSWORD', async () => {
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+      process.env.SMTP_PASS = 'old_password'
+      delete process.env.SMTP_PASSWORD
+
+      const { checkDeprecatedEnvVars } = await import('@/lib/email/config')
+      checkDeprecatedEnvVars()
+
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.stringContaining('SMTP_PASS')
+      )
+
+      warnSpy.mockRestore()
+    })
+
+    it('devrait afficher un warning si EMAIL_FROM est utilisé au lieu de SMTP_FROM', async () => {
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+      process.env.EMAIL_FROM = 'old@email.com'
+      delete process.env.SMTP_FROM
+
+      const { checkDeprecatedEnvVars } = await import('@/lib/email/config')
+      checkDeprecatedEnvVars()
+
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.stringContaining('EMAIL_FROM')
+      )
+
+      warnSpy.mockRestore()
+    })
+
+    it('devrait afficher un warning si EMAIL_CONTACT est utilisé au lieu de CONTACT_EMAIL', async () => {
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+      process.env.EMAIL_CONTACT = 'old@contact.com'
+      delete process.env.CONTACT_EMAIL
+
+      const { checkDeprecatedEnvVars } = await import('@/lib/email/config')
+      checkDeprecatedEnvVars()
+
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.stringContaining('EMAIL_CONTACT')
+      )
+
+      warnSpy.mockRestore()
+    })
+
+    it('ne devrait pas afficher de warning si les bonnes variables sont utilisées', async () => {
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+      process.env.SMTP_PASSWORD = 'correct_password'
+      process.env.SMTP_FROM = 'correct@email.com'
+      process.env.CONTACT_EMAIL = 'correct@contact.com'
+      delete process.env.SMTP_PASS
+      delete process.env.EMAIL_FROM
+      delete process.env.EMAIL_CONTACT
+
+      const { checkDeprecatedEnvVars } = await import('@/lib/email/config')
+      checkDeprecatedEnvVars()
+
+      expect(warnSpy).not.toHaveBeenCalled()
+
+      warnSpy.mockRestore()
+    })
+  })
 })
