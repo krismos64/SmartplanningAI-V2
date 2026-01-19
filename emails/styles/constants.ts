@@ -123,7 +123,7 @@ export const dimensions = {
   maxWidth: '600px',
 
   // Hauteur du logo
-  logoHeight: '120px',
+  logoHeight: '180px',
 
   // Taille des boutons
   buttonHeight: '44px',

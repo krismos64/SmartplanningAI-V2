@@ -12,8 +12,9 @@
 
 import { Prisma } from '@prisma/client'
 
-import { prisma } from '@/lib/prisma'
+import { sendWelcomeEmail } from '@/lib/email/templates/welcome'
 import { hashPassword } from '@/lib/password'
+import { prisma } from '@/lib/prisma'
 import { signupSchema, type SignupFormData } from '@/lib/validations'
 
 /**
@@ -166,6 +167,22 @@ export async function registerAction(
 
       return { user, company }
     })
+
+    // 6. Envoyer l'email de bienvenue (non bloquant)
+    // L'échec de l'envoi ne doit PAS bloquer l'inscription
+    try {
+      const firstName = name.trim().split(' ')[0] || name.trim()
+      await sendWelcomeEmail({
+        firstName,
+        email: email.toLowerCase(),
+      })
+    } catch (emailError) {
+      // Logger l'erreur mais ne pas bloquer l'inscription
+      if (process.env.NODE_ENV === 'development') {
+        // eslint-disable-next-line no-console
+        console.error('[registerAction] Failed to send welcome email:', emailError)
+      }
+    }
 
     return {
       success: true,
