@@ -81,26 +81,7 @@ export const changePasswordSchema = z
 export type ChangePasswordFormData = z.infer<typeof changePasswordSchema>
 
 // ============================================
-// FORGOT PASSWORD FORM
+// FORGOT PASSWORD & RESET PASSWORD
 // ============================================
-export const forgotPasswordSchema = z.object({
-  email: emailSchema,
-})
-
-export type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>
-
-// ============================================
-// RESET PASSWORD FORM
-// ============================================
-export const resetPasswordSchema = z
-  .object({
-    token: z.string().min(1, 'Token invalide'),
-    password: passwordSchema,
-    confirmPassword: z.string().min(1, 'Veuillez confirmer le mot de passe'),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: 'Les mots de passe ne correspondent pas',
-    path: ['confirmPassword'],
-  })
-
-export type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>
+// Note: forgotPasswordSchema et resetPasswordSchema sont définis dans auth.ts (SP-298)
+// pour une meilleure organisation des schémas d'authentification

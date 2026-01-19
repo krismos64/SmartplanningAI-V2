@@ -44,6 +44,18 @@ export const colors = {
     dark: '#92400e', // Texte warning (amber-800)
   },
 
+  // Variantes info pour les informations
+  info: {
+    light: '#dbeafe', // Fond info (blue-100)
+    dark: '#1e40af', // Texte info (blue-800)
+  },
+
+  // Variantes success pour les succès
+  success: {
+    light: '#dcfce7', // Fond success (green-100)
+    dark: '#166534', // Texte success (green-800)
+  },
+
   // Bordures
   border: {
     light: '#e2e8f0', // Bordure claire
