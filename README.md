@@ -197,6 +197,14 @@ Système complet d'envoi d'emails transactionnels avec React Email et Nodemailer
   - Protection contre l'énumération de comptes
   - 10 tests unitaires
 
+- **SP-300 : Email Congé Validé/Refusé** ✅
+  - Templates `LeaveApprovedEmail.tsx` et `LeaveRejectedEmail.tsx`
+  - Types `LeaveType`, `LeaveEmailData`, `LeaveRejectedEmailData` dans `src/types/leave.ts`
+  - 6 types de congés supportés (PAID_LEAVE, RTT, SICK_LEAVE, UNPAID_LEAVE, FAMILY_EVENT, OTHER)
+  - Fonctions `sendLeaveApprovedEmail`, `sendLeaveRejectedEmail` dans `src/lib/email/templates/leave-decision.ts`
+  - Helpers `formatDateFr` (dates en français) et `getLeaveTypeLabel` (traduction types)
+  - 48 tests unitaires (16 + 19 + 13)
+
 ### Formulaire de Contact (SP-287, SP-289 - 19 janvier 2026)
 
 - **Composant ContactForm** : Formulaire complet avec React Hook Form + Zod
@@ -300,7 +308,7 @@ SmartplanningAI/
 ├── emails/               # Templates React Email (Sprint 9)
 │   ├── components/       # Layout, Header, Footer, Button
 │   ├── styles/           # Design tokens (colors, typography)
-│   └── templates/        # WelcomeEmail, ResetPasswordEmail, VerificationEmail
+│   └── templates/        # WelcomeEmail, ResetPasswordEmail, VerificationEmail, LeaveApprovedEmail, LeaveRejectedEmail
 ├── docs/                 # Documentation complète
 │   ├── project-overview.md
 │   ├── database-schema.md
