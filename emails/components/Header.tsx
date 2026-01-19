@@ -25,9 +25,15 @@ export interface HeaderProps {
  * - Logo centré cliquable
  */
 export function Header({
-  logoUrl = 'https://smartplanning.fr/images/logo-smartplanning.png',
-  logoLink = 'https://smartplanning.fr',
+  logoUrl,
+  logoLink,
 }: HeaderProps) {
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://smartplanning.fr'
+  const defaultLogoUrl = `${baseUrl}/images/logo-sp.png`
+  const defaultLogoLink = baseUrl
+
+  const finalLogoUrl = logoUrl || defaultLogoUrl
+  const finalLogoLink = logoLink || defaultLogoLink
   return (
     <>
       {/* Bande de couleur primaire */}
@@ -37,14 +43,14 @@ export function Header({
       <Section style={headerStyle}>
         <Row>
           <Column align="center">
-            <Link href={logoLink} style={logoLinkStyle}>
+            <Link href={finalLogoLink} style={logoLinkStyle}>
               {/* Logo texte en fallback si l'image ne charge pas */}
               <table role="presentation" cellPadding="0" cellSpacing="0">
                 <tbody>
                   <tr>
                     <td style={logoContainerStyle}>
                       <Img
-                        src={logoUrl}
+                        src={finalLogoUrl}
                         alt="SmartPlanning"
                         height={dimensions.logoHeight}
                         style={logoImageStyle}
