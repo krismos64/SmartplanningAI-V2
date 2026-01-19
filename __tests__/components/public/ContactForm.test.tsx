@@ -1,7 +1,7 @@
 /**
  * Tests unitaires pour le composant ContactForm
  *
- * @ticket SP-287
+ * @ticket SP-287, SP-289
  * @description Tests du formulaire de contact (rendu, validation, états)
  */
 
@@ -22,7 +22,16 @@ vi.mock('framer-motion', () => ({
     p: ({ children, ...props }: React.PropsWithChildren<object>) => (
       <p {...props}>{children}</p>
     ),
+    svg: ({ children, ...props }: React.PropsWithChildren<object>) => (
+      <svg {...props}>{children}</svg>
+    ),
+    circle: (props: object) => <circle {...props} />,
+    path: (props: object) => <path {...props} />,
   },
+  AnimatePresence: ({ children }: React.PropsWithChildren) => <>{children}</>,
+  useAnimation: () => ({
+    start: vi.fn().mockResolvedValue(undefined),
+  }),
 }))
 
 // Mock sonner (toast)
@@ -316,7 +325,8 @@ describe('ContactForm', () => {
       await user.click(screen.getByRole('button', { name: /envoyer/i }))
 
       await waitFor(() => {
-        expect(screen.getByText(/message envoyé/i)).toBeInTheDocument()
+        // SP-289: Nouveau message de succès avec le nom de l'utilisateur
+        expect(screen.getByText(/merci jean dupont/i)).toBeInTheDocument()
       })
     })
 
@@ -345,28 +355,23 @@ describe('ContactForm', () => {
       await user.click(screen.getByRole('button', { name: /envoyer/i }))
 
       // Le bouton est désactivé pendant le chargement
-      expect(screen.getByRole('button')).toBeDisabled()
+      expect(screen.getByRole('button', { name: /envoi en cours/i })).toBeDisabled()
 
-      // Attendre que le chargement se termine (bouton reste désactivé en mode succès aussi)
+      // Attendre que le chargement se termine
       await waitFor(() => {
-        expect(screen.getByText(/message envoyé/i)).toBeInTheDocument()
+        // SP-289: En mode succès, on affiche le composant ContactSuccessState
+        expect(screen.getByText(/merci jean dupont/i)).toBeInTheDocument()
       })
-
-      // En mode succès, le bouton est aussi désactivé (pour éviter double soumission)
-      expect(screen.getByRole('button')).toBeDisabled()
     })
 
-    it('devrait réinitialiser le formulaire après succès', async () => {
+    it('devrait réinitialiser le formulaire après clic sur "Envoyer un autre message"', async () => {
       const user = userEvent.setup()
       const mockOnSubmit = vi.fn().mockResolvedValue({ success: true })
       render(<ContactForm onSubmit={mockOnSubmit} />)
 
-      const nameInput = screen.getByLabelText(/nom complet/i)
-      const emailInput = screen.getByLabelText(/adresse email/i)
-
       // Remplir et soumettre
-      await user.type(nameInput, 'Jean Dupont')
-      await user.type(emailInput, 'jean@test.com')
+      await user.type(screen.getByLabelText(/nom complet/i), 'Jean Dupont')
+      await user.type(screen.getByLabelText(/adresse email/i), 'jean@test.com')
       await user.type(screen.getByLabelText(/sujet/i), 'Test sujet valide')
       await user.type(
         screen.getByLabelText(/message/i),
@@ -375,9 +380,18 @@ describe('ContactForm', () => {
 
       await user.click(screen.getByRole('button', { name: /envoyer/i }))
 
+      // SP-289: Attendre l'état de succès
       await waitFor(() => {
-        expect(nameInput).toHaveValue('')
-        expect(emailInput).toHaveValue('')
+        expect(screen.getByText(/merci jean dupont/i)).toBeInTheDocument()
+      })
+
+      // Cliquer sur reset pour revenir au formulaire
+      await user.click(screen.getByRole('button', { name: /envoyer un autre message/i }))
+
+      // Le formulaire doit être réinitialisé
+      await waitFor(() => {
+        expect(screen.getByLabelText(/nom complet/i)).toHaveValue('')
+        expect(screen.getByLabelText(/adresse email/i)).toHaveValue('')
       })
     })
   })
@@ -409,7 +423,8 @@ describe('ContactForm', () => {
 
       await waitFor(
         () => {
-          expect(screen.getByText(/message envoyé/i)).toBeInTheDocument()
+          // SP-289: Nouveau message de succès personnalisé
+          expect(screen.getByText(/merci jean dupont/i)).toBeInTheDocument()
         },
         { timeout: 3000 }
       )
