@@ -197,15 +197,20 @@ Système complet d'envoi d'emails transactionnels avec React Email et Nodemailer
   - Protection contre l'énumération de comptes
   - 10 tests unitaires
 
-### Formulaire de Contact (SP-287 - 19 janvier 2026)
+### Formulaire de Contact (SP-287, SP-289 - 19 janvier 2026)
 
 - **Composant ContactForm** : Formulaire complet avec React Hook Form + Zod
 - **Validation** : Schéma Zod pour nom, email, sujet, message (messages FR)
-- **Accessibilité** : aria-labels, aria-required, aria-invalid, aria-describedby, role="alert"
-- **UX** : États loading/success, toast notifications (Sonner), reset après succès
+- **Accessibilité** : aria-labels, aria-required, aria-invalid, aria-describedby, role="alert", role="status"
+- **UX États animés (SP-289)** :
+  - Machine d'état : idle → submitting → success/error
+  - `ContactSuccessState` : Checkmark SVG animé (pathLength), message personnalisé, bouton reset
+  - `ContactErrorState` : Animation shake, bouton retry, conservation données formulaire
+  - `useContactForm` hook : Gestion état, retry automatique, mock mode
+  - Animations Framer Motion (variants centralisés dans `lib/animations/contact.ts`)
 - **Design** : Glassmorphism, animations Framer Motion, responsive
 - **ContactSection** : Intégration landing page avec infos contact (email, localisation, disponibilité 24/24)
-- **Tests** : 41 tests unitaires (20 validation Zod + 21 composant)
+- **Tests** : 95 tests unitaires (20 validation + 21 form + 54 UX states)
 
 ### Fonctionnalités avancées (Post-MVP)
 
@@ -283,7 +288,11 @@ SmartplanningAI/
 │   │   ├── validations/  # Schémas Zod (auth, user, employee, company, team...)
 │   │   └── utils.ts      # Fonctions utilitaires
 │   ├── types/            # Types TypeScript globaux (+ crud.ts SP-150)
-│   ├── hooks/            # Custom React hooks (+ useCrudMutation SP-150)
+│   ├── hooks/            # Custom React hooks
+│   │   ├── useCrudMutation.ts    # Hook mutations CRUD (SP-150)
+│   │   ├── useCookieConsent.ts   # Hook consentement cookies (SP-283)
+│   │   ├── useUmamiTrack.ts      # Hook tracking analytics (SP-345)
+│   │   └── useContactForm.ts     # Hook machine d'état contact (SP-289)
 │   └── middleware.ts     # Middleware NextAuth (protection routes)
 ├── prisma/
 │   ├── schema.prisma     # Schéma de base de données
@@ -802,7 +811,7 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 
 | Catégorie            | Coverage | Tests    |
 | -------------------- | -------- | -------- |
-| **Global**           | **~55%** | **1591** |
+| **Global**           | **~55%** | **1693** |
 | loading              | 100%     | 152      |
 | modals               | 100%     | 52       |
 | cards                | 77.09%   | 88       |
@@ -818,7 +827,7 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 | cookies              | 100%     | 83       |
 | analytics            | 100%     | 13       |
 | emails (Sprint 9)    | 100%     | 37       |
-| contact (SP-287)     | 100%     | 41       |
+| contact (SP-287/289) | 100%     | 95       |
 
 ### Tests E2E
 
@@ -1032,7 +1041,7 @@ Merge main → Build Docker → Push GHCR → Deploy VPS (~8-10 min)
 
 - **CI** (`.github/workflows/ci.yml`) : Lint, Type-check, Tests unitaires, Build, Tests E2E (PR uniquement)
 - **CD** (`.github/workflows/cd.yml`) : Build image Docker, Push sur ghcr.io, Deploy via SSH
-- Tests unitaires sur tous les push (~1591 tests Vitest)
+- Tests unitaires sur tous les push (~1693 tests Vitest)
 - Tests E2E sur PR vers main (~211 tests Playwright actifs)
 - Déploiement automatique sur merge main ✅
 - Migrations Prisma automatiques
