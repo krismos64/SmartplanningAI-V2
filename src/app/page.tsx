@@ -26,6 +26,7 @@ import {
   StatsSection,
   PricingSection,
   FAQSection,
+  ContactSection,
   CTASection,
   Footer,
 } from './(landing)/components/sections'
@@ -61,6 +62,7 @@ export default function LandingPage() {
       <StatsSection />
       <PricingSection />
       <FAQSection />
+      <ContactSection />
       <CTASection />
 
       {/* Footer */}
