@@ -24,6 +24,7 @@ const navLinks = [
   { href: '/#benefits', label: 'Avantages' },
   { href: '/#pricing', label: 'Tarifs' },
   { href: '/#faq', label: 'FAQ' },
+  { href: '/#contact', label: 'Contact' },
   { href: '/a-propos', label: 'À propos' },
 ]
 
@@ -73,12 +74,12 @@ export function LandingHeader({
 
           {/* Desktop Navigation */}
           {showNavLinks && (
-            <div className="hidden items-center gap-8 lg:flex">
+            <div className="hidden items-center gap-4 xl:gap-5 lg:flex">
               {navLinks.map((link) => (
                 <a
                   key={link.href}
                   href={link.href}
-                  className="text-sm text-white/70 transition-colors hover:text-white"
+                  className="whitespace-nowrap text-sm text-white/70 transition-colors hover:text-white"
                 >
                   {link.label}
                 </a>
@@ -125,14 +126,15 @@ export function LandingHeader({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
-              className="fixed inset-0 top-0 z-40 flex flex-col bg-[#030712] lg:hidden"
+              className="fixed inset-0 z-[100] flex flex-col bg-[#030712] lg:hidden"
+              style={{ backgroundColor: '#030712' }}
             >
               {/* Close button - Fixed top right */}
               <motion.button
                 initial={{ opacity: 0, rotate: -90 }}
                 animate={{ opacity: 1, rotate: 0 }}
                 transition={{ duration: 0.3, delay: 0.1 }}
-                className="absolute right-4 top-4 z-50 flex h-12 w-12 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white backdrop-blur-sm transition-all hover:border-cyan-400/50 hover:bg-cyan-400/20 hover:text-cyan-400"
+                className="absolute right-4 top-4 z-[110] flex h-12 w-12 items-center justify-center rounded-full border border-white/20 bg-[#030712] text-white transition-all hover:border-cyan-400/50 hover:bg-cyan-400/20 hover:text-cyan-400"
                 onClick={() => setIsMobileMenuOpen(false)}
                 aria-label="Fermer le menu"
               >
