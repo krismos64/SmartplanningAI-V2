@@ -205,6 +205,14 @@ Système complet d'envoi d'emails transactionnels avec React Email et Nodemailer
   - Helpers `formatDateFr` (dates en français) et `getLeaveTypeLabel` (traduction types)
   - 48 tests unitaires (16 + 19 + 13)
 
+- **SP-301 : Email Contact** ✅
+  - Templates `ContactConfirmationEmail.tsx` (confirmation à l'expéditeur) et `ContactNotificationEmail.tsx` (notification admin)
+  - Fonctions `sendContactConfirmation`, `sendContactNotification`, `sendContactEmails` (envoi parallèle)
+  - Intégration API route `/api/contact` avec rate limiting (5 req/min)
+  - Reply-To configuré pour réponse directe à l'expéditeur
+  - Horodatage en français dans l'email admin
+  - 52 tests unitaires (18 + 22 + 12 fonctions)
+
 ### Formulaire de Contact (SP-287, SP-289 - 19 janvier 2026)
 
 - **Composant ContactForm** : Formulaire complet avec React Hook Form + Zod
@@ -308,7 +316,7 @@ SmartplanningAI/
 ├── emails/               # Templates React Email (Sprint 9)
 │   ├── components/       # Layout, Header, Footer, Button
 │   ├── styles/           # Design tokens (colors, typography)
-│   └── templates/        # WelcomeEmail, ResetPasswordEmail, VerificationEmail, LeaveApprovedEmail, LeaveRejectedEmail
+│   └── templates/        # WelcomeEmail, ResetPasswordEmail, VerificationEmail, LeaveApprovedEmail, LeaveRejectedEmail, ContactConfirmationEmail, ContactNotificationEmail
 ├── docs/                 # Documentation complète
 │   ├── project-overview.md
 │   ├── database-schema.md
@@ -819,7 +827,7 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 
 | Catégorie            | Coverage | Tests    |
 | -------------------- | -------- | -------- |
-| **Global**           | **~55%** | **1693** |
+| **Global**           | **~55%** | **1785** |
 | loading              | 100%     | 152      |
 | modals               | 100%     | 52       |
 | cards                | 77.09%   | 88       |
@@ -834,7 +842,7 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 | dashboard admin      | 100%     | 115      |
 | cookies              | 100%     | 83       |
 | analytics            | 100%     | 13       |
-| emails (Sprint 9)    | 100%     | 37       |
+| emails (Sprint 9)    | 100%     | 129      |
 | contact (SP-287/289) | 100%     | 95       |
 
 ### Tests E2E
