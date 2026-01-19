@@ -1,7 +1,7 @@
 {
   "name": "smartplanning-v2",
   "version": "2.0.0",
-  "description": "Plateforme SaaS de gestion intelligente des plannings - Projet CDA",
+  "description": "Plateforme SaaS de gestion intelligente des équipes - Projet CDA",
   "author": "Christophe Mostefaoui",
   "private": true,
   "scripts": {

@@ -1,6 +1,6 @@
-import Link from 'next/link'
-import { Separator } from '@/components/ui/separator'
 import { Button } from '@/components/ui/button'
+import { Separator } from '@/components/ui/separator'
+import Link from 'next/link'
 
 interface FooterProps {
   variant?: 'dashboard' | 'public'
@@ -43,7 +43,7 @@ export function Footer({ variant = 'dashboard' }: FooterProps) {
           <div className="space-y-3">
             <h3 className="text-lg font-semibold">SmartPlanning</h3>
             <p className="text-sm text-muted-foreground">
-              Plateforme SaaS de gestion intelligente des plannings
+              Plateforme SaaS de gestion intelligente des équipes
             </p>
             <p className="text-xs text-muted-foreground">Version {version}</p>
           </div>

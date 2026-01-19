@@ -20,11 +20,11 @@
  * - SEO-first approach pour référencement Google
  */
 
+import { UmamiAnalyticsWrapper } from '@/components/analytics'
+import { CookieConsentProvider } from '@/components/cookies'
+import { ToastProvider } from '@/components/toast'
 import type { Metadata, Viewport } from 'next'
 import { Inter, Rajdhani } from 'next/font/google'
-import { ToastProvider } from '@/components/toast'
-import { CookieConsentProvider } from '@/components/cookies'
-import { UmamiAnalyticsWrapper } from '@/components/analytics'
 import './globals.css'
 
 /**
@@ -79,7 +79,7 @@ export const metadata: Metadata = {
     process.env.NEXT_PUBLIC_APP_URL || 'https://smartplanning.fr'
   ),
   title: {
-    default: 'SmartPlanning - Gestion intelligente des plannings',
+    default: 'SmartPlanning - Gestion intelligente des équipes',
     template: '%s | SmartPlanning',
   },
   description:
@@ -102,21 +102,29 @@ export const metadata: Metadata = {
   creator: 'Christophe Dev',
   publisher: 'SmartPlanning SaaS',
 
-  // Métadonnées Open Graph (Facebook, LinkedIn)
+  // Métadonnées Open Graph (Facebook, LinkedIn, Google, LLMs)
   openGraph: {
     type: 'website',
     locale: 'fr_FR',
     url: 'https://smartplanning.fr',
-    title: 'SmartPlanning - Bientôt disponible',
+    title: 'SmartPlanning - Gestion intelligente des plannings',
     description:
-      'La solution intelligente de gestion des plannings arrive bientôt !',
+      "Solution SaaS de gestion des plannings d'entreprise. Automatisez vos plannings, gérez vos équipes et optimisez votre organisation.",
     siteName: 'SmartPlanning',
     images: [
       {
         url: '/og-image.png',
         width: 1200,
         height: 630,
-        alt: 'SmartPlanning - Gestion de planning',
+        alt: 'SmartPlanning - Plateforme SaaS de gestion intelligente des plannings',
+        type: 'image/png',
+      },
+      {
+        url: '/android-chrome-512x512.png',
+        width: 512,
+        height: 512,
+        alt: 'Logo SmartPlanning',
+        type: 'image/png',
       },
     ],
   },
@@ -124,10 +132,18 @@ export const metadata: Metadata = {
   // Twitter Cards
   twitter: {
     card: 'summary_large_image',
-    title: 'SmartPlanning - Bientôt disponible',
+    site: '@smartplanning',
+    title: 'SmartPlanning - Gestion intelligente des plannings',
     description:
-      'La solution intelligente de gestion des plannings arrive bientôt !',
-    images: ['/twitter-image.png'],
+      "Solution SaaS de gestion des plannings d'entreprise. Automatisez vos plannings, gérez vos équipes et optimisez votre organisation.",
+    images: [
+      {
+        url: '/twitter-image.png',
+        width: 1200,
+        height: 600,
+        alt: 'SmartPlanning - Plateforme SaaS de gestion intelligente des plannings',
+      },
+    ],
     creator: '@christophedev',
   },
 
@@ -144,13 +160,44 @@ export const metadata: Metadata = {
     },
   },
 
-  // Icônes et manifeste PWA
+  // Icônes et manifeste PWA - Configuration complète multi-tailles
   icons: {
-    icon: '/favicon.ico',
-    shortcut: '/favicon-16x16.png',
-    apple: '/apple-touch-icon.png',
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+      { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/favicon-48x48.png', sizes: '48x48', type: 'image/png' },
+      { url: '/favicon-96x96.png', sizes: '96x96', type: 'image/png' },
+    ],
+    shortcut: '/favicon-32x32.png',
+    apple: [
+      { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+      {
+        url: '/apple-touch-icon-152x152.png',
+        sizes: '152x152',
+        type: 'image/png',
+      },
+      {
+        url: '/apple-touch-icon-167x167.png',
+        sizes: '167x167',
+        type: 'image/png',
+      },
+    ],
+    other: [
+      {
+        rel: 'mask-icon',
+        url: '/android-chrome-512x512.png',
+        color: '#3b82f6',
+      },
+    ],
   },
   manifest: '/site.webmanifest',
+
+  // Images pour moteurs de recherche et LLMs
+  other: {
+    'msapplication-TileImage': '/android-chrome-192x192.png',
+    'msapplication-TileColor': '#030712',
+  },
 }
 
 /**

@@ -3,7 +3,7 @@
 [![CI - Lint, Test & Build](https://github.com/krismos64/SmartplanningAI-V2/actions/workflows/ci.yml/badge.svg)](https://github.com/krismos64/SmartplanningAI-V2/actions/workflows/ci.yml)
 [![CD - Build & Deploy](https://github.com/krismos64/SmartplanningAI-V2/actions/workflows/cd.yml/badge.svg)](https://github.com/krismos64/SmartplanningAI-V2/actions/workflows/cd.yml)
 
-Plateforme SaaS moderne de gestion intelligente des plannings d'entreprise (multi-tenant).
+Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entreprise (multi-tenant).
 
 ## Informations projet
 
