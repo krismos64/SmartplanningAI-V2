@@ -73,6 +73,19 @@ export type {
 } from './crud'
 
 // ============================================================================
+// TYPES CONTACT API
+// ============================================================================
+export type {
+  ContactFormData,
+  ContactApiResponse,
+  ContactEmailResult,
+  ContactConfirmationParams,
+  ContactNotificationParams,
+  RateLimitConfig,
+  RateLimitResult,
+} from './contact'
+
+// ============================================================================
 // TYPES GÉNÉRIQUES UTILITAIRES
 // ============================================================================
 
