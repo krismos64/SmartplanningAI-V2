@@ -187,6 +187,15 @@ Système complet d'envoi d'emails transactionnels avec React Email et Nodemailer
   - Schémas Zod pour validation
   - 9 tests unitaires
 
+- **SP-299 : Email Vérification** ✅
+  - Template `VerificationEmail.tsx` avec message de bienvenue et avantages
+  - Server Actions `sendVerificationEmailAction`, `verifyEmailAction`, `resendVerificationEmailAction`
+  - Préfixe token `verify_` pour distinguer des tokens de reset
+  - Expiration 24h (vs 1h pour reset password)
+  - Transaction atomique Prisma pour validation
+  - Protection contre l'énumération de comptes
+  - 10 tests unitaires
+
 ### Fonctionnalités avancées (Post-MVP)
 
 - Notifications push et email
@@ -251,6 +260,7 @@ SmartplanningAI/
 │   │   ├── actions/      # Server Actions
 │   │   │   ├── auth-actions.ts      # Actions authentification (inscription)
 │   │   │   ├── password-actions.ts  # Actions reset password (SP-298)
+│   │   │   ├── verification-actions.ts # Actions vérification email (SP-299)
 │   │   │   └── crud-utils.ts        # Utilitaires CRUD génériques (SP-150)
 │   │   ├── email/        # Système d'emails (Sprint 9)
 │   │   │   ├── index.ts          # Export principal
@@ -270,7 +280,7 @@ SmartplanningAI/
 ├── emails/               # Templates React Email (Sprint 9)
 │   ├── components/       # Layout, Header, Footer, Button
 │   ├── styles/           # Design tokens (colors, typography)
-│   └── templates/        # WelcomeEmail, ResetPasswordEmail
+│   └── templates/        # WelcomeEmail, ResetPasswordEmail, VerificationEmail
 ├── docs/                 # Documentation complète
 │   ├── project-overview.md
 │   ├── database-schema.md
@@ -777,11 +787,11 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 - **E2E** : Playwright (configuré)
 - **Coverage** : v8 provider
 
-### Couverture actuelle (16 janvier 2026)
+### Couverture actuelle (19 janvier 2026)
 
 | Catégorie            | Coverage | Tests    |
 | -------------------- | -------- | -------- |
-| **Global**           | **~55%** | **1457** |
+| **Global**           | **~55%** | **1537** |
 | loading              | 100%     | 152      |
 | modals               | 100%     | 52       |
 | cards                | 77.09%   | 88       |
@@ -796,6 +806,7 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 | dashboard admin      | 100%     | 115      |
 | cookies              | 100%     | 83       |
 | analytics            | 100%     | 13       |
+| emails (Sprint 9)    | 100%     | 37       |
 
 ### Tests E2E
 
@@ -1009,7 +1020,7 @@ Merge main → Build Docker → Push GHCR → Deploy VPS (~8-10 min)
 
 - **CI** (`.github/workflows/ci.yml`) : Lint, Type-check, Tests unitaires, Build, Tests E2E (PR uniquement)
 - **CD** (`.github/workflows/cd.yml`) : Build image Docker, Push sur ghcr.io, Deploy via SSH
-- Tests unitaires sur tous les push (~1457 tests Vitest)
+- Tests unitaires sur tous les push (~1537 tests Vitest)
 - Tests E2E sur PR vers main (~211 tests Playwright actifs)
 - Déploiement automatique sur merge main ✅
 - Migrations Prisma automatiques
