@@ -17,7 +17,7 @@
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { motion } from 'framer-motion'
+import { motion, type Variants } from 'framer-motion'
 import { Send, Loader2, CheckCircle2, User, Mail, FileText } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -33,16 +33,16 @@ import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
 
 // Animation variants
-const formVariants = {
+const formVariants: Variants = {
   hidden: { opacity: 0, y: 20 },
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.5, ease: 'easeOut' },
+    transition: { duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] },
   },
 }
 
-const inputVariants = {
+const inputVariants: Variants = {
   hidden: { opacity: 0, x: -20 },
   visible: {
     opacity: 1,
