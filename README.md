@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 17 janvier 2026 (Fix Umami Analytics Docker)
+- **Dernière mise à jour** : 19 janvier 2026 (Sprint 9 - Emails Transactionnels)
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -162,6 +162,31 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Support variant** : LoginForm et RegisterForm acceptent variant="dark" | "light"
 - **Tests** : 34 tests unitaires + 20 tests E2E passent
 
+### Emails Transactionnels (Sprint 9 - Janvier 2026)
+
+Système complet d'envoi d'emails transactionnels avec React Email et Nodemailer :
+
+- **SP-295 : Configuration Email** ✅
+  - Nodemailer avec SMTP Hostinger (smtp.hostinger.com:587)
+  - Pattern singleton pour le transporter
+  - Retry logic avec exponential backoff
+
+- **SP-296 : Templates React Email** ✅
+  - Design tokens centralisés (couleurs, typographie, spacing)
+  - Composants réutilisables : Layout, Header, Footer, Button
+  - Preview dev avec `npm run email:dev` (localhost:3001)
+
+- **SP-297 : Email de Bienvenue** ✅
+  - Template `WelcomeEmail.tsx` personnalisé
+  - Intégration non-bloquante dans `registerAction`
+  - 18 tests unitaires
+
+- **SP-298 : Email Reset Password** ✅
+  - Template `ResetPasswordEmail.tsx` avec durée de validité
+  - Server Actions `forgotPasswordAction` et `resetPasswordAction`
+  - Schémas Zod pour validation
+  - 9 tests unitaires
+
 ### Fonctionnalités avancées (Post-MVP)
 
 - Notifications push et email
@@ -224,8 +249,14 @@ SmartplanningAI/
 │   │   ├── auth.config.ts # Config middleware + callbacks RBAC
 │   │   ├── permissions.ts # Système de permissions centralisé
 │   │   ├── actions/      # Server Actions
-│   │   │   ├── auth-actions.ts   # Actions authentification
-│   │   │   └── crud-utils.ts     # Utilitaires CRUD génériques (SP-150)
+│   │   │   ├── auth-actions.ts      # Actions authentification (inscription)
+│   │   │   ├── password-actions.ts  # Actions reset password (SP-298)
+│   │   │   └── crud-utils.ts        # Utilitaires CRUD génériques (SP-150)
+│   │   ├── email/        # Système d'emails (Sprint 9)
+│   │   │   ├── index.ts          # Export principal
+│   │   │   ├── config.ts         # Configuration SMTP
+│   │   │   ├── send.ts           # Fonction sendEmail avec retry
+│   │   │   └── templates/        # Fonctions d'envoi par type
 │   │   ├── services/     # Services métier
 │   │   │   └── dashboard/  # Services stats par rôle (SP-144)
 │   │   ├── validations/  # Schémas Zod (auth, user, employee, company, team...)
@@ -236,6 +267,10 @@ SmartplanningAI/
 ├── prisma/
 │   ├── schema.prisma     # Schéma de base de données
 │   └── migrations/       # Migrations Prisma
+├── emails/               # Templates React Email (Sprint 9)
+│   ├── components/       # Layout, Header, Footer, Button
+│   ├── styles/           # Design tokens (colors, typography)
+│   └── templates/        # WelcomeEmail, ResetPasswordEmail
 ├── docs/                 # Documentation complète
 │   ├── project-overview.md
 │   ├── database-schema.md

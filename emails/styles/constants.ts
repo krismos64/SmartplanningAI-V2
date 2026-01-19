@@ -38,6 +38,12 @@ export const colors = {
     info: '#3b82f6', // Bleu info
   },
 
+  // Variantes warning pour les alertes
+  warning: {
+    light: '#fef3c7', // Fond warning (amber-100)
+    dark: '#92400e', // Texte warning (amber-800)
+  },
+
   // Bordures
   border: {
     light: '#e2e8f0', // Bordure claire

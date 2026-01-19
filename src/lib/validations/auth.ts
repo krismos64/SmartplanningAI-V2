@@ -4,8 +4,10 @@
  * @description Schémas Zod spécifiques aux flows d'authentification
  * - signupSchema : Nouveau client SaaS (crée Company + User DIRECTOR)
  * - loginSchema : Réexporté depuis user.ts pour centralisation
+ * - forgotPasswordSchema : Demande de réinitialisation de mot de passe
+ * - resetPasswordSchema : Réinitialisation du mot de passe avec token
  *
- * @ticket SP-136
+ * @ticket SP-136, SP-298
  * @see Context7 - Zod validation patterns
  */
 
@@ -87,6 +89,71 @@ export const signupSchema = z
  * Utilisé pour typer les formulaires et Server Actions
  */
 export type SignupFormData = z.infer<typeof signupSchema>
+
+// =============================================================================
+// FORGOT PASSWORD (SP-298)
+// =============================================================================
+
+/**
+ * Schéma de validation pour la demande de réinitialisation de mot de passe
+ *
+ * Cas d'usage : Utilisateur ayant oublié son mot de passe
+ * - Saisit uniquement son email
+ * - Reçoit un lien de réinitialisation par email
+ */
+export const forgotPasswordSchema = z.object({
+  /**
+   * Email du compte à réinitialiser
+   */
+  email: emailSchema,
+})
+
+/**
+ * Type inféré du schéma forgot password
+ */
+export type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>
+
+// =============================================================================
+// RESET PASSWORD (SP-298)
+// =============================================================================
+
+/**
+ * Schéma de validation pour la réinitialisation du mot de passe
+ *
+ * Cas d'usage : Utilisateur cliquant sur le lien de réinitialisation
+ * - Saisit un nouveau mot de passe
+ * - Confirme le nouveau mot de passe
+ */
+export const resetPasswordSchema = z
+  .object({
+    /**
+     * Token de réinitialisation (reçu par email)
+     */
+    token: z.string().min(1, 'Token de réinitialisation manquant'),
+
+    /**
+     * Nouveau mot de passe sécurisé
+     */
+    password: passwordSchema,
+
+    /**
+     * Confirmation du nouveau mot de passe
+     */
+    confirmPassword: z.string().min(1, 'Veuillez confirmer le mot de passe'),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: 'Les mots de passe ne correspondent pas',
+    path: ['confirmPassword'],
+  })
+
+/**
+ * Type inféré du schéma reset password
+ */
+export type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>
+
+// =============================================================================
+// MESSAGES D'ERREUR
+// =============================================================================
 
 /**
  * Messages d'erreur d'authentification
