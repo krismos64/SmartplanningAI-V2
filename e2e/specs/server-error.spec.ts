@@ -40,10 +40,9 @@ test.describe('Server Error Page (500)', () => {
     })
 
     test('should display the error title in French', async ({ page }) => {
-      const title = page.getByRole('heading', {
-        name: /une erreur est survenue/i,
-      })
+      const title = page.locator('#server-error-title')
       await expect(title).toBeVisible()
+      await expect(title).toContainText('Une erreur est survenue')
     })
 
     test('should display the error description in French', async ({ page }) => {
