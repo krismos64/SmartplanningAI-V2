@@ -196,7 +196,7 @@ test.describe('Server Error Page (500)', () => {
 
   test.describe('Page Metadata', () => {
     test('should have correct page title', async ({ page }) => {
-      await expect(page).toHaveTitle(/server-error.*Erreur serveur.*SmartPlanning/i)
+      await expect(page).toHaveTitle(/500.*Erreur serveur.*SmartPlanning/i)
     })
   })
 })
