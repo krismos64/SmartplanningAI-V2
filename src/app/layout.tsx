@@ -22,6 +22,7 @@
 
 import { UmamiAnalyticsWrapper } from '@/components/analytics'
 import { CookieConsentProvider } from '@/components/cookies'
+import { ErrorBoundaryWrapper } from '@/components/error'
 import { ToastProvider } from '@/components/toast'
 import type { Metadata, Viewport } from 'next'
 import { Inter, Rajdhani } from 'next/font/google'
@@ -249,13 +250,16 @@ export default function RootLayout({
       <body className="min-h-screen bg-background font-rajdhani antialiased">
         {/* Cookie Consent RGPD (SP-283) - Provider enveloppe tout le contenu */}
         <CookieConsentProvider>
-          {/*
-            Structure sémantique HTML5
-            - <main> sera fourni par les layouts enfants
-            - Permet l'accessibilité (lecteurs d'écran)
-            - Font Rajdhani appliquée par défaut (SmartPlanning branding)
-          */}
-          {children}
+          {/* Error Boundary (SP-304) - Capture les erreurs React côté client */}
+          <ErrorBoundaryWrapper>
+            {/*
+              Structure sémantique HTML5
+              - <main> sera fourni par les layouts enfants
+              - Permet l'accessibilité (lecteurs d'écran)
+              - Font Rajdhani appliquée par défaut (SmartPlanning branding)
+            */}
+            {children}
+          </ErrorBoundaryWrapper>
 
           {/* Toast System - Sonner (SP-122) */}
           <ToastProvider />
