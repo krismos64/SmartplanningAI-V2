@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 20 janvier 2026 (Sprint 9 - Emails + Error Boundary + Page 404)
+- **Dernière mise à jour** : 20 janvier 2026 (Sprint 9 - Emails + Error Boundary + Pages 404/500)
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -274,6 +274,35 @@ Page 404 personnalisée avec animations Framer Motion et accessibilité WCAG 2.1
 
 - **Tests** : 40 tests unitaires + 8 tests E2E
 
+### Page 500 personnalisée (SP-303 - 20 janvier 2026)
+
+Page d'erreur serveur personnalisée avec animations Framer Motion et accessibilité WCAG 2.1 AA :
+
+- **error-logger.ts** : Utilitaire de logging serveur
+  - Extraction sécurisée des erreurs (Error, string, unknown)
+  - Logging structuré (JSON en production, formaté en dev)
+  - Support des digests Next.js
+  - Hooks préparés pour Sentry/LogRocket
+
+- **ServerErrorPage** : Page 500 complète
+  - "500" en grand avec gradient text destructive
+  - Icône ServerCrash avec style destructive
+  - Titre et description en français
+  - Bouton "Réessayer" (reload), "Accueil", "Signaler le problème"
+  - Props personnalisables : errorCode, errorMessage, digest, showReportButton
+
+- **Next.js App Router** :
+  - `/server-error` pour tests manuels
+  - Intégration avec error.tsx et global-error.tsx
+
+- **Accessibilité WCAG 2.1 AA** :
+  - `role="main"` sur le conteneur principal
+  - `aria-label`, `aria-labelledby`, `aria-describedby`
+  - `aria-hidden="true"` sur éléments décoratifs
+  - Labels accessibles sur tous les boutons
+
+- **Tests** : 74 tests unitaires + 22 tests E2E
+
 ### Formulaire de Contact (SP-287, SP-289 - 19 janvier 2026)
 
 - **Composant ContactForm** : Formulaire complet avec React Hook Form + Zod
@@ -337,7 +366,7 @@ SmartplanningAI/
 │   │   ├── ui/           # Shadcn components (button, form, label...)
 │   │   ├── auth/         # LoginForm, RegisterForm (variant dark/light)
 │   │   ├── cards/        # UserCard, TeamCard, AvatarStack
-│   │   ├── error/        # ErrorBoundary, ErrorFallback (SP-304)
+│   │   ├── error/        # ErrorBoundary, ErrorFallback (SP-304), NotFoundPage (SP-302), ServerErrorPage (SP-303)
 │   │   ├── charts/       # AreaChartWidget, BarChartWidget, PieChartWidget
 │   │   ├── cookies/      # CookieBanner, CookiePreferencesModal, CookieSettingsButton, CookieConsentProvider
 │   │   ├── dashboard/    # StatCard, TrendIndicator, StatsGrid
@@ -927,9 +956,11 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 | **Cookies RGPD**             | 18    | ✅     |
 | **Analytics Umami**          | 8     | ✅     |
 | **Error Boundary**           | 5     | ✅     |
-| **Total E2E actifs**         | **224** | ✅   |
+| **Page 404**                 | 8     | ✅     |
+| **Page 500**                 | 22    | ✅     |
+| **Total E2E actifs**         | **254** | ✅   |
 | **Total E2E skipped**        | **24**  | ⏸️   |
-| **Total E2E**                | **248** |      |
+| **Total E2E**                | **278** |      |
 
 **Note** : Tests exécutés uniquement sur Chromium (Firefox et WebKit supprimés pour stabilité et performance).
 
@@ -1039,6 +1070,16 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 - ErrorFallback (UI de secours avec retry/home buttons, stack trace dev mode)
 - error.tsx (Next.js route segment error boundary)
 - global-error.tsx (Next.js root layout error boundary avec inline styles)
+
+#### Page 404 (2 composants - SP-302)
+
+- NotFoundPage (page 404 complète avec animations)
+- NotFoundIllustration (illustration animée avec icônes orbitantes)
+
+#### Page 500 (2 composants + utilitaire - SP-303)
+
+- ServerErrorPage (page 500 complète avec animations)
+- error-logger.ts (utilitaire de logging serveur structuré)
 
 ### Scripts de test
 
