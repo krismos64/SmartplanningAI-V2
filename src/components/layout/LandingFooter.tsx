@@ -17,13 +17,9 @@ const footerLinks = {
   product: [
     { href: '/#features', label: 'Fonctionnalités' },
     { href: '/#pricing', label: 'Tarifs' },
-    { href: '#', label: 'Intégrations' },
-    { href: '#', label: 'Changelog' },
   ],
   company: [
     { href: '/a-propos', label: 'À propos' },
-    { href: '#', label: 'Blog' },
-    { href: '#', label: 'Carrières' },
     { href: '/#contact', label: 'Contact' },
   ],
   legal: [
@@ -141,25 +137,24 @@ export function LandingFooter() {
             </ul>
           </div>
 
-          {/* Newsletter */}
+          {/* Contact */}
           <div>
-            <h4 className="mb-4 font-semibold text-white">Newsletter</h4>
-            <p className="mb-4 text-sm text-white/50">
-              Recevez nos actualités et conseils.
-            </p>
-            <form className="flex gap-2">
-              <input
-                type="email"
-                placeholder="Email"
-                className="flex-1 rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-sm text-white placeholder:text-white/30 focus:border-cyan-500/50 focus:outline-none"
-              />
-              <button
-                type="submit"
-                className="rounded-lg bg-gradient-to-r from-blue-500 to-cyan-400 p-2 text-white transition-opacity hover:opacity-90"
+            <h4 className="mb-4 font-semibold text-white">Contact</h4>
+            <div className="space-y-3">
+              <a
+                href="mailto:contact@smartplanning.fr"
+                className="flex items-center gap-2 text-sm text-white/50 transition-colors hover:text-cyan-400"
               >
-                <Mail className="h-5 w-5" />
-              </button>
-            </form>
+                <Mail className="h-4 w-4" />
+                contact@smartplanning.fr
+              </a>
+              <p className="text-sm text-white/50">
+                Support disponible 24/7
+              </p>
+              <p className="text-sm text-white/50">
+                Réponse sous 24h ouvrées
+              </p>
+            </div>
           </div>
         </div>
 
