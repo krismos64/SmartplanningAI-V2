@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 20 janvier 2026 (Sprint 9 - Emails Transactionnels + Error Boundary)
+- **Dernière mise à jour** : 20 janvier 2026 (Sprint 9 - Emails + Error Boundary + Page 404)
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -242,6 +242,37 @@ Système complet de gestion des erreurs React côté client :
   - `aria-hidden` sur les icônes décoratives
 
 - **Tests** : 22 tests unitaires + 5 tests E2E
+
+### Page 404 personnalisée (SP-302 - 20 janvier 2026)
+
+Page 404 personnalisée avec animations Framer Motion et accessibilité WCAG 2.1 AA :
+
+- **NotFoundIllustration** : Illustration animée décorative
+  - Animation flottante sur l'icône principale (FileQuestion)
+  - Icônes décoratives orbitantes (Search, ArrowRight)
+  - Points décoratifs avec animation pulse
+  - Tailles responsives (h-32 sm:h-40 md:h-48)
+  - `aria-hidden="true"` pour accessibilité
+
+- **NotFoundPage** : Page 404 complète
+  - "404" en grand avec gradient text (from-primary to-primary/60)
+  - Titre "Page non trouvée" en français
+  - Description explicative
+  - Bouton "Accueil" (primary) et "Dashboard" (outline)
+  - Liens rapides : Fonctionnalités, Tarifs, Contact
+
+- **Next.js App Router** :
+  - `not-found.tsx` pour affichage automatique 404
+  - Intégration seamless avec le routing Next.js 15
+
+- **Accessibilité WCAG 2.1 AA** :
+  - `role="main"` sur le conteneur principal
+  - `aria-label`, `aria-labelledby`, `aria-describedby`
+  - `aria-hidden="true"` sur éléments décoratifs
+  - `aria-label="Liens rapides"` sur la navigation
+  - Focus visible sur les liens
+
+- **Tests** : 40 tests unitaires + 8 tests E2E
 
 ### Formulaire de Contact (SP-287, SP-289 - 19 janvier 2026)
 
