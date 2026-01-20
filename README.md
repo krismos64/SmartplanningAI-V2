@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 20 janvier 2026 (Sprint 9 - Emails + Error Boundary + Pages 404/500)
+- **Dernière mise à jour** : 20 janvier 2026 (Sprint 9 - Emails + Error Boundary + Pages 403/404/500)
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -303,6 +303,32 @@ Page d'erreur serveur personnalisée avec animations Framer Motion et accessibil
 
 - **Tests** : 74 tests unitaires + 22 tests E2E
 
+### Page 403 personnalisée (SP-305 - 20 janvier 2026)
+
+Page d'accès refusé personnalisée avec animations Framer Motion et accessibilité WCAG 2.1 AA :
+
+- **ForbiddenPage** : Page 403 complète
+  - "403" en grand avec gradient text orange
+  - Icône ShieldAlert avec animation pulse
+  - Titre "Accès non autorisé" et description en français
+  - Bouton "Dashboard" (orange), "Accueil" (outline), "Contacter l'administrateur"
+  - Props personnalisables : reason, requiredRole, currentRole, showContactAdmin
+  - Affichage optionnel des informations de rôle (requis vs actuel)
+
+- **Next.js 15 App Router** :
+  - `forbidden.tsx` : Convention native pour forbidden() (requires experimental.authInterrupts)
+  - `/access-denied` : Route de test accessible directement
+  - Intégration avec Server Components, Server Actions, Route Handlers
+
+- **Accessibilité WCAG 2.1 AA** :
+  - `role="main"` sur le conteneur principal
+  - `aria-label`, `aria-labelledby`, `aria-describedby`
+  - `aria-hidden="true"` sur éléments décoratifs
+  - Labels accessibles sur tous les boutons
+  - Navigation clavier complète
+
+- **Tests** : 47 tests unitaires + 24 tests E2E
+
 ### Formulaire de Contact (SP-287, SP-289 - 19 janvier 2026)
 
 - **Composant ContactForm** : Formulaire complet avec React Hook Form + Zod
@@ -366,7 +392,7 @@ SmartplanningAI/
 │   │   ├── ui/           # Shadcn components (button, form, label...)
 │   │   ├── auth/         # LoginForm, RegisterForm (variant dark/light)
 │   │   ├── cards/        # UserCard, TeamCard, AvatarStack
-│   │   ├── error/        # ErrorBoundary, ErrorFallback (SP-304), NotFoundPage (SP-302), ServerErrorPage (SP-303)
+│   │   ├── error/        # ErrorBoundary, ErrorFallback (SP-304), NotFoundPage (SP-302), ServerErrorPage (SP-303), ForbiddenPage (SP-305)
 │   │   ├── charts/       # AreaChartWidget, BarChartWidget, PieChartWidget
 │   │   ├── cookies/      # CookieBanner, CookiePreferencesModal, CookieSettingsButton, CookieConsentProvider
 │   │   ├── dashboard/    # StatCard, TrendIndicator, StatsGrid
