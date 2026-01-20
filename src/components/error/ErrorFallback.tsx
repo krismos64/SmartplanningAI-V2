@@ -32,12 +32,35 @@ import { useState } from 'react'
 
 /**
  * Props for ErrorFallback component
+ * Compatible with react-error-boundary FallbackProps (error is unknown)
  */
 export interface ErrorFallbackProps {
-  /** The error that was caught */
-  error: Error & { digest?: string }
+  /** The error that was caught (unknown type from react-error-boundary) */
+  error: unknown
   /** Function to reset the error boundary and retry rendering */
   resetErrorBoundary: () => void
+}
+
+/**
+ * Helper to safely extract error information from unknown error type
+ */
+function getErrorInfo(error: unknown): {
+  message: string
+  stack?: string
+  digest?: string
+} {
+  if (error instanceof Error) {
+    return {
+      message: error.message || 'Erreur inconnue',
+      stack: error.stack,
+      digest: (error as Error & { digest?: string }).digest,
+    }
+  }
+  return {
+    message: String(error) || 'Erreur inconnue',
+    stack: undefined,
+    digest: undefined,
+  }
 }
 
 /**
@@ -56,6 +79,9 @@ export function ErrorFallback({ error, resetErrorBoundary }: ErrorFallbackProps)
   const router = useRouter()
   const [showDetails, setShowDetails] = useState(false)
   const isDevelopment = process.env.NODE_ENV === 'development'
+
+  // Safely extract error information
+  const errorInfo = getErrorInfo(error)
 
   /**
    * Navigate to home page
@@ -93,12 +119,12 @@ export function ErrorFallback({ error, resetErrorBoundary }: ErrorFallbackProps)
           {/* Error message summary */}
           <div className="rounded-lg bg-muted/50 p-3 text-center">
             <p className="text-sm text-muted-foreground">
-              {error.message || 'Erreur inconnue'}
+              {errorInfo.message}
             </p>
           </div>
 
           {/* Development mode: Show stack trace */}
-          {isDevelopment && error.stack && (
+          {isDevelopment && errorInfo.stack && (
             <div className="space-y-2">
               <button
                 type="button"
@@ -122,7 +148,7 @@ export function ErrorFallback({ error, resetErrorBoundary }: ErrorFallbackProps)
                   className="max-h-48 overflow-auto rounded-lg bg-muted p-3"
                 >
                   <pre className="whitespace-pre-wrap text-xs text-muted-foreground">
-                    {error.stack}
+                    {errorInfo.stack}
                   </pre>
                 </div>
               )}
@@ -130,9 +156,9 @@ export function ErrorFallback({ error, resetErrorBoundary }: ErrorFallbackProps)
           )}
 
           {/* Error digest for production debugging */}
-          {error.digest && (
+          {errorInfo.digest && (
             <p className="text-center text-xs text-muted-foreground">
-              Code erreur : {error.digest}
+              Code erreur : {errorInfo.digest}
             </p>
           )}
         </CardContent>

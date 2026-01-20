@@ -32,7 +32,7 @@
  * </ErrorBoundaryWrapper>
  */
 
-import { ReactNode } from 'react'
+import { ReactNode, ErrorInfo } from 'react'
 import { ErrorBoundary, FallbackProps } from 'react-error-boundary'
 import { ErrorFallback } from './ErrorFallback'
 
@@ -68,15 +68,19 @@ export interface ErrorBoundaryWrapperProps {
  * Logs error information to console with structured data
  * In production, this could be extended to send to a monitoring service
  *
- * @param error - The error that was caught
+ * @param error - The error that was caught (unknown type from react-error-boundary)
  * @param info - Additional error info including componentStack
  */
-function logError(error: Error, info: { componentStack?: string }): void {
+function logError(error: unknown, info: ErrorInfo): void {
+  // Safely extract error information
+  const errorMessage = error instanceof Error ? error.message : String(error)
+  const errorStack = error instanceof Error ? error.stack : undefined
+
   const errorLog: ErrorLogData = {
     timestamp: new Date().toISOString(),
-    message: error.message,
-    stack: error.stack,
-    componentStack: info.componentStack,
+    message: errorMessage,
+    stack: errorStack,
+    componentStack: info.componentStack ?? undefined,
     url: typeof window !== 'undefined' ? window.location.href : 'SSR',
     userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'SSR',
   }
