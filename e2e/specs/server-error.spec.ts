@@ -11,11 +11,12 @@
  * @ticket SP-303
  */
 
-import { test, expect } from '@playwright/test'
+import { test, expect } from '../fixtures/consent.fixture'
 
 test.describe('Server Error Page (500)', () => {
   test.beforeEach(async ({ page }) => {
     // Navigate to the /server-error test route
+    // Note: consent.fixture automatically sets cookie consent to avoid banner blocking clicks
     await page.goto('/server-error')
     // Wait for the page to be fully loaded
     await page.waitForSelector('[data-testid="server-error-page"]')
