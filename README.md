@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 19 janvier 2026 (Sprint 9 - Emails Transactionnels)
+- **Dernière mise à jour** : 20 janvier 2026 (Sprint 9 - Emails Transactionnels + Error Boundary)
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -49,7 +49,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Hosting** : VPS OVH (Ubuntu 24.04 LTS) ✅
 - **SSL** : Let's Encrypt (auto-renew) ✅
 - **Reverse Proxy** : Nginx
-- **Monitoring** : À définir (Sentry/LogRocket)
+- **Monitoring** : Error Boundary React + À définir (Sentry/LogRocket)
 
 ## Fonctionnalités principales
 
@@ -213,6 +213,36 @@ Système complet d'envoi d'emails transactionnels avec React Email et Nodemailer
   - Horodatage en français dans l'email admin
   - 52 tests unitaires (18 + 22 + 12 fonctions)
 
+### Error Boundary React (SP-304 - 20 janvier 2026)
+
+Système complet de gestion des erreurs React côté client :
+
+- **ErrorBoundary** : Wrapper utilisant `react-error-boundary` v5.0.0
+  - Capture les erreurs de rendu React
+  - Logging structuré (timestamp, message, stack, componentStack, URL)
+  - Support de fallback personnalisé et resetKeys
+  - Callback onReset pour intégration analytics
+
+- **ErrorFallback** : UI de secours élégante
+  - Design Shadcn/ui (Card, Button) cohérent avec l'app
+  - Bouton "Réessayer" pour reset de l'error boundary
+  - Bouton "Accueil" pour navigation sécurisée
+  - Stack trace dépliable en mode développement
+  - Code erreur (digest) affiché en production
+
+- **Next.js Error Pages** :
+  - `error.tsx` : Error boundary par segment de route
+  - `global-error.tsx` : Error boundary racine (remplace le layout, inclut `<html>` et `<body>`)
+  - Styles inline pour `global-error.tsx` (CSS peut ne pas être chargé)
+
+- **Accessibilité WCAG 2.1 AA** :
+  - `role="alert"` et `aria-live="assertive"`
+  - `aria-labelledby` et `aria-describedby`
+  - `aria-label` sur les boutons d'action
+  - `aria-hidden` sur les icônes décoratives
+
+- **Tests** : 22 tests unitaires + 5 tests E2E
+
 ### Formulaire de Contact (SP-287, SP-289 - 19 janvier 2026)
 
 - **Composant ContactForm** : Formulaire complet avec React Hook Form + Zod
@@ -276,6 +306,7 @@ SmartplanningAI/
 │   │   ├── ui/           # Shadcn components (button, form, label...)
 │   │   ├── auth/         # LoginForm, RegisterForm (variant dark/light)
 │   │   ├── cards/        # UserCard, TeamCard, AvatarStack
+│   │   ├── error/        # ErrorBoundary, ErrorFallback (SP-304)
 │   │   ├── charts/       # AreaChartWidget, BarChartWidget, PieChartWidget
 │   │   ├── cookies/      # CookieBanner, CookiePreferencesModal, CookieSettingsButton, CookieConsentProvider
 │   │   ├── dashboard/    # StatCard, TrendIndicator, StatsGrid
@@ -823,11 +854,11 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 - **E2E** : Playwright (configuré)
 - **Coverage** : v8 provider
 
-### Couverture actuelle (19 janvier 2026)
+### Couverture actuelle (20 janvier 2026)
 
 | Catégorie            | Coverage | Tests    |
 | -------------------- | -------- | -------- |
-| **Global**           | **~55%** | **1785** |
+| **Global**           | **~55%** | **1807** |
 | loading              | 100%     | 152      |
 | modals               | 100%     | 52       |
 | cards                | 77.09%   | 88       |
@@ -844,6 +875,7 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 | analytics            | 100%     | 13       |
 | emails (Sprint 9)    | 100%     | 129      |
 | contact (SP-287/289) | 100%     | 95       |
+| error boundary       | 100%     | 22       |
 
 ### Tests E2E
 
@@ -863,9 +895,10 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 | **Empty States**             | 8     | ✅     |
 | **Cookies RGPD**             | 18    | ✅     |
 | **Analytics Umami**          | 8     | ✅     |
-| **Total E2E actifs**         | **219** | ✅   |
+| **Error Boundary**           | 5     | ✅     |
+| **Total E2E actifs**         | **224** | ✅   |
 | **Total E2E skipped**        | **24**  | ⏸️   |
-| **Total E2E**                | **243** |      |
+| **Total E2E**                | **248** |      |
 
 **Note** : Tests exécutés uniquement sur Chromium (Firefox et WebKit supprimés pour stabilité et performance).
 
@@ -968,6 +1001,13 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 
 - UmamiAnalytics (chargement conditionnel script basé sur consentement)
 - useUmamiTrack (hook pour tracking events custom avec vérification RGPD)
+
+#### Error Boundary (2 composants - SP-304)
+
+- ErrorBoundaryWrapper (wrapper react-error-boundary avec logging structuré)
+- ErrorFallback (UI de secours avec retry/home buttons, stack trace dev mode)
+- error.tsx (Next.js route segment error boundary)
+- global-error.tsx (Next.js root layout error boundary avec inline styles)
 
 ### Scripts de test
 
