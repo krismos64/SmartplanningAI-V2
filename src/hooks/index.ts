@@ -1,8 +1,8 @@
 /**
- * Barrel export pour tous les hooks personnalises
- * Import unique : import { useCrudMutation, useMediaQuery } from '@/hooks'
+ * Barrel export pour tous les hooks personnalisés
+ * Import unique : import { useCrudMutation, useMediaQuery, useLoading } from '@/hooks'
  *
- * @ticket SP-150
+ * @ticket SP-150, SP-266
  */
 
 // Media query hook
@@ -17,3 +17,16 @@ export {
   useDeleteMutation,
   useRefreshList,
 } from './use-crud-mutation'
+
+// Loading hooks (SP-266)
+export {
+  useLoading,
+  type UseLoadingOptions,
+  type UseLoadingResult,
+} from './use-loading'
+
+export {
+  useProgressLoading,
+  type UseProgressLoadingOptions,
+  type UseProgressLoadingResult,
+} from './use-progress-loading'
