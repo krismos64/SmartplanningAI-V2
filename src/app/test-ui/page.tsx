@@ -54,7 +54,7 @@ export default function TestUIPage() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 p-8 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       <div className="container-custom mx-auto max-w-6xl space-y-8">
         {/* Hero Section avec animation */}
-        <div className="animate-fade-in text-center">
+        <div className="animate-slide-up text-center">
           <h1 className="mb-4 bg-gradient-to-r from-blue-600 via-blue-500 to-purple-600 bg-clip-text font-rajdhani text-5xl font-bold text-transparent">
             Test Shadcn/ui - SmartPlanning
           </h1>

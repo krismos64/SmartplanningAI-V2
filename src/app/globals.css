@@ -139,47 +139,22 @@
 }
 
 /* =========================================================================
-   UTILITY CLASSES - Classes personnalisées
+   UTILITY CLASSES - Classes personnalisées utilisées
    ========================================================================= */
 @layer utilities {
-  /* Container centré avec padding responsive */
+  /* Container centré avec padding responsive - utilisé dans les sections landing */
   .container-custom {
     @apply mx-auto max-w-7xl px-4 sm:px-6 lg:px-8;
   }
 
-  /* Transitions fluides */
+  /* Transitions fluides - utilisé dans plusieurs composants */
   .transition-smooth {
     @apply transition-all duration-200 ease-in-out;
   }
 
-  /* Texte tronqué avec ellipse */
+  /* Texte tronqué avec ellipse - utilisé dans les cards et listes */
   .text-truncate {
     @apply overflow-hidden text-ellipsis whitespace-nowrap;
-  }
-
-  /* Flexbox centré */
-  .flex-center {
-    @apply flex items-center justify-center;
-  }
-
-  /* Grid responsive par défaut */
-  .grid-auto {
-    @apply grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3;
-  }
-
-  /* Card standard SmartPlanning */
-  .card-base {
-    @apply rounded-lg border bg-card p-6 shadow-sm transition-smooth hover:shadow-md;
-  }
-
-  /* Badge standard */
-  .badge-base {
-    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold;
-  }
-
-  /* ✨ SmartPlanning text glow effect */
-  .text-glow {
-    text-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
   }
 }
 
@@ -201,29 +176,8 @@
   @apply rounded-full bg-border hover:bg-primary/50;
 }
 
-/* Loading spinner global */
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.animate-spin {
-  animation: spin 1s linear infinite;
-}
-
-/* Fade in animation */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-fade-in {
-  animation: fadeIn 0.3s ease-out;
-}
+/* Note: Les animations spin et fade sont gérées par Tailwind CSS natif
+   - animate-spin : Tailwind built-in
+   - animate-fade-in : défini dans tailwind.config.ts
+   - animate-slide-up : défini dans tailwind.config.ts (avec translateY)
+*/

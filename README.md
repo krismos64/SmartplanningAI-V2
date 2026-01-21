@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 20 janvier 2026 (Sprint 9 - Emails + Error Boundary + Pages 403/404/500)
+- **Dernière mise à jour** : 21 janvier 2026 (Sprint 9 - Nettoyage CSS + Préparation Design System)
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -86,6 +86,30 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Entreprises** (SYSTEM_ADMIN) : Liste, création, édition, suppression avec filtres
 - **Collaborateurs** (DIRECTOR, MANAGER) : Gestion complète avec permissions RBAC
 - **Équipes** (DIRECTOR) : CRUD + gestion des membres
+
+### Architecture CSS & Animations (Nettoyage - 21 janvier 2026)
+
+Organisation rationalisée des styles et animations :
+
+- **Styles globaux** (`src/app/globals.css`) :
+  - CSS Variables pour le theming (couleurs HSL, radius, sidebar)
+  - Classes utilitaires utilisées : `container-custom`, `transition-smooth`, `text-truncate`
+  - Support dark mode préparé (variables `.dark`)
+  - Scrollbar personnalisée (Webkit)
+
+- **Animations Tailwind** (`tailwind.config.ts`) :
+  - Keyframes Radix : `accordion-down`, `accordion-up`
+  - Keyframes custom : `fade-in`, `scale-in`, `slide-up/down/left/right`
+  - Plugin `tailwindcss-animate` pour animations Shadcn/ui
+
+- **Animations Framer Motion** :
+  - Landing page : `src/app/(landing)/animations/variants.ts`
+  - Contact form : `src/lib/animations/contact.ts`
+  - Variants : fadeInUp, staggerContainer, float, glow, success/error states
+
+- **CSS Modules** (`landing.module.css`) : Styles spécifiques landing (glassmorphism, gradients)
+
+> **Note** : Les animations `spin` et `pulse` sont natives Tailwind. Les classes CSS inutilisées ont été supprimées.
 
 ### Landing Page (Refonte complète - 13 janvier 2026)
 

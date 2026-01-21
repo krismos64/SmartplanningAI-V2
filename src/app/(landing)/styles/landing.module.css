@@ -245,34 +245,10 @@
 }
 
 /* ============================================================================
-   ANIMATIONS
+   ANIMATIONS - Note: Les animations principales sont gérées par :
+   - Framer Motion (variants dans src/app/(landing)/animations/variants.ts)
+   - Tailwind CSS natif (animate-pulse, animate-spin, etc.)
    ============================================================================ */
-
-@keyframes pulse {
-  0%, 100% {
-    opacity: 0.1;
-  }
-  50% {
-    opacity: 0.2;
-  }
-}
-
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
-}
-
-.animate-pulse {
-  animation: pulse 4s ease-in-out infinite;
-}
-
-.animate-float {
-  animation: float 6s ease-in-out infinite;
-}
 
 /* ============================================================================
    UTILITIES
