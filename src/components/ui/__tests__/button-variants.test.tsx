@@ -14,17 +14,23 @@ describe('Button Variants', () => {
   describe('renders without crashing', () => {
     it('renders default variant', () => {
       render(<Button>Default</Button>)
-      expect(screen.getByRole('button', { name: 'Default' })).toBeInTheDocument()
+      expect(
+        screen.getByRole('button', { name: 'Default' })
+      ).toBeInTheDocument()
     })
 
     it('renders success variant', () => {
       render(<Button variant="success">Success</Button>)
-      expect(screen.getByRole('button', { name: 'Success' })).toBeInTheDocument()
+      expect(
+        screen.getByRole('button', { name: 'Success' })
+      ).toBeInTheDocument()
     })
 
     it('renders warning variant', () => {
       render(<Button variant="warning">Warning</Button>)
-      expect(screen.getByRole('button', { name: 'Warning' })).toBeInTheDocument()
+      expect(
+        screen.getByRole('button', { name: 'Warning' })
+      ).toBeInTheDocument()
     })
 
     it('renders info variant', () => {

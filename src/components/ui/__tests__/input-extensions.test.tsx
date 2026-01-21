@@ -6,7 +6,7 @@
  */
 
 import { describe, it, expect, vi } from 'vitest'
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import '@testing-library/jest-dom'
 import React from 'react'
@@ -80,11 +80,7 @@ describe('Input Extensions', () => {
 
     it('loader replaces right icon', () => {
       render(
-        <Input
-          isLoading
-          rightIcon={<MockRightIcon />}
-          placeholder="Loading"
-        />
+        <Input isLoading rightIcon={<MockRightIcon />} placeholder="Loading" />
       )
       // Right icon should not be rendered when loading
       expect(screen.queryByTestId('mock-right-icon')).not.toBeInTheDocument()
@@ -185,7 +181,11 @@ describe('Input Extensions', () => {
     it('works as controlled input', async () => {
       const onChange = vi.fn()
       render(
-        <Input value="controlled" onChange={onChange} placeholder="Controlled" />
+        <Input
+          value="controlled"
+          onChange={onChange}
+          placeholder="Controlled"
+        />
       )
       const input = screen.getByPlaceholderText('Controlled')
       expect(input).toHaveValue('controlled')
@@ -235,7 +235,8 @@ describe('Input Extensions', () => {
         <Input leftIcon={<MockIcon />} isLoading placeholder="Icon + Loading" />
       )
       expect(screen.getByTestId('mock-icon')).toBeInTheDocument()
-      const container = screen.getByPlaceholderText('Icon + Loading').parentElement
+      const container =
+        screen.getByPlaceholderText('Icon + Loading').parentElement
       expect(container?.querySelector('.animate-spin')).toBeInTheDocument()
     })
 
@@ -254,12 +255,7 @@ describe('Input Extensions', () => {
 
     it('error + size + left icon', () => {
       render(
-        <Input
-          error
-          size="lg"
-          leftIcon={<MockIcon />}
-          placeholder="Combo"
-        />
+        <Input error size="lg" leftIcon={<MockIcon />} placeholder="Combo" />
       )
       const input = screen.getByPlaceholderText('Combo')
       expect(input).toHaveClass('border-destructive')
