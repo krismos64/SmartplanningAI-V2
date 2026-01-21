@@ -48,7 +48,7 @@ export function PricingSection() {
                 'relative mx-auto w-full max-w-sm rounded-2xl p-6 sm:p-8 md:mx-0 md:max-w-none',
                 plan.popular
                   ? 'border-2 border-cyan-500/50 bg-gradient-to-b from-cyan-500/10 to-transparent'
-                  : 'border border-white/10 bg-white/[0.02]'
+                  : 'border border-border/50 bg-card/50'
               )}
             >
               {/* Popular Badge */}
@@ -63,14 +63,16 @@ export function PricingSection() {
               {/* Plan Info */}
               <div className="mb-6">
                 <h3 className="mb-2 text-xl font-semibold">{plan.name}</h3>
-                <p className="text-sm text-white/50">{plan.description}</p>
+                <p className="text-sm text-muted-foreground">
+                  {plan.description}
+                </p>
               </div>
 
               {/* Price */}
               <div className="mb-6">
                 <span className="text-4xl font-bold">{plan.price}</span>
                 {plan.period && (
-                  <span className="text-white/50">{plan.period}</span>
+                  <span className="text-muted-foreground">{plan.period}</span>
                 )}
               </div>
 
@@ -79,7 +81,7 @@ export function PricingSection() {
                 {plan.features.map((feature) => (
                   <li key={feature} className="flex items-center gap-3">
                     <Check className="h-5 w-5 text-cyan-400" />
-                    <span className="text-white/70">{feature}</span>
+                    <span className="text-muted-foreground">{feature}</span>
                   </li>
                 ))}
               </ul>

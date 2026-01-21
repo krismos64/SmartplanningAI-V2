@@ -45,7 +45,10 @@ const TikTokIcon = ({ className }: { className?: string }) => (
 
 export function LandingFooter() {
   return (
-    <footer id="contact" className="border-t border-white/5 bg-[#030712] py-16">
+    <footer
+      id="contact"
+      className="border-t border-border/50 bg-background py-16"
+    >
       <div className="container-custom">
         <div className="mb-16 grid grid-cols-2 gap-8 md:grid-cols-4 lg:grid-cols-5 lg:gap-12">
           {/* Brand */}
@@ -54,31 +57,31 @@ export function LandingFooter() {
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-cyan-400">
                 <Calendar className="h-5 w-5 text-white" />
               </div>
-              <span className="text-lg font-bold text-white">
+              <span className="text-lg font-bold text-foreground">
                 Smart<span className="text-cyan-400">Planning</span>
               </span>
             </Link>
-            <p className="mb-6 text-sm text-white/50">
+            <p className="mb-6 text-sm text-muted-foreground">
               La solution intelligente pour gérer vos plannings d&apos;équipe.
             </p>
             <div className="flex gap-4">
               <a
                 href="#"
-                className="rounded-lg bg-white/5 p-2 text-white/50 transition-colors hover:bg-white/10 hover:text-white"
+                className="rounded-lg bg-card/50 p-2 text-muted-foreground transition-colors hover:bg-card hover:text-foreground"
                 aria-label="LinkedIn"
               >
                 <Linkedin className="h-5 w-5" />
               </a>
               <a
                 href="#"
-                className="rounded-lg bg-white/5 p-2 text-white/50 transition-colors hover:bg-white/10 hover:text-white"
+                className="rounded-lg bg-card/50 p-2 text-muted-foreground transition-colors hover:bg-card hover:text-foreground"
                 aria-label="Instagram"
               >
                 <Instagram className="h-5 w-5" />
               </a>
               <a
                 href="#"
-                className="rounded-lg bg-white/5 p-2 text-white/50 transition-colors hover:bg-white/10 hover:text-white"
+                className="rounded-lg bg-card/50 p-2 text-muted-foreground transition-colors hover:bg-card hover:text-foreground"
                 aria-label="TikTok"
               >
                 <TikTokIcon className="h-5 w-5" />
@@ -88,13 +91,13 @@ export function LandingFooter() {
 
           {/* Product Links */}
           <div>
-            <h4 className="mb-4 font-semibold text-white">Produit</h4>
+            <h4 className="mb-4 font-semibold text-foreground">Produit</h4>
             <ul className="space-y-3">
               {footerLinks.product.map((link) => (
                 <li key={link.label}>
                   <a
                     href={link.href}
-                    className="text-sm text-white/50 transition-colors hover:text-white"
+                    className="text-sm text-muted-foreground transition-colors hover:text-foreground"
                   >
                     {link.label}
                   </a>
@@ -105,13 +108,13 @@ export function LandingFooter() {
 
           {/* Company Links */}
           <div>
-            <h4 className="mb-4 font-semibold text-white">Entreprise</h4>
+            <h4 className="mb-4 font-semibold text-foreground">Entreprise</h4>
             <ul className="space-y-3">
               {footerLinks.company.map((link) => (
                 <li key={link.label}>
                   <a
                     href={link.href}
-                    className="text-sm text-white/50 transition-colors hover:text-white"
+                    className="text-sm text-muted-foreground transition-colors hover:text-foreground"
                   >
                     {link.label}
                   </a>
@@ -122,13 +125,13 @@ export function LandingFooter() {
 
           {/* Legal Links */}
           <div>
-            <h4 className="mb-4 font-semibold text-white">Légal</h4>
+            <h4 className="mb-4 font-semibold text-foreground">Légal</h4>
             <ul className="space-y-3">
               {footerLinks.legal.map((link) => (
                 <li key={link.label}>
                   <a
                     href={link.href}
-                    className="text-sm text-white/50 transition-colors hover:text-white"
+                    className="text-sm text-muted-foreground transition-colors hover:text-foreground"
                   >
                     {link.label}
                   </a>
@@ -139,33 +142,37 @@ export function LandingFooter() {
 
           {/* Contact */}
           <div>
-            <h4 className="mb-4 font-semibold text-white">Contact</h4>
+            <h4 className="mb-4 font-semibold text-foreground">Contact</h4>
             <div className="space-y-3">
               <a
                 href="mailto:contact@smartplanning.fr"
-                className="flex items-center gap-2 text-sm text-white/50 transition-colors hover:text-cyan-400"
+                className="flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-cyan-400"
               >
                 <Mail className="h-4 w-4" />
                 contact@smartplanning.fr
               </a>
-              <p className="text-sm text-white/50">Support disponible 24/7</p>
-              <p className="text-sm text-white/50">Réponse sous 24h ouvrées</p>
+              <p className="text-sm text-muted-foreground">
+                Support disponible 24/7
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Réponse sous 24h ouvrées
+              </p>
             </div>
           </div>
         </div>
 
         {/* Bottom */}
-        <div className="flex flex-col items-center justify-between gap-4 border-t border-white/5 pt-8 md:flex-row">
-          <p className="text-sm text-white/40">
+        <div className="flex flex-col items-center justify-between gap-4 border-t border-border/50 pt-8 md:flex-row">
+          <p className="text-sm text-muted-foreground">
             &copy; {new Date().getFullYear()} SmartPlanning. Tous droits
             réservés.
           </p>
           <div className="flex items-center gap-4">
             <CookieSettingsButton
               variant="link"
-              className="h-auto p-0 text-sm text-white/40 hover:text-white"
+              className="h-auto p-0 text-sm text-muted-foreground hover:text-foreground"
             />
-            <p className="flex items-center gap-2 text-sm text-white/40">
+            <p className="flex items-center gap-2 text-sm text-muted-foreground">
               Made in France
               <span className="text-base">🇫🇷</span>
             </p>

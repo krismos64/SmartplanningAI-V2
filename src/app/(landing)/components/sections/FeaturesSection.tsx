@@ -61,10 +61,10 @@ export function FeaturesSection() {
               variants={fadeInUp}
               whileHover={{ y: -5, transition: { duration: 0.2 } }}
               className={cn(
-                'group relative overflow-hidden rounded-2xl border bg-white/[0.02] p-8 transition-all hover:border-white/10',
+                'group relative overflow-hidden rounded-2xl border bg-card/50 p-8 transition-all hover:border-primary/30',
                 feature.comingSoon
                   ? 'border-violet-500/30 bg-violet-500/5'
-                  : 'border-white/5'
+                  : 'border-border/50'
               )}
             >
               {/* Coming Soon Badge */}
@@ -86,7 +86,7 @@ export function FeaturesSection() {
 
               {/* Content */}
               <h3 className="mb-3 text-xl font-semibold">{feature.title}</h3>
-              <p className="text-white/60">{feature.description}</p>
+              <p className="text-muted-foreground">{feature.description}</p>
 
               {/* Hover Gradient */}
               <div

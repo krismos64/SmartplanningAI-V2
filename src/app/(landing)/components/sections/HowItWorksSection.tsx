@@ -48,7 +48,7 @@ export function HowItWorksSection() {
               {/* Step Number */}
               <div className="relative mx-auto mb-6 flex h-32 w-32 items-center justify-center">
                 <div className="absolute inset-0 rounded-full bg-gradient-to-br from-purple-500/20 to-pink-500/20 blur-xl" />
-                <div className="relative flex h-24 w-24 items-center justify-center rounded-full border border-purple-500/30 bg-[#030712]">
+                <div className="relative flex h-24 w-24 items-center justify-center rounded-full border border-purple-500/30 bg-background">
                   <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-4xl font-bold text-transparent">
                     {step.number}
                   </span>
@@ -57,7 +57,7 @@ export function HowItWorksSection() {
 
               {/* Content */}
               <h3 className="mb-3 text-xl font-semibold">{step.title}</h3>
-              <p className="mx-auto max-w-xs text-white/50">
+              <p className="mx-auto max-w-xs text-muted-foreground">
                 {step.description}
               </p>
             </motion.div>

@@ -38,7 +38,7 @@ export function CTASection() {
               <br />
               votre gestion des plannings ?
             </h2>
-            <p className="mx-auto mb-10 max-w-2xl text-lg text-white/80">
+            <p className="mx-auto mb-10 max-w-2xl text-lg text-white/80 dark:text-white/80">
               Commencez dès maintenant à simplifier votre organisation avec
               SmartPlanning. Essai gratuit, sans engagement.
             </p>

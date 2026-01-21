@@ -56,7 +56,7 @@ export function BenefitsSection() {
               <motion.div
                 key={benefit.id}
                 variants={fadeInUp}
-                className="group flex gap-4 rounded-xl border border-white/5 bg-white/[0.02] p-4 transition-all hover:border-white/10 hover:bg-white/[0.04]"
+                className="group flex gap-4 rounded-xl border border-border/50 bg-card/50 p-4 transition-all hover:border-primary/30 hover:bg-card"
               >
                 <div
                   className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${benefit.color}`}
@@ -65,7 +65,9 @@ export function BenefitsSection() {
                 </div>
                 <div>
                   <h3 className="mb-1 font-semibold">{benefit.title}</h3>
-                  <p className="text-sm text-white/60">{benefit.description}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {benefit.description}
+                  </p>
                 </div>
               </motion.div>
             ))}

@@ -18,7 +18,7 @@ interface FAQItemProps {
 export function FAQItem({ question, answer, isOpen, onClick }: FAQItemProps) {
   return (
     <div
-      className="cursor-pointer rounded-2xl border border-white/5 bg-white/[0.02] p-6 transition-all hover:border-white/10"
+      className="cursor-pointer rounded-2xl border border-border/50 bg-card/50 p-6 transition-all hover:border-border"
       onClick={onClick}
     >
       <div className="flex items-center justify-between gap-4">
@@ -27,7 +27,7 @@ export function FAQItem({ question, answer, isOpen, onClick }: FAQItemProps) {
           animate={{ rotate: isOpen ? 180 : 0 }}
           transition={{ duration: 0.2 }}
         >
-          <ChevronDown className="h-5 w-5 text-white/50" />
+          <ChevronDown className="h-5 w-5 text-muted-foreground" />
         </motion.div>
       </div>
       <AnimatePresence>
@@ -39,7 +39,7 @@ export function FAQItem({ question, answer, isOpen, onClick }: FAQItemProps) {
             transition={{ duration: 0.2 }}
             className="overflow-hidden"
           >
-            <p className="mt-4 text-white/60">{answer}</p>
+            <p className="mt-4 text-muted-foreground">{answer}</p>
           </motion.div>
         )}
       </AnimatePresence>

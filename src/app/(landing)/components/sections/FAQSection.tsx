@@ -61,7 +61,7 @@ export function FAQSection() {
             </motion.h2>
             <motion.p
               variants={fadeInUp}
-              className="mb-8 text-lg text-white/60"
+              className="mb-8 text-lg text-muted-foreground"
             >
               Vous ne trouvez pas votre réponse ? Notre équipe est là pour vous
               aider.

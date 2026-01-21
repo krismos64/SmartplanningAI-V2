@@ -70,21 +70,23 @@ export function ContactSection() {
                 <motion.div
                   key={item.label}
                   variants={fadeInUp}
-                  className="group rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm transition-all duration-300 hover:border-cyan-500/30 hover:bg-white/10"
+                  className="group rounded-2xl border border-border/50 bg-card/50 p-6 backdrop-blur-sm transition-all duration-300 hover:border-cyan-500/30 hover:bg-card"
                 >
                   <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-500/20">
                     <item.icon className="h-6 w-6 text-cyan-400" />
                   </div>
-                  <p className="mb-1 text-sm text-white/60">{item.label}</p>
+                  <p className="mb-1 text-sm text-muted-foreground">
+                    {item.label}
+                  </p>
                   {item.href ? (
                     <a
                       href={item.href}
-                      className="text-lg font-medium text-white transition-colors hover:text-cyan-400"
+                      className="text-lg font-medium text-foreground transition-colors hover:text-cyan-400"
                     >
                       {item.value}
                     </a>
                   ) : (
-                    <p className="text-lg font-medium text-white">
+                    <p className="text-lg font-medium text-foreground">
                       {item.value}
                     </p>
                   )}
@@ -113,9 +115,9 @@ export function ContactSection() {
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true }}
-            className="rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm sm:p-8 lg:p-10"
+            className="rounded-3xl border border-border/50 bg-card/50 p-6 backdrop-blur-sm sm:p-8 lg:p-10"
           >
-            <h3 className="mb-6 text-xl font-semibold text-white">
+            <h3 className="mb-6 text-xl font-semibold text-foreground">
               Envoyez-nous un message
             </h3>
             <ContactForm />

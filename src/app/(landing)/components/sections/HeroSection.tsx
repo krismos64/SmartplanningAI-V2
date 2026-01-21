@@ -115,7 +115,7 @@ export function HeroSection() {
             {/* Subheadline */}
             <motion.p
               variants={fadeInUp}
-              className="mx-auto max-w-xl text-lg text-white/60 sm:text-xl lg:mx-0"
+              className="mx-auto max-w-xl text-lg text-muted-foreground sm:text-xl lg:mx-0"
             >
               La solution SaaS qui révolutionne la gestion des plannings
               d&apos;entreprise. Automatisez, optimisez et simplifiez votre
@@ -139,7 +139,8 @@ export function HeroSection() {
               </Button>
               <Button
                 size="lg"
-                className="h-14 border-2 border-white bg-transparent px-8 text-base font-semibold text-white hover:bg-white hover:text-[#030712]"
+                variant="outline"
+                className="h-14 border-2 px-8 text-base font-semibold"
               >
                 <PlayCircle className="mr-2 h-5 w-5" />
                 Voir la démo
@@ -166,7 +167,8 @@ export function HeroSection() {
             </Button>
             <Button
               size="lg"
-              className="h-14 w-full border-2 border-white bg-transparent px-8 text-base font-semibold text-white hover:bg-white hover:text-[#030712]"
+              variant="outline"
+              className="h-14 w-full border-2 px-8 text-base font-semibold"
             >
               <PlayCircle className="mr-2 h-5 w-5" />
               Voir la démo

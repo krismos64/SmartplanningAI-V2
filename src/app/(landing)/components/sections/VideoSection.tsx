@@ -54,7 +54,7 @@ export function VideoSection() {
           <div className="absolute -inset-4 rounded-3xl bg-gradient-to-r from-red-500/20 via-pink-500/20 to-purple-500/20 blur-2xl" />
 
           {/* Video Frame */}
-          <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-[#0a0a0f] shadow-2xl">
+          <div className="relative overflow-hidden rounded-2xl border border-border bg-card shadow-2xl">
             {/* Aspect Ratio Container */}
             <div className="relative aspect-video w-full">
               {!isPlaying ? (
@@ -147,10 +147,14 @@ export function VideoSection() {
             <motion.div
               key={feature.id}
               variants={fadeInUp}
-              className="rounded-xl border border-white/5 bg-white/[0.02] p-6 text-center"
+              className="rounded-xl border border-border/50 bg-card/50 p-6 text-center"
             >
-              <h3 className="mb-2 font-semibold text-white">{feature.title}</h3>
-              <p className="text-sm text-white/50">{feature.description}</p>
+              <h3 className="mb-2 font-semibold text-foreground">
+                {feature.title}
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                {feature.description}
+              </p>
             </motion.div>
           ))}
         </motion.div>

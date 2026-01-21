@@ -116,7 +116,7 @@ export function SectionHeader({
       {description && (
         <motion.p
           variants={fadeInUp}
-          className="mx-auto max-w-2xl text-lg text-white/60"
+          className="mx-auto max-w-2xl text-lg text-muted-foreground"
         >
           {description}
         </motion.p>
