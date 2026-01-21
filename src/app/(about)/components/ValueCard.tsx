@@ -6,10 +6,9 @@
  * Reusable card component following the landing page design system
  */
 
-import { motion } from 'framer-motion'
 import { LucideIcon } from 'lucide-react'
-import { fadeInUp } from '@/app/(landing)/animations/variants'
 import { cn } from '@/lib/utils'
+import { motion, fadeInUp } from '@/lib/animations'
 
 interface ValueCardProps {
   icon: LucideIcon

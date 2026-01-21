@@ -13,14 +13,9 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { motion } from 'framer-motion'
 import { ArrowRight, Target } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import {
-  fadeInUp,
-  staggerContainer,
-  scaleIn,
-} from '@/app/(landing)/animations/variants'
+import { motion, fadeInUp, staggerContainer, scaleIn } from '@/lib/animations'
 import { SectionHeader, AnimatedBackground } from '@/app/(landing)/components'
 import { LandingHeader } from '@/components/layout/LandingHeader'
 import { LandingFooter } from '@/components/layout/LandingFooter'

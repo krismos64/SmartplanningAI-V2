@@ -15,12 +15,11 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { motion } from 'framer-motion'
 import { Calendar, ChevronUp, FileText, ArrowLeft } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { AnimatedBackground } from '@/app/(landing)/components'
 import { LandingFooter } from '@/components/layout/LandingFooter'
-import { fadeInUp, staggerContainer } from '@/app/(landing)/animations'
+import { motion, fadeInUp, staggerContainer } from '@/lib/animations'
 
 // Types pour la table des matières
 export interface TableOfContentsItem {

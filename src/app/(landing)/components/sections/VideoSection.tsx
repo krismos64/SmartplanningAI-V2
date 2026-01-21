@@ -8,9 +8,8 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
-import { motion } from 'framer-motion'
 import { Play } from 'lucide-react'
-import { fadeInUp, staggerContainer } from '../../animations'
+import { motion, fadeInUp, staggerContainer } from '@/lib/animations'
 import { videoFeatures } from '../../data'
 import { SectionHeader } from '../index'
 

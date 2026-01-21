@@ -7,11 +7,10 @@
  * @description Section contact sur la landing page
  */
 
-import { motion } from 'framer-motion'
 import { Mail, Clock, MapPin } from 'lucide-react'
 import { SectionHeader } from '../SectionHeader'
 import { ContactForm } from '@/components/public/ContactForm'
-import { fadeInUp, staggerContainer } from '../../animations'
+import { motion, fadeInUp, staggerContainer } from '@/lib/animations'
 
 // Informations de contact
 const contactInfo = [

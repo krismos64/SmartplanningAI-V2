@@ -14,7 +14,6 @@
  * @ticket SP-305
  */
 
-import { motion, Variants } from 'framer-motion'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import {
@@ -26,6 +25,13 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { Home, LayoutDashboard, Mail, ShieldAlert } from 'lucide-react'
+import {
+  motion,
+  staggerContainer,
+  staggerItem,
+  scaleVariants,
+  pulseAnimation,
+} from '@/lib/animations'
 
 /**
  * Props for ForbiddenPage component
@@ -39,64 +45,6 @@ export interface ForbiddenPageProps {
   currentRole?: string
   /** Show the "Contact admin" button (default: true) */
   showContactAdmin?: boolean
-}
-
-/**
- * Container animation variants for staggered children
- */
-const containerVariants: Variants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-      delayChildren: 0.2,
-    },
-  },
-}
-
-/**
- * Item animation variants for fade-in with slide-up
- */
-const itemVariants: Variants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.5,
-      ease: 'easeOut' as const,
-    },
-  },
-}
-
-/**
- * Icon animation variants for pulse effect (locked feeling)
- */
-const iconVariants: Variants = {
-  hidden: { opacity: 0, scale: 0.8 },
-  visible: {
-    opacity: 1,
-    scale: 1,
-    transition: {
-      duration: 0.5,
-      ease: 'easeOut' as const,
-    },
-  },
-}
-
-/**
- * Pulse animation for the shield icon
- */
-const pulseVariants: Variants = {
-  pulse: {
-    scale: [1, 1.05, 1],
-    transition: {
-      duration: 2,
-      repeat: Infinity,
-      ease: 'easeInOut' as const,
-    },
-  },
 }
 
 /**
@@ -168,7 +116,7 @@ export function ForbiddenPage({
       aria-labelledby="forbidden-title"
       aria-describedby="forbidden-description"
       className="flex min-h-screen flex-col items-center justify-center bg-background p-4"
-      variants={containerVariants}
+      variants={staggerContainer}
       initial="hidden"
       animate="visible"
       data-testid="forbidden-page"
@@ -177,10 +125,13 @@ export function ForbiddenPage({
         <CardHeader className="text-center">
           {/* Shield Icon with pulse */}
           <motion.div
-            variants={iconVariants}
+            variants={scaleVariants}
             className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-orange-500/10"
           >
-            <motion.div variants={pulseVariants} animate="pulse">
+            <motion.div
+              animate={pulseAnimation.animate}
+              transition={pulseAnimation.transition}
+            >
               <ShieldAlert
                 className="h-10 w-10 text-orange-500"
                 aria-hidden="true"
@@ -190,7 +141,7 @@ export function ForbiddenPage({
           </motion.div>
 
           {/* Error Code with Gradient */}
-          <motion.div variants={itemVariants}>
+          <motion.div variants={staggerItem}>
             <span
               className="bg-gradient-to-r from-orange-500 to-orange-500/60 bg-clip-text text-5xl font-bold text-transparent sm:text-6xl"
               aria-hidden="true"
@@ -201,7 +152,7 @@ export function ForbiddenPage({
           </motion.div>
 
           {/* Title */}
-          <motion.div variants={itemVariants}>
+          <motion.div variants={staggerItem}>
             <CardTitle
               id="forbidden-title"
               className="mt-4 text-xl text-orange-600 dark:text-orange-400 sm:text-2xl"
@@ -211,7 +162,7 @@ export function ForbiddenPage({
           </motion.div>
 
           {/* Description */}
-          <motion.div variants={itemVariants}>
+          <motion.div variants={staggerItem}>
             <CardDescription
               id="forbidden-description"
               className="mt-2 text-muted-foreground"
@@ -222,7 +173,7 @@ export function ForbiddenPage({
         </CardHeader>
 
         <CardContent>
-          <motion.div variants={itemVariants} className="space-y-3">
+          <motion.div variants={staggerItem} className="space-y-3">
             {/* Role info if available */}
             {(requiredRole || currentRole) && !reason && (
               <div
@@ -252,7 +203,7 @@ export function ForbiddenPage({
         <CardFooter className="flex flex-col gap-3">
           {/* Action Buttons */}
           <motion.div
-            variants={itemVariants}
+            variants={staggerItem}
             className="flex w-full flex-col gap-3 sm:flex-row"
           >
             <Button
@@ -279,7 +230,7 @@ export function ForbiddenPage({
 
           {/* Contact Admin Link */}
           {showContactAdmin && (
-            <motion.div variants={itemVariants} className="w-full">
+            <motion.div variants={staggerItem} className="w-full">
               <Button
                 onClick={handleContactAdmin}
                 variant="ghost"

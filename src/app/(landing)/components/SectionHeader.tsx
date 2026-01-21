@@ -6,9 +6,8 @@
  * Reduces code duplication across 7+ sections
  */
 
-import { motion } from 'framer-motion'
-import { fadeInUp, staggerContainer } from '../animations'
 import { cn } from '@/lib/utils'
+import { motion, fadeInUp, staggerContainer } from '@/lib/animations'
 
 // Color variants for badges and gradients
 export const SECTION_COLORS = {

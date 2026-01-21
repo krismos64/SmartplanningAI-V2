@@ -5,9 +5,12 @@
  * Animated scroll indicator at the bottom of the hero section
  */
 
-import { motion } from 'framer-motion'
 import { ChevronDown } from 'lucide-react'
-import { bounceAnimation, bounceTransition } from '../animations'
+import {
+  motion,
+  bounceAnimationValue,
+  bounceTransition,
+} from '@/lib/animations'
 
 export function ScrollIndicator() {
   return (
@@ -18,7 +21,7 @@ export function ScrollIndicator() {
       className="absolute bottom-10 left-1/2 -translate-x-1/2"
     >
       <motion.div
-        animate={bounceAnimation}
+        animate={bounceAnimationValue}
         transition={bounceTransition}
         className="flex flex-col items-center gap-2"
       >

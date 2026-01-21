@@ -6,14 +6,14 @@
  */
 
 import Image from 'next/image'
-import { motion } from 'framer-motion'
 import {
+  motion,
   floatSmall,
   floatSmallTransition,
   glowPulse,
   glowPulseTransition,
   hoverScale,
-} from '../animations'
+} from '@/lib/animations'
 
 export function SectionLogo() {
   return (

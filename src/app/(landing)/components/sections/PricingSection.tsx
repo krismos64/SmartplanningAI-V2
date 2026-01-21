@@ -7,11 +7,10 @@
  */
 
 import Link from 'next/link'
-import { motion } from 'framer-motion'
 import { Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { fadeInUp, staggerContainer } from '../../animations'
+import { motion, fadeInUp, staggerContainer } from '@/lib/animations'
 import { pricingPlans } from '../../data'
 import { SectionLogo, SectionHeader } from '../index'
 

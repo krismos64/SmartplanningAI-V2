@@ -14,40 +14,11 @@
  * @ticket SP-302
  */
 
-import { motion, Variants } from 'framer-motion'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Home, LayoutDashboard } from 'lucide-react'
 import { NotFoundIllustration } from './NotFoundIllustration'
-
-/**
- * Container animation variants for staggered children
- */
-const containerVariants: Variants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-      delayChildren: 0.2,
-    },
-  },
-}
-
-/**
- * Item animation variants for fade-in with slide-up
- */
-const itemVariants: Variants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.5,
-      ease: 'easeOut' as const,
-    },
-  },
-}
+import { motion, staggerContainer, staggerItem } from '@/lib/animations'
 
 /**
  * Quick links for additional navigation
@@ -81,18 +52,18 @@ export function NotFoundPage() {
       aria-labelledby="not-found-title"
       aria-describedby="not-found-description"
       className="flex min-h-screen flex-col items-center justify-center bg-background p-4"
-      variants={containerVariants}
+      variants={staggerContainer}
       initial="hidden"
       animate="visible"
       data-testid="not-found-page"
     >
       {/* Animated Illustration */}
-      <motion.div variants={itemVariants}>
+      <motion.div variants={staggerItem}>
         <NotFoundIllustration className="mb-6" />
       </motion.div>
 
       {/* 404 Number with Gradient */}
-      <motion.div variants={itemVariants} className="text-center">
+      <motion.div variants={staggerItem} className="text-center">
         <span
           className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-6xl font-bold text-transparent sm:text-7xl md:text-8xl"
           aria-hidden="true"
@@ -104,7 +75,7 @@ export function NotFoundPage() {
       {/* Title */}
       <motion.h1
         id="not-found-title"
-        variants={itemVariants}
+        variants={staggerItem}
         className="mt-4 text-center text-xl font-semibold text-foreground sm:text-2xl md:text-3xl"
       >
         Page non trouvée
@@ -113,7 +84,7 @@ export function NotFoundPage() {
       {/* Description */}
       <motion.p
         id="not-found-description"
-        variants={itemVariants}
+        variants={staggerItem}
         className="mt-3 max-w-md px-4 text-center text-muted-foreground"
       >
         Désolé, la page que vous recherchez n&apos;existe pas ou a été déplacée.
@@ -122,7 +93,7 @@ export function NotFoundPage() {
 
       {/* Navigation Buttons */}
       <motion.div
-        variants={itemVariants}
+        variants={staggerItem}
         className="mt-8 flex flex-col gap-4 sm:flex-row"
       >
         <Button asChild size="lg" className="min-w-[160px]">
@@ -142,7 +113,7 @@ export function NotFoundPage() {
 
       {/* Quick Links */}
       <motion.nav
-        variants={itemVariants}
+        variants={staggerItem}
         className="mt-10 flex flex-wrap justify-center gap-4"
         aria-label="Liens rapides"
       >
