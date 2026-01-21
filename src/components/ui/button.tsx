@@ -4,6 +4,13 @@ import { cva, type VariantProps } from 'class-variance-authority'
 
 import { cn } from '@/lib/utils'
 
+/**
+ * Button variants using CVA (class-variance-authority)
+ *
+ * @see SP-260 - Extension composants UI
+ * Variants ajoutés : success, warning, info
+ * Utilise les CSS variables définies dans globals.css
+ */
 const buttonVariants = cva(
   'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
   {
@@ -19,6 +26,12 @@ const buttonVariants = cva(
           'bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80',
         ghost: 'hover:bg-accent hover:text-accent-foreground',
         link: 'text-primary underline-offset-4 hover:underline',
+        // SP-260: Nouveaux variants sémantiques
+        success:
+          'bg-success text-success-foreground shadow-sm hover:bg-success/90',
+        warning:
+          'bg-warning text-warning-foreground shadow-sm hover:bg-warning/90',
+        info: 'bg-info text-info-foreground shadow-sm hover:bg-info/90',
       },
       size: {
         default: 'h-9 px-4 py-2',
