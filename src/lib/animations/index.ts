@@ -93,6 +93,10 @@ export {
   // Floating elements presets
   floatingElement1,
   floatingElement2,
+  // Illustration variants (with initial/animate states)
+  illustrationContainer,
+  floatVariants,
+  orbitVariants,
   // Map
   variantsMap,
   default as variants,

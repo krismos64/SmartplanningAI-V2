@@ -904,6 +904,65 @@ export const floatingElement2 = {
 }
 
 // =============================================================================
+// ILLUSTRATION VARIANTS (with initial/animate states)
+// =============================================================================
+
+/**
+ * Illustration Container - Container pour illustrations animées
+ *
+ * Utilise initial/animate au lieu de hidden/visible pour compatibilité
+ * avec les animations continues (float, orbit)
+ * @see NotFoundIllustration
+ */
+export const illustrationContainer: Variants = {
+  initial: { opacity: 0 },
+  animate: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.2,
+      delayChildren: 0.1,
+    },
+  },
+}
+
+/**
+ * Float Variants - Animation de flottement vertical
+ *
+ * Pour illustrations animées avec effet de flottement doux
+ * @see NotFoundIllustration
+ */
+export const floatVariants: Variants = {
+  initial: { y: 0 },
+  animate: {
+    y: [-8, 8, -8],
+    transition: {
+      duration: 3,
+      repeat: Infinity,
+      ease: 'easeInOut' as const,
+    },
+  },
+}
+
+/**
+ * Orbit Variants - Animation de pulsation pour éléments décoratifs
+ *
+ * Pour icônes décoratives en orbite autour d'un élément central
+ * @see NotFoundIllustration
+ */
+export const orbitVariants: Variants = {
+  initial: { opacity: 0, scale: 0.8 },
+  animate: {
+    opacity: [0.4, 0.7, 0.4],
+    scale: [0.8, 1, 0.8],
+    transition: {
+      duration: 2.5,
+      repeat: Infinity,
+      ease: 'easeInOut' as const,
+    },
+  },
+}
+
+// =============================================================================
 // HOVER / TAP PRESETS
 // =============================================================================
 

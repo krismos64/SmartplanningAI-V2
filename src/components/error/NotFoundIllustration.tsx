@@ -14,8 +14,13 @@
  * @ticket SP-302
  */
 
-import { motion, Variants } from 'framer-motion'
 import { FileQuestion, Search, ArrowRight } from 'lucide-react'
+import {
+  motion,
+  illustrationContainer,
+  floatVariants,
+  orbitVariants,
+} from '@/lib/animations'
 
 /**
  * Props for NotFoundIllustration component
@@ -23,51 +28,6 @@ import { FileQuestion, Search, ArrowRight } from 'lucide-react'
 interface NotFoundIllustrationProps {
   /** Additional CSS classes */
   className?: string
-}
-
-/**
- * Float animation variants for the main icon
- */
-const floatVariants: Variants = {
-  initial: { y: 0 },
-  animate: {
-    y: [-8, 8, -8],
-    transition: {
-      duration: 3,
-      repeat: Infinity,
-      ease: 'easeInOut' as const,
-    },
-  },
-}
-
-/**
- * Orbit animation for decorative icons
- */
-const orbitVariants: Variants = {
-  initial: { opacity: 0, scale: 0.8 },
-  animate: {
-    opacity: [0.4, 0.7, 0.4],
-    scale: [0.8, 1, 0.8],
-    transition: {
-      duration: 2.5,
-      repeat: Infinity,
-      ease: 'easeInOut' as const,
-    },
-  },
-}
-
-/**
- * Container variants for staggered entry
- */
-const containerVariants: Variants = {
-  initial: { opacity: 0 },
-  animate: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.2,
-      delayChildren: 0.1,
-    },
-  },
 }
 
 /**
@@ -89,7 +49,7 @@ export function NotFoundIllustration({
   return (
     <motion.div
       className={`relative flex h-32 items-center justify-center sm:h-40 md:h-48 ${className}`}
-      variants={containerVariants}
+      variants={illustrationContainer}
       initial="initial"
       animate="animate"
       aria-hidden="true"
