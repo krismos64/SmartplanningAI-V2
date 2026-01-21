@@ -92,7 +92,7 @@ export function PricingSection() {
                   'w-full',
                   plan.popular
                     ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white hover:from-cyan-600 hover:to-blue-600'
-                    : 'border border-white/10 bg-white/5 text-white hover:bg-white/10'
+                    : 'border-2 border-primary/50 bg-primary/10 text-primary hover:border-primary hover:bg-primary/20 dark:border-cyan-400/50 dark:bg-cyan-400/10 dark:text-cyan-400 dark:hover:border-cyan-400 dark:hover:bg-cyan-400/20'
                 )}
                 asChild
               >

@@ -147,7 +147,7 @@ export function ContactForm({ onSubmit, className }: ContactFormProps) {
               <motion.div variants={inputVariants} className="space-y-2">
                 <Label
                   htmlFor="contact-name"
-                  className="flex items-center gap-2 text-sm font-medium text-white/90"
+                  className="flex items-center gap-2 text-sm font-medium text-foreground"
                 >
                   <User className="h-4 w-4 text-blue-400" />
                   Nom complet
@@ -165,11 +165,11 @@ export function ContactForm({ onSubmit, className }: ContactFormProps) {
                   aria-describedby={errors.name ? 'name-error' : undefined}
                   disabled={state === 'submitting'}
                   className={cn(
-                    'h-12 border-white/20 bg-white/5 text-white placeholder:text-white/40',
-                    'focus:border-blue-400 focus:ring-blue-400/20',
+                    'h-12 border-border bg-background text-foreground placeholder:text-muted-foreground',
+                    'focus:border-primary focus:ring-primary/20',
                     'disabled:cursor-not-allowed disabled:opacity-50',
                     errors.name &&
-                      'border-red-400 focus:border-red-400 focus:ring-red-400/20'
+                      'border-destructive focus:border-destructive focus:ring-destructive/20'
                   )}
                   {...register('name')}
                 />
@@ -188,7 +188,7 @@ export function ContactForm({ onSubmit, className }: ContactFormProps) {
               <motion.div variants={inputVariants} className="space-y-2">
                 <Label
                   htmlFor="contact-email"
-                  className="flex items-center gap-2 text-sm font-medium text-white/90"
+                  className="flex items-center gap-2 text-sm font-medium text-foreground"
                 >
                   <Mail className="h-4 w-4 text-blue-400" />
                   Adresse email
@@ -206,11 +206,11 @@ export function ContactForm({ onSubmit, className }: ContactFormProps) {
                   aria-describedby={errors.email ? 'email-error' : undefined}
                   disabled={state === 'submitting'}
                   className={cn(
-                    'h-12 border-white/20 bg-white/5 text-white placeholder:text-white/40',
-                    'focus:border-blue-400 focus:ring-blue-400/20',
+                    'h-12 border-border bg-background text-foreground placeholder:text-muted-foreground',
+                    'focus:border-primary focus:ring-primary/20',
                     'disabled:cursor-not-allowed disabled:opacity-50',
                     errors.email &&
-                      'border-red-400 focus:border-red-400 focus:ring-red-400/20'
+                      'border-destructive focus:border-destructive focus:ring-destructive/20'
                   )}
                   {...register('email')}
                 />
@@ -229,7 +229,7 @@ export function ContactForm({ onSubmit, className }: ContactFormProps) {
               <motion.div variants={inputVariants} className="space-y-2">
                 <Label
                   htmlFor="contact-subject"
-                  className="flex items-center gap-2 text-sm font-medium text-white/90"
+                  className="flex items-center gap-2 text-sm font-medium text-foreground"
                 >
                   <FileText className="h-4 w-4 text-blue-400" />
                   Sujet
@@ -248,11 +248,11 @@ export function ContactForm({ onSubmit, className }: ContactFormProps) {
                   }
                   disabled={state === 'submitting'}
                   className={cn(
-                    'h-12 border-white/20 bg-white/5 text-white placeholder:text-white/40',
-                    'focus:border-blue-400 focus:ring-blue-400/20',
+                    'h-12 border-border bg-background text-foreground placeholder:text-muted-foreground',
+                    'focus:border-primary focus:ring-primary/20',
                     'disabled:cursor-not-allowed disabled:opacity-50',
                     errors.subject &&
-                      'border-red-400 focus:border-red-400 focus:ring-red-400/20'
+                      'border-destructive focus:border-destructive focus:ring-destructive/20'
                   )}
                   {...register('subject')}
                 />
@@ -271,7 +271,7 @@ export function ContactForm({ onSubmit, className }: ContactFormProps) {
               <motion.div variants={inputVariants} className="space-y-2">
                 <Label
                   htmlFor="contact-message"
-                  className="flex items-center gap-2 text-sm font-medium text-white/90"
+                  className="flex items-center gap-2 text-sm font-medium text-foreground"
                 >
                   <Send className="h-4 w-4 text-blue-400" />
                   Message
@@ -290,11 +290,11 @@ export function ContactForm({ onSubmit, className }: ContactFormProps) {
                   }
                   disabled={state === 'submitting'}
                   className={cn(
-                    'min-h-[140px] resize-none border-white/20 bg-white/5 text-white placeholder:text-white/40',
-                    'focus:border-blue-400 focus:ring-blue-400/20',
+                    'min-h-[140px] resize-none border-border bg-background text-foreground placeholder:text-muted-foreground',
+                    'focus:border-primary focus:ring-primary/20',
                     'disabled:cursor-not-allowed disabled:opacity-50',
                     errors.message &&
-                      'border-red-400 focus:border-red-400 focus:ring-red-400/20'
+                      'border-destructive focus:border-destructive focus:ring-destructive/20'
                   )}
                   {...register('message')}
                 />
@@ -307,7 +307,10 @@ export function ContactForm({ onSubmit, className }: ContactFormProps) {
                     {errors.message.message}
                   </p>
                 ) : (
-                  <p id="message-hint" className="text-xs text-white/50">
+                  <p
+                    id="message-hint"
+                    className="text-xs text-muted-foreground"
+                  >
                     Minimum 20 caractères, maximum 2000 caractères
                   </p>
                 )}
@@ -342,12 +345,12 @@ export function ContactForm({ onSubmit, className }: ContactFormProps) {
               {/* Note confidentialité */}
               <motion.p
                 variants={inputVariants}
-                className="text-center text-xs text-white/50"
+                className="text-center text-xs text-muted-foreground"
               >
                 En soumettant ce formulaire, vous acceptez notre{' '}
                 <a
                   href="/confidentialite"
-                  className="text-blue-400 underline hover:text-blue-300"
+                  className="text-primary underline hover:text-primary/80"
                 >
                   politique de confidentialité
                 </a>

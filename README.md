@@ -355,8 +355,8 @@ Système complet de thème clair/sombre avec détection automatique des préfér
 
 - **ThemeProvider** : Wrapper next-themes configuré pour SmartPlanning
   - `attribute="class"` : Compatible Tailwind CSS darkMode
-  - `defaultTheme="system"` : Respecte les préférences OS
-  - `enableSystem` : Détection prefers-color-scheme
+  - `defaultTheme="dark"` : Dark mode par défaut pour SmartPlanning
+  - `enableSystem` : Détection prefers-color-scheme après choix utilisateur
   - Persistance localStorage automatique
 
 - **ThemeToggle** : Bouton de bascule avec cycle intelligent
@@ -1031,7 +1031,7 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 
 | Catégorie            | Coverage | Tests    |
 | -------------------- | -------- | -------- |
-| **Global**           | **~55%** | **2272** |
+| **Global**           | **~55%** | **2378** |
 | loading              | 100%     | 152      |
 | modals               | 100%     | 52       |
 | cards                | 77.09%   | 88       |

@@ -32,13 +32,13 @@ export function CTASection() {
           <div className="absolute right-0 top-0 h-96 w-96 rounded-full bg-cyan-400/20 blur-[120px]" />
           <div className="absolute bottom-0 left-0 h-96 w-96 rounded-full bg-purple-400/20 blur-[120px]" />
 
-          <div className="relative z-10 text-center">
-            <h2 className="mb-6 text-3xl font-bold sm:text-4xl lg:text-5xl">
+          <div className="relative z-10 text-center text-white">
+            <h2 className="mb-6 text-3xl font-bold text-white sm:text-4xl lg:text-5xl">
               Prêt à transformer
               <br />
               votre gestion des plannings ?
             </h2>
-            <p className="mx-auto mb-10 max-w-2xl text-lg text-white/80 dark:text-white/80">
+            <p className="mx-auto mb-10 max-w-2xl text-lg text-white/80">
               Commencez dès maintenant à simplifier votre organisation avec
               SmartPlanning. Essai gratuit, sans engagement.
             </p>

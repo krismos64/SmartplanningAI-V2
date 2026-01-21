@@ -63,7 +63,7 @@ describe('ThemeProvider', () => {
     const provider = screen.getByTestId('next-themes-provider')
 
     expect(provider).toHaveAttribute('data-attribute', 'class')
-    expect(provider).toHaveAttribute('data-default-theme', 'system')
+    expect(provider).toHaveAttribute('data-default-theme', 'dark')
     expect(provider).toHaveAttribute('data-enable-system', 'true')
     expect(provider).toHaveAttribute('data-disable-transition', 'false')
   })
