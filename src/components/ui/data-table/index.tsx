@@ -55,6 +55,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Checkbox } from '@/components/ui/checkbox'
+import { EmptyState } from '@/components/ui/empty-state'
 import { useMediaQuery } from '@/hooks/use-media-query'
 import { DataTableToolbar } from './data-table-toolbar'
 import { DataTablePagination } from './data-table-pagination'
@@ -89,6 +90,7 @@ export function DataTable<TData, TValue>({
   searchColumn,
   isLoading = false,
   emptyMessage = 'Aucun résultat trouvé',
+  emptyState,
   enablePagination = true,
   pageSize = 10,
   pageSizeOptions = [10, 20, 50, 100],
@@ -153,8 +155,17 @@ export function DataTable<TData, TValue>({
   if (data.length === 0) {
     return (
       <div className="space-y-4">
-        <div className="flex h-64 items-center justify-center rounded-lg border border-dashed">
-          <p className="text-sm text-muted-foreground">{emptyMessage}</p>
+        <div className="flex items-center justify-center rounded-lg border border-dashed">
+          <EmptyState
+            title={emptyState?.title ?? emptyMessage}
+            description={emptyState?.description}
+            variant={emptyState?.variant ?? 'default'}
+            size={emptyState?.size ?? 'default'}
+            illustration={emptyState?.illustration}
+            action={emptyState?.action}
+            animated={emptyState?.animated}
+            hideIllustration={emptyState?.hideIllustration}
+          />
         </div>
       </div>
     )

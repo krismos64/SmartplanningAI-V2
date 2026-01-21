@@ -17,6 +17,7 @@ import type {
   Table,
   Row,
 } from '@tanstack/react-table'
+import type { EmptyStateProps } from '@/components/ui/empty-state'
 
 /**
  * Props principales du composant DataTable
@@ -51,6 +52,9 @@ export interface DataTableProps<TData, TValue = unknown> {
 
   /** Message à afficher quand aucune donnée */
   emptyMessage?: string
+
+  /** Configuration de l'état vide personnalisée - overrides emptyMessage */
+  emptyState?: Omit<EmptyStateProps, 'title'> & { title?: string }
 
   /** Activer la pagination (par défaut : true) */
   enablePagination?: boolean
