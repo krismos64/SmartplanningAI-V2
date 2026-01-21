@@ -7,6 +7,7 @@ import { signOut } from 'next-auth/react'
 import { Menu, Bell, LogOut, User, Settings } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
+import { ThemeToggle } from '@/components/ui/ThemeToggle'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -94,8 +95,11 @@ export function Header({ user, notificationsCount = 0 }: HeaderProps) {
           </Link>
         </div>
 
-        {/* Right: Notifications + User menu */}
+        {/* Right: Theme toggle + Notifications + User menu */}
         <div className="flex items-center gap-3">
+          {/* Theme Toggle (SP-265) */}
+          <ThemeToggle />
+
           {/* Notifications */}
           <Button variant="ghost" size="icon" className="relative" asChild>
             <Link href="/notifications">

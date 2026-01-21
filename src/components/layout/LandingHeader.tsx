@@ -14,6 +14,7 @@ import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Calendar, Menu, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { ThemeToggle } from '@/components/ui/ThemeToggle'
 import { cn } from '@/lib/utils'
 
 // Navigation links for landing page
@@ -87,8 +88,11 @@ export function LandingHeader({
             </div>
           )}
 
-          {/* CTA Buttons */}
+          {/* CTA Buttons + Theme Toggle */}
           <div className="hidden items-center gap-4 lg:flex">
+            {/* Theme Toggle (SP-265) */}
+            <ThemeToggle className="text-white/80 hover:text-white" />
+
             <Button
               variant="ghost"
               className="text-white/80 hover:bg-white/10 hover:text-white"
