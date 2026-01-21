@@ -75,7 +75,10 @@ function getErrorInfo(error: unknown): {
  * - Dark mode support via Tailwind
  * - Accessible with proper ARIA attributes
  */
-export function ErrorFallback({ error, resetErrorBoundary }: ErrorFallbackProps) {
+export function ErrorFallback({
+  error,
+  resetErrorBoundary,
+}: ErrorFallbackProps) {
   const router = useRouter()
   const [showDetails, setShowDetails] = useState(false)
   const isDevelopment = process.env.NODE_ENV === 'development'
@@ -118,9 +121,7 @@ export function ErrorFallback({ error, resetErrorBoundary }: ErrorFallbackProps)
         <CardContent className="space-y-4">
           {/* Error message summary */}
           <div className="rounded-lg bg-muted/50 p-3 text-center">
-            <p className="text-sm text-muted-foreground">
-              {errorInfo.message}
-            </p>
+            <p className="text-sm text-muted-foreground">{errorInfo.message}</p>
           </div>
 
           {/* Development mode: Show stack trace */}

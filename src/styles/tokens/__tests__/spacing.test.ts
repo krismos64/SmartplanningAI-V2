@@ -17,7 +17,26 @@ import {
 describe('Design Tokens - Spacing', () => {
   describe('Spacing Scale', () => {
     it('should export all standard spacing values', () => {
-      const standardKeys = ['px', 0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+      const standardKeys = [
+        'px',
+        0,
+        0.5,
+        1,
+        1.5,
+        2,
+        2.5,
+        3,
+        3.5,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+      ]
       standardKeys.forEach((key) => {
         expect(spacing).toHaveProperty(String(key))
       })
@@ -152,7 +171,19 @@ describe('Design Tokens - Spacing', () => {
 
   describe('Container Widths', () => {
     it('should export all container width levels', () => {
-      const levels = ['xs', 'sm', 'md', 'lg', 'xl', '2xl', '3xl', '4xl', '5xl', '6xl', '7xl']
+      const levels = [
+        'xs',
+        'sm',
+        'md',
+        'lg',
+        'xl',
+        '2xl',
+        '3xl',
+        '4xl',
+        '5xl',
+        '6xl',
+        '7xl',
+      ]
       levels.forEach((level) => {
         expect(containerWidths).toHaveProperty(level)
       })

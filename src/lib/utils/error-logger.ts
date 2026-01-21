@@ -139,7 +139,8 @@ export async function logServerError(
     environment: process.env.NODE_ENV || 'development',
   }
 
-  // Console logging (always)
+  // Console logging (always) - eslint-disable for intentional error logging
+  /* eslint-disable no-console */
   if (isDevelopment) {
     // Development: Full details with formatting
     console.group('🚨 Server Error')
@@ -159,6 +160,7 @@ export async function logServerError(
     // Production: JSON format for log aggregation
     console.error(JSON.stringify(errorLog))
   }
+  /* eslint-enable no-console */
 
   // TODO: Future integration with monitoring services
   // Uncomment and configure when ready:

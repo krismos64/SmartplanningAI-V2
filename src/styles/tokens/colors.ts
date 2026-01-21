@@ -401,7 +401,18 @@ export const semanticColors = {
  * Type pour les couleurs primitives
  */
 export type PrimitiveColor = keyof typeof primitiveColors
-export type ColorShade = 50 | 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900 | 950
+export type ColorShade =
+  | 50
+  | 100
+  | 200
+  | 300
+  | 400
+  | 500
+  | 600
+  | 700
+  | 800
+  | 900
+  | 950
 
 /**
  * Fonction utilitaire pour obtenir une couleur avec opacité
@@ -419,9 +430,11 @@ export function toHslVar(name: string): string {
   return `hsl(var(--${name}))`
 }
 
-export default {
+const colors = {
   primitive: primitiveColors,
   semantic: semanticColors,
   withOpacity,
   toHslVar,
 }
+
+export default colors

@@ -221,7 +221,10 @@ export const tailwindTheme = {
   fontSize: Object.fromEntries(
     Object.entries(fontSize).map(([key, value]) => [
       key,
-      [value.size, { lineHeight: value.lineHeight, letterSpacing: value.letterSpacing }],
+      [
+        value.size,
+        { lineHeight: value.lineHeight, letterSpacing: value.letterSpacing },
+      ],
     ])
   ),
 

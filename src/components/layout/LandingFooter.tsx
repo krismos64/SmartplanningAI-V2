@@ -148,12 +148,8 @@ export function LandingFooter() {
                 <Mail className="h-4 w-4" />
                 contact@smartplanning.fr
               </a>
-              <p className="text-sm text-white/50">
-                Support disponible 24/7
-              </p>
-              <p className="text-sm text-white/50">
-                Réponse sous 24h ouvrées
-              </p>
+              <p className="text-sm text-white/50">Support disponible 24/7</p>
+              <p className="text-sm text-white/50">Réponse sous 24h ouvrées</p>
             </div>
           </div>
         </div>

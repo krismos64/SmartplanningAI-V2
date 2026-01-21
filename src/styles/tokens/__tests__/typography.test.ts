@@ -46,7 +46,21 @@ describe('Design Tokens - Typography', () => {
 
   describe('Font Sizes', () => {
     it('should export all size levels', () => {
-      const sizes = ['xs', 'sm', 'base', 'lg', 'xl', '2xl', '3xl', '4xl', '5xl', '6xl', '7xl', '8xl', '9xl']
+      const sizes = [
+        'xs',
+        'sm',
+        'base',
+        'lg',
+        'xl',
+        '2xl',
+        '3xl',
+        '4xl',
+        '5xl',
+        '6xl',
+        '7xl',
+        '8xl',
+        '9xl',
+      ]
       sizes.forEach((size) => {
         expect(fontSize).toHaveProperty(size)
       })
@@ -88,7 +102,17 @@ describe('Design Tokens - Typography', () => {
 
   describe('Font Weights', () => {
     it('should export all weight levels', () => {
-      const weights = ['thin', 'extralight', 'light', 'normal', 'medium', 'semibold', 'bold', 'extrabold', 'black']
+      const weights = [
+        'thin',
+        'extralight',
+        'light',
+        'normal',
+        'medium',
+        'semibold',
+        'bold',
+        'extrabold',
+        'black',
+      ]
       weights.forEach((weight) => {
         expect(fontWeight).toHaveProperty(weight)
       })
@@ -157,12 +181,24 @@ describe('Design Tokens - Typography', () => {
   describe('Text Styles', () => {
     it('should export all text style presets', () => {
       const styles = [
-        'displayLarge', 'displayMedium', 'displaySmall',
-        'h1', 'h2', 'h3', 'h4',
-        'bodyLarge', 'bodyBase', 'bodySmall',
-        'label', 'caption', 'overline',
-        'code', 'codeBlock',
-        'buttonLarge', 'buttonBase', 'buttonSmall',
+        'displayLarge',
+        'displayMedium',
+        'displaySmall',
+        'h1',
+        'h2',
+        'h3',
+        'h4',
+        'bodyLarge',
+        'bodyBase',
+        'bodySmall',
+        'label',
+        'caption',
+        'overline',
+        'code',
+        'codeBlock',
+        'buttonLarge',
+        'buttonBase',
+        'buttonSmall',
       ]
       styles.forEach((style) => {
         expect(textStyles).toHaveProperty(style)

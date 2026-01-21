@@ -63,7 +63,7 @@ function ErrorState({ message }: { message: string }) {
 function NoCompanyAssigned() {
   return (
     <div className="flex min-h-[400px] flex-col items-center justify-center space-y-4">
-      <div className="bg-warning/10 rounded-full p-4">
+      <div className="rounded-full bg-warning/10 p-4">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 24 24"
@@ -72,7 +72,7 @@ function NoCompanyAssigned() {
           strokeWidth="2"
           strokeLinecap="round"
           strokeLinejoin="round"
-          className="text-warning h-8 w-8"
+          className="h-8 w-8 text-warning"
           aria-hidden="true"
         >
           <path d="M3 21h18" />

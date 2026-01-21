@@ -61,7 +61,9 @@ describe('Design Tokens - Integration', () => {
   describe('Utils Export', () => {
     it('should export withOpacity utility', () => {
       expect(utils.withOpacity).toBeTypeOf('function')
-      expect(utils.withOpacity('217 91% 60%', 0.5)).toBe('hsl(217 91% 60% / 0.5)')
+      expect(utils.withOpacity('217 91% 60%', 0.5)).toBe(
+        'hsl(217 91% 60% / 0.5)'
+      )
     })
 
     it('should export toHslVar utility', () => {
@@ -125,7 +127,9 @@ describe('Design Tokens - Integration', () => {
     })
 
     it('should have different values for light and dark', () => {
-      expect(cssVariablesLight.background.DEFAULT).not.toBe(cssVariablesDark.background.DEFAULT)
+      expect(cssVariablesLight.background.DEFAULT).not.toBe(
+        cssVariablesDark.background.DEFAULT
+      )
     })
   })
 

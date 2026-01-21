@@ -86,15 +86,13 @@ function logError(error: unknown, info: ErrorInfo): void {
   }
 
   // Log to console in development
-  console.group('🚨 ErrorBoundary caught an error')
-  console.error('Error:', error)
-  console.error('Component Stack:', info.componentStack)
-  console.table({
-    Timestamp: errorLog.timestamp,
-    URL: errorLog.url,
-    Message: errorLog.message,
-  })
-  console.groupEnd()
+  // eslint-disable-next-line no-console
+  console.error(
+    '🚨 ErrorBoundary caught an error:',
+    error,
+    info.componentStack,
+    errorLog
+  )
 
   // In production, send to error monitoring service
   // Example: Sentry, LogRocket, etc.
@@ -107,9 +105,6 @@ function logError(error: unknown, info: ErrorInfo): void {
  * Handles reset actions for analytics or state cleanup
  */
 function handleReset(): void {
-  // Log reset action
-  console.info('🔄 ErrorBoundary reset - attempting to recover')
-
   // Clear any cached error state if needed
   // Reset any application state that might have caused the error
 }

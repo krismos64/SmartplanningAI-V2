@@ -135,8 +135,7 @@ describe('ErrorBoundaryWrapper', () => {
         </ErrorBoundaryWrapper>
       )
 
-      // Error is logged via console.group
-      expect(console.group).toHaveBeenCalled()
+      // Error is logged via console.error
       expect(console.error).toHaveBeenCalled()
     })
   })

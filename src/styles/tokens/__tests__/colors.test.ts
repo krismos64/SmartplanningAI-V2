@@ -90,7 +90,15 @@ describe('Design Tokens - Colors', () => {
     })
 
     it('should have hover and foreground variants for main colors', () => {
-      const mainColors = ['primary', 'secondary', 'accent', 'success', 'warning', 'destructive', 'info']
+      const mainColors = [
+        'primary',
+        'secondary',
+        'accent',
+        'success',
+        'warning',
+        'destructive',
+        'info',
+      ]
 
       mainColors.forEach((color) => {
         const colorObj = semanticLight[color as keyof typeof semanticLight]
@@ -113,8 +121,12 @@ describe('Design Tokens - Colors', () => {
 
     it('should have different values from light mode', () => {
       // Primary should be brighter in dark mode
-      expect(semanticDark.primary.DEFAULT).not.toBe(semanticLight.primary.DEFAULT)
-      expect(semanticDark.background.DEFAULT).not.toBe(semanticLight.background.DEFAULT)
+      expect(semanticDark.primary.DEFAULT).not.toBe(
+        semanticLight.primary.DEFAULT
+      )
+      expect(semanticDark.background.DEFAULT).not.toBe(
+        semanticLight.background.DEFAULT
+      )
     })
   })
 
@@ -137,7 +149,9 @@ describe('Design Tokens - Colors', () => {
 
     it('toHslVar should handle different variable names', () => {
       expect(toHslVar('background')).toBe('hsl(var(--background))')
-      expect(toHslVar('accent-foreground')).toBe('hsl(var(--accent-foreground))')
+      expect(toHslVar('accent-foreground')).toBe(
+        'hsl(var(--accent-foreground))'
+      )
     })
   })
 
