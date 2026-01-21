@@ -9,11 +9,10 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { motion } from 'framer-motion'
 import { LandingHeader } from '@/components/layout/LandingHeader'
 import { LandingFooter } from '@/components/layout/LandingFooter'
 import { AnimatedBackground } from '../(landing)/components'
-import { fadeInUp } from '../(landing)/animations/variants'
+import { motion, fadeInUp } from '@/lib/animations'
 
 interface AuthLayoutClientProps {
   children: React.ReactNode
