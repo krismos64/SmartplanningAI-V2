@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 21 janvier 2026 (Sprint 9 - Design System unifié + Animation System centralisé)
+- **Dernière mise à jour** : 21 janvier 2026 (Sprint 9 - Dark/Light Mode + Design System unifié)
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -349,6 +349,40 @@ Page d'erreur serveur personnalisée avec animations Framer Motion et accessibil
 
 - **Tests** : 74 tests unitaires + 22 tests E2E
 
+### Dark/Light Mode (SP-265 - 21 janvier 2026)
+
+Système complet de thème clair/sombre avec détection automatique des préférences système :
+
+- **ThemeProvider** : Wrapper next-themes configuré pour SmartPlanning
+  - `attribute="class"` : Compatible Tailwind CSS darkMode
+  - `defaultTheme="system"` : Respecte les préférences OS
+  - `enableSystem` : Détection prefers-color-scheme
+  - Persistance localStorage automatique
+
+- **ThemeToggle** : Bouton de bascule avec cycle intelligent
+  - Cycle : system → light → dark → system
+  - Icônes animées (Sun/Moon/Monitor) avec Framer Motion
+  - Gestion hydratation SSR (mounted state)
+  - Support `prefers-reduced-motion`
+
+- **ThemeDropdown** : Menu dropdown avec 3 options explicites
+  - Options : Clair, Sombre, Système
+  - Descriptions explicatives pour chaque option
+  - Animations Framer Motion (AnimatePresence)
+  - Fermeture au clic extérieur et touche Escape
+  - Accessibilité : aria-expanded, aria-haspopup, role="listbox"
+
+- **Intégration Headers** :
+  - `LandingHeader` : ThemeToggle dans la navigation desktop
+  - `Header` (Dashboard) : ThemeToggle dans les actions utilisateur
+
+- **CSS Variables** : Support complet light/dark dans globals.css
+  - Variables HSL pour toutes les couleurs sémantiques
+  - Classe `.dark` pour le mode sombre
+  - Transitions fluides entre thèmes
+
+- **Tests** : 30 tests unitaires (4 ThemeProvider + 12 ThemeToggle + 14 ThemeDropdown)
+
 ### Page 403 personnalisée (SP-305 - 20 janvier 2026)
 
 Page d'accès refusé personnalisée avec animations Framer Motion et accessibilité WCAG 2.1 AA :
@@ -440,12 +474,14 @@ SmartplanningAI/
 │   │   ├── error/        # ErrorBoundary, ErrorFallback (SP-304), NotFoundPage (SP-302), ServerErrorPage (SP-303), ForbiddenPage (SP-305)
 │   │   ├── charts/       # AreaChartWidget, BarChartWidget, PieChartWidget
 │   │   ├── cookies/      # CookieBanner, CookiePreferencesModal, CookieSettingsButton, CookieConsentProvider
+│   │   ├── providers/    # ThemeProvider (SP-265)
 │   │   ├── dashboard/    # StatCard, TrendIndicator, StatsGrid
 │   │   ├── forms/        # FormField, FormInput, FormSelect...
 │   │   ├── layout/       # LandingHeader, LandingFooter (partagés)
 │   │   ├── loading/      # Spinner, Skeleton, LoadingOverlay
 │   │   ├── modals/       # ConfirmDialog, FormDialog
-│   │   └── toast/        # Toast system (Sonner)
+│   │   ├── toast/        # Toast system (Sonner)
+│   │   └── ui/           # Shadcn + ThemeToggle, ThemeDropdown (SP-265)
 │   ├── lib/              # Utilitaires et helpers
 │   │   ├── prisma.ts     # Client Prisma
 │   │   ├── auth.ts       # Configuration NextAuth
@@ -995,7 +1031,7 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 
 | Catégorie            | Coverage | Tests    |
 | -------------------- | -------- | -------- |
-| **Global**           | **~55%** | **2242** |
+| **Global**           | **~55%** | **2272** |
 | loading              | 100%     | 152      |
 | modals               | 100%     | 52       |
 | cards                | 77.09%   | 88       |
@@ -1015,6 +1051,7 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 | error boundary       | 100%     | 22       |
 | animations (SP-379)  | 100%     | 102      |
 | design tokens        | 100%     | 99       |
+| dark/light mode      | 100%     | 30       |
 
 ### Tests E2E
 
@@ -1159,6 +1196,12 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 
 - ServerErrorPage (page 500 complète avec animations)
 - error-logger.ts (utilitaire de logging serveur structuré)
+
+#### Dark/Light Mode (3 composants - SP-265)
+
+- ThemeProvider (wrapper next-themes avec config SmartPlanning)
+- ThemeToggle (bouton cycle system → light → dark avec icônes animées)
+- ThemeDropdown (menu dropdown 3 options avec descriptions)
 
 ### Scripts de test
 
