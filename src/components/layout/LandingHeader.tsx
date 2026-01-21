@@ -177,12 +177,27 @@ export function LandingHeader({
                     </motion.a>
                   ))}
 
-                {/* CTA Buttons */}
+                {/* Theme Toggle Mobile */}
                 <motion.div
                   initial={{ opacity: 0, y: 15 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{
                     delay: showNavLinks ? navLinks.length * 0.05 : 0,
+                  }}
+                  className="mt-2 flex items-center gap-2"
+                >
+                  <span className="text-sm text-muted-foreground dark:text-white/70">
+                    Thème
+                  </span>
+                  <ThemeToggle className="text-foreground dark:text-white" />
+                </motion.div>
+
+                {/* CTA Buttons */}
+                <motion.div
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    delay: showNavLinks ? navLinks.length * 0.05 + 0.05 : 0.05,
                   }}
                   className="mt-4 flex w-full max-w-xs flex-col gap-3"
                 >
