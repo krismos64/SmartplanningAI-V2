@@ -5,8 +5,7 @@
  * Key statistics with animated counters
  */
 
-import { motion } from 'framer-motion'
-import { fadeInUp, staggerContainer } from '../../animations'
+import { motion, fadeInUp, staggerContainer } from '@/lib/animations'
 import { stats } from '../../data'
 import { AnimatedCounter, SectionLogo } from '../index'
 

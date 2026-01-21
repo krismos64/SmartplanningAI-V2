@@ -765,6 +765,12 @@ export const floatAnimation = {
   },
 }
 
+/** Legacy: valeur d'animation pour float */
+export const floatAnimationValue = floatAnimation.animate
+
+/** Legacy: transition pour float */
+export const floatTransition = floatAnimation.transition
+
 /**
  * Float Small - Version plus subtile du flottement
  */
@@ -778,6 +784,12 @@ export const floatSmallAnimation = {
     ease: 'easeInOut' as const,
   },
 }
+
+/** Legacy: valeur d'animation pour floatSmall */
+export const floatSmall = floatSmallAnimation.animate
+
+/** Legacy: transition pour floatSmall */
+export const floatSmallTransition = floatSmallAnimation.transition
 
 /**
  * Glow Pulse - Effet de pulsation lumineuse
@@ -796,10 +808,19 @@ export const glowPulseAnimation = {
   },
 }
 
+/** Legacy: valeur d'animation pour glowPulse */
+export const glowPulse = glowPulseAnimation.animate
+
+/** Legacy: transition pour glowPulse */
+export const glowPulseTransition = glowPulseAnimation.transition
+
 /**
  * Marquee Animation - Défilement horizontal continu
  *
  * Idéal pour : banners, tickers, carrousels de logos
+ *
+ * Usage combiné: animate={marqueeAnimation.animate} transition={marqueeAnimation.transition}
+ * Usage séparé (legacy): animate={marqueeAnimationValue} transition={marqueeTransition}
  */
 export const marqueeAnimation = {
   animate: {
@@ -815,10 +836,19 @@ export const marqueeAnimation = {
   },
 }
 
+/** Legacy: valeur d'animation pour marquee (utiliser avec marqueeTransition) */
+export const marqueeAnimationValue = marqueeAnimation.animate
+
+/** Legacy: transition pour marquee */
+export const marqueeTransition = marqueeAnimation.transition
+
 /**
  * Bounce Animation - Rebond vertical
  *
  * Idéal pour : indicateurs de scroll, flèches, éléments d'attention
+ *
+ * Usage combiné: animate={bounceAnimation.animate} transition={bounceAnimation.transition}
+ * Usage séparé (legacy): animate={bounceAnimationValue} transition={bounceTransition}
  */
 export const bounceAnimation = {
   animate: {
@@ -830,6 +860,12 @@ export const bounceAnimation = {
     ease: 'easeInOut' as const,
   },
 }
+
+/** Legacy: valeur d'animation pour bounce (utiliser avec bounceTransition) */
+export const bounceAnimationValue = bounceAnimation.animate
+
+/** Legacy: transition pour bounce */
+export const bounceTransition = bounceAnimation.transition
 
 /**
  * Pulse Animation - Pulsation d'échelle

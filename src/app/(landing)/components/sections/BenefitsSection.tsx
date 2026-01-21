@@ -7,8 +7,7 @@
  */
 
 import Image from 'next/image'
-import { motion } from 'framer-motion'
-import { fadeInUp, staggerContainer } from '../../animations'
+import { motion, fadeInUp, staggerContainer } from '@/lib/animations'
 import { benefits } from '../../data'
 import { SectionLogo, SectionHeader } from '../index'
 

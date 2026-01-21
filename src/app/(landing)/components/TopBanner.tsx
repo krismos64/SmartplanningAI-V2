@@ -5,14 +5,17 @@
  * Animated marquee banner at the top of the page
  */
 
-import { motion } from 'framer-motion'
-import { marqueeAnimation, marqueeTransition } from '../animations'
+import {
+  motion,
+  marqueeAnimationValue,
+  marqueeTransition,
+} from '@/lib/animations'
 
 export function TopBanner() {
   return (
     <div className="fixed left-0 right-0 top-0 z-[60] overflow-hidden bg-gradient-to-r from-blue-600 via-cyan-500 to-blue-600 py-2">
       <motion.div
-        animate={marqueeAnimation}
+        animate={marqueeAnimationValue}
         transition={marqueeTransition}
         className="flex whitespace-nowrap"
       >

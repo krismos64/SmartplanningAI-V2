@@ -5,9 +5,8 @@
  * Animated floating icons around content
  */
 
-import { motion } from 'framer-motion'
 import { Check, Bell, type LucideIcon } from 'lucide-react'
-import { floatingElement1, floatingElement2 } from '../animations'
+import { motion, floatingElement1, floatingElement2 } from '@/lib/animations'
 
 interface FloatingElementProps {
   icon: LucideIcon

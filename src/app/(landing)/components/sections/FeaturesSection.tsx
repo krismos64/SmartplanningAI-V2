@@ -7,10 +7,9 @@
  */
 
 import dynamic from 'next/dynamic'
-import { motion } from 'framer-motion'
 import { ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { fadeInUp, staggerContainer } from '../../animations'
+import { motion, fadeInUp, staggerContainer } from '@/lib/animations'
 import { features } from '../../data'
 import { SectionLogo, SectionHeader } from '../index'
 

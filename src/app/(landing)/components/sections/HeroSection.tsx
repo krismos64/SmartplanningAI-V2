@@ -8,18 +8,20 @@
 import { useRef } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { motion, useScroll, useTransform } from 'framer-motion'
 import { ArrowRight, PlayCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
+  motion,
+  useScroll,
+  useTransform,
   fadeInUp,
   staggerContainer,
   scaleIn,
-  floatAnimation,
+  floatAnimationValue,
   floatTransition,
   glowPulse,
   glowPulseTransition,
-} from '../../animations'
+} from '@/lib/animations'
 import { ScrollIndicator, FloatingCheck, FloatingBell } from '../index'
 
 export function HeroSection() {
@@ -57,7 +59,7 @@ export function HeroSection() {
 
             {/* Welcome Image */}
             <motion.div
-              animate={floatAnimation}
+              animate={floatAnimationValue}
               transition={floatTransition}
               className="relative"
             >
