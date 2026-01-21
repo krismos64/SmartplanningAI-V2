@@ -43,7 +43,7 @@ export default function LandingPage() {
   }, [])
 
   return (
-    <div className="min-h-screen overflow-x-hidden bg-[#030712] text-white">
+    <div className="min-h-screen overflow-x-hidden bg-background text-foreground dark:bg-[#030712] dark:text-white">
       {/* Background */}
       <AnimatedBackground />
 

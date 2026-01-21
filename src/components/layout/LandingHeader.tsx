@@ -54,7 +54,7 @@ export function LandingHeader({
         'left-0 right-0 z-50 transition-all duration-500',
         isFixed ? 'fixed top-8' : 'relative top-0',
         isScrolled || !isFixed
-          ? 'border-b border-white/5 bg-[#030712]/80 py-4 backdrop-blur-xl'
+          ? 'border-b border-border/10 bg-background/80 py-4 backdrop-blur-xl dark:border-white/5 dark:bg-[#030712]/80'
           : 'bg-transparent py-6'
       )}
     >
@@ -68,7 +68,7 @@ export function LandingHeader({
                 <Calendar className="h-6 w-6 text-white" />
               </div>
             </div>
-            <span className="text-xl font-bold tracking-tight text-white">
+            <span className="text-xl font-bold tracking-tight text-foreground dark:text-white">
               Smart<span className="text-cyan-400">Planning</span>
             </span>
           </Link>
@@ -80,7 +80,7 @@ export function LandingHeader({
                 <a
                   key={link.href}
                   href={link.href}
-                  className="whitespace-nowrap text-sm text-white/70 transition-colors hover:text-white"
+                  className="whitespace-nowrap text-sm text-muted-foreground transition-colors hover:text-foreground dark:text-white/70 dark:hover:text-white"
                 >
                   {link.label}
                 </a>
@@ -91,11 +91,11 @@ export function LandingHeader({
           {/* CTA Buttons + Theme Toggle */}
           <div className="hidden items-center gap-4 lg:flex">
             {/* Theme Toggle (SP-265) */}
-            <ThemeToggle className="text-white/80 hover:text-white" />
+            <ThemeToggle className="text-muted-foreground hover:text-foreground dark:text-white/80 dark:hover:text-white" />
 
             <Button
               variant="ghost"
-              className="text-white/80 hover:bg-white/10 hover:text-white"
+              className="text-muted-foreground hover:bg-accent hover:text-foreground dark:text-white/80 dark:hover:bg-white/10 dark:hover:text-white"
               asChild
             >
               <Link href="/login">Connexion</Link>
@@ -110,7 +110,7 @@ export function LandingHeader({
 
           {/* Mobile Menu Button */}
           <button
-            className="rounded-lg p-2 text-white/80 transition-colors hover:bg-white/10 lg:hidden"
+            className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-accent dark:text-white/80 dark:hover:bg-white/10 lg:hidden"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             aria-label={isMobileMenuOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
           >
@@ -130,15 +130,14 @@ export function LandingHeader({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
-              className="fixed inset-0 z-[100] flex flex-col bg-[#030712] lg:hidden"
-              style={{ backgroundColor: '#030712' }}
+              className="fixed inset-0 z-[100] flex flex-col bg-background dark:bg-[#030712] lg:hidden"
             >
               {/* Close button - Fixed top right */}
               <motion.button
                 initial={{ opacity: 0, rotate: -90 }}
                 animate={{ opacity: 1, rotate: 0 }}
                 transition={{ duration: 0.3, delay: 0.1 }}
-                className="absolute right-4 top-4 z-[110] flex h-12 w-12 items-center justify-center rounded-full border border-white/20 bg-[#030712] text-white transition-all hover:border-cyan-400/50 hover:bg-cyan-400/20 hover:text-cyan-400"
+                className="absolute right-4 top-4 z-[110] flex h-12 w-12 items-center justify-center rounded-full border border-border bg-background text-foreground transition-all hover:border-cyan-400/50 hover:bg-cyan-400/20 hover:text-cyan-400 dark:border-white/20 dark:bg-[#030712] dark:text-white"
                 onClick={() => setIsMobileMenuOpen(false)}
                 aria-label="Fermer le menu"
               >
@@ -171,7 +170,7 @@ export function LandingHeader({
                       initial={{ opacity: 0, y: 15 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.05 }}
-                      className="text-lg font-medium text-white transition-colors hover:text-cyan-400"
+                      className="text-lg font-medium text-foreground transition-colors hover:text-cyan-400 dark:text-white"
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
                       {link.label}
@@ -189,7 +188,7 @@ export function LandingHeader({
                 >
                   <Button
                     size="default"
-                    className="h-12 w-full border-2 border-white bg-transparent text-sm font-semibold text-white hover:bg-white hover:text-[#030712]"
+                    className="h-12 w-full border-2 border-foreground bg-transparent text-sm font-semibold text-foreground hover:bg-foreground hover:text-background dark:border-white dark:text-white dark:hover:bg-white dark:hover:text-[#030712]"
                     asChild
                   >
                     <Link
