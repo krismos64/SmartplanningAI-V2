@@ -430,11 +430,9 @@ export function toHslVar(name: string): string {
   return `hsl(var(--${name}))`
 }
 
-const colors = {
+export const colors = {
   primitive: primitiveColors,
   semantic: semanticColors,
   withOpacity,
   toHslVar,
 }
-
-export default colors

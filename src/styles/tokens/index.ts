@@ -11,7 +11,8 @@
 // IMPORTS
 // =============================================================================
 
-import colors, {
+import {
+  colors,
   primitiveColors,
   semanticColors,
   semanticLight,
@@ -223,7 +224,10 @@ export const tailwindTheme = {
       key,
       [
         value.size,
-        { lineHeight: value.lineHeight, letterSpacing: value.letterSpacing },
+        {
+          lineHeight: value.lineHeight,
+          letterSpacing: value.letterSpacing,
+        },
       ],
     ])
   ),
