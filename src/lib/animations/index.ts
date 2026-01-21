@@ -79,6 +79,20 @@ export {
   createSlideVariant,
   createScaleVariant,
   createStaggerContainer,
+  // Landing page specific (compatibility with old system)
+  fadeInUp,
+  scaleIn,
+  // Continuous / Looping animations
+  floatAnimation,
+  floatSmallAnimation,
+  glowPulseAnimation,
+  marqueeAnimation,
+  bounceAnimation,
+  pulseAnimation,
+  orbitAnimation,
+  // Floating elements presets
+  floatingElement1,
+  floatingElement2,
   // Map
   variantsMap,
   default as variants,

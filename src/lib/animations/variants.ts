@@ -693,6 +693,246 @@ export function createStaggerContainer(
 }
 
 // =============================================================================
+// LANDING PAGE SPECIFIC VARIANTS
+// =============================================================================
+
+/**
+ * Fade In Up - Version landing page avec plus d'amplitude
+ *
+ * Utilisé pour les sections de la landing page avec un mouvement plus prononcé
+ * Compatible avec l'ancien système `fadeInUp` de la landing
+ */
+export const fadeInUp: Variants = {
+  hidden: {
+    opacity: 0,
+    y: 40,
+  },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: durations.slow,
+      ease: easings.easeOut,
+    },
+  },
+}
+
+/**
+ * Scale In - Version landing page
+ *
+ * Compatible avec l'ancien système `scaleIn` de la landing
+ */
+export const scaleIn: Variants = {
+  hidden: {
+    opacity: 0,
+    scale: 0.9,
+  },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    transition: {
+      duration: durations.slow,
+      ease: easings.easeOut,
+    },
+  },
+}
+
+// =============================================================================
+// CONTINUOUS / LOOPING ANIMATIONS
+// =============================================================================
+
+/**
+ * Float Animation - Mouvement de flottement vertical
+ *
+ * Idéal pour : éléments décoratifs, illustrations, badges flottants
+ *
+ * @example
+ * ```tsx
+ * <motion.div
+ *   animate={floatAnimation.animate}
+ *   transition={floatAnimation.transition}
+ * />
+ * ```
+ */
+export const floatAnimation = {
+  animate: {
+    y: [0, -10, 0],
+  },
+  transition: {
+    duration: 6,
+    repeat: Infinity,
+    ease: 'easeInOut' as const,
+  },
+}
+
+/**
+ * Float Small - Version plus subtile du flottement
+ */
+export const floatSmallAnimation = {
+  animate: {
+    y: [0, -8, 0],
+  },
+  transition: {
+    duration: 4,
+    repeat: Infinity,
+    ease: 'easeInOut' as const,
+  },
+}
+
+/**
+ * Glow Pulse - Effet de pulsation lumineuse
+ *
+ * Idéal pour : effets de glow, highlights, éléments attirant l'attention
+ */
+export const glowPulseAnimation = {
+  animate: {
+    opacity: [0.3, 0.6, 0.3],
+    scale: [1, 1.2, 1],
+  },
+  transition: {
+    duration: 5,
+    repeat: Infinity,
+    ease: 'easeInOut' as const,
+  },
+}
+
+/**
+ * Marquee Animation - Défilement horizontal continu
+ *
+ * Idéal pour : banners, tickers, carrousels de logos
+ */
+export const marqueeAnimation = {
+  animate: {
+    x: [0, -1000],
+  },
+  transition: {
+    x: {
+      repeat: Infinity,
+      repeatType: 'loop' as const,
+      duration: 20,
+      ease: 'linear' as const,
+    },
+  },
+}
+
+/**
+ * Bounce Animation - Rebond vertical
+ *
+ * Idéal pour : indicateurs de scroll, flèches, éléments d'attention
+ */
+export const bounceAnimation = {
+  animate: {
+    y: [0, 10, 0],
+  },
+  transition: {
+    duration: 2,
+    repeat: Infinity,
+    ease: 'easeInOut' as const,
+  },
+}
+
+/**
+ * Pulse Animation - Pulsation d'échelle
+ *
+ * Idéal pour : icônes d'état, badges de notification
+ */
+export const pulseAnimation = {
+  animate: {
+    scale: [1, 1.05, 1],
+  },
+  transition: {
+    duration: 2,
+    repeat: Infinity,
+    ease: 'easeInOut' as const,
+  },
+}
+
+/**
+ * Orbit Animation - Rotation continue
+ *
+ * Idéal pour : éléments décoratifs, loaders custom
+ */
+export const orbitAnimation = {
+  animate: {
+    rotate: 360,
+  },
+  transition: {
+    duration: 20,
+    repeat: Infinity,
+    ease: 'linear' as const,
+  },
+}
+
+// =============================================================================
+// FLOATING ELEMENTS PRESETS
+// =============================================================================
+
+/**
+ * Floating Element 1 - Animation complexe avec rotation
+ *
+ * Pour éléments décoratifs flottants (style 1)
+ */
+export const floatingElement1 = {
+  animate: {
+    y: [0, 15, 0],
+    rotate: [0, 5, 0],
+  },
+  transition: {
+    duration: 5,
+    repeat: Infinity,
+    ease: 'easeInOut' as const,
+    delay: 0.5,
+  },
+}
+
+/**
+ * Floating Element 2 - Animation inverse
+ *
+ * Pour éléments décoratifs flottants (style 2)
+ */
+export const floatingElement2 = {
+  animate: {
+    y: [0, -15, 0],
+    rotate: [0, -5, 0],
+  },
+  transition: {
+    duration: 4,
+    repeat: Infinity,
+    ease: 'easeInOut' as const,
+    delay: 1,
+  },
+}
+
+// =============================================================================
+// HOVER / TAP PRESETS
+// =============================================================================
+
+/**
+ * Hover Scale - Agrandissement au survol
+ */
+export const hoverScale = {
+  scale: 1.05,
+}
+
+/**
+ * Tap Scale - Réduction au clic
+ */
+export const tapScale = {
+  scale: 0.95,
+}
+
+/**
+ * Hover Lift - Effet de soulèvement au survol
+ */
+export const hoverLift = {
+  y: -5,
+  transition: {
+    duration: durations.fast,
+    ease: easings.easeOut,
+  },
+}
+
+// =============================================================================
 // TYPE EXPORTS
 // =============================================================================
 
