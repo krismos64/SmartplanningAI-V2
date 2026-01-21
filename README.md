@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 21 janvier 2026 (Sprint 9 - Empty States + Dark/Light Mode + Design System unifié)
+- **Dernière mise à jour** : 21 janvier 2026 (Sprint 9 - Loading States avancés + Dark/Light Mode + Design System unifié)
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -349,6 +349,49 @@ Page d'erreur serveur personnalisée avec animations Framer Motion et accessibil
 
 - **Tests** : 74 tests unitaires + 22 tests E2E
 
+### Loading States avancés (SP-266 - 21 janvier 2026)
+
+Système complet de composants et hooks pour la gestion des états de chargement avec animations Framer Motion :
+
+- **ProgressBar** : Barre de progression horizontale
+  - Modes : déterminé (0-100%) et indéterminé (animation infinie)
+  - Tailles : sm (4px), md (8px), lg (12px)
+  - Couleurs : primary, success, warning, destructive, info
+  - Props : `showLabel`, `customLabel`, `onComplete`
+  - Animation : transitions fluides avec Framer Motion
+  - Accessibilité : `role="progressbar"`, `aria-valuenow`, `aria-valuemin`, `aria-valuemax`
+
+- **ProgressCircle** : Indicateur circulaire de progression
+  - Modes : déterminé (0-100%) et indéterminé (rotation infinie)
+  - Tailles : sm (32px), md (48px), lg (64px)
+  - Couleurs : primary, success, warning, destructive, info
+  - Props : `showValue`, `centerLabel`, `strokeWidth`, `onComplete`
+  - Animation : stroke-dashoffset animé avec Framer Motion
+  - Accessibilité : `role="progressbar"`, ARIA complet
+
+- **useLoading** : Hook de gestion d'état de chargement
+  - `startLoading()`, `stopLoading()`, `toggleLoading()`, `reset()`
+  - `withLoading(asyncFn)` : wrapper pour fonctions async
+  - Options : `initialState`, `minDuration`, `onStart`, `onEnd`
+  - Callbacks memoizés pour stabilité des références
+
+- **useProgressLoading** : Hook de progression avec valeur
+  - Étend `useLoading` avec gestion de pourcentage (0-100)
+  - `setProgress(value)`, `incrementProgress(amount)`, `resetProgress()`
+  - Détection automatique de complétion à 100%
+  - Callback `onProgressComplete`
+
+- **withLoading** : HOC pour composants avec état loading
+  - Injection automatique de `isLoading` et méthodes
+  - Props additionnelles typées avec génériques TypeScript
+  - Support ref forwarding
+
+- **Tests** : 131 tests unitaires (100% coverage)
+  - ProgressBar : 45 tests
+  - ProgressCircle : 42 tests
+  - useLoading : 27 tests
+  - useProgressLoading : 17 tests
+
 ### Dark/Light Mode (SP-265 - 21 janvier 2026)
 
 Système complet de thème clair/sombre avec détection automatique des préférences système :
@@ -481,7 +524,7 @@ SmartplanningAI/
 │   │   ├── loading/      # Spinner, Skeleton, LoadingOverlay
 │   │   ├── modals/       # ConfirmDialog, FormDialog
 │   │   ├── toast/        # Toast system (Sonner)
-│   │   └── ui/           # Shadcn + ThemeToggle, ThemeDropdown (SP-265)
+│   │   └── ui/           # Shadcn + ThemeToggle, ThemeDropdown (SP-265), ProgressBar, ProgressCircle (SP-266)
 │   ├── lib/              # Utilitaires et helpers
 │   │   ├── prisma.ts     # Client Prisma
 │   │   ├── auth.ts       # Configuration NextAuth
@@ -512,7 +555,9 @@ SmartplanningAI/
 │   │   ├── useCrudMutation.ts    # Hook mutations CRUD (SP-150)
 │   │   ├── useCookieConsent.ts   # Hook consentement cookies (SP-283)
 │   │   ├── useUmamiTrack.ts      # Hook tracking analytics (SP-345)
-│   │   └── useContactForm.ts     # Hook machine d'état contact (SP-289)
+│   │   ├── useContactForm.ts     # Hook machine d'état contact (SP-289)
+│   │   ├── use-loading.ts        # Hook état chargement (SP-266)
+│   │   └── use-progress-loading.ts # Hook progression avec valeur (SP-266)
 │   └── middleware.ts     # Middleware NextAuth (protection routes)
 ├── prisma/
 │   ├── schema.prisma     # Schéma de base de données
@@ -1031,7 +1076,7 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 
 | Catégorie            | Coverage | Tests    |
 | -------------------- | -------- | -------- |
-| **Global**           | **~55%** | **2378** |
+| **Global**           | **~55%** | **2509** |
 | loading              | 100%     | 152      |
 | modals               | 100%     | 52       |
 | cards                | 77.09%   | 88       |
@@ -1052,6 +1097,7 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 | animations (SP-379)  | 100%     | 102      |
 | design tokens        | 100%     | 99       |
 | dark/light mode      | 100%     | 30       |
+| loading states (SP-266) | 100%  | 131      |
 
 ### Tests E2E
 
@@ -1202,6 +1248,14 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 - ThemeProvider (wrapper next-themes avec config SmartPlanning)
 - ThemeToggle (bouton cycle system → light → dark avec icônes animées)
 - ThemeDropdown (menu dropdown 3 options avec descriptions)
+
+#### Loading States avancés (2 composants + 2 hooks + 1 HOC - SP-266)
+
+- ProgressBar (barre horizontale : déterminé/indéterminé, 3 tailles, 5 couleurs, labels)
+- ProgressCircle (cercle SVG : déterminé/indéterminé, 3 tailles, 5 couleurs, centerLabel)
+- useLoading (gestion état chargement avec minDuration, callbacks, withLoading wrapper)
+- useProgressLoading (progression 0-100% avec increment, auto-completion)
+- withLoading HOC (injection props isLoading + méthodes)
 
 ### Scripts de test
 
