@@ -150,7 +150,13 @@ export function useStaggerAnimation(
         },
       },
     }
-  }, [shouldReduceMotion, ignoreReducedMotion, staggerDelay, initialDelay, direction])
+  }, [
+    shouldReduceMotion,
+    ignoreReducedMotion,
+    staggerDelay,
+    initialDelay,
+    direction,
+  ])
 
   // Item variants mémorisés
   const itemVariants = useMemo((): Variants => {
@@ -185,7 +191,14 @@ export function useStaggerAnimation(
       const adjustedIndex = direction === -1 ? itemCount - 1 - index : index
       return initialDelay + adjustedIndex * staggerDelay
     },
-    [shouldReduceMotion, ignoreReducedMotion, direction, itemCount, initialDelay, staggerDelay]
+    [
+      shouldReduceMotion,
+      ignoreReducedMotion,
+      direction,
+      itemCount,
+      initialDelay,
+      staggerDelay,
+    ]
   )
 
   // Fonction pour obtenir les props d'un item avec son délai

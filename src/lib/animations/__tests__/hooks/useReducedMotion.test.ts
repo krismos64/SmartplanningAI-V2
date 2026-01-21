@@ -33,22 +33,28 @@ describe('useReducedMotion Hook', () => {
     matchMediaMock = vi.fn().mockImplementation((query: string) => ({
       matches: false,
       media: query,
-      addEventListener: vi.fn((event: string, listener: (event: { matches: boolean }) => void) => {
-        if (event === 'change') {
-          listeners.push(listener)
+      addEventListener: vi.fn(
+        (event: string, listener: (event: { matches: boolean }) => void) => {
+          if (event === 'change') {
+            listeners.push(listener)
+          }
         }
-      }),
-      removeEventListener: vi.fn((event: string, listener: (event: { matches: boolean }) => void) => {
-        if (event === 'change') {
-          listeners = listeners.filter((l) => l !== listener)
+      ),
+      removeEventListener: vi.fn(
+        (event: string, listener: (event: { matches: boolean }) => void) => {
+          if (event === 'change') {
+            listeners = listeners.filter((l) => l !== listener)
+          }
         }
-      }),
+      ),
       addListener: vi.fn((listener: (event: { matches: boolean }) => void) => {
         listeners.push(listener)
       }),
-      removeListener: vi.fn((listener: (event: { matches: boolean }) => void) => {
-        listeners = listeners.filter((l) => l !== listener)
-      }),
+      removeListener: vi.fn(
+        (listener: (event: { matches: boolean }) => void) => {
+          listeners = listeners.filter((l) => l !== listener)
+        }
+      ),
     }))
 
     Object.defineProperty(window, 'matchMedia', {

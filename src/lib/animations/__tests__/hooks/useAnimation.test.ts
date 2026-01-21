@@ -54,9 +54,7 @@ describe('useAnimation Hook', () => {
     })
 
     it('should apply delay option', () => {
-      const { result } = renderHook(() =>
-        useAnimation('fade', { delay: 0.5 })
-      )
+      const { result } = renderHook(() => useAnimation('fade', { delay: 0.5 }))
 
       expect(result.current.transition).toHaveProperty('delay', 0.5)
     })

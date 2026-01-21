@@ -4,81 +4,50 @@
  * @see SP-379 - Animations System
  */
 
+/* eslint-disable react/display-name */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import '@testing-library/jest-dom'
 import React from 'react'
+
+// Mock framer-motion - must be before imports that use it
+vi.mock('framer-motion', async () => {
+  const actual = await vi.importActual('framer-motion')
+  const ReactMock = await import('react')
+
+  const createMockElement = (tagName: string, testId: string) =>
+    ReactMock.forwardRef(
+      (
+        props: React.HTMLAttributes<HTMLElement>,
+        ref: React.Ref<HTMLElement>
+      ) => {
+        const { children, ...rest } = props
+        return ReactMock.createElement(
+          tagName,
+          { ref, 'data-testid': testId, ...rest },
+          children
+        )
+      }
+    )
+
+  return {
+    ...actual,
+    motion: {
+      ul: createMockElement('ul', 'motion-ul'),
+      ol: createMockElement('ol', 'motion-ol'),
+      li: createMockElement('li', 'motion-li'),
+      div: createMockElement('div', 'motion-div'),
+    },
+    AnimatePresence: ({ children }: { children: React.ReactNode }) => children,
+  }
+})
+
 import {
   AnimatedList,
   QuickAnimatedList,
   GridAnimatedList,
   AnimatedOrderedList,
 } from '../../components/AnimatedList'
-
-// Mock framer-motion
-vi.mock('framer-motion', async () => {
-  const actual = await vi.importActual('framer-motion')
-  return {
-    ...actual,
-    motion: {
-      ul: React.forwardRef(
-        (
-          {
-            children,
-            ...props
-          }: React.HTMLAttributes<HTMLUListElement>,
-          ref: React.Ref<HTMLUListElement>
-        ) => (
-          <ul ref={ref} data-testid="motion-ul" {...props}>
-            {children}
-          </ul>
-        )
-      ),
-      ol: React.forwardRef(
-        (
-          {
-            children,
-            ...props
-          }: React.HTMLAttributes<HTMLOListElement>,
-          ref: React.Ref<HTMLOListElement>
-        ) => (
-          <ol ref={ref} data-testid="motion-ol" {...props}>
-            {children}
-          </ol>
-        )
-      ),
-      li: React.forwardRef(
-        (
-          {
-            children,
-            ...props
-          }: React.HTMLAttributes<HTMLLIElement>,
-          ref: React.Ref<HTMLLIElement>
-        ) => (
-          <li ref={ref} data-testid="motion-li" {...props}>
-            {children}
-          </li>
-        )
-      ),
-      div: React.forwardRef(
-        (
-          {
-            children,
-            ...props
-          }: React.HTMLAttributes<HTMLDivElement>,
-          ref: React.Ref<HTMLDivElement>
-        ) => (
-          <div ref={ref} data-testid="motion-div" {...props}>
-            {children}
-          </div>
-        )
-      ),
-    },
-    AnimatePresence: ({ children }: { children: React.ReactNode }) => (
-      <>{children}</>
-    ),
-  }
-})
 
 interface TestItem {
   id: string

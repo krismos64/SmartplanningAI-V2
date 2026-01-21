@@ -205,7 +205,9 @@ describe('Animation Config', () => {
       expect(animationConfig.easings).toBe(easings)
       expect(animationConfig.springs).toBe(springs)
       expect(animationConfig.staggerConfig).toBe(staggerConfig)
-      expect(animationConfig.reducedMotionDurations).toBe(reducedMotionDurations)
+      expect(animationConfig.reducedMotionDurations).toBe(
+        reducedMotionDurations
+      )
       expect(animationConfig.transitions).toBe(transitions)
     })
   })

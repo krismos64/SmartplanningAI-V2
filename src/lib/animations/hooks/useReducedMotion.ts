@@ -50,13 +50,15 @@ export function useReducedMotion(): boolean {
   const framerReducedMotion = useFramerReducedMotion()
 
   // State local comme fallback
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState<boolean>(() => {
-    // SSR-safe: retourne false côté serveur
-    if (typeof window === 'undefined') {
-      return false
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState<boolean>(
+    () => {
+      // SSR-safe: retourne false côté serveur
+      if (typeof window === 'undefined') {
+        return false
+      }
+      return window.matchMedia(REDUCED_MOTION_QUERY).matches
     }
-    return window.matchMedia(REDUCED_MOTION_QUERY).matches
-  })
+  )
 
   useEffect(() => {
     // SSR guard
@@ -137,7 +139,9 @@ export function useMotionSafe<T extends object>(
 
     // Fallback: garder uniquement opacity si présent
     if ('opacity' in normalAnimation) {
-      return { opacity: (normalAnimation as { opacity: number }).opacity } as unknown as Partial<T>
+      return {
+        opacity: (normalAnimation as { opacity: number }).opacity,
+      } as unknown as Partial<T>
     }
 
     // Sinon retourne un objet vide (pas d'animation)

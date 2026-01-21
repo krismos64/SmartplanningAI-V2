@@ -14,7 +14,11 @@ import React, { useRef, useMemo, useCallback } from 'react'
 import { useInView, useAnimationControls } from 'framer-motion'
 import type { Variants } from 'framer-motion'
 import { useReducedMotion } from './useReducedMotion'
-import { variantsMap, reducedMotionVariants, type VariantName } from '../variants'
+import {
+  variantsMap,
+  reducedMotionVariants,
+  type VariantName,
+} from '../variants'
 
 // =============================================================================
 // TYPES
@@ -102,7 +106,10 @@ export function useInViewAnimation<T extends Element = HTMLDivElement>(
   const inViewOptions = useMemo(
     () => ({
       amount: threshold,
-      margin: margin as `${number}px` | `${number}px ${number}px` | `${number}px ${number}px ${number}px ${number}px`,
+      margin: margin as
+        | `${number}px`
+        | `${number}px ${number}px`
+        | `${number}px ${number}px ${number}px ${number}px`,
       once,
       root,
     }),
@@ -142,7 +149,7 @@ export function useInViewAnimation<T extends Element = HTMLDivElement>(
   // Déclenche l'animation quand isInView change (après mount)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   React.useEffect(() => {
-    triggerAnimation()
+    void triggerAnimation()
   }, [triggerAnimation])
 
   // Props à spreader sur le composant motion

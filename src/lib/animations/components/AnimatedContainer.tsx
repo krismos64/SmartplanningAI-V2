@@ -27,7 +27,8 @@ import { cn } from '@/lib/utils'
 // TYPES
 // =============================================================================
 
-export interface AnimatedContainerProps extends Omit<HTMLMotionProps<'div'>, 'variants'> {
+export interface AnimatedContainerProps
+  extends Omit<HTMLMotionProps<'div'>, 'variants'> {
   /** Variant d'animation à utiliser */
   variant?: VariantName | 'none'
   /** Activer le stagger pour les enfants */
@@ -37,7 +38,15 @@ export interface AnimatedContainerProps extends Omit<HTMLMotionProps<'div'>, 'va
   /** Délai avant l'animation */
   delay?: number
   /** Tag HTML à utiliser */
-  as?: 'div' | 'section' | 'article' | 'main' | 'aside' | 'header' | 'footer' | 'nav'
+  as?:
+    | 'div'
+    | 'section'
+    | 'article'
+    | 'main'
+    | 'aside'
+    | 'header'
+    | 'footer'
+    | 'nav'
   /** Afficher avec AnimatePresence (pour les conditions) */
   show?: boolean
   /** Mode AnimatePresence */
@@ -88,7 +97,10 @@ const staggerMap = {
  * </AnimatedContainer>
  * ```
  */
-export const AnimatedContainer = forwardRef<HTMLDivElement, AnimatedContainerProps>(
+export const AnimatedContainer = forwardRef<
+  HTMLDivElement,
+  AnimatedContainerProps
+>(
   (
     {
       variant = 'fadeSlideUp',
@@ -169,9 +181,7 @@ export const AnimatedContainer = forwardRef<HTMLDivElement, AnimatedContainerPro
     // Avec AnimatePresence si show est utilisé
     if (typeof show === 'boolean') {
       return (
-        <AnimatePresence mode={presenceMode}>
-          {show && content}
-        </AnimatePresence>
+        <AnimatePresence mode={presenceMode}>{show && content}</AnimatePresence>
       )
     }
 
@@ -218,7 +228,9 @@ ScaleContainer.displayName = 'ScaleContainer'
 export const StaggerContainer = forwardRef<
   HTMLDivElement,
   Omit<AnimatedContainerProps, 'variant' | 'stagger'>
->((props, ref) => <AnimatedContainer ref={ref} variant="fade" stagger {...props} />)
+>((props, ref) => (
+  <AnimatedContainer ref={ref} variant="fade" stagger {...props} />
+))
 StaggerContainer.displayName = 'StaggerContainer'
 
 export default AnimatedContainer

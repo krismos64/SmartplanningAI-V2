@@ -13,14 +13,18 @@ import React from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import type { HTMLMotionProps } from 'framer-motion'
 import { useReducedMotion } from '../hooks/useReducedMotion'
-import { useStaggerAnimation, type StaggerItemVariant } from '../hooks/useStaggerAnimation'
+import {
+  useStaggerAnimation,
+  type StaggerItemVariant,
+} from '../hooks/useStaggerAnimation'
 import { cn } from '@/lib/utils'
 
 // =============================================================================
 // TYPES
 // =============================================================================
 
-export interface AnimatedListProps<T> extends Omit<HTMLMotionProps<'ul'>, 'children'> {
+export interface AnimatedListProps<T>
+  extends Omit<HTMLMotionProps<'ul'>, 'children'> {
   /** Items à afficher */
   items: T[]
   /** Fonction de rendu pour chaque item */
@@ -157,9 +161,7 @@ export function AnimatedList<T>({
         className={cn(className)}
         {...motionProps}
       >
-        <AnimatePresence mode={presenceMode}>
-          {listItems}
-        </AnimatePresence>
+        <AnimatePresence mode={presenceMode}>{listItems}</AnimatePresence>
       </MotionContainer>
     )
   }
@@ -186,7 +188,14 @@ export function AnimatedList<T>({
 export function QuickAnimatedList<T>(
   props: Omit<AnimatedListProps<T>, 'staggerDelay' | 'initialDelay'>
 ) {
-  return <AnimatedList<T> {...props} staggerDelay={0.05} initialDelay={0} itemVariant="fade" />
+  return (
+    <AnimatedList<T>
+      {...props}
+      staggerDelay={0.05}
+      initialDelay={0}
+      itemVariant="fade"
+    />
+  )
 }
 
 /**

@@ -36,15 +36,17 @@ describe('useInViewAnimation Hook', () => {
     })
 
     // Setup IntersectionObserver mock
-    mockIntersectionObserver.mockImplementation((_callback: IntersectionObserverCallback) => ({
-      observe: vi.fn(),
-      unobserve: vi.fn(),
-      disconnect: vi.fn(),
-      root: null,
-      rootMargin: '',
-      thresholds: [],
-      takeRecords: vi.fn(() => []),
-    }))
+    mockIntersectionObserver.mockImplementation(
+      (_callback: IntersectionObserverCallback) => ({
+        observe: vi.fn(),
+        unobserve: vi.fn(),
+        disconnect: vi.fn(),
+        root: null,
+        rootMargin: '',
+        thresholds: [],
+        takeRecords: vi.fn(() => []),
+      })
+    )
 
     Object.defineProperty(window, 'IntersectionObserver', {
       writable: true,
@@ -87,9 +89,7 @@ describe('useInViewAnimation Hook', () => {
     })
 
     it('should apply once option', () => {
-      const { result } = renderHook(() =>
-        useInViewAnimation({ once: true })
-      )
+      const { result } = renderHook(() => useInViewAnimation({ once: true }))
 
       expect(result.current.animationProps).toBeDefined()
     })
@@ -98,18 +98,14 @@ describe('useInViewAnimation Hook', () => {
       const variants = ['fade', 'fadeSlideUp', 'scale'] as const
 
       variants.forEach((variant) => {
-        const { result } = renderHook(() =>
-          useInViewAnimation({ variant })
-        )
+        const { result } = renderHook(() => useInViewAnimation({ variant }))
 
         expect(result.current.animationProps.variants).toBeDefined()
       })
     })
 
     it('should apply delay option', () => {
-      const { result } = renderHook(() =>
-        useInViewAnimation({ delay: 0.3 })
-      )
+      const { result } = renderHook(() => useInViewAnimation({ delay: 0.3 }))
 
       // Delay is handled internally by the hook
       expect(result.current.animationProps).toBeDefined()
@@ -142,9 +138,7 @@ describe('useInViewAnimation Hook', () => {
     })
 
     it('should accept variant option', () => {
-      const { result } = renderHook(() =>
-        useInViewOnce('scale')
-      )
+      const { result } = renderHook(() => useInViewOnce('scale'))
 
       expect(result.current.animationProps.variants).toBeDefined()
     })
@@ -187,9 +181,7 @@ describe('useInViewAnimation Hook', () => {
     })
 
     it('should accept custom variant', () => {
-      const { result } = renderHook(() =>
-        useInViewRepeatable('fade')
-      )
+      const { result } = renderHook(() => useInViewRepeatable('fade'))
 
       expect(result.current.animationProps.variants).toBeDefined()
     })

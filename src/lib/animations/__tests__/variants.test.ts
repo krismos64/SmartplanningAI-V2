@@ -107,7 +107,9 @@ describe('Animation Variants', () => {
     })
 
     it('scaleSpring should use spring transition', () => {
-      const transition = (scaleSpringVariants.visible as { transition: { type: string } }).transition
+      const transition = (
+        scaleSpringVariants.visible as { transition: { type: string } }
+      ).transition
       expect(transition.type).toBe('spring')
     })
 
@@ -144,12 +146,16 @@ describe('Animation Variants', () => {
     })
 
     it('container visible should have staggerChildren', () => {
-      const transition = (staggerContainer.visible as { transition: { staggerChildren: number } }).transition
+      const transition = (
+        staggerContainer.visible as { transition: { staggerChildren: number } }
+      ).transition
       expect(transition.staggerChildren).toBeDefined()
     })
 
     it('container visible should use beforeChildren', () => {
-      const transition = (staggerContainer.visible as { transition: { when: string } }).transition
+      const transition = (
+        staggerContainer.visible as { transition: { when: string } }
+      ).transition
       expect(transition.when).toBe('beforeChildren')
     })
   })
@@ -191,7 +197,9 @@ describe('Animation Variants', () => {
     })
 
     it('should have fast transition', () => {
-      const transition = (reducedMotionVariants.visible as { transition: { duration: number } }).transition
+      const transition = (
+        reducedMotionVariants.visible as { transition: { duration: number } }
+      ).transition
       expect(transition.duration).toBeLessThanOrEqual(0.1)
     })
   })
@@ -231,7 +239,11 @@ describe('Animation Variants', () => {
     describe('createStaggerContainer', () => {
       it('should create container with custom stagger', () => {
         const variant = createStaggerContainer(0.2, 0.5)
-        const transition = (variant.visible as { transition: { staggerChildren: number; delayChildren: number } }).transition
+        const transition = (
+          variant.visible as {
+            transition: { staggerChildren: number; delayChildren: number }
+          }
+        ).transition
         expect(transition.staggerChildren).toBe(0.2)
         expect(transition.delayChildren).toBe(0.5)
       })

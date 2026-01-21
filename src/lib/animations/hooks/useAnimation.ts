@@ -12,7 +12,11 @@
 import { useMemo } from 'react'
 import type { Variants, TargetAndTransition, Transition } from 'framer-motion'
 import { useReducedMotion } from './useReducedMotion'
-import { variantsMap, reducedMotionVariants, type VariantName } from '../variants'
+import {
+  variantsMap,
+  reducedMotionVariants,
+  type VariantName,
+} from '../variants'
 import { transitions, reducedMotionDurations, durations } from '../config'
 
 // =============================================================================
@@ -74,21 +78,27 @@ export function useAnimation(
   options: AnimationOptions = {}
 ): AnimationProps {
   const shouldReduceMotion = useReducedMotion()
-  const { delay = 0, duration, ignoreReducedMotion = false, transition: customTransition } = options
+  const {
+    delay = 0,
+    duration,
+    ignoreReducedMotion = false,
+    transition: customTransition,
+  } = options
 
   return useMemo(() => {
     // Détermine si on doit réduire le mouvement
     const reduceMotion = shouldReduceMotion && !ignoreReducedMotion
 
     // Récupère les variants
-    const baseVariants = typeof variant === 'string' ? variantsMap[variant] : variant
+    const baseVariants =
+      typeof variant === 'string' ? variantsMap[variant] : variant
     const activeVariants = reduceMotion ? reducedMotionVariants : baseVariants
 
     // Construit la transition
     const baseTransition: Transition = {
       duration: reduceMotion
         ? reducedMotionDurations.normal
-        : duration ?? durations.normal,
+        : (duration ?? durations.normal),
       delay,
     }
 
@@ -103,7 +113,14 @@ export function useAnimation(
       exit: 'exit',
       transition: finalTransition,
     }
-  }, [variant, shouldReduceMotion, delay, duration, ignoreReducedMotion, customTransition])
+  }, [
+    variant,
+    shouldReduceMotion,
+    delay,
+    duration,
+    ignoreReducedMotion,
+    customTransition,
+  ])
 }
 
 /**

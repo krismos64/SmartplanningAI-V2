@@ -4,10 +4,83 @@
  * @see SP-379 - Animations System
  */
 
+/* eslint-disable react/display-name */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import '@testing-library/jest-dom'
 import React from 'react'
+
+// Mock framer-motion - must be before imports that use it
+vi.mock('framer-motion', async () => {
+  const actual = await vi.importActual('framer-motion')
+  const ReactMock = await import('react')
+
+  return {
+    ...actual,
+    motion: {
+      div: ReactMock.forwardRef(
+        (
+          props: React.HTMLAttributes<HTMLDivElement> & {
+            initial?: string
+            animate?: string
+            exit?: string
+            variants?: unknown
+          },
+          ref: React.Ref<HTMLDivElement>
+        ) => {
+          const {
+            children,
+            initial,
+            animate,
+            exit,
+            variants: _variants,
+            ...rest
+          } = props
+          return ReactMock.createElement(
+            'div',
+            {
+              ref,
+              'data-initial': initial,
+              'data-animate': animate,
+              'data-exit': exit,
+              'data-testid': 'motion-div',
+              ...rest,
+            },
+            children
+          )
+        }
+      ),
+      section: ReactMock.forwardRef(
+        (
+          props: React.HTMLAttributes<HTMLElement>,
+          ref: React.Ref<HTMLElement>
+        ) => {
+          const { children, ...rest } = props
+          return ReactMock.createElement(
+            'section',
+            { ref, 'data-testid': 'motion-section', ...rest },
+            children
+          )
+        }
+      ),
+      ul: ReactMock.forwardRef(
+        (
+          props: React.HTMLAttributes<HTMLUListElement>,
+          ref: React.Ref<HTMLUListElement>
+        ) => {
+          const { children, ...rest } = props
+          return ReactMock.createElement(
+            'ul',
+            { ref, 'data-testid': 'motion-ul', ...rest },
+            children
+          )
+        }
+      ),
+    },
+    AnimatePresence: ({ children }: { children: React.ReactNode }) => children,
+  }
+})
+
 import {
   AnimatedContainer,
   FadeContainer,
@@ -15,74 +88,6 @@ import {
   ScaleContainer,
   StaggerContainer,
 } from '../../components/AnimatedContainer'
-
-// Mock framer-motion
-vi.mock('framer-motion', async () => {
-  const actual = await vi.importActual('framer-motion')
-  return {
-    ...actual,
-    motion: {
-      div: React.forwardRef(
-        (
-          {
-            children,
-            initial,
-            animate,
-            exit,
-            variants,
-            ...props
-          }: React.HTMLAttributes<HTMLDivElement> & {
-            initial?: string
-            animate?: string
-            exit?: string
-            variants?: unknown
-          },
-          ref: React.Ref<HTMLDivElement>
-        ) => (
-          <div
-            ref={ref}
-            data-initial={initial}
-            data-animate={animate}
-            data-exit={exit}
-            data-testid="motion-div"
-            {...props}
-          >
-            {children}
-          </div>
-        )
-      ),
-      section: React.forwardRef(
-        (
-          {
-            children,
-            ...props
-          }: React.HTMLAttributes<HTMLElement>,
-          ref: React.Ref<HTMLElement>
-        ) => (
-          <section ref={ref} data-testid="motion-section" {...props}>
-            {children}
-          </section>
-        )
-      ),
-      ul: React.forwardRef(
-        (
-          {
-            children,
-            ...props
-          }: React.HTMLAttributes<HTMLUListElement>,
-          ref: React.Ref<HTMLUListElement>
-        ) => (
-          <ul ref={ref} data-testid="motion-ul" {...props}>
-            {children}
-          </ul>
-        )
-      ),
-    },
-    AnimatePresence: ({ children }: { children: React.ReactNode }) => (
-      <>{children}</>
-    ),
-  }
-})
 
 describe('AnimatedContainer Component', () => {
   let matchMediaMock: ReturnType<typeof vi.fn>
