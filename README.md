@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 21 janvier 2026 (Sprint 9 - Nettoyage CSS + Préparation Design System)
+- **Dernière mise à jour** : 21 janvier 2026 (Sprint 9 - Design System unifié + Animation System centralisé)
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -87,29 +87,51 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Collaborateurs** (DIRECTOR, MANAGER) : Gestion complète avec permissions RBAC
 - **Équipes** (DIRECTOR) : CRUD + gestion des membres
 
-### Architecture CSS & Animations (Nettoyage - 21 janvier 2026)
+### Architecture CSS & Animations (SP-379 - 21 janvier 2026)
 
-Organisation rationalisée des styles et animations :
+Système de design unifié et centralisé :
+
+- **Design Tokens** (`src/styles/tokens/`) :
+  - `colors.ts` : Palettes primitives et sémantiques (light/dark)
+  - `typography.ts` : Fonts, tailles, styles de texte
+  - `spacing.ts` : Échelle d'espacement, breakpoints, containers
+  - `shadows.ts` : Box shadows, drop shadows, glows
+  - `radius.ts` : Border radius, ring, outline
+  - `index.ts` : Export centralisé `tokens` + `tailwindTheme`
+  - Tests complets : 99 tests unitaires
+
+- **Animations Framer Motion** (`src/lib/animations/`) :
+  - `variants.ts` : Tous les variants d'animation centralisés
+  - `presets.ts` : Configurations d'animation prédéfinies
+  - `config.ts` : Durées, easings, breakpoints motion
+  - `hooks/` : `useReducedMotion`, `useScrollAnimation`
+  - `index.ts` : Re-export de `motion` + tous les variants
+  - Tests complets : 102 tests unitaires
 
 - **Styles globaux** (`src/app/globals.css`) :
   - CSS Variables pour le theming (couleurs HSL, radius, sidebar)
-  - Classes utilitaires utilisées : `container-custom`, `transition-smooth`, `text-truncate`
+  - Classes utilitaires : `container-custom`, `transition-smooth`, `text-truncate`
   - Support dark mode préparé (variables `.dark`)
   - Scrollbar personnalisée (Webkit)
 
-- **Animations Tailwind** (`tailwind.config.ts`) :
+- **Tailwind Config** (`tailwind.config.ts`) :
+  - Intègre les design tokens TypeScript
   - Keyframes Radix : `accordion-down`, `accordion-up`
   - Keyframes custom : `fade-in`, `scale-in`, `slide-up/down/left/right`
-  - Plugin `tailwindcss-animate` pour animations Shadcn/ui
-
-- **Animations Framer Motion** :
-  - Landing page : `src/app/(landing)/animations/variants.ts`
-  - Contact form : `src/lib/animations/contact.ts`
-  - Variants : fadeInUp, staggerContainer, float, glow, success/error states
+  - Plugin `tailwindcss-animate` pour Shadcn/ui
 
 - **CSS Modules** (`landing.module.css`) : Styles spécifiques landing (glassmorphism, gradients)
 
-> **Note** : Les animations `spin` et `pulse` sont natives Tailwind. Les classes CSS inutilisées ont été supprimées.
+**Import unifié** :
+```typescript
+// Animation system - import unique
+import { motion, fadeInUp, staggerContainer, floatAnimation } from '@/lib/animations'
+
+// Design tokens - import unique
+import { tokens, colors, spacing } from '@/styles/tokens'
+```
+
+> **Note** : L'ancien répertoire `src/app/(landing)/animations/` a été supprimé. Tous les composants utilisent maintenant `@/lib/animations`.
 
 ### Landing Page (Refonte complète - 13 janvier 2026)
 
@@ -389,7 +411,6 @@ SmartplanningAI/
 │   │   │   ├── components/       # ValueCard, TargetCard
 │   │   │   └── data.ts           # Données valeurs et cibles
 │   │   ├── (landing)/    # Landing page et composants
-│   │   │   ├── animations/       # Variants Framer Motion
 │   │   │   ├── components/       # Composants sections
 │   │   │   ├── data/             # Features, benefits, pricing, FAQs
 │   │   │   └── styles/           # CSS modules
@@ -430,6 +451,12 @@ SmartplanningAI/
 │   │   ├── auth.ts       # Configuration NextAuth
 │   │   ├── auth.config.ts # Config middleware + callbacks RBAC
 │   │   ├── permissions.ts # Système de permissions centralisé
+│   │   ├── animations/   # Système d'animation centralisé (SP-379)
+│   │   │   ├── variants.ts       # Tous les variants Framer Motion
+│   │   │   ├── presets.ts        # Presets d'animation
+│   │   │   ├── config.ts         # Configuration (durées, easings)
+│   │   │   ├── hooks/            # useReducedMotion, useScrollAnimation
+│   │   │   └── index.ts          # Export centralisé (motion + variants)
 │   │   ├── actions/      # Server Actions
 │   │   │   ├── auth-actions.ts      # Actions authentification (inscription)
 │   │   │   ├── password-actions.ts  # Actions reset password (SP-298)
@@ -964,11 +991,11 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 - **E2E** : Playwright (configuré)
 - **Coverage** : v8 provider
 
-### Couverture actuelle (20 janvier 2026)
+### Couverture actuelle (21 janvier 2026)
 
 | Catégorie            | Coverage | Tests    |
 | -------------------- | -------- | -------- |
-| **Global**           | **~55%** | **1807** |
+| **Global**           | **~55%** | **2242** |
 | loading              | 100%     | 152      |
 | modals               | 100%     | 52       |
 | cards                | 77.09%   | 88       |
@@ -986,6 +1013,8 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 | emails (Sprint 9)    | 100%     | 129      |
 | contact (SP-287/289) | 100%     | 95       |
 | error boundary       | 100%     | 22       |
+| animations (SP-379)  | 100%     | 102      |
+| design tokens        | 100%     | 99       |
 
 ### Tests E2E
 
