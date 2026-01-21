@@ -39,11 +39,7 @@ vi.mock('@/lib/animations', async () => {
           ref: React.Ref<HTMLButtonElement>
         ) => {
           const { children, whileHover: _wh, whileTap: _wt, ...rest } = props
-          return ReactMock.createElement(
-            'button',
-            { ref, ...rest },
-            children
-          )
+          return ReactMock.createElement('button', { ref, ...rest }, children)
         }
       ),
       div: ReactMock.forwardRef(

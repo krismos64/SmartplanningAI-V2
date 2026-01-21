@@ -26,6 +26,12 @@ vi.mock('next-themes', () => ({
 vi.mock('@/lib/animations', async () => {
   const ReactMock = await import('react')
 
+  const AnimatePresenceComponent = ({
+    children,
+  }: {
+    children: React.ReactNode
+  }) => children
+
   return {
     motion: {
       div: ReactMock.forwardRef(
@@ -50,7 +56,8 @@ vi.mock('@/lib/animations', async () => {
         }
       ),
     },
-    AnimatePresence: ({ children }: { children: React.ReactNode }) => children,
+    AnimatePresence: AnimatePresenceComponent,
+    FramerAnimatePresence: AnimatePresenceComponent,
   }
 })
 

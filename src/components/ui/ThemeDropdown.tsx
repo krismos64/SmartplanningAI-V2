@@ -17,7 +17,10 @@
 import { useTheme } from 'next-themes'
 import { useEffect, useState } from 'react'
 import { Sun, Moon, Monitor, Check, ChevronDown } from 'lucide-react'
-import { motion, AnimatePresence } from '@/lib/animations'
+import {
+  motion,
+  FramerAnimatePresence as AnimatePresence,
+} from '@/lib/animations'
 import { cn } from '@/lib/utils'
 
 interface ThemeOption {
@@ -80,6 +83,7 @@ export function ThemeDropdown({
       document.addEventListener('click', handleClickOutside)
       return () => document.removeEventListener('click', handleClickOutside)
     }
+    return undefined
   }, [isOpen])
 
   // Fermer avec Escape
@@ -94,6 +98,7 @@ export function ThemeDropdown({
       document.addEventListener('keydown', handleEscape)
       return () => document.removeEventListener('keydown', handleEscape)
     }
+    return undefined
   }, [isOpen])
 
   if (!mounted) {
@@ -105,8 +110,8 @@ export function ThemeDropdown({
   }
 
   const currentOption =
-    themeOptions.find((opt) => opt.value === theme) || themeOptions[2]
-  const CurrentIcon = currentOption.icon
+    themeOptions.find((opt) => opt.value === theme) ?? themeOptions[2]
+  const CurrentIcon = currentOption!.icon
 
   return (
     <div className={cn('relative', className)} data-theme-dropdown>
@@ -122,7 +127,7 @@ export function ThemeDropdown({
         )}
         aria-expanded={isOpen}
         aria-haspopup="listbox"
-        aria-label={`Thème : ${currentOption.label}`}
+        aria-label={`Thème : ${currentOption!.label}`}
       >
         <CurrentIcon className="h-5 w-5" aria-hidden="true" />
         <ChevronDown
