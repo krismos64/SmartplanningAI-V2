@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 21 janvier 2026 (Sprint 9 - Dark/Light Mode + Design System unifié)
+- **Dernière mise à jour** : 21 janvier 2026 (Sprint 9 - Empty States + Dark/Light Mode + Design System unifié)
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
