@@ -335,7 +335,6 @@ export function DynamicBreadcrumbs({
       {/* Breadcrumbs visuels */}
       <Breadcrumb
         className={cn('mb-6', className)}
-        aria-label="Fil d'Ariane"
         data-testid="dynamic-breadcrumbs"
       >
         <BreadcrumbList>
