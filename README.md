@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 22 janvier 2026 (Sprint 9 - Keyboard Shortcuts Modal SP-264 Phase 3)
+- **Dernière mise à jour** : 22 janvier 2026 (Sprint 9 - Recent Pages SP-264 Phase 4)
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -481,6 +481,61 @@ import { useNavigationShortcuts, DEFAULT_NAVIGATION_SHORTCUTS } from '@/hooks'
 import { KeyboardShortcutsModal } from '@/components/ui/keyboard-shortcuts-modal'
 ```
 
+### Recent Pages avec localStorage (SP-264 Phase 4 - 22 janvier 2026)
+
+Système de pages récentes stockées en localStorage avec affichage dans la Command Palette :
+
+- **recentPagesStore** : Store externe compatible `useSyncExternalStore`
+  - API : `getSnapshot()`, `getServerSnapshot()`, `subscribe()`, `addPage()`, `clear()`
+  - Limite FIFO de 5 pages maximum
+  - Déduplication automatique par path (revisite = mise à jour timestamp + remontée en tête)
+  - Validation stricte des entrées (path, title, visitedAt obligatoires)
+  - Gestion robuste des erreurs JSON parsing
+  - SSR-safe : `getServerSnapshot()` retourne toujours `[]` pour éviter les erreurs d'hydratation
+
+- **useRecentPages** : Hook React pour accès au store
+  - Utilise `useSyncExternalStore` pour synchronisation réactive
+  - États : `recentPages`, `isLoading`
+  - Actions : `addPage({ path, title, icon? })`, `clearHistory()`
+  - Fonctions memoizées avec `useCallback` pour stabilité des références
+
+- **formatRelativeTime** : Utilitaire de formatage temporel en français
+  - Granularité adaptative : "À l'instant" (< 30s) → "Il y a X min" → "Il y a Xh" → "Il y a Xj"
+  - Au-delà d'une semaine : date formatée (ex: "15 janv.")
+  - Version longue `formatRelativeTimeLong` pour tooltips
+  - Gestion des cas limites (timestamps invalides, futur)
+
+- **PageTracker** : Composant invisible de tracking automatique
+  - Détection changements de route via `usePathname`
+  - Mapping pathname → titre + icône via `ROUTE_INFO_MAP` et `navigationItems`
+  - Exclusion des routes non-dashboard (/auth, /api, /login, etc.)
+  - Support des pages de détail dynamiques (IDs UUID/CUID/numeric)
+  - Protection contre le tracking en double (`lastTrackedPath` ref)
+  - RGPD compliant : stocke uniquement path, title, icon, timestamp
+
+- **Intégration Command Palette** :
+  - Groupe "Pages récentes" affiché en tête si `recentPages.length > 0`
+  - Icônes dynamiques via `getIconByName()` (lookup dans LucideIcons)
+  - Temps relatif affiché à droite de chaque item
+  - Navigation au clic comme les autres items
+
+- **Tests** : 53 tests unitaires (27 format-relative-time + 18 recent-pages-store + 8 use-recent-pages)
+
+**Import** :
+```typescript
+// Store et types
+import { recentPagesStore, type RecentPage } from '@/lib/storage/recent-pages-store'
+
+// Hook React
+import { useRecentPages } from '@/hooks/use-recent-pages'
+
+// Formatage temps relatif
+import { formatRelativeTime, formatRelativeTimeLong } from '@/lib/utils/format-relative-time'
+
+// Tracking automatique (à placer dans le layout)
+import { PageTracker } from '@/components/layout/PageTracker'
+```
+
 ### Loading States avancés (SP-266 - 21 janvier 2026)
 
 Système complet de composants et hooks pour la gestion des états de chargement avec animations Framer Motion :
@@ -652,7 +707,7 @@ SmartplanningAI/
 │   │   ├── providers/    # ThemeProvider (SP-265), CommandPaletteProvider (SP-264), KeyboardShortcutsProvider (SP-264)
 │   │   ├── dashboard/    # StatCard, TrendIndicator, StatsGrid
 │   │   ├── forms/        # FormField, FormInput, FormSelect...
-│   │   ├── layout/       # LandingHeader, LandingFooter (partagés)
+│   │   ├── layout/       # LandingHeader, LandingFooter, PageTracker (partagés)
 │   │   ├── loading/      # Spinner, Skeleton, LoadingOverlay
 │   │   ├── modals/       # ConfirmDialog, FormDialog
 │   │   ├── toast/        # Toast system (Sonner)
@@ -670,6 +725,10 @@ SmartplanningAI/
 │   │   │   └── index.ts          # Export centralisé (motion + variants)
 │   │   ├── navigation/   # Navigation centralisée (SP-264)
 │   │   │   └── menu-items.ts     # Items navigation (Sidebar + CommandPalette)
+│   │   ├── storage/       # Stores localStorage (SP-264)
+│   │   │   └── recent-pages-store.ts # Store pages récentes (useSyncExternalStore)
+│   │   ├── utils/         # Utilitaires divers
+│   │   │   └── format-relative-time.ts # Formatage temps relatif FR
 │   │   ├── actions/      # Server Actions
 │   │   │   ├── auth-actions.ts      # Actions authentification (inscription)
 │   │   │   ├── password-actions.ts  # Actions reset password (SP-298)
@@ -693,7 +752,8 @@ SmartplanningAI/
 │   │   ├── use-loading.ts        # Hook état chargement (SP-266)
 │   │   ├── use-progress-loading.ts # Hook progression avec valeur (SP-266)
 │   │   ├── use-keyboard-shortcuts.ts # Hook raccourcis clavier (SP-264)
-│   │   └── use-navigation-shortcuts.ts # Hook navigation Vim-style (SP-264)
+│   │   ├── use-navigation-shortcuts.ts # Hook navigation Vim-style (SP-264)
+│   │   └── use-recent-pages.ts    # Hook pages récentes (SP-264 Phase 4)
 │   ├── providers/        # Context providers centralisés
 │   │   ├── index.ts              # Export centralisé
 │   │   └── keyboard-shortcuts-provider.tsx # Provider modal raccourcis (SP-264)
@@ -1215,7 +1275,7 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 
 | Catégorie            | Coverage | Tests    |
 | -------------------- | -------- | -------- |
-| **Global**           | **~55%** | **2697** |
+| **Global**           | **~55%** | **2750** |
 | loading              | 100%     | 152      |
 | modals               | 100%     | 52       |
 | cards                | 77.09%   | 88       |
@@ -1241,6 +1301,9 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 | navigation shortcuts (SP-264) | 100% | 15    |
 | keyboard shortcuts modal (SP-264) | 100% | 10 |
 | keyboard shortcuts provider (SP-264) | 100% | 10 |
+| recent pages store (SP-264 Phase 4) | 100% | 18 |
+| use-recent-pages hook (SP-264 Phase 4) | 100% | 8 |
+| format-relative-time (SP-264 Phase 4) | 100% | 27 |
 
 ### Tests E2E
 
@@ -1263,9 +1326,12 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 | **Error Boundary**           | 5     | ✅     |
 | **Page 404**                 | 8     | ✅     |
 | **Page 500**                 | 22    | ✅     |
-| **Total E2E actifs**         | **254** | ✅   |
+| **Command Palette (SP-264)** | 6     | ✅     |
+| **Recent Pages (SP-264)**    | 6     | ✅     |
+| **Keyboard Shortcuts (SP-264)** | 6  | ✅     |
+| **Total E2E actifs**         | **272** | ✅   |
 | **Total E2E skipped**        | **24**  | ⏸️   |
-| **Total E2E**                | **278** |      |
+| **Total E2E**                | **296** |      |
 
 **Note** : Tests exécutés uniquement sur Chromium (Firefox et WebKit supprimés pour stabilité et performance).
 
@@ -1412,6 +1478,13 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 - KeyboardShortcutsModal (modal Radix Dialog avec animations Framer Motion, détection OS)
 - KeyboardShortcutsProvider (context React pour modal raccourcis, touche `?`)
 
+#### Recent Pages (4 modules - SP-264 Phase 4)
+
+- recentPagesStore (store externe useSyncExternalStore, localStorage, FIFO 5 pages, déduplication)
+- useRecentPages (hook React avec addPage, clearHistory, isLoading)
+- formatRelativeTime (formatage temps relatif FR : "À l'instant", "Il y a X min", etc.)
+- PageTracker (composant invisible tracking automatique, RGPD compliant)
+
 ### Scripts de test
 
 ```bash
@@ -1500,8 +1573,8 @@ Merge main → Build Docker → Push GHCR → Deploy VPS (~8-10 min)
 
 - **CI** (`.github/workflows/ci.yml`) : Lint, Type-check, Tests unitaires, Build, Tests E2E (PR uniquement)
 - **CD** (`.github/workflows/cd.yml`) : Build image Docker, Push sur ghcr.io, Deploy via SSH
-- Tests unitaires sur tous les push (~1693 tests Vitest)
-- Tests E2E sur PR vers main (~211 tests Playwright actifs)
+- Tests unitaires sur tous les push (~2750 tests Vitest)
+- Tests E2E sur PR vers main (~272 tests Playwright actifs)
 - Déploiement automatique sur merge main ✅
 - Migrations Prisma automatiques
 - Healthcheck endpoint : `/api/health` ✅
