@@ -42,7 +42,10 @@ export interface UseKeyboardShortcutsOptions {
   sequenceTimeout?: number
 }
 
-type ShortcutMap = Record<string, ShortcutHandler | [ShortcutHandler, ShortcutOptions]>
+type ShortcutMap = Record<
+  string,
+  ShortcutHandler | [ShortcutHandler, ShortcutOptions]
+>
 
 interface ParsedShortcut {
   keys: string[]
@@ -65,11 +68,17 @@ interface ParsedShortcut {
  */
 function parseShortcut(shortcut: string): ParsedShortcut {
   const isSequence = shortcut.includes(' ')
-  const parts = shortcut.toLowerCase().split('+').map((s) => s.trim())
+  const parts = shortcut
+    .toLowerCase()
+    .split('+')
+    .map((s) => s.trim())
 
   if (isSequence) {
     return {
-      keys: shortcut.toLowerCase().split(' ').map((s) => s.trim()),
+      keys: shortcut
+        .toLowerCase()
+        .split(' ')
+        .map((s) => s.trim()),
       isSequence: true,
       ctrlKey: false,
       metaKey: false,
@@ -184,7 +193,10 @@ export function useKeyboardShortcuts(
         const parsed = parseShortcut(shortcutKey)
 
         // Vérifier si on est dans un input et si c'est autorisé
-        if (!shortcutOptions.enableInInputs && isInputElement(document.activeElement)) {
+        if (
+          !shortcutOptions.enableInInputs &&
+          isInputElement(document.activeElement)
+        ) {
           // Permettre Escape même dans les inputs pour fermer les modals
           if (key !== 'escape') {
             continue

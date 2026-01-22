@@ -101,7 +101,8 @@ export function CommandPalette({
           router.push('/app/director/teams/new')
           break
         default:
-          console.log(`Action: ${item.action}`)
+          // Action non gérée - ignorer silencieusement
+          break
       }
       onOpenChange(false)
     },
@@ -120,8 +121,7 @@ export function CommandPalette({
     (action: string) => {
       switch (action) {
         case 'show-shortcuts':
-          // TODO: Ouvrir modal de raccourcis
-          console.log('Show shortcuts modal')
+          // TODO: Ouvrir modal de raccourcis (SP-264 Phase 2)
           break
         case 'open-docs':
           window.open('/docs', '_blank')

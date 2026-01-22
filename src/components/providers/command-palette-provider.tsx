@@ -91,11 +91,7 @@ export function CommandPaletteProvider({
   return (
     <CommandPaletteContext.Provider value={value}>
       {children}
-      <CommandPalette
-        open={open}
-        onOpenChange={setOpen}
-        userRole={userRole}
-      />
+      <CommandPalette open={open} onOpenChange={setOpen} userRole={userRole} />
     </CommandPaletteContext.Provider>
   )
 }

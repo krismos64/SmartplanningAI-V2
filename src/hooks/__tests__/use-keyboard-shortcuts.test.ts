@@ -6,7 +6,10 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
-import { useKeyboardShortcuts, useKeyboardShortcut } from '../use-keyboard-shortcuts'
+import {
+  useKeyboardShortcuts,
+  useKeyboardShortcut,
+} from '../use-keyboard-shortcuts'
 
 // Mock navigator.platform
 const mockPlatform = (platform: string) => {
@@ -54,9 +57,7 @@ describe('useKeyboardShortcuts', () => {
       renderHook(() => useKeyboardShortcuts({ 'mod+k': handler }))
 
       act(() => {
-        window.dispatchEvent(
-          createKeyboardEvent('k', { metaKey: true })
-        )
+        window.dispatchEvent(createKeyboardEvent('k', { metaKey: true }))
       })
 
       expect(handler).toHaveBeenCalledTimes(1)
@@ -68,9 +69,7 @@ describe('useKeyboardShortcuts', () => {
       renderHook(() => useKeyboardShortcuts({ 'mod+k': handler }))
 
       act(() => {
-        window.dispatchEvent(
-          createKeyboardEvent('k', { ctrlKey: true })
-        )
+        window.dispatchEvent(createKeyboardEvent('k', { ctrlKey: true }))
       })
 
       expect(handler).toHaveBeenCalledTimes(1)
@@ -97,7 +96,9 @@ describe('useKeyboardShortcuts', () => {
 
     it('should cleanup listeners on unmount', () => {
       const handler = vi.fn()
-      const { unmount } = renderHook(() => useKeyboardShortcuts({ escape: handler }))
+      const { unmount } = renderHook(() =>
+        useKeyboardShortcuts({ escape: handler })
+      )
 
       unmount()
 
@@ -301,7 +302,7 @@ describe('useKeyboardShortcuts', () => {
   })
 
   describe('sequences', () => {
-    it('should handle key sequences like g+h', async () => {
+    it('should handle key sequences like g+h', () => {
       vi.useFakeTimers()
       const handler = vi.fn()
       renderHook(() =>
@@ -421,9 +422,7 @@ describe('useKeyboardShortcut', () => {
 
   it('should pass options correctly', () => {
     const handler = vi.fn()
-    renderHook(() =>
-      useKeyboardShortcut('mod+k', handler, { enabled: false })
-    )
+    renderHook(() => useKeyboardShortcut('mod+k', handler, { enabled: false }))
 
     act(() => {
       window.dispatchEvent(createKeyboardEvent('k', { metaKey: true }))

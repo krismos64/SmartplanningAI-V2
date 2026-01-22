@@ -90,7 +90,9 @@ describe('CommandPalette', () => {
       )
 
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
-      expect(screen.queryByPlaceholderText(/rechercher/i)).not.toBeInTheDocument()
+      expect(
+        screen.queryByPlaceholderText(/rechercher/i)
+      ).not.toBeInTheDocument()
     })
 
     it('should render when open', () => {
@@ -389,11 +391,7 @@ describe('CommandPalette', () => {
 
     it('should hide director-only items for MANAGER role', () => {
       render(
-        <CommandPalette
-          open={true}
-          onOpenChange={vi.fn()}
-          userRole="MANAGER"
-        />
+        <CommandPalette open={true} onOpenChange={vi.fn()} userRole="MANAGER" />
       )
 
       expect(screen.queryByText('Équipes')).not.toBeInTheDocument()
