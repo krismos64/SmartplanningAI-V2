@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/breadcrumb'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { CommandPaletteProvider } from '@/components/providers/command-palette-provider'
 
 import { Header } from './Header'
 import { Sidebar } from './Sidebar'
@@ -44,44 +45,46 @@ export function DashboardLayout({
   const pathname = usePathname()
 
   return (
-    <SidebarProvider defaultOpen={true}>
-      <div className="flex min-h-screen w-full">
-        {/* Sidebar */}
-        <Sidebar user={user} />
+    <CommandPaletteProvider userRole={user.role}>
+      <SidebarProvider defaultOpen={true}>
+        <div className="flex min-h-screen w-full">
+          {/* Sidebar */}
+          <Sidebar user={user} />
 
-        {/* Main content area */}
-        <div className="flex flex-1 flex-col">
-          {/* Header */}
-          <Header user={user} notificationsCount={notificationsCount} />
+          {/* Main content area */}
+          <div className="flex flex-1 flex-col">
+            {/* Header */}
+            <Header user={user} notificationsCount={notificationsCount} />
 
-          {/* Page content */}
-          <main className="flex-1">
-            <ScrollArea className="h-[calc(100vh-4rem-3.5rem)]">
-              <div className="container mx-auto p-6">
-                {/* Breadcrumbs */}
-                <Breadcrumbs pathname={pathname} />
+            {/* Page content */}
+            <main className="flex-1">
+              <ScrollArea className="h-[calc(100vh-4rem-3.5rem)]">
+                <div className="container mx-auto p-6">
+                  {/* Breadcrumbs */}
+                  <Breadcrumbs pathname={pathname} />
 
-                {/* Page content with Suspense boundary */}
-                <Suspense
-                  fallback={
-                    <div className="space-y-4">
-                      <Skeleton className="h-8 w-64" />
-                      <Skeleton className="h-64 w-full" />
-                      <Skeleton className="h-32 w-full" />
-                    </div>
-                  }
-                >
-                  {children}
-                </Suspense>
-              </div>
-            </ScrollArea>
-          </main>
+                  {/* Page content with Suspense boundary */}
+                  <Suspense
+                    fallback={
+                      <div className="space-y-4">
+                        <Skeleton className="h-8 w-64" />
+                        <Skeleton className="h-64 w-full" />
+                        <Skeleton className="h-32 w-full" />
+                      </div>
+                    }
+                  >
+                    {children}
+                  </Suspense>
+                </div>
+              </ScrollArea>
+            </main>
 
-          {/* Footer */}
-          <Footer variant="dashboard" />
+            {/* Footer */}
+            <Footer variant="dashboard" />
+          </div>
         </div>
-      </div>
-    </SidebarProvider>
+      </SidebarProvider>
+    </CommandPaletteProvider>
   )
 }
 

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
 import { signOut } from 'next-auth/react'
-import { Menu, Bell, LogOut, User, Settings } from 'lucide-react'
+import { Menu, Bell, LogOut, User, Settings, Search } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
@@ -19,6 +19,7 @@ import {
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { useSidebar } from '@/components/ui/sidebar'
+import { useCommandPalette } from '@/components/providers/command-palette-provider'
 
 // Dynamic import du composant Lottie pour éviter les erreurs SSR
 const Lottie = dynamic(() => import('lottie-react'), { ssr: false })
@@ -37,6 +38,7 @@ interface HeaderProps {
 
 export function Header({ user, notificationsCount = 0 }: HeaderProps) {
   const { toggleSidebar } = useSidebar()
+  const { setOpen: openCommandPalette } = useCommandPalette()
   // Type object pour les données d'animation Lottie
   const [animationData, setAnimationData] = useState<object | null>(null)
 
@@ -95,8 +97,32 @@ export function Header({ user, notificationsCount = 0 }: HeaderProps) {
           </Link>
         </div>
 
-        {/* Right: Theme toggle + Notifications + User menu */}
+        {/* Right: Search + Theme toggle + Notifications + User menu */}
         <div className="flex items-center gap-3">
+          {/* Search Button - Command Palette trigger (SP-264) */}
+          <Button
+            variant="outline"
+            onClick={() => openCommandPalette(true)}
+            className="hidden h-9 gap-2 border-border/50 bg-muted/50 px-3 text-muted-foreground hover:bg-muted hover:text-foreground sm:flex"
+          >
+            <Search className="h-4 w-4" />
+            <span className="text-sm">Rechercher...</span>
+            <kbd className="pointer-events-none ml-2 hidden select-none rounded border border-border bg-background px-1.5 py-0.5 text-[10px] font-medium md:inline-block">
+              ⌘K
+            </kbd>
+          </Button>
+
+          {/* Search Icon Button for mobile */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => openCommandPalette(true)}
+            className="sm:hidden"
+            aria-label="Ouvrir la recherche"
+          >
+            <Search className="h-5 w-5" />
+          </Button>
+
           {/* Theme Toggle (SP-265) */}
           <ThemeToggle />
 

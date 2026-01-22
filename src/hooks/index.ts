@@ -30,3 +30,13 @@ export {
   type UseProgressLoadingOptions,
   type UseProgressLoadingResult,
 } from './use-progress-loading'
+
+// Keyboard shortcuts hooks (SP-264)
+export {
+  useKeyboardShortcuts,
+  useKeyboardShortcut,
+  type ShortcutHandler,
+  type ShortcutMap,
+  type ShortcutOptions,
+  type UseKeyboardShortcutsOptions,
+} from './use-keyboard-shortcuts'
