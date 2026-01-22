@@ -44,7 +44,7 @@ const STORAGE_KEY = 'smartplanning:recent-pages'
 const MAX_PAGES = 5
 
 /** Set des listeners pour les notifications */
-let listeners = new Set<() => void>()
+const listeners = new Set<() => void>()
 
 /** Cache mémoire pour éviter de parser JSON à chaque lecture */
 let cachedPages: RecentPage[] | null = null
@@ -79,14 +79,17 @@ function readFromStorage(): RecentPage[] {
     }
 
     // Filtrer les entrées invalides
-    return parsed.filter(
-      (item): item is RecentPage =>
-        typeof item === 'object' &&
-        item !== null &&
-        typeof item.path === 'string' &&
-        typeof item.title === 'string' &&
-        typeof item.visitedAt === 'number'
-    )
+    return parsed.filter((item): item is RecentPage => {
+      if (typeof item !== 'object' || item === null) {
+        return false
+      }
+      const obj = item as Record<string, unknown>
+      return (
+        typeof obj.path === 'string' &&
+        typeof obj.title === 'string' &&
+        typeof obj.visitedAt === 'number'
+      )
+    })
   } catch {
     // JSON parse error ou autre erreur
     return []

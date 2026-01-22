@@ -52,14 +52,18 @@ const ROUTE_INFO_MAP: Record<string, { title: string; icon: string }> = {
 /**
  * Routes à exclure du tracking
  */
-const EXCLUDED_ROUTES = ['/auth', '/api', '/login', '/register', '/forgot-password']
+const EXCLUDED_ROUTES = [
+  '/auth',
+  '/api',
+  '/login',
+  '/register',
+  '/forgot-password',
+]
 
 /**
  * Récupère les infos de page pour un pathname
  */
-function getPageInfo(
-  pathname: string
-): { title: string; icon: string } | null {
+function getPageInfo(pathname: string): { title: string; icon: string } | null {
   // Vérifier si la route est exclue
   if (EXCLUDED_ROUTES.some((route) => pathname.startsWith(route))) {
     return null
@@ -89,7 +93,8 @@ function getPageInfo(
     return null
   }
 
-  const isDetailPage = /^[a-f0-9-]+$/i.test(lastSegment) || /^\d+$/.test(lastSegment)
+  const isDetailPage =
+    /^[a-f0-9-]+$/i.test(lastSegment) || /^\d+$/.test(lastSegment)
 
   if (isDetailPage && segments.length >= 2) {
     const parentSegment = segments[segments.length - 2]
@@ -109,7 +114,8 @@ function getPageInfo(
     }
 
     // Sinon, capitaliser le segment parent
-    const capitalizedParent = parentSegment.charAt(0).toUpperCase() + parentSegment.slice(1)
+    const capitalizedParent =
+      parentSegment.charAt(0).toUpperCase() + parentSegment.slice(1)
     return {
       title: `Détail - ${capitalizedParent}`,
       icon: 'FileText',

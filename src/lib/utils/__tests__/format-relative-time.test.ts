@@ -24,7 +24,7 @@ describe('formatRelativeTime', () => {
   // TESTS "À L'INSTANT"
   // =========================================================================
 
-  describe('À l\'instant (< 30 secondes)', () => {
+  describe("À l'instant (< 30 secondes)", () => {
     it('should return "À l\'instant" for 0 seconds', () => {
       const now = Date.now()
       expect(formatRelativeTime(now, now)).toBe("À l'instant")
@@ -119,7 +119,7 @@ describe('formatRelativeTime', () => {
   // TESTS > 1 SEMAINE
   // =========================================================================
 
-  describe('Plus d\'une semaine', () => {
+  describe("Plus d'une semaine", () => {
     it('should return date format for 8 days ago', () => {
       const now = Date.now()
       const eightDaysAgo = now - 8 * 24 * 60 * 60 * 1000

@@ -260,7 +260,12 @@ export function CommandPalette({
                           <CommandItem
                             key={page.path}
                             onSelect={() => handleRecentPageNavigate(page)}
-                            keywords={[page.title, 'récent', 'recent', 'visité']}
+                            keywords={[
+                              page.title,
+                              'récent',
+                              'recent',
+                              'visité',
+                            ]}
                           >
                             <IconComponent className="mr-3 h-4 w-4 text-muted-foreground" />
                             <span className="flex-1">{page.title}</span>

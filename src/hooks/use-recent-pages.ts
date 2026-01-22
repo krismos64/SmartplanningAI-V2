@@ -75,10 +75,11 @@ export function useRecentPages(
   const [isHydrated, setIsHydrated] = useState(false)
 
   // Synchronisation avec le store externe
+  // Bind les méthodes pour éviter les problèmes de contexte `this`
   const recentPages = useSyncExternalStore(
-    recentPagesStore.subscribe,
-    recentPagesStore.getSnapshot,
-    recentPagesStore.getServerSnapshot
+    (callback) => recentPagesStore.subscribe(callback),
+    () => recentPagesStore.getSnapshot(),
+    () => recentPagesStore.getServerSnapshot()
   )
 
   // Détecter la fin de l'hydratation

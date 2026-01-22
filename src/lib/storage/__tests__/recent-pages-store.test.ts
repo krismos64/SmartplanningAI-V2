@@ -64,13 +64,24 @@ describe('recentPagesStore', () => {
 
     it('should return stored pages', () => {
       const pages: RecentPage[] = [
-        { path: '/dashboard', title: 'Dashboard', icon: 'Home', visitedAt: Date.now() },
+        {
+          path: '/dashboard',
+          title: 'Dashboard',
+          icon: 'Home',
+          visitedAt: Date.now(),
+        },
       ]
-      localStorageMock.setItem('smartplanning:recent-pages', JSON.stringify(pages))
+      localStorageMock.setItem(
+        'smartplanning:recent-pages',
+        JSON.stringify(pages)
+      )
 
       // Invalider le cache
       recentPagesStore.clear()
-      localStorageMock.setItem('smartplanning:recent-pages', JSON.stringify(pages))
+      localStorageMock.setItem(
+        'smartplanning:recent-pages',
+        JSON.stringify(pages)
+      )
 
       const snapshot = recentPagesStore.getSnapshot()
       expect(snapshot).toEqual(pages)
@@ -95,11 +106,17 @@ describe('recentPagesStore', () => {
         null,
         'string',
       ]
-      localStorageMock.setItem('smartplanning:recent-pages', JSON.stringify(invalidData))
+      localStorageMock.setItem(
+        'smartplanning:recent-pages',
+        JSON.stringify(invalidData)
+      )
 
       // Force refresh
       recentPagesStore.clear()
-      localStorageMock.setItem('smartplanning:recent-pages', JSON.stringify(invalidData))
+      localStorageMock.setItem(
+        'smartplanning:recent-pages',
+        JSON.stringify(invalidData)
+      )
 
       const snapshot = recentPagesStore.getSnapshot()
       expect(snapshot).toHaveLength(1)

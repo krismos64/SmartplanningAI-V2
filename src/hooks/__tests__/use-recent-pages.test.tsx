@@ -131,7 +131,9 @@ describe('useRecentPages', () => {
       expect(result.current.recentPages[0]?.visitedAt).toBeGreaterThanOrEqual(
         before
       )
-      expect(result.current.recentPages[0]?.visitedAt).toBeLessThanOrEqual(after)
+      expect(result.current.recentPages[0]?.visitedAt).toBeLessThanOrEqual(
+        after
+      )
     })
 
     it('should deduplicate by path', async () => {
