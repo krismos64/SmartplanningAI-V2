@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 22 janvier 2026 (Sprint 9 - Dynamic Breadcrumbs SP-264)
+- **Dernière mise à jour** : 22 janvier 2026 (Sprint 9 - Keyboard Shortcuts Modal SP-264 Phase 3)
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -431,6 +431,56 @@ import { DynamicBreadcrumbs } from '@/components/ui/dynamic-breadcrumbs'
 import { useBreadcrumbResolver, isIdSegment, getEntityTypeFromPreviousSegment } from '@/hooks'
 ```
 
+### Navigation Shortcuts & Keyboard Shortcuts Modal (SP-264 Phase 3 - 22 janvier 2026)
+
+Système de raccourcis clavier Vim-style pour la navigation rapide + modal d'aide accessible via `?` :
+
+- **useNavigationShortcuts** : Hook pour les séquences de navigation Vim-style
+  - Séquences supportées (2 touches) :
+    | Séquence | Action | Description |
+    |----------|--------|-------------|
+    | `g h` | Go Home | Aller au Dashboard |
+    | `g e` | Go Employees | Aller aux Employés |
+    | `g t` | Go Teams | Aller aux Équipes |
+    | `g p` | Go Plannings | Aller aux Plannings |
+    | `g l` | Go Leaves | Aller aux Congés |
+    | `g s` | Go Settings | Aller aux Paramètres |
+    | `g c` | Go Company | Aller à l'Entreprise |
+  - Timeout configurable (1000ms par défaut)
+  - Désactivation automatique dans les inputs/textarea/contenteditable
+  - Ignore les modificateurs (Ctrl, Alt, Meta)
+
+- **KeyboardShortcutsModal** : Modal accessible avec tous les raccourcis
+  - Ouverture via `?` (touche question)
+  - Design Radix Dialog + Framer Motion AnimatePresence
+  - Groupes par catégorie : Navigation, Actions, Aide
+  - Détection OS : `⌘` sur Mac, `Ctrl` sur Windows/Linux
+  - Accessibilité ARIA complète (focus trap, Escape to close)
+  - Support `prefers-reduced-motion`
+
+- **KeyboardShortcutsProvider** : Context React pour gestion centralisée
+  - Hook `useKeyboardShortcutsContext()` : `{ isOpen, openModal, closeModal, toggleModal }`
+  - Intégré dans DashboardLayout
+  - Connecté à CommandPalette via callback `onShowShortcuts`
+
+- **Intégration Command Palette** :
+  - Item "Raccourcis clavier" dans groupe Aide ouvre la modal
+  - Callback `onShowShortcuts` propagé via CommandPaletteProvider
+
+- **Tests** : 35 tests unitaires (15 hook + 10 modal + 10 provider)
+
+**Import** :
+```typescript
+// Provider et hook
+import { KeyboardShortcutsProvider, useKeyboardShortcutsContext } from '@/providers'
+
+// Hook navigation Vim-style
+import { useNavigationShortcuts, DEFAULT_NAVIGATION_SHORTCUTS } from '@/hooks'
+
+// Modal (usage interne via provider)
+import { KeyboardShortcutsModal } from '@/components/ui/keyboard-shortcuts-modal'
+```
+
 ### Loading States avancés (SP-266 - 21 janvier 2026)
 
 Système complet de composants et hooks pour la gestion des états de chargement avec animations Framer Motion :
@@ -599,14 +649,14 @@ SmartplanningAI/
 │   │   ├── error/        # ErrorBoundary, ErrorFallback (SP-304), NotFoundPage (SP-302), ServerErrorPage (SP-303), ForbiddenPage (SP-305)
 │   │   ├── charts/       # AreaChartWidget, BarChartWidget, PieChartWidget
 │   │   ├── cookies/      # CookieBanner, CookiePreferencesModal, CookieSettingsButton, CookieConsentProvider
-│   │   ├── providers/    # ThemeProvider (SP-265), CommandPaletteProvider (SP-264)
+│   │   ├── providers/    # ThemeProvider (SP-265), CommandPaletteProvider (SP-264), KeyboardShortcutsProvider (SP-264)
 │   │   ├── dashboard/    # StatCard, TrendIndicator, StatsGrid
 │   │   ├── forms/        # FormField, FormInput, FormSelect...
 │   │   ├── layout/       # LandingHeader, LandingFooter (partagés)
 │   │   ├── loading/      # Spinner, Skeleton, LoadingOverlay
 │   │   ├── modals/       # ConfirmDialog, FormDialog
 │   │   ├── toast/        # Toast system (Sonner)
-│   │   └── ui/           # Shadcn + ThemeToggle, ThemeDropdown (SP-265), ProgressBar, ProgressCircle (SP-266), CommandPalette (SP-264)
+│   │   └── ui/           # Shadcn + ThemeToggle, ThemeDropdown (SP-265), ProgressBar, ProgressCircle (SP-266), CommandPalette, KeyboardShortcutsModal, DynamicBreadcrumbs (SP-264)
 │   ├── lib/              # Utilitaires et helpers
 │   │   ├── prisma.ts     # Client Prisma
 │   │   ├── auth.ts       # Configuration NextAuth
@@ -642,7 +692,11 @@ SmartplanningAI/
 │   │   ├── useContactForm.ts     # Hook machine d'état contact (SP-289)
 │   │   ├── use-loading.ts        # Hook état chargement (SP-266)
 │   │   ├── use-progress-loading.ts # Hook progression avec valeur (SP-266)
-│   │   └── use-keyboard-shortcuts.ts # Hook raccourcis clavier (SP-264)
+│   │   ├── use-keyboard-shortcuts.ts # Hook raccourcis clavier (SP-264)
+│   │   └── use-navigation-shortcuts.ts # Hook navigation Vim-style (SP-264)
+│   ├── providers/        # Context providers centralisés
+│   │   ├── index.ts              # Export centralisé
+│   │   └── keyboard-shortcuts-provider.tsx # Provider modal raccourcis (SP-264)
 │   └── middleware.ts     # Middleware NextAuth (protection routes)
 ├── prisma/
 │   ├── schema.prisma     # Schéma de base de données
@@ -1161,7 +1215,7 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 
 | Catégorie            | Coverage | Tests    |
 | -------------------- | -------- | -------- |
-| **Global**           | **~55%** | **2619** |
+| **Global**           | **~55%** | **2697** |
 | loading              | 100%     | 152      |
 | modals               | 100%     | 52       |
 | cards                | 77.09%   | 88       |
@@ -1184,6 +1238,9 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 | dark/light mode      | 100%     | 30       |
 | loading states (SP-266) | 100%  | 131      |
 | command palette (SP-264) | 100% | 55       |
+| navigation shortcuts (SP-264) | 100% | 15    |
+| keyboard shortcuts modal (SP-264) | 100% | 10 |
+| keyboard shortcuts provider (SP-264) | 100% | 10 |
 
 ### Tests E2E
 
@@ -1348,6 +1405,12 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 - useKeyboardShortcuts (hook raccourcis clavier avec modifiers et séquences)
 - CommandPalette (composant cmdk avec navigation, actions, thème, RBAC)
 - CommandPaletteProvider (context React pour état global + raccourci Cmd+K)
+
+#### Navigation Shortcuts & Keyboard Shortcuts Modal (3 modules - SP-264 Phase 3)
+
+- useNavigationShortcuts (hook séquences Vim-style : g h, g e, g t, g p, g l, g s, g c)
+- KeyboardShortcutsModal (modal Radix Dialog avec animations Framer Motion, détection OS)
+- KeyboardShortcutsProvider (context React pour modal raccourcis, touche `?`)
 
 ### Scripts de test
 
