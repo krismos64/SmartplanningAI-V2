@@ -14,6 +14,14 @@
 
 import { test, expect } from '../../fixtures/auth.fixture'
 
+/**
+ * Helper pour le raccourci d'ouverture de la Command Palette
+ * - Mac: Cmd+K (Meta+k)
+ * - Windows/Linux: Ctrl+K (Control+k)
+ * - Playwright Chromium: utilise Control+k par défaut
+ */
+const OPEN_COMMAND_PALETTE_KEY = 'Control+k'
+
 test.describe('Command Palette', () => {
   // =========================================================================
   // TESTS D'OUVERTURE / FERMETURE
@@ -24,11 +32,9 @@ test.describe('Command Palette', () => {
       directorPage,
     }) => {
       // Ouvrir avec le raccourci clavier
-      await directorPage.keyboard.press('Meta+k')
+      await directorPage.keyboard.press(OPEN_COMMAND_PALETTE_KEY)
 
-      // Vérifier que la palette est ouverte
-      const palette = directorPage.locator('[data-testid="command-palette"]')
-      // Si pas de data-testid, chercher par le placeholder
+      // Vérifier que la palette est ouverte via le placeholder de l'input
       const input = directorPage.getByPlaceholder(
         'Rechercher ou exécuter une commande...'
       )
@@ -40,7 +46,7 @@ test.describe('Command Palette', () => {
       directorPage,
     }) => {
       // Ouvrir la palette
-      await directorPage.keyboard.press('Meta+k')
+      await directorPage.keyboard.press(OPEN_COMMAND_PALETTE_KEY)
 
       const input = directorPage.getByPlaceholder(
         'Rechercher ou exécuter une commande...'
@@ -58,7 +64,7 @@ test.describe('Command Palette', () => {
       directorPage,
     }) => {
       // Ouvrir la palette
-      await directorPage.keyboard.press('Meta+k')
+      await directorPage.keyboard.press(OPEN_COMMAND_PALETTE_KEY)
 
       const input = directorPage.getByPlaceholder(
         'Rechercher ou exécuter une commande...'
@@ -80,7 +86,7 @@ test.describe('Command Palette', () => {
   test.describe('Search', () => {
     test('should filter items when typing', async ({ directorPage }) => {
       // Ouvrir la palette
-      await directorPage.keyboard.press('Meta+k')
+      await directorPage.keyboard.press(OPEN_COMMAND_PALETTE_KEY)
 
       const input = directorPage.getByPlaceholder(
         'Rechercher ou exécuter une commande...'
@@ -100,7 +106,7 @@ test.describe('Command Palette', () => {
       directorPage,
     }) => {
       // Ouvrir la palette
-      await directorPage.keyboard.press('Meta+k')
+      await directorPage.keyboard.press(OPEN_COMMAND_PALETTE_KEY)
 
       const input = directorPage.getByPlaceholder(
         'Rechercher ou exécuter une commande...'
@@ -126,7 +132,7 @@ test.describe('Command Palette', () => {
       directorPage,
     }) => {
       // Ouvrir la palette
-      await directorPage.keyboard.press('Meta+k')
+      await directorPage.keyboard.press(OPEN_COMMAND_PALETTE_KEY)
 
       const input = directorPage.getByPlaceholder(
         'Rechercher ou exécuter une commande...'
@@ -149,7 +155,7 @@ test.describe('Command Palette', () => {
       directorPage,
     }) => {
       // Ouvrir la palette
-      await directorPage.keyboard.press('Meta+k')
+      await directorPage.keyboard.press(OPEN_COMMAND_PALETTE_KEY)
 
       const input = directorPage.getByPlaceholder(
         'Rechercher ou exécuter une commande...'
@@ -174,7 +180,7 @@ test.describe('Command Palette', () => {
       directorPage,
     }) => {
       // Ouvrir la palette
-      await directorPage.keyboard.press('Meta+k')
+      await directorPage.keyboard.press(OPEN_COMMAND_PALETTE_KEY)
 
       const input = directorPage.getByPlaceholder(
         'Rechercher ou exécuter une commande...'
@@ -195,7 +201,7 @@ test.describe('Command Palette', () => {
       directorPage,
     }) => {
       // D'abord passer en dark
-      await directorPage.keyboard.press('Meta+k')
+      await directorPage.keyboard.press(OPEN_COMMAND_PALETTE_KEY)
       let input = directorPage.getByPlaceholder(
         'Rechercher ou exécuter une commande...'
       )
@@ -204,7 +210,7 @@ test.describe('Command Palette', () => {
       await directorPage.getByRole('option', { name: /mode sombre/i }).click()
 
       // Maintenant passer en light
-      await directorPage.keyboard.press('Meta+k')
+      await directorPage.keyboard.press(OPEN_COMMAND_PALETTE_KEY)
       input = directorPage.getByPlaceholder(
         'Rechercher ou exécuter une commande...'
       )
