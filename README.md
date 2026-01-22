@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 21 janvier 2026 (Sprint 9 - Loading States avancés + Dark/Light Mode + Design System unifié)
+- **Dernière mise à jour** : 22 janvier 2026 (Sprint 9 - Command Palette Cmd+K + Loading States + Dark/Light Mode)
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -349,6 +349,48 @@ Page d'erreur serveur personnalisée avec animations Framer Motion et accessibil
 
 - **Tests** : 74 tests unitaires + 22 tests E2E
 
+### Command Palette Cmd+K (SP-264 - 22 janvier 2026)
+
+Système de palette de commandes accessible via `Cmd+K` (Mac) ou `Ctrl+K` (Windows/Linux) :
+
+- **Package cmdk** : Librairie `cmdk` v1.1.1 pour l'interface command palette
+- **useKeyboardShortcuts** : Hook centralisé pour les raccourcis clavier
+  - Support modifiers : `mod+k`, `ctrl+k`, `shift+mod+k`, `alt+k`
+  - Support séquences : `g h` (go home), `g e` (go employees)
+  - Ignore automatique dans les inputs/textarea
+  - Option `enableInInputs` pour forcer l'activation
+  - Détection plateforme (Mac vs Windows)
+
+- **CommandPalette** : Composant principal avec animations Framer Motion
+  - **Navigation** : Dashboard, Plannings, Congés, Équipes, Statistiques, Paramètres
+  - **Actions rapides** : Nouveau planning, Nouvelle demande de congé, Nouvelle équipe
+  - **Thème** : Mode clair / Mode sombre / Thème système
+  - **Aide** : Raccourcis clavier, Documentation, Centre d'aide
+  - Recherche fuzzy avec filtrage en temps réel
+  - Filtrage RBAC selon le rôle utilisateur (SYSTEM_ADMIN, DIRECTOR, MANAGER, EMPLOYEE)
+  - Shortcuts affichés sur chaque item (ex: `G H` pour Dashboard)
+
+- **CommandPaletteProvider** : Context React pour état global
+  - Hook `useCommandPalette()` : `{ open, setOpen, toggle }`
+  - Intégration automatique du raccourci Cmd+K
+  - Wrapping dans DashboardLayout
+
+- **Intégration Header** :
+  - Bouton "Rechercher..." avec badge `⌘K` (desktop)
+  - Icône loupe (mobile)
+  - ThemeToggle adjacent
+
+- **Tests** : 55 tests unitaires (25 hook + 23 component + 7 provider)
+
+**Import** :
+```typescript
+// Hook raccourcis clavier
+import { useKeyboardShortcuts, useKeyboardShortcut } from '@/hooks'
+
+// Provider et hook command palette
+import { CommandPaletteProvider, useCommandPalette } from '@/components/providers'
+```
+
 ### Loading States avancés (SP-266 - 21 janvier 2026)
 
 Système complet de composants et hooks pour la gestion des états de chargement avec animations Framer Motion :
@@ -517,14 +559,14 @@ SmartplanningAI/
 │   │   ├── error/        # ErrorBoundary, ErrorFallback (SP-304), NotFoundPage (SP-302), ServerErrorPage (SP-303), ForbiddenPage (SP-305)
 │   │   ├── charts/       # AreaChartWidget, BarChartWidget, PieChartWidget
 │   │   ├── cookies/      # CookieBanner, CookiePreferencesModal, CookieSettingsButton, CookieConsentProvider
-│   │   ├── providers/    # ThemeProvider (SP-265)
+│   │   ├── providers/    # ThemeProvider (SP-265), CommandPaletteProvider (SP-264)
 │   │   ├── dashboard/    # StatCard, TrendIndicator, StatsGrid
 │   │   ├── forms/        # FormField, FormInput, FormSelect...
 │   │   ├── layout/       # LandingHeader, LandingFooter (partagés)
 │   │   ├── loading/      # Spinner, Skeleton, LoadingOverlay
 │   │   ├── modals/       # ConfirmDialog, FormDialog
 │   │   ├── toast/        # Toast system (Sonner)
-│   │   └── ui/           # Shadcn + ThemeToggle, ThemeDropdown (SP-265), ProgressBar, ProgressCircle (SP-266)
+│   │   └── ui/           # Shadcn + ThemeToggle, ThemeDropdown (SP-265), ProgressBar, ProgressCircle (SP-266), CommandPalette (SP-264)
 │   ├── lib/              # Utilitaires et helpers
 │   │   ├── prisma.ts     # Client Prisma
 │   │   ├── auth.ts       # Configuration NextAuth
@@ -536,6 +578,8 @@ SmartplanningAI/
 │   │   │   ├── config.ts         # Configuration (durées, easings)
 │   │   │   ├── hooks/            # useReducedMotion, useScrollAnimation
 │   │   │   └── index.ts          # Export centralisé (motion + variants)
+│   │   ├── navigation/   # Navigation centralisée (SP-264)
+│   │   │   └── menu-items.ts     # Items navigation (Sidebar + CommandPalette)
 │   │   ├── actions/      # Server Actions
 │   │   │   ├── auth-actions.ts      # Actions authentification (inscription)
 │   │   │   ├── password-actions.ts  # Actions reset password (SP-298)
@@ -557,7 +601,8 @@ SmartplanningAI/
 │   │   ├── useUmamiTrack.ts      # Hook tracking analytics (SP-345)
 │   │   ├── useContactForm.ts     # Hook machine d'état contact (SP-289)
 │   │   ├── use-loading.ts        # Hook état chargement (SP-266)
-│   │   └── use-progress-loading.ts # Hook progression avec valeur (SP-266)
+│   │   ├── use-progress-loading.ts # Hook progression avec valeur (SP-266)
+│   │   └── use-keyboard-shortcuts.ts # Hook raccourcis clavier (SP-264)
 │   └── middleware.ts     # Middleware NextAuth (protection routes)
 ├── prisma/
 │   ├── schema.prisma     # Schéma de base de données
@@ -1072,11 +1117,11 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 - **E2E** : Playwright (configuré)
 - **Coverage** : v8 provider
 
-### Couverture actuelle (21 janvier 2026)
+### Couverture actuelle (22 janvier 2026)
 
 | Catégorie            | Coverage | Tests    |
 | -------------------- | -------- | -------- |
-| **Global**           | **~55%** | **2509** |
+| **Global**           | **~55%** | **2619** |
 | loading              | 100%     | 152      |
 | modals               | 100%     | 52       |
 | cards                | 77.09%   | 88       |
@@ -1098,6 +1143,7 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 | design tokens        | 100%     | 99       |
 | dark/light mode      | 100%     | 30       |
 | loading states (SP-266) | 100%  | 131      |
+| command palette (SP-264) | 100% | 55       |
 
 ### Tests E2E
 
@@ -1256,6 +1302,12 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 - useLoading (gestion état chargement avec minDuration, callbacks, withLoading wrapper)
 - useProgressLoading (progression 0-100% avec increment, auto-completion)
 - withLoading HOC (injection props isLoading + méthodes)
+
+#### Command Palette (3 modules - SP-264)
+
+- useKeyboardShortcuts (hook raccourcis clavier avec modifiers et séquences)
+- CommandPalette (composant cmdk avec navigation, actions, thème, RBAC)
+- CommandPaletteProvider (context React pour état global + raccourci Cmd+K)
 
 ### Scripts de test
 
