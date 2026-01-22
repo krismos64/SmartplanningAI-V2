@@ -5,6 +5,7 @@
  * Permet la navigation rapide, les actions et le changement de thème.
  *
  * @see SP-264 - Dashboard Layout V2
+ * @see SP-264 Phase 4 - Recent Pages
  * @see Context7 (cmdk documentation)
  *
  * @example
@@ -23,6 +24,8 @@ import * as React from 'react'
 import { useRouter } from 'next/navigation'
 import { Command } from 'cmdk'
 import { useTheme } from 'next-themes'
+import { Clock, type LucideIcon } from 'lucide-react'
+import * as LucideIcons from 'lucide-react'
 import {
   motion,
   FramerAnimatePresence as AnimatePresence,
@@ -39,6 +42,8 @@ import {
   themeItems,
   helpItems,
 } from '@/lib/navigation/menu-items'
+import { useRecentPages, type RecentPage } from '@/hooks/use-recent-pages'
+import { formatRelativeTime } from '@/lib/utils/format-relative-time'
 
 export interface CommandPaletteProps {
   /** État ouvert/fermé */
@@ -53,6 +58,15 @@ export interface CommandPaletteProps {
   className?: string
 }
 
+/**
+ * Récupère l'icône Lucide par son nom
+ */
+function getIconByName(iconName: string): LucideIcon {
+  // Cast explicite pour accéder aux icônes par nom
+  const icons = LucideIcons as unknown as Record<string, LucideIcon>
+  return icons[iconName] || Clock
+}
+
 export function CommandPalette({
   open,
   onOpenChange,
@@ -63,6 +77,9 @@ export function CommandPalette({
   const router = useRouter()
   const { setTheme, theme: currentTheme } = useTheme()
   const [search, setSearch] = React.useState('')
+
+  // Hook pour les pages récentes (SP-264 Phase 4)
+  const { recentPages, isLoading: recentPagesLoading } = useRecentPages()
 
   // Filtrer les items selon le rôle
   const navigationItems = React.useMemo(
@@ -86,6 +103,15 @@ export function CommandPalette({
   const handleNavigate = React.useCallback(
     (item: NavigationItem) => {
       router.push(item.href)
+      onOpenChange(false)
+    },
+    [router, onOpenChange]
+  )
+
+  // Handler pour les pages récentes (SP-264 Phase 4)
+  const handleRecentPageNavigate = React.useCallback(
+    (page: RecentPage) => {
+      router.push(page.path)
       onOpenChange(false)
     },
     [router, onOpenChange]
@@ -216,6 +242,36 @@ export function CommandPalette({
                   <Command.Empty className="flex h-16 items-center justify-center text-sm text-muted-foreground">
                     Aucun résultat trouvé.
                   </Command.Empty>
+
+                  {/* Recent Pages Group (SP-264 Phase 4) */}
+                  {!recentPagesLoading && recentPages.length > 0 && (
+                    <Command.Group
+                      heading={
+                        <span className="px-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                          Pages récentes
+                        </span>
+                      }
+                    >
+                      {recentPages.map((page) => {
+                        const IconComponent = page.icon
+                          ? getIconByName(page.icon)
+                          : Clock
+                        return (
+                          <CommandItem
+                            key={page.path}
+                            onSelect={() => handleRecentPageNavigate(page)}
+                            keywords={[page.title, 'récent', 'recent', 'visité']}
+                          >
+                            <IconComponent className="mr-3 h-4 w-4 text-muted-foreground" />
+                            <span className="flex-1">{page.title}</span>
+                            <span className="text-xs text-muted-foreground">
+                              {formatRelativeTime(page.visitedAt)}
+                            </span>
+                          </CommandItem>
+                        )
+                      })}
+                    </Command.Group>
+                  )}
 
                   {/* Navigation Group */}
                   {navigationItems.length > 0 && (

@@ -16,6 +16,7 @@ import {
 import { Header } from './Header'
 import { Sidebar } from './Sidebar'
 import { Footer } from './Footer'
+import { PageTracker } from './PageTracker'
 
 type UserRole = 'SYSTEM_ADMIN' | 'DIRECTOR' | 'MANAGER' | 'EMPLOYEE'
 
@@ -54,6 +55,9 @@ function DashboardLayoutContent({
       userRole={user.role}
       onShowShortcuts={openShortcutsModal}
     >
+      {/* Page Tracker - SP-264 Phase 4 */}
+      <PageTracker />
+
       <SidebarProvider defaultOpen={true}>
         <div className="flex min-h-screen w-full">
           {/* Sidebar */}
