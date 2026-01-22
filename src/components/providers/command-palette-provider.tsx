@@ -25,7 +25,7 @@ import { CommandPalette } from '@/components/ui/command-palette'
 import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts'
 import type { UserRole } from '@/lib/navigation/menu-items'
 
-interface CommandPaletteContextValue {
+export interface CommandPaletteContextValue {
   /** État ouvert/fermé de la palette */
   open: boolean
   /** Définir l'état ouvert/fermé */
