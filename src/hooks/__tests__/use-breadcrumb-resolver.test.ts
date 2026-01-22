@@ -237,27 +237,33 @@ describe('useBreadcrumbResolver', () => {
       const result = useBreadcrumbsFromPathname('/app/dashboard/employees')
 
       expect(result).toHaveLength(1)
-      expect(result[0].segment).toBe('employees')
-      expect(result[0].label).toBe('Employés')
-      expect(result[0].href).toBe('/app/dashboard/employees')
-      expect(result[0].isLast).toBe(true)
+      const firstSegment = result[0]
+      expect(firstSegment).toBeDefined()
+      expect(firstSegment?.segment).toBe('employees')
+      expect(firstSegment?.label).toBe('Employés')
+      expect(firstSegment?.href).toBe('/app/dashboard/employees')
+      expect(firstSegment?.isLast).toBe(true)
     })
 
     it('should handle multiple segments', () => {
       const result = useBreadcrumbsFromPathname('/app/dashboard/employees/123')
 
       expect(result).toHaveLength(2)
-      expect(result[0].label).toBe('Employés')
-      expect(result[0].isLast).toBe(false)
-      expect(result[1].segment).toBe('123')
-      expect(result[1].isLast).toBe(true)
+      const first = result[0]
+      const second = result[1]
+      expect(first).toBeDefined()
+      expect(second).toBeDefined()
+      expect(first?.label).toBe('Employés')
+      expect(first?.isLast).toBe(false)
+      expect(second?.segment).toBe('123')
+      expect(second?.isLast).toBe(true)
     })
 
     it('should filter out app and dashboard segments', () => {
       const result = useBreadcrumbsFromPathname('/app/dashboard/settings')
 
       expect(result).toHaveLength(1)
-      expect(result[0].segment).toBe('settings')
+      expect(result[0]?.segment).toBe('settings')
     })
 
     it('should use static labels for known segments', () => {
@@ -265,8 +271,8 @@ describe('useBreadcrumbResolver', () => {
         '/app/dashboard/super-admin/organizations'
       )
 
-      expect(result[0].label).toBe('Administration')
-      expect(result[1].label).toBe('Organisations')
+      expect(result[0]?.label).toBe('Administration')
+      expect(result[1]?.label).toBe('Organisations')
     })
   })
 })

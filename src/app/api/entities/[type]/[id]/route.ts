@@ -116,27 +116,22 @@ async function resolveScheduleName(id: string): Promise<string | null> {
   const schedule = await prisma.schedule.findUnique({
     where: { id },
     select: {
-      name: true,
-      date: true,
+      title: true,
+      startDate: true,
     },
   })
 
   if (!schedule) return null
 
-  // Utiliser le nom si présent, sinon formater la date
-  if (schedule.name) {
-    return String(schedule.name)
+  // Utiliser le titre si présent, sinon formater la date
+  if (schedule.title) {
+    return schedule.title
   }
 
-  // Convertir schedule.date en Date si nécessaire
-  // Prisma retourne Date mais TypeScript peut ne pas le savoir
-  const rawDate: unknown = schedule.date
-  const dateValue: Date =
-    rawDate instanceof Date ? rawDate : new Date(String(rawDate))
-
+  // Formater la date de début
   return new Intl.DateTimeFormat('fr-FR', {
     dateStyle: 'medium',
-  }).format(dateValue)
+  }).format(schedule.startDate)
 }
 
 /**
@@ -220,7 +215,7 @@ type RouteContext = {
  * @returns NextResponse avec le nom ou une erreur
  */
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   context: RouteContext
 ): Promise<NextResponse> {
   try {

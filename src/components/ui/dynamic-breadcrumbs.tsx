@@ -359,7 +359,8 @@ export function DynamicBreadcrumbs({
 
           {/* Segments dynamiques */}
           {segments.map((segment, index) => {
-            const previousSegment = index > 0 ? segments[index - 1] : null
+            const previousSegment: string | null =
+              index > 0 ? (segments[index - 1] ?? null) : null
             const href =
               '/app/dashboard/' + segments.slice(0, index + 1).join('/')
             const isLast = index === segments.length - 1
