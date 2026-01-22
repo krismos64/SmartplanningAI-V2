@@ -298,7 +298,9 @@ export function CommandPalette({
                     {helpItems.map((item) => (
                       <CommandItem
                         key={item.id}
-                        onSelect={() => handleHelp(item.action, onShowShortcuts)}
+                        onSelect={() =>
+                          handleHelp(item.action, onShowShortcuts)
+                        }
                         keywords={item.keywords}
                       >
                         <item.icon className="mr-3 h-4 w-4 text-muted-foreground" />

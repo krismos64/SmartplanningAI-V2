@@ -123,13 +123,7 @@ function formatKey(key: string, isMac: boolean): string {
 /**
  * Composant pour afficher une touche
  */
-function KeyBadge({
-  keyName,
-  isMac,
-}: {
-  keyName: string
-  isMac: boolean
-}) {
+function KeyBadge({ keyName, isMac }: { keyName: string; isMac: boolean }) {
   const formattedKey = formatKey(keyName, isMac)
 
   return (
@@ -393,8 +387,8 @@ export function KeyboardShortcutsModal({
                 {/* Footer */}
                 <div className="mt-6 flex items-center justify-between border-t border-border pt-4">
                   <p className="text-xs text-muted-foreground">
-                    Appuyez sur{' '}
-                    <KeyBadge keyName="escape" isMac={isMac} /> pour fermer
+                    Appuyez sur <KeyBadge keyName="escape" isMac={isMac} /> pour
+                    fermer
                   </p>
                   <p className="text-xs text-muted-foreground">
                     <KeyBadge keyName="?" isMac={isMac} /> pour réouvrir

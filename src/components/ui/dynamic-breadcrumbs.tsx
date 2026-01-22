@@ -17,7 +17,7 @@
 
 'use client'
 
-import { Fragment, useMemo } from 'react'
+import { Fragment, useMemo, useState, useEffect } from 'react'
 import Link from 'next/link'
 import { ChevronRight, Home } from 'lucide-react'
 import useSWR from 'swr'
@@ -312,10 +312,15 @@ export function DynamicBreadcrumbs({
       .filter((s) => s && s !== 'app' && s !== 'dashboard')
   }, [pathname])
 
-  // Construire les données structurées Schema.org
-  const schemaData = useMemo(() => {
-    const origin = typeof window !== 'undefined' ? window.location.origin : ''
-    return generateSchemaData(segments, homeLabel, homeHref, origin)
+  // État pour le schema (évite erreur d'hydratation)
+  const [schemaData, setSchemaData] = useState<ReturnType<
+    typeof generateSchemaData
+  > | null>(null)
+
+  // Générer le schema uniquement côté client après hydratation
+  useEffect(() => {
+    const origin = window.location.origin
+    setSchemaData(generateSchemaData(segments, homeLabel, homeHref, origin))
   }, [segments, homeLabel, homeHref])
 
   // Ne pas afficher si pas de segments
@@ -325,12 +330,14 @@ export function DynamicBreadcrumbs({
 
   return (
     <>
-      {/* Schema.org pour SEO */}
-      <script
-        type="application/ld+json"
-        // eslint-disable-next-line react/no-danger
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaData) }}
-      />
+      {/* Schema.org pour SEO - rendu uniquement côté client */}
+      {schemaData && (
+        <script
+          type="application/ld+json"
+          // eslint-disable-next-line react/no-danger
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaData) }}
+        />
+      )}
 
       {/* Breadcrumbs visuels */}
       <Breadcrumb

@@ -172,8 +172,9 @@ describe('DynamicBreadcrumbs', () => {
     it('should have aria-label on nav element', () => {
       render(<DynamicBreadcrumbs pathname="/app/dashboard/employees" />)
 
+      // Le composant Breadcrumb de shadcn/ui utilise aria-label="breadcrumb" par défaut
       expect(
-        screen.getByRole('navigation', { name: /fil d'ariane/i })
+        screen.getByRole('navigation', { name: /breadcrumb/i })
       ).toBeInTheDocument()
     })
 

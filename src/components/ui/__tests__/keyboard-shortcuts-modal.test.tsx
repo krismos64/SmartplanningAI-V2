@@ -94,9 +94,7 @@ describe('KeyboardShortcutsModal', () => {
         />
       )
 
-      expect(
-        screen.getByTestId('keyboard-shortcuts-modal')
-      ).toBeInTheDocument()
+      expect(screen.getByTestId('keyboard-shortcuts-modal')).toBeInTheDocument()
     })
 
     it('should display modal title', () => {
