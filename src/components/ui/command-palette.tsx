@@ -47,6 +47,8 @@ export interface CommandPaletteProps {
   onOpenChange: (open: boolean) => void
   /** Rôle de l'utilisateur pour le filtrage RBAC */
   userRole: UserRole
+  /** Callback pour ouvrir la modal de raccourcis clavier (SP-264 Phase 3) */
+  onShowShortcuts?: () => void
   /** Classes CSS additionnelles */
   className?: string
 }
@@ -55,6 +57,7 @@ export function CommandPalette({
   open,
   onOpenChange,
   userRole,
+  onShowShortcuts,
   className,
 }: CommandPaletteProps) {
   const router = useRouter()
@@ -118,10 +121,11 @@ export function CommandPalette({
   )
 
   const handleHelp = React.useCallback(
-    (action: string) => {
+    (action: string, onShowShortcuts?: () => void) => {
       switch (action) {
         case 'show-shortcuts':
-          // TODO: Ouvrir modal de raccourcis (SP-264 Phase 2)
+          // SP-264 Phase 3 - Ouvrir la modal de raccourcis
+          onShowShortcuts?.()
           break
         case 'open-docs':
           window.open('/docs', '_blank')
@@ -294,7 +298,7 @@ export function CommandPalette({
                     {helpItems.map((item) => (
                       <CommandItem
                         key={item.id}
-                        onSelect={() => handleHelp(item.action)}
+                        onSelect={() => handleHelp(item.action, onShowShortcuts)}
                         keywords={item.keywords}
                       >
                         <item.icon className="mr-3 h-4 w-4 text-muted-foreground" />
