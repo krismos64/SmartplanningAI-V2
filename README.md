@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 22 janvier 2026 (Sprint 9 - Command Palette Cmd+K + Loading States + Dark/Light Mode)
+- **Dernière mise à jour** : 22 janvier 2026 (Sprint 9 - Dynamic Breadcrumbs SP-264)
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -389,6 +389,46 @@ import { useKeyboardShortcuts, useKeyboardShortcut } from '@/hooks'
 
 // Provider et hook command palette
 import { CommandPaletteProvider, useCommandPalette } from '@/components/providers'
+```
+
+### Dynamic Breadcrumbs (SP-264 - 22 janvier 2026)
+
+Fil d'Ariane dynamique avec résolution automatique des IDs vers des noms lisibles :
+
+- **DynamicBreadcrumbs** : Composant principal avec résolution API
+  - Détection automatique des IDs (UUID, CUID, numeric 3+ digits)
+  - Skeleton loading pendant la résolution
+  - Schema.org BreadcrumbList pour SEO
+  - Accessibilité ARIA complète
+  - Support thème dark/light
+
+- **API Route** : `/api/entities/[type]/[id]`
+  - Types supportés : employees, teams, companies, schedules, leave-requests
+  - Validation des formats d'ID (UUID, CUID, numeric)
+  - Requêtes Prisma optimisées avec select minimal
+  - Cache HTTP (s-maxage=60, stale-while-revalidate=300)
+
+- **useBreadcrumbResolver** : Hook avec SWR
+  - Cache SWR avec déduplication (60s)
+  - États loading/error/success
+  - Fonctions utilitaires : `isIdSegment()`, `getEntityTypeFromPreviousSegment()`
+
+- **Mapping segments** :
+  - `employees`, `employee` → Employés
+  - `teams`, `team` → Équipes
+  - `companies`, `organizations` → Entreprises
+  - `schedules`, `planning` → Plannings
+  - `leaves`, `leave-requests`, `conges` → Demandes de congés
+
+- **Tests** : 43 tests unitaires (8 API + 12 hook + 23 component)
+
+**Import** :
+```typescript
+// Composant breadcrumbs
+import { DynamicBreadcrumbs } from '@/components/ui/dynamic-breadcrumbs'
+
+// Hook et utilitaires
+import { useBreadcrumbResolver, isIdSegment, getEntityTypeFromPreviousSegment } from '@/hooks'
 ```
 
 ### Loading States avancés (SP-266 - 21 janvier 2026)
