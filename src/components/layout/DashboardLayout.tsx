@@ -2,20 +2,11 @@
 
 import { Suspense } from 'react'
 import { usePathname } from 'next/navigation'
-import Link from 'next/link'
-import { ChevronRight } from 'lucide-react'
 
 import { SidebarProvider } from '@/components/ui/sidebar'
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from '@/components/ui/breadcrumb'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { DynamicBreadcrumbs } from '@/components/ui/dynamic-breadcrumbs'
 import { CommandPaletteProvider } from '@/components/providers/command-palette-provider'
 
 import { Header } from './Header'
@@ -60,8 +51,8 @@ export function DashboardLayout({
             <main className="flex-1">
               <ScrollArea className="h-[calc(100vh-4rem-3.5rem)]">
                 <div className="container mx-auto p-6">
-                  {/* Breadcrumbs */}
-                  <Breadcrumbs pathname={pathname} />
+                  {/* Dynamic Breadcrumbs - SP-264 */}
+                  <DynamicBreadcrumbs pathname={pathname} />
 
                   {/* Page content with Suspense boundary */}
                   <Suspense
@@ -86,81 +77,4 @@ export function DashboardLayout({
       </SidebarProvider>
     </CommandPaletteProvider>
   )
-}
-
-interface BreadcrumbsProps {
-  pathname: string
-}
-
-function Breadcrumbs({ pathname }: BreadcrumbsProps) {
-  const pathSegments = pathname
-    .split('/')
-    .filter((segment) => segment)
-    .filter((segment) => segment !== 'dashboard')
-
-  if (pathSegments.length === 0) {
-    return null
-  }
-
-  const breadcrumbs = pathSegments.map((segment, index) => {
-    const href = `/${pathSegments.slice(0, index + 1).join('/')}`
-    const label = formatBreadcrumbLabel(segment)
-    const isLast = index === pathSegments.length - 1
-
-    return {
-      href,
-      label,
-      isLast,
-    }
-  })
-
-  return (
-    <Breadcrumb className="mb-6">
-      <BreadcrumbList>
-        <BreadcrumbItem>
-          <BreadcrumbLink asChild>
-            <Link href="/app/dashboard">Accueil</Link>
-          </BreadcrumbLink>
-        </BreadcrumbItem>
-        {breadcrumbs.map((breadcrumb) => (
-          <div key={breadcrumb.href} className="flex items-center gap-2">
-            <BreadcrumbSeparator>
-              <ChevronRight className="h-4 w-4" />
-            </BreadcrumbSeparator>
-            <BreadcrumbItem>
-              {breadcrumb.isLast ? (
-                <BreadcrumbPage>{breadcrumb.label}</BreadcrumbPage>
-              ) : (
-                <BreadcrumbLink asChild>
-                  <Link href={breadcrumb.href}>{breadcrumb.label}</Link>
-                </BreadcrumbLink>
-              )}
-            </BreadcrumbItem>
-          </div>
-        ))}
-      </BreadcrumbList>
-    </Breadcrumb>
-  )
-}
-
-function formatBreadcrumbLabel(segment: string): string {
-  // Convertir les segments d'URL en labels lisibles
-  const labelMap: Record<string, string> = {
-    'super-admin': 'Administration',
-    organizations: 'Organisations',
-    monitoring: 'Monitoring',
-    logs: 'Logs',
-    team: 'Équipe',
-    schedules: 'Plannings',
-    leaves: 'Congés',
-    tasks: 'Tâches',
-    stats: 'Statistiques',
-    incidents: 'Incidents',
-    'ai-planning': 'IA Planning',
-    settings: 'Paramètres',
-    profile: 'Profil',
-    notifications: 'Notifications',
-  }
-
-  return labelMap[segment] || segment.charAt(0).toUpperCase() + segment.slice(1)
 }

@@ -2,7 +2,7 @@
  * Barrel export pour tous les hooks personnalisés
  * Import unique : import { useCrudMutation, useMediaQuery, useLoading } from '@/hooks'
  *
- * @ticket SP-150, SP-266
+ * @ticket SP-150, SP-266, SP-264
  */
 
 // Media query hook
@@ -40,3 +40,14 @@ export {
   type ShortcutOptions,
   type UseKeyboardShortcutsOptions,
 } from './use-keyboard-shortcuts'
+
+// Breadcrumb resolver hooks (SP-264)
+export {
+  useBreadcrumbResolver,
+  useBreadcrumbsFromPathname,
+  isIdSegment,
+  getEntityTypeFromPreviousSegment,
+  type UseBreadcrumbResolverOptions,
+  type UseBreadcrumbResolverResult,
+  type ResolvedBreadcrumbSegment,
+} from './use-breadcrumb-resolver'
