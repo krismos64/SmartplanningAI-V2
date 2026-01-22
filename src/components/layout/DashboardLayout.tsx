@@ -8,6 +8,10 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { DynamicBreadcrumbs } from '@/components/ui/dynamic-breadcrumbs'
 import { CommandPaletteProvider } from '@/components/providers/command-palette-provider'
+import {
+  KeyboardShortcutsProvider,
+  useKeyboardShortcutsContext,
+} from '@/providers/keyboard-shortcuts-provider'
 
 import { Header } from './Header'
 import { Sidebar } from './Sidebar'
@@ -28,15 +32,28 @@ interface DashboardLayoutProps {
   notificationsCount?: number
 }
 
-export function DashboardLayout({
+/**
+ * Composant interne qui connecte CommandPalette au contexte des raccourcis
+ * Nécessaire car CommandPaletteProvider doit être enfant de KeyboardShortcutsProvider
+ */
+function DashboardLayoutContent({
   children,
   user,
-  notificationsCount = 0,
-}: DashboardLayoutProps) {
-  const pathname = usePathname()
+  notificationsCount,
+  pathname,
+}: {
+  children: React.ReactNode
+  user: DashboardLayoutProps['user']
+  notificationsCount: number
+  pathname: string
+}) {
+  const { openShortcutsModal } = useKeyboardShortcutsContext()
 
   return (
-    <CommandPaletteProvider userRole={user.role}>
+    <CommandPaletteProvider
+      userRole={user.role}
+      onShowShortcuts={openShortcutsModal}
+    >
       <SidebarProvider defaultOpen={true}>
         <div className="flex min-h-screen w-full">
           {/* Sidebar */}
@@ -76,5 +93,25 @@ export function DashboardLayout({
         </div>
       </SidebarProvider>
     </CommandPaletteProvider>
+  )
+}
+
+export function DashboardLayout({
+  children,
+  user,
+  notificationsCount = 0,
+}: DashboardLayoutProps) {
+  const pathname = usePathname()
+
+  return (
+    <KeyboardShortcutsProvider>
+      <DashboardLayoutContent
+        user={user}
+        notificationsCount={notificationsCount}
+        pathname={pathname}
+      >
+        {children}
+      </DashboardLayoutContent>
+    </KeyboardShortcutsProvider>
   )
 }

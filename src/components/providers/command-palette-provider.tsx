@@ -5,6 +5,7 @@
  * Permet d'ouvrir/fermer la palette depuis n'importe où dans l'app.
  *
  * @see SP-264 - Dashboard Layout V2
+ * @see SP-264 Phase 3 - Keyboard Shortcuts Modal integration
  *
  * @example
  * ```tsx
@@ -58,6 +59,8 @@ export interface CommandPaletteProviderProps {
   children: React.ReactNode
   /** Rôle de l'utilisateur pour le filtrage RBAC */
   userRole: UserRole
+  /** Callback pour ouvrir la modal de raccourcis (SP-264 Phase 3) */
+  onShowShortcuts?: () => void
 }
 
 /**
@@ -67,6 +70,7 @@ export interface CommandPaletteProviderProps {
 export function CommandPaletteProvider({
   children,
   userRole,
+  onShowShortcuts,
 }: CommandPaletteProviderProps) {
   const [open, setOpen] = React.useState(false)
 
@@ -91,7 +95,12 @@ export function CommandPaletteProvider({
   return (
     <CommandPaletteContext.Provider value={value}>
       {children}
-      <CommandPalette open={open} onOpenChange={setOpen} userRole={userRole} />
+      <CommandPalette
+        open={open}
+        onOpenChange={setOpen}
+        userRole={userRole}
+        onShowShortcuts={onShowShortcuts}
+      />
     </CommandPaletteContext.Provider>
   )
 }
