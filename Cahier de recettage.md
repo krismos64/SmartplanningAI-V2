@@ -34,7 +34,7 @@ Dans le cadre du diplôme **CDA (Concepteur Développeur d'Applications)**, ce c
 | Métrique | Objectif | Atteint |
 |----------|----------|---------|
 | Couverture globale | ≥ 70% | ✅ 85% |
-| Tests unitaires | ≥ 500 | ✅ 2750 |
+| Tests unitaires | ≥ 500 | ✅ 2881 |
 | Tests E2E | ≥ 50 | ✅ 326 |
 | Anomalies critiques | 0 en prod | ✅ 0 |
 
@@ -370,6 +370,7 @@ Ce tableau recense chaque campagne de tests significative (mise en production, f
 
 | Date | Sprint | Version/Commit | Tests unitaires | Tests E2E | Couverture | Statut | Notes |
 |------|--------|----------------|-----------------|-----------|------------|--------|-------|
+| 23/01/2026 | Sprint 11 | SP-268 Phase 3 | 2881/2881 ✅ | 326/326 ✅ | ~85% | ✅ PASS | 🆕 SP-268 Phase 3 Mobile UI Components. +110 tests unitaires (SP-385: 31, SP-386: 32, SP-387: 22, SP-388: 25). TouchableButton, MobileFormField, DataTablePagination, ResponsiveBreadcrumb. WCAG 2.5.5 touch targets 44px, iOS zoom prevention, scroll-snap. Total : 3207 tests |
 | 23/01/2026 | Sprint 11 | SP-383/384 | 2771/2771 ✅ | 326/326 ✅ | ~85% | ✅ PASS | 🆕 SP-383/SP-384 Navigation Mobile Phase 2. +21 tests unitaires SwipeableDrawer. Framer Motion gestures, swipe to close, iOS safe-area, prefers-reduced-motion. Total : 3097 tests |
 | 23/01/2026 | Sprint 11 | Hotfix | 2750/2750 ✅ | 326/326 ✅ | ~85% | ✅ PASS | 🔧 Suppression test E2E flaky "click overlay to close" Command Palette. Le z-index du dialog cmdk intercepte les pointer events. Comportement déjà couvert par test Escape. Total : 3076 tests |
 | 23/01/2026 | Sprint 11 | SP-264 | 2750/2750 ✅ | 327/327 ✅ | ~85% | ✅ PASS | 🆕 SP-264 Dashboard Layout V2. +133 tests unitaires, +30 tests E2E (163 total). Command Palette (⌘K), Dynamic Breadcrumbs, Keyboard Shortcuts Modal (?), Recent Pages (localStorage). Tests E2E temporairement skip (routes /schedules, /leaves non implémentées). Total : 3077 tests 🎉 |
@@ -406,6 +407,205 @@ Ce tableau recense chaque campagne de tests significative (mise en production, f
 | 09/12/2025 | Sprint 5 | SP-141 | 570/570 ✅ | 59/59 ✅ | ~85% | ✅ PASS | SP-141 Tests E2E Auth. +18 tests Playwright login/register |
 | 05/12/2025 | Sprint 4 | SP-126 | 474/474 ✅ | 12/12 ✅ | 83.83% | ✅ PASS | SP-126 Tests unitaires UI. 6 catégories |
 | 04/12/2025 | Sprint 4 | SP-125 | 15/15 ✅ | 12/12 ✅ | ~70% | ✅ PASS | Setup initial. Vitest + RTL + Playwright + MSW |
+
+---
+
+## Détail des tests Sprint 11 - Mobile UI Components (SP-268 Phase 3) 🆕
+
+### SP-268 Phase 3 : Mobile UI Component Adaptations (110 tests)
+
+**Objectif** : Adapter les composants UI pour une expérience mobile optimale avec zones tactiles 44px (WCAG 2.5.5), prévention du zoom iOS et scroll horizontal snap.
+
+| Composant | Tests unitaires | Tests E2E | Total |
+|-----------|-----------------|-----------|-------|
+| SP-385 TouchableButton | 31 | 0 | 31 |
+| SP-386 MobileFormField | 32 | 0 | 32 |
+| SP-387 DataTablePagination | 22 | 0 | 22 |
+| SP-388 ResponsiveBreadcrumb | 25 | 0 | 25 |
+| **Total** | **110** | **0** | **110** |
+
+**Fichiers de test unitaires** :
+
+| Fichier | Nb tests | Description |
+|---------|----------|-------------|
+| `src/components/ui/__tests__/touchable-button.test.tsx` | 31 | Touch targets 44px, CVA variants, useIsMobile hook |
+| `src/components/ui/__tests__/mobile-form-field.test.tsx` | 32 | iOS zoom prevention (font-size 16px), Visual Viewport API |
+| `src/components/ui/data-table/__tests__/data-table-pagination.test.tsx` | 22 | Layout responsive, page size mobile, navigation |
+| `src/components/ui/__tests__/responsive-breadcrumb.test.tsx` | 25 | Scroll horizontal, fade indicators, snap-to-item |
+
+---
+
+### SP-385 : TouchableButton - Zones tactiles adaptatives (31 tests)
+
+**Objectif** : Créer un wrapper Button intelligent avec zones tactiles 44px sur mobile (WCAG 2.5.5 AAA).
+
+**Tests couverts** :
+
+| Catégorie | Nb tests | Description |
+|-----------|----------|-------------|
+| Basic Rendering | 4 | Rendu sans erreur, props passées, ref forwarding |
+| Touch Size Mapping | 6 | Mapping default→touch, sm→touch-sm, lg→touch-lg, icon→touch-icon |
+| Desktop Behavior | 4 | Tailles standard sur desktop (pas de touch) |
+| Mobile Behavior | 5 | Tailles tactiles automatiques sur mobile |
+| Force Touch Mode | 4 | Prop forceTouchMode pour forcer 44px |
+| Active Feedback | 4 | Classes active:scale-95 active:opacity-90 |
+| CVA Variants | 4 | Intégration buttonVariants touch-* |
+
+**Fichiers créés/modifiés** :
+
+| Fichier | Description |
+|---------|-------------|
+| `src/components/ui/button.tsx` | +buttonVariants touch-*, +TouchableButton, +useIsMobile hook |
+| `src/components/ui/__tests__/touchable-button.test.tsx` | 31 tests unitaires |
+
+**Architecture TouchableButton** :
+
+```
+TouchableButton (Client Component)
+├── Props
+│   ├── ...ButtonProps (variant, size, etc.)
+│   └── forceTouchMode?: boolean
+├── Hooks
+│   └── useIsMobile() → matchMedia (max-width: 767px)
+├── Size Mapping
+│   ├── default → touch (h-11 min-h-[44px])
+│   ├── sm → touch-sm (h-11 min-h-[44px])
+│   ├── lg → touch-lg (h-12 min-h-[48px])
+│   └── icon → touch-icon (h-11 w-11 min-h-[44px])
+└── Active Feedback
+    └── active:scale-95 active:opacity-90 (mobile)
+```
+
+---
+
+### SP-386 : MobileFormField - Prévention zoom iOS (32 tests)
+
+**Objectif** : Wrapper pour inputs avec font-size ≥ 16px évitant l'auto-zoom iOS.
+
+**Tests couverts** :
+
+| Catégorie | Nb tests | Description |
+|-----------|----------|-------------|
+| Basic Rendering | 4 | Rendu input, label, description |
+| iOS Zoom Prevention | 6 | font-size 16px, Visual Viewport API |
+| Desktop Behavior | 4 | Styles standard sans modification |
+| Mobile Behavior | 6 | Classes adaptatives, touch targets |
+| Error States | 4 | Affichage erreurs, aria-invalid |
+| Accessibility | 4 | Labels, aria-describedby, focus visible |
+| Variants | 4 | Input, textarea, select variants |
+
+**Fichiers créés** :
+
+| Fichier | Description |
+|---------|-------------|
+| `src/components/ui/mobile-form-field.tsx` | Composant wrapper (~150 lignes) |
+| `src/components/ui/__tests__/mobile-form-field.test.tsx` | 32 tests unitaires |
+
+**Caractéristiques iOS** :
+
+| Feature | Valeur | Raison |
+|---------|--------|--------|
+| font-size | ≥ 16px | Évite auto-zoom iOS Safari |
+| min-height | 44px | WCAG 2.5.5 touch target |
+| padding | Augmenté | Zone tactile confortable |
+| Visual Viewport API | Détection clavier | Ajustement viewport |
+
+---
+
+### SP-387 : DataTablePagination - Layout responsive (22 tests)
+
+**Objectif** : Pagination adaptive avec layout compact sur mobile et complet sur desktop.
+
+**Tests couverts** :
+
+| Catégorie | Nb tests | Description |
+|-----------|----------|-------------|
+| Basic Rendering | 3 | Contrôles pagination, prev/next, page info |
+| Desktop Layout | 3 | First/last buttons, full text, flex-row |
+| Mobile Layout | 5 | Compact "3/5", flex-col, hidden first/last |
+| Touch Targets | 2 | Boutons 44px, select trigger 44px |
+| Navigation | 4 | previousPage, nextPage, setPageIndex |
+| Disabled States | 4 | Boutons disabled sur first/last page |
+| Accessibility | 1 | aria-labels navigation |
+
+**Fichiers modifiés** :
+
+| Fichier | Description |
+|---------|-------------|
+| `src/components/ui/data-table/data-table-pagination.tsx` | Layout responsive (~200 lignes) |
+| `src/components/ui/data-table/__tests__/data-table-pagination.test.tsx` | 22 tests unitaires |
+
+**Layout comparaison** :
+
+| Feature | Desktop | Mobile |
+|---------|---------|--------|
+| First/Last buttons | ✅ Visible | ❌ Masqués |
+| Page info | "Page 3 sur 5" | "3/5" |
+| Total rows | "45 ligne(s) au total" | "45 résultat(s)" |
+| Page size label | "Lignes par page" | "Par page" |
+| Page size options | 10, 20, 50, 100 | 10, 25, 50 |
+| Layout | flex-row | flex-col |
+| Touch targets | Standard | 44px minimum |
+
+---
+
+### SP-388 : ResponsiveBreadcrumb - Scroll horizontal mobile (25 tests)
+
+**Objectif** : Breadcrumb avec scroll horizontal et snap-to-item sur mobile.
+
+**Tests couverts** :
+
+| Catégorie | Nb tests | Description |
+|-----------|----------|-------------|
+| Basic Rendering | 3 | Rendu items, separators |
+| Desktop Behavior | 4 | Layout standard, flex-wrap |
+| Mobile Scroll | 6 | overflow-x-auto, scroll-to-end, touch-pan-x |
+| Snap Behavior | 4 | snap-x snap-mandatory, snap-center items |
+| Fade Indicators | 5 | Left/right fade, visibility on scroll |
+| Accessibility | 3 | aria-hidden fades, navigation role |
+
+**Fichiers modifiés** :
+
+| Fichier | Description |
+|---------|-------------|
+| `src/components/ui/breadcrumb.tsx` | +ResponsiveBreadcrumb (~150 lignes) |
+| `src/components/ui/__tests__/responsive-breadcrumb.test.tsx` | 25 tests unitaires |
+
+**Architecture ResponsiveBreadcrumb** :
+
+```
+ResponsiveBreadcrumb (Client Component)
+├── Props
+│   ├── children: React.ReactNode
+│   ├── separator?: React.ReactNode
+│   ├── showFadeEdges?: boolean (default: true)
+│   └── className?: string
+├── Hooks
+│   └── useIsMobile() → matchMedia (max-width: 767px)
+├── Desktop
+│   └── Standard Breadcrumb + BreadcrumbList
+└── Mobile
+    ├── Scroll Container (overflow-x-auto)
+    │   ├── scrollbar-none (hidden)
+    │   ├── touch-pan-x (horizontal touch)
+    │   └── scroll-to-end (current page visible)
+    ├── BreadcrumbList
+    │   ├── flex-nowrap
+    │   ├── snap-x snap-mandatory
+    │   └── Items avec snap-center shrink-0
+    └── Fade Indicators (conditional)
+        ├── Left fade (bg-gradient-to-r)
+        └── Right fade (bg-gradient-to-l)
+```
+
+**CSS Scroll Snap** :
+
+| Property | Value | Description |
+|----------|-------|-------------|
+| snap-x | scroll-snap-type: x | Snap horizontal |
+| snap-mandatory | mandatory | Force snap |
+| snap-center | scroll-snap-align: center | Centre l'item |
+| touch-pan-x | touch-action: pan-x | Geste horizontal |
 
 ---
 
@@ -1154,8 +1354,9 @@ not-found.tsx (Server Component)
 | 23/01/2026 (SP-264) | 2750 | 327 | 3077 | ~85% | 📈 +163 |
 | 23/01/2026 (Hotfix) | 2750 | 326 | 3076 | ~85% | 🔧 -1 |
 | 23/01/2026 (SP-383/384) | 2771 | 326 | 3097 | ~85% | 📈 +21 |
+| 23/01/2026 (SP-268 Phase 3) | 2881 | 326 | 3207 | ~85% | 📈 +110 |
 
-**Graphique d'évolution** : De 27 tests (04/12) à 3097 tests (23/01) = **+11370% de croissance** 🚀
+**Graphique d'évolution** : De 27 tests (04/12) à 3207 tests (23/01) = **+11778% de croissance** 🚀
 
 ---
 
@@ -1165,11 +1366,11 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
 
 | N° | Compétence | Preuve |
 |----|------------|--------|
-| 1 | Tester les composants d'une application | 2771 tests unitaires documentés |
+| 1 | Tester les composants d'une application | 2881 tests unitaires documentés |
 | 2 | Contribuer à la qualité du code | Couverture 85%, anomalies tracées |
 | 3 | Documenter les procédures | Procédure de recette formalisée |
 | 4 | Utiliser une méthodologie | Approche structurée par sprints |
-| 5 | Développer des tests automatisés | 3097 tests (unitaires + E2E) |
+| 5 | Développer des tests automatisés | 3207 tests (unitaires + E2E) |
 | 6 | Sécuriser une application | Tests RBAC (62 unitaires, 27 E2E), rate limiting, protection énumération |
 | 7 | Concevoir une architecture logicielle | Pattern ServiceResult<T>, multi-tenant |
 | 8 | Développer des composants métier | 4 dashboards par rôle |
@@ -1205,6 +1406,10 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
 | 38 | Implémenter un tracking des pages récentes | localStorage, déduplication, limite FIFO, intégration Command Palette (SP-264) 🆕 |
 | 39 | Développer des gestes tactiles natifs pour mobile | SwipeableDrawer avec Framer Motion drag gestures, velocity/threshold detection (SP-383) 🆕 |
 | 40 | Intégrer des composants mobiles avec feature flags | SwipeableDrawer dans Sidebar avec rollback possible, iOS safe-area (SP-384) 🆕 |
+| 41 | Implémenter les normes WCAG 2.5.5 Target Size | TouchableButton avec zones tactiles 44px minimum, CVA variants touch-* (SP-385) 🆕 |
+| 42 | Développer des formulaires optimisés iOS | MobileFormField avec font-size ≥16px évitant l'auto-zoom Safari, Visual Viewport API (SP-386) 🆕 |
+| 43 | Concevoir des layouts responsive adaptatifs | DataTablePagination avec layout compact mobile, full desktop, touch targets (SP-387) 🆕 |
+| 44 | Implémenter CSS scroll-snap pour UX mobile | ResponsiveBreadcrumb avec scroll horizontal, snap-to-item, fade indicators (SP-388) 🆕 |
 
 ---
 
@@ -1244,6 +1449,7 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
 
 | Date | Modification |
 |------|--------------|
+| 23/01/2026 | 🆕 SP-268 Phase 3 Mobile UI Components : +110 tests unitaires (SP-385: 31, SP-386: 32, SP-387: 22, SP-388: 25). TouchableButton (WCAG 2.5.5 touch targets 44px), MobileFormField (iOS zoom prevention), DataTablePagination (responsive layout), ResponsiveBreadcrumb (scroll-snap). Compétences CDA #41-44 ajoutées. Total : 3207 tests |
 | 23/01/2026 | 🆕 SP-383/SP-384 Navigation Mobile Phase 2 : +21 tests unitaires SwipeableDrawer. Gestes tactiles Framer Motion (swipe to close), velocity/threshold detection, iOS safe-area, prefers-reduced-motion. Sidebar refactorisé avec feature flag. Compétences CDA #39-40 ajoutées. Total : 3097 tests |
 | 23/01/2026 | 🔧 Hotfix : Suppression test E2E flaky "click overlay to close" Command Palette (ANO-019). Le z-index du dialog cmdk intercepte les pointer events. Comportement couvert par test Escape. Total : 3076 tests (-1) |
 | 23/01/2026 | 🆕 SP-264 Dashboard Layout V2 : +133 tests unitaires, +30 tests E2E (163 total). Command Palette (cmdk), Dynamic Breadcrumbs, Keyboard Shortcuts Modal, Recent Pages (localStorage). Compétences CDA #36-38 ajoutées. Total : 3077 tests 🎉 |
@@ -1281,7 +1487,13 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
 
 ## Documents liés
 
-### Sprint 11 - Navigation Mobile 🆕
+### Sprint 11 - Mobile UI Components (SP-268 Phase 3) 🆕
+- SP-385 : TouchableButton - WCAG 2.5.5 touch targets 44px ✅ TERMINÉ
+- SP-386 : MobileFormField - iOS zoom prevention ✅ TERMINÉ
+- SP-387 : DataTablePagination - Responsive layout ✅ TERMINÉ
+- SP-388 : ResponsiveBreadcrumb - Scroll-snap mobile ✅ TERMINÉ
+
+### Sprint 11 - Navigation Mobile Phase 2
 - SP-383 : SwipeableDrawer avec Framer Motion gestures ✅ TERMINÉ
 - SP-384 : Refactorisation Sidebar pour gestes swipe ✅ TERMINÉ
 - PR : https://github.com/krismos64/SmartplanningAI-V2/pull/7
