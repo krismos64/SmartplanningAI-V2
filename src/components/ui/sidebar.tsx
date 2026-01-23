@@ -1,5 +1,18 @@
 'use client'
 
+/**
+ * Sidebar Component - Navigation principale avec support mobile
+ *
+ * ✅ Source : Context7 - Framer Motion + Shadcn/ui patterns
+ *
+ * MODIFICATIONS SP-384 :
+ * - Intégration SwipeableDrawer pour mobile (swipe to close)
+ * - Conserve Sheet comme fallback si SwipeableDrawer n'est pas disponible
+ * - Desktop : comportement inchangé
+ *
+ * @ticket SP-384
+ */
+
 import * as React from 'react'
 import { Slot } from '@radix-ui/react-slot'
 import { cva, type VariantProps } from 'class-variance-authority'
@@ -15,6 +28,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet'
+import { SwipeableDrawer } from '@/components/mobile'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
   Tooltip,
@@ -23,6 +37,9 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { ViewVerticalIcon } from '@radix-ui/react-icons'
+
+// Feature flag pour activer SwipeableDrawer sur mobile
+const USE_SWIPEABLE_DRAWER = true
 
 const SIDEBAR_COOKIE_NAME = 'sidebar_state'
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
@@ -198,6 +215,35 @@ const Sidebar = React.forwardRef<
     }
 
     if (isMobile) {
+      // SP-384: Utiliser SwipeableDrawer pour une meilleure UX tactile mobile
+      if (USE_SWIPEABLE_DRAWER) {
+        return (
+          <SwipeableDrawer
+            open={openMobile}
+            onClose={() => setOpenMobile(false)}
+            onOpen={() => setOpenMobile(true)}
+            side={side}
+            width={parseInt(SIDEBAR_WIDTH_MOBILE)}
+            swipeToClose={true}
+            swipeThreshold={100}
+            velocityThreshold={500}
+            showCloseButton={true}
+            ariaLabel="Navigation principale"
+            className="bg-sidebar text-sidebar-foreground"
+            {...props}
+          >
+            <div
+              data-sidebar="sidebar"
+              data-mobile="true"
+              className="flex h-full w-full flex-col"
+            >
+              {children}
+            </div>
+          </SwipeableDrawer>
+        )
+      }
+
+      // Fallback: Sheet de Radix (comportement original)
       return (
         <Sheet open={openMobile} onOpenChange={setOpenMobile} {...props}>
           <SheetContent
