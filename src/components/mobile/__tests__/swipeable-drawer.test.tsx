@@ -42,7 +42,7 @@ interface MockMotionDivProps {
   'data-testid'?: string
   'data-side'?: string
   role?: string
-  'aria-modal'?: string
+  'aria-modal'?: boolean | 'true' | 'false'
   'aria-label'?: string
   style?: React.CSSProperties
   [key: string]: unknown
@@ -72,7 +72,9 @@ vi.mock('framer-motion', () => ({
           data-testid={dataTestId}
           data-side={dataSide}
           role={role}
-          aria-modal={ariaModal}
+          aria-modal={
+            ariaModal === true || ariaModal === 'true' ? true : undefined
+          }
           aria-label={ariaLabel}
           style={style}
         >
