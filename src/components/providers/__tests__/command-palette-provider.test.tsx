@@ -10,8 +10,27 @@ import { render, screen, fireEvent } from '@testing-library/react'
 import '@testing-library/jest-dom'
 import React from 'react'
 
+// Mock matchMedia for useIsMobile hook (SP-268 Phase 3)
+const mockMatchMedia = (matches: boolean) => {
+  Object.defineProperty(window, 'matchMedia', {
+    writable: true,
+    value: vi.fn().mockImplementation((query: string) => ({
+      matches,
+      media: query,
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    })),
+  })
+}
+
 // Mock scrollIntoView for cmdk (not available in jsdom)
 beforeAll(() => {
+  // Default to desktop mode for tests
+  mockMatchMedia(false)
   Element.prototype.scrollIntoView = vi.fn()
 })
 
