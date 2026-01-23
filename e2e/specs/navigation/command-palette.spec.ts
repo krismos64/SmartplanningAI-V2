@@ -72,7 +72,7 @@ test.describe('Command Palette', () => {
       await expect(input).toBeVisible({ timeout: 5000 })
 
       // Cliquer sur l'overlay (zone sombre)
-      await directorPage.locator('.bg-black\\/50').click()
+      await directorPage.getByTestId('command-palette-overlay').click()
 
       // Vérifier que la palette est fermée
       await expect(input).not.toBeVisible()

@@ -172,6 +172,7 @@ export function CommandPalette({
           {/* Backdrop overlay */}
           <motion.div
             key="command-palette-overlay"
+            data-testid="command-palette-overlay"
             className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm"
             variants={fadeVariants}
             initial="hidden"
