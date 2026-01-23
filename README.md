@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 22 janvier 2026 (Sprint 9 - Recent Pages SP-264 Phase 4)
+- **Dernière mise à jour** : 23 janvier 2026 (Sprint 11 - Navigation Mobile SP-383/SP-384)
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -481,6 +481,50 @@ import { useNavigationShortcuts, DEFAULT_NAVIGATION_SHORTCUTS } from '@/hooks'
 import { KeyboardShortcutsModal } from '@/components/ui/keyboard-shortcuts-modal'
 ```
 
+### Navigation Mobile - SwipeableDrawer (SP-383/SP-384 - 23 janvier 2026)
+
+Système de navigation mobile avec drawer swipeable et gestes tactiles Framer Motion :
+
+- **SwipeableDrawer** : Composant drawer mobile avec gestes tactiles
+  - Swipe horizontal pour fermer (seuil 100px ou vélocité 500px/s)
+  - Animation spring fluide (damping: 30, stiffness: 400)
+  - Support iOS safe-area (env(safe-area-inset-*))
+  - Body scroll lock quand ouvert
+  - Focus trap et accessibilité (aria-modal, role="dialog")
+  - Portal rendering (z-index correct)
+  - Respect `prefers-reduced-motion`
+  - Props : `side` (left/right), `width`, `swipeToClose`, `swipeThreshold`, `velocityThreshold`
+
+- **Hooks personnalisés** :
+  - `useBodyScrollLock(locked)` : Verrouillage scroll body avec compensation scrollbar
+  - `usePrefersReducedMotion()` : Détection préférence animation réduite
+  - `useFocusTrap(containerRef, isActive)` : Focus trap basique pour accessibilité
+
+- **Intégration Sidebar** :
+  - Sidebar utilise SwipeableDrawer sur mobile (< 768px)
+  - Feature flag `USE_SWIPEABLE_DRAWER` pour rollback facile
+  - Gestes natifs au lieu de Sheet Radix sur mobile
+  - Desktop : comportement Sidebar classique inchangé
+
+- **Tests** : 21 tests unitaires (100% coverage)
+  - Rendering conditionnel (open/closed)
+  - Props side left/right
+  - Swipe gesture detection
+  - Accessibility (focus trap, Escape, aria)
+  - Body scroll lock
+  - Overlay click to close
+  - Close button
+  - Custom width et className
+  - Callbacks (onOpen, onClose)
+  - Swipe indicator visibility
+  - Drag configuration
+
+**Import** :
+```typescript
+// Composant drawer mobile
+import { SwipeableDrawer, type SwipeableDrawerProps } from '@/components/mobile'
+```
+
 ### Recent Pages avec localStorage (SP-264 Phase 4 - 22 janvier 2026)
 
 Système de pages récentes stockées en localStorage avec affichage dans la Command Palette :
@@ -699,6 +743,10 @@ SmartplanningAI/
 │   │   └── layout.tsx
 │   ├── components/       # Composants React réutilisables
 │   │   ├── ui/           # Shadcn components (button, form, label...)
+│   │   ├── mobile/       # Composants mobile (SP-383)
+│   │   │   ├── swipeable-drawer.tsx  # Drawer avec gestes Framer Motion
+│   │   │   ├── __tests__/            # 21 tests unitaires
+│   │   │   └── index.ts              # Barrel export
 │   │   ├── auth/         # LoginForm, RegisterForm (variant dark/light)
 │   │   ├── cards/        # UserCard, TeamCard, AvatarStack
 │   │   ├── error/        # ErrorBoundary, ErrorFallback (SP-304), NotFoundPage (SP-302), ServerErrorPage (SP-303), ForbiddenPage (SP-305)
@@ -1271,11 +1319,11 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 - **E2E** : Playwright (configuré)
 - **Coverage** : v8 provider
 
-### Couverture actuelle (22 janvier 2026)
+### Couverture actuelle (23 janvier 2026)
 
 | Catégorie            | Coverage | Tests    |
 | -------------------- | -------- | -------- |
-| **Global**           | **~55%** | **2750** |
+| **Global**           | **~85%** | **2771** |
 | loading              | 100%     | 152      |
 | modals               | 100%     | 52       |
 | cards                | 77.09%   | 88       |
@@ -1304,6 +1352,7 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 | recent pages store (SP-264 Phase 4) | 100% | 18 |
 | use-recent-pages hook (SP-264 Phase 4) | 100% | 8 |
 | format-relative-time (SP-264 Phase 4) | 100% | 27 |
+| swipeable-drawer (SP-383) | 100% | 21 |
 
 ### Tests E2E
 
@@ -1485,6 +1534,13 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 - formatRelativeTime (formatage temps relatif FR : "À l'instant", "Il y a X min", etc.)
 - PageTracker (composant invisible tracking automatique, RGPD compliant)
 
+#### Mobile Navigation (1 composant + 3 hooks - SP-383/SP-384)
+
+- SwipeableDrawer (drawer mobile avec gestes Framer Motion, swipe to close)
+- useBodyScrollLock (verrouillage scroll body avec compensation scrollbar)
+- usePrefersReducedMotion (détection prefers-reduced-motion)
+- useFocusTrap (focus trap basique pour accessibilité dialog)
+
 ### Scripts de test
 
 ```bash
@@ -1573,7 +1629,7 @@ Merge main → Build Docker → Push GHCR → Deploy VPS (~8-10 min)
 
 - **CI** (`.github/workflows/ci.yml`) : Lint, Type-check, Tests unitaires, Build, Tests E2E (PR uniquement)
 - **CD** (`.github/workflows/cd.yml`) : Build image Docker, Push sur ghcr.io, Deploy via SSH
-- Tests unitaires sur tous les push (~2750 tests Vitest)
+- Tests unitaires sur tous les push (~2771 tests Vitest)
 - Tests E2E sur PR vers main (~272 tests Playwright actifs)
 - Déploiement automatique sur merge main ✅
 - Migrations Prisma automatiques
