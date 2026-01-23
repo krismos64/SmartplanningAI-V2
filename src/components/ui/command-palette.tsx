@@ -6,7 +6,10 @@
  *
  * @see SP-264 - Dashboard Layout V2
  * @see SP-264 Phase 4 - Recent Pages
+ * @see SP-386 - Mobile adaptation (full-screen, touch targets)
  * @see Context7 (cmdk documentation)
+ *
+ * ✅ Source : Context7 - Visual Viewport API, iOS safe-area insets
  *
  * @example
  * ```tsx
@@ -24,7 +27,7 @@ import * as React from 'react'
 import { useRouter } from 'next/navigation'
 import { Command } from 'cmdk'
 import { useTheme } from 'next-themes'
-import { Clock, type LucideIcon } from 'lucide-react'
+import { Clock, X, type LucideIcon } from 'lucide-react'
 import * as LucideIcons from 'lucide-react'
 import {
   motion,
@@ -44,6 +47,59 @@ import {
 } from '@/lib/navigation/menu-items'
 import { useRecentPages, type RecentPage } from '@/hooks/use-recent-pages'
 import { formatRelativeTime } from '@/lib/utils/format-relative-time'
+
+// ============================================================================
+// SP-386: Mobile Detection Hook
+// ============================================================================
+
+/**
+ * Hook pour détecter les écrans mobiles (< 768px)
+ */
+function useIsMobile(): boolean {
+  const [isMobile, setIsMobile] = React.useState(false)
+
+  React.useEffect(() => {
+    const mediaQuery = window.matchMedia('(max-width: 767px)')
+    setIsMobile(mediaQuery.matches)
+
+    const handler = (event: MediaQueryListEvent) => {
+      setIsMobile(event.matches)
+    }
+
+    mediaQuery.addEventListener('change', handler)
+    return () => mediaQuery.removeEventListener('change', handler)
+  }, [])
+
+  return isMobile
+}
+
+/**
+ * Hook pour gérer le Visual Viewport (détection clavier mobile)
+ * Retourne la hauteur disponible tenant compte du clavier virtuel
+ */
+function useVisualViewport(): number | null {
+  const [viewportHeight, setViewportHeight] = React.useState<number | null>(
+    null
+  )
+
+  React.useEffect(() => {
+    if (typeof window === 'undefined' || !window.visualViewport) {
+      return
+    }
+
+    const viewport = window.visualViewport
+
+    const handleResize = () => {
+      setViewportHeight(viewport.height)
+    }
+
+    handleResize()
+    viewport.addEventListener('resize', handleResize)
+    return () => viewport.removeEventListener('resize', handleResize)
+  }, [])
+
+  return viewportHeight
+}
 
 export interface CommandPaletteProps {
   /** État ouvert/fermé */
@@ -77,6 +133,10 @@ export function CommandPalette({
   const router = useRouter()
   const { setTheme, theme: currentTheme } = useTheme()
   const [search, setSearch] = React.useState('')
+
+  // SP-386: Mobile detection
+  const isMobile = useIsMobile()
+  const viewportHeight = useVisualViewport()
 
   // Hook pour les pages récentes (SP-264 Phase 4)
   const { recentPages, isLoading: recentPagesLoading } = useRecentPages()
@@ -165,6 +225,19 @@ export function CommandPalette({
     [onOpenChange]
   )
 
+  // SP-386: Calculate list height based on viewport
+  const listMaxHeight = React.useMemo(() => {
+    if (!isMobile) return '400px'
+    // On mobile, use visual viewport height minus header and footer
+    if (viewportHeight) {
+      // Header: ~56px, Footer: ~40px, Input: ~56px, Padding: ~32px
+      const availableHeight = viewportHeight - 56 - 40 - 56 - 32
+      return `${Math.max(200, availableHeight)}px`
+    }
+    // Fallback: use CSS calc with safe-area
+    return 'calc(100vh - 200px)'
+  }, [isMobile, viewportHeight])
+
   return (
     <AnimatePresence mode="wait">
       {open && (
@@ -185,7 +258,14 @@ export function CommandPalette({
           {/* Dialog container */}
           <motion.div
             key="command-palette-dialog"
-            className="fixed inset-0 z-50 flex items-start justify-center pt-[15vh]"
+            data-testid="command-palette-dialog"
+            className={cn(
+              'fixed z-50 flex',
+              // SP-386: Full screen on mobile, centered on desktop
+              isMobile
+                ? 'inset-0 items-end justify-center'
+                : 'inset-0 items-start justify-center pt-[15vh]'
+            )}
             variants={fadeVariants}
             initial="hidden"
             animate="visible"
@@ -197,14 +277,27 @@ export function CommandPalette({
               animate="visible"
               exit="hidden"
               className={cn(
-                'w-full max-w-[640px] overflow-hidden rounded-xl',
-                'border border-border bg-popover shadow-2xl',
-                'mx-4',
+                'overflow-hidden bg-popover shadow-2xl',
+                // SP-386: Full width/height on mobile with safe-area support
+                isMobile
+                  ? [
+                      'h-full max-h-full w-full',
+                      'rounded-b-none rounded-t-2xl',
+                      'border-x border-t border-border',
+                      // iOS safe-area
+                      'pb-[env(safe-area-inset-bottom)]',
+                    ]
+                  : [
+                      'w-full max-w-[640px]',
+                      'rounded-xl border border-border',
+                      'mx-4',
+                    ],
                 className
               )}
+              data-testid="command-palette-container"
             >
               <Command
-                className="flex flex-col"
+                className="flex h-full flex-col"
                 label="Command Palette"
                 onKeyDown={(e) => {
                   if (e.key === 'Escape') {
@@ -213,32 +306,73 @@ export function CommandPalette({
                 }}
               >
                 {/* Search Input */}
-                <div className="flex items-center border-b border-border px-4">
-                  <SearchIcon className="mr-3 h-5 w-5 shrink-0 text-muted-foreground" />
+                <div
+                  className={cn(
+                    'flex items-center border-b border-border',
+                    // SP-386: Larger touch targets on mobile
+                    isMobile ? 'px-3 py-1' : 'px-4'
+                  )}
+                >
+                  <SearchIcon
+                    className={cn(
+                      'shrink-0 text-muted-foreground',
+                      isMobile ? 'mr-2 h-5 w-5' : 'mr-3 h-5 w-5'
+                    )}
+                  />
                   <Command.Input
                     value={search}
                     onValueChange={setSearch}
-                    placeholder="Rechercher ou exécuter une commande..."
+                    placeholder={
+                      isMobile
+                        ? 'Rechercher...'
+                        : 'Rechercher ou exécuter une commande...'
+                    }
                     className={cn(
-                      'flex h-14 w-full bg-transparent py-4 text-sm',
+                      'flex w-full bg-transparent',
                       'placeholder:text-muted-foreground',
-                      'outline-none disabled:cursor-not-allowed disabled:opacity-50'
+                      'outline-none disabled:cursor-not-allowed disabled:opacity-50',
+                      // SP-386: Larger input on mobile, 16px font to prevent iOS zoom
+                      isMobile ? 'h-12 py-3 text-base' : 'h-14 py-4 text-sm'
                     )}
                     autoFocus
+                    data-testid="command-palette-input"
                   />
-                  <kbd className="hidden rounded border border-border bg-muted px-2 py-1 text-xs text-muted-foreground sm:inline-block">
-                    ESC
-                  </kbd>
+                  {/* SP-386: Close button on mobile, ESC badge on desktop */}
+                  {isMobile ? (
+                    <button
+                      type="button"
+                      onClick={() => onOpenChange(false)}
+                      className={cn(
+                        'flex h-10 w-10 items-center justify-center rounded-full',
+                        'text-muted-foreground hover:bg-accent hover:text-accent-foreground',
+                        'min-h-[44px] min-w-[44px]'
+                      )}
+                      aria-label="Fermer"
+                      data-testid="command-palette-close"
+                    >
+                      <X className="h-5 w-5" />
+                    </button>
+                  ) : (
+                    <kbd className="hidden rounded border border-border bg-muted px-2 py-1 text-xs text-muted-foreground sm:inline-block">
+                      ESC
+                    </kbd>
+                  )}
                 </div>
 
                 {/* Command List */}
                 <Command.List
-                  className="max-h-[400px] overflow-y-auto p-2"
+                  className={cn(
+                    'overflow-y-auto',
+                    // SP-386: Larger padding and item spacing on mobile
+                    isMobile ? 'p-3' : 'p-2'
+                  )}
                   style={
                     {
                       '--cmdk-list-height': 'auto',
+                      maxHeight: listMaxHeight,
                     } as React.CSSProperties
                   }
+                  data-testid="command-palette-list"
                 >
                   <Command.Empty className="flex h-16 items-center justify-center text-sm text-muted-foreground">
                     Aucun résultat trouvé.
@@ -267,6 +401,7 @@ export function CommandPalette({
                               'recent',
                               'visité',
                             ]}
+                            isMobile={isMobile}
                           >
                             <IconComponent className="mr-3 h-4 w-4 text-muted-foreground" />
                             <span className="flex-1">{page.title}</span>
@@ -293,6 +428,7 @@ export function CommandPalette({
                           key={item.id}
                           onSelect={() => handleNavigate(item)}
                           keywords={item.keywords}
+                          isMobile={isMobile}
                         >
                           <item.icon className="mr-3 h-4 w-4 text-muted-foreground" />
                           <span className="flex-1">{item.label}</span>
@@ -318,6 +454,7 @@ export function CommandPalette({
                           key={item.id}
                           onSelect={() => handleAction(item)}
                           keywords={item.keywords}
+                          isMobile={isMobile}
                         >
                           <item.icon className="mr-3 h-4 w-4 text-muted-foreground" />
                           <span className="flex-1">{item.label}</span>
@@ -339,6 +476,7 @@ export function CommandPalette({
                         key={item.id}
                         onSelect={() => handleThemeChange(item.theme)}
                         keywords={item.keywords}
+                        isMobile={isMobile}
                       >
                         <item.icon className="mr-3 h-4 w-4 text-muted-foreground" />
                         <span className="flex-1">{item.label}</span>
@@ -364,6 +502,7 @@ export function CommandPalette({
                           handleHelp(item.action, onShowShortcuts)
                         }
                         keywords={item.keywords}
+                        isMobile={isMobile}
                       >
                         <item.icon className="mr-3 h-4 w-4 text-muted-foreground" />
                         <span className="flex-1">{item.label}</span>
@@ -372,29 +511,34 @@ export function CommandPalette({
                   </Command.Group>
                 </Command.List>
 
-                {/* Footer */}
-                <div className="flex items-center justify-between border-t border-border px-4 py-2">
-                  <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                    <span className="flex items-center gap-1">
-                      <kbd className="rounded border border-border bg-muted px-1.5 py-0.5">
-                        ↑
-                      </kbd>
-                      <kbd className="rounded border border-border bg-muted px-1.5 py-0.5">
-                        ↓
-                      </kbd>
-                      <span>naviguer</span>
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <kbd className="rounded border border-border bg-muted px-1.5 py-0.5">
-                        ↵
-                      </kbd>
-                      <span>sélectionner</span>
+                {/* Footer - Hidden on mobile (keyboard shortcuts not relevant) */}
+                {!isMobile && (
+                  <div
+                    className="flex items-center justify-between border-t border-border px-4 py-2"
+                    data-testid="command-palette-footer"
+                  >
+                    <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                      <span className="flex items-center gap-1">
+                        <kbd className="rounded border border-border bg-muted px-1.5 py-0.5">
+                          ↑
+                        </kbd>
+                        <kbd className="rounded border border-border bg-muted px-1.5 py-0.5">
+                          ↓
+                        </kbd>
+                        <span>naviguer</span>
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <kbd className="rounded border border-border bg-muted px-1.5 py-0.5">
+                          ↵
+                        </kbd>
+                        <span>sélectionner</span>
+                      </span>
+                    </div>
+                    <span className="text-xs text-muted-foreground">
+                      SmartPlanning
                     </span>
                   </div>
-                  <span className="text-xs text-muted-foreground">
-                    SmartPlanning
-                  </span>
-                </div>
+                )}
               </Command>
             </motion.div>
           </motion.div>
@@ -406,25 +550,34 @@ export function CommandPalette({
 
 /**
  * Command Item wrapper avec styles
+ * SP-386: Larger touch targets on mobile
  */
 interface CommandItemProps {
   children: React.ReactNode
   onSelect: () => void
   keywords?: string[]
+  isMobile?: boolean
 }
 
-function CommandItem({ children, onSelect, keywords }: CommandItemProps) {
+function CommandItem({
+  children,
+  onSelect,
+  keywords,
+  isMobile,
+}: CommandItemProps) {
   return (
     <Command.Item
       onSelect={onSelect}
       keywords={keywords}
       className={cn(
-        'flex cursor-pointer items-center rounded-lg px-3 py-2.5',
-        'text-sm text-foreground',
+        'flex cursor-pointer items-center rounded-lg',
+        'text-foreground',
         'transition-colors duration-100',
         'hover:bg-accent hover:text-accent-foreground',
         'data-[selected=true]:bg-accent data-[selected=true]:text-accent-foreground',
-        'outline-none'
+        'outline-none',
+        // SP-386: Larger touch targets on mobile (44px min)
+        isMobile ? 'min-h-[44px] px-3 py-3 text-base' : 'px-3 py-2.5 text-sm'
       )}
     >
       {children}

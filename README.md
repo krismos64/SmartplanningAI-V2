@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 23 janvier 2026 (Sprint 11 - Navigation Mobile SP-383/SP-384)
+- **Dernière mise à jour** : 23 janvier 2026 (Sprint 11 - SP-268 Phase 3 Mobile UI Components)
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -523,6 +523,58 @@ Système de navigation mobile avec drawer swipeable et gestes tactiles Framer Mo
 ```typescript
 // Composant drawer mobile
 import { SwipeableDrawer, type SwipeableDrawerProps } from '@/components/mobile'
+```
+
+### Mobile UI Components (SP-268 Phase 3 - 23 janvier 2026)
+
+Adaptations mobiles des composants UI principaux avec zones tactiles WCAG 2.5.5 (44px minimum) :
+
+- **SP-385 : TouchableButton** - Boutons adaptatifs mobile/desktop
+  - Hook `useIsMobile()` : Détection viewport < 768px avec matchMedia
+  - Variants tactiles : `touch`, `touch-sm`, `touch-icon`, `touch-lg` (44-48px)
+  - Mapping automatique : `default` → `touch`, `sm` → `touch-sm`, `icon` → `touch-icon`
+  - Feedback tactile : `active:scale-95 active:opacity-90`
+  - Prop `forceTouchMode` pour forcer le mode tactile sur desktop
+  - 31 tests unitaires
+
+- **SP-386 : CommandPalette Mobile** - Adaptation modale plein écran sur mobile
+  - Layout full-screen avec hauteur dynamique (Visual Viewport API)
+  - Bouton close explicite avec `×` (44x44px touch target)
+  - Safe-area insets iOS (`env(safe-area-inset-*)`)
+  - Input `text-base` (16px) pour éviter le zoom iOS
+  - Badge `ESC` remplacé par `×` sur mobile
+  - Placeholder adaptatif : "Tapez pour rechercher..." vs "Rechercher ou tapez une commande..."
+  - Footer masqué sur mobile (raccourcis clavier non pertinents)
+  - 32 tests unitaires
+
+- **SP-387 : DataTablePagination Responsive** - Pagination adaptative
+  - Layout vertical empilé sur mobile, inline sur desktop
+  - Boutons First/Last masqués sur mobile (économie d'espace)
+  - Format page compact : "3/5" (mobile) vs "Page 3 sur 5" (desktop)
+  - Labels abrégés : "Par page" vs "Lignes par page"
+  - Options réduites sur mobile : [10, 25, 50] vs [10, 20, 50, 100]
+  - SelectTrigger avec `min-h-[44px]` sur mobile
+  - Total compact : "45 résultat(s)" vs "45 ligne(s) au total"
+  - 22 tests unitaires
+
+- **SP-388 : ResponsiveBreadcrumb** - Fil d'Ariane avec scroll horizontal mobile
+  - Scroll horizontal avec masquage de la scrollbar (`scrollbar-none`)
+  - Scroll-snap (`snap-x snap-mandatory`, `snap-center` sur items)
+  - Auto-scroll vers la page courante à droite
+  - Indicateurs de fade aux bords (`bg-gradient-to-r/l from-background`)
+  - Touch behavior optimisé (`touch-pan-x`)
+  - 25 tests unitaires
+
+**Import** :
+```typescript
+// Boutons adaptatifs
+import { TouchableButton, useIsMobile } from '@/components/ui/button'
+
+// Breadcrumb responsive
+import { ResponsiveBreadcrumb } from '@/components/ui/breadcrumb'
+
+// Pagination responsive (utilisée automatiquement dans DataTable)
+import { DataTablePagination } from '@/components/ui/data-table'
 ```
 
 ### Recent Pages avec localStorage (SP-264 Phase 4 - 22 janvier 2026)
@@ -1323,7 +1375,7 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 
 | Catégorie            | Coverage | Tests    |
 | -------------------- | -------- | -------- |
-| **Global**           | **~85%** | **2771** |
+| **Global**           | **~85%** | **2881** |
 | loading              | 100%     | 152      |
 | modals               | 100%     | 52       |
 | cards                | 77.09%   | 88       |
@@ -1353,6 +1405,10 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 | use-recent-pages hook (SP-264 Phase 4) | 100% | 8 |
 | format-relative-time (SP-264 Phase 4) | 100% | 27 |
 | swipeable-drawer (SP-383) | 100% | 21 |
+| touchable-button (SP-385) | 100% | 31 |
+| command-palette-mobile (SP-386) | 100% | 32 |
+| data-table-pagination (SP-387) | 100% | 22 |
+| responsive-breadcrumb (SP-388) | 100% | 25 |
 
 ### Tests E2E
 
@@ -1541,6 +1597,13 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 - usePrefersReducedMotion (détection prefers-reduced-motion)
 - useFocusTrap (focus trap basique pour accessibilité dialog)
 
+#### Mobile UI Components (4 composants - SP-268 Phase 3)
+
+- TouchableButton (boutons adaptatifs 44px sur mobile, mapping automatique des tailles)
+- CommandPalette mobile (layout full-screen, Visual Viewport API, safe-area insets iOS)
+- DataTablePagination responsive (layout vertical mobile, options réduites, labels compacts)
+- ResponsiveBreadcrumb (scroll horizontal snap, fade indicators, auto-scroll vers page courante)
+
 ### Scripts de test
 
 ```bash
@@ -1629,7 +1692,7 @@ Merge main → Build Docker → Push GHCR → Deploy VPS (~8-10 min)
 
 - **CI** (`.github/workflows/ci.yml`) : Lint, Type-check, Tests unitaires, Build, Tests E2E (PR uniquement)
 - **CD** (`.github/workflows/cd.yml`) : Build image Docker, Push sur ghcr.io, Deploy via SSH
-- Tests unitaires sur tous les push (~2771 tests Vitest)
+- Tests unitaires sur tous les push (~2881 tests Vitest)
 - Tests E2E sur PR vers main (~272 tests Playwright actifs)
 - Déploiement automatique sur merge main ✅
 - Migrations Prisma automatiques
