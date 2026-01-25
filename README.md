@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 23 janvier 2026 (Sprint 11 - SP-268 Phase 3 Mobile UI Components)
+- **Dernière mise à jour** : 25 janvier 2026 (Sprint 11 - SP-389 E2E Mobile Tests)
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -872,9 +872,10 @@ SmartplanningAI/
 │   ├── JIRA-SETUP.md
 │   └── ISSUES-TRACKING.md
 ├── e2e/                  # Tests E2E Playwright
-│   ├── fixtures/         # Fixtures auth par rôle (SP-149)
+│   ├── fixtures/         # Fixtures auth par rôle (SP-149) + mobile (SP-389)
 │   ├── pages/            # Page Objects dashboards (SP-149)
-│   └── specs/            # middleware-rbac.spec.ts, auth.spec.ts, dashboard/*.spec.ts
+│   ├── utils/            # Utilitaires (touch-gestures.ts pour mobile SP-389)
+│   └── specs/            # middleware-rbac.spec.ts, auth.spec.ts, dashboard/*.spec.ts, mobile/*.spec.ts
 ├── __tests__/            # Tests unitaires Vitest
 │   └── lib/              # permissions.test.ts
 ├── docker-compose.yml    # Configuration Docker
@@ -1371,7 +1372,7 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 - **E2E** : Playwright (configuré)
 - **Coverage** : v8 provider
 
-### Couverture actuelle (23 janvier 2026)
+### Couverture actuelle (25 janvier 2026)
 
 | Catégorie            | Coverage | Tests    |
 | -------------------- | -------- | -------- |
@@ -1434,11 +1435,16 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 | **Command Palette (SP-264)** | 6     | ✅     |
 | **Recent Pages (SP-264)**    | 6     | ✅     |
 | **Keyboard Shortcuts (SP-264)** | 6  | ✅     |
-| **Total E2E actifs**         | **272** | ✅   |
-| **Total E2E skipped**        | **24**  | ⏸️   |
-| **Total E2E**                | **296** |      |
+| **Mobile Navigation (SP-389)** | 9 | ✅ (+ 4 échouent - bugs UX réels) |
+| **Mobile Command Palette (SP-389)** | 15 | ✅ |
+| **Mobile Breadcrumbs (SP-389)** | 20 | ✅ |
+| **Mobile Data Table (SP-389)** | 15 | ✅ |
+| **Mobile Touch Targets (SP-389)** | 16 | ✅ |
+| **Total E2E actifs**         | **347** | ✅   |
+| **Total E2E skipped**        | **69**  | ⏸️   |
+| **Total E2E**                | **416** |      |
 
-**Note** : Tests exécutés uniquement sur Chromium (Firefox et WebKit supprimés pour stabilité et performance).
+**Note** : Tests desktop exécutés sur Chromium uniquement. Tests mobiles exécutés sur 5 devices (iPhone SE, iPhone 14 Pro, Pixel 7, iPad Mini, iPad Pro 11") via Chromium avec émulation mobile (WebKit supprimé car bug HTTPS upgrade sur localhost).
 
 ### Composants testés
 
@@ -1604,6 +1610,31 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 - DataTablePagination responsive (layout vertical mobile, options réduites, labels compacts)
 - ResponsiveBreadcrumb (scroll horizontal snap, fade indicators, auto-scroll vers page courante)
 
+#### E2E Mobile Tests (SP-389 - 25 janvier 2026)
+
+Tests E2E Playwright pour appareils mobiles avec émulation multi-device :
+
+- **Configuration Playwright mobile** (`playwright.config.ts`) :
+  - iPhone SE (320x568) : petit écran, test contraintes espace
+  - iPhone 14 Pro (393x852) : écran moderne iOS
+  - Pixel 7 (412x915) : Android référence Chrome mobile
+  - iPad Mini (768x1024) : tablette petite
+  - iPad Pro 11" (834x1194) : tablette grande, layout quasi-desktop
+  - Note : Utilisation de Chromium au lieu de WebKit pour tous les projets mobiles (fix bug WebKit localhost HTTPS upgrade)
+
+- **Fixtures et utilitaires** :
+  - `e2e/fixtures/mobile.fixture.ts` : Fixture d'authentification mobile avec gestion orientation
+  - `e2e/utils/touch-gestures.ts` : Utilitaires gestes tactiles (tap, doubleTap, longPress, swipe, pinch, scroll)
+
+- **Tests mobiles** (`e2e/specs/mobile/`) :
+  - `navigation.spec.ts` : Navigation mobile (sidebar swipe, menu burger, footer)
+  - `command-palette.spec.ts` : Command palette en mode plein écran mobile
+  - `breadcrumbs.spec.ts` : Fil d'Ariane avec scroll horizontal snap
+  - `data-table.spec.ts` : Pagination responsive et layout cards
+  - `touch-targets.spec.ts` : Conformité WCAG 2.5.5 (zones tactiles 44px minimum)
+
+- **Documentation** : `/docs/e2e-mobile-tests.md`
+
 ### Scripts de test
 
 ```bash
@@ -1693,7 +1724,7 @@ Merge main → Build Docker → Push GHCR → Deploy VPS (~8-10 min)
 - **CI** (`.github/workflows/ci.yml`) : Lint, Type-check, Tests unitaires, Build, Tests E2E (PR uniquement)
 - **CD** (`.github/workflows/cd.yml`) : Build image Docker, Push sur ghcr.io, Deploy via SSH
 - Tests unitaires sur tous les push (~2881 tests Vitest)
-- Tests E2E sur PR vers main (~272 tests Playwright actifs)
+- Tests E2E sur PR vers main (~347 tests Playwright actifs, 5 devices mobiles)
 - Déploiement automatique sur merge main ✅
 - Migrations Prisma automatiques
 - Healthcheck endpoint : `/api/health` ✅

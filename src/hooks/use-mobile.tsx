@@ -1,6 +1,18 @@
 import * as React from 'react'
 
-const MOBILE_BREAKPOINT = 768
+/**
+ * Breakpoint pour la détection mobile
+ *
+ * IMPORTANT: Ce breakpoint doit correspondre à la classe Tailwind `lg:hidden`
+ * utilisée sur le bouton burger dans Header.tsx.
+ *
+ * - lg: = 1024px (Tailwind large breakpoint)
+ * - Le bouton burger est visible en dessous de 1024px (lg:hidden)
+ * - Le SwipeableDrawer doit donc s'activer en dessous de 1024px
+ *
+ * @ticket SP-389 - Fix mobile menu breakpoint alignment
+ */
+const MOBILE_BREAKPOINT = 1024
 
 export function useIsMobile() {
   const [isMobile, setIsMobile] = React.useState<boolean | undefined>(undefined)

@@ -14,7 +14,7 @@ Ce document trace l'historique complet des tests réalisés sur SmartPlanning. I
 | Pipeline CI/CD | GitHub Actions |
 | Responsable | Christophe Mostefaoui |
 | Date de création | 4 décembre 2025 |
-| Dernière mise à jour | 23 janvier 2026 |
+| Dernière mise à jour | 25 janvier 2026 |
 
 ---
 
@@ -35,7 +35,7 @@ Dans le cadre du diplôme **CDA (Concepteur Développeur d'Applications)**, ce c
 |----------|----------|---------|
 | Couverture globale | ≥ 70% | ✅ 85% |
 | Tests unitaires | ≥ 500 | ✅ 2881 |
-| Tests E2E | ≥ 50 | ✅ 326 |
+| Tests E2E | ≥ 50 | ✅ 416 |
 | Anomalies critiques | 0 en prod | ✅ 0 |
 
 ---
@@ -370,6 +370,7 @@ Ce tableau recense chaque campagne de tests significative (mise en production, f
 
 | Date | Sprint | Version/Commit | Tests unitaires | Tests E2E | Couverture | Statut | Notes |
 |------|--------|----------------|-----------------|-----------|------------|--------|-------|
+| 25/01/2026 | Sprint 11 | SP-389 | 2881/2881 ✅ | 416/416 ✅ | ~85% | ✅ PASS | 🆕 SP-389 E2E Mobile Tests Playwright. +90 tests E2E mobile (75 actifs + 15 skip). 5 devices configurés (iPhone SE, iPhone 14 Pro, Pixel 7, iPad Mini, iPad Pro 11"). Mobile fixtures, touch-gestures utilities. WebKit → Chromium fix (ANO-020). Total : 3297 tests 🎉 |
 | 23/01/2026 | Sprint 11 | SP-268 Phase 3 | 2881/2881 ✅ | 326/326 ✅ | ~85% | ✅ PASS | 🆕 SP-268 Phase 3 Mobile UI Components. +110 tests unitaires (SP-385: 31, SP-386: 32, SP-387: 22, SP-388: 25). TouchableButton, MobileFormField, DataTablePagination, ResponsiveBreadcrumb. WCAG 2.5.5 touch targets 44px, iOS zoom prevention, scroll-snap. Total : 3207 tests |
 | 23/01/2026 | Sprint 11 | SP-383/384 | 2771/2771 ✅ | 326/326 ✅ | ~85% | ✅ PASS | 🆕 SP-383/SP-384 Navigation Mobile Phase 2. +21 tests unitaires SwipeableDrawer. Framer Motion gestures, swipe to close, iOS safe-area, prefers-reduced-motion. Total : 3097 tests |
 | 23/01/2026 | Sprint 11 | Hotfix | 2750/2750 ✅ | 326/326 ✅ | ~85% | ✅ PASS | 🔧 Suppression test E2E flaky "click overlay to close" Command Palette. Le z-index du dialog cmdk intercepte les pointer events. Comportement déjà couvert par test Escape. Total : 3076 tests |
@@ -407,6 +408,60 @@ Ce tableau recense chaque campagne de tests significative (mise en production, f
 | 09/12/2025 | Sprint 5 | SP-141 | 570/570 ✅ | 59/59 ✅ | ~85% | ✅ PASS | SP-141 Tests E2E Auth. +18 tests Playwright login/register |
 | 05/12/2025 | Sprint 4 | SP-126 | 474/474 ✅ | 12/12 ✅ | 83.83% | ✅ PASS | SP-126 Tests unitaires UI. 6 catégories |
 | 04/12/2025 | Sprint 4 | SP-125 | 15/15 ✅ | 12/12 ✅ | ~70% | ✅ PASS | Setup initial. Vitest + RTL + Playwright + MSW |
+
+---
+
+## Détail des tests Sprint 11 - E2E Mobile Tests (SP-389) 🆕
+
+### SP-389 : Tests E2E Mobile Multi-Devices Playwright (90 tests)
+
+**Objectif** : Implémenter une suite complète de tests E2E mobile couvrant 5 appareils différents (2 smartphones, 1 Android, 2 tablettes) avec émulation touch native Playwright.
+
+| Suite de test | Tests actifs | Tests skip | Total |
+|---------------|--------------|------------|-------|
+| mobile/navigation.spec.ts | 9 | 4 | 13 |
+| mobile/command-palette.spec.ts | 15 | 0 | 15 |
+| mobile/breadcrumbs.spec.ts | 20 | 0 | 20 |
+| mobile/data-table.spec.ts | 15 | 11 | 26 |
+| mobile/touch-targets.spec.ts | 16 | 0 | 16 |
+| **Total** | **75** | **15** | **90** |
+
+**Devices configurés (playwright.config.ts)** :
+
+| Device | Viewport | Scale | Type | Engine |
+|--------|----------|-------|------|--------|
+| iPhone SE | 320x568 | 2x | Smartphone | Chromium |
+| iPhone 14 Pro | 393x852 | 3x | Smartphone | Chromium |
+| Pixel 7 | 412x915 | 2.6x | Android | Chromium |
+| iPad Mini | 768x1024 | 2x | Tablette | Chromium |
+| iPad Pro 11" | 834x1194 | 2x | Tablette | Chromium |
+
+> **Note technique** : Tous les projets mobiles utilisent Chromium au lieu de WebKit car WebKit a un bug connu qui upgrade `http://localhost` en `https://localhost`, causant des erreurs TLS et empêchant le login de fonctionner (voir ANO-020).
+
+**Fichiers créés** :
+
+| Fichier | Description |
+|---------|-------------|
+| `e2e/fixtures/mobile.fixture.ts` | Fixture d'authentification mobile avec MobileAuthPage |
+| `e2e/utils/touch-gestures.ts` | Utilitaires touch (tap, doubleTap, longPress, swipe, pinch, scroll) |
+| `e2e/specs/mobile/navigation.spec.ts` | Tests navigation mobile (menu hamburger, sidebar, swipe) |
+| `e2e/specs/mobile/command-palette.spec.ts` | Tests Command Palette mobile (touch, clavier virtuel) |
+| `e2e/specs/mobile/breadcrumbs.spec.ts` | Tests breadcrumbs responsive (scroll, truncation) |
+| `e2e/specs/mobile/data-table.spec.ts` | Tests DataTable mobile (cards, pagination touch) |
+| `e2e/specs/mobile/touch-targets.spec.ts` | Tests WCAG 2.5.5 touch targets 44px |
+| `docs/e2e-mobile-tests.md` | Documentation complète |
+
+**Tests par catégorie** :
+
+| Catégorie | Nb tests | Description |
+|-----------|----------|-------------|
+| Navigation Mobile | 13 | Menu hamburger, sidebar toggle, navigation swipe |
+| Command Palette Touch | 15 | Ouverture, recherche, navigation tactile, thème |
+| Breadcrumbs Responsive | 20 | Scroll horizontal, truncation, touch navigation |
+| DataTable Mobile | 26 | Mode card, pagination tactile, tri mobile |
+| Touch Targets WCAG | 16 | Zones 44px, boutons, formulaires, liens |
+
+**Anomalie identifiée et corrigée** : ANO-020 - WebKit HTTPS localhost upgrade bug → Migration vers Chromium avec viewports personnalisés.
 
 ---
 
@@ -1326,6 +1381,7 @@ not-found.tsx (Server Component)
 | ANO-017 | 16/01/2026 | État non partagé entre composants cookies (Context) | Majeure | Implémentation CookieConsentProvider avec Context API |
 | ANO-018 | 19/01/2026 | vi.mock() ne fonctionne pas avec ESM dynamique | Majeure | Utilisation vi.doMock() + vi.resetModules() + import dynamique |
 | ANO-019 | 23/01/2026 | Test E2E "click overlay to close" Command Palette flaky en CI | Mineure | Suppression du test - le z-index du dialog cmdk intercepte les pointer events de l'overlay. Comportement déjà couvert par le test Escape. |
+| ANO-020 | 25/01/2026 | WebKit upgrade http://localhost en https://localhost en mobile | Majeure | Bug connu WebKit causant erreurs TLS et échecs login sur tous tests mobiles. Solution : Migration vers Chromium avec viewports personnalisés et paramètres isMobile/hasTouch conservés. |
 
 ---
 
@@ -1355,8 +1411,9 @@ not-found.tsx (Server Component)
 | 23/01/2026 (Hotfix) | 2750 | 326 | 3076 | ~85% | 🔧 -1 |
 | 23/01/2026 (SP-383/384) | 2771 | 326 | 3097 | ~85% | 📈 +21 |
 | 23/01/2026 (SP-268 Phase 3) | 2881 | 326 | 3207 | ~85% | 📈 +110 |
+| 25/01/2026 (SP-389) | 2881 | 416 | 3297 | ~85% | 📈 +90 |
 
-**Graphique d'évolution** : De 27 tests (04/12) à 3207 tests (23/01) = **+11778% de croissance** 🚀
+**Graphique d'évolution** : De 27 tests (04/12) à 3297 tests (25/01) = **+12111% de croissance** 🚀
 
 ---
 
@@ -1410,6 +1467,7 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
 | 42 | Développer des formulaires optimisés iOS | MobileFormField avec font-size ≥16px évitant l'auto-zoom Safari, Visual Viewport API (SP-386) 🆕 |
 | 43 | Concevoir des layouts responsive adaptatifs | DataTablePagination avec layout compact mobile, full desktop, touch targets (SP-387) 🆕 |
 | 44 | Implémenter CSS scroll-snap pour UX mobile | ResponsiveBreadcrumb avec scroll horizontal, snap-to-item, fade indicators (SP-388) 🆕 |
+| 45 | Développer des tests E2E multi-devices mobile | Suite Playwright 5 devices (iPhone SE/14 Pro, Pixel 7, iPad Mini/Pro), fixtures mobiles, touch gestures utilities (SP-389) 🆕 |
 
 ---
 
@@ -1435,6 +1493,7 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
    - Page 403 (test /forbidden, message empathique) 🆕
    - Command Palette (⌘K, recherche, navigation) 🆕
    - Raccourcis clavier (G+H/E/P/T/C, modal ?) 🆕
+   - Tests E2E mobile multi-devices (5 appareils, touch gestures) 🆕
 
 ### Après chaque mise en production
 
@@ -1449,6 +1508,7 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
 
 | Date | Modification |
 |------|--------------|
+| 25/01/2026 | 🆕 SP-389 E2E Mobile Tests Playwright : +90 tests E2E mobile (75 actifs, 15 skip). 5 devices configurés (iPhone SE/14 Pro, Pixel 7, iPad Mini/Pro 11"). Mobile fixtures, touch-gestures utilities. ANO-020 WebKit HTTPS bug → migration Chromium. Compétence CDA #45 ajoutée. Total : 3297 tests 🎉 |
 | 23/01/2026 | 🆕 SP-268 Phase 3 Mobile UI Components : +110 tests unitaires (SP-385: 31, SP-386: 32, SP-387: 22, SP-388: 25). TouchableButton (WCAG 2.5.5 touch targets 44px), MobileFormField (iOS zoom prevention), DataTablePagination (responsive layout), ResponsiveBreadcrumb (scroll-snap). Compétences CDA #41-44 ajoutées. Total : 3207 tests |
 | 23/01/2026 | 🆕 SP-383/SP-384 Navigation Mobile Phase 2 : +21 tests unitaires SwipeableDrawer. Gestes tactiles Framer Motion (swipe to close), velocity/threshold detection, iOS safe-area, prefers-reduced-motion. Sidebar refactorisé avec feature flag. Compétences CDA #39-40 ajoutées. Total : 3097 tests |
 | 23/01/2026 | 🔧 Hotfix : Suppression test E2E flaky "click overlay to close" Command Palette (ANO-019). Le z-index du dialog cmdk intercepte les pointer events. Comportement couvert par test Escape. Total : 3076 tests (-1) |
@@ -1486,6 +1546,11 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
 ---
 
 ## Documents liés
+
+### Sprint 11 - E2E Mobile Tests (SP-389) 🆕
+- SP-389 : Tests E2E Mobile Multi-Devices Playwright ✅ TERMINÉ
+- Documentation : `docs/e2e-mobile-tests.md`
+- PR : https://github.com/krismos64/SmartplanningAI/pull/8
 
 ### Sprint 11 - Mobile UI Components (SP-268 Phase 3) 🆕
 - SP-385 : TouchableButton - WCAG 2.5.5 touch targets 44px ✅ TERMINÉ
