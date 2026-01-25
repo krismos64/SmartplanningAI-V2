@@ -34,8 +34,9 @@ Dans le cadre du diplôme **CDA (Concepteur Développeur d'Applications)**, ce c
 | Métrique | Objectif | Atteint |
 |----------|----------|---------|
 | Couverture globale | ≥ 70% | ✅ 85% |
-| Tests unitaires | ≥ 500 | ✅ 2881 |
-| Tests E2E | ≥ 50 | ✅ 416 |
+| Tests unitaires | ≥ 500 | ✅ 2895 |
+| Tests E2E | ≥ 50 | ✅ 430 |
+| Score Lighthouse A11y | ≥ 90% | ✅ 95% |
 | Anomalies critiques | 0 en prod | ✅ 0 |
 
 ---
@@ -116,6 +117,25 @@ Cette section explique pourquoi j'ai choisi chaque outil plutôt qu'un autre, d�
 - **Projet CDA** : Démontre la maîtrise d'une bibliothèque moderne et professionnelle
 
 **Conclusion** : Pour les pages d'erreur (404, 500) et les UI engageantes, Framer Motion offre le meilleur rapport expressivité/maintenance malgré un coût de 35kb. L'accessibilité native justifie à elle seule ce choix pour un projet certifiant CDA.
+
+### Pourquoi @axe-core/playwright plutôt que pa11y ou Lighthouse CI ? (Sprint 11) 🆕
+
+| Critère | pa11y | Lighthouse CI | @axe-core/playwright | Mon choix |
+|---------|-------|---------------|---------------------|-----------|
+| Intégration Playwright | ❌ Outil séparé | ❌ CLI distinct | ✅ API native | axe-core |
+| Règles WCAG | ⚠️ Basiques | ✅ Bonnes | ✅ Excellentes (Deque) | axe-core |
+| Granularité tests | ❌ Page entière | ❌ Page entière | ✅ Par composant/zone | axe-core |
+| Filtrage violations | ⚠️ Limité | ⚠️ Limité | ✅ Par impact/règle | axe-core |
+| Context Playwright | ❌ Non | ❌ Non | ✅ Accès page/locator | axe-core |
+| Maintenance | ⚠️ Communauté | ✅ Google | ✅ Deque (experts a11y) | axe-core |
+
+**Justification du choix (SP-269)** :
+- **Intégration native** : `new AxeBuilder({ page })` s'intègre directement dans les tests Playwright existants
+- **Filtrage précis** : `.withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])` pour cibler WCAG 2.1 AA
+- **Exclusions design** : `.disableRules(['color-contrast'])` pour exclure les choix de design validés
+- **Filtrage par impact** : `violations.filter(v => v.impact === 'critical')` pour CI non-bloquant sur violations mineures
+
+**Conclusion** : @axe-core/playwright offre la meilleure intégration dans la stack de tests existante tout en bénéficiant de l'expertise de Deque (créateurs de axe, référence en accessibilité). Le filtrage granulaire permet une approche pragmatique de la conformité WCAG.
 
 ### Pourquoi React Email plutôt que MJML ou HTML brut ? (Sprint 9)
 
@@ -370,6 +390,7 @@ Ce tableau recense chaque campagne de tests significative (mise en production, f
 
 | Date | Sprint | Version/Commit | Tests unitaires | Tests E2E | Couverture | Statut | Notes |
 |------|--------|----------------|-----------------|-----------|------------|--------|-------|
+| 25/01/2026 | Sprint 11 | SP-269 | 2895/2895 ✅ | 430/430 ✅ | ~85% | ✅ PASS | 🆕 SP-269 Accessibilité WCAG 2.1. +14 tests unitaires SkipLink, +14 tests E2E axe-core. Skip to main content (WCAG 2.4.1), audit Lighthouse 95%. Script a11y:audit. Total : 3325 tests 🎉 |
 | 25/01/2026 | Sprint 11 | SP-389 | 2881/2881 ✅ | 416/416 ✅ | ~85% | ✅ PASS | 🆕 SP-389 E2E Mobile Tests Playwright. +90 tests E2E mobile (75 actifs + 15 skip). 5 devices configurés (iPhone SE, iPhone 14 Pro, Pixel 7, iPad Mini, iPad Pro 11"). Mobile fixtures, touch-gestures utilities. WebKit → Chromium fix (ANO-020). Total : 3297 tests 🎉 |
 | 23/01/2026 | Sprint 11 | SP-268 Phase 3 | 2881/2881 ✅ | 326/326 ✅ | ~85% | ✅ PASS | 🆕 SP-268 Phase 3 Mobile UI Components. +110 tests unitaires (SP-385: 31, SP-386: 32, SP-387: 22, SP-388: 25). TouchableButton, MobileFormField, DataTablePagination, ResponsiveBreadcrumb. WCAG 2.5.5 touch targets 44px, iOS zoom prevention, scroll-snap. Total : 3207 tests |
 | 23/01/2026 | Sprint 11 | SP-383/384 | 2771/2771 ✅ | 326/326 ✅ | ~85% | ✅ PASS | 🆕 SP-383/SP-384 Navigation Mobile Phase 2. +21 tests unitaires SwipeableDrawer. Framer Motion gestures, swipe to close, iOS safe-area, prefers-reduced-motion. Total : 3097 tests |
@@ -408,6 +429,141 @@ Ce tableau recense chaque campagne de tests significative (mise en production, f
 | 09/12/2025 | Sprint 5 | SP-141 | 570/570 ✅ | 59/59 ✅ | ~85% | ✅ PASS | SP-141 Tests E2E Auth. +18 tests Playwright login/register |
 | 05/12/2025 | Sprint 4 | SP-126 | 474/474 ✅ | 12/12 ✅ | 83.83% | ✅ PASS | SP-126 Tests unitaires UI. 6 catégories |
 | 04/12/2025 | Sprint 4 | SP-125 | 15/15 ✅ | 12/12 ✅ | ~70% | ✅ PASS | Setup initial. Vitest + RTL + Playwright + MSW |
+
+---
+
+## Détail des tests Sprint 11 - Accessibilité WCAG 2.1 (SP-269) 🆕
+
+### SP-269 : Accessibilité WCAG 2.1 - Skip Link + Tests axe-core (28 tests)
+
+**Objectif** : Implémenter la conformité WCAG 2.1 niveau AA avec un composant Skip to Main Content (WCAG 2.4.1 Bypass Blocks), des tests E2E automatisés via @axe-core/playwright, et un script d'audit Lighthouse.
+
+| Suite de test | Tests unitaires | Tests E2E | Total |
+|---------------|-----------------|-----------|-------|
+| SkipLink component | 14 | 0 | 14 |
+| accessibility.spec.ts | 0 | 14 | 14 |
+| **Total** | **14** | **14** | **28** |
+
+**Fichiers créés** :
+
+| Fichier | Description |
+|---------|-------------|
+| `src/components/layout/skip-link.tsx` | Composant SkipLink (WCAG 2.4.1 Bypass Blocks) |
+| `src/components/layout/__tests__/skip-link.test.tsx` | 14 tests unitaires SkipLink |
+| `e2e/specs/a11y/accessibility.spec.ts` | 14 tests E2E axe-core WCAG |
+| `scripts/lighthouse-audit.js` | Script audit Lighthouse accessibilité |
+| `docs/lighthouse-a11y-report.md` | Rapport Lighthouse généré |
+
+**Tests E2E par catégorie (accessibility.spec.ts)** :
+
+| Catégorie | Nb tests | Description |
+|-----------|----------|-------------|
+| Public Pages | 3 | Audit WCAG login, register, home (violations critiques) |
+| Skip Link | 4 | Présence DOM, visibilité focus, navigation, main-content |
+| Keyboard Navigation | 2 | Tab navigation, Escape fermeture modals |
+| Color Contrast | 1 | Violations critiques contraste |
+| Forms | 2 | Labels accessibles login/register |
+| ARIA & Semantics | 2 | Landmark regions, éléments focusables |
+| **Total** | **14** | |
+
+**Tests unitaires SkipLink (skip-link.test.tsx)** :
+
+| Catégorie | Nb tests | Description |
+|-----------|----------|-------------|
+| Rendering | 3 | Rendu par défaut, label custom, targetId custom |
+| Accessibility | 4 | href correct, data-testid, focus visible, sr-only initial |
+| Styling | 4 | Classes sr-only, focus:not-sr-only, bg-primary, ring focus |
+| Customization | 3 | ClassName custom, props combinées, children |
+| **Total** | **14** | |
+
+**Composant SkipLink** :
+
+```typescript
+// src/components/layout/skip-link.tsx
+'use client'
+
+export function SkipLink({
+  label = 'Aller au contenu principal',
+  targetId = 'main-content',
+  className,
+}: SkipLinkProps) {
+  return (
+    <a
+      href={`#${targetId}`}
+      className={cn(
+        'sr-only',                    // Invisible par défaut
+        'focus:not-sr-only',          // Visible au focus
+        'focus:absolute focus:top-4 focus:left-4 focus:z-[100]',
+        'focus:px-4 focus:py-2',
+        'focus:bg-primary focus:text-primary-foreground',
+        'focus:rounded-md focus:font-medium',
+        'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
+        className
+      )}
+      data-testid="skip-link"
+    >
+      {label}
+    </a>
+  )
+}
+```
+
+**Intégration layout.tsx** :
+
+```typescript
+// src/app/layout.tsx
+import { SkipLink } from '@/components/layout/skip-link'
+
+<body>
+  <SkipLink />  {/* Premier élément focusable */}
+  <ThemeProvider>
+    <main id="main-content" tabIndex={-1}>
+      {children}
+    </main>
+  </ThemeProvider>
+</body>
+```
+
+**Configuration axe-core** :
+
+```typescript
+// e2e/specs/a11y/accessibility.spec.ts
+import AxeBuilder from '@axe-core/playwright'
+
+const accessibilityScanResults = await new AxeBuilder({ page })
+  .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])  // WCAG 2.1 AA
+  .disableRules(['color-contrast'])  // Exclusion design choice
+  .analyze()
+
+const criticalViolations = accessibilityScanResults.violations
+  .filter(v => v.impact === 'critical')  // Uniquement critiques
+```
+
+**Résultats Lighthouse Audit** :
+
+| Page | Score | Statut |
+|------|-------|--------|
+| Accueil (/) | 95% | ✅ Conforme |
+| Login (/login) | 95% | ✅ Conforme |
+| Register (/register) | 95% | ✅ Conforme |
+| **Moyenne** | **95%** | ✅ (objectif ≥ 90%) |
+
+**Scripts NPM ajoutés** :
+
+```bash
+npm run test:a11y     # Tests E2E accessibilité (14 tests)
+npm run a11y:audit    # Audit Lighthouse (nécessite serveur actif)
+```
+
+**Critères WCAG 2.1 AA implémentés** :
+
+| Critère | Description | Implémentation |
+|---------|-------------|----------------|
+| 2.4.1 | Bypass Blocks | SkipLink "Aller au contenu principal" |
+| 2.4.3 | Focus Order | Tab order logique, skip link premier |
+| 2.4.7 | Focus Visible | ring-2 ring-ring ring-offset-2 |
+| 2.5.5 | Target Size | 44px minimum (SP-268 Phase 3) |
+| 4.1.2 | Name, Role, Value | aria-* attributes sur formulaires |
 
 ---
 
@@ -1412,8 +1568,9 @@ not-found.tsx (Server Component)
 | 23/01/2026 (SP-383/384) | 2771 | 326 | 3097 | ~85% | 📈 +21 |
 | 23/01/2026 (SP-268 Phase 3) | 2881 | 326 | 3207 | ~85% | 📈 +110 |
 | 25/01/2026 (SP-389) | 2881 | 416 | 3297 | ~85% | 📈 +90 |
+| 25/01/2026 (SP-269) | 2895 | 430 | 3325 | ~85% | 📈 +28 |
 
-**Graphique d'évolution** : De 27 tests (04/12) à 3297 tests (25/01) = **+12111% de croissance** 🚀
+**Graphique d'évolution** : De 27 tests (04/12) à 3325 tests (25/01) = **+12215% de croissance** 🚀
 
 ---
 
@@ -1468,6 +1625,7 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
 | 43 | Concevoir des layouts responsive adaptatifs | DataTablePagination avec layout compact mobile, full desktop, touch targets (SP-387) 🆕 |
 | 44 | Implémenter CSS scroll-snap pour UX mobile | ResponsiveBreadcrumb avec scroll horizontal, snap-to-item, fade indicators (SP-388) 🆕 |
 | 45 | Développer des tests E2E multi-devices mobile | Suite Playwright 5 devices (iPhone SE/14 Pro, Pixel 7, iPad Mini/Pro), fixtures mobiles, touch gestures utilities (SP-389) 🆕 |
+| 46 | Implémenter l'accessibilité WCAG 2.1 automatisée | Skip to main content (WCAG 2.4.1), tests axe-core/Playwright, audit Lighthouse 95%, script a11y:audit (SP-269) 🆕 |
 
 ---
 
@@ -1494,6 +1652,7 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
    - Command Palette (⌘K, recherche, navigation) 🆕
    - Raccourcis clavier (G+H/E/P/T/C, modal ?) 🆕
    - Tests E2E mobile multi-devices (5 appareils, touch gestures) 🆕
+   - Accessibilité WCAG 2.1 (Skip link focus, audit Lighthouse ≥90%) 🆕
 
 ### Après chaque mise en production
 
@@ -1508,6 +1667,7 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
 
 | Date | Modification |
 |------|--------------|
+| 25/01/2026 | 🆕 SP-269 Accessibilité WCAG 2.1 : +14 tests unitaires SkipLink, +14 tests E2E axe-core. Skip to main content (WCAG 2.4.1), focus visible (2.4.7), focus order (2.4.3). Audit Lighthouse 95%. Script `npm run a11y:audit`. Compétence CDA #46 ajoutée. Total : 3325 tests 🎉 |
 | 25/01/2026 | 🆕 SP-389 E2E Mobile Tests Playwright : +90 tests E2E mobile (75 actifs, 15 skip). 5 devices configurés (iPhone SE/14 Pro, Pixel 7, iPad Mini/Pro 11"). Mobile fixtures, touch-gestures utilities. ANO-020 WebKit HTTPS bug → migration Chromium. Compétence CDA #45 ajoutée. Total : 3297 tests 🎉 |
 | 23/01/2026 | 🆕 SP-268 Phase 3 Mobile UI Components : +110 tests unitaires (SP-385: 31, SP-386: 32, SP-387: 22, SP-388: 25). TouchableButton (WCAG 2.5.5 touch targets 44px), MobileFormField (iOS zoom prevention), DataTablePagination (responsive layout), ResponsiveBreadcrumb (scroll-snap). Compétences CDA #41-44 ajoutées. Total : 3207 tests |
 | 23/01/2026 | 🆕 SP-383/SP-384 Navigation Mobile Phase 2 : +21 tests unitaires SwipeableDrawer. Gestes tactiles Framer Motion (swipe to close), velocity/threshold detection, iOS safe-area, prefers-reduced-motion. Sidebar refactorisé avec feature flag. Compétences CDA #39-40 ajoutées. Total : 3097 tests |
@@ -1546,6 +1706,12 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
 ---
 
 ## Documents liés
+
+### Sprint 11 - Accessibilité WCAG 2.1 (SP-269) 🆕
+- SP-269 : Accessibilité WCAG 2.1 - Skip Link + Tests axe-core ✅ TERMINÉ
+- Documentation : `docs/lighthouse-a11y-report.md`
+- Tests E2E : `e2e/specs/a11y/accessibility.spec.ts`
+- Script audit : `npm run a11y:audit` / `scripts/lighthouse-audit.js`
 
 ### Sprint 11 - E2E Mobile Tests (SP-389) 🆕
 - SP-389 : Tests E2E Mobile Multi-Devices Playwright ✅ TERMINÉ
