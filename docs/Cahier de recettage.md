@@ -34,7 +34,7 @@ Dans le cadre du diplôme **CDA (Concepteur Développeur d'Applications)**, ce c
 | Métrique | Objectif | Atteint |
 |----------|----------|---------|
 | Couverture globale | ≥ 70% | ✅ 85% |
-| Tests unitaires | ≥ 500 | ✅ 2895 |
+| Tests unitaires | ≥ 500 | ✅ 2934 |
 | Tests E2E | ≥ 50 | ✅ 430 |
 | Score Lighthouse A11y | ≥ 90% | ✅ 95% |
 | Anomalies critiques | 0 en prod | ✅ 0 |
@@ -390,6 +390,7 @@ Ce tableau recense chaque campagne de tests significative (mise en production, f
 
 | Date | Sprint | Version/Commit | Tests unitaires | Tests E2E | Couverture | Statut | Notes |
 |------|--------|----------------|-----------------|-----------|------------|--------|-------|
+| 25/01/2026 | Sprint 11 | SP-263 | 2934/2934 ✅ | 430/430 ✅ | ~85% | ✅ PASS | 🆕 SP-263 Réinitialisation mot de passe. +39 tests unitaires (ForgotPasswordForm: 14, ResetPasswordForm: 17, reset-password page: 8). Pages /forgot-password et /reset-password. Server Actions avec tokens sécurisés. Validation Zod. Anti-énumération OWASP. Framer Motion animations. Total : 3364 tests 🎉 |
 | 25/01/2026 | Sprint 11 | SP-269 | 2895/2895 ✅ | 430/430 ✅ | ~85% | ✅ PASS | 🆕 SP-269 Accessibilité WCAG 2.1. +14 tests unitaires SkipLink, +14 tests E2E axe-core. Skip to main content (WCAG 2.4.1), audit Lighthouse 95%. Script a11y:audit. Total : 3325 tests 🎉 |
 | 25/01/2026 | Sprint 11 | SP-389 | 2881/2881 ✅ | 416/416 ✅ | ~85% | ✅ PASS | 🆕 SP-389 E2E Mobile Tests Playwright. +90 tests E2E mobile (75 actifs + 15 skip). 5 devices configurés (iPhone SE, iPhone 14 Pro, Pixel 7, iPad Mini, iPad Pro 11"). Mobile fixtures, touch-gestures utilities. WebKit → Chromium fix (ANO-020). Total : 3297 tests 🎉 |
 | 23/01/2026 | Sprint 11 | SP-268 Phase 3 | 2881/2881 ✅ | 326/326 ✅ | ~85% | ✅ PASS | 🆕 SP-268 Phase 3 Mobile UI Components. +110 tests unitaires (SP-385: 31, SP-386: 32, SP-387: 22, SP-388: 25). TouchableButton, MobileFormField, DataTablePagination, ResponsiveBreadcrumb. WCAG 2.5.5 touch targets 44px, iOS zoom prevention, scroll-snap. Total : 3207 tests |
@@ -1152,7 +1153,7 @@ src/lib/animations/
 - Description empathique
 - Bouton "Retour" fonctionnel
 - 3 liens rapides (Accueil, Dashboard, Connexion)
-- ARIA attributes (role="main", aria-label, aria-describedby)
+- ARIA attributes (role="region", aria-label, aria-describedby)
 - Responsive design (mobile, tablet, desktop)
 - Dark mode support
 - Animation Framer Motion
@@ -1255,7 +1256,7 @@ export async function GET() {
 - Description empathique
 - Bouton "Retour" présent et fonctionnel
 - 3 liens rapides (Accueil, Dashboard, Connexion)
-- ARIA attributes (role="main", aria-label, aria-describedby)
+- ARIA attributes (role="region", aria-label, aria-describedby)
 - Responsive (breakpoints sm/md)
 - Dark mode support
 - Navigation Next.js Link
@@ -1283,12 +1284,12 @@ export async function GET() {
 
 | Attribut | Utilisation |
 |----------|-------------|
-| `role="main"` | Conteneur principal |
+| `role="region"` | Conteneur principal (évite conflit avec `<main>` du layout) |
 | `aria-label` | "Page non trouvée" |
 | `aria-labelledby` | Lie titre h1 au conteneur |
 | `aria-describedby` | Lie description au conteneur |
 | `aria-hidden="true"` | Illustration décorative |
-| Navigation clavier | Tab, Enter, focus visible |
+| Navigation clavier | Tab (skip-link → boutons), Enter, focus visible |
 | Contraste couleurs | ≥ 4.5:1 (Lighthouse 100/100) |
 
 **Animations Framer Motion** :
@@ -1569,8 +1570,9 @@ not-found.tsx (Server Component)
 | 23/01/2026 (SP-268 Phase 3) | 2881 | 326 | 3207 | ~85% | 📈 +110 |
 | 25/01/2026 (SP-389) | 2881 | 416 | 3297 | ~85% | 📈 +90 |
 | 25/01/2026 (SP-269) | 2895 | 430 | 3325 | ~85% | 📈 +28 |
+| 25/01/2026 (SP-263) | 2934 | 430 | 3364 | ~85% | 📈 +39 |
 
-**Graphique d'évolution** : De 27 tests (04/12) à 3325 tests (25/01) = **+12215% de croissance** 🚀
+**Graphique d'évolution** : De 27 tests (04/12) à 3364 tests (25/01) = **+12359% de croissance** 🚀
 
 ---
 
@@ -1580,11 +1582,11 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
 
 | N° | Compétence | Preuve |
 |----|------------|--------|
-| 1 | Tester les composants d'une application | 2881 tests unitaires documentés |
+| 1 | Tester les composants d'une application | 2934 tests unitaires documentés |
 | 2 | Contribuer à la qualité du code | Couverture 85%, anomalies tracées |
 | 3 | Documenter les procédures | Procédure de recette formalisée |
 | 4 | Utiliser une méthodologie | Approche structurée par sprints |
-| 5 | Développer des tests automatisés | 3207 tests (unitaires + E2E) |
+| 5 | Développer des tests automatisés | 3364 tests (unitaires + E2E) |
 | 6 | Sécuriser une application | Tests RBAC (62 unitaires, 27 E2E), rate limiting, protection énumération |
 | 7 | Concevoir une architecture logicielle | Pattern ServiceResult<T>, multi-tenant |
 | 8 | Développer des composants métier | 4 dashboards par rôle |
@@ -1626,6 +1628,7 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
 | 44 | Implémenter CSS scroll-snap pour UX mobile | ResponsiveBreadcrumb avec scroll horizontal, snap-to-item, fade indicators (SP-388) 🆕 |
 | 45 | Développer des tests E2E multi-devices mobile | Suite Playwright 5 devices (iPhone SE/14 Pro, Pixel 7, iPad Mini/Pro), fixtures mobiles, touch gestures utilities (SP-389) 🆕 |
 | 46 | Implémenter l'accessibilité WCAG 2.1 automatisée | Skip to main content (WCAG 2.4.1), tests axe-core/Playwright, audit Lighthouse 95%, script a11y:audit (SP-269) 🆕 |
+| 47 | Implémenter un flux sécurisé de réinitialisation de mot de passe | Pages /forgot-password et /reset-password, Server Actions sécurisées, tokens aléatoires, anti-énumération OWASP, validation Zod (SP-263) 🆕 |
 
 ---
 
@@ -1643,6 +1646,7 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
    - Navigation et Empty States
    - Bannière cookies et modal préférences
    - Envoi emails (bienvenue, reset password, vérification)
+   - Réinitialisation mot de passe (/forgot-password, /reset-password, flux complet) 🆕
    - Formulaire de contact (validation, soumission, états succès/erreur)
    - API /api/contact (test avec curl/Postman)
    - Error Boundary (test /test-error pour déclencher erreur)
@@ -1667,6 +1671,8 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
 
 | Date | Modification |
 |------|--------------|
+| 25/01/2026 | 🆕 SP-263 Réinitialisation mot de passe : +39 tests unitaires (ForgotPasswordForm: 14, ResetPasswordForm: 17, reset-password page: 8). Pages /forgot-password et /reset-password avec Server Actions sécurisées. Tokens aléatoires, anti-énumération OWASP, validation Zod. Compétence CDA #47 ajoutée. Total : 3364 tests 🎉 |
+| 25/01/2026 | 🔧 Correction accessibilité pages d'erreur : role="main" → role="region" sur NotFoundPage, ServerErrorPage, ForbiddenPage. Évite conflit avec `<main>` du layout. Navigation clavier skip-link → boutons. Tests unitaires et E2E mis à jour. |
 | 25/01/2026 | 🆕 SP-269 Accessibilité WCAG 2.1 : +14 tests unitaires SkipLink, +14 tests E2E axe-core. Skip to main content (WCAG 2.4.1), focus visible (2.4.7), focus order (2.4.3). Audit Lighthouse 95%. Script `npm run a11y:audit`. Compétence CDA #46 ajoutée. Total : 3325 tests 🎉 |
 | 25/01/2026 | 🆕 SP-389 E2E Mobile Tests Playwright : +90 tests E2E mobile (75 actifs, 15 skip). 5 devices configurés (iPhone SE/14 Pro, Pixel 7, iPad Mini/Pro 11"). Mobile fixtures, touch-gestures utilities. ANO-020 WebKit HTTPS bug → migration Chromium. Compétence CDA #45 ajoutée. Total : 3297 tests 🎉 |
 | 23/01/2026 | 🆕 SP-268 Phase 3 Mobile UI Components : +110 tests unitaires (SP-385: 31, SP-386: 32, SP-387: 22, SP-388: 25). TouchableButton (WCAG 2.5.5 touch targets 44px), MobileFormField (iOS zoom prevention), DataTablePagination (responsive layout), ResponsiveBreadcrumb (scroll-snap). Compétences CDA #41-44 ajoutées. Total : 3207 tests |
@@ -1706,6 +1712,13 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
 ---
 
 ## Documents liés
+
+### Sprint 11 - Réinitialisation mot de passe (SP-263) 🆕
+- SP-263 : Pages /forgot-password et /reset-password ✅ TERMINÉ
+- Composants : `ForgotPasswordForm.tsx`, `ResetPasswordForm.tsx`
+- Tests unitaires : 39 tests (14 + 17 + 8)
+- Server Actions : forgotPasswordAction, resetPasswordAction
+- Sécurité : Tokens sécurisés, anti-énumération OWASP, validation Zod
 
 ### Sprint 11 - Accessibilité WCAG 2.1 (SP-269) 🆕
 - SP-269 : Accessibilité WCAG 2.1 - Skip Link + Tests axe-core ✅ TERMINÉ
