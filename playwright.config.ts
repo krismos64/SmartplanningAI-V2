@@ -127,19 +127,33 @@ export default defineConfig({
     },
 
     // ==================== MOBILE - SMARTPHONES ====================
+    // Note: Tous les projets mobiles utilisent Chromium au lieu de WebKit
+    // car WebKit a un bug connu qui upgrade http://localhost en https://
+    // ce qui cause des erreurs TLS et empêche le login de fonctionner.
+    // Les viewports et paramètres touch sont conservés pour l'émulation mobile.
     {
       name: 'mobile-iphone-se',
       use: {
-        ...devices['iPhone SE'],
-        // Petit écran 375x667, test contraintes espace minimal
+        // Viewport iPhone SE : petit écran 320x568
+        viewport: { width: 320, height: 568 },
+        deviceScaleFactor: 2,
+        isMobile: true,
+        hasTouch: true,
+        userAgent:
+          'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1',
       },
       testMatch: /.*mobile.*\.spec\.ts/,
     },
     {
       name: 'mobile-iphone-14-pro',
       use: {
-        ...devices['iPhone 14 Pro'],
-        // Écran moderne 393x852, iOS Safari, notch dynamique
+        // Viewport iPhone 14 Pro : écran moderne 393x852
+        viewport: { width: 393, height: 852 },
+        deviceScaleFactor: 3,
+        isMobile: true,
+        hasTouch: true,
+        userAgent:
+          'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1',
       },
       testMatch: /.*mobile.*\.spec\.ts/,
     },
@@ -156,16 +170,26 @@ export default defineConfig({
     {
       name: 'tablet-ipad-mini',
       use: {
-        ...devices['iPad Mini'],
-        // Tablette petite 768x1024, mode intermédiaire
+        // Viewport iPad Mini : 768x1024
+        viewport: { width: 768, height: 1024 },
+        deviceScaleFactor: 2,
+        isMobile: true,
+        hasTouch: true,
+        userAgent:
+          'Mozilla/5.0 (iPad; CPU OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1',
       },
       testMatch: /.*mobile.*\.spec\.ts/,
     },
     {
       name: 'tablet-ipad-pro-11',
       use: {
-        ...devices['iPad Pro 11'],
-        // Grande tablette 834x1194, layout quasi-desktop
+        // Viewport iPad Pro 11" : 834x1194
+        viewport: { width: 834, height: 1194 },
+        deviceScaleFactor: 2,
+        isMobile: true,
+        hasTouch: true,
+        userAgent:
+          'Mozilla/5.0 (iPad; CPU OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1',
       },
       testMatch: /.*mobile.*\.spec\.ts/,
     },
