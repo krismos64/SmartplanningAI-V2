@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 25 janvier 2026 (Sprint 11 - SP-389 E2E Mobile Tests)
+- **Dernière mise à jour** : 25 janvier 2026 (Sprint 11 - SP-269 Accessibilité WCAG 2.1)
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -1440,9 +1440,10 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 | **Mobile Breadcrumbs (SP-389)** | 20 | ✅ |
 | **Mobile Data Table (SP-389)** | 15 | ✅ |
 | **Mobile Touch Targets (SP-389)** | 16 | ✅ |
-| **Total E2E actifs**         | **347** | ✅   |
+| **Accessibility WCAG (SP-269)** | 14 | ✅ |
+| **Total E2E actifs**         | **361** | ✅   |
 | **Total E2E skipped**        | **69**  | ⏸️   |
-| **Total E2E**                | **416** |      |
+| **Total E2E**                | **430** |      |
 
 **Note** : Tests desktop exécutés sur Chromium uniquement. Tests mobiles exécutés sur 5 devices (iPhone SE, iPhone 14 Pro, Pixel 7, iPad Mini, iPad Pro 11") via Chromium avec émulation mobile (WebKit supprimé car bug HTTPS upgrade sur localhost).
 
@@ -1610,6 +1611,10 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 - DataTablePagination responsive (layout vertical mobile, options réduites, labels compacts)
 - ResponsiveBreadcrumb (scroll horizontal snap, fade indicators, auto-scroll vers page courante)
 
+#### Accessibilité (1 composant - SP-269)
+
+- SkipLink (skip to main content, WCAG 2.4.1 Bypass Blocks, 14 tests unitaires)
+
 #### E2E Mobile Tests (SP-389 - 25 janvier 2026)
 
 Tests E2E Playwright pour appareils mobiles avec émulation multi-device :
@@ -1635,6 +1640,52 @@ Tests E2E Playwright pour appareils mobiles avec émulation multi-device :
 
 - **Documentation** : `/docs/e2e-mobile-tests.md`
 
+### Accessibilité WCAG 2.1 (SP-269 - 25 janvier 2026)
+
+Conformité WCAG 2.1 niveau AA avec tests automatisés axe-core et audit Lighthouse :
+
+- **Skip to Main Content** (WCAG 2.4.1 Bypass Blocks) :
+  - Composant `SkipLink` : Premier élément focusable de la page
+  - Pattern `sr-only` + `focus:not-sr-only` pour visibilité au focus uniquement
+  - Cible `#main-content` avec `tabIndex={-1}` pour focus programmatique
+  - Style : `bg-primary text-primary-foreground rounded-md` avec ring focus
+  - Label français : "Aller au contenu principal"
+  - 14 tests unitaires
+
+- **Tests E2E axe-core** (`e2e/specs/a11y/accessibility.spec.ts`) :
+  - Intégration `@axe-core/playwright` pour audit WCAG automatisé
+  - Tags WCAG testés : `wcag2a`, `wcag2aa`, `wcag21a`, `wcag21aa`
+  - **Public Pages** (3 tests) : Login, Register, Home - violations critiques
+  - **Skip Link** (4 tests) : Présence DOM, visibilité focus, navigation, main-content
+  - **Keyboard Navigation** (2 tests) : Tab navigation, Escape fermeture modals
+  - **Color Contrast** (1 test) : Violations critiques uniquement
+  - **Forms** (2 tests) : Labels accessibles login/register
+  - **ARIA & Semantics** (2 tests) : Landmark regions, éléments focusables
+  - 14 tests E2E au total
+
+- **Lighthouse Audit Script** (`scripts/lighthouse-audit.js`) :
+  - Audit automatisé accessibilité sur pages principales
+  - Seuil minimum configurable (défaut : 90%)
+  - Rapport Markdown généré dans `/docs/lighthouse-a11y-report.md`
+  - Support variable `BASE_URL` pour environnements staging/production
+  - Utilisation sécurisée `execFileSync` (vs execSync)
+
+- **Résultats audit** :
+  - Score moyen : **95%** (objectif ≥ 90%)
+  - Pages conformes : Accueil, Login, Register
+
+**Scripts NPM** :
+```bash
+npm run test:a11y     # Tests E2E accessibilité (14 tests)
+npm run a11y:audit    # Audit Lighthouse (nécessite serveur actif)
+```
+
+**Import** :
+```typescript
+// Skip Link (intégré automatiquement dans layout.tsx)
+import { SkipLink } from '@/components/layout/skip-link'
+```
+
 ### Scripts de test
 
 ```bash
@@ -1642,6 +1693,8 @@ npm run test             # Tests en mode watch
 npm run test -- --run    # Tests single run
 npm run test:coverage    # Tests avec coverage
 npm run test:e2e         # Tests E2E Playwright
+npm run test:a11y        # Tests E2E accessibilité axe-core
+npm run a11y:audit       # Audit Lighthouse accessibilité
 ```
 
 ## Contribution
