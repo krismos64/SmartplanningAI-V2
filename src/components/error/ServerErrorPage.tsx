@@ -9,7 +9,7 @@
  * @see Context7 Documentation:
  * - Next.js 15: Custom error pages for server errors
  * - Framer Motion: staggerChildren for cascading entry animations
- * - Accessibility: role="main", aria-label, aria-labelledby, aria-describedby
+ * - Accessibility: role="region", aria-label, aria-labelledby, aria-describedby
  *
  * @ticket SP-303
  */
@@ -93,8 +93,8 @@ export function ServerErrorPage({
   }
 
   return (
-    <motion.main
-      role="main"
+    <motion.div
+      role="region"
       aria-label="Erreur serveur"
       aria-labelledby="server-error-title"
       aria-describedby="server-error-description"
@@ -215,6 +215,6 @@ export function ServerErrorPage({
           )}
         </CardFooter>
       </Card>
-    </motion.main>
+    </motion.div>
   )
 }

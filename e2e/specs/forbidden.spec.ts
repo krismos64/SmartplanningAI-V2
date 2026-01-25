@@ -105,13 +105,13 @@ test.describe('Forbidden Page (403)', () => {
   })
 
   test.describe('Accessibility', () => {
-    test('should have proper ARIA attributes on main element', async ({
+    test('should have proper ARIA attributes on error region', async ({
       page,
     }) => {
-      const main = page.getByRole('main')
-      await expect(main).toHaveAttribute('aria-label', 'Accès refusé')
-      await expect(main).toHaveAttribute('aria-labelledby', 'forbidden-title')
-      await expect(main).toHaveAttribute(
+      const errorRegion = page.getByTestId('forbidden-page')
+      await expect(errorRegion).toHaveAttribute('aria-label', 'Accès refusé')
+      await expect(errorRegion).toHaveAttribute('aria-labelledby', 'forbidden-title')
+      await expect(errorRegion).toHaveAttribute(
         'aria-describedby',
         'forbidden-description'
       )
@@ -144,6 +144,11 @@ test.describe('Forbidden Page (403)', () => {
     })
 
     test('should be keyboard navigable', async ({ page }) => {
+      // First Tab goes to skip-link (from root layout)
+      await page.keyboard.press('Tab')
+      const skipLink = page.getByTestId('skip-link')
+      await expect(skipLink).toBeFocused()
+
       // Tab through the buttons
       await page.keyboard.press('Tab')
       const dashboardButton = page.getByTestId('dashboard-button')
@@ -159,8 +164,10 @@ test.describe('Forbidden Page (403)', () => {
     })
 
     test('should activate button with Enter key', async ({ page }) => {
-      await page.keyboard.press('Tab')
-      await page.keyboard.press('Tab') // Focus home button
+      // First Tab goes to skip-link, then to buttons
+      await page.keyboard.press('Tab') // Skip link
+      await page.keyboard.press('Tab') // Dashboard button
+      await page.keyboard.press('Tab') // Home button
       await page.keyboard.press('Enter')
       await page.waitForURL('/')
       await expect(page).toHaveURL('/')

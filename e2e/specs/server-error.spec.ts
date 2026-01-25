@@ -91,16 +91,16 @@ test.describe('Server Error Page (500)', () => {
   })
 
   test.describe('Accessibility', () => {
-    test('should have proper ARIA attributes on main element', async ({
+    test('should have proper ARIA attributes on error region', async ({
       page,
     }) => {
-      const main = page.getByRole('main')
-      await expect(main).toHaveAttribute('aria-label', 'Erreur serveur')
-      await expect(main).toHaveAttribute(
+      const errorRegion = page.getByTestId('server-error-page')
+      await expect(errorRegion).toHaveAttribute('aria-label', 'Erreur serveur')
+      await expect(errorRegion).toHaveAttribute(
         'aria-labelledby',
         'server-error-title'
       )
-      await expect(main).toHaveAttribute(
+      await expect(errorRegion).toHaveAttribute(
         'aria-describedby',
         'server-error-description'
       )
@@ -133,6 +133,11 @@ test.describe('Server Error Page (500)', () => {
     })
 
     test('should be keyboard navigable', async ({ page }) => {
+      // First Tab goes to skip-link (from root layout)
+      await page.keyboard.press('Tab')
+      const skipLink = page.getByTestId('skip-link')
+      await expect(skipLink).toBeFocused()
+
       // Tab through the buttons
       await page.keyboard.press('Tab')
       const retryButton = page.getByTestId('retry-button')

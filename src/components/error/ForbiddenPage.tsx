@@ -9,7 +9,7 @@
  * @see Context7 Documentation:
  * - Next.js 15: forbidden.tsx file convention for 403 pages
  * - Framer Motion: staggerChildren for cascading entry animations
- * - Accessibility: role="main", aria-label, aria-labelledby, aria-describedby
+ * - Accessibility: role="region", aria-label, aria-labelledby, aria-describedby
  *
  * @ticket SP-305
  */
@@ -110,8 +110,8 @@ export function ForbiddenPage({
   }
 
   return (
-    <motion.main
-      role="main"
+    <motion.div
+      role="region"
       aria-label="Accès refusé"
       aria-labelledby="forbidden-title"
       aria-describedby="forbidden-description"
@@ -245,6 +245,6 @@ export function ForbiddenPage({
           )}
         </CardFooter>
       </Card>
-    </motion.main>
+    </motion.div>
   )
 }
