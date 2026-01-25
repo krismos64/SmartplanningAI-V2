@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 25 janvier 2026 (Sprint 11 - SP-269 Accessibilité WCAG 2.1)
+- **Dernière mise à jour** : 25 janvier 2026 (Sprint 11 - SP-263 Réinitialisation mot de passe)
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -209,6 +209,42 @@ import { tokens, colors, spacing } from '@/styles/tokens'
 - **Support variant** : LoginForm et RegisterForm acceptent variant="dark" | "light"
 - **Tests** : 34 tests unitaires + 20 tests E2E passent
 
+### Réinitialisation du mot de passe (SP-263 - 25 janvier 2026)
+
+Système complet de réinitialisation de mot de passe avec sécurité anti-énumération :
+
+- **ForgotPasswordForm** : Formulaire de demande de réinitialisation
+  - React Hook Form + Zod pour validation email
+  - Appel Server Action `forgotPasswordAction`
+  - **Sécurité anti-énumération** : message de succès identique que l'email existe ou non
+  - État de succès avec message de confirmation
+  - Bouton "Réessayer" pour renvoyer un email
+  - Support variant dark/light
+  - 14 tests unitaires
+
+- **ResetPasswordForm** : Formulaire de nouveau mot de passe
+  - Validation mot de passe fort (8 caractères minimum)
+  - Vérification de correspondance des mots de passe
+  - Token de réinitialisation passé via props
+  - Appel Server Action `resetPasswordAction`
+  - Toggle visibilité mot de passe (Eye/EyeOff)
+  - Countdown de redirection après succès (5s)
+  - Bouton "Se connecter maintenant" pour redirection immédiate
+  - Support variant dark/light
+  - 17 tests unitaires
+
+- **Pages Next.js App Router** :
+  - `/forgot-password` : Page de demande avec ForgotPasswordForm
+  - `/reset-password?token=xxx` : Page de réinitialisation avec ResetPasswordForm
+  - Gestion du token manquant avec message d'erreur et lien vers /forgot-password
+  - Design dark cohérent avec la landing page
+
+- **Server Actions** (dans `src/lib/actions/password-actions.ts`) :
+  - `forgotPasswordAction` : Génère token, envoie email (protégé contre l'énumération)
+  - `resetPasswordAction` : Vérifie token, met à jour le mot de passe
+
+- **Tests** : 39 tests unitaires (14 ForgotPasswordForm + 17 ResetPasswordForm + 8 ResetPasswordPage)
+
 ### Emails Transactionnels (Sprint 9 - Janvier 2026)
 
 Système complet d'envoi d'emails transactionnels avec React Email et Nodemailer :
@@ -342,10 +378,11 @@ Page d'erreur serveur personnalisée avec animations Framer Motion et accessibil
   - Intégration avec error.tsx et global-error.tsx
 
 - **Accessibilité WCAG 2.1 AA** :
-  - `role="main"` sur le conteneur principal
+  - `role="region"` sur le conteneur (évite les duplicates `<main>` avec le layout)
   - `aria-label`, `aria-labelledby`, `aria-describedby`
   - `aria-hidden="true"` sur éléments décoratifs
   - Labels accessibles sur tous les boutons
+  - Navigation clavier complète (Tab, Enter)
 
 - **Tests** : 74 tests unitaires + 22 tests E2E
 
@@ -727,13 +764,13 @@ Page d'accès refusé personnalisée avec animations Framer Motion et accessibil
   - Intégration avec Server Components, Server Actions, Route Handlers
 
 - **Accessibilité WCAG 2.1 AA** :
-  - `role="main"` sur le conteneur principal
+  - `role="region"` sur le conteneur principal (évite conflit avec `<main>` du layout)
   - `aria-label`, `aria-labelledby`, `aria-describedby`
   - `aria-hidden="true"` sur éléments décoratifs
   - Labels accessibles sur tous les boutons
-  - Navigation clavier complète
+  - Navigation clavier complète (skip-link → boutons)
 
-- **Tests** : 47 tests unitaires + 24 tests E2E
+- **Tests** : 47 tests unitaires + 24 tests E2E (tous passants)
 
 ### Formulaire de Contact (SP-287, SP-289 - 19 janvier 2026)
 
