@@ -141,15 +141,15 @@ test.describe('Not Found Page (404)', () => {
   test('has proper accessibility attributes', async ({ page }) => {
     await page.goto('/inaccessible-page-test')
 
-    // Verify main landmark is present
-    const main = page.getByRole('main', { name: /page non trouvée/i })
-    await expect(main).toBeVisible()
+    // Verify region landmark is present (not main, to avoid conflict with layout's <main>)
+    const region = page.getByRole('region', { name: /page non trouvée/i })
+    await expect(region).toBeVisible()
 
     // Verify aria-labelledby points to title
-    await expect(main).toHaveAttribute('aria-labelledby', 'not-found-title')
+    await expect(region).toHaveAttribute('aria-labelledby', 'not-found-title')
 
     // Verify aria-describedby points to description
-    await expect(main).toHaveAttribute('aria-describedby', 'not-found-description')
+    await expect(region).toHaveAttribute('aria-describedby', 'not-found-description')
 
     // Verify title has correct id
     const title = page.locator('#not-found-title')

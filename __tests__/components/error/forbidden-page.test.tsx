@@ -198,10 +198,10 @@ describe('ForbiddenPage', () => {
   })
 
   describe('Accessibility', () => {
-    it('should have proper role on main element', () => {
+    it('should have proper role on region element', () => {
       render(<ForbiddenPage />)
-      const main = screen.getByRole('main')
-      expect(main).toBeInTheDocument()
+      const region = screen.getByRole('region')
+      expect(region).toBeInTheDocument()
     })
 
     it('should have aria-label on main element', () => {

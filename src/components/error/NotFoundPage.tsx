@@ -46,8 +46,8 @@ const quickLinks = [
  */
 export function NotFoundPage() {
   return (
-    <motion.main
-      role="main"
+    <motion.div
+      role="region"
       aria-label="Page non trouvée"
       aria-labelledby="not-found-title"
       aria-describedby="not-found-description"
@@ -127,6 +127,6 @@ export function NotFoundPage() {
           </Link>
         ))}
       </motion.nav>
-    </motion.main>
+    </motion.div>
   )
 }
