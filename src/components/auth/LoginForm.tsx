@@ -177,7 +177,7 @@ export function LoginForm({ variant = 'light' }: LoginFormProps) {
               <div className="flex items-center justify-between">
                 <FormLabel className={labelClass}>Mot de passe</FormLabel>
                 <Link
-                  href="/reset-password"
+                  href="/forgot-password"
                   className={linkClass}
                   tabIndex={-1}
                 >
