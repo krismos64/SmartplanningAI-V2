@@ -3,12 +3,14 @@
  *
  * Ce fichier configure Playwright pour les tests end-to-end :
  * - Navigateurs : Chromium (CI) / Chromium + Firefox + WebKit (local)
+ * - Projets mobiles : iPhone SE, iPhone 14 Pro, Pixel 7, iPad Mini, iPad Pro
  * - webServer : démarre Next.js automatiquement
  * - Traces et screenshots sur échec
  * - Timeouts adaptés pour CI
  *
  * @see https://playwright.dev/docs/test-configuration
- * @ticket SP-133, SP-113
+ * @see Context7 - Playwright mobile emulation with devices and isMobile
+ * @ticket SP-133, SP-113, SP-389
  */
 
 import { defineConfig, devices } from '@playwright/test'
@@ -100,18 +102,96 @@ export default defineConfig({
    * CONFIGURATION DES NAVIGATEURS
    * ============================================================
    *
-   * Chromium uniquement (CI et local) :
-   * - Représente ~65% des utilisateurs (Chrome + Edge)
-   * - Firefox et WebKit supprimés car instables et peu utiles pour ce projet
-   * - Temps de tests réduit significativement
+   * Desktop :
+   * - Chromium uniquement (représente ~65% des utilisateurs)
+   *
+   * Mobile (SP-389) :
+   * - iPhone SE : petit écran (375x667), test contraintes espace
+   * - iPhone 14 Pro : écran moderne (393x852), iOS Safari
+   * - Pixel 7 : Android référence (412x915), Chrome mobile
+   * - iPad Mini : tablette petite (768x1024), mode intermédiaire
+   * - iPad Pro 11" : tablette grande (834x1194), layout quasi-desktop
    *
    * @see https://playwright.dev/docs/browsers
+   * @see https://playwright.dev/docs/emulation#devices
+   * @ticket SP-389
    * ============================================================
    */
   projects: [
+    // ==================== DESKTOP ====================
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
+      // Exclure les tests mobile-only sur le projet desktop
+      testIgnore: /.*mobile.*\.spec\.ts/,
+    },
+
+    // ==================== MOBILE - SMARTPHONES ====================
+    // Note: Tous les projets mobiles utilisent Chromium au lieu de WebKit
+    // car WebKit a un bug connu qui upgrade http://localhost en https://
+    // ce qui cause des erreurs TLS et empêche le login de fonctionner.
+    // Les viewports et paramètres touch sont conservés pour l'émulation mobile.
+    {
+      name: 'mobile-iphone-se',
+      use: {
+        // Viewport iPhone SE : petit écran 320x568
+        viewport: { width: 320, height: 568 },
+        deviceScaleFactor: 2,
+        isMobile: true,
+        hasTouch: true,
+        userAgent:
+          'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1',
+      },
+      testMatch: /.*mobile.*\.spec\.ts/,
+    },
+    {
+      name: 'mobile-iphone-14-pro',
+      use: {
+        // Viewport iPhone 14 Pro : écran moderne 393x852
+        viewport: { width: 393, height: 852 },
+        deviceScaleFactor: 3,
+        isMobile: true,
+        hasTouch: true,
+        userAgent:
+          'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1',
+      },
+      testMatch: /.*mobile.*\.spec\.ts/,
+    },
+    {
+      name: 'mobile-pixel-7',
+      use: {
+        ...devices['Pixel 7'],
+        // Android référence 412x915, Chrome mobile
+      },
+      testMatch: /.*mobile.*\.spec\.ts/,
+    },
+
+    // ==================== MOBILE - TABLETS ====================
+    {
+      name: 'tablet-ipad-mini',
+      use: {
+        // Viewport iPad Mini : 768x1024
+        viewport: { width: 768, height: 1024 },
+        deviceScaleFactor: 2,
+        isMobile: true,
+        hasTouch: true,
+        userAgent:
+          'Mozilla/5.0 (iPad; CPU OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1',
+      },
+      testMatch: /.*mobile.*\.spec\.ts/,
+    },
+    {
+      name: 'tablet-ipad-pro-11',
+      use: {
+        // Viewport iPad Pro 11" : 834x1194
+        viewport: { width: 834, height: 1194 },
+        deviceScaleFactor: 2,
+        isMobile: true,
+        hasTouch: true,
+        userAgent:
+          'Mozilla/5.0 (iPad; CPU OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1',
+      },
+      testMatch: /.*mobile.*\.spec\.ts/,
     },
   ],
 
