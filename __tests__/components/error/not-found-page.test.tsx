@@ -266,32 +266,32 @@ describe('NotFoundPage', () => {
   // -------------------------------------------------------------------------
 
   describe('Accessibilité WCAG 2.1 AA', () => {
-    it('has main landmark with correct role', () => {
+    it('has region landmark with correct role', () => {
       render(<NotFoundPage />)
 
-      const main = screen.getByRole('main')
-      expect(main).toBeInTheDocument()
+      const region = screen.getByRole('region')
+      expect(region).toBeInTheDocument()
     })
 
     it('has aria-label for page description', () => {
       render(<NotFoundPage />)
 
-      const main = screen.getByRole('main')
-      expect(main).toHaveAttribute('aria-label', 'Page non trouvée')
+      const region = screen.getByRole('region')
+      expect(region).toHaveAttribute('aria-label', 'Page non trouvée')
     })
 
     it('has aria-labelledby pointing to title', () => {
       render(<NotFoundPage />)
 
-      const main = screen.getByRole('main')
-      expect(main).toHaveAttribute('aria-labelledby', 'not-found-title')
+      const region = screen.getByRole('region')
+      expect(region).toHaveAttribute('aria-labelledby', 'not-found-title')
     })
 
     it('has aria-describedby pointing to description', () => {
       render(<NotFoundPage />)
 
-      const main = screen.getByRole('main')
-      expect(main).toHaveAttribute('aria-describedby', 'not-found-description')
+      const region = screen.getByRole('region')
+      expect(region).toHaveAttribute('aria-describedby', 'not-found-description')
     })
 
     it('title has correct id for aria reference', () => {
@@ -360,15 +360,15 @@ describe('NotFoundPage', () => {
     it('page has full viewport height', () => {
       render(<NotFoundPage />)
 
-      const main = screen.getByRole('main')
-      expect(main).toHaveClass('min-h-screen')
+      const region = screen.getByRole('region')
+      expect(region).toHaveClass('min-h-screen')
     })
 
     it('content is centered', () => {
       render(<NotFoundPage />)
 
-      const main = screen.getByRole('main')
-      expect(main).toHaveClass('items-center', 'justify-center')
+      const region = screen.getByRole('region')
+      expect(region).toHaveClass('items-center', 'justify-center')
     })
   })
 
@@ -380,8 +380,8 @@ describe('NotFoundPage', () => {
     it('uses bg-background for theme compatibility', () => {
       render(<NotFoundPage />)
 
-      const main = screen.getByRole('main')
-      expect(main).toHaveClass('bg-background')
+      const region = screen.getByRole('region')
+      expect(region).toHaveClass('bg-background')
     })
 
     it('uses text-foreground for title', () => {
