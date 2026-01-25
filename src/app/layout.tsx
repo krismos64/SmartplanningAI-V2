@@ -23,6 +23,7 @@
 import { UmamiAnalyticsWrapper } from '@/components/analytics'
 import { CookieConsentProvider } from '@/components/cookies'
 import { ErrorBoundaryWrapper } from '@/components/error'
+import { SkipLink } from '@/components/layout/skip-link'
 import { ThemeProvider } from '@/components/providers'
 import { ToastProvider } from '@/components/toast'
 import type { Metadata, Viewport } from 'next'
@@ -249,6 +250,9 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="min-h-screen bg-background font-rajdhani antialiased">
+        {/* Skip Link - Accessibilité WCAG 2.4.1 (SP-269) */}
+        <SkipLink />
+
         {/* Theme Provider (SP-265) - Dark/Light mode avec détection système */}
         <ThemeProvider>
           {/* Cookie Consent RGPD (SP-283) - Provider enveloppe tout le contenu */}
@@ -256,12 +260,14 @@ export default function RootLayout({
             {/* Error Boundary (SP-304) - Capture les erreurs React côté client */}
             <ErrorBoundaryWrapper>
               {/*
-                Structure sémantique HTML5
-                - <main> sera fourni par les layouts enfants
+                Structure sémantique HTML5 (SP-269)
+                - <main id="main-content"> cible du skip link
                 - Permet l'accessibilité (lecteurs d'écran)
                 - Font Rajdhani appliquée par défaut (SmartPlanning branding)
               */}
-              {children}
+              <main id="main-content" tabIndex={-1}>
+                {children}
+              </main>
             </ErrorBoundaryWrapper>
 
             {/* Toast System - Sonner (SP-122) */}
