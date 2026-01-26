@@ -34,7 +34,7 @@ Dans le cadre du diplôme **CDA (Concepteur Développeur d'Applications)**, ce c
 | Métrique              | Objectif  | Atteint |
 | --------------------- | --------- | ------- |
 | Couverture globale    | ≥ 70%     | ✅ 85%  |
-| Tests unitaires       | ≥ 500     | ✅ 3112 |
+| Tests unitaires       | ≥ 500     | ✅ 3152 |
 | Tests E2E             | ≥ 50      | ✅ 430  |
 | Score Lighthouse A11y | ≥ 90%     | ✅ 95%  |
 | Anomalies critiques   | 0 en prod | ✅ 0    |
@@ -397,6 +397,7 @@ Ce tableau recense chaque campagne de tests significative (mise en production, f
 
 | Date       | Sprint    | Version/Commit | Tests unitaires | Tests E2E  | Couverture | Statut  | Notes                                                                                                                                                                                                                                                                                                          |
 | ---------- | --------- | -------------- | --------------- | ---------- | ---------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 26/01/2026 | Sprint 12 | SP-399         | 3152/3152 ✅    | 430/430 ✅ | ~85%       | ✅ PASS | 🆕 SP-399 Récurrence des Shifts. +40 tests unitaires (recurrence: 24, RecurrenceConfig: 12, availability fix: 4). Fréquences DAILY/WEEKLY/BIWEEKLY/MONTHLY. Sélection jours semaine. Limites: 52 occurrences max, 200 créneaux max. Server Actions groupées (delete/update par scope). RecurrenceEditDialog. Total : 3582 tests |
 | 26/01/2026 | Sprint 12 | SP-398         | 3112/3112 ✅    | 430/430 ✅ | ~85%       | ✅ PASS | 🆕 SP-398 Drag & Drop calendrier. +19 tests unitaires. Plugin @schedule-x/resize ajouté. Déplacer créneaux par drag, resize par bord. Persistance updateSchedule avec rollback erreur. RBAC: DIRECTOR/MANAGER uniquement. Toast feedback. Total : 3542 tests |
 | 26/01/2026 | Sprint 12 | SP-397         | 3093/3093 ✅    | 430/430 ✅ | ~85%       | ✅ PASS | 🆕 SP-397 ShiftModal création/édition créneaux. +30 tests unitaires (17 modal + 13 hook). Sélection multi-employés avec recherche et filtrage équipe. Date/time pickers locale FR. Types/statuts FR. Intégration createSchedule/updateSchedule. Total : 3523 tests |
 | 26/01/2026 | Sprint 12 | SP-396         | 3063/3063 ✅    | 430/430 ✅ | ~85%       | ✅ PASS | 🆕 SP-396 ScheduleCalendar responsive. +18 tests unitaires. Schedule-X intégré (desktop ≥768px) avec vues jour/semaine/mois. Vue mobile cards empilées (pas de scroll horizontal). Couleurs par type (7 types), badges statut. Temporal API polyfill. useMediaQuery hook. Total : 3493 tests |
@@ -1708,6 +1709,9 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
 
 | Date       | Modification                                                                                                                                                                                                                                                                                                                                     |
 | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 26/01/2026 | 🆕 SP-399 Récurrence des Shifts : +40 tests unitaires (recurrence: 24, RecurrenceConfig: 12, availability fix: 4). Fréquences DAILY/WEEKLY/BIWEEKLY/MONTHLY. Sélection jours semaine. Limites : 52 occurrences max, 200 créneaux max. Server Actions groupées (getRecurrenceGroupCounts, deleteRecurringSchedules, updateRecurringSchedules). RecurrenceEditDialog pour scope single/future/all. Total : 3582 tests |
+| 26/01/2026 | 🆕 SP-398 Drag & Drop Calendrier : +19 tests unitaires. Plugin @schedule-x/drag-and-drop + @schedule-x/resize. Déplacer créneaux par drag, redimensionner par bord. Persistance updateSchedule avec rollback erreur. RBAC : DIRECTOR/MANAGER uniquement. Toast feedback. Total : 3542 tests |
+| 26/01/2026 | 🆕 SP-397 ShiftModal : +30 tests unitaires (17 modal + 13 hook). Modal création/édition avec React Hook Form + Zod. Sélection multi-employés avec recherche et filtrage équipe. Date/time pickers locale française. Types/statuts FR. Total : 3523 tests |
 | 26/01/2026 | 🆕 SP-396 ScheduleCalendar responsive : +18 tests unitaires. Intégration Schedule-X (desktop ≥768px) avec vues jour/semaine/mois, drag & drop. Vue mobile cards empilées verticalement (pas de scroll horizontal). Couleurs par type (7 types : travail, pause, réunion, formation, télétravail, astreinte, heures sup.). Temporal API polyfill. Total : 3493 tests |
 | 26/01/2026 | 🆕 SP-395 Page Liste Schedules : Route `/app/dashboard/schedules`. Layout SEO, loading skeleton grille semaine. `SchedulesPageContent` (navigation date, vues jour/semaine/mois, filtres collapsibles, stats rapides). `SchedulesList` (grille semaine, shifts colorés par type). `SchedulesFilters` (recherche, statut, type). Correction Sidebar URL. Total : 3475 tests |
 | 26/01/2026 | 🆕 SP-394 Server Actions Schedules CRUD : +30 tests unitaires. 10 actions CRUD (`getSchedules`, `getScheduleById`, `createSchedule`, `updateSchedule`, `deleteSchedule`, `deleteScheduleGroup`, `duplicateSchedule`, `updateScheduleStatus`, `getEmployeeSchedules`, `getTeamSchedules`). RBAC complet (SYSTEM_ADMIN, DIRECTOR, MANAGER, EMPLOYEE). Multi-employé via `employeeIds`. Total : 3475 tests 🎉 |
@@ -1773,7 +1777,27 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
   - Vue mobile cards empilées verticalement (pas de scroll horizontal)
   - Couleurs par type (7 types), badges statut, locale française
   - 18 tests unitaires, Temporal API polyfill
-- Prochaines étapes : SP-397+ (Formulaire création/édition, modale détails)
+- SP-397 : ShiftModal création/édition ✅ TERMINÉ
+  - Modal création/édition avec React Hook Form + Zod
+  - Sélection multi-employés avec recherche et filtrage équipe
+  - Date/time pickers locale française
+  - 30 tests unitaires (17 modal + 13 hook)
+- SP-398 : Drag & Drop Calendrier ✅ TERMINÉ
+  - Plugin @schedule-x/drag-and-drop pour déplacer les créneaux
+  - Plugin @schedule-x/resize pour redimensionner (modifier heure fin)
+  - Persistance updateSchedule avec rollback erreur
+  - RBAC : DIRECTOR/MANAGER uniquement
+  - 19 tests unitaires
+- SP-399 : Récurrence des Shifts ✅ TERMINÉ
+  - Fréquences : DAILY, WEEKLY, BIWEEKLY, MONTHLY
+  - Sélection jours de la semaine (Lun-Dim) pour WEEKLY/BIWEEKLY
+  - Mode de fin : nombre d'occurrences OU date de fin
+  - Limites sécurité : 52 occurrences max, 200 créneaux max par création
+  - RecurrenceConfig UI component avec aperçu et warnings
+  - RecurrenceEditDialog pour opérations groupées (scope: single/future/all)
+  - Server Actions : getRecurrenceGroupCounts, deleteRecurringSchedules, updateRecurringSchedules
+  - 40 tests unitaires (recurrence: 24, RecurrenceConfig: 12, availability fix: 4)
+- Prochaines étapes : SP-400+ (Gestion des disponibilités)
 
 ### Sprint 11 - Réinitialisation mot de passe (SP-263)
 
