@@ -126,7 +126,9 @@ describe('useConflictDetection', () => {
 
   describe('État initial', () => {
     it('retourne un état initial correct', () => {
-      vi.mocked(checkAvailabilityConflicts).mockResolvedValue(mockNoConflictResult)
+      vi.mocked(checkAvailabilityConflicts).mockResolvedValue(
+        mockNoConflictResult
+      )
 
       const { result } = renderHook(() =>
         useConflictDetection({
@@ -146,8 +148,10 @@ describe('useConflictDetection', () => {
       expect(result.current.error).toBeNull()
     })
 
-    it('ne fait pas d\'appel si enabled=false', async () => {
-      vi.mocked(checkAvailabilityConflicts).mockResolvedValue(mockNoConflictResult)
+    it("ne fait pas d'appel si enabled=false", async () => {
+      vi.mocked(checkAvailabilityConflicts).mockResolvedValue(
+        mockNoConflictResult
+      )
 
       renderHook(() =>
         useConflictDetection({
@@ -160,14 +164,16 @@ describe('useConflictDetection', () => {
 
       // Avancer le timer au-delà du debounce
       await act(async () => {
-        vi.advanceTimersByTime(500)
+        await vi.advanceTimersByTimeAsync(500)
       })
 
       expect(checkAvailabilityConflicts).not.toHaveBeenCalled()
     })
 
-    it('ne fait pas d\'appel si employeeIds est vide', async () => {
-      vi.mocked(checkAvailabilityConflicts).mockResolvedValue(mockNoConflictResult)
+    it("ne fait pas d'appel si employeeIds est vide", async () => {
+      vi.mocked(checkAvailabilityConflicts).mockResolvedValue(
+        mockNoConflictResult
+      )
 
       renderHook(() =>
         useConflictDetection({
@@ -179,14 +185,16 @@ describe('useConflictDetection', () => {
       )
 
       await act(async () => {
-        vi.advanceTimersByTime(500)
+        await vi.advanceTimersByTimeAsync(500)
       })
 
       expect(checkAvailabilityConflicts).not.toHaveBeenCalled()
     })
 
-    it('ne fait pas d\'appel si dates invalides', async () => {
-      vi.mocked(checkAvailabilityConflicts).mockResolvedValue(mockNoConflictResult)
+    it("ne fait pas d'appel si dates invalides", async () => {
+      vi.mocked(checkAvailabilityConflicts).mockResolvedValue(
+        mockNoConflictResult
+      )
 
       renderHook(() =>
         useConflictDetection({
@@ -198,7 +206,7 @@ describe('useConflictDetection', () => {
       )
 
       await act(async () => {
-        vi.advanceTimersByTime(500)
+        await vi.advanceTimersByTimeAsync(500)
       })
 
       expect(checkAvailabilityConflicts).not.toHaveBeenCalled()
@@ -207,7 +215,9 @@ describe('useConflictDetection', () => {
 
   describe('Détection de conflits', () => {
     it('détecte correctement un hard conflict', async () => {
-      vi.mocked(checkAvailabilityConflicts).mockResolvedValue(mockHardConflictResult)
+      vi.mocked(checkAvailabilityConflicts).mockResolvedValue(
+        mockHardConflictResult
+      )
 
       const { result } = renderHook(() =>
         useConflictDetection({
@@ -232,7 +242,9 @@ describe('useConflictDetection', () => {
     })
 
     it('détecte correctement un soft conflict', async () => {
-      vi.mocked(checkAvailabilityConflicts).mockResolvedValue(mockSoftConflictResult)
+      vi.mocked(checkAvailabilityConflicts).mockResolvedValue(
+        mockSoftConflictResult
+      )
 
       const { result } = renderHook(() =>
         useConflictDetection({
@@ -256,7 +268,9 @@ describe('useConflictDetection', () => {
     })
 
     it('retourne hasConflict=false si aucun conflit', async () => {
-      vi.mocked(checkAvailabilityConflicts).mockResolvedValue(mockNoConflictResult)
+      vi.mocked(checkAvailabilityConflicts).mockResolvedValue(
+        mockNoConflictResult
+      )
 
       const { result } = renderHook(() =>
         useConflictDetection({
@@ -277,7 +291,9 @@ describe('useConflictDetection', () => {
     })
 
     it('fonctionne avec plusieurs employés', async () => {
-      vi.mocked(checkAvailabilityConflicts).mockResolvedValue(mockMixedConflictResult)
+      vi.mocked(checkAvailabilityConflicts).mockResolvedValue(
+        mockMixedConflictResult
+      )
 
       const { result } = renderHook(() =>
         useConflictDetection({
@@ -309,7 +325,9 @@ describe('useConflictDetection', () => {
 
   describe('Debounce', () => {
     it('debounce les appels successifs', async () => {
-      vi.mocked(checkAvailabilityConflicts).mockResolvedValue(mockNoConflictResult)
+      vi.mocked(checkAvailabilityConflicts).mockResolvedValue(
+        mockNoConflictResult
+      )
 
       const { rerender } = renderHook(
         ({ employeeIds }) =>
@@ -377,7 +395,9 @@ describe('useConflictDetection', () => {
 
   describe('Refetch et Reset', () => {
     it('refetch force une nouvelle vérification', async () => {
-      vi.mocked(checkAvailabilityConflicts).mockResolvedValue(mockNoConflictResult)
+      vi.mocked(checkAvailabilityConflicts).mockResolvedValue(
+        mockNoConflictResult
+      )
 
       const { result } = renderHook(() =>
         useConflictDetection({
@@ -405,7 +425,9 @@ describe('useConflictDetection', () => {
     })
 
     it("reset réinitialise l'état", async () => {
-      vi.mocked(checkAvailabilityConflicts).mockResolvedValue(mockHardConflictResult)
+      vi.mocked(checkAvailabilityConflicts).mockResolvedValue(
+        mockHardConflictResult
+      )
 
       const { result } = renderHook(() =>
         useConflictDetection({
