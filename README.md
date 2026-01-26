@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 26 janvier 2026 (Sprint 12 - SP-398 Drag & Drop)
+- **Dernière mise à jour** : 26 janvier 2026 (Sprint 12 - SP-399 Récurrence des Shifts)
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -368,6 +368,44 @@ Fonctionnalités interactives pour le calendrier Schedule-X :
   - Message d'aide affiché pour les utilisateurs autorisés
 
 - **Tests** : 19 tests unitaires (rendering, plugins, RBAC, callbacks)
+
+### Récurrence des Shifts (SP-399 - 26 janvier 2026)
+
+Système complet de récurrence pour les créneaux horaires :
+
+- **Fréquences supportées** :
+  - DAILY : Quotidien (tous les X jours)
+  - WEEKLY : Hebdomadaire avec sélection des jours
+  - BIWEEKLY : Toutes les 2 semaines avec sélection des jours
+  - MONTHLY : Mensuel (même jour du mois)
+
+- **Configuration UI** (`RecurrenceConfig`) :
+  - Switch pour activer/désactiver la récurrence
+  - Sélecteur de fréquence
+  - Boutons de sélection des jours (Lun-Dim) pour WEEKLY/BIWEEKLY
+  - Mode de fin : nombre d'occurrences OU date de fin
+  - Aperçu du nombre de créneaux qui seront créés
+  - Warning si dépassement des limites (200 créneaux max)
+
+- **Limites de sécurité** :
+  - Maximum 52 occurrences par série
+  - Maximum 200 créneaux créés en une fois (occurrences × employés)
+
+- **Génération backend** :
+  - Utilitaire `generateOccurrences()` pour calculer toutes les dates
+  - `recurrenceGroupId` pour regrouper les créneaux d'une même série
+  - Création en batch dans la base de données
+
+- **Server Actions pour opérations groupées** :
+  - `getRecurrenceGroupCounts` : Compte les créneaux d'un groupe
+  - `deleteRecurringSchedules` : Suppression avec scope (single/future/all)
+  - `updateRecurringSchedules` : Modification avec scope (single/future/all)
+
+- **Dialog d'édition groupée** (`RecurrenceEditDialog`) :
+  - 3 options de scope : Ce créneau uniquement, Ce créneau et les suivants, Tous les créneaux de la série
+  - Confirmation avant action
+
+- **Tests** : 24 tests utilitaire recurrence + 12 tests RecurrenceConfig
 
 ### Gestion des Plannings - Base de données (SP-392 - 26 janvier 2026)
 
@@ -1613,11 +1651,11 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 - **E2E** : Playwright (configuré)
 - **Coverage** : v8 provider
 
-### Couverture actuelle (25 janvier 2026)
+### Couverture actuelle (26 janvier 2026)
 
 | Catégorie                              | Coverage | Tests    |
 | -------------------------------------- | -------- | -------- |
-| **Global**                             | **~85%** | **2881** |
+| **Global**                             | **~85%** | **3152** |
 | loading                                | 100%     | 152      |
 | modals                                 | 100%     | 52       |
 | cards                                  | 77.09%   | 88       |
@@ -1651,6 +1689,10 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 | command-palette-mobile (SP-386)        | 100%     | 32       |
 | data-table-pagination (SP-387)         | 100%     | 22       |
 | responsive-breadcrumb (SP-388)         | 100%     | 25       |
+| recurrence utils (SP-399)              | 100%     | 24       |
+| RecurrenceConfig (SP-399)              | 100%     | 12       |
+| schedules actions (SP-397/399)         | 100%     | 30       |
+| schedule validation (SP-393/399)       | 100%     | 47       |
 
 ### Tests E2E
 
