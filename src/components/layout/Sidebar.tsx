@@ -114,7 +114,7 @@ const menuItems: MenuItem[] = [
     id: 'schedules',
     label: 'Plannings',
     icon: Calendar,
-    href: '/schedules',
+    href: '/app/dashboard/schedules',
     roles: ['DIRECTOR', 'MANAGER', 'EMPLOYEE'],
   },
   {
