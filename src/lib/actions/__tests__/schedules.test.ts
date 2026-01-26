@@ -4,6 +4,8 @@
  * @ticket SP-394
  */
 
+/* eslint-disable @typescript-eslint/unbound-method */
+
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import {
   getSchedules,
@@ -101,7 +103,10 @@ const mockSchedule = (overrides = {}) => ({
   ...overrides,
 })
 
-const mockSession = (role: string, companyId: string | null = 'clcompany0000000001') => ({
+const mockSession = (
+  role: string,
+  companyId: string | null = 'clcompany0000000001'
+) => ({
   user: {
     id: 'cluser00000000000001',
     email: 'user@test.com',
@@ -131,17 +136,16 @@ describe('schedules actions', () => {
 
       expect(result.success).toBe(false)
       if (!result.success) {
-        expect(result.error).toBe('Vous devez être connecté pour effectuer cette action')
+        expect(result.error).toBe(
+          'Vous devez être connecté pour effectuer cette action'
+        )
       }
     })
 
     it('retourne les schedules pour un DIRECTOR', async () => {
       vi.mocked(auth).mockResolvedValue(mockSession('DIRECTOR') as never)
       vi.mocked(prisma.employee.findUnique).mockResolvedValue(null)
-      vi.mocked(prisma.$transaction).mockResolvedValue([
-        [mockSchedule()],
-        1,
-      ])
+      vi.mocked(prisma.$transaction).mockResolvedValue([[mockSchedule()], 1])
 
       const result = await getSchedules({})
 
@@ -183,10 +187,7 @@ describe('schedules actions', () => {
     it('applique la pagination', async () => {
       vi.mocked(auth).mockResolvedValue(mockSession('DIRECTOR') as never)
       vi.mocked(prisma.employee.findUnique).mockResolvedValue(null)
-      vi.mocked(prisma.$transaction).mockResolvedValue([
-        [mockSchedule()],
-        50,
-      ])
+      vi.mocked(prisma.$transaction).mockResolvedValue([[mockSchedule()], 50])
 
       const result = await getSchedules({ page: 2, limit: 10 })
 
@@ -207,7 +208,9 @@ describe('schedules actions', () => {
     it('retourne le schedule si autorise', async () => {
       vi.mocked(auth).mockResolvedValue(mockSession('DIRECTOR') as never)
       vi.mocked(prisma.employee.findUnique).mockResolvedValue(null)
-      vi.mocked(prisma.schedule.findUnique).mockResolvedValue(mockSchedule() as never)
+      vi.mocked(prisma.schedule.findUnique).mockResolvedValue(
+        mockSchedule() as never
+      )
 
       const result = await getScheduleById('clschedule000000001')
 
@@ -231,9 +234,13 @@ describe('schedules actions', () => {
     })
 
     it('refuse acces si company differente', async () => {
-      vi.mocked(auth).mockResolvedValue(mockSession('DIRECTOR', 'otherCompany') as never)
+      vi.mocked(auth).mockResolvedValue(
+        mockSession('DIRECTOR', 'otherCompany') as never
+      )
       vi.mocked(prisma.employee.findUnique).mockResolvedValue(null)
-      vi.mocked(prisma.schedule.findUnique).mockResolvedValue(mockSchedule() as never)
+      vi.mocked(prisma.schedule.findUnique).mockResolvedValue(
+        mockSchedule() as never
+      )
 
       const result = await getScheduleById('clschedule000000001')
 
@@ -276,7 +283,9 @@ describe('schedules actions', () => {
     })
 
     it('refuse la creation pour un SYSTEM_ADMIN', async () => {
-      vi.mocked(auth).mockResolvedValue(mockSession('SYSTEM_ADMIN', null) as never)
+      vi.mocked(auth).mockResolvedValue(
+        mockSession('SYSTEM_ADMIN', null) as never
+      )
       vi.mocked(prisma.employee.findUnique).mockResolvedValue(null)
 
       const result = await createSchedule(validInput)
@@ -342,7 +351,9 @@ describe('schedules actions', () => {
     })
 
     it('refuse si company differente', async () => {
-      vi.mocked(auth).mockResolvedValue(mockSession('DIRECTOR', 'otherCompany') as never)
+      vi.mocked(auth).mockResolvedValue(
+        mockSession('DIRECTOR', 'otherCompany') as never
+      )
       vi.mocked(prisma.employee.findUnique).mockResolvedValue(null)
 
       const result = await createSchedule(validInput)
@@ -364,7 +375,9 @@ describe('schedules actions', () => {
       vi.mocked(prisma.employee.findUnique).mockResolvedValue(
         mockEmployee() as never
       )
-      vi.mocked(prisma.schedule.findUnique).mockResolvedValue(mockSchedule() as never)
+      vi.mocked(prisma.schedule.findUnique).mockResolvedValue(
+        mockSchedule() as never
+      )
 
       const result = await updateSchedule({
         id: 'clschedule000000001',
@@ -380,7 +393,9 @@ describe('schedules actions', () => {
     it('modifie un schedule pour un DIRECTOR', async () => {
       vi.mocked(auth).mockResolvedValue(mockSession('DIRECTOR') as never)
       vi.mocked(prisma.employee.findUnique).mockResolvedValue(null)
-      vi.mocked(prisma.schedule.findUnique).mockResolvedValue(mockSchedule() as never)
+      vi.mocked(prisma.schedule.findUnique).mockResolvedValue(
+        mockSchedule() as never
+      )
       vi.mocked(prisma.schedule.update).mockResolvedValue(
         mockSchedule({ title: 'Updated' }) as never
       )
@@ -421,8 +436,12 @@ describe('schedules actions', () => {
     it('supprime un schedule pour un DIRECTOR', async () => {
       vi.mocked(auth).mockResolvedValue(mockSession('DIRECTOR') as never)
       vi.mocked(prisma.employee.findUnique).mockResolvedValue(null)
-      vi.mocked(prisma.schedule.findUnique).mockResolvedValue(mockSchedule() as never)
-      vi.mocked(prisma.schedule.delete).mockResolvedValue(mockSchedule() as never)
+      vi.mocked(prisma.schedule.findUnique).mockResolvedValue(
+        mockSchedule() as never
+      )
+      vi.mocked(prisma.schedule.delete).mockResolvedValue(
+        mockSchedule() as never
+      )
 
       const result = await deleteSchedule('clschedule000000001')
 
@@ -434,7 +453,9 @@ describe('schedules actions', () => {
       vi.mocked(prisma.employee.findUnique).mockResolvedValue(
         mockEmployee() as never
       )
-      vi.mocked(prisma.schedule.findUnique).mockResolvedValue(mockSchedule() as never)
+      vi.mocked(prisma.schedule.findUnique).mockResolvedValue(
+        mockSchedule() as never
+      )
 
       const result = await deleteSchedule('clschedule000000001')
 
@@ -489,7 +510,9 @@ describe('schedules actions', () => {
     it('duplique un schedule avec decalage', async () => {
       vi.mocked(auth).mockResolvedValue(mockSession('DIRECTOR') as never)
       vi.mocked(prisma.employee.findUnique).mockResolvedValue(null)
-      vi.mocked(prisma.schedule.findUnique).mockResolvedValue(mockSchedule() as never)
+      vi.mocked(prisma.schedule.findUnique).mockResolvedValue(
+        mockSchedule() as never
+      )
       vi.mocked(prisma.employee.findMany).mockResolvedValue([
         mockEmployee() as never,
       ])
@@ -497,7 +520,9 @@ describe('schedules actions', () => {
         mockSchedule({ id: 'newSchedule' }),
       ])
 
-      const result = await duplicateSchedule('clschedule000000001', { shiftDays: 7 })
+      const result = await duplicateSchedule('clschedule000000001', {
+        shiftDays: 7,
+      })
 
       expect(result.success).toBe(true)
       if (result.success) {
@@ -528,12 +553,17 @@ describe('schedules actions', () => {
     it('change le statut en CONFIRMED', async () => {
       vi.mocked(auth).mockResolvedValue(mockSession('DIRECTOR') as never)
       vi.mocked(prisma.employee.findUnique).mockResolvedValue(null)
-      vi.mocked(prisma.schedule.findUnique).mockResolvedValue(mockSchedule() as never)
+      vi.mocked(prisma.schedule.findUnique).mockResolvedValue(
+        mockSchedule() as never
+      )
       vi.mocked(prisma.schedule.update).mockResolvedValue(
         mockSchedule({ status: 'CONFIRMED' }) as never
       )
 
-      const result = await updateScheduleStatus('clschedule000000001', 'CONFIRMED')
+      const result = await updateScheduleStatus(
+        'clschedule000000001',
+        'CONFIRMED'
+      )
 
       expect(result.success).toBe(true)
       if (result.success) {
@@ -544,12 +574,17 @@ describe('schedules actions', () => {
     it('change le statut en CANCELLED', async () => {
       vi.mocked(auth).mockResolvedValue(mockSession('DIRECTOR') as never)
       vi.mocked(prisma.employee.findUnique).mockResolvedValue(null)
-      vi.mocked(prisma.schedule.findUnique).mockResolvedValue(mockSchedule() as never)
+      vi.mocked(prisma.schedule.findUnique).mockResolvedValue(
+        mockSchedule() as never
+      )
       vi.mocked(prisma.schedule.update).mockResolvedValue(
         mockSchedule({ status: 'CANCELLED' }) as never
       )
 
-      const result = await updateScheduleStatus('clschedule000000001', 'CANCELLED')
+      const result = await updateScheduleStatus(
+        'clschedule000000001',
+        'CANCELLED'
+      )
 
       expect(result.success).toBe(true)
       if (result.success) {
@@ -563,7 +598,7 @@ describe('schedules actions', () => {
   // ==========================================================================
 
   describe('getEmployeeSchedules', () => {
-    it('retourne les schedules d\'un employe', async () => {
+    it("retourne les schedules d'un employe", async () => {
       vi.mocked(auth).mockResolvedValue(mockSession('DIRECTOR') as never)
       vi.mocked(prisma.employee.findUnique).mockResolvedValue(
         mockEmployee() as never
@@ -608,7 +643,7 @@ describe('schedules actions', () => {
   // ==========================================================================
 
   describe('getTeamSchedules', () => {
-    it('retourne les schedules d\'une equipe', async () => {
+    it("retourne les schedules d'une equipe", async () => {
       vi.mocked(auth).mockResolvedValue(mockSession('DIRECTOR') as never)
       vi.mocked(prisma.employee.findUnique).mockResolvedValue(null)
       vi.mocked(prisma.team.findUnique).mockResolvedValue({
