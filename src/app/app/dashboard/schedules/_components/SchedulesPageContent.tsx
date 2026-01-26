@@ -250,6 +250,15 @@ export function SchedulesPageContent({
     [dateRange.start, dateRange.end, reloadSchedules]
   )
 
+  // Callback pour les mises à jour drag & drop
+  const handleScheduleUpdate = useCallback(
+    (_scheduleId: string, _startDate: Date, _endDate: Date) => {
+      // Rafraîchir les données après une mise à jour réussie via drag & drop
+      void reloadSchedules(dateRange.start, dateRange.end, activeFilters)
+    },
+    [dateRange.start, dateRange.end, activeFilters, reloadSchedules]
+  )
+
   // Calculs pour les stats
   const uniqueEmployees = new Set(schedules.map((s) => s.employeeId)).size
   const confirmedCount = schedules.filter(
@@ -377,6 +386,7 @@ export function SchedulesPageContent({
                 setIsShiftModalOpen(true)
               }
             }}
+            onScheduleUpdate={handleScheduleUpdate}
             isLoading={isPending}
             canEdit={canCreate}
           />
