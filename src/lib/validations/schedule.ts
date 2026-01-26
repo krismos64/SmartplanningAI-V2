@@ -20,9 +20,19 @@ import { ScheduleType, ScheduleStatus } from '@prisma/client'
 import { timeSchema } from './common'
 
 /**
- * Jours de la semaine (0 = Dimanche, 6 = Samedi)
+ * Jours de la semaine (format string)
  */
-export const dayOfWeekSchema = z.number().int().min(0).max(6)
+export const dayOfWeekSchema = z.enum([
+  'MONDAY',
+  'TUESDAY',
+  'WEDNESDAY',
+  'THURSDAY',
+  'FRIDAY',
+  'SATURDAY',
+  'SUNDAY',
+])
+
+export type DayOfWeek = z.infer<typeof dayOfWeekSchema>
 
 /**
  * Frequence de recurrence
@@ -63,7 +73,7 @@ export const recurrenceRuleSchema = z
     /** Intervalle (tous les X jours/semaines/mois) */
     interval: z.number().int().min(1).max(12).default(1),
 
-    /** Jours de la semaine (0=Dimanche, 6=Samedi) - pour WEEKLY/BIWEEKLY */
+    /** Jours de la semaine (MONDAY, TUESDAY, etc.) - pour WEEKLY/BIWEEKLY */
     daysOfWeek: z.array(dayOfWeekSchema).optional(),
 
     /** Date de fin de la recurrence */
