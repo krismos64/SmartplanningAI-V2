@@ -27,6 +27,8 @@ export default async function SchedulesPage() {
     | 'MANAGER'
     | 'EMPLOYEE'
 
+  const companyId = session.user.companyId ?? ''
+
   // Calculer les dates de la semaine courante
   const today = new Date()
   const dayOfWeek = today.getDay()
@@ -56,6 +58,7 @@ export default async function SchedulesPage() {
         initialSchedules={schedules}
         initialTotal={totalCount}
         userRole={userRole}
+        companyId={companyId}
         initialStartDate={startOfWeek}
         initialEndDate={endOfWeek}
       />

@@ -25,7 +25,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { getSchedules, ScheduleWithRelations } from '@/lib/actions/schedules'
-import { ScheduleCalendar } from '@/components/schedules'
+import { ScheduleCalendar, ShiftModal } from '@/components/schedules'
 import { SchedulesFilters } from './SchedulesFilters'
 import {
   format,
@@ -49,6 +49,8 @@ interface SchedulesPageContentProps {
   initialSchedules: ScheduleWithRelations[]
   initialTotal: number
   userRole: 'SYSTEM_ADMIN' | 'DIRECTOR' | 'MANAGER' | 'EMPLOYEE'
+  /** ID de l'entreprise pour création de créneaux */
+  companyId: string
   /** Date de début de la période initiale (pour référence) */
   initialStartDate?: Date
   /** Date de fin de la période initiale (pour référence) */
@@ -63,6 +65,7 @@ export function SchedulesPageContent({
   initialSchedules,
   initialTotal,
   userRole,
+  companyId,
   // Dates initiales disponibles pour usage futur si nécessaire
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   initialStartDate: _initialStartDate,
@@ -79,6 +82,14 @@ export function SchedulesPageContent({
   const [isPending, startTransition] = useTransition()
   const [activeFilters, setActiveFilters] = useState<Record<string, unknown>>(
     {}
+  )
+
+  // État pour le modal ShiftModal
+  const [isShiftModalOpen, setIsShiftModalOpen] = useState(false)
+  const [selectedSchedule, setSelectedSchedule] =
+    useState<ScheduleWithRelations | null>(null)
+  const [shiftModalMode, setShiftModalMode] = useState<'create' | 'edit'>(
+    'create'
   )
 
   // Permissions RBAC
@@ -262,9 +273,15 @@ export function SchedulesPageContent({
           </div>
         </div>
         {canCreate && (
-          <Button>
+          <Button
+            onClick={() => {
+              setShiftModalMode('create')
+              setSelectedSchedule(null)
+              setIsShiftModalOpen(true)
+            }}
+          >
             <Plus className="mr-2 h-4 w-4" />
-            Nouveau shift
+            Nouveau créneau
           </Button>
         )}
       </div>
@@ -353,17 +370,33 @@ export function SchedulesPageContent({
             schedules={schedules}
             viewMode={viewMode}
             currentDate={currentDate}
-            onScheduleClick={(_schedule) => {
-              // TODO SP-397: Ouvrir modal d'édition
-            }}
-            onScheduleUpdate={(_id, _startDate, _endDate) => {
-              // TODO SP-397: Appeler updateSchedule via Server Action
+            onScheduleClick={(schedule) => {
+              if (canCreate) {
+                setShiftModalMode('edit')
+                setSelectedSchedule(schedule)
+                setIsShiftModalOpen(true)
+              }
             }}
             isLoading={isPending}
             canEdit={canCreate}
           />
         </CardContent>
       </Card>
+
+      {/* Modal création/édition de créneau */}
+      <ShiftModal
+        isOpen={isShiftModalOpen}
+        onClose={() => {
+          setIsShiftModalOpen(false)
+          setSelectedSchedule(null)
+        }}
+        mode={shiftModalMode}
+        schedule={selectedSchedule}
+        companyId={companyId}
+        onSuccess={() => {
+          void reloadSchedules(dateRange.start, dateRange.end, activeFilters)
+        }}
+      />
 
       {/* Stats rapides */}
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
