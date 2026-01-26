@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 26 janvier 2026 (Sprint 12 - SP-394 Server Actions Schedules)
+- **Dernière mise à jour** : 26 janvier 2026 (Sprint 12 - SP-395 Page Schedules)
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -257,6 +257,34 @@ Server Actions CRUD complets avec RBAC pour le module de gestion des plannings :
   - `EMPLOYEE` : Lecture de ses propres schedules uniquement
 
 - **Tests** : 30 tests unitaires couvrant tous les cas RBAC
+
+### Gestion des Plannings - Page Liste (SP-395 - 26 janvier 2026)
+
+Page Next.js complète pour la gestion des plannings :
+
+- **Route** : `/app/dashboard/schedules`
+- **Layout** : Metadata SEO (title, description, OpenGraph)
+- **Loading** : Skeleton UI responsive avec grille semaine
+
+- **SchedulesPageContent** :
+  - Navigation date (précédent/suivant/aujourd'hui)
+  - 3 modes de vue : Jour, Semaine, Mois
+  - Filtres collapsibles (recherche, statut, type)
+  - Stats rapides : shifts, employés planifiés, confirmés, brouillons
+  - Bouton "Nouveau shift" (DIRECTOR/MANAGER uniquement)
+
+- **SchedulesList** :
+  - Vue grille semaine avec colonnes par jour
+  - Shifts colorés par type (WORK, MEETING, TRAINING, etc.)
+  - Vue liste pour jour/mois
+  - Empty state avec icône
+
+- **SchedulesFilters** :
+  - Recherche par nom/prénom/titre
+  - Filtre par statut (brouillon, confirmé, annulé, terminé)
+  - Filtre par type (travail, pause, réunion, formation, etc.)
+
+- **Correction Sidebar** : URL `/schedules` → `/app/dashboard/schedules`
 
 ### Gestion des Plannings - Base de données (SP-392 - 26 janvier 2026)
 

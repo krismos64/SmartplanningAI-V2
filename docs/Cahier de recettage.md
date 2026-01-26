@@ -397,6 +397,7 @@ Ce tableau recense chaque campagne de tests significative (mise en production, f
 
 | Date       | Sprint    | Version/Commit | Tests unitaires | Tests E2E  | Couverture | Statut  | Notes                                                                                                                                                                                                                                                                                                          |
 | ---------- | --------- | -------------- | --------------- | ---------- | ---------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 26/01/2026 | Sprint 12 | SP-395         | 3045/3045 ✅    | 430/430 ✅ | ~85%       | ✅ PASS | 🆕 SP-395 Page Liste Schedules. Route `/app/dashboard/schedules`. Layout SEO, loading skeleton, SchedulesPageContent (navigation date, vues jour/semaine/mois, filtres), SchedulesList (grille semaine, shifts colorés), SchedulesFilters (recherche, statut, type). Correction Sidebar URL. Total : 3475 tests |
 | 26/01/2026 | Sprint 12 | SP-394         | 3045/3045 ✅    | 430/430 ✅ | ~85%       | ✅ PASS | 🆕 SP-394 Server Actions Schedules CRUD avec RBAC. +30 tests unitaires. 10 actions : getSchedules, getScheduleById, createSchedule (multi-employé), updateSchedule, deleteSchedule, deleteScheduleGroup, duplicateSchedule, updateScheduleStatus, getEmployeeSchedules, getTeamSchedules. Permissions RBAC complètes. Total : 3475 tests 🎉 |
 | 26/01/2026 | Sprint 12 | SP-393         | 3015/3015 ✅    | 430/430 ✅ | ~85%       | ✅ PASS | 🆕 SP-393 Validations Zod Plannings. +81 tests unitaires (schedule: 47, availability: 34). Schemas createScheduleSchema, updateScheduleSchema, scheduleFiltersSchema, recurrenceRuleSchema. Support multi-employés employeeIds. Labels FR, couleurs, icônes. Total : 3445 tests 🎉 |
 | 26/01/2026 | Sprint 12 | SP-392         | 2934/2934 ✅    | 430/430 ✅ | ~85%       | ✅ PASS | 🆕 SP-392 Gestion Plannings - Prisma. Modèle Availability (disponibilités employés), enum AvailabilityType (6 types). Enrichissement Schedule (isRecurring, recurrenceRule, recurrenceGroupId, scheduleGroupId). Migration + indexes optimisés. Fondations Sprint 12. Total : 3364 tests |
@@ -1602,6 +1603,7 @@ not-found.tsx (Server Component)
 | 26/01/2026 (SP-392)         | 2934            | 430       | 3364  | ~85%       | ⚙️ Prisma |
 | 26/01/2026 (SP-393)         | 3015            | 430       | 3445  | ~85%       | 📈 +81   |
 | 26/01/2026 (SP-394)         | 3045            | 430       | 3475  | ~85%       | 📈 +30   |
+| 26/01/2026 (SP-395)         | 3045            | 430       | 3475  | ~85%       | 🖥️ Page   |
 
 **Graphique d'évolution** : De 27 tests (04/12) à 3475 tests (26/01) = **+12770% de croissance** 🚀
 
@@ -1702,6 +1704,7 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
 
 | Date       | Modification                                                                                                                                                                                                                                                                                                                                     |
 | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 26/01/2026 | 🆕 SP-395 Page Liste Schedules : Route `/app/dashboard/schedules`. Layout SEO, loading skeleton grille semaine. `SchedulesPageContent` (navigation date, vues jour/semaine/mois, filtres collapsibles, stats rapides). `SchedulesList` (grille semaine, shifts colorés par type). `SchedulesFilters` (recherche, statut, type). Correction Sidebar URL. Total : 3475 tests |
 | 26/01/2026 | 🆕 SP-394 Server Actions Schedules CRUD : +30 tests unitaires. 10 actions CRUD (`getSchedules`, `getScheduleById`, `createSchedule`, `updateSchedule`, `deleteSchedule`, `deleteScheduleGroup`, `duplicateSchedule`, `updateScheduleStatus`, `getEmployeeSchedules`, `getTeamSchedules`). RBAC complet (SYSTEM_ADMIN, DIRECTOR, MANAGER, EMPLOYEE). Multi-employé via `employeeIds`. Total : 3475 tests 🎉 |
 | 26/01/2026 | 🆕 SP-393 Validations Zod Plannings : +81 tests unitaires (schedule: 47, availability: 34). Schemas `createScheduleSchema`, `updateScheduleSchema`, `scheduleFiltersSchema`, `recurrenceRuleSchema`. Support multi-employés `employeeIds`. `timeSchema` et `hexColorSchema` dans common.ts. Labels FR, couleurs, icônes. Total : 3445 tests 🎉 |
 | 26/01/2026 | 🆕 SP-392 Gestion Plannings - Fondations Prisma : Modèle `Availability` (disponibilités/indisponibilités employés), enum `AvailabilityType` (UNAVAILABLE, PREFERRED, VACATION, SICK, TRAINING, OTHER). Enrichissement `Schedule` (isRecurring, recurrenceRule JSON, recurrenceGroupId, scheduleGroupId). Migration + indexes. Début Sprint 12. |
@@ -1755,7 +1758,12 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
   - 10 actions : getSchedules, getScheduleById, createSchedule, updateSchedule, deleteSchedule, deleteScheduleGroup, duplicateSchedule, updateScheduleStatus, getEmployeeSchedules, getTeamSchedules
   - RBAC : SYSTEM_ADMIN (lecture cross-tenant), DIRECTOR (CRUD complet), MANAGER (équipes), EMPLOYEE (lecture propres schedules)
   - 30 tests unitaires
-- Prochaines étapes : SP-395+ (UI Composants Planning)
+- SP-395 : Page Liste Schedules ✅ TERMINÉ
+  - Route : `/app/dashboard/schedules`
+  - Composants : SchedulesPageContent, SchedulesList, SchedulesFilters
+  - Navigation date (jour/semaine/mois), filtres, stats rapides
+  - Correction URL Sidebar
+- Prochaines étapes : SP-396+ (Formulaire création/édition, modale détails)
 
 ### Sprint 11 - Réinitialisation mot de passe (SP-263)
 
