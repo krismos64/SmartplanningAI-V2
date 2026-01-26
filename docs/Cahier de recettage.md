@@ -34,7 +34,7 @@ Dans le cadre du diplôme **CDA (Concepteur Développeur d'Applications)**, ce c
 | Métrique              | Objectif  | Atteint |
 | --------------------- | --------- | ------- |
 | Couverture globale    | ≥ 70%     | ✅ 85%  |
-| Tests unitaires       | ≥ 500     | ✅ 3206 |
+| Tests unitaires       | ≥ 500     | ✅ 3231 |
 | Tests E2E             | ≥ 50      | ✅ 430  |
 | Score Lighthouse A11y | ≥ 90%     | ✅ 95%  |
 | Anomalies critiques   | 0 en prod | ✅ 0    |
@@ -397,6 +397,7 @@ Ce tableau recense chaque campagne de tests significative (mise en production, f
 
 | Date       | Sprint    | Version/Commit | Tests unitaires | Tests E2E  | Couverture | Statut  | Notes                                                                                                                                                                                                                                                                                                          |
 | ---------- | --------- | -------------- | --------------- | ---------- | ---------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 26/01/2026 | Sprint 12 | SP-400         | 3231/3231 ✅    | 430/430 ✅ | ~85%       | ✅ PASS | 🆕 SP-400 Détection Conflits Horaires. +25 tests unitaires (useConflictDetection: 12, ConflictAlert: 13). Server Action checkAvailabilityConflicts. Classification hard/soft conflicts. Composants ConflictAlert, ConflictConfirmDialog. Hook useConflictDetection avec debounce. Intégration ShiftModal + ScheduleCalendarDesktop (drag & drop). Total : 3661 tests |
 | 26/01/2026 | Sprint 12 | SP-401         | 3206/3206 ✅    | 430/430 ✅ | ~85%       | ✅ PASS | 🆕 SP-401 CRUD Availabilities. +54 tests unitaires (Server Actions: 22, AvailabilityCard: 18, AvailabilityModal: 14). 8 Server Actions RBAC : getAvailabilities, getAvailabilityById, createAvailability, updateAvailability, deleteAvailability, getEmployeeAvailabilities, getTeamAvailabilities, getAvailabilitiesStats. Composants UI : AvailabilityCard, AvailabilityModal, AvailabilitiesList. 6 types d'indisponibilité avec icônes/couleurs. Total : 3636 tests |
 | 26/01/2026 | Sprint 12 | SP-399         | 3152/3152 ✅    | 430/430 ✅ | ~85%       | ✅ PASS | 🆕 SP-399 Récurrence des Shifts. +40 tests unitaires (recurrence: 24, RecurrenceConfig: 12, availability fix: 4). Fréquences DAILY/WEEKLY/BIWEEKLY/MONTHLY. Sélection jours semaine. Limites: 52 occurrences max, 200 créneaux max. Server Actions groupées (delete/update par scope). RecurrenceEditDialog. Total : 3582 tests |
 | 26/01/2026 | Sprint 12 | SP-398         | 3112/3112 ✅    | 430/430 ✅ | ~85%       | ✅ PASS | 🆕 SP-398 Drag & Drop calendrier. +19 tests unitaires. Plugin @schedule-x/resize ajouté. Déplacer créneaux par drag, resize par bord. Persistance updateSchedule avec rollback erreur. RBAC: DIRECTOR/MANAGER uniquement. Toast feedback. Total : 3542 tests |
@@ -1805,6 +1806,13 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
   - Composants UI : AvailabilityCard, AvailabilityModal, AvailabilitiesList
   - 6 types d'indisponibilité : UNAVAILABLE, PREFERRED, VACATION, SICK, TRAINING, OTHER
   - 54 tests unitaires (Server Actions: 22, AvailabilityCard: 18, AvailabilityModal: 14)
+- SP-400 : Détection Conflits Horaires ✅ TERMINÉ
+  - Server Action checkAvailabilityConflicts avec classification hard/soft
+  - Classification : Hard (VACATION, SICK, UNAVAILABLE) bloquants / Soft (PREFERRED, TRAINING, OTHER) avertissements
+  - Composants UI : ConflictAlert (alertes visuelles), ConflictConfirmDialog (confirmation drag & drop)
+  - Hook useConflictDetection avec debounce 300ms et gestion d'erreurs
+  - Intégration : ShiftModal (détection temps réel), ScheduleCalendarDesktop (drag & drop avec confirmation)
+  - 25 tests unitaires (useConflictDetection: 12, ConflictAlert: 13)
 - Prochaines étapes : SP-402+ (Page gestion des disponibilités)
 
 ### Sprint 11 - Réinitialisation mot de passe (SP-263)
