@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 26 janvier 2026 (Sprint 12 - SP-397 ShiftModal)
+- **Dernière mise à jour** : 26 janvier 2026 (Sprint 12 - SP-398 Drag & Drop)
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -343,6 +343,31 @@ Modal complet pour la création et modification de créneaux :
 - **Terminologie française** : "Créneau" (singulier) / "Créneaux" (pluriel) dans toute l'UI
 
 - **Tests** : 30 tests unitaires (17 ShiftModal + 13 useShiftFormData)
+
+### Drag & Drop Calendrier (SP-398 - 26 janvier 2026)
+
+Fonctionnalités interactives pour le calendrier Schedule-X :
+
+- **Drag & Drop** : Déplacer un créneau vers une autre date/heure
+  - Plugin `@schedule-x/drag-and-drop` activé
+  - Persistance automatique via Server Action `updateSchedule`
+  - Rollback visuel en cas d'erreur de sauvegarde
+
+- **Resize** : Redimensionner un créneau (modifier l'heure de fin)
+  - Plugin `@schedule-x/resize` ajouté
+  - Tirer sur le bord inférieur pour ajuster la durée
+
+- **Feedback utilisateur** :
+  - Indicateur de chargement pendant la mise à jour
+  - Toast de succès après modification réussie
+  - Toast d'erreur avec message explicite en cas d'échec
+
+- **Permissions RBAC** :
+  - DIRECTOR et MANAGER peuvent drag/drop et resize
+  - EMPLOYEE voit le calendrier en lecture seule
+  - Message d'aide affiché pour les utilisateurs autorisés
+
+- **Tests** : 19 tests unitaires (rendering, plugins, RBAC, callbacks)
 
 ### Gestion des Plannings - Base de données (SP-392 - 26 janvier 2026)
 
