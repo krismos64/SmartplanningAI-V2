@@ -397,6 +397,7 @@ Ce tableau recense chaque campagne de tests significative (mise en production, f
 
 | Date       | Sprint    | Version/Commit | Tests unitaires | Tests E2E  | Couverture | Statut  | Notes                                                                                                                                                                                                                                                                                                          |
 | ---------- | --------- | -------------- | --------------- | ---------- | ---------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 26/01/2026 | Sprint 12 | SP-393         | 3015/3015 ✅    | 430/430 ✅ | ~85%       | ✅ PASS | 🆕 SP-393 Validations Zod Plannings. +81 tests unitaires (schedule: 47, availability: 34). Schemas createScheduleSchema, updateScheduleSchema, scheduleFiltersSchema, recurrenceRuleSchema. Support multi-employés employeeIds. Labels FR, couleurs, icônes. Total : 3445 tests 🎉 |
 | 26/01/2026 | Sprint 12 | SP-392         | 2934/2934 ✅    | 430/430 ✅ | ~85%       | ✅ PASS | 🆕 SP-392 Gestion Plannings - Prisma. Modèle Availability (disponibilités employés), enum AvailabilityType (6 types). Enrichissement Schedule (isRecurring, recurrenceRule, recurrenceGroupId, scheduleGroupId). Migration + indexes optimisés. Fondations Sprint 12. Total : 3364 tests |
 | 25/01/2026 | Sprint 11 | SP-263         | 2934/2934 ✅    | 430/430 ✅ | ~85%       | ✅ PASS | 🆕 SP-263 Réinitialisation mot de passe. +39 tests unitaires (ForgotPasswordForm: 14, ResetPasswordForm: 17, reset-password page: 8). Pages /forgot-password et /reset-password. Server Actions avec tokens sécurisés. Validation Zod. Anti-énumération OWASP. Framer Motion animations. Total : 3364 tests 🎉 |
 | 25/01/2026 | Sprint 11 | SP-269         | 2895/2895 ✅    | 430/430 ✅ | ~85%       | ✅ PASS | 🆕 SP-269 Accessibilité WCAG 2.1. +14 tests unitaires SkipLink, +14 tests E2E axe-core. Skip to main content (WCAG 2.4.1), audit Lighthouse 95%. Script a11y:audit. Total : 3325 tests 🎉                                                                                                                      |
@@ -1598,8 +1599,9 @@ not-found.tsx (Server Component)
 | 25/01/2026 (SP-269)         | 2895            | 430       | 3325  | ~85%       | 📈 +28   |
 | 25/01/2026 (SP-263)         | 2934            | 430       | 3364  | ~85%       | 📈 +39   |
 | 26/01/2026 (SP-392)         | 2934            | 430       | 3364  | ~85%       | ⚙️ Prisma |
+| 26/01/2026 (SP-393)         | 3015            | 430       | 3445  | ~85%       | 📈 +81   |
 
-**Graphique d'évolution** : De 27 tests (04/12) à 3364 tests (26/01) = **+12359% de croissance** 🚀
+**Graphique d'évolution** : De 27 tests (04/12) à 3445 tests (26/01) = **+12659% de croissance** 🚀
 
 ---
 
@@ -1698,6 +1700,7 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
 
 | Date       | Modification                                                                                                                                                                                                                                                                                                                                     |
 | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 26/01/2026 | 🆕 SP-393 Validations Zod Plannings : +81 tests unitaires (schedule: 47, availability: 34). Schemas `createScheduleSchema`, `updateScheduleSchema`, `scheduleFiltersSchema`, `recurrenceRuleSchema`. Support multi-employés `employeeIds`. `timeSchema` et `hexColorSchema` dans common.ts. Labels FR, couleurs, icônes. Total : 3445 tests 🎉 |
 | 26/01/2026 | 🆕 SP-392 Gestion Plannings - Fondations Prisma : Modèle `Availability` (disponibilités/indisponibilités employés), enum `AvailabilityType` (UNAVAILABLE, PREFERRED, VACATION, SICK, TRAINING, OTHER). Enrichissement `Schedule` (isRecurring, recurrenceRule JSON, recurrenceGroupId, scheduleGroupId). Migration + indexes. Début Sprint 12. |
 | 25/01/2026 | 🆕 SP-263 Réinitialisation mot de passe : +39 tests unitaires (ForgotPasswordForm: 14, ResetPasswordForm: 17, reset-password page: 8). Pages /forgot-password et /reset-password avec Server Actions sécurisées. Tokens aléatoires, anti-énumération OWASP, validation Zod. Compétence CDA #47 ajoutée. Total : 3364 tests 🎉                    |
 | 25/01/2026 | 🔧 Correction accessibilité pages d'erreur : role="main" → role="region" sur NotFoundPage, ServerErrorPage, ForbiddenPage. Évite conflit avec `<main>` du layout. Navigation clavier skip-link → boutons. Tests unitaires et E2E mis à jour.                                                                                                     |
