@@ -82,11 +82,7 @@ describe('ConflictAlert', () => {
   describe('Rendering', () => {
     it('ne rend rien si aucun conflit', () => {
       const { container } = render(
-        <ConflictAlert
-          conflicts={[]}
-          hardConflicts={[]}
-          softConflicts={[]}
-        />
+        <ConflictAlert conflicts={[]} hardConflicts={[]} softConflicts={[]} />
       )
 
       expect(container.firstChild).toBeNull()
@@ -150,8 +146,12 @@ describe('ConflictAlert', () => {
         />
       )
 
-      expect(screen.getByText(/Conflits horaires détectés/i)).toBeInTheDocument()
-      expect(screen.getByText(/2 indisponibilités bloquantes/i)).toBeInTheDocument()
+      expect(
+        screen.getByText(/Conflits horaires détectés/i)
+      ).toBeInTheDocument()
+      expect(
+        screen.getByText(/2 indisponibilités bloquantes/i)
+      ).toBeInTheDocument()
     })
 
     it('affiche le type SICK correctement', () => {
@@ -204,7 +204,9 @@ describe('ConflictAlert', () => {
       )
 
       expect(screen.queryByText('Annuler')).not.toBeInTheDocument()
-      expect(screen.queryByText(/Créer malgré le conflit/i)).not.toBeInTheDocument()
+      expect(
+        screen.queryByText(/Créer malgré le conflit/i)
+      ).not.toBeInTheDocument()
     })
 
     it('appelle onConfirm au clic sur le bouton de confirmation', () => {
@@ -263,7 +265,9 @@ describe('ConflictAlert', () => {
       )
 
       expect(screen.getByText('Confirmer')).toBeInTheDocument()
-      expect(screen.queryByText(/Créer malgré le conflit/i)).not.toBeInTheDocument()
+      expect(
+        screen.queryByText(/Créer malgré le conflit/i)
+      ).not.toBeInTheDocument()
     })
   })
 

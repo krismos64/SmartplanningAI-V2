@@ -25,4 +25,7 @@ export {
   type RecurrenceEditAction,
 } from './RecurrenceEditDialog'
 export { ConflictAlert, type ConflictAlertProps } from './ConflictAlert'
-export { ConflictConfirmDialog, type ConflictConfirmDialogProps } from './ConflictConfirmDialog'
+export {
+  ConflictConfirmDialog,
+  type ConflictConfirmDialogProps,
+} from './ConflictConfirmDialog'

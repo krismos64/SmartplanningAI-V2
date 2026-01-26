@@ -253,7 +253,7 @@ export function ShiftModal({
     endDate: watchedEndDate,
     startTime: watchedStartTime,
     endTime: watchedEndTime,
-    enabled: isOpen && (selectedEmployeeIds?.length > 0),
+    enabled: isOpen && selectedEmployeeIds?.length > 0,
     debounceMs: 300,
   })
 
