@@ -3,8 +3,9 @@
  *
  * @description Modal pour créer ou éditer des créneaux (shifts)
  * Supporte la sélection multi-employés avec recherche et la récurrence
+ * Détecte et affiche les conflits avec les indisponibilités (SP-400)
  *
- * @ticket SP-397, SP-399
+ * @ticket SP-397, SP-399, SP-400
  */
 
 'use client'
@@ -66,11 +67,13 @@ import { createSchedule, updateSchedule } from '@/lib/actions/schedules'
 import type { ScheduleWithRelations } from '@/lib/actions/schedules'
 import { useShiftFormData, type EmployeeOption } from './useShiftFormData'
 import { RecurrenceConfig } from './RecurrenceConfig'
+import { ConflictAlert } from './ConflictAlert'
 import {
   type RecurrenceRule,
   MAX_TOTAL_SCHEDULES,
   calculateTotalSchedules,
 } from '@/lib/utils/recurrence'
+import { useConflictDetection } from '@/hooks/useConflictDetection'
 
 // ============================================================================
 // Types
@@ -228,9 +231,31 @@ export function ShiftModal({
     }
   }, [isOpen, mode, schedule, reset])
 
-  // Employés sélectionnés
+  // Employés sélectionnés et dates surveillées
   const selectedEmployeeIds = watch('employeeIds')
   const selectedTeamId = watch('teamId')
+  const watchedStartDate = watch('startDate')
+  const watchedEndDate = watch('endDate')
+  const watchedStartTime = watch('startTime')
+  const watchedEndTime = watch('endTime')
+
+  // Détection des conflits avec les indisponibilités (SP-400)
+  const {
+    isChecking: isCheckingConflicts,
+    hasConflict,
+    hasHardConflict,
+    conflicts,
+    hardConflicts,
+    softConflicts,
+  } = useConflictDetection({
+    employeeIds: selectedEmployeeIds || [],
+    startDate: watchedStartDate,
+    endDate: watchedEndDate,
+    startTime: watchedStartTime,
+    endTime: watchedEndTime,
+    enabled: isOpen && (selectedEmployeeIds?.length > 0),
+    debounceMs: 300,
+  })
 
   // Filtrer les employés par recherche et équipe
   const filteredEmployees = useMemo(() => {
@@ -802,6 +827,24 @@ export function ShiftModal({
             </div>
           )}
 
+          {/* Alerte de conflits avec les indisponibilités (SP-400) */}
+          {hasConflict && !isCheckingConflicts && (
+            <ConflictAlert
+              conflicts={conflicts}
+              hardConflicts={hardConflicts}
+              softConflicts={softConflicts}
+              showActions={false}
+            />
+          )}
+
+          {/* Indicateur de vérification en cours */}
+          {isCheckingConflicts && (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              <span>Vérification des disponibilités...</span>
+            </div>
+          )}
+
           {/* Actions */}
           <DialogFooter className="gap-2 sm:gap-0">
             <Button
@@ -812,11 +855,19 @@ export function ShiftModal({
             >
               Annuler
             </Button>
-            <Button type="submit" disabled={isSubmitting || isLoadingData}>
+            <Button
+              type="submit"
+              disabled={isSubmitting || isLoadingData}
+              variant={hasHardConflict ? 'destructive' : 'default'}
+            >
               {isSubmitting && (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               )}
-              {mode === 'create' ? 'Créer le créneau' : 'Enregistrer'}
+              {hasHardConflict
+                ? 'Créer malgré le conflit'
+                : mode === 'create'
+                  ? 'Créer le créneau'
+                  : 'Enregistrer'}
             </Button>
           </DialogFooter>
         </form>

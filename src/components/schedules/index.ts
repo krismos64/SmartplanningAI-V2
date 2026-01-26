@@ -1,7 +1,7 @@
 /**
  * Barrel export pour les composants Schedule
  *
- * @ticket SP-396, SP-397, SP-399
+ * @ticket SP-396, SP-397, SP-399, SP-400
  */
 
 export {
@@ -24,3 +24,5 @@ export {
   type RecurrenceEditScope,
   type RecurrenceEditAction,
 } from './RecurrenceEditDialog'
+export { ConflictAlert, type ConflictAlertProps } from './ConflictAlert'
+export { ConflictConfirmDialog, type ConflictConfirmDialogProps } from './ConflictConfirmDialog'
