@@ -22,3 +22,9 @@ export * from './company'
 
 // Team schemas (SP-150)
 export * from './team'
+
+// Schedule schemas (SP-393)
+export * from './schedule'
+
+// Availability schemas (SP-393)
+export * from './availability'
