@@ -89,8 +89,8 @@ export function LeaveRejectedEmail({
 
       {/* Invitation à contacter le manager */}
       <Text style={infoTextStyle}>
-        N&apos;hésitez pas à contacter votre manager pour plus d&apos;informations
-        ou pour discuter d&apos;alternatives possibles.
+        N&apos;hésitez pas à contacter votre manager pour plus
+        d&apos;informations ou pour discuter d&apos;alternatives possibles.
       </Text>
 
       {/* Call to action */}

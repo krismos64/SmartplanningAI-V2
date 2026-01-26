@@ -42,8 +42,9 @@ export function Demo({ userName = 'Christophe' }: DemoProps) {
       {/* Paragraphe d'introduction */}
       <Text style={presetStyles.paragraph}>
         Ceci est un email de démonstration qui présente tous les composants
-        disponibles dans notre système d&apos;emails React Email. Ce template permet
-        de vérifier le rendu visuel avant d&apos;implémenter les vrais templates.
+        disponibles dans notre système d&apos;emails React Email. Ce template
+        permet de vérifier le rendu visuel avant d&apos;implémenter les vrais
+        templates.
       </Text>
 
       <Hr style={presetStyles.divider} />
@@ -120,19 +121,32 @@ export function Demo({ userName = 'Christophe' }: DemoProps) {
       {/* Section Typographie */}
       <Text style={presetStyles.heading2}>Typographie</Text>
 
-      <Text style={{ ...presetStyles.paragraph, fontSize: typography.fontSize.xs }}>
+      <Text
+        style={{ ...presetStyles.paragraph, fontSize: typography.fontSize.xs }}
+      >
         Texte extra small (12px)
       </Text>
-      <Text style={{ ...presetStyles.paragraph, fontSize: typography.fontSize.sm }}>
+      <Text
+        style={{ ...presetStyles.paragraph, fontSize: typography.fontSize.sm }}
+      >
         Texte small (14px)
       </Text>
-      <Text style={{ ...presetStyles.paragraph, fontSize: typography.fontSize.base }}>
+      <Text
+        style={{
+          ...presetStyles.paragraph,
+          fontSize: typography.fontSize.base,
+        }}
+      >
         Texte base (16px) - Taille par défaut des paragraphes
       </Text>
-      <Text style={{ ...presetStyles.paragraph, fontSize: typography.fontSize.lg }}>
+      <Text
+        style={{ ...presetStyles.paragraph, fontSize: typography.fontSize.lg }}
+      >
         Texte large (18px)
       </Text>
-      <Text style={{ ...presetStyles.paragraph, fontSize: typography.fontSize.xl }}>
+      <Text
+        style={{ ...presetStyles.paragraph, fontSize: typography.fontSize.xl }}
+      >
         Texte extra large (20px)
       </Text>
 
@@ -141,7 +155,10 @@ export function Demo({ userName = 'Christophe' }: DemoProps) {
       {/* Section Couleurs */}
       <Text style={presetStyles.heading2}>Palette de couleurs</Text>
 
-      <table role="presentation" style={{ width: '100%', marginBottom: spacing.lg }}>
+      <table
+        role="presentation"
+        style={{ width: '100%', marginBottom: spacing.lg }}
+      >
         <tbody>
           <tr>
             <td style={colorBoxStyle(colors.primary)}>Primary</td>
@@ -165,8 +182,8 @@ export function Demo({ userName = 'Christophe' }: DemoProps) {
         <Row>
           <Column>
             <Text style={infoBoxTextStyle}>
-              💡 <strong>Conseil :</strong> Vous pouvez personnaliser ces composants
-              selon vos besoins en modifiant les constantes de style.
+              💡 <strong>Conseil :</strong> Vous pouvez personnaliser ces
+              composants selon vos besoins en modifiant les constantes de style.
             </Text>
           </Column>
         </Row>
@@ -180,7 +197,11 @@ export function Demo({ userName = 'Christophe' }: DemoProps) {
       </Text>
 
       <Section style={{ textAlign: 'center' }}>
-        <Button href="https://smartplanning.fr/inscription" variant="primary" size="lg">
+        <Button
+          href="https://smartplanning.fr/inscription"
+          variant="primary"
+          size="lg"
+        >
           Créer mon compte gratuitement
         </Button>
       </Section>

@@ -19,6 +19,7 @@
 ## 🔧 Prérequis
 
 ### Sur le VPS
+
 - Ubuntu 24.04 LTS
 - Docker + Docker Compose installés
 - Nginx installé et configuré
@@ -27,7 +28,9 @@
 - UFW configuré correctement
 
 ### Secrets GitHub Actions
+
 Les secrets suivants doivent être configurés dans le repository :
+
 - `VPS_HOST` : Adresse IP du VPS
 - `VPS_USER` : `deploy`
 - `VPS_SSH_KEY` : Clé privée SSH (base64)
@@ -61,11 +64,13 @@ sudo ufw status verbose
 ```
 
 La sortie doit montrer :
+
 ```
 Default: deny (incoming), allow (outgoing), deny (routed)
 ```
 
 ✅ **Ports autorisés (incoming)** :
+
 - 22/tcp : SSH
 - 80/tcp : HTTP
 - 443/tcp : HTTPS
@@ -81,6 +86,7 @@ nano .env
 ```
 
 Variables essentielles :
+
 ```env
 # Base de données PostgreSQL
 DATABASE_URL=postgresql://smartplanning:<PASSWORD>@postgres:5432/smartplanning?schema=public
@@ -108,6 +114,7 @@ NODE_ENV=production
 Le fichier de configuration Nginx complet se trouve dans `/etc/nginx/sites-available/smartplanning.conf`.
 
 Activer la configuration :
+
 ```bash
 sudo ln -s /etc/nginx/sites-available/smartplanning.conf /etc/nginx/sites-enabled/
 sudo rm /etc/nginx/sites-enabled/default  # Si présent
@@ -165,6 +172,7 @@ curl -I https://smartplanning.fr/
 **Cause probable** : UFW bloque le trafic avec `deny outgoing`.
 
 **Solution** :
+
 ```bash
 # Vérifier la configuration UFW
 sudo ufw status verbose
@@ -178,6 +186,7 @@ curl http://localhost:3000/api/health
 ```
 
 **Explication** :
+
 - UFW avec `deny outgoing` bloque le trafic Docker interne
 - Nginx sur le host ne peut plus communiquer avec le conteneur app:3000
 - Docker utilise iptables NAT, mais UFW peut bloquer les réponses
@@ -192,6 +201,7 @@ curl http://localhost:3000/api/health
 
 **Solution** :
 Dans `docker-compose.yml`, désactiver la persistance AOF :
+
 ```yaml
 redis:
   command: redis-server --requirepass ${REDIS_PASSWORD} --appendonly no
@@ -215,6 +225,7 @@ Retirer les appels à `prisma.$metrics.json()` du code (déjà corrigé dans `sr
 Les mises à jour se font automatiquement via GitHub Actions lors d'un push sur `main`.
 
 Pour forcer un redéploiement manuel :
+
 ```bash
 cd /var/www/smartplanning
 sudo -u deploy docker compose pull

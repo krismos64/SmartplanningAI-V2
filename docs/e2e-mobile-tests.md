@@ -8,13 +8,13 @@
 
 Suite de tests E2E validant l'expérience utilisateur mobile sur 5 devices différents :
 
-| Device | Viewport | OS | Caractéristiques |
-|--------|----------|-----|-----------------|
-| iPhone SE | 375×667 | iOS | Petit écran, contraintes espace |
-| iPhone 14 Pro | 393×852 | iOS | Écran moderne, notch dynamique |
-| Pixel 7 | 412×915 | Android | Chrome mobile, référence Android |
-| iPad Mini | 768×1024 | iPadOS | Tablette petite, mode intermédiaire |
-| iPad Pro 11" | 834×1194 | iPadOS | Grande tablette, layout quasi-desktop |
+| Device        | Viewport | OS      | Caractéristiques                      |
+| ------------- | -------- | ------- | ------------------------------------- |
+| iPhone SE     | 375×667  | iOS     | Petit écran, contraintes espace       |
+| iPhone 14 Pro | 393×852  | iOS     | Écran moderne, notch dynamique        |
+| Pixel 7       | 412×915  | Android | Chrome mobile, référence Android      |
+| iPad Mini     | 768×1024 | iPadOS  | Tablette petite, mode intermédiaire   |
+| iPad Pro 11"  | 834×1194 | iPadOS  | Grande tablette, layout quasi-desktop |
 
 ## Structure des fichiers
 
@@ -37,21 +37,25 @@ e2e/
 ## Exécution des tests
 
 ### Tous les tests mobile
+
 ```bash
 npx playwright test --project=mobile-iphone-se --project=mobile-iphone-14-pro --project=mobile-pixel-7 --project=tablet-ipad-mini --project=tablet-ipad-pro-11
 ```
 
 ### Un device spécifique
+
 ```bash
 npx playwright test --project=mobile-iphone-se
 ```
 
 ### Un fichier de test
+
 ```bash
 npx playwright test e2e/specs/mobile/navigation.spec.ts
 ```
 
 ### Mode UI (debug visuel)
+
 ```bash
 npx playwright test --ui --project=mobile-iphone-se
 ```
@@ -65,14 +69,14 @@ import { test, expect } from '../../fixtures/mobile.fixture'
 
 test('exemple test mobile', async ({ directorPage, mobile }) => {
   // Détection device
-  console.log(mobile.isMobile)      // true pour phones/tablets
-  console.log(mobile.isTablet)      // true pour iPad
-  console.log(mobile.hasTouch)      // true si touch supporté
+  console.log(mobile.isMobile) // true pour phones/tablets
+  console.log(mobile.isTablet) // true pour iPad
+  console.log(mobile.hasTouch) // true si touch supporté
   console.log(mobile.viewportWidth) // largeur viewport
-  console.log(mobile.deviceName)    // ex: "mobile-iphone-se"
+  console.log(mobile.deviceName) // ex: "mobile-iphone-se"
 
   // Gestes tactiles
-  await mobile.swipeLeft(200)       // swipe depuis centre viewport
+  await mobile.swipeLeft(200) // swipe depuis centre viewport
   await mobile.swipeRight(150)
   await mobile.swipeLeftOn(locator, 200) // swipe sur élément
 
@@ -125,6 +129,7 @@ const result = await checkTouchTargetSize(locator)
 ## Tests par catégorie
 
 ### 1. Navigation (navigation.spec.ts)
+
 - Burger menu visibility sur mobile
 - SwipeableDrawer ouverture/fermeture
 - Swipe gesture pour fermer le drawer
@@ -132,6 +137,7 @@ const result = await checkTouchTargetSize(locator)
 - Focus trap et accessibilité
 
 ### 2. Command Palette (command-palette.spec.ts)
+
 - Mode full-screen sur mobile
 - Bouton X au lieu du badge ESC
 - Font-size 16px (prévention zoom iOS)
@@ -139,18 +145,21 @@ const result = await checkTouchTargetSize(locator)
 - Touch targets des résultats
 
 ### 3. Touch Targets (touch-targets.spec.ts)
+
 - WCAG 2.5.5 compliance (44×44px minimum)
 - Burger menu, search, theme toggle
 - Boutons navigation pagination
 - Contrôles drawer et command palette
 
 ### 4. Breadcrumbs (breadcrumbs.spec.ts)
+
 - Scroll horizontal sur mobile
 - Scroll-snap entre items
 - Fade indicators (left/right)
 - Auto-scroll vers page courante
 
 ### 5. DataTable Pagination (data-table.spec.ts)
+
 - Format compact "X/Y" (vs "Page X sur Y")
 - First/Last buttons masqués sur mobile
 - Page size selector 44px height
@@ -181,6 +190,7 @@ projects: [
 ## Best practices
 
 ### 1. Conditionnel mobile-only
+
 ```typescript
 test.beforeEach(async ({ mobile }) => {
   test.skip(!mobile.isMobile, 'Test only runs on mobile devices')
@@ -188,6 +198,7 @@ test.beforeEach(async ({ mobile }) => {
 ```
 
 ### 2. Skip gracieux si composant absent
+
 ```typescript
 if (!(await element.isVisible({ timeout: 3000 }).catch(() => false))) {
   test.skip()
@@ -196,12 +207,14 @@ if (!(await element.isVisible({ timeout: 3000 }).catch(() => false))) {
 ```
 
 ### 3. Attente animations
+
 ```typescript
 // Après swipe/navigation
 await page.waitForTimeout(300) // animation fluide
 ```
 
 ### 4. Touch target validation
+
 ```typescript
 const result = await mobile.checkTouchTarget(button)
 expect(result.width).toBeGreaterThanOrEqual(44)

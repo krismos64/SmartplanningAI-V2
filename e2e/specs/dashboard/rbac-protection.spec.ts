@@ -139,9 +139,7 @@ test.describe('RBAC Protection - Tests E2E', () => {
   // ==========================================================================
 
   test.describe('Acces /app/dashboard selon role', () => {
-    test('Employee reste sur /app/dashboard', async ({
-      employeePage,
-    }) => {
+    test('Employee reste sur /app/dashboard', async ({ employeePage }) => {
       await employeePage.goto('/app/dashboard')
       await expect(employeePage).toHaveURL(/.*app\/dashboard.*/)
     })
@@ -154,7 +152,9 @@ test.describe('RBAC Protection - Tests E2E', () => {
       await expect(directorPage).toHaveURL(/.*app\/dashboard.*/)
     })
 
-    test('Admin reste sur /app/dashboard (pas de redirection auto)', async ({ adminPage }) => {
+    test('Admin reste sur /app/dashboard (pas de redirection auto)', async ({
+      adminPage,
+    }) => {
       await adminPage.goto('/app/dashboard')
       // L'admin reste sur /app/dashboard (pas de redirection auto)
       await expect(adminPage).toHaveURL(/.*app\/dashboard.*/)

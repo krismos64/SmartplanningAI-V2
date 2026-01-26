@@ -144,7 +144,10 @@ describe('updateCompanySchema', () => {
   })
 
   it('should validate email format on update', () => {
-    const invalidData = { id: 'clp1234567890abcdefghij', email: 'invalid-email' }
+    const invalidData = {
+      id: 'clp1234567890abcdefghij',
+      email: 'invalid-email',
+    }
     const result = updateCompanySchema.safeParse(invalidData)
 
     expect(result.success).toBe(false)
@@ -170,17 +173,23 @@ describe('companyFiltersSchema', () => {
   })
 
   it('should validate subscription plan filter', () => {
-    const result = companyFiltersSchema.safeParse({ subscriptionPlan: 'BUSINESS' })
+    const result = companyFiltersSchema.safeParse({
+      subscriptionPlan: 'BUSINESS',
+    })
     expect(result.success).toBe(true)
   })
 
   it('should reject invalid subscription plan filter', () => {
-    const result = companyFiltersSchema.safeParse({ subscriptionPlan: 'INVALID' })
+    const result = companyFiltersSchema.safeParse({
+      subscriptionPlan: 'INVALID',
+    })
     expect(result.success).toBe(false)
   })
 
   it('should validate subscription status filter', () => {
-    const result = companyFiltersSchema.safeParse({ subscriptionStatus: 'ACTIVE' })
+    const result = companyFiltersSchema.safeParse({
+      subscriptionStatus: 'ACTIVE',
+    })
     expect(result.success).toBe(true)
   })
 

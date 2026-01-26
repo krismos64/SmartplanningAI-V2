@@ -75,7 +75,9 @@ test.describe('CRUD Teams (DIRECTOR)', () => {
     await formPage.submit()
 
     await expect(
-      directorPage.locator('text=/nom.*requis|nom.*caractère|nom.*caractere|obligatoire/i')
+      directorPage.locator(
+        'text=/nom.*requis|nom.*caractère|nom.*caractere|obligatoire/i'
+      )
     ).toBeVisible()
   })
 

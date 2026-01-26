@@ -218,9 +218,7 @@ test.describe.skip('Recent Pages', () => {
       await expect(input).toBeVisible({ timeout: 5000 })
 
       // Vérifier qu'un temps relatif est affiché (ex: "À l'instant")
-      await expect(
-        directorPage.getByText(/À l'instant|Il y a/i)
-      ).toBeVisible()
+      await expect(directorPage.getByText(/À l'instant|Il y a/i)).toBeVisible()
     })
   })
 

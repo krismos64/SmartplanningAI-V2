@@ -42,13 +42,13 @@ describe('ContactErrorState', () => {
   // RENDU
   // ==========================================================================
   describe('Rendu', () => {
-    it('devrait afficher le titre d\'erreur', () => {
+    it("devrait afficher le titre d'erreur", () => {
       render(<ContactErrorState {...defaultProps} />)
 
       expect(screen.getByText(/erreur lors de l'envoi/i)).toBeInTheDocument()
     })
 
-    it('devrait afficher le message d\'erreur', () => {
+    it("devrait afficher le message d'erreur", () => {
       render(<ContactErrorState {...defaultProps} />)
 
       expect(screen.getByText('Une erreur est survenue')).toBeInTheDocument()
@@ -62,7 +62,7 @@ describe('ContactErrorState', () => {
       ).toBeInTheDocument()
     })
 
-    it('devrait afficher l\'icône X', () => {
+    it("devrait afficher l'icône X", () => {
       render(<ContactErrorState {...defaultProps} />)
 
       // L'icône XCircle de lucide-react (lucide utilise lucide-circle-x)
@@ -92,9 +92,7 @@ describe('ContactErrorState', () => {
     it('devrait appeler onRetry au clic sur le bouton', async () => {
       const user = userEvent.setup()
       const mockOnRetry = vi.fn()
-      render(
-        <ContactErrorState message="Erreur test" onRetry={mockOnRetry} />
-      )
+      render(<ContactErrorState message="Erreur test" onRetry={mockOnRetry} />)
 
       await user.click(screen.getByRole('button', { name: /réessayer/i }))
 
@@ -106,7 +104,7 @@ describe('ContactErrorState', () => {
   // PERSONNALISATION
   // ==========================================================================
   describe('Personnalisation', () => {
-    it('devrait afficher le message d\'erreur personnalisé', () => {
+    it("devrait afficher le message d'erreur personnalisé", () => {
       render(
         <ContactErrorState
           message="Email invalide, veuillez réessayer"
@@ -121,10 +119,7 @@ describe('ContactErrorState', () => {
 
     it('devrait accepter une className personnalisée', () => {
       render(
-        <ContactErrorState
-          {...defaultProps}
-          className="custom-error-class"
-        />
+        <ContactErrorState {...defaultProps} className="custom-error-class" />
       )
 
       // La classe personnalisée est sur le conteneur externe

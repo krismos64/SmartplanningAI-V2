@@ -110,7 +110,10 @@ test.describe('Forbidden Page (403)', () => {
     }) => {
       const errorRegion = page.getByTestId('forbidden-page')
       await expect(errorRegion).toHaveAttribute('aria-label', 'Accès refusé')
-      await expect(errorRegion).toHaveAttribute('aria-labelledby', 'forbidden-title')
+      await expect(errorRegion).toHaveAttribute(
+        'aria-labelledby',
+        'forbidden-title'
+      )
       await expect(errorRegion).toHaveAttribute(
         'aria-describedby',
         'forbidden-description'

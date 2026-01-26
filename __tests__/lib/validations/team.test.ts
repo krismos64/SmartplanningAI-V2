@@ -449,15 +449,13 @@ describe('Helper functions', () => {
 
   describe('getFullName', () => {
     it('should combine first and last name', () => {
-      expect(
-        getFullName({ firstName: 'Jean', lastName: 'Dupont' })
-      ).toBe('Jean Dupont')
+      expect(getFullName({ firstName: 'Jean', lastName: 'Dupont' })).toBe(
+        'Jean Dupont'
+      )
     })
 
     it('should handle empty strings', () => {
-      expect(
-        getFullName({ firstName: '', lastName: 'Dupont' })
-      ).toBe(' Dupont')
+      expect(getFullName({ firstName: '', lastName: 'Dupont' })).toBe(' Dupont')
     })
   })
 })

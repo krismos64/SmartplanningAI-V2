@@ -95,8 +95,9 @@ export function ResetPasswordEmail({
           inchangé.
         </Text>
         <Text style={securityNoteTextStyle}>
-          Ne partagez jamais ce lien avec quelqu&apos;un d&apos;autre. L&apos;équipe
-          SmartPlanning ne vous demandera jamais votre mot de passe.
+          Ne partagez jamais ce lien avec quelqu&apos;un d&apos;autre.
+          L&apos;équipe SmartPlanning ne vous demandera jamais votre mot de
+          passe.
         </Text>
       </Section>
 

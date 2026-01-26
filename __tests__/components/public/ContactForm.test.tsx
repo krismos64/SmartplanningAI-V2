@@ -159,7 +159,7 @@ describe('ContactForm', () => {
   // VALIDATION
   // ==========================================================================
   describe('Validation', () => {
-    it("devrait afficher une erreur si le nom est trop court", async () => {
+    it('devrait afficher une erreur si le nom est trop court', async () => {
       const user = userEvent.setup()
       render(<ContactForm />)
 
@@ -235,10 +235,7 @@ describe('ContactForm', () => {
       render(<ContactForm onSubmit={mockOnSubmit} />)
 
       await user.type(screen.getByLabelText(/nom complet/i), 'Jean Dupont')
-      await user.type(
-        screen.getByLabelText(/adresse email/i),
-        'jean@test.com'
-      )
+      await user.type(screen.getByLabelText(/adresse email/i), 'jean@test.com')
       await user.type(screen.getByLabelText(/sujet/i), 'Test sujet valide')
       await user.type(
         screen.getByLabelText(/message/i),
@@ -257,7 +254,7 @@ describe('ContactForm', () => {
       })
     })
 
-    it("devrait ne pas soumettre si le formulaire est invalide", async () => {
+    it('devrait ne pas soumettre si le formulaire est invalide', async () => {
       const user = userEvent.setup()
       const mockOnSubmit = vi.fn()
       render(<ContactForm onSubmit={mockOnSubmit} />)
@@ -277,17 +274,19 @@ describe('ContactForm', () => {
   describe('États', () => {
     it("devrait afficher l'état de chargement pendant la soumission", async () => {
       const user = userEvent.setup()
-      const mockOnSubmit = vi.fn().mockImplementation(
-        () => new Promise((resolve) => setTimeout(() => resolve({ success: true }), 100))
-      )
+      const mockOnSubmit = vi
+        .fn()
+        .mockImplementation(
+          () =>
+            new Promise((resolve) =>
+              setTimeout(() => resolve({ success: true }), 100)
+            )
+        )
       render(<ContactForm onSubmit={mockOnSubmit} />)
 
       // Remplir le formulaire
       await user.type(screen.getByLabelText(/nom complet/i), 'Jean Dupont')
-      await user.type(
-        screen.getByLabelText(/adresse email/i),
-        'jean@test.com'
-      )
+      await user.type(screen.getByLabelText(/adresse email/i), 'jean@test.com')
       await user.type(screen.getByLabelText(/sujet/i), 'Test sujet valide')
       await user.type(
         screen.getByLabelText(/message/i),
@@ -312,10 +311,7 @@ describe('ContactForm', () => {
 
       // Remplir et soumettre
       await user.type(screen.getByLabelText(/nom complet/i), 'Jean Dupont')
-      await user.type(
-        screen.getByLabelText(/adresse email/i),
-        'jean@test.com'
-      )
+      await user.type(screen.getByLabelText(/adresse email/i), 'jean@test.com')
       await user.type(screen.getByLabelText(/sujet/i), 'Test sujet valide')
       await user.type(
         screen.getByLabelText(/message/i),
@@ -332,20 +328,19 @@ describe('ContactForm', () => {
 
     it('devrait désactiver le bouton pendant le chargement', async () => {
       const user = userEvent.setup()
-      const mockOnSubmit = vi.fn().mockImplementation(
-        () =>
-          new Promise((resolve) =>
-            setTimeout(() => resolve({ success: true }), 100)
-          )
-      )
+      const mockOnSubmit = vi
+        .fn()
+        .mockImplementation(
+          () =>
+            new Promise((resolve) =>
+              setTimeout(() => resolve({ success: true }), 100)
+            )
+        )
       render(<ContactForm onSubmit={mockOnSubmit} />)
 
       // Remplir le formulaire
       await user.type(screen.getByLabelText(/nom complet/i), 'Jean Dupont')
-      await user.type(
-        screen.getByLabelText(/adresse email/i),
-        'jean@test.com'
-      )
+      await user.type(screen.getByLabelText(/adresse email/i), 'jean@test.com')
       await user.type(screen.getByLabelText(/sujet/i), 'Test sujet valide')
       await user.type(
         screen.getByLabelText(/message/i),
@@ -355,7 +350,9 @@ describe('ContactForm', () => {
       await user.click(screen.getByRole('button', { name: /envoyer/i }))
 
       // Le bouton est désactivé pendant le chargement
-      expect(screen.getByRole('button', { name: /envoi en cours/i })).toBeDisabled()
+      expect(
+        screen.getByRole('button', { name: /envoi en cours/i })
+      ).toBeDisabled()
 
       // Attendre que le chargement se termine
       await waitFor(() => {
@@ -386,7 +383,9 @@ describe('ContactForm', () => {
       })
 
       // Cliquer sur reset pour revenir au formulaire
-      await user.click(screen.getByRole('button', { name: /envoyer un autre message/i }))
+      await user.click(
+        screen.getByRole('button', { name: /envoyer un autre message/i })
+      )
 
       // Le formulaire doit être réinitialisé
       await waitFor(() => {
@@ -406,10 +405,7 @@ describe('ContactForm', () => {
 
       // Remplir le formulaire
       await user.type(screen.getByLabelText(/nom complet/i), 'Jean Dupont')
-      await user.type(
-        screen.getByLabelText(/adresse email/i),
-        'jean@test.com'
-      )
+      await user.type(screen.getByLabelText(/adresse email/i), 'jean@test.com')
       await user.type(screen.getByLabelText(/sujet/i), 'Test sujet valide')
       await user.type(
         screen.getByLabelText(/message/i),

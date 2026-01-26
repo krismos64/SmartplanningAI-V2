@@ -50,17 +50,15 @@ export function VerificationEmail({
   return (
     <Layout preview={previewText}>
       {/* Titre principal */}
-      <Text style={presetStyles.heading1}>
-        Bienvenue sur SmartPlanning !
-      </Text>
+      <Text style={presetStyles.heading1}>Bienvenue sur SmartPlanning !</Text>
 
       {/* Message d'introduction */}
       <Text style={presetStyles.paragraph}>{greeting}</Text>
 
       <Text style={presetStyles.paragraph}>
         Merci de vous être inscrit sur SmartPlanning. Pour activer votre compte
-        et accéder à toutes les fonctionnalités, veuillez confirmer votre adresse
-        email <strong>{email}</strong>.
+        et accéder à toutes les fonctionnalités, veuillez confirmer votre
+        adresse email <strong>{email}</strong>.
       </Text>
 
       <Hr style={presetStyles.divider} />
@@ -69,8 +67,9 @@ export function VerificationEmail({
       <Section style={infoContainerStyle}>
         <Text style={infoIconStyle}>📧</Text>
         <Text style={infoTextStyle}>
-          Ce lien de vérification est valable pendant <strong>{expiresIn}</strong>.
-          Passé ce délai, vous pourrez demander un nouveau lien de vérification.
+          Ce lien de vérification est valable pendant{' '}
+          <strong>{expiresIn}</strong>. Passé ce délai, vous pourrez demander un
+          nouveau lien de vérification.
         </Text>
       </Section>
 
@@ -97,7 +96,8 @@ export function VerificationEmail({
           • Recevez les notifications importantes
         </Text>
         <Text style={benefitsTextStyle}>
-          • Récupérez l&apos;accès à votre compte en cas d&apos;oubli de mot de passe
+          • Récupérez l&apos;accès à votre compte en cas d&apos;oubli de mot de
+          passe
         </Text>
       </Section>
 

@@ -20,7 +20,10 @@ vi.mock('@/lib/rate-limit', () => ({
 }))
 
 // Helper pour créer une requête mock
-function createMockRequest(body: unknown, headers: Record<string, string> = {}): Request {
+function createMockRequest(
+  body: unknown,
+  headers: Record<string, string> = {}
+): Request {
   return {
     json: vi.fn().mockResolvedValue(body),
     headers: {
@@ -49,8 +52,9 @@ describe('POST /api/contact', () => {
   const validFormData = {
     name: 'Jean Dupont',
     email: 'jean@example.com',
-    subject: 'Demande d\'information sur SmartPlanning',
-    message: 'Bonjour, je souhaite en savoir plus sur vos services de planification.',
+    subject: "Demande d'information sur SmartPlanning",
+    message:
+      'Bonjour, je souhaite en savoir plus sur vos services de planification.',
   }
 
   beforeEach(async () => {
@@ -61,10 +65,14 @@ describe('POST /api/contact', () => {
     const emailModule = await import('@/lib/email/templates/contact')
     const rateLimitModule = await import('@/lib/rate-limit')
 
-    sendContactEmails = emailModule.sendContactEmails as ReturnType<typeof vi.fn>
+    sendContactEmails = emailModule.sendContactEmails as ReturnType<
+      typeof vi.fn
+    >
     checkRateLimit = rateLimitModule.checkRateLimit as ReturnType<typeof vi.fn>
     getClientIp = rateLimitModule.getClientIp as ReturnType<typeof vi.fn>
-    getRateLimitHeaders = rateLimitModule.getRateLimitHeaders as ReturnType<typeof vi.fn>
+    getRateLimitHeaders = rateLimitModule.getRateLimitHeaders as ReturnType<
+      typeof vi.fn
+    >
 
     // Configurer les mocks par défaut
     getClientIp.mockReturnValue('127.0.0.1')
@@ -280,13 +288,16 @@ describe('POST /api/contact', () => {
       expect(data.message).toContain('Trop de requêtes')
     })
 
-    it('devrait appeler checkRateLimit avec l\'IP du client', async () => {
+    it("devrait appeler checkRateLimit avec l'IP du client", async () => {
       getClientIp.mockReturnValue('192.168.1.100')
 
       const request = createMockRequest(validFormData)
       await POST(request)
 
-      expect(checkRateLimit).toHaveBeenCalledWith('192.168.1.100', expect.any(Object))
+      expect(checkRateLimit).toHaveBeenCalledWith(
+        '192.168.1.100',
+        expect.any(Object)
+      )
     })
 
     it('ne devrait pas appeler sendContactEmails si rate limited', async () => {
@@ -376,7 +387,11 @@ describe('OPTIONS /api/contact', () => {
 
     expect(response.status).toBe(204)
     expect(response.headers.get('Access-Control-Allow-Origin')).toBe('*')
-    expect(response.headers.get('Access-Control-Allow-Methods')).toContain('POST')
-    expect(response.headers.get('Access-Control-Allow-Headers')).toContain('Content-Type')
+    expect(response.headers.get('Access-Control-Allow-Methods')).toContain(
+      'POST'
+    )
+    expect(response.headers.get('Access-Control-Allow-Headers')).toContain(
+      'Content-Type'
+    )
   })
 })

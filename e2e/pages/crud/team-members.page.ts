@@ -43,15 +43,21 @@ export class TeamMembersPage {
     this.page = page
 
     // Header
-    this.pageTitle = page.getByRole('heading', { name: /membres.*equipe|gestion.*membres/i })
+    this.pageTitle = page.getByRole('heading', {
+      name: /membres.*equipe|gestion.*membres/i,
+    })
     this.teamName = page.locator('[data-testid="team-name"]')
-    this.addMemberButton = page.getByRole('button', { name: /ajouter.*membre/i })
+    this.addMemberButton = page.getByRole('button', {
+      name: /ajouter.*membre/i,
+    })
     this.backButton = page.getByRole('link', { name: /retour/i })
 
     // Contenu
     this.membersList = page.locator('[data-testid="members-list"]')
     this.memberItems = page.locator('[data-testid="member-item"]')
-    this.availableEmployeesList = page.locator('[data-testid="available-employees"]')
+    this.availableEmployeesList = page.locator(
+      '[data-testid="available-employees"]'
+    )
     this.emptyMessage = page.locator('text=/aucun membre|equipe vide/i')
   }
 
@@ -128,9 +134,12 @@ export class TeamMembersPage {
    */
   async selectEmployeeToAdd(employeeName: string): Promise<void> {
     await this.page
-      .locator('[data-testid="available-employees"] [data-testid="employee-item"]', {
-        hasText: employeeName,
-      })
+      .locator(
+        '[data-testid="available-employees"] [data-testid="employee-item"]',
+        {
+          hasText: employeeName,
+        }
+      )
       .click()
   }
 

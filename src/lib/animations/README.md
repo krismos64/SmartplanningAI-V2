@@ -53,14 +53,14 @@ src/lib/animations/
 import { durations } from '@/lib/animations'
 
 // Valeurs disponibles (en secondes)
-durations.instant   // 0.1  - Micro-interactions
-durations.fast      // 0.15 - Hover, focus
-durations.quick     // 0.2  - Tooltips, dropdowns
-durations.normal    // 0.3  - Standard
-durations.medium    // 0.4  - Sidebars, panels
-durations.slow      // 0.5  - Modals, pages
-durations.slower    // 0.8  - Animations complexes
-durations.slowest   // 1.0  - Onboarding
+durations.instant // 0.1  - Micro-interactions
+durations.fast // 0.15 - Hover, focus
+durations.quick // 0.2  - Tooltips, dropdowns
+durations.normal // 0.3  - Standard
+durations.medium // 0.4  - Sidebars, panels
+durations.slow // 0.5  - Modals, pages
+durations.slower // 0.8  - Animations complexes
+durations.slowest // 1.0  - Onboarding
 ```
 
 ### Easings
@@ -69,12 +69,12 @@ durations.slowest   // 1.0  - Onboarding
 import { easings } from '@/lib/animations'
 
 // Courbes cubic-bezier
-easings.easeOut     // Entrées naturelles
-easings.easeInOut   // Transitions fluides
-easings.easeIn      // Sorties progressives
-easings.sharp       // Interactions rapides
-easings.anticipate  // Léger recul avant mouvement
-easings.overshoot   // Dépassement puis retour
+easings.easeOut // Entrées naturelles
+easings.easeInOut // Transitions fluides
+easings.easeIn // Sorties progressives
+easings.sharp // Interactions rapides
+easings.anticipate // Léger recul avant mouvement
+easings.overshoot // Dépassement puis retour
 ```
 
 ### Springs
@@ -82,11 +82,11 @@ easings.overshoot   // Dépassement puis retour
 ```tsx
 import { springs } from '@/lib/animations'
 
-springs.gentle      // Doux - Boutons, cards
-springs.default     // Standard - Usage général
-springs.snappy      // Réactif - Toggles
-springs.bouncy      // Rebondissant - Notifications
-springs.slow        // Lent - Modals, pages
+springs.gentle // Doux - Boutons, cards
+springs.default // Standard - Usage général
+springs.snappy // Réactif - Toggles
+springs.bouncy // Rebondissant - Notifications
+springs.slow // Lent - Modals, pages
 ```
 
 ---
@@ -154,11 +154,7 @@ import { scaleVariants, scaleSpringVariants, popVariants } from '@/lib/animation
 ```tsx
 import { staggerContainer, staggerItem } from '@/lib/animations'
 
-<motion.ul
-  variants={staggerContainer}
-  initial="hidden"
-  animate="visible"
->
+;<motion.ul variants={staggerContainer} initial="hidden" animate="visible">
   {items.map((item) => (
     <motion.li key={item.id} variants={staggerItem}>
       {item.name}
@@ -170,7 +166,11 @@ import { staggerContainer, staggerItem } from '@/lib/animations'
 ### Factory Functions
 
 ```tsx
-import { createSlideVariant, createScaleVariant, createStaggerContainer } from '@/lib/animations'
+import {
+  createSlideVariant,
+  createScaleVariant,
+  createStaggerContainer,
+} from '@/lib/animations'
 
 // Slide personnalisé
 const customSlide = createSlideVariant('up', 50) // 50px
@@ -205,7 +205,7 @@ import { hoverScale, hoverLift, hoverGlow } from '@/lib/animations'
 ```tsx
 import { tapScale, tapPush } from '@/lib/animations'
 
-<motion.button whileHover={hoverScale} whileTap={tapScale}>
+;<motion.button whileHover={hoverScale} whileTap={tapScale}>
   Click me
 </motion.button>
 ```
@@ -230,7 +230,7 @@ import { buttonPrimary, buttonIcon, buttonLift } from '@/lib/animations'
 ```tsx
 import { cardInteractive, cardSubtle } from '@/lib/animations'
 
-<motion.div {...cardInteractive}>
+;<motion.div {...cardInteractive}>
   <Card />
 </motion.div>
 ```
@@ -267,11 +267,7 @@ function MyComponent() {
     duration: 0.5,
   })
 
-  return (
-    <motion.div {...animationProps}>
-      Contenu animé
-    </motion.div>
-  )
+  return <motion.div {...animationProps}>Contenu animé</motion.div>
 }
 ```
 
@@ -287,11 +283,7 @@ function Button() {
     focus: { scale: 1.01 },
   })
 
-  return (
-    <motion.button {...whileProps}>
-      Click me
-    </motion.button>
-  )
+  return <motion.button {...whileProps}>Click me</motion.button>
 }
 ```
 
@@ -375,7 +367,7 @@ import { AnimatedContainer } from '@/lib/animations'
 ```tsx
 import { AnimatedList } from '@/lib/animations'
 
-<AnimatedList
+;<AnimatedList
   items={users}
   keyExtractor={(user) => user.id}
   renderItem={(user) => <UserCard user={user} />}
@@ -386,7 +378,7 @@ import { AnimatedList } from '@/lib/animations'
 // Pour les grilles
 import { GridAnimatedList } from '@/lib/animations'
 
-<GridAnimatedList
+;<GridAnimatedList
   items={products}
   keyExtractor={(p) => p.id}
   renderItem={(p) => <ProductCard product={p} />}
@@ -504,9 +496,7 @@ function Modal({ isOpen, onClose }) {
             animate="visible"
             exit="exit"
           >
-            <div className="bg-white rounded-lg p-6">
-              Modal content
-            </div>
+            <div className="rounded-lg bg-white p-6">Modal content</div>
           </motion.div>
         </>
       )}
@@ -526,7 +516,7 @@ function TodoList({ todos, onRemove }) {
       items={todos}
       keyExtractor={(todo) => todo.id}
       renderItem={(todo) => (
-        <div className="flex justify-between p-4 bg-white rounded">
+        <div className="flex justify-between rounded bg-white p-4">
           <span>{todo.text}</span>
           <button onClick={() => onRemove(todo.id)}>Remove</button>
         </div>

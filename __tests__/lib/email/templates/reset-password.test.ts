@@ -154,7 +154,9 @@ describe('sendResetPasswordEmail', () => {
     })
 
     it('devrait gérer les exceptions de sendEmail', async () => {
-      const mockSendEmail = vi.fn().mockRejectedValue(new Error('Network error'))
+      const mockSendEmail = vi
+        .fn()
+        .mockRejectedValue(new Error('Network error'))
 
       vi.doMock('@/lib/email', () => ({
         sendEmail: mockSendEmail,
@@ -183,7 +185,7 @@ describe('sendResetPasswordEmail', () => {
   // ==========================================================================
 
   describe("Construction de l'URL", () => {
-    it('devrait encoder le token dans l\'URL', async () => {
+    it("devrait encoder le token dans l'URL", async () => {
       const mockSendEmail = vi.fn().mockResolvedValue({
         success: true,
         messageId: 'msg-url-123',

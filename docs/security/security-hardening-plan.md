@@ -17,14 +17,14 @@ Suite à **deux incidents de sécurité** en 10 jours (5 et 15 décembre 2025), 
 
 ## Tableau de Bord
 
-| Phase | Description | Statut | Progression |
-|-------|-------------|--------|-------------|
-| 1 | Réponse immédiate | FAIT | 100% |
-| 2 | Blocage IPs malveillantes | EN COURS | 0% |
-| 3 | Hardening Docker | PLANIFIÉ | 0% |
-| 4 | Security Headers Next.js | PLANIFIÉ | 0% |
-| 5 | Rate Limiting Nginx | PLANIFIÉ | 0% |
-| 6 | Monitoring & Alertes | PLANIFIÉ | 0% |
+| Phase | Description               | Statut   | Progression |
+| ----- | ------------------------- | -------- | ----------- |
+| 1     | Réponse immédiate         | FAIT     | 100%        |
+| 2     | Blocage IPs malveillantes | EN COURS | 0%          |
+| 3     | Hardening Docker          | PLANIFIÉ | 0%          |
+| 4     | Security Headers Next.js  | PLANIFIÉ | 0%          |
+| 5     | Rate Limiting Nginx       | PLANIFIÉ | 0%          |
+| 6     | Monitoring & Alertes      | PLANIFIÉ | 0%          |
 
 ---
 
@@ -165,6 +165,7 @@ ignoreregex =
 ### 2.4 Configuration UFW Correcte
 
 **Configuration recommandée** :
+
 ```bash
 # CORRECT : Compatible Docker
 sudo ufw default deny incoming
@@ -178,6 +179,7 @@ sudo ufw allow 443/tcp  # HTTPS
 ```
 
 ⚠️ **NE PAS UTILISER** :
+
 ```bash
 # INCORRECT : Bloque Docker
 sudo ufw default deny outgoing  # ❌ Incompatible avec Docker
@@ -203,7 +205,7 @@ sudo ufw default deny outgoing  # ❌ Incompatible avec Docker
 ### 3.1 docker-compose.yml Sécurisé
 
 ```yaml
-version: "3.8"
+version: '3.8'
 
 services:
   app:
@@ -250,7 +252,11 @@ services:
       - smartplanning
 
     healthcheck:
-      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:3000/api/health || exit 1"]
+      test:
+        [
+          'CMD-SHELL',
+          'wget -q --spider http://127.0.0.1:3000/api/health || exit 1',
+        ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -367,7 +373,9 @@ export function middleware(request: NextRequest) {
     form-action 'self';
     frame-ancestors 'none';
     upgrade-insecure-requests;
-  `.replace(/\s{2,}/g, ' ').trim()
+  `
+    .replace(/\s{2,}/g, ' ')
+    .trim()
 
   const requestHeaders = new Headers(request.headers)
   requestHeaders.set('x-nonce', nonce)
@@ -679,10 +687,10 @@ log "Check de sécurité terminé - OK"
 
 ## Historique des Mises à Jour
 
-| Date | Version | Modification |
-|------|---------|--------------|
-| 06/01/2026 | 1.1 | Phase 2 terminée + Fix critique UFW Docker compatibility |
-| 15/12/2025 | 1.0 | Création initiale du document |
+| Date       | Version | Modification                                             |
+| ---------- | ------- | -------------------------------------------------------- |
+| 06/01/2026 | 1.1     | Phase 2 terminée + Fix critique UFW Docker compatibility |
+| 15/12/2025 | 1.0     | Création initiale du document                            |
 
 ---
 

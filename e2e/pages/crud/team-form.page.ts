@@ -56,10 +56,14 @@ export class TeamFormPage {
     })
 
     // Champs - utiliser un sélecteur plus précis pour éviter les doublons
-    this.nameInput = page.getByRole('textbox', { name: /nom de l'équipe|nom de l.équipe/i })
+    this.nameInput = page.getByRole('textbox', {
+      name: /nom de l'équipe|nom de l.équipe/i,
+    })
     this.descriptionInput = page.getByLabel(/description/i)
     this.colorSelect = page.getByRole('combobox', { name: /couleur/i })
-    this.managerSelect = page.getByRole('combobox', { name: /manager|responsable/i })
+    this.managerSelect = page.getByRole('combobox', {
+      name: /manager|responsable/i,
+    })
 
     // Actions
     this.submitButton = page.getByRole('button', {
@@ -136,7 +140,9 @@ export class TeamFormPage {
    */
   async expectSuccess(): Promise<void> {
     await expect(
-      this.page.locator('text=/equipe.*cree|succes|enregistre/i, [data-sonner-toast]')
+      this.page.locator(
+        'text=/equipe.*cree|succes|enregistre/i, [data-sonner-toast]'
+      )
     ).toBeVisible({ timeout: 10000 })
   }
 

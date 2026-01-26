@@ -78,11 +78,15 @@ export class EmployeeListPage {
     // Table
     this.table = page.locator('table')
     this.tableRows = page.locator('table tbody tr')
-    this.emptyMessage = page.locator('text=/aucun employe|aucun collaborateur/i')
+    this.emptyMessage = page.locator(
+      'text=/aucun employe|aucun collaborateur/i'
+    )
     this.loadingIndicator = page.locator('text=Chargement...').first()
 
     // Pagination
-    this.prevPageButton = page.getByRole('button', { name: /précédent|precedent/i })
+    this.prevPageButton = page.getByRole('button', {
+      name: /précédent|precedent/i,
+    })
     this.nextPageButton = page.getByRole('button', { name: /suivant/i })
   }
 

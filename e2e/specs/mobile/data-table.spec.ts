@@ -30,7 +30,9 @@ test.describe('Mobile DataTable Pagination', () => {
   })
 
   // Helper to check if pagination exists
-  async function hasPagination(page: import('@playwright/test').Page): Promise<boolean> {
+  async function hasPagination(
+    page: import('@playwright/test').Page
+  ): Promise<boolean> {
     const pagination = page.locator('[data-testid="data-table-pagination"]')
     try {
       return await pagination.isVisible({ timeout: 3000 })
@@ -116,7 +118,9 @@ test.describe('Mobile DataTable Pagination', () => {
         return
       }
 
-      const firstButton = directorPage.locator('[data-testid="pagination-first"]')
+      const firstButton = directorPage.locator(
+        '[data-testid="pagination-first"]'
+      )
       await expect(firstButton).not.toBeVisible()
     })
 

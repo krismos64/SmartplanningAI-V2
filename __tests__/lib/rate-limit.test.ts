@@ -77,7 +77,9 @@ describe('Rate Limiter', () => {
       const result = checkRateLimit('test-ip-4', defaultConfig)
       const after = Date.now()
 
-      expect(result.resetAt).toBeGreaterThanOrEqual(before + defaultConfig.windowMs)
+      expect(result.resetAt).toBeGreaterThanOrEqual(
+        before + defaultConfig.windowMs
+      )
       expect(result.resetAt).toBeLessThanOrEqual(after + defaultConfig.windowMs)
     })
 
@@ -118,7 +120,7 @@ describe('Rate Limiter', () => {
   // ==========================================================================
 
   describe('getClientIp', () => {
-    it('devrait extraire l\'IP de x-forwarded-for', () => {
+    it("devrait extraire l'IP de x-forwarded-for", () => {
       const request = {
         headers: {
           get: (name: string) => {

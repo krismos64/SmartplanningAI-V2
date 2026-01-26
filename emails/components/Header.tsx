@@ -24,10 +24,7 @@ export interface HeaderProps {
  * - Bande de couleur primaire en haut
  * - Logo centré cliquable
  */
-export function Header({
-  logoUrl,
-  logoLink,
-}: HeaderProps) {
+export function Header({ logoUrl, logoLink }: HeaderProps) {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://smartplanning.fr'
   const defaultLogoUrl = `${baseUrl}/images/logo-sp.png`
   const defaultLogoLink = baseUrl

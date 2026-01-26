@@ -40,7 +40,7 @@ describe('Contact Email Functions', () => {
   const mockContactData = {
     name: 'Jean Dupont',
     email: 'jean@example.com',
-    subject: 'Demande d\'information',
+    subject: "Demande d'information",
     message: 'Bonjour, je souhaite en savoir plus sur vos services.',
   }
 
@@ -69,7 +69,7 @@ describe('Contact Email Functions', () => {
   // ==========================================================================
 
   describe('sendContactConfirmation', () => {
-    it('devrait envoyer un email de confirmation à l\'expéditeur', async () => {
+    it("devrait envoyer un email de confirmation à l'expéditeur", async () => {
       const result = await sendContactConfirmation(mockContactData)
 
       expect(sendEmail).toHaveBeenCalledTimes(1)
@@ -82,7 +82,7 @@ describe('Contact Email Functions', () => {
       expect(result.messageId).toBe('msg-123')
     })
 
-    it('devrait inclure le sujet dans le titre de l\'email', async () => {
+    it("devrait inclure le sujet dans le titre de l'email", async () => {
       await sendContactConfirmation(mockContactData)
 
       expect(sendEmail).toHaveBeenCalledWith(
@@ -92,7 +92,7 @@ describe('Contact Email Functions', () => {
       )
     })
 
-    it('devrait inclure un replyTo vers l\'admin', async () => {
+    it("devrait inclure un replyTo vers l'admin", async () => {
       await sendContactConfirmation(mockContactData)
 
       expect(sendEmail).toHaveBeenCalledWith(
@@ -134,7 +134,7 @@ describe('Contact Email Functions', () => {
       submittedAt: new Date('2026-01-19T10:30:00Z'),
     }
 
-    it('devrait envoyer un email de notification à l\'admin', async () => {
+    it("devrait envoyer un email de notification à l'admin", async () => {
       const result = await sendContactNotification(notificationData)
 
       expect(sendEmail).toHaveBeenCalledTimes(1)
@@ -161,7 +161,7 @@ describe('Contact Email Functions', () => {
       )
     })
 
-    it('devrait permettre de répondre directement à l\'expéditeur', async () => {
+    it("devrait permettre de répondre directement à l'expéditeur", async () => {
       await sendContactNotification(notificationData)
 
       expect(sendEmail).toHaveBeenCalledWith(
@@ -172,7 +172,10 @@ describe('Contact Email Functions', () => {
     })
 
     it('devrait retourner une erreur si sendEmail échoue', async () => {
-      sendEmail.mockResolvedValue({ success: false, error: 'Connection refused' })
+      sendEmail.mockResolvedValue({
+        success: false,
+        error: 'Connection refused',
+      })
 
       const result = await sendContactNotification(notificationData)
 
@@ -217,7 +220,7 @@ describe('Contact Email Functions', () => {
       expect(result.notification.success).toBe(true)
     })
 
-    it('devrait gérer l\'échec des deux emails', async () => {
+    it("devrait gérer l'échec des deux emails", async () => {
       sendEmail
         .mockResolvedValueOnce({ success: false, error: 'Error 1' })
         .mockResolvedValueOnce({ success: false, error: 'Error 2' })

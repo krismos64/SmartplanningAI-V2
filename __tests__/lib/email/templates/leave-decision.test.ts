@@ -187,7 +187,9 @@ describe('leave-decision', () => {
     })
 
     it('devrait gérer les exceptions de sendEmail', async () => {
-      const mockSendEmail = vi.fn().mockRejectedValue(new Error('Network error'))
+      const mockSendEmail = vi
+        .fn()
+        .mockRejectedValue(new Error('Network error'))
 
       vi.doMock('@/lib/email', () => ({
         sendEmail: mockSendEmail,

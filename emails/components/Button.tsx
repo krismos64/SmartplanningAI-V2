@@ -16,7 +16,12 @@ import {
   spacing,
 } from '../styles/constants'
 
-export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'success' | 'danger'
+export type ButtonVariant =
+  | 'primary'
+  | 'secondary'
+  | 'outline'
+  | 'success'
+  | 'danger'
 export type ButtonSize = 'sm' | 'md' | 'lg'
 
 export interface ButtonProps {
@@ -58,7 +63,11 @@ export function Button({
   const buttonStyle = {
     ...getBaseStyle(size),
     ...getVariantStyle(variant),
-    ...(fullWidth && { width: '100%', display: 'block', textAlign: 'center' as const }),
+    ...(fullWidth && {
+      width: '100%',
+      display: 'block',
+      textAlign: 'center' as const,
+    }),
     ...style,
   }
 
@@ -155,7 +164,12 @@ export function ButtonGroup({
   gap = spacing.md,
 }: ButtonGroupProps) {
   return (
-    <table role="presentation" cellPadding="0" cellSpacing="0" style={{ width: '100%' }}>
+    <table
+      role="presentation"
+      cellPadding="0"
+      cellSpacing="0"
+      style={{ width: '100%' }}
+    >
       <tbody>
         <tr>
           <td

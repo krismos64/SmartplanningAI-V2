@@ -79,7 +79,9 @@ describe('useUmamiTrack', () => {
       result.current.track('cta-click', { location: 'hero' })
     })
 
-    expect(mockUmamiTrack).toHaveBeenCalledWith('cta-click', { location: 'hero' })
+    expect(mockUmamiTrack).toHaveBeenCalledWith('cta-click', {
+      location: 'hero',
+    })
   })
 
   it('envoie un event sans données additionnelles', () => {

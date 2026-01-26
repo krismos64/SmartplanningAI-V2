@@ -15,12 +15,7 @@ import {
 } from '@react-email/components'
 import * as React from 'react'
 
-import {
-  colors,
-  typography,
-  dimensions,
-  spacing,
-} from '../styles/constants'
+import { colors, typography, dimensions, spacing } from '../styles/constants'
 import { Header } from './Header'
 import { Footer } from './Footer'
 
@@ -57,7 +52,10 @@ export function Layout({
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <meta name="x-apple-disable-message-reformatting" />
-        <meta name="format-detection" content="telephone=no,address=no,email=no,date=no,url=no" />
+        <meta
+          name="format-detection"
+          content="telephone=no,address=no,email=no,date=no,url=no"
+        />
         <Font
           fontFamily="Rajdhani"
           fallbackFontFamily={['Helvetica', 'Arial', 'sans-serif']}

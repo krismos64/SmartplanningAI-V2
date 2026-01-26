@@ -83,9 +83,7 @@ describe('ErrorBoundaryWrapper', () => {
       )
 
       expect(screen.getByTestId('child-content')).toBeInTheDocument()
-      expect(
-        screen.getByText('Child component rendered')
-      ).toBeInTheDocument()
+      expect(screen.getByText('Child component rendered')).toBeInTheDocument()
     })
 
     it('does not show fallback UI when no error', () => {
@@ -288,10 +286,7 @@ describe('ErrorFallback', () => {
       errorWithDigest.digest = 'ABC123'
 
       render(
-        <ErrorFallback
-          error={errorWithDigest}
-          resetErrorBoundary={mockReset}
-        />
+        <ErrorFallback error={errorWithDigest} resetErrorBoundary={mockReset} />
       )
 
       expect(screen.getByText(/Code erreur : ABC123/)).toBeInTheDocument()
@@ -342,27 +337,21 @@ describe('ErrorFallback', () => {
       errorWithStack.stack = 'Error: Test\n    at Component.render'
 
       render(
-        <ErrorFallback
-          error={errorWithStack}
-          resetErrorBoundary={mockReset}
-        />
+        <ErrorFallback error={errorWithStack} resetErrorBoundary={mockReset} />
       )
 
       // In test mode (NODE_ENV=test), stack trace toggle should NOT be visible
-      expect(
-        screen.queryByText(/détails techniques/i)
-      ).not.toBeInTheDocument()
+      expect(screen.queryByText(/détails techniques/i)).not.toBeInTheDocument()
     })
 
     it('always shows error message regardless of environment', () => {
-      const errorWithStack = new Error('Test message') as Error & { digest?: string }
+      const errorWithStack = new Error('Test message') as Error & {
+        digest?: string
+      }
       errorWithStack.stack = 'Error: Test\n    at Component.render'
 
       render(
-        <ErrorFallback
-          error={errorWithStack}
-          resetErrorBoundary={mockReset}
-        />
+        <ErrorFallback error={errorWithStack} resetErrorBoundary={mockReset} />
       )
 
       // Error message is always visible
@@ -438,9 +427,7 @@ describe('ErrorFallback', () => {
       )
 
       // Should not show stack trace toggle when no stack
-      expect(
-        screen.queryByText(/détails techniques/i)
-      ).not.toBeInTheDocument()
+      expect(screen.queryByText(/détails techniques/i)).not.toBeInTheDocument()
     })
   })
 })

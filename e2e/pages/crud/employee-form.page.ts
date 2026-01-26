@@ -17,7 +17,13 @@ export interface EmployeeFormData {
   position?: string
   department?: string
   teamId?: string
-  contractType?: 'CDI' | 'CDD' | 'INTERIM' | 'FREELANCE' | 'APPRENTICE' | 'INTERN'
+  contractType?:
+    | 'CDI'
+    | 'CDD'
+    | 'INTERIM'
+    | 'FREELANCE'
+    | 'APPRENTICE'
+    | 'INTERN'
   employmentType?: 'FULL_TIME' | 'PART_TIME' | 'TEMPORARY' | 'INTERN'
   hireDate?: string
   endDate?: string
@@ -99,8 +105,12 @@ export class EmployeeFormPage {
     this.positionInput = page.getByLabel(/poste|fonction/i)
     this.departmentSelect = page.getByRole('combobox', { name: /departement/i })
     this.teamSelect = page.getByRole('combobox', { name: /equipe/i })
-    this.contractTypeSelect = page.getByRole('combobox', { name: /type.*contrat/i })
-    this.employmentTypeSelect = page.getByRole('combobox', { name: /type.*emploi/i })
+    this.contractTypeSelect = page.getByRole('combobox', {
+      name: /type.*contrat/i,
+    })
+    this.employmentTypeSelect = page.getByRole('combobox', {
+      name: /type.*emploi/i,
+    })
     this.hireDateInput = page.getByLabel(/date.*embauche|debut/i)
     this.endDateInput = page.getByLabel(/date.*fin/i)
     this.weeklyHoursInput = page.getByLabel(/heures.*hebdo/i)
@@ -181,7 +191,9 @@ export class EmployeeFormPage {
    */
   async expectSuccess(): Promise<void> {
     await expect(
-      this.page.locator('text=/employe.*cree|succes|enregistre/i, [data-sonner-toast]')
+      this.page.locator(
+        'text=/employe.*cree|succes|enregistre/i, [data-sonner-toast]'
+      )
     ).toBeVisible({ timeout: 10000 })
   }
 

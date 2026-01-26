@@ -75,8 +75,8 @@ export function WelcomeEmail({
           <Column style={featureTextColumnStyle}>
             <Text style={featureTitleStyle}>Planification intelligente</Text>
             <Text style={featureDescStyle}>
-              Organisez les plannings de vos équipes en quelques clics avec notre
-              interface intuitive.
+              Organisez les plannings de vos équipes en quelques clics avec
+              notre interface intuitive.
             </Text>
           </Column>
         </Row>
@@ -114,7 +114,8 @@ export function WelcomeEmail({
 
       {/* Call to action */}
       <Text style={{ ...presetStyles.paragraph, textAlign: 'center' }}>
-        Prêt à commencer ? Connectez-vous dès maintenant pour explorer votre espace.
+        Prêt à commencer ? Connectez-vous dès maintenant pour explorer votre
+        espace.
       </Text>
 
       <Section style={ctaContainerStyle}>
@@ -127,16 +128,14 @@ export function WelcomeEmail({
 
       {/* Message de support */}
       <Text style={supportTextStyle}>
-        Une question ? Notre équipe est là pour vous aider. Répondez simplement à
-        cet email ou contactez-nous à{' '}
+        Une question ? Notre équipe est là pour vous aider. Répondez simplement
+        à cet email ou contactez-nous à{' '}
         <a href="mailto:contact@smartplanning.fr" style={linkStyle}>
           contact@smartplanning.fr
         </a>
       </Text>
 
-      <Text style={signatureStyle}>
-        L&apos;équipe SmartPlanning
-      </Text>
+      <Text style={signatureStyle}>L&apos;équipe SmartPlanning</Text>
     </Layout>
   )
 }

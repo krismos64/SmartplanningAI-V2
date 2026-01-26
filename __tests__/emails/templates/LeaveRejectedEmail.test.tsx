@@ -67,7 +67,7 @@ describe('LeaveRejectedEmail', () => {
       expect(html).toContain('équipe incomplète')
     })
 
-    it('devrait contenir l\'invitation à contacter le manager', async () => {
+    it("devrait contenir l'invitation à contacter le manager", async () => {
       const html = await render(LeaveRejectedEmail(defaultProps))
 
       expect(html).toContain('contacter votre manager')
@@ -132,7 +132,8 @@ describe('LeaveRejectedEmail', () => {
     it('devrait gérer un motif de refus différent', async () => {
       const customProps = {
         ...defaultProps,
-        rejectionReason: 'Chevauchement avec les congés d\'un autre membre de l\'équipe.',
+        rejectionReason:
+          "Chevauchement avec les congés d'un autre membre de l'équipe.",
       }
 
       const html = await render(LeaveRejectedEmail(customProps))
@@ -144,7 +145,7 @@ describe('LeaveRejectedEmail', () => {
       const customProps = {
         ...defaultProps,
         rejectionReason:
-          'Cette période correspond à notre phase de clôture annuelle. Tous les membres de l\'équipe comptabilité doivent être présents pour finaliser les bilans.',
+          "Cette période correspond à notre phase de clôture annuelle. Tous les membres de l'équipe comptabilité doivent être présents pour finaliser les bilans.",
       }
 
       const html = await render(LeaveRejectedEmail(customProps))
@@ -182,7 +183,7 @@ describe('LeaveRejectedEmail', () => {
       expect(html).toContain('alt="SmartPlanning"')
     })
 
-    it('devrait contenir la signature de l\'équipe', async () => {
+    it("devrait contenir la signature de l'équipe", async () => {
       const html = await render(LeaveRejectedEmail(defaultProps))
 
       expect(html).toContain('SmartPlanning')

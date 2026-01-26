@@ -92,7 +92,9 @@ test.describe('Mobile Responsive Breadcrumbs', () => {
         '[data-testid="breadcrumb-scroll-container"]'
       )
 
-      if (!(await scrollContainer.isVisible({ timeout: 1000 }).catch(() => false))) {
+      if (
+        !(await scrollContainer.isVisible({ timeout: 1000 }).catch(() => false))
+      ) {
         test.skip()
         return
       }
@@ -118,7 +120,9 @@ test.describe('Mobile Responsive Breadcrumbs', () => {
         '[data-testid="breadcrumb-scroll-container"]'
       )
 
-      if (!(await scrollContainer.isVisible({ timeout: 3000 }).catch(() => false))) {
+      if (
+        !(await scrollContainer.isVisible({ timeout: 3000 }).catch(() => false))
+      ) {
         test.skip()
         return
       }
@@ -151,7 +155,9 @@ test.describe('Mobile Responsive Breadcrumbs', () => {
         '[data-testid="breadcrumb-scroll-container"]'
       )
 
-      if (!(await scrollContainer.isVisible({ timeout: 3000 }).catch(() => false))) {
+      if (
+        !(await scrollContainer.isVisible({ timeout: 3000 }).catch(() => false))
+      ) {
         test.skip()
         return
       }
@@ -182,7 +188,9 @@ test.describe('Mobile Responsive Breadcrumbs', () => {
         '[data-testid="breadcrumb-scroll-container"]'
       )
 
-      if (!(await scrollContainer.isVisible({ timeout: 3000 }).catch(() => false))) {
+      if (
+        !(await scrollContainer.isVisible({ timeout: 3000 }).catch(() => false))
+      ) {
         test.skip()
         return
       }
@@ -190,7 +198,9 @@ test.describe('Mobile Responsive Breadcrumbs', () => {
       // Check for snap-x class
       const hasSnapX = await scrollContainer.evaluate((el) => {
         const classList = el.querySelector('ol')?.classList
-        return classList?.contains('snap-x') || classList?.contains('snap-mandatory')
+        return (
+          classList?.contains('snap-x') || classList?.contains('snap-mandatory')
+        )
       })
 
       expect(hasSnapX).toBe(true)
@@ -210,7 +220,9 @@ test.describe('Mobile Responsive Breadcrumbs', () => {
         '[data-testid="breadcrumb-scroll-container"]'
       )
 
-      if (!(await scrollContainer.isVisible({ timeout: 3000 }).catch(() => false))) {
+      if (
+        !(await scrollContainer.isVisible({ timeout: 3000 }).catch(() => false))
+      ) {
         test.skip()
         return
       }
@@ -245,7 +257,9 @@ test.describe('Mobile Responsive Breadcrumbs', () => {
         '[data-testid="breadcrumb-scroll-container"]'
       )
 
-      if (!(await scrollContainer.isVisible({ timeout: 3000 }).catch(() => false))) {
+      if (
+        !(await scrollContainer.isVisible({ timeout: 3000 }).catch(() => false))
+      ) {
         test.skip()
         return
       }
@@ -320,7 +334,9 @@ test.describe('Mobile Responsive Breadcrumbs', () => {
           await firstLink.click()
 
           // Should have navigated
-          await expect(directorPage).toHaveURL(new RegExp(href.replace(/\//g, '\\/')))
+          await expect(directorPage).toHaveURL(
+            new RegExp(href.replace(/\//g, '\\/'))
+          )
         }
       }
     })
@@ -340,7 +356,9 @@ test.describe('Mobile Responsive Breadcrumbs', () => {
 
       if (await currentPage.isVisible()) {
         // Should be a span, not a link
-        const tagName = await currentPage.evaluate((el) => el.tagName.toLowerCase())
+        const tagName = await currentPage.evaluate((el) =>
+          el.tagName.toLowerCase()
+        )
         expect(tagName).toBe('span')
 
         // Should have aria-disabled

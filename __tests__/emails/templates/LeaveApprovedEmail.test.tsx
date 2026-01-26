@@ -155,7 +155,7 @@ describe('LeaveApprovedEmail', () => {
       expect(html).toContain('alt="SmartPlanning"')
     })
 
-    it('devrait contenir la signature de l\'équipe', async () => {
+    it("devrait contenir la signature de l'équipe", async () => {
       const html = await render(LeaveApprovedEmail(defaultProps))
 
       expect(html).toContain('SmartPlanning')

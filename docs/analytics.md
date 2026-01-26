@@ -95,25 +95,21 @@ function CTAButton() {
     // ... reste de la logique
   }
 
-  return (
-    <button onClick={handleClick}>
-      S'inscrire {isEnabled && '📊'}
-    </button>
-  )
+  return <button onClick={handleClick}>S'inscrire {isEnabled && '📊'}</button>
 }
 ```
 
 ### Events prédéfinis
 
-| Event | Description | Données |
-|-------|-------------|---------|
-| `cta-click` | Clic sur un CTA | `{ location: 'hero' \| 'pricing' \| 'footer' }` |
-| `signup-start` | Début d'inscription | `{ source: 'landing' \| 'pricing' }` |
-| `signup-complete` | Inscription terminée | `{ plan: 'free' \| 'pro' \| 'enterprise' }` |
-| `login` | Connexion | `{ method: 'email' \| 'google' \| 'github' }` |
-| `pricing-view` | Vue page pricing | `{ plan: 'free' \| 'pro' \| 'enterprise' }` |
-| `contact-submit` | Soumission formulaire contact | `{ subject: string }` |
-| `feature-use` | Utilisation d'une feature | `{ feature: 'planning' \| 'team' \| 'export' }` |
+| Event             | Description                   | Données                                         |
+| ----------------- | ----------------------------- | ----------------------------------------------- |
+| `cta-click`       | Clic sur un CTA               | `{ location: 'hero' \| 'pricing' \| 'footer' }` |
+| `signup-start`    | Début d'inscription           | `{ source: 'landing' \| 'pricing' }`            |
+| `signup-complete` | Inscription terminée          | `{ plan: 'free' \| 'pro' \| 'enterprise' }`     |
+| `login`           | Connexion                     | `{ method: 'email' \| 'google' \| 'github' }`   |
+| `pricing-view`    | Vue page pricing              | `{ plan: 'free' \| 'pro' \| 'enterprise' }`     |
+| `contact-submit`  | Soumission formulaire contact | `{ subject: string }`                           |
+| `feature-use`     | Utilisation d'une feature     | `{ feature: 'planning' \| 'team' \| 'export' }` |
 
 ## Intégration RGPD
 

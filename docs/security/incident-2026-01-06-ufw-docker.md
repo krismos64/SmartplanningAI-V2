@@ -16,6 +16,7 @@ Après un déploiement réussi sur un nouveau VPS OVH (SP-158), l'application Sm
 ## 🔍 Symptômes
 
 ### Ce qui fonctionnait
+
 - ✅ Tous les conteneurs Docker : **HEALTHY**
 - ✅ Next.js : "Ready in 186ms"
 - ✅ PostgreSQL : 13 tables créées
@@ -23,6 +24,7 @@ Après un déploiement réussi sur un nouveau VPS OVH (SP-158), l'application Sm
 - ✅ API `/api/health` répond **depuis l'intérieur du conteneur** (Status 200)
 
 ### Ce qui ne fonctionnait PAS
+
 - ❌ Nginx ne peut pas atteindre `localhost:3000`
 - ❌ Site web inaccessible depuis l'extérieur (timeout)
 - ❌ `curl http://localhost:3000/api/health` depuis le VPS host : timeout après 2min
@@ -108,11 +110,13 @@ sudo ufw status verbose
 ### Pourquoi UFW `deny outgoing` pose problème
 
 #### Trafic bloqué :
+
 - **Connexions localhost** : UFW bloque même `127.0.0.1 → 127.0.0.1:3000`
 - **Trafic Docker NAT** : Le forwarding via docker-proxy est bloqué
 - **Réponses des conteneurs** : Les paquets de retour sont filtrés par UFW OUTPUT
 
 #### Ce qui a masqué le problème :
+
 - Les conteneurs sont HEALTHY car le healthcheck s'exécute **depuis l'intérieur** du conteneur
 - Docker-proxy écoute bien sur le port, donc la connexion TCP réussit
 - Mais les **réponses HTTP** sont bloquées par UFW
@@ -160,11 +164,13 @@ curl https://smartplanning.fr/api/health
 ### 1. UFW `deny outgoing` n'est PAS compatible avec Docker
 
 **Pourquoi** :
+
 - Docker utilise des réseaux bridge internes
 - Le trafic entre le host et les conteneurs passe par NAT
 - UFW avec `deny outgoing` bloque ces communications
 
 **Alternative sécurisée** :
+
 - Utiliser `allow outgoing` (politique par défaut recommandée)
 - Bloquer spécifiquement des destinations si nécessaire avec `deny out to <IP>`
 - Docker gère déjà l'isolation réseau via ses propres règles iptables
@@ -172,16 +178,19 @@ curl https://smartplanning.fr/api/health
 ### 2. Le healthcheck Docker ne garantit pas l'accessibilité externe
 
 **Observation** :
+
 - Healthcheck OK = le conteneur répond en interne
 - Mais cela ne teste PAS le routage réseau complet
 
 **Recommandation** :
+
 - Toujours tester l'accès externe après déploiement
 - Inclure un test Nginx → app dans le monitoring
 
 ### 3. Méthode de diagnostic pour ce type de problème
 
 **Workflow recommandé** :
+
 1. Vérifier les conteneurs (status, logs, processus)
 2. Tester depuis l'intérieur du conteneur
 3. Tester depuis le host (localhost)
@@ -196,11 +205,13 @@ curl https://smartplanning.fr/api/health
 ### 1. Script `scripts/secure-vps-part1.sh`
 
 **Avant** :
+
 ```bash
 ufw default deny outgoing  # ❌ PROBLÉMATIQUE
 ```
 
 **Après** :
+
 ```bash
 ufw default allow outgoing  # ✅ CORRIGÉ
 # ⚠️  IMPORTANT: "deny outgoing" bloque le trafic Docker interne
@@ -222,11 +233,13 @@ ufw default allow outgoing  # ✅ CORRIGÉ
 ## 📊 Impact
 
 ### Temps d'indisponibilité
+
 - **Durée** : ~3 heures
 - **Impact utilisateur** : Site complètement inaccessible
 - **Impact métier** : Aucun (migration VPS, site n'était pas en production)
 
 ### Temps de résolution
+
 - **Investigation** : ~2h30
 - **Fix** : 2 minutes (une seule commande UFW)
 - **Vérification** : 15 minutes
@@ -236,17 +249,20 @@ ufw default allow outgoing  # ✅ CORRIGÉ
 ## ✅ Actions de prévention
 
 ### Court terme (Fait ✅)
+
 - [x] Corriger le script `secure-vps-part1.sh`
 - [x] Mettre à jour `DEPLOY.md` avec troubleshooting
 - [x] Documenter l'incident (ce fichier)
 - [x] Tester la configuration UFW sur le VPS de production
 
 ### Moyen terme (À faire)
+
 - [ ] Créer un script de vérification post-déploiement
 - [ ] Ajouter un test de connectivité Nginx → app au monitoring
 - [ ] Documenter UFW dans la formation interne
 
 ### Long terme (À planifier)
+
 - [ ] Envisager l'utilisation de Docker en mode `--iptables=false` si UFW strict requis
 - [ ] Créer un playbook Ansible pour configuration VPS reproductible
 

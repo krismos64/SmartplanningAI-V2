@@ -105,7 +105,9 @@ describe('DeleteCompanyDialog', () => {
       _count: { users: 0, teams: 0, employees: 0 },
     }
 
-    render(<DeleteCompanyDialog {...defaultProps} company={companyWithNoRelations} />)
+    render(
+      <DeleteCompanyDialog {...defaultProps} company={companyWithNoRelations} />
+    )
 
     expect(screen.queryByText(/utilisateurs/i)).not.toBeInTheDocument()
     expect(screen.queryByText(/équipes/i)).not.toBeInTheDocument()
@@ -121,14 +123,18 @@ describe('DeleteCompanyDialog', () => {
   it('should render delete button', () => {
     render(<DeleteCompanyDialog {...defaultProps} />)
 
-    expect(screen.getByRole('button', { name: /supprimer/i })).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: /supprimer/i })
+    ).toBeInTheDocument()
   })
 
   it('should call onOpenChange when cancel is clicked', async () => {
     const onOpenChange = vi.fn()
     const user = setupUser()
 
-    render(<DeleteCompanyDialog {...defaultProps} onOpenChange={onOpenChange} />)
+    render(
+      <DeleteCompanyDialog {...defaultProps} onOpenChange={onOpenChange} />
+    )
 
     await user.click(screen.getByRole('button', { name: /annuler/i }))
 

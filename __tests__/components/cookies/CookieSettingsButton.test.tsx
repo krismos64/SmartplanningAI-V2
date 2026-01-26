@@ -30,7 +30,9 @@ describe('CookieSettingsButton', () => {
   }
 
   beforeEach(() => {
-    mockUseCookieConsentContextOptional.mockReturnValue({ ...defaultMockReturn })
+    mockUseCookieConsentContextOptional.mockReturnValue({
+      ...defaultMockReturn,
+    })
   })
 
   afterEach(() => {

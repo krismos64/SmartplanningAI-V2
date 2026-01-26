@@ -50,7 +50,7 @@ test.describe('Empty States - Companies', () => {
 // =============================================================================
 
 test.describe('Empty States - Employees', () => {
-  test('DIRECTOR voit le CTA de creation dans l\'etat vide (recherche)', async ({
+  test("DIRECTOR voit le CTA de creation dans l'etat vide (recherche)", async ({
     directorPage,
   }) => {
     const listPage = new EmployeeListPage(directorPage)
@@ -66,7 +66,7 @@ test.describe('Empty States - Employees', () => {
     await expect(listPage.newEmployeeButton).toBeVisible()
   })
 
-  test('MANAGER voit le CTA de creation dans l\'etat vide', async ({
+  test("MANAGER voit le CTA de creation dans l'etat vide", async ({
     managerPage,
   }) => {
     const listPage = new EmployeeListPage(managerPage)
