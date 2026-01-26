@@ -1,0 +1,127 @@
+/**
+ * Personnalisation du thème Schedule-X
+ *
+ * @description Adapte Schedule-X au design system SmartPlanning
+ * @ticket SP-396
+ */
+
+/* Variables CSS pour intégration avec Shadcn/ui */
+.schedule-calendar-desktop {
+  --sx-color-primary: hsl(var(--primary));
+  --sx-color-surface: hsl(var(--card));
+  --sx-color-on-surface: hsl(var(--card-foreground));
+  --sx-color-surface-dim: hsl(var(--muted));
+}
+
+/* Conteneur principal */
+.sx-react-calendar {
+  font-family: inherit;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+/* Header du calendrier */
+.sx__calendar-header {
+  background-color: hsl(var(--card));
+  border-bottom: 1px solid hsl(var(--border));
+}
+
+/* Événements */
+.sx__event {
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+  padding: 2px 4px;
+  overflow: hidden;
+}
+
+.sx__event:hover {
+  opacity: 0.9;
+  cursor: pointer;
+}
+
+/* Titre des événements */
+.sx__event-title {
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* En-têtes des jours */
+.sx__time-grid-day-header {
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+/* Highlight du jour actuel */
+.sx__time-grid-day--is-today .sx__time-grid-day-header {
+  background-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  border-radius: 0.375rem;
+}
+
+/* Grille horaire */
+.sx__time-grid {
+  background-color: hsl(var(--background));
+}
+
+.sx__time-grid-hour-line {
+  border-color: hsl(var(--border));
+}
+
+/* Vue mois - grille */
+.sx__month-grid {
+  background-color: hsl(var(--card));
+}
+
+.sx__month-grid-day {
+  border-color: hsl(var(--border));
+}
+
+.sx__month-grid-day--is-today {
+  background-color: hsl(var(--primary) / 0.1);
+}
+
+.sx__month-grid-day:hover {
+  background-color: hsl(var(--muted));
+}
+
+/* Navigation */
+.sx__date-picker-popup {
+  background-color: hsl(var(--popover));
+  border: 1px solid hsl(var(--border));
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+}
+
+/* Boutons de navigation */
+.sx__chevron-wrapper {
+  padding: 0.5rem;
+  border-radius: 0.25rem;
+  transition: background-color 0.15s;
+}
+
+.sx__chevron-wrapper:hover {
+  background-color: hsl(var(--muted));
+}
+
+/* Dark mode support */
+.dark .sx-react-calendar {
+  --sx-color-surface-variant: hsl(var(--muted));
+}
+
+.dark .sx__time-grid {
+  background-color: hsl(var(--background));
+}
+
+.dark .sx__month-grid {
+  background-color: hsl(var(--card));
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+  .sx__event {
+    font-size: 0.65rem;
+    padding: 1px 2px;
+  }
+}
