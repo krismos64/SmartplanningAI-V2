@@ -61,6 +61,7 @@
     "@schedule-x/event-recurrence": "^4.1.0",
     "@schedule-x/events-service": "^4.1.0",
     "@schedule-x/react": "^4.1.0",
+    "@schedule-x/resize": "^3.7.3",
     "@schedule-x/theme-default": "^4.1.0",
     "@tanstack/match-sorter-utils": "^8.19.4",
     "@tanstack/react-table": "^8.21.3",

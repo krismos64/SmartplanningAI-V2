@@ -2,15 +2,15 @@
  * Composant ScheduleCalendarDesktop - Calendrier Schedule-X
  *
  * @description Calendrier interactif Schedule-X pour desktop (≥768px)
- * Intègre les vues jour/semaine/mois avec drag & drop
+ * Intègre les vues jour/semaine/mois avec drag & drop et resize
  *
- * @ticket SP-396
+ * @ticket SP-396, SP-398
  * @see https://schedule-x.dev/
  */
 
 'use client'
 
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState, useCallback } from 'react'
 import { useCalendarApp, ScheduleXCalendar } from '@schedule-x/react'
 import {
   createViewDay,
@@ -18,13 +18,15 @@ import {
   createViewMonthGrid,
 } from '@schedule-x/calendar'
 import { createDragAndDropPlugin } from '@schedule-x/drag-and-drop'
+import { createResizePlugin } from '@schedule-x/resize'
 import { createEventsServicePlugin } from '@schedule-x/events-service'
 import 'temporal-polyfill/global'
 import '@schedule-x/theme-default/dist/index.css'
 import { format } from 'date-fns'
 import { ScheduleCalendarProps } from './ScheduleCalendar'
-import { ScheduleWithRelations } from '@/lib/actions/schedules'
-import { CalendarX } from 'lucide-react'
+import { ScheduleWithRelations, updateSchedule } from '@/lib/actions/schedules'
+import { CalendarX, GripVertical } from 'lucide-react'
+import { useToast } from '@/components/toast/use-toast'
 
 // ============================================================================
 // Configuration des couleurs par type de schedule
@@ -158,6 +160,11 @@ export function ScheduleCalendarDesktop({
   isLoading,
   canEdit = false,
 }: ScheduleCalendarProps) {
+  const { success, error: toastError } = useToast()
+
+  // État de mise à jour en cours
+  const [isUpdating, setIsUpdating] = useState(false)
+
   // Ref pour le service d'events
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const eventsServiceRef = useRef<any>(null)
@@ -165,12 +172,89 @@ export function ScheduleCalendarDesktop({
   // Store schedule data pour accès dans callbacks
   const schedulesMapRef = useRef<Map<string, ScheduleWithRelations>>(new Map())
 
+  // Store des événements originaux pour rollback
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const originalEventsRef = useRef<Map<string, any>>(new Map())
+
   // Créer le service d'events une seule fois
   const [eventsService] = useState(() => {
     const service = createEventsServicePlugin()
     eventsServiceRef.current = service
     return service
   })
+
+  // Handler pour la mise à jour d'un événement (drag ou resize)
+  const handleEventUpdate = useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async (event: any) => {
+      if (!canEdit || isUpdating) return
+
+      setIsUpdating(true)
+      /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-argument */
+      const eventId = event.id as string
+
+      // Sauvegarder l'événement original pour rollback
+      const originalEvent = originalEventsRef.current.get(eventId)
+
+      try {
+        // Parser les dates Temporal
+        const startStr = String(event.start.toString())
+        const endStr = String(event.end.toString())
+
+        // Extraire date et heure du format ISO Temporal
+        const startDate = new Date(startStr)
+        const endDate = new Date(endStr)
+
+        // Extraire les heures au format HH:mm
+        const startTime = format(startDate, 'HH:mm')
+        const endTime = format(endDate, 'HH:mm')
+
+        // Appeler la Server Action
+        const result = await updateSchedule({
+          id: eventId,
+          startDate,
+          endDate,
+          startTime,
+          endTime,
+        })
+
+        if (result.success) {
+          success('Créneau modifié', {
+            description: 'Le créneau a été déplacé avec succès.',
+          })
+
+          // Mettre à jour la référence originale
+          originalEventsRef.current.set(eventId, event)
+
+          // Notifier le parent pour refresh
+          onScheduleUpdate?.(eventId, startDate, endDate)
+        } else {
+          // Rollback en cas d'erreur
+          if (originalEvent && eventsServiceRef.current) {
+            eventsServiceRef.current.update(originalEvent)
+          }
+
+          toastError('Erreur', {
+            description: result.error || 'Impossible de modifier le créneau.',
+          })
+        }
+      } catch (err) {
+        // Rollback en cas d'exception
+        if (originalEvent && eventsServiceRef.current) {
+          eventsServiceRef.current.update(originalEvent)
+        }
+
+        toastError('Erreur', {
+          description: 'Une erreur est survenue lors de la modification.',
+        })
+        console.error('[ScheduleCalendarDesktop] Update error:', err)
+      } finally {
+        setIsUpdating(false)
+      }
+      /* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-argument */
+    },
+    [canEdit, isUpdating, onScheduleUpdate, success, toastError]
+  )
 
   // Convertir les schedules en events Schedule-X avec Temporal API
   const events = useMemo(() => {
@@ -216,14 +300,21 @@ export function ScheduleCalendarDesktop({
   }
 
   // Plugins (créés une seule fois)
-  const plugins = useMemo(() => {
-    /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-return */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const plugins = useMemo((): any[] => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const list: any[] = [eventsService]
     if (canEdit) {
-      list.push(createDragAndDropPlugin())
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      const dragPlugin = createDragAndDropPlugin()
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      const resizePluginInstance = createResizePlugin()
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+      list.push(dragPlugin)
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+      list.push(resizePluginInstance)
     }
     return list
-    /* eslint-enable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-return */
   }, [canEdit, eventsService])
 
   // Configuration du calendrier
@@ -255,16 +346,9 @@ export function ScheduleCalendarDesktop({
           }
         },
         onEventUpdate: (event) => {
-          if (onScheduleUpdate && canEdit) {
-            // Parser les dates Temporal
-            const startStr = event.start.toString()
-            const endStr = event.end.toString()
-
-            // Extraire date et heure du format ISO
-            const startDate = new Date(startStr)
-            const endDate = new Date(endStr)
-
-            onScheduleUpdate(event.id as string, startDate, endDate)
+          if (canEdit) {
+            // Utiliser le handler async avec persistance
+            void handleEventUpdate(event)
           }
         },
       },
@@ -285,9 +369,14 @@ export function ScheduleCalendarDesktop({
         service.remove(event.id as string)
       })
 
-      // Add new events
+      // Clear original events ref
+      originalEventsRef.current.clear()
+
+      // Add new events and save originals for rollback
       events.forEach((event) => {
         service.add(event)
+        // Sauvegarder une copie pour rollback potentiel
+        originalEventsRef.current.set(event.id, { ...event })
       })
       /* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access */
     }
@@ -314,23 +403,45 @@ export function ScheduleCalendarDesktop({
   }
 
   return (
-    <div className="schedule-calendar-desktop space-y-4">
+    <div className="schedule-calendar-desktop relative space-y-4">
+      {/* Indicateur de mise à jour */}
+      {isUpdating && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center rounded-lg bg-background/50">
+          <div className="flex items-center gap-2 rounded-md bg-background p-4 shadow-lg">
+            <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+            <span className="text-sm">Mise à jour en cours...</span>
+          </div>
+        </div>
+      )}
+
       {/* Calendrier Schedule-X */}
       <div className="overflow-hidden rounded-lg border bg-card">
         <ScheduleXCalendar calendarApp={calendar} />
       </div>
 
-      {/* Légende des couleurs */}
-      <div className="flex flex-wrap gap-4 text-sm">
-        {Object.entries(calendars).map(([key, cal]) => (
-          <div key={key} className="flex items-center gap-2">
-            <div
-              className="h-3 w-3 rounded"
-              style={{ backgroundColor: cal.lightColors.main }}
-            />
-            <span>{typeLabels[key]}</span>
-          </div>
-        ))}
+      {/* Info drag & drop + Légende */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        {/* Message d'aide pour le drag & drop */}
+        {canEdit && (
+          <p className="flex items-center gap-2 text-xs text-muted-foreground">
+            <GripVertical className="h-4 w-4" />
+            Glissez-déposez les créneaux pour les déplacer. Redimensionnez-les
+            en tirant sur les bords.
+          </p>
+        )}
+
+        {/* Légende des couleurs */}
+        <div className="flex flex-wrap gap-4 text-sm">
+          {Object.entries(calendars).map(([key, cal]) => (
+            <div key={key} className="flex items-center gap-2">
+              <div
+                className="h-3 w-3 rounded"
+                style={{ backgroundColor: cal.lightColors.main }}
+              />
+              <span>{typeLabels[key]}</span>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   )
