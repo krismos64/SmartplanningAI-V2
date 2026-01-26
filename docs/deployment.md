@@ -56,7 +56,7 @@
 ### Stack technique
 
 | Composant        | Technologie                      | Version      |
-|------------------|----------------------------------|--------------|
+| ---------------- | -------------------------------- | ------------ |
 | Application      | Next.js                          | 15.5.9       |
 | Runtime          | Node.js                          | 20 Alpine    |
 | Base de données  | PostgreSQL                       | 16 Alpine    |
@@ -73,12 +73,12 @@
 
 ### URLs
 
-| Service             | URL                                              |
-|---------------------|--------------------------------------------------|
-| Application         | https://smartplanning.fr                         |
-| Analytics           | https://analytics.smartplanning.fr               |
-| Repository GitHub   | https://github.com/krismos64/SmartplanningAI     |
-| Container Registry  | ghcr.io/krismos64/smartplanningai-v2             |
+| Service            | URL                                          |
+| ------------------ | -------------------------------------------- |
+| Application        | https://smartplanning.fr                     |
+| Analytics          | https://analytics.smartplanning.fr           |
+| Repository GitHub  | https://github.com/krismos64/SmartplanningAI |
+| Container Registry | ghcr.io/krismos64/smartplanningai-v2         |
 
 ---
 
@@ -87,7 +87,7 @@
 ### VPS OVH
 
 | Caractéristique | Valeur           |
-|-----------------|------------------|
+| --------------- | ---------------- |
 | Fournisseur     | OVH              |
 | IP              | 51.77.146.72     |
 | OS              | Ubuntu 24.04 LTS |
@@ -119,11 +119,11 @@ ssh deploy@51.77.146.72
 
 ### Conteneurs Docker
 
-| Container              | Image                                        | Port  | Status    |
-|------------------------|----------------------------------------------|-------|-----------|
-| smartplanning-app      | ghcr.io/krismos64/smartplanningai-v2:latest | 3000  | Running   |
-| smartplanning-postgres | postgres:16-alpine                           | 5432  | Running   |
-| smartplanning-redis    | redis:7-alpine                               | 6379  | Running   |
+| Container              | Image                                          | Port | Status  |
+| ---------------------- | ---------------------------------------------- | ---- | ------- |
+| smartplanning-app      | ghcr.io/krismos64/smartplanningai-v2:latest    | 3000 | Running |
+| smartplanning-postgres | postgres:16-alpine                             | 5432 | Running |
+| smartplanning-redis    | redis:7-alpine                                 | 6379 | Running |
 | smartplanning-umami    | ghcr.io/umami-software/umami:postgresql-latest | 3001 | Running |
 
 ---
@@ -196,25 +196,25 @@ IMAGE_TAG=latest
 
 > **IMPORTANT** : Les noms des variables doivent correspondre exactement à ceux attendus par le code.
 
-| Variable (code)      | Fichier                | Description                |
-|----------------------|------------------------|----------------------------|
-| `SMTP_HOST`          | `src/lib/email/config.ts` | Serveur SMTP            |
-| `SMTP_PORT`          | `src/lib/email/config.ts` | Port SMTP (587)         |
-| `SMTP_USER`          | `src/lib/email/config.ts` | Email d'auth SMTP       |
-| `SMTP_PASSWORD`      | `src/lib/email/config.ts` | Mot de passe SMTP       |
-| `SMTP_FROM`          | `src/lib/email/config.ts` | Adresse d'expédition    |
-| `CONTACT_EMAIL`      | `src/lib/email/config.ts` | Email de réception contact |
+| Variable (code) | Fichier                   | Description                |
+| --------------- | ------------------------- | -------------------------- |
+| `SMTP_HOST`     | `src/lib/email/config.ts` | Serveur SMTP               |
+| `SMTP_PORT`     | `src/lib/email/config.ts` | Port SMTP (587)            |
+| `SMTP_USER`     | `src/lib/email/config.ts` | Email d'auth SMTP          |
+| `SMTP_PASSWORD` | `src/lib/email/config.ts` | Mot de passe SMTP          |
+| `SMTP_FROM`     | `src/lib/email/config.ts` | Adresse d'expédition       |
+| `CONTACT_EMAIL` | `src/lib/email/config.ts` | Email de réception contact |
 
 ### GitHub Secrets requis
 
 Les secrets suivants doivent être configurés dans GitHub (Settings → Secrets → Actions) :
 
-| Secret         | Description             | Valeur actuelle      |
-|----------------|-------------------------|----------------------|
-| `VPS_HOST`     | IP du VPS               | `51.77.146.72`       |
-| `VPS_USER`     | Utilisateur SSH         | `deploy`             |
-| `VPS_SSH_KEY`  | Clé privée SSH (base64) | Configuré ✅         |
-| `VPS_SSH_PORT` | Port SSH                | `22`                 |
+| Secret         | Description             | Valeur actuelle |
+| -------------- | ----------------------- | --------------- |
+| `VPS_HOST`     | IP du VPS               | `51.77.146.72`  |
+| `VPS_USER`     | Utilisateur SSH         | `deploy`        |
+| `VPS_SSH_KEY`  | Clé privée SSH (base64) | Configuré ✅    |
+| `VPS_SSH_PORT` | Port SSH                | `22`            |
 
 > **Note** : Les secrets applicatifs (DB, Redis, SMTP) sont gérés via le `.env` sur le VPS, pas via GitHub Secrets. C'est une approche valide car le CD ne fait que `docker pull` + `docker compose up`.
 
@@ -225,31 +225,33 @@ Les secrets suivants doivent être configurés dans GitHub (Settings → Secrets
 ### CI Pipeline (`.github/workflows/ci.yml`)
 
 **Déclencheurs** :
+
 - Push sur toutes les branches
 - Pull requests vers `main`
 
 **Jobs** :
 
-| Job       | Description                    | Condition                    |
-|-----------|--------------------------------|------------------------------|
-| `lint`    | ESLint + TypeScript            | Tous les push                |
-| `test`    | Tests unitaires Vitest (1693)  | Tous les push                |
-| `test-e2e`| Tests E2E Playwright (219)     | PR vers main OU push sur main |
-| `build`   | Build Next.js                  | Tous les push                |
+| Job        | Description                   | Condition                     |
+| ---------- | ----------------------------- | ----------------------------- |
+| `lint`     | ESLint + TypeScript           | Tous les push                 |
+| `test`     | Tests unitaires Vitest (1693) | Tous les push                 |
+| `test-e2e` | Tests E2E Playwright (219)    | PR vers main OU push sur main |
+| `build`    | Build Next.js                 | Tous les push                 |
 
 ### CD Pipeline (`.github/workflows/cd.yml`)
 
 **Déclencheurs** :
+
 - Après succès du CI sur `main`
 - Déclenchement manuel (`workflow_dispatch`)
 
 **Jobs** :
 
-| Job              | Description                     |
-|------------------|---------------------------------|
-| `build-and-push` | Build image Docker → Push GHCR  |
-| `deploy`         | SSH → Pull image → Restart      |
-| `migrate`        | Prisma migrate deploy           |
+| Job              | Description                    |
+| ---------------- | ------------------------------ |
+| `build-and-push` | Build image Docker → Push GHCR |
+| `deploy`         | SSH → Pull image → Restart     |
+| `migrate`        | Prisma migrate deploy          |
 
 ### Flux complet
 
@@ -384,6 +386,7 @@ docker exec smartplanning-app env | grep -E 'DATABASE|NEXTAUTH|SMTP'
 ### Emails non envoyés
 
 1. Vérifier les variables SMTP :
+
 ```bash
 docker exec smartplanning-app env | grep SMTP
 ```
@@ -394,6 +397,7 @@ docker exec smartplanning-app env | grep SMTP
    - `CONTACT_EMAIL` (pas `EMAIL_CONTACT`)
 
 3. Vérifier les logs :
+
 ```bash
 docker logs smartplanning-app 2>&1 | grep -i email
 ```
@@ -414,6 +418,7 @@ docker exec smartplanning-app node -e "console.log(process.env.DATABASE_URL)"
    - `VPS_HOST`, `VPS_USER`, `VPS_SSH_KEY`, `VPS_SSH_PORT`
 
 2. Vérifier l'authentification GHCR sur le VPS :
+
 ```bash
 docker pull ghcr.io/krismos64/smartplanningai-v2:latest
 ```
@@ -424,12 +429,12 @@ docker pull ghcr.io/krismos64/smartplanningai-v2:latest
 
 ## Historique des mises à jour
 
-| Date       | Version | Description                                    |
-|------------|---------|------------------------------------------------|
-| 2025-12-02 | 1.0     | Déploiement initial                            |
-| 2026-01-06 | 1.1     | Migration vers nouveau VPS (51.77.146.72)      |
-| 2026-01-16 | 1.2     | Ajout Umami Analytics                          |
-| 2026-01-19 | 2.0     | Configuration SMTP + refonte documentation     |
+| Date       | Version | Description                                |
+| ---------- | ------- | ------------------------------------------ |
+| 2025-12-02 | 1.0     | Déploiement initial                        |
+| 2026-01-06 | 1.1     | Migration vers nouveau VPS (51.77.146.72)  |
+| 2026-01-16 | 1.2     | Ajout Umami Analytics                      |
+| 2026-01-19 | 2.0     | Configuration SMTP + refonte documentation |
 
 ---
 

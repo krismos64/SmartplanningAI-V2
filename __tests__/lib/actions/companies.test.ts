@@ -122,7 +122,9 @@ describe('listCompanies', () => {
       expect.objectContaining({
         where: expect.objectContaining({
           OR: expect.arrayContaining([
-            expect.objectContaining({ name: { contains: 'acme', mode: 'insensitive' } }),
+            expect.objectContaining({
+              name: { contains: 'acme', mode: 'insensitive' },
+            }),
           ]),
         }),
       })

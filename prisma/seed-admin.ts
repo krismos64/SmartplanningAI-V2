@@ -13,8 +13,12 @@ async function main() {
   const name = process.env.ADMIN_NAME || 'Super Admin'
 
   if (!email || !password) {
-    console.error('Error: ADMIN_EMAIL and ADMIN_PASSWORD environment variables are required')
-    console.log('Usage: ADMIN_EMAIL=xxx ADMIN_PASSWORD=xxx ADMIN_NAME=xxx npx tsx prisma/seed-admin.ts')
+    console.error(
+      'Error: ADMIN_EMAIL and ADMIN_PASSWORD environment variables are required'
+    )
+    console.log(
+      'Usage: ADMIN_EMAIL=xxx ADMIN_PASSWORD=xxx ADMIN_NAME=xxx npx tsx prisma/seed-admin.ts'
+    )
     process.exit(1)
   }
 

@@ -35,11 +35,9 @@ vi.mock('framer-motion', () => ({
     path: ({ variants, style, ...props }: React.PropsWithChildren<object>) => (
       <path {...props} />
     ),
-    p: ({
-      children,
-      variants,
-      ...props
-    }: React.PropsWithChildren<object>) => <p {...props}>{children}</p>,
+    p: ({ children, variants, ...props }: React.PropsWithChildren<object>) => (
+      <p {...props}>{children}</p>
+    ),
   },
   AnimatePresence: ({ children }: React.PropsWithChildren) => <>{children}</>,
 }))
@@ -143,12 +141,7 @@ describe('ContactSuccessState', () => {
     })
 
     it('devrait accepter une className personnalisée', () => {
-      render(
-        <ContactSuccessState
-          {...defaultProps}
-          className="custom-class"
-        />
-      )
+      render(<ContactSuccessState {...defaultProps} className="custom-class" />)
 
       const statusElement = screen.getByRole('status')
       expect(statusElement).toHaveClass('custom-class')

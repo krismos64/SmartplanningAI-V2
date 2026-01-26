@@ -92,9 +92,9 @@ test.describe('Login Page', () => {
 
     // Attendre le toast d'erreur ou le message d'erreur
     // NextAuth renvoie une erreur "CredentialsSignin" pour les credentials invalides
-    await expect(
-      page.getByText('Email ou mot de passe incorrect')
-    ).toBeVisible({ timeout: 10000 })
+    await expect(page.getByText('Email ou mot de passe incorrect')).toBeVisible(
+      { timeout: 10000 }
+    )
   })
 
   test('should show error for wrong password', async ({ page }) => {
@@ -106,9 +106,9 @@ test.describe('Login Page', () => {
     await page.getByRole('button', { name: 'Se connecter' }).click()
 
     // Attendre le message d'erreur
-    await expect(
-      page.getByText('Email ou mot de passe incorrect')
-    ).toBeVisible({ timeout: 10000 })
+    await expect(page.getByText('Email ou mot de passe incorrect')).toBeVisible(
+      { timeout: 10000 }
+    )
   })
 
   test('should login successfully with valid credentials and redirect to dashboard', async ({
@@ -296,7 +296,9 @@ test.describe('Register Page', () => {
 
     // Attendre soit le toast de succès, soit la redirection
     await Promise.race([
-      expect(page.getByText(/Compte créé|succès|Bienvenue/i)).toBeVisible({ timeout: 30000 }),
+      expect(page.getByText(/Compte créé|succès|Bienvenue/i)).toBeVisible({
+        timeout: 30000,
+      }),
       page.waitForURL(/\/app\/|\/login/, { timeout: 30000 }),
     ])
 
@@ -317,8 +319,13 @@ test.describe('Register Page', () => {
 
     // Localiser les conteneurs de chaque champ mot de passe
     // On utilise les labels pour identifier chaque champ
-    const passwordContainer = page.locator('label:has-text("Mot de passe")').first().locator('..')
-    const confirmContainer = page.locator('label:has-text("Confirm")').locator('..')
+    const passwordContainer = page
+      .locator('label:has-text("Mot de passe")')
+      .first()
+      .locator('..')
+    const confirmContainer = page
+      .locator('label:has-text("Confirm")')
+      .locator('..')
 
     // Toggle le premier champ (Mot de passe)
     const firstToggle = passwordContainer.getByRole('button')
@@ -388,6 +395,8 @@ test.describe('Auth Navigation & Accessibility', () => {
 
     await expect(page.getByText('Nom complet').first()).toBeVisible()
     await expect(page.getByText('Email professionnel').first()).toBeVisible()
-    await expect(page.getByText('Nom de votre organisation').first()).toBeVisible()
+    await expect(
+      page.getByText('Nom de votre organisation').first()
+    ).toBeVisible()
   })
 })

@@ -18,7 +18,11 @@ vi.mock('@/lib/cookies', () => ({
   setConsent: (prefs: unknown) => mockSetConsent(prefs),
   applyConsentPreferences: () => mockApplyConsentPreferences(),
   DEFAULT_PREFERENCES: { essential: true, analytics: false, functional: false },
-  ACCEPT_ALL_PREFERENCES: { essential: true, analytics: true, functional: true },
+  ACCEPT_ALL_PREFERENCES: {
+    essential: true,
+    analytics: true,
+    functional: true,
+  },
 }))
 
 describe('useCookieConsent', () => {
@@ -230,7 +234,7 @@ describe('useCookieConsent', () => {
       expect(mockApplyConsentPreferences).toHaveBeenCalled()
     })
 
-    it('n\'applique pas les preferences si pas de consentement', () => {
+    it("n'applique pas les preferences si pas de consentement", () => {
       mockGetConsent.mockReturnValue(null)
 
       renderHook(() => useCookieConsent())

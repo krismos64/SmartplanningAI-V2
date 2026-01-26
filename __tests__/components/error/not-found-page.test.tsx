@@ -291,7 +291,10 @@ describe('NotFoundPage', () => {
       render(<NotFoundPage />)
 
       const region = screen.getByRole('region')
-      expect(region).toHaveAttribute('aria-describedby', 'not-found-description')
+      expect(region).toHaveAttribute(
+        'aria-describedby',
+        'not-found-description'
+      )
     })
 
     it('title has correct id for aria reference', () => {
@@ -304,7 +307,9 @@ describe('NotFoundPage', () => {
     it('description has correct id for aria reference', () => {
       render(<NotFoundPage />)
 
-      const description = screen.getByText(/désolé, la page que vous recherchez/i)
+      const description = screen.getByText(
+        /désolé, la page que vous recherchez/i
+      )
       expect(description).toHaveAttribute('id', 'not-found-description')
     })
 
@@ -394,7 +399,9 @@ describe('NotFoundPage', () => {
     it('uses text-muted-foreground for description', () => {
       render(<NotFoundPage />)
 
-      const description = screen.getByText(/désolé, la page que vous recherchez/i)
+      const description = screen.getByText(
+        /désolé, la page que vous recherchez/i
+      )
       expect(description).toHaveClass('text-muted-foreground')
     })
   })

@@ -19,7 +19,11 @@ import {
   violet,
 } from './src/styles/tokens/colors'
 import { fontFamily, fontSize } from './src/styles/tokens/typography'
-import { spacing, breakpoints, containerWidths } from './src/styles/tokens/spacing'
+import {
+  spacing,
+  breakpoints,
+  containerWidths,
+} from './src/styles/tokens/spacing'
 import { boxShadowLight } from './src/styles/tokens/shadows'
 import { borderRadius } from './src/styles/tokens/radius'
 
@@ -71,19 +75,97 @@ const config: Config = {
       },
 
       fontSize: {
-        xs: [fontSize.xs.size, { lineHeight: fontSize.xs.lineHeight, letterSpacing: fontSize.xs.letterSpacing }],
-        sm: [fontSize.sm.size, { lineHeight: fontSize.sm.lineHeight, letterSpacing: fontSize.sm.letterSpacing }],
-        base: [fontSize.base.size, { lineHeight: fontSize.base.lineHeight, letterSpacing: fontSize.base.letterSpacing }],
-        lg: [fontSize.lg.size, { lineHeight: fontSize.lg.lineHeight, letterSpacing: fontSize.lg.letterSpacing }],
-        xl: [fontSize.xl.size, { lineHeight: fontSize.xl.lineHeight, letterSpacing: fontSize.xl.letterSpacing }],
-        '2xl': [fontSize['2xl'].size, { lineHeight: fontSize['2xl'].lineHeight, letterSpacing: fontSize['2xl'].letterSpacing }],
-        '3xl': [fontSize['3xl'].size, { lineHeight: fontSize['3xl'].lineHeight, letterSpacing: fontSize['3xl'].letterSpacing }],
-        '4xl': [fontSize['4xl'].size, { lineHeight: fontSize['4xl'].lineHeight, letterSpacing: fontSize['4xl'].letterSpacing }],
-        '5xl': [fontSize['5xl'].size, { lineHeight: fontSize['5xl'].lineHeight, letterSpacing: fontSize['5xl'].letterSpacing }],
-        '6xl': [fontSize['6xl'].size, { lineHeight: fontSize['6xl'].lineHeight, letterSpacing: fontSize['6xl'].letterSpacing }],
-        '7xl': [fontSize['7xl'].size, { lineHeight: fontSize['7xl'].lineHeight, letterSpacing: fontSize['7xl'].letterSpacing }],
-        '8xl': [fontSize['8xl'].size, { lineHeight: fontSize['8xl'].lineHeight, letterSpacing: fontSize['8xl'].letterSpacing }],
-        '9xl': [fontSize['9xl'].size, { lineHeight: fontSize['9xl'].lineHeight, letterSpacing: fontSize['9xl'].letterSpacing }],
+        xs: [
+          fontSize.xs.size,
+          {
+            lineHeight: fontSize.xs.lineHeight,
+            letterSpacing: fontSize.xs.letterSpacing,
+          },
+        ],
+        sm: [
+          fontSize.sm.size,
+          {
+            lineHeight: fontSize.sm.lineHeight,
+            letterSpacing: fontSize.sm.letterSpacing,
+          },
+        ],
+        base: [
+          fontSize.base.size,
+          {
+            lineHeight: fontSize.base.lineHeight,
+            letterSpacing: fontSize.base.letterSpacing,
+          },
+        ],
+        lg: [
+          fontSize.lg.size,
+          {
+            lineHeight: fontSize.lg.lineHeight,
+            letterSpacing: fontSize.lg.letterSpacing,
+          },
+        ],
+        xl: [
+          fontSize.xl.size,
+          {
+            lineHeight: fontSize.xl.lineHeight,
+            letterSpacing: fontSize.xl.letterSpacing,
+          },
+        ],
+        '2xl': [
+          fontSize['2xl'].size,
+          {
+            lineHeight: fontSize['2xl'].lineHeight,
+            letterSpacing: fontSize['2xl'].letterSpacing,
+          },
+        ],
+        '3xl': [
+          fontSize['3xl'].size,
+          {
+            lineHeight: fontSize['3xl'].lineHeight,
+            letterSpacing: fontSize['3xl'].letterSpacing,
+          },
+        ],
+        '4xl': [
+          fontSize['4xl'].size,
+          {
+            lineHeight: fontSize['4xl'].lineHeight,
+            letterSpacing: fontSize['4xl'].letterSpacing,
+          },
+        ],
+        '5xl': [
+          fontSize['5xl'].size,
+          {
+            lineHeight: fontSize['5xl'].lineHeight,
+            letterSpacing: fontSize['5xl'].letterSpacing,
+          },
+        ],
+        '6xl': [
+          fontSize['6xl'].size,
+          {
+            lineHeight: fontSize['6xl'].lineHeight,
+            letterSpacing: fontSize['6xl'].letterSpacing,
+          },
+        ],
+        '7xl': [
+          fontSize['7xl'].size,
+          {
+            lineHeight: fontSize['7xl'].lineHeight,
+            letterSpacing: fontSize['7xl'].letterSpacing,
+          },
+        ],
+        '8xl': [
+          fontSize['8xl'].size,
+          {
+            lineHeight: fontSize['8xl'].lineHeight,
+            letterSpacing: fontSize['8xl'].letterSpacing,
+          },
+        ],
+        '9xl': [
+          fontSize['9xl'].size,
+          {
+            lineHeight: fontSize['9xl'].lineHeight,
+            letterSpacing: fontSize['9xl'].letterSpacing,
+          },
+        ],
       },
 
       // =================================================================
@@ -297,7 +379,7 @@ const config: Config = {
           '0%': { transform: 'translateX(-10px)', opacity: '0' },
           '100%': { transform: 'translateX(0)', opacity: '1' },
         },
-        'shimmer': {
+        shimmer: {
           '0%': { backgroundPosition: '-200% 0' },
           '100%': { backgroundPosition: '200% 0' },
         },
@@ -318,7 +400,7 @@ const config: Config = {
         'slide-down': 'slide-down 0.3s ease-in-out forwards',
         'slide-left': 'slide-left 0.3s ease-in-out forwards',
         'slide-right': 'slide-right 0.3s ease-in-out forwards',
-        'shimmer': 'shimmer 2s infinite linear',
+        shimmer: 'shimmer 2s infinite linear',
         'pulse-soft': 'pulse-soft 2s ease-in-out infinite',
       },
 
@@ -342,8 +424,8 @@ const config: Config = {
         'in-expo': 'cubic-bezier(0.95, 0.05, 0.795, 0.035)',
         'out-expo': 'cubic-bezier(0.19, 1, 0.22, 1)',
         'in-out-expo': 'cubic-bezier(0.87, 0, 0.13, 1)',
-        'smooth': 'cubic-bezier(0.4, 0, 0.2, 1)',
-        'bounce': 'cubic-bezier(0.68, -0.55, 0.265, 1.55)',
+        smooth: 'cubic-bezier(0.4, 0, 0.2, 1)',
+        bounce: 'cubic-bezier(0.68, -0.55, 0.265, 1.55)',
       },
     },
   },

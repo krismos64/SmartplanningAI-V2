@@ -42,7 +42,9 @@ export class TeamListPage {
 
     // Header
     this.pageTitle = page.getByRole('heading', { name: /équipes|equipes/i })
-    this.description = page.locator('text=/gérez vos équipes|gerez vos equipes/i')
+    this.description = page.locator(
+      'text=/gérez vos équipes|gerez vos equipes/i'
+    )
     this.newTeamButton = page.getByRole('link', {
       name: /nouvelle équipe|nouvelle equipe|créer.*équipe|creer.*equipe/i,
     })
@@ -140,7 +142,9 @@ export class TeamListPage {
    * Editer une equipe via le menu
    */
   async editTeam(teamName: string): Promise<void> {
-    const card = this.page.locator('[data-testid="team-card"]', { hasText: teamName })
+    const card = this.page.locator('[data-testid="team-card"]', {
+      hasText: teamName,
+    })
     await card.getByRole('button', { name: /actions|menu/i }).click()
     await this.page.getByRole('menuitem', { name: /modifier|editer/i }).click()
   }
@@ -149,7 +153,9 @@ export class TeamListPage {
    * Supprimer une equipe
    */
   async deleteTeam(teamName: string): Promise<void> {
-    const card = this.page.locator('[data-testid="team-card"]', { hasText: teamName })
+    const card = this.page.locator('[data-testid="team-card"]', {
+      hasText: teamName,
+    })
     await card.getByRole('button', { name: /actions|menu/i }).click()
     await this.page.getByRole('menuitem', { name: /supprimer/i }).click()
   }
@@ -158,7 +164,9 @@ export class TeamListPage {
    * Gerer les membres d'une equipe
    */
   async manageMembers(teamName: string): Promise<void> {
-    const card = this.page.locator('[data-testid="team-card"]', { hasText: teamName })
+    const card = this.page.locator('[data-testid="team-card"]', {
+      hasText: teamName,
+    })
     await card.getByRole('button', { name: /actions|menu/i }).click()
     await this.page.getByRole('menuitem', { name: /membres|gerer/i }).click()
   }
@@ -167,7 +175,9 @@ export class TeamListPage {
    * Confirme la suppression
    */
   async confirmDelete(): Promise<void> {
-    await this.page.getByRole('button', { name: /supprimer|confirmer/i }).click()
+    await this.page
+      .getByRole('button', { name: /supprimer|confirmer/i })
+      .click()
   }
 
   /**

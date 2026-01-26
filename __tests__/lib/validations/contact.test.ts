@@ -56,7 +56,7 @@ describe('contactSchema', () => {
       expect(result.success).toBe(true)
     })
 
-    it("devrait accepter un sujet avec 5 caractères (minimum)", () => {
+    it('devrait accepter un sujet avec 5 caractères (minimum)', () => {
       const data = {
         name: 'Jean Dupont',
         email: 'jean@test.com',
@@ -101,8 +101,7 @@ describe('contactSchema', () => {
         name: '  Jean Dupont  ',
         email: 'jean@test.com', // Email sans espaces (trim fait APRÈS validation)
         subject: '  Test sujet valide  ',
-        message:
-          '  Ceci est un message de test avec plus de 20 caractères.  ',
+        message: '  Ceci est un message de test avec plus de 20 caractères.  ',
       }
 
       const result = contactSchema.safeParse(data)

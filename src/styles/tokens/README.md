@@ -45,15 +45,15 @@ import { utils, withOpacity } from '@/styles/tokens'
 
 ### Palettes primitives
 
-| Palette   | Usage                        | Couleur principale |
-| --------- | ---------------------------- | ------------------ |
-| `blue`    | Couleur primaire             | `#3b82f6`          |
-| `cyan`    | Accents modernes             | `#06b6d4`          |
-| `slate`   | Gris neutres                 | `#64748b`          |
-| `emerald` | Succès, validation           | `#10b981`          |
-| `amber`   | Alertes, avertissements      | `#f59e0b`          |
-| `rose`    | Erreurs, destructif          | `#e11d48`          |
-| `violet`  | Premium, éléments spéciaux   | `#8b5cf6`          |
+| Palette   | Usage                      | Couleur principale |
+| --------- | -------------------------- | ------------------ |
+| `blue`    | Couleur primaire           | `#3b82f6`          |
+| `cyan`    | Accents modernes           | `#06b6d4`          |
+| `slate`   | Gris neutres               | `#64748b`          |
+| `emerald` | Succès, validation         | `#10b981`          |
+| `amber`   | Alertes, avertissements    | `#f59e0b`          |
+| `rose`    | Erreurs, destructif        | `#e11d48`          |
+| `violet`  | Premium, éléments spéciaux | `#8b5cf6`          |
 
 ### Exemple d'utilisation
 
@@ -78,11 +78,11 @@ Les tokens sémantiques utilisent le format HSL pour compatibilité avec Tailwin
 // Light mode
 const semanticLight = {
   primary: {
-    DEFAULT: '217 91% 60%',     // Couleur principale
-    hover: '217 91% 55%',        // État hover
-    active: '217 91% 50%',       // État actif
-    foreground: '210 40% 98%',   // Texte sur primary
-    muted: '217 91% 95%',        // Background léger
+    DEFAULT: '217 91% 60%', // Couleur principale
+    hover: '217 91% 55%', // État hover
+    active: '217 91% 50%', // État actif
+    foreground: '210 40% 98%', // Texte sur primary
+    muted: '217 91% 95%', // Background léger
   },
   // ... autres tokens
 }
@@ -92,12 +92,12 @@ const semanticLight = {
 
 ### Familles de polices
 
-| Famille   | Usage                | Polices                      |
-| --------- | -------------------- | ---------------------------- |
-| `display` | Titres, hero         | Rajdhani                     |
-| `sans`    | Corps de texte       | Plus Jakarta Sans            |
-| `mono`    | Code                 | JetBrains Mono               |
-| `serif`   | Citations, spéciaux  | Merriweather                 |
+| Famille   | Usage               | Polices           |
+| --------- | ------------------- | ----------------- |
+| `display` | Titres, hero        | Rajdhani          |
+| `sans`    | Corps de texte      | Plus Jakarta Sans |
+| `mono`    | Code                | JetBrains Mono    |
+| `serif`   | Citations, spéciaux | Merriweather      |
 
 ### Échelle typographique
 
@@ -105,11 +105,11 @@ const semanticLight = {
 import { fontSize, textStyles } from '@/styles/tokens'
 
 // Échelle de tailles
-fontSize.xs   // 12px
-fontSize.sm   // 14px
+fontSize.xs // 12px
+fontSize.sm // 14px
 fontSize.base // 16px
-fontSize.lg   // 18px
-fontSize.xl   // 20px
+fontSize.lg // 18px
+fontSize.xl // 20px
 fontSize['2xl'] // 24px
 // ... jusqu'à 9xl
 
@@ -140,11 +140,11 @@ L'échelle utilise une unité de base de 4px (0.25rem) :
 ```tsx
 import { spacingScale } from '@/styles/tokens'
 
-spacingScale[0]  // '0'
-spacingScale[1]  // '0.25rem' (4px)
-spacingScale[2]  // '0.5rem'  (8px)
-spacingScale[4]  // '1rem'    (16px)
-spacingScale[8]  // '2rem'    (32px)
+spacingScale[0] // '0'
+spacingScale[1] // '0.25rem' (4px)
+spacingScale[2] // '0.5rem'  (8px)
+spacingScale[4] // '1rem'    (16px)
+spacingScale[8] // '2rem'    (32px)
 spacingScale[16] // '4rem'    (64px)
 // ...
 ```
@@ -175,10 +175,10 @@ semanticSpacing.form.fieldGap // '1rem' (16px)
 import { boxShadowLight, semanticShadows } from '@/styles/tokens'
 
 // Échelle générique
-boxShadowLight.sm  // Subtle
-boxShadowLight.md  // Cards
-boxShadowLight.lg  // Dropdowns
-boxShadowLight.xl  // Modals
+boxShadowLight.sm // Subtle
+boxShadowLight.md // Cards
+boxShadowLight.lg // Dropdowns
+boxShadowLight.xl // Modals
 
 // Sémantiques
 semanticShadows.light.card.DEFAULT
@@ -192,9 +192,9 @@ semanticShadows.light.input.focus
 import { glow } from '@/styles/tokens'
 
 // Glow colorés
-glow.primary.md  // Glow bleu
-glow.accent.lg   // Glow cyan
-glow.success.sm  // Glow vert
+glow.primary.md // Glow bleu
+glow.accent.lg // Glow cyan
+glow.success.sm // Glow vert
 ```
 
 ## Border Radius
@@ -204,12 +204,12 @@ glow.success.sm  // Glow vert
 ```tsx
 import { borderRadius } from '@/styles/tokens'
 
-borderRadius.none    // '0'
-borderRadius.sm      // '0.25rem' (4px)
+borderRadius.none // '0'
+borderRadius.sm // '0.25rem' (4px)
 borderRadius.DEFAULT // '0.5rem'  (8px)
-borderRadius.lg      // '0.75rem' (12px)
-borderRadius.xl      // '1rem'    (16px)
-borderRadius.full    // '9999px'
+borderRadius.lg // '0.75rem' (12px)
+borderRadius.xl // '1rem'    (16px)
+borderRadius.full // '9999px'
 ```
 
 ### Sémantiques
@@ -217,7 +217,7 @@ borderRadius.full    // '9999px'
 ```tsx
 import { semanticRadius } from '@/styles/tokens'
 
-semanticRadius.button.md   // Boutons
+semanticRadius.button.md // Boutons
 semanticRadius.card.DEFAULT // Cards
 semanticRadius.modal.DEFAULT // Modals
 semanticRadius.avatar.DEFAULT // Avatars (full)

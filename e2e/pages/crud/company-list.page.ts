@@ -122,9 +122,7 @@ export class CompanyListPage {
    * Verifie le nombre d'entreprises affiche
    */
   async expectTotalCount(count: number): Promise<void> {
-    await expect(
-      this.page.locator(`text=${count} entreprise`)
-    ).toBeVisible()
+    await expect(this.page.locator(`text=${count} entreprise`)).toBeVisible()
   }
 
   /**

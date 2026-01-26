@@ -85,7 +85,7 @@ describe('ContactConfirmationEmail', () => {
       expect(html).toContain('contact@smartplanning.fr')
     })
 
-    it('devrait contenir la signature de l\'équipe', async () => {
+    it("devrait contenir la signature de l'équipe", async () => {
       const html = await render(ContactConfirmationEmail(defaultProps))
 
       expect(html).toContain('SmartPlanning')

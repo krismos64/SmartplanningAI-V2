@@ -46,7 +46,8 @@ const validFormData = {
   name: 'Jean Dupont',
   email: 'jean@test.com',
   subject: 'Test sujet valide',
-  message: 'Ceci est un message de test avec plus de 20 caractères pour passer la validation.',
+  message:
+    'Ceci est un message de test avec plus de 20 caractères pour passer la validation.',
 }
 
 async function fillForm(user: ReturnType<typeof userEvent.setup>) {
@@ -67,18 +68,22 @@ describe('ContactForm Integration', () => {
   describe('Flux : Formulaire → Loading → Succès', () => {
     it('devrait afficher le formulaire, puis loading, puis succès', async () => {
       const user = userEvent.setup()
-      const mockOnSubmit = vi.fn().mockImplementation(
-        () =>
-          new Promise((resolve) =>
-            setTimeout(() => resolve({ success: true }), 50)
-          )
-      )
+      const mockOnSubmit = vi
+        .fn()
+        .mockImplementation(
+          () =>
+            new Promise((resolve) =>
+              setTimeout(() => resolve({ success: true }), 50)
+            )
+        )
 
       render(<ContactForm onSubmit={mockOnSubmit} />)
 
       // 1. Formulaire visible
       expect(screen.getByLabelText(/nom complet/i)).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: /envoyer le message/i })).toBeInTheDocument()
+      expect(
+        screen.getByRole('button', { name: /envoyer le message/i })
+      ).toBeInTheDocument()
 
       // 2. Remplir et soumettre
       await fillForm(user)
@@ -91,7 +96,9 @@ describe('ContactForm Integration', () => {
       await waitFor(() => {
         expect(screen.getByText(/merci jean dupont/i)).toBeInTheDocument()
       })
-      expect(screen.getByText(/votre message a bien été envoyé/i)).toBeInTheDocument()
+      expect(
+        screen.getByText(/votre message a bien été envoyé/i)
+      ).toBeInTheDocument()
     })
 
     it('devrait masquer le formulaire après succès', async () => {
@@ -132,13 +139,17 @@ describe('ContactForm Integration', () => {
       })
 
       // Cliquer sur le bouton de reset
-      await user.click(screen.getByRole('button', { name: /envoyer un autre message/i }))
+      await user.click(
+        screen.getByRole('button', { name: /envoyer un autre message/i })
+      )
 
       // Le formulaire doit réapparaître
       await waitFor(() => {
         expect(screen.getByLabelText(/nom complet/i)).toBeInTheDocument()
       })
-      expect(screen.getByRole('button', { name: /envoyer le message/i })).toBeInTheDocument()
+      expect(
+        screen.getByRole('button', { name: /envoyer le message/i })
+      ).toBeInTheDocument()
     })
 
     it('devrait réinitialiser les champs du formulaire après reset', async () => {
@@ -154,7 +165,9 @@ describe('ContactForm Integration', () => {
         expect(screen.getByText(/merci jean dupont/i)).toBeInTheDocument()
       })
 
-      await user.click(screen.getByRole('button', { name: /envoyer un autre message/i }))
+      await user.click(
+        screen.getByRole('button', { name: /envoyer un autre message/i })
+      )
 
       await waitFor(() => {
         const nameInput = screen.getByLabelText(/nom complet/i)
@@ -167,7 +180,7 @@ describe('ContactForm Integration', () => {
   // FLUX ERREUR
   // ==========================================================================
   describe('Flux : Formulaire → Loading → Erreur', () => {
-    it('devrait afficher l\'état d\'erreur après échec', async () => {
+    it("devrait afficher l'état d'erreur après échec", async () => {
       const user = userEvent.setup()
       const mockOnSubmit = vi.fn().mockResolvedValue({
         success: false,
@@ -185,7 +198,7 @@ describe('ContactForm Integration', () => {
       })
     })
 
-    it('devrait garder le formulaire visible en état d\'erreur', async () => {
+    it("devrait garder le formulaire visible en état d'erreur", async () => {
       const user = userEvent.setup()
       const mockOnSubmit = vi.fn().mockResolvedValue({
         success: false,
@@ -222,8 +235,12 @@ describe('ContactForm Integration', () => {
       })
 
       // Vérifier que les données sont conservées
-      expect(screen.getByLabelText(/nom complet/i)).toHaveValue(validFormData.name)
-      expect(screen.getByLabelText(/adresse email/i)).toHaveValue(validFormData.email)
+      expect(screen.getByLabelText(/nom complet/i)).toHaveValue(
+        validFormData.name
+      )
+      expect(screen.getByLabelText(/adresse email/i)).toHaveValue(
+        validFormData.email
+      )
     })
   })
 
@@ -270,7 +287,9 @@ describe('ContactForm Integration', () => {
       await user.click(screen.getByRole('button', { name: /envoyer/i }))
 
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: /réessayer/i })).toBeInTheDocument()
+        expect(
+          screen.getByRole('button', { name: /réessayer/i })
+        ).toBeInTheDocument()
       })
 
       await user.click(screen.getByRole('button', { name: /réessayer/i }))
@@ -292,12 +311,14 @@ describe('ContactForm Integration', () => {
   describe('Désactivation pendant loading', () => {
     it('devrait désactiver tous les champs pendant la soumission', async () => {
       const user = userEvent.setup()
-      const mockOnSubmit = vi.fn().mockImplementation(
-        () =>
-          new Promise((resolve) =>
-            setTimeout(() => resolve({ success: true }), 100)
-          )
-      )
+      const mockOnSubmit = vi
+        .fn()
+        .mockImplementation(
+          () =>
+            new Promise((resolve) =>
+              setTimeout(() => resolve({ success: true }), 100)
+            )
+        )
 
       render(<ContactForm onSubmit={mockOnSubmit} />)
 
@@ -330,7 +351,9 @@ describe('ContactForm Integration', () => {
 
       // Les champs doivent être réactivés
       expect(screen.getByLabelText(/nom complet/i)).not.toBeDisabled()
-      expect(screen.getByRole('button', { name: /envoyer le message/i })).not.toBeDisabled()
+      expect(
+        screen.getByRole('button', { name: /envoyer le message/i })
+      ).not.toBeDisabled()
     })
   })
 })

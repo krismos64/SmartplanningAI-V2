@@ -95,7 +95,7 @@ describe('useContactForm', () => {
       expect(result.current.submittedName).toBe('Jean Dupont')
     })
 
-    it('devrait effacer l\'erreur lors de la soumission', async () => {
+    it("devrait effacer l'erreur lors de la soumission", async () => {
       const mockOnSubmit = vi
         .fn()
         .mockRejectedValueOnce(new Error('Erreur'))
@@ -134,7 +134,7 @@ describe('useContactForm', () => {
       expect(result.current.state).toBe('error')
     })
 
-    it('devrait stocker le message d\'erreur de la réponse', async () => {
+    it("devrait stocker le message d'erreur de la réponse", async () => {
       const mockOnSubmit = vi.fn().mockResolvedValue({
         success: false,
         error: 'Adresse email invalide',
@@ -148,10 +148,10 @@ describe('useContactForm', () => {
       expect(result.current.error).toBe('Adresse email invalide')
     })
 
-    it('devrait utiliser message si error n\'est pas défini', async () => {
+    it("devrait utiliser message si error n'est pas défini", async () => {
       const mockOnSubmit = vi.fn().mockResolvedValue({
         success: false,
-        message: 'Message d\'erreur alternatif',
+        message: "Message d'erreur alternatif",
       })
       const { result } = renderHook(() => useContactForm(mockOnSubmit))
 
@@ -159,7 +159,7 @@ describe('useContactForm', () => {
         await result.current.submit(validFormData)
       })
 
-      expect(result.current.error).toBe('Message d\'erreur alternatif')
+      expect(result.current.error).toBe("Message d'erreur alternatif")
     })
 
     it('devrait passer à error si onSubmit throw', async () => {
@@ -174,7 +174,7 @@ describe('useContactForm', () => {
       expect(result.current.error).toBe('Network error')
     })
 
-    it('devrait avoir un message par défaut si error n\'est pas une Error', async () => {
+    it("devrait avoir un message par défaut si error n'est pas une Error", async () => {
       const mockOnSubmit = vi.fn().mockRejectedValue('String error')
       const { result } = renderHook(() => useContactForm(mockOnSubmit))
 

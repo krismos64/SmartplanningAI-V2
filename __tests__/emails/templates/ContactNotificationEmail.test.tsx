@@ -39,14 +39,14 @@ describe('ContactNotificationEmail', () => {
       expect(html).toContain('contact')
     })
 
-    it('devrait contenir le nom de l\'expéditeur dans le titre', async () => {
+    it("devrait contenir le nom de l'expéditeur dans le titre", async () => {
       const html = await render(ContactNotificationEmail(defaultProps))
 
       expect(html).toContain('Message de')
       expect(html).toContain('Jean Dupont')
     })
 
-    it('devrait afficher les informations de l\'expéditeur', async () => {
+    it("devrait afficher les informations de l'expéditeur", async () => {
       const html = await render(ContactNotificationEmail(defaultProps))
 
       expect(html).toContain('Jean Dupont')

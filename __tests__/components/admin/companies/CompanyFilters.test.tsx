@@ -50,7 +50,9 @@ describe('CompanyFilters', () => {
     const onFiltersChange = vi.fn()
     const user = setupUser()
 
-    render(<CompanyFilters {...defaultProps} onFiltersChange={onFiltersChange} />)
+    render(
+      <CompanyFilters {...defaultProps} onFiltersChange={onFiltersChange} />
+    )
 
     const searchInput = screen.getByPlaceholderText(/rechercher/i)
     await user.type(searchInput, 'acme')
@@ -65,13 +67,17 @@ describe('CompanyFilters', () => {
 
     render(<CompanyFilters {...defaultProps} filters={filters} />)
 
-    expect(screen.getByRole('button', { name: /réinitialiser/i })).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: /réinitialiser/i })
+    ).toBeInTheDocument()
   })
 
   it('should not show reset button when no filters are active', () => {
     render(<CompanyFilters {...defaultProps} />)
 
-    expect(screen.queryByRole('button', { name: /réinitialiser/i })).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: /réinitialiser/i })
+    ).not.toBeInTheDocument()
   })
 
   it('should call onFiltersChange with empty object when reset is clicked', async () => {

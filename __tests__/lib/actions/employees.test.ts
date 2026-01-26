@@ -167,7 +167,9 @@ describe('RBAC - SYSTEM_ADMIN full access', () => {
 
   it('should allow listEmployees for all companies', async () => {
     prismaMock.employee.count.mockResolvedValue(2)
-    prismaMock.employee.findMany.mockResolvedValue([mockEmployeeWithRelations] as never)
+    prismaMock.employee.findMany.mockResolvedValue([
+      mockEmployeeWithRelations,
+    ] as never)
 
     const result = await listEmployees()
 
@@ -183,7 +185,9 @@ describe('RBAC - SYSTEM_ADMIN full access', () => {
   })
 
   it('should allow getEmployee from any company', async () => {
-    prismaMock.employee.findUnique.mockResolvedValue(mockEmployeeWithRelations as never)
+    prismaMock.employee.findUnique.mockResolvedValue(
+      mockEmployeeWithRelations as never
+    )
 
     const result = await getEmployee(EMP_ID)
 
@@ -194,7 +198,9 @@ describe('RBAC - SYSTEM_ADMIN full access', () => {
   })
 
   it('should allow createEmployee in any company', async () => {
-    prismaMock.employee.create.mockResolvedValue(mockEmployeeWithRelations as never)
+    prismaMock.employee.create.mockResolvedValue(
+      mockEmployeeWithRelations as never
+    )
 
     const result = await createEmployee({
       firstName: 'Marie',
@@ -230,7 +236,9 @@ describe('RBAC - DIRECTOR company-scoped access', () => {
 
   it('should filter listEmployees by own company', async () => {
     prismaMock.employee.count.mockResolvedValue(1)
-    prismaMock.employee.findMany.mockResolvedValue([mockEmployeeWithRelations] as never)
+    prismaMock.employee.findMany.mockResolvedValue([
+      mockEmployeeWithRelations,
+    ] as never)
 
     await listEmployees()
 
@@ -244,7 +252,9 @@ describe('RBAC - DIRECTOR company-scoped access', () => {
   })
 
   it('should allow getEmployee from own company', async () => {
-    prismaMock.employee.findUnique.mockResolvedValue(mockEmployeeWithRelations as never)
+    prismaMock.employee.findUnique.mockResolvedValue(
+      mockEmployeeWithRelations as never
+    )
 
     const result = await getEmployee(EMP_ID)
 
@@ -312,7 +322,9 @@ describe('RBAC - MANAGER team-scoped access', () => {
 
   it('should filter listEmployees by managed teams', async () => {
     prismaMock.employee.count.mockResolvedValue(1)
-    prismaMock.employee.findMany.mockResolvedValue([mockEmployeeWithRelations] as never)
+    prismaMock.employee.findMany.mockResolvedValue([
+      mockEmployeeWithRelations,
+    ] as never)
 
     await listEmployees()
 
@@ -409,7 +421,9 @@ describe('listEmployees', () => {
 
   it('should return paginated employees list', async () => {
     prismaMock.employee.count.mockResolvedValue(1)
-    prismaMock.employee.findMany.mockResolvedValue([mockEmployeeWithRelations] as never)
+    prismaMock.employee.findMany.mockResolvedValue([
+      mockEmployeeWithRelations,
+    ] as never)
 
     const result = await listEmployees({ page: 1, pageSize: 10 })
 
@@ -423,7 +437,9 @@ describe('listEmployees', () => {
 
   it('should filter by department', async () => {
     prismaMock.employee.count.mockResolvedValue(1)
-    prismaMock.employee.findMany.mockResolvedValue([mockEmployeeWithRelations] as never)
+    prismaMock.employee.findMany.mockResolvedValue([
+      mockEmployeeWithRelations,
+    ] as never)
 
     await listEmployees({}, { department: 'TECHNIQUE' })
 
@@ -438,7 +454,9 @@ describe('listEmployees', () => {
 
   it('should filter by search term', async () => {
     prismaMock.employee.count.mockResolvedValue(1)
-    prismaMock.employee.findMany.mockResolvedValue([mockEmployeeWithRelations] as never)
+    prismaMock.employee.findMany.mockResolvedValue([
+      mockEmployeeWithRelations,
+    ] as never)
 
     await listEmployees({}, { search: 'Jean' })
 
@@ -457,7 +475,9 @@ describe('listEmployees', () => {
 
   it('should filter by isActive status', async () => {
     prismaMock.employee.count.mockResolvedValue(1)
-    prismaMock.employee.findMany.mockResolvedValue([mockEmployeeWithRelations] as never)
+    prismaMock.employee.findMany.mockResolvedValue([
+      mockEmployeeWithRelations,
+    ] as never)
 
     await listEmployees({}, { isActive: true })
 
@@ -472,7 +492,9 @@ describe('listEmployees', () => {
 
   it('should filter by skill', async () => {
     prismaMock.employee.count.mockResolvedValue(1)
-    prismaMock.employee.findMany.mockResolvedValue([mockEmployeeWithRelations] as never)
+    prismaMock.employee.findMany.mockResolvedValue([
+      mockEmployeeWithRelations,
+    ] as never)
 
     await listEmployees({}, { skill: 'React' })
 
@@ -495,7 +517,9 @@ describe('getEmployee', () => {
   })
 
   it('should return employee details by ID', async () => {
-    prismaMock.employee.findUnique.mockResolvedValue(mockEmployeeWithRelations as never)
+    prismaMock.employee.findUnique.mockResolvedValue(
+      mockEmployeeWithRelations as never
+    )
 
     const result = await getEmployee(EMP_ID)
 
@@ -526,7 +550,9 @@ describe('createEmployee', () => {
   })
 
   it('should create an employee with valid data', async () => {
-    prismaMock.employee.create.mockResolvedValue(mockEmployeeWithRelations as never)
+    prismaMock.employee.create.mockResolvedValue(
+      mockEmployeeWithRelations as never
+    )
 
     const result = await createEmployee({
       firstName: 'Jean',
@@ -551,7 +577,9 @@ describe('createEmployee', () => {
   })
 
   it('should set default weeklyHours to 35', async () => {
-    prismaMock.employee.create.mockResolvedValue(mockEmployeeWithRelations as never)
+    prismaMock.employee.create.mockResolvedValue(
+      mockEmployeeWithRelations as never
+    )
 
     await createEmployee({
       firstName: 'Jean',
@@ -576,7 +604,9 @@ describe('updateEmployee', () => {
   })
 
   it('should update employee with valid data', async () => {
-    prismaMock.employee.findUnique.mockResolvedValue(mockEmployeeWithRelations as never)
+    prismaMock.employee.findUnique.mockResolvedValue(
+      mockEmployeeWithRelations as never
+    )
     prismaMock.employee.update.mockResolvedValue({
       ...mockEmployeeWithRelations,
       jobTitle: 'Senior Developpeur',
@@ -643,7 +673,9 @@ describe('toggleEmployeeStatus', () => {
   })
 
   it('should deactivate active employee', async () => {
-    prismaMock.employee.findUnique.mockResolvedValue(mockEmployeeWithRelations as never)
+    prismaMock.employee.findUnique.mockResolvedValue(
+      mockEmployeeWithRelations as never
+    )
     prismaMock.employee.update.mockResolvedValue({
       ...mockEmployeeWithRelations,
       isActive: false,

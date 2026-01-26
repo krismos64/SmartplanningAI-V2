@@ -64,7 +64,7 @@ describe('email/config', () => {
       expect(isEmailConfigured()).toBe(false)
     })
 
-    it('devrait retourner false si aucune variable n\'est définie', async () => {
+    it("devrait retourner false si aucune variable n'est définie", async () => {
       delete process.env.SMTP_HOST
       delete process.env.SMTP_PORT
       delete process.env.SMTP_USER
@@ -168,7 +168,7 @@ describe('email/config', () => {
       expect(getEmailFrom()).toBe('SmartPlanning <contact@smartplanning.fr>')
     })
 
-    it('devrait retourner SMTP_USER si SMTP_FROM n\'est pas défini', async () => {
+    it("devrait retourner SMTP_USER si SMTP_FROM n'est pas défini", async () => {
       delete process.env.SMTP_FROM
       process.env.SMTP_USER = 'contact@smartplanning.fr'
 
@@ -176,7 +176,7 @@ describe('email/config', () => {
       expect(getEmailFrom()).toBe('contact@smartplanning.fr')
     })
 
-    it('devrait retourner la valeur par défaut si rien n\'est défini', async () => {
+    it("devrait retourner la valeur par défaut si rien n'est défini", async () => {
       delete process.env.SMTP_FROM
       delete process.env.SMTP_USER
 
@@ -218,7 +218,7 @@ describe('email/config', () => {
       expect(getContactEmail()).toBe('support@smartplanning.fr')
     })
 
-    it('devrait retourner SMTP_USER si CONTACT_EMAIL n\'est pas défini', async () => {
+    it("devrait retourner SMTP_USER si CONTACT_EMAIL n'est pas défini", async () => {
       delete process.env.CONTACT_EMAIL
       process.env.SMTP_USER = 'contact@smartplanning.fr'
 
@@ -226,7 +226,7 @@ describe('email/config', () => {
       expect(getContactEmail()).toBe('contact@smartplanning.fr')
     })
 
-    it('devrait retourner la valeur par défaut si rien n\'est défini', async () => {
+    it("devrait retourner la valeur par défaut si rien n'est défini", async () => {
       delete process.env.CONTACT_EMAIL
       delete process.env.SMTP_USER
 
@@ -249,9 +249,7 @@ describe('email/config', () => {
       const { checkDeprecatedEnvVars } = await import('@/lib/email/config')
       checkDeprecatedEnvVars()
 
-      expect(warnSpy).toHaveBeenCalledWith(
-        expect.stringContaining('SMTP_PASS')
-      )
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('SMTP_PASS'))
 
       warnSpy.mockRestore()
     })

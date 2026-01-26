@@ -26,26 +26,18 @@ test.describe('Error Boundary', () => {
 
     // Verify component is working initially
     await expect(page.getByTestId('working-component')).toBeVisible()
-    await expect(
-      page.getByText('Component is working normally')
-    ).toBeVisible()
+    await expect(page.getByText('Component is working normally')).toBeVisible()
 
     // Trigger the error
     await page.getByTestId('trigger-error-button').click()
 
     // Verify fallback UI is displayed
     await expect(page.getByText('Une erreur est survenue')).toBeVisible()
-    await expect(
-      page.getByText(/nous sommes désolés/i)
-    ).toBeVisible()
+    await expect(page.getByText(/nous sommes désolés/i)).toBeVisible()
 
     // Verify action buttons are visible
-    await expect(
-      page.getByRole('button', { name: /réessayer/i })
-    ).toBeVisible()
-    await expect(
-      page.getByRole('button', { name: /accueil/i })
-    ).toBeVisible()
+    await expect(page.getByRole('button', { name: /réessayer/i })).toBeVisible()
+    await expect(page.getByRole('button', { name: /accueil/i })).toBeVisible()
   })
 
   /**

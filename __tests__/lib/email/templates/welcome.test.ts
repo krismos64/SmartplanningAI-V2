@@ -91,7 +91,9 @@ describe('sendWelcomeEmail', () => {
     })
 
     it('devrait gérer les exceptions de sendEmail', async () => {
-      const mockSendEmail = vi.fn().mockRejectedValue(new Error('Network error'))
+      const mockSendEmail = vi
+        .fn()
+        .mockRejectedValue(new Error('Network error'))
 
       vi.doMock('@/lib/email', () => ({
         sendEmail: mockSendEmail,
@@ -117,7 +119,7 @@ describe('sendWelcomeEmail', () => {
   // Construction de l'URL
   // ==========================================================================
 
-  describe('Construction de l\'URL', () => {
+  describe("Construction de l'URL", () => {
     it('devrait utiliser NEXT_PUBLIC_APP_URL pour le loginUrl', async () => {
       const mockSendEmail = vi.fn().mockResolvedValue({
         success: true,

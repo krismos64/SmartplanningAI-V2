@@ -34,7 +34,9 @@ describe('email/send', () => {
 
   describe('sendEmail - succès', () => {
     it('devrait envoyer un email avec succès', async () => {
-      const mockSendMail = vi.fn().mockResolvedValue({ messageId: 'test-message-id' })
+      const mockSendMail = vi
+        .fn()
+        .mockResolvedValue({ messageId: 'test-message-id' })
 
       vi.doMock('nodemailer', () => ({
         default: {
@@ -241,7 +243,7 @@ describe('email/send', () => {
   // ==========================================================================
 
   describe('sendEmail - configuration manquante', () => {
-    it('devrait retourner une erreur si le service n\'est pas configuré', async () => {
+    it("devrait retourner une erreur si le service n'est pas configuré", async () => {
       delete process.env.SMTP_HOST
       delete process.env.SMTP_USER
       delete process.env.SMTP_PASSWORD
@@ -276,8 +278,9 @@ describe('email/send', () => {
   // ==========================================================================
 
   describe('sendEmail - retry logic', () => {
-    it('devrait réessayer en cas d\'erreur temporaire', async () => {
-      const mockSendMail = vi.fn()
+    it("devrait réessayer en cas d'erreur temporaire", async () => {
+      const mockSendMail = vi
+        .fn()
         .mockRejectedValueOnce(new Error('ECONNREFUSED'))
         .mockRejectedValueOnce(new Error('Timeout'))
         .mockResolvedValueOnce({ messageId: 'success-id' })
@@ -293,8 +296,12 @@ describe('email/send', () => {
       }))
 
       const { sendEmail } = await import('@/lib/email/send')
-      const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
-      const consoleInfoSpy = vi.spyOn(console, 'info').mockImplementation(() => {})
+      const consoleWarnSpy = vi
+        .spyOn(console, 'warn')
+        .mockImplementation(() => {})
+      const consoleInfoSpy = vi
+        .spyOn(console, 'info')
+        .mockImplementation(() => {})
 
       const resultPromise = sendEmail({
         to: 'test@test.com',
@@ -317,7 +324,9 @@ describe('email/send', () => {
     })
 
     it('devrait échouer après 3 tentatives', async () => {
-      const mockSendMail = vi.fn().mockRejectedValue(new Error('Persistent error'))
+      const mockSendMail = vi
+        .fn()
+        .mockRejectedValue(new Error('Persistent error'))
 
       vi.doMock('nodemailer', () => ({
         default: {
@@ -330,8 +339,12 @@ describe('email/send', () => {
       }))
 
       const { sendEmail } = await import('@/lib/email/send')
-      const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
-      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+      const consoleWarnSpy = vi
+        .spyOn(console, 'warn')
+        .mockImplementation(() => {})
+      const consoleErrorSpy = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => {})
 
       const resultPromise = sendEmail({
         to: 'test@test.com',
@@ -354,8 +367,10 @@ describe('email/send', () => {
       consoleErrorSpy.mockRestore()
     })
 
-    it('ne devrait pas réessayer en cas d\'erreur d\'authentification', async () => {
-      const mockSendMail = vi.fn().mockRejectedValue(new Error('EAUTH: Invalid login'))
+    it("ne devrait pas réessayer en cas d'erreur d'authentification", async () => {
+      const mockSendMail = vi
+        .fn()
+        .mockRejectedValue(new Error('EAUTH: Invalid login'))
 
       vi.doMock('nodemailer', () => ({
         default: {
@@ -368,8 +383,12 @@ describe('email/send', () => {
       }))
 
       const { sendEmail } = await import('@/lib/email/send')
-      const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
-      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+      const consoleWarnSpy = vi
+        .spyOn(console, 'warn')
+        .mockImplementation(() => {})
+      const consoleErrorSpy = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => {})
 
       const result = await sendEmail({
         to: 'test@test.com',
@@ -393,7 +412,8 @@ describe('email/send', () => {
 
   describe('sendEmails', () => {
     it('devrait envoyer plusieurs emails en parallèle', async () => {
-      const mockSendMail = vi.fn()
+      const mockSendMail = vi
+        .fn()
         .mockResolvedValueOnce({ messageId: 'id-1' })
         .mockResolvedValueOnce({ messageId: 'id-2' })
         .mockResolvedValueOnce({ messageId: 'id-3' })
@@ -427,7 +447,8 @@ describe('email/send', () => {
     })
 
     it('devrait gérer les échecs partiels', async () => {
-      const mockSendMail = vi.fn()
+      const mockSendMail = vi
+        .fn()
         .mockResolvedValueOnce({ messageId: 'id-1' })
         .mockRejectedValueOnce(new Error('EAUTH: Failed'))
         .mockResolvedValueOnce({ messageId: 'id-3' })
@@ -443,9 +464,15 @@ describe('email/send', () => {
       }))
 
       const { sendEmails } = await import('@/lib/email/send')
-      const consoleInfoSpy = vi.spyOn(console, 'info').mockImplementation(() => {})
-      const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
-      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+      const consoleInfoSpy = vi
+        .spyOn(console, 'info')
+        .mockImplementation(() => {})
+      const consoleWarnSpy = vi
+        .spyOn(console, 'warn')
+        .mockImplementation(() => {})
+      const consoleErrorSpy = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => {})
 
       const results = await sendEmails([
         { to: 'user1@test.com', subject: 'Test 1', html: '<p>1</p>' },

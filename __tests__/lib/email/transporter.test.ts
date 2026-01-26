@@ -43,7 +43,9 @@ describe('email/transporter', () => {
   describe('getTransporter', () => {
     it('devrait créer un transporter avec la configuration SMTP', async () => {
       const nodemailer = await import('nodemailer')
-      const { getTransporter, resetTransporter } = await import('@/lib/email/transporter')
+      const { getTransporter, resetTransporter } = await import(
+        '@/lib/email/transporter'
+      )
 
       resetTransporter()
       getTransporter()
@@ -65,7 +67,9 @@ describe('email/transporter', () => {
     })
 
     it('devrait retourner le même transporter (singleton)', async () => {
-      const { getTransporter, resetTransporter } = await import('@/lib/email/transporter')
+      const { getTransporter, resetTransporter } = await import(
+        '@/lib/email/transporter'
+      )
 
       resetTransporter()
       const transporter1 = getTransporter()
@@ -79,7 +83,9 @@ describe('email/transporter', () => {
       delete process.env.SMTP_USER
       delete process.env.SMTP_PASSWORD
 
-      const { getTransporter, resetTransporter } = await import('@/lib/email/transporter')
+      const { getTransporter, resetTransporter } = await import(
+        '@/lib/email/transporter'
+      )
 
       resetTransporter()
       expect(() => getTransporter()).toThrow('Service email non configuré')
@@ -100,7 +106,9 @@ describe('email/transporter', () => {
         close: vi.fn(),
       } as never)
 
-      const { verifyConnection, resetTransporter } = await import('@/lib/email/transporter')
+      const { verifyConnection, resetTransporter } = await import(
+        '@/lib/email/transporter'
+      )
 
       resetTransporter()
       const result = await verifyConnection()
@@ -111,14 +119,18 @@ describe('email/transporter', () => {
 
     it('devrait retourner false si la connexion échoue', async () => {
       const nodemailer = await import('nodemailer')
-      const mockVerify = vi.fn().mockRejectedValue(new Error('Connection failed'))
+      const mockVerify = vi
+        .fn()
+        .mockRejectedValue(new Error('Connection failed'))
       vi.mocked(nodemailer.default.createTransport).mockReturnValue({
         verify: mockVerify,
         sendMail: vi.fn(),
         close: vi.fn(),
       } as never)
 
-      const { verifyConnection, resetTransporter } = await import('@/lib/email/transporter')
+      const { verifyConnection, resetTransporter } = await import(
+        '@/lib/email/transporter'
+      )
 
       resetTransporter()
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
@@ -133,7 +145,9 @@ describe('email/transporter', () => {
       delete process.env.SMTP_USER
       delete process.env.SMTP_PASSWORD
 
-      const { verifyConnection, resetTransporter } = await import('@/lib/email/transporter')
+      const { verifyConnection, resetTransporter } = await import(
+        '@/lib/email/transporter'
+      )
 
       resetTransporter()
       const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
@@ -158,7 +172,8 @@ describe('email/transporter', () => {
         close: mockClose,
       } as never)
 
-      const { getTransporter, closeTransporter, resetTransporter } = await import('@/lib/email/transporter')
+      const { getTransporter, closeTransporter, resetTransporter } =
+        await import('@/lib/email/transporter')
 
       resetTransporter()
       getTransporter() // Crée le transporter
@@ -169,8 +184,10 @@ describe('email/transporter', () => {
       consoleSpy.mockRestore()
     })
 
-    it('ne devrait rien faire si aucun transporter n\'existe', async () => {
-      const { closeTransporter, resetTransporter } = await import('@/lib/email/transporter')
+    it("ne devrait rien faire si aucun transporter n'existe", async () => {
+      const { closeTransporter, resetTransporter } = await import(
+        '@/lib/email/transporter'
+      )
 
       resetTransporter()
       // Ne devrait pas lever d'erreur
@@ -185,7 +202,9 @@ describe('email/transporter', () => {
   describe('resetTransporter', () => {
     it('devrait permettre de créer un nouveau transporter après reset', async () => {
       const nodemailer = await import('nodemailer')
-      const { getTransporter, resetTransporter } = await import('@/lib/email/transporter')
+      const { getTransporter, resetTransporter } = await import(
+        '@/lib/email/transporter'
+      )
 
       resetTransporter()
       getTransporter()

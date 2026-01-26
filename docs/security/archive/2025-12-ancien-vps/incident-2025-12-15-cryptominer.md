@@ -21,18 +21,18 @@ Un cryptominer a été injecté dans le conteneur `smartplanning-app` le 15 déc
 
 ## 2. Timeline de l'Incident
 
-| Heure (UTC) | Événement |
-|-------------|-----------|
-| 07:00 | Déploiement CD réussi (image propre) |
-| 09:00 | Container `smartplanning-app` redémarré avec AUTH_TRUST_HOST |
-| **09:31:00** | **POST HTTP 500 depuis 180.172.231.1** (possible exploit) |
-| **09:31** | **Création des fichiers malveillants** dans /app |
-| 09:32-09:33 | Scan massif des fichiers .env depuis 78.153.140.177 |
-| 09:38:41 | POST depuis 180.172.231.1 avec python-urllib3 |
-| 11:40 | **Détection des processus suspects** lors du diagnostic |
-| 11:41 | Arrêt et suppression du conteneur compromis |
-| 11:42 | Redémarrage avec image propre |
-| 11:47 | Conteneur healthy, site opérationnel |
+| Heure (UTC)  | Événement                                                    |
+| ------------ | ------------------------------------------------------------ |
+| 07:00        | Déploiement CD réussi (image propre)                         |
+| 09:00        | Container `smartplanning-app` redémarré avec AUTH_TRUST_HOST |
+| **09:31:00** | **POST HTTP 500 depuis 180.172.231.1** (possible exploit)    |
+| **09:31**    | **Création des fichiers malveillants** dans /app             |
+| 09:32-09:33  | Scan massif des fichiers .env depuis 78.153.140.177          |
+| 09:38:41     | POST depuis 180.172.231.1 avec python-urllib3                |
+| 11:40        | **Détection des processus suspects** lors du diagnostic      |
+| 11:41        | Arrêt et suppression du conteneur compromis                  |
+| 11:42        | Redémarrage avec image propre                                |
+| 11:47        | Conteneur healthy, site opérationnel                         |
 
 ---
 
@@ -49,6 +49,7 @@ Trois fichiers exécutables trouvés dans `/app` du conteneur :
 ```
 
 **Caractéristiques** :
+
 - Noms aléatoires (technique d'obfuscation)
 - Propriétaire : `nextjs` (utilisateur du conteneur)
 - Permissions : exécutable
@@ -63,6 +64,7 @@ PID   USER     TIME     COMMAND
 ```
 
 **Observations** :
+
 - `/app/1L1aFl` : **8h17 de temps CPU** - cryptominer actif
 - Option `-c /app/ju2J` : fichier de configuration
 - Option `-B` : probablement mode "background" ou "benchmark"
@@ -78,6 +80,7 @@ tcp    172.18.0.4:39764    37.114.37.82:80      ESTABLISHED  # C2/Pool
 ```
 
 **IPs de Command & Control / Mining Pool** :
+
 - `37.114.37.82:80` - 2 connexions actives
 - `5.255.121.141:80` - 255KB de données en attente d'envoi
 
@@ -129,11 +132,11 @@ Socket avec nom aléatoire - probable mécanisme de persistence.
 
 ### 4.3 Points d'Entrée Possibles
 
-| Endpoint | Risque | Action |
-|----------|--------|--------|
-| POST / | CRITIQUE | Vérifier le handler de la page d'accueil |
-| /api/* | HAUT | Auditer toutes les routes API |
-| Server Actions | MOYEN | Vérifier la validation des inputs |
+| Endpoint       | Risque   | Action                                   |
+| -------------- | -------- | ---------------------------------------- |
+| POST /         | CRITIQUE | Vérifier le handler de la page d'accueil |
+| /api/\*        | HAUT     | Auditer toutes les routes API            |
+| Server Actions | MOYEN    | Vérifier la validation des inputs        |
 
 ---
 
@@ -141,21 +144,21 @@ Socket avec nom aléatoire - probable mécanisme de persistence.
 
 ### 5.1 Fichiers
 
-| Type | Valeur | Description |
-|------|--------|-------------|
-| Fichier | `/app/1L1aFl` | Cryptominer principal (2.8 MB) |
-| Fichier | `/app/VLvveomR2` | Loader/dropper (3.8 MB) |
-| Fichier | `/app/ju2J` | Config miner (10 KB) |
+| Type    | Valeur           | Description                    |
+| ------- | ---------------- | ------------------------------ |
+| Fichier | `/app/1L1aFl`    | Cryptominer principal (2.8 MB) |
+| Fichier | `/app/VLvveomR2` | Loader/dropper (3.8 MB)        |
+| Fichier | `/app/ju2J`      | Config miner (10 KB)           |
 
 ### 5.2 IPs Malveillantes
 
-| IP | Type | Action |
-|----|------|--------|
-| `180.172.231.1` | Attaquant (exploit) | BLOQUER |
-| `185.16.39.52` | Attaquant (brute force) | BLOQUER |
-| `78.153.140.177` | Scanner (.env) | BLOQUER |
-| `37.114.37.82` | C2/Mining Pool | BLOQUER |
-| `5.255.121.141` | C2/Mining Pool | BLOQUER |
+| IP               | Type                    | Action  |
+| ---------------- | ----------------------- | ------- |
+| `180.172.231.1`  | Attaquant (exploit)     | BLOQUER |
+| `185.16.39.52`   | Attaquant (brute force) | BLOQUER |
+| `78.153.140.177` | Scanner (.env)          | BLOQUER |
+| `37.114.37.82`   | C2/Mining Pool          | BLOQUER |
+| `5.255.121.141`  | C2/Mining Pool          | BLOQUER |
 
 ### 5.3 User Agents Suspects
 
@@ -197,13 +200,13 @@ python-urllib3/1.26.4  # Outil automatisé
 
 **IMPORTANT** : C'est le **DEUXIÈME incident de sécurité** en 10 jours.
 
-| Critère | Incident 05/12 | Incident 15/12 |
-|---------|----------------|----------------|
-| Type | UDP Flooder | Cryptominer |
-| Vecteur | Clé SSH compromise | RCE via POST (probable) |
-| Cible | DDoS externe | Mining crypto |
-| Localisation | /tmp/a (conteneur) | /app/* (conteneur) |
-| Durée | Non déterminée | ~8h17 |
+| Critère      | Incident 05/12     | Incident 15/12          |
+| ------------ | ------------------ | ----------------------- |
+| Type         | UDP Flooder        | Cryptominer             |
+| Vecteur      | Clé SSH compromise | RCE via POST (probable) |
+| Cible        | DDoS externe       | Mining crypto           |
+| Localisation | /tmp/a (conteneur) | /app/\* (conteneur)     |
+| Durée        | Non déterminée     | ~8h17                   |
 
 **Conclusion** : Les mesures de sécurisation post-incident du 5 décembre étaient **insuffisantes**. Une refonte complète de la sécurité est nécessaire.
 

@@ -55,7 +55,10 @@ function TestTable({
           <tr key={headerGroup.id}>
             {headerGroup.headers.map((header) => (
               <th key={header.id}>
-                {flexRender(header.column.columnDef.header, header.getContext())}
+                {flexRender(
+                  header.column.columnDef.header,
+                  header.getContext()
+                )}
               </th>
             ))}
           </tr>
@@ -111,14 +114,18 @@ describe('createCompanyColumns', () => {
   it('should include name column', () => {
     const columns = createCompanyColumns()
 
-    expect(columns.find((c) => 'accessorKey' in c && c.accessorKey === 'name')).toBeDefined()
+    expect(
+      columns.find((c) => 'accessorKey' in c && c.accessorKey === 'name')
+    ).toBeDefined()
   })
 
   it('should include subscriptionPlan column', () => {
     const columns = createCompanyColumns()
 
     expect(
-      columns.find((c) => 'accessorKey' in c && c.accessorKey === 'subscriptionPlan')
+      columns.find(
+        (c) => 'accessorKey' in c && c.accessorKey === 'subscriptionPlan'
+      )
     ).toBeDefined()
   })
 
@@ -126,7 +133,9 @@ describe('createCompanyColumns', () => {
     const columns = createCompanyColumns()
 
     expect(
-      columns.find((c) => 'accessorKey' in c && c.accessorKey === 'subscriptionStatus')
+      columns.find(
+        (c) => 'accessorKey' in c && c.accessorKey === 'subscriptionStatus'
+      )
     ).toBeDefined()
   })
 
@@ -194,7 +203,9 @@ describe('Company columns rendering', () => {
   it('should render actions menu button', () => {
     renderWithProviders(<TestTable data={[mockCompany]} />)
 
-    expect(screen.getByRole('button', { name: /menu actions/i })).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: /menu actions/i })
+    ).toBeInTheDocument()
   })
 })
 
@@ -230,7 +241,9 @@ describe('Company columns actions', () => {
     const onDelete = vi.fn()
     const user = setupUser()
 
-    renderWithProviders(<TestTable data={[mockCompany]} actions={{ onDelete }} />)
+    renderWithProviders(
+      <TestTable data={[mockCompany]} actions={{ onDelete }} />
+    )
 
     await user.click(screen.getByRole('button', { name: /menu actions/i }))
     await user.click(screen.getByText('Supprimer'))
@@ -242,7 +255,9 @@ describe('Company columns actions', () => {
     const onToggleStatus = vi.fn()
     const user = setupUser()
 
-    renderWithProviders(<TestTable data={[mockCompany]} actions={{ onToggleStatus }} />)
+    renderWithProviders(
+      <TestTable data={[mockCompany]} actions={{ onToggleStatus }} />
+    )
 
     await user.click(screen.getByRole('button', { name: /menu actions/i }))
     await user.click(screen.getByText('Désactiver'))
@@ -255,7 +270,9 @@ describe('Company columns actions', () => {
     const inactiveCompany = { ...mockCompany, isActive: false }
     const user = setupUser()
 
-    renderWithProviders(<TestTable data={[inactiveCompany]} actions={{ onToggleStatus }} />)
+    renderWithProviders(
+      <TestTable data={[inactiveCompany]} actions={{ onToggleStatus }} />
+    )
 
     await user.click(screen.getByRole('button', { name: /menu actions/i }))
 

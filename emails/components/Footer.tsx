@@ -69,7 +69,10 @@ export function Footer({
                       <Text style={separatorStyle}>•</Text>
                     </td>
                     <td style={linkCellStyle}>
-                      <Link href={`${baseUrl}/confidentialite`} style={linkStyle}>
+                      <Link
+                        href={`${baseUrl}/confidentialite`}
+                        style={linkStyle}
+                      >
                         Confidentialité
                       </Link>
                     </td>

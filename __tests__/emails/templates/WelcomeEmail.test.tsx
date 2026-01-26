@@ -38,13 +38,13 @@ describe('WelcomeEmail', () => {
       expect(html).toContain('Christophe')
     })
 
-    it('devrait contenir l\'adresse email', async () => {
+    it("devrait contenir l'adresse email", async () => {
       const html = await render(WelcomeEmail(defaultProps))
 
       expect(html).toContain('christophe@test.com')
     })
 
-    it('devrait contenir le bouton CTA avec l\'URL de connexion', async () => {
+    it("devrait contenir le bouton CTA avec l'URL de connexion", async () => {
       const html = await render(WelcomeEmail(defaultProps))
 
       expect(html).toContain('Accéder à mon espace')
@@ -132,7 +132,7 @@ describe('WelcomeEmail', () => {
       expect(html).toContain('Contact')
     })
 
-    it('devrait contenir l\'email de contact', async () => {
+    it("devrait contenir l'email de contact", async () => {
       const html = await render(WelcomeEmail(defaultProps))
 
       expect(html).toContain('contact@smartplanning.fr')

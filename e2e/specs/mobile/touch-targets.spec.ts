@@ -14,7 +14,10 @@
  */
 
 import { test, expect } from '../../fixtures/mobile.fixture'
-import { openMobileDrawer, openCommandPaletteMobile } from '../../fixtures/mobile.fixture'
+import {
+  openMobileDrawer,
+  openCommandPaletteMobile,
+} from '../../fixtures/mobile.fixture'
 
 const WCAG_MIN_SIZE = 44
 
@@ -67,7 +70,7 @@ test.describe('Touch Target Sizes (WCAG 2.5.5)', () => {
         has: directorPage.locator('svg.lucide-sun, svg.lucide-moon'),
       })
 
-      if (await themeToggle.count() > 0) {
+      if ((await themeToggle.count()) > 0) {
         const result = await mobile.checkTouchTarget(themeToggle.first())
 
         expect(result.isValid).toBe(true)
@@ -80,7 +83,9 @@ test.describe('Touch Target Sizes (WCAG 2.5.5)', () => {
       directorPage,
       mobile,
     }) => {
-      const notificationsButton = directorPage.locator('a[href="/notifications"]')
+      const notificationsButton = directorPage.locator(
+        'a[href="/notifications"]'
+      )
 
       if (await notificationsButton.isVisible()) {
         const result = await mobile.checkTouchTarget(notificationsButton)
@@ -188,7 +193,9 @@ test.describe('Touch Target Sizes (WCAG 2.5.5)', () => {
     }) => {
       // TouchableButton adds min-h-[44px] min-w-[44px] on mobile
       // Look for buttons that should be touchable
-      const iconButtons = directorPage.locator('button[size="icon"], button:has(svg:only-child)')
+      const iconButtons = directorPage.locator(
+        'button[size="icon"], button:has(svg:only-child)'
+      )
       const count = await iconButtons.count()
 
       let checkedCount = 0
@@ -295,7 +302,9 @@ test.describe('Touch Target Sizes (WCAG 2.5.5)', () => {
       directorPage,
     }) => {
       // Check any visible text inputs
-      const inputs = directorPage.locator('input[type="text"], input[type="email"], input[type="password"]')
+      const inputs = directorPage.locator(
+        'input[type="text"], input[type="email"], input[type="password"]'
+      )
       const count = await inputs.count()
 
       for (let i = 0; i < Math.min(count, 5); i++) {

@@ -92,7 +92,9 @@ test.describe('CRUD Companies (SYSTEM_ADMIN)', () => {
 
     // Verifier l'erreur de validation
     await expect(
-      adminPage.locator('text=/nom.*requis|nom.*caractère|nom.*caractere|obligatoire/i')
+      adminPage.locator(
+        'text=/nom.*requis|nom.*caractère|nom.*caractere|obligatoire/i'
+      )
     ).toBeVisible()
   })
 
@@ -204,7 +206,9 @@ test.describe('Navigation et UX - Companies', () => {
 
     // Verifier la presence d'un breadcrumb ou navigation
     await expect(
-      adminPage.locator('nav[aria-label="breadcrumb"], [data-testid="breadcrumb"]')
+      adminPage.locator(
+        'nav[aria-label="breadcrumb"], [data-testid="breadcrumb"]'
+      )
     ).toBeVisible()
   })
 

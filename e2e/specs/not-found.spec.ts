@@ -93,7 +93,9 @@ test.describe('Not Found Page (404)', () => {
     await page.goto('/unknown-page-404')
 
     // Verify quick links navigation is present
-    const quickLinksNav = page.getByRole('navigation', { name: /liens rapides/i })
+    const quickLinksNav = page.getByRole('navigation', {
+      name: /liens rapides/i,
+    })
     await expect(quickLinksNav).toBeVisible()
 
     // Verify Fonctionnalités link
@@ -149,7 +151,10 @@ test.describe('Not Found Page (404)', () => {
     await expect(region).toHaveAttribute('aria-labelledby', 'not-found-title')
 
     // Verify aria-describedby points to description
-    await expect(region).toHaveAttribute('aria-describedby', 'not-found-description')
+    await expect(region).toHaveAttribute(
+      'aria-describedby',
+      'not-found-description'
+    )
 
     // Verify title has correct id
     const title = page.locator('#not-found-title')
@@ -165,7 +170,9 @@ test.describe('Not Found Page (404)', () => {
     await expect(number).toHaveAttribute('aria-hidden', 'true')
 
     // Verify navigation has aria-label
-    const quickLinksNav = page.getByRole('navigation', { name: /liens rapides/i })
+    const quickLinksNav = page.getByRole('navigation', {
+      name: /liens rapides/i,
+    })
     await expect(quickLinksNav).toHaveAttribute('aria-label', 'Liens rapides')
   })
 

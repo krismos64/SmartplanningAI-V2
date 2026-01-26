@@ -68,6 +68,8 @@ playwright/.cache/
 # Claude Code Configuration (LOCAL)
 # ============================================
 .claude/
+CLAUDE.md
+CLAUDE.local.md
 
 # ============================================
 # OS Files

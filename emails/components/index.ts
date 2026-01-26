@@ -17,7 +17,12 @@ export type { FooterProps } from './Footer'
 
 // Composants UI
 export { Button, ButtonGroup } from './Button'
-export type { ButtonProps, ButtonGroupProps, ButtonVariant, ButtonSize } from './Button'
+export type {
+  ButtonProps,
+  ButtonGroupProps,
+  ButtonVariant,
+  ButtonSize,
+} from './Button'
 
 // Ré-export des composants React Email utiles
 export {

@@ -181,7 +181,9 @@ test.describe('Mobile Command Palette', () => {
     }) => {
       await openCommandPaletteMobile(directorPage)
 
-      const input = directorPage.locator('[data-testid="command-palette-input"]')
+      const input = directorPage.locator(
+        '[data-testid="command-palette-input"]'
+      )
 
       // Get computed font-size
       const fontSize = await input.evaluate((el) => {
@@ -198,7 +200,9 @@ test.describe('Mobile Command Palette', () => {
     }) => {
       await openCommandPaletteMobile(directorPage)
 
-      const input = directorPage.locator('[data-testid="command-palette-input"]')
+      const input = directorPage.locator(
+        '[data-testid="command-palette-input"]'
+      )
       await expect(input).toBeFocused()
     })
 
@@ -220,7 +224,9 @@ test.describe('Mobile Command Palette', () => {
     test('should filter results when typing', async ({ directorPage }) => {
       await openCommandPaletteMobile(directorPage)
 
-      const input = directorPage.locator('[data-testid="command-palette-input"]')
+      const input = directorPage.locator(
+        '[data-testid="command-palette-input"]'
+      )
       await input.fill('collabor')
 
       // Should show filtered result
@@ -235,7 +241,9 @@ test.describe('Mobile Command Palette', () => {
     }) => {
       await openCommandPaletteMobile(directorPage)
 
-      const input = directorPage.locator('[data-testid="command-palette-input"]')
+      const input = directorPage.locator(
+        '[data-testid="command-palette-input"]'
+      )
       await input.fill('xyznonexistent123')
 
       // Should show no results message
@@ -247,7 +255,9 @@ test.describe('Mobile Command Palette', () => {
     test('should navigate when selecting an item', async ({ directorPage }) => {
       await openCommandPaletteMobile(directorPage)
 
-      const input = directorPage.locator('[data-testid="command-palette-input"]')
+      const input = directorPage.locator(
+        '[data-testid="command-palette-input"]'
+      )
       await input.fill('collabor')
 
       // Click on the result
