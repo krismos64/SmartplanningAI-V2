@@ -135,3 +135,22 @@ export const longTextSchema = z
   .trim()
   .or(z.literal(''))
   .optional()
+
+// ============================================
+// HORAIRE (Format HH:mm)
+// ============================================
+export const timeSchema = z
+  .string()
+  .regex(
+    /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/,
+    'Format horaire invalide (ex: 09:00, 14:30)'
+  )
+
+// ============================================
+// COULEUR HEXADÉCIMALE
+// ============================================
+export const hexColorSchema = z
+  .string()
+  .regex(/^#[0-9A-Fa-f]{6}$/, 'Couleur hexadécimale invalide (ex: #10B981)')
+  .optional()
+  .nullable()
