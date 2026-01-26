@@ -118,14 +118,15 @@ model Company {
   subscriptionEndsAt DateTime?
 
   // Relations
-  users         User[]
-  teams         Team[]
-  employees     Employee[]
-  schedules     Schedule[]
-  leaveRequests LeaveRequest[]
-  notifications Notification[]
-  subscription  Subscription?
-  payments      Payment[]
+  users          User[]
+  teams          Team[]
+  employees      Employee[]
+  schedules      Schedule[]
+  leaveRequests  LeaveRequest[]
+  notifications  Notification[]
+  subscription   Subscription?
+  payments       Payment[]
+  availabilities Availability[]
 
   // Audit
   isActive  Boolean  @default(true)
@@ -263,9 +264,10 @@ model Employee {
   teamId String?
   team   Team?   @relation("TeamMembers", fields: [teamId], references: [id])
 
-  managedTeams  Team[]         @relation("TeamManager")
-  schedules     Schedule[]
-  leaveRequests LeaveRequest[]
+  managedTeams   Team[]         @relation("TeamManager")
+  schedules      Schedule[]
+  leaveRequests  LeaveRequest[]
+  availabilities Availability[]
 
   // Audit
   isActive  Boolean  @default(true)
@@ -302,6 +304,14 @@ model Schedule {
   location    String?
   color       String? @default("#10B981")
 
+  // Récurrence (SP-399)
+  isRecurring       Boolean @default(false)
+  recurrenceRule    Json?   // Format: { frequency: "WEEKLY", interval: 1, daysOfWeek: ["MONDAY"], endDate?: "2025-12-31" }
+  recurrenceGroupId String? // ID partagé par tous les créneaux d'une série récurrente
+
+  // Multi-employés (SP-397)
+  scheduleGroupId String? // ID partagé pour les créneaux créés simultanément pour plusieurs employés
+
   // Relations
   employeeId String
   employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
@@ -322,7 +332,47 @@ model Schedule {
   @@index([startDate, endDate])
   @@index([status])
   @@index([type])
+  @@index([recurrenceGroupId])
+  @@index([scheduleGroupId])
   @@map("schedules")
+}
+
+// ============================================================================
+// DISPONIBILITÉS EMPLOYÉS (SP-392)
+// ============================================================================
+
+model Availability {
+  id String @id @default(cuid())
+
+  // Période
+  startDate DateTime
+  endDate   DateTime
+  startTime String? // Format HH:mm (optionnel pour journée entière)
+  endTime   String? // Format HH:mm (optionnel pour journée entière)
+
+  // Type de disponibilité
+  type   AvailabilityType @default(UNAVAILABLE)
+  reason String?          @db.Text
+
+  // Récurrence
+  isRecurring    Boolean @default(false)
+  recurrenceRule Json?   // Format: { frequency: "WEEKLY", daysOfWeek: ["MONDAY", "TUESDAY"] }
+
+  // Relations
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  // Audit
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([employeeId, startDate, endDate])
+  @@index([companyId])
+  @@index([type])
+  @@map("availabilities")
 }
 
 // ============================================================================
@@ -471,4 +521,13 @@ enum NotificationType {
   WARNING
   ERROR
   SYSTEM
+}
+
+enum AvailabilityType {
+  UNAVAILABLE // Indisponible
+  PREFERRED   // Préférence horaire
+  VACATION    // Congés/Vacances
+  SICK        // Maladie
+  TRAINING    // Formation
+  OTHER       // Autre
 }
