@@ -17,10 +17,7 @@ import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/prisma'
 import { UserRole, Prisma } from '@prisma/client'
 import { auth } from '@/lib/auth'
-import {
-  validateData,
-  handlePrismaError,
-} from './crud-helpers'
+import { validateData, handlePrismaError } from './crud-helpers'
 import {
   createScheduleSchema,
   updateScheduleSchema,
@@ -88,8 +85,23 @@ export type ScheduleFiltersInput = Partial<{
   employeeId: string
   employeeIds: string[]
   teamId: string
-  type: 'WORK' | 'MEETING' | 'BREAK' | 'TRAINING' | 'REMOTE' | 'ON_CALL' | 'OVERTIME'
-  types: ('WORK' | 'MEETING' | 'BREAK' | 'TRAINING' | 'REMOTE' | 'ON_CALL' | 'OVERTIME')[]
+  type:
+    | 'WORK'
+    | 'MEETING'
+    | 'BREAK'
+    | 'TRAINING'
+    | 'REMOTE'
+    | 'ON_CALL'
+    | 'OVERTIME'
+  types: (
+    | 'WORK'
+    | 'MEETING'
+    | 'BREAK'
+    | 'TRAINING'
+    | 'REMOTE'
+    | 'ON_CALL'
+    | 'OVERTIME'
+  )[]
   status: 'DRAFT' | 'CONFIRMED' | 'CANCELLED' | 'COMPLETED'
   statuses: ('DRAFT' | 'CONFIRMED' | 'CANCELLED' | 'COMPLETED')[]
   startDate: Date
@@ -240,10 +252,10 @@ async function canModifySchedule(
 /**
  * Construit la clause WHERE Prisma selon le role et les filtres
  */
-async function buildWhereClause(
+function buildWhereClause(
   user: AuthenticatedUser,
   filters: ScheduleFiltersInput
-): Promise<Prisma.ScheduleWhereInput> {
+): Prisma.ScheduleWhereInput {
   const where: Prisma.ScheduleWhereInput = {}
 
   // Filtre par company (obligatoire sauf SYSTEM_ADMIN)
@@ -280,7 +292,8 @@ async function buildWhereClause(
 
   // Filtres additionnels
   if (filters.employeeId) where.employeeId = filters.employeeId
-  if (filters.employeeIds?.length) where.employeeId = { in: filters.employeeIds }
+  if (filters.employeeIds?.length)
+    where.employeeId = { in: filters.employeeIds }
   if (filters.teamId) where.teamId = filters.teamId
   if (filters.type) where.type = filters.type
   if (filters.types?.length) where.type = { in: filters.types }
@@ -307,12 +320,23 @@ async function buildWhereClause(
     const searchConditions: Prisma.ScheduleWhereInput[] = [
       { title: { contains: filters.search, mode: 'insensitive' } },
       { description: { contains: filters.search, mode: 'insensitive' } },
-      { employee: { firstName: { contains: filters.search, mode: 'insensitive' } } },
-      { employee: { lastName: { contains: filters.search, mode: 'insensitive' } } },
+      {
+        employee: {
+          firstName: { contains: filters.search, mode: 'insensitive' },
+        },
+      },
+      {
+        employee: {
+          lastName: { contains: filters.search, mode: 'insensitive' },
+        },
+      },
     ]
     if (where.OR) {
       // Combiner avec les conditions RBAC existantes
-      where.AND = [...(where.AND as Prisma.ScheduleWhereInput[] || []), { OR: searchConditions }]
+      where.AND = [
+        ...((where.AND as Prisma.ScheduleWhereInput[]) || []),
+        { OR: searchConditions },
+      ]
     } else {
       where.OR = searchConditions
     }
@@ -362,7 +386,7 @@ export async function getSchedules(
     const sortOrder = validFilters.sortOrder ?? 'asc'
 
     // Construire le where selon les permissions
-    const where = await buildWhereClause(user, validFilters)
+    const where = buildWhereClause(user, validFilters)
 
     // Requete avec pagination
     const [schedules, total] = await prisma.$transaction([
@@ -473,7 +497,11 @@ export async function createSchedule(
     // Valider les donnees
     const validation = validateData(createScheduleSchema, input)
     if (!validation.success) {
-      return { success: false, error: validation.error, field: validation.field }
+      return {
+        success: false,
+        error: validation.error,
+        field: validation.field,
+      }
     }
 
     const validated = validation.data
@@ -504,7 +532,10 @@ export async function createSchedule(
     })
 
     if (employees.length !== employeeIds.length) {
-      return { success: false, error: 'Un ou plusieurs employés sont invalides' }
+      return {
+        success: false,
+        error: 'Un ou plusieurs employés sont invalides',
+      }
     }
 
     // Pour MANAGER, verifier qu'il gere bien ces employes
@@ -520,9 +551,10 @@ export async function createSchedule(
     }
 
     // Generer un scheduleGroupId si multi-employes
-    const scheduleGroupId = employeeIds.length > 1
-      ? `group_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`
-      : undefined
+    const scheduleGroupId =
+      employeeIds.length > 1
+        ? `group_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`
+        : undefined
 
     // Creer les schedules en transaction
     const schedules = await prisma.$transaction(
@@ -588,7 +620,11 @@ export async function updateSchedule(
     // Valider les donnees
     const validation = validateData(updateScheduleSchema, input)
     if (!validation.success) {
-      return { success: false, error: validation.error, field: validation.field }
+      return {
+        success: false,
+        error: validation.error,
+        field: validation.field,
+      }
     }
 
     const validated = validation.data
@@ -621,10 +657,16 @@ export async function updateSchedule(
         ...(validated.type && { type: validated.type }),
         ...(validated.status && { status: validated.status }),
         ...(validated.title !== undefined && { title: validated.title }),
-        ...(validated.description !== undefined && { description: validated.description }),
-        ...(validated.location !== undefined && { location: validated.location }),
+        ...(validated.description !== undefined && {
+          description: validated.description,
+        }),
+        ...(validated.location !== undefined && {
+          location: validated.location,
+        }),
         ...(validated.color !== undefined && { color: validated.color }),
-        ...(validated.isRecurring !== undefined && { isRecurring: validated.isRecurring }),
+        ...(validated.isRecurring !== undefined && {
+          isRecurring: validated.isRecurring,
+        }),
         ...(validated.recurrenceRule !== undefined && {
           recurrenceRule: validated.recurrenceRule ?? Prisma.JsonNull,
         }),
@@ -804,7 +846,10 @@ export async function duplicateSchedule(
     })
 
     if (employees.length !== employeeIds.length) {
-      return { success: false, error: 'Un ou plusieurs employés sont invalides' }
+      return {
+        success: false,
+        error: 'Un ou plusieurs employés sont invalides',
+      }
     }
 
     // Pour MANAGER, verifier les permissions
@@ -820,9 +865,10 @@ export async function duplicateSchedule(
     }
 
     // Generer un nouveau scheduleGroupId si multi-employes
-    const scheduleGroupId = employeeIds.length > 1
-      ? `group_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`
-      : undefined
+    const scheduleGroupId =
+      employeeIds.length > 1
+        ? `group_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`
+        : undefined
 
     // Creer les nouveaux schedules
     const duplicates = await prisma.$transaction(
@@ -1020,7 +1066,10 @@ export async function getTeamSchedules(
       // OK
     } else if (user.companyId !== team.companyId) {
       return { success: false, error: 'Accès non autorisé' }
-    } else if (user.role === 'MANAGER' && !user.managedTeamIds.includes(teamId)) {
+    } else if (
+      user.role === 'MANAGER' &&
+      !user.managedTeamIds.includes(teamId)
+    ) {
       return { success: false, error: 'Accès non autorisé à cette équipe' }
     } else if (user.role === 'EMPLOYEE') {
       return { success: false, error: 'Accès non autorisé' }
