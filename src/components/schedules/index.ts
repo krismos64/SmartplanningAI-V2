@@ -1,7 +1,7 @@
 /**
  * Barrel export pour les composants Schedule
  *
- * @ticket SP-396, SP-397
+ * @ticket SP-396, SP-397, SP-399
  */
 
 export {
@@ -17,3 +17,10 @@ export {
   type TeamOption,
   type ShiftFormData,
 } from './useShiftFormData'
+export { RecurrenceConfig } from './RecurrenceConfig'
+export {
+  RecurrenceEditDialog,
+  DeleteConfirmDialog,
+  type RecurrenceEditScope,
+  type RecurrenceEditAction,
+} from './RecurrenceEditDialog'

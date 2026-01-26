@@ -107,7 +107,7 @@ describe('recurrenceRuleSchema', () => {
     it('accepte une regle avec daysOfWeek', () => {
       const result = recurrenceRuleSchema.safeParse({
         frequency: 'WEEKLY',
-        daysOfWeek: [1, 2, 3, 4, 5], // Lundi-Vendredi
+        daysOfWeek: ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY'],
         occurrences: 12,
       })
       expect(result.success).toBe(true)
@@ -172,7 +172,7 @@ describe('recurrenceRuleSchema', () => {
     it('rejette daysOfWeek avec jour invalide', () => {
       const result = recurrenceRuleSchema.safeParse({
         frequency: 'WEEKLY',
-        daysOfWeek: [1, 7], // 7 est invalide
+        daysOfWeek: ['MONDAY', 'INVALID_DAY'], // INVALID_DAY est invalide
         occurrences: 5,
       })
       expect(result.success).toBe(false)
@@ -229,7 +229,7 @@ describe('createScheduleSchema', () => {
         isRecurring: true,
         recurrenceRule: {
           frequency: 'WEEKLY',
-          daysOfWeek: [1, 2, 3, 4, 5],
+          daysOfWeek: ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY'],
           occurrences: 12,
         },
       })
