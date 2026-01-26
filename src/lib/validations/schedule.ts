@@ -73,8 +73,7 @@ export const recurrenceRuleSchema = z
     occurrences: z.number().int().min(1).max(52).optional(),
   })
   .refine((data) => data.endDate || data.occurrences, {
-    message:
-      "Vous devez specifier une date de fin OU un nombre d'occurrences",
+    message: "Vous devez specifier une date de fin OU un nombre d'occurrences",
   })
 
 export type RecurrenceRule = z.infer<typeof recurrenceRuleSchema>
@@ -91,13 +90,13 @@ export type RecurrenceRule = z.infer<typeof recurrenceRuleSchema>
  */
 export const scheduleBaseSchema = z.object({
   /** ID de l'employe */
-  employeeId: z.string().cuid("ID employe invalide"),
+  employeeId: z.string().cuid('ID employe invalide'),
 
   /** ID de l'equipe (optionnel) */
-  teamId: z.string().cuid("ID equipe invalide").optional().nullable(),
+  teamId: z.string().cuid('ID equipe invalide').optional().nullable(),
 
   /** ID de l'entreprise */
-  companyId: z.string().cuid("ID entreprise invalide"),
+  companyId: z.string().cuid('ID entreprise invalide'),
 
   /** Date de debut */
   startDate: z.coerce.date({
@@ -179,16 +178,19 @@ export const createScheduleSchema = scheduleBaseSchema
   .omit({ recurrenceGroupId: true, scheduleGroupId: true, employeeId: true })
   .extend({
     /** ID de l'employe (optionnel si employeeIds fourni) */
-    employeeId: z.string().cuid("ID employe invalide").optional(),
+    employeeId: z.string().cuid('ID employe invalide').optional(),
     /** Liste d'employes pour creation multi-employes */
     employeeIds: z
-      .array(z.string().cuid("ID employe invalide"))
+      .array(z.string().cuid('ID employe invalide'))
       .min(1, 'Au moins un employe requis')
       .optional(),
   })
   .superRefine((data, ctx) => {
     // Valider qu'on a soit employeeId soit employeeIds
-    if (!data.employeeId && (!data.employeeIds || data.employeeIds.length === 0)) {
+    if (
+      !data.employeeId &&
+      (!data.employeeIds || data.employeeIds.length === 0)
+    ) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: "Vous devez specifier un employe ou une liste d'employes",
@@ -206,7 +208,7 @@ export const createScheduleSchema = scheduleBaseSchema
     if (endDateTime <= startDateTime) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "La date/heure de fin doit etre apres la date/heure de debut",
+        message: 'La date/heure de fin doit etre apres la date/heure de debut',
         path: ['endTime'],
       })
     }
@@ -215,7 +217,8 @@ export const createScheduleSchema = scheduleBaseSchema
     if (data.isRecurring && !data.recurrenceRule) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: 'Les regles de recurrence sont requises pour un shift recurrent',
+        message:
+          'Les regles de recurrence sont requises pour un shift recurrent',
         path: ['recurrenceRule'],
       })
     }
@@ -253,7 +256,7 @@ export const updateScheduleSchema = scheduleBaseSchema
       return true
     },
     {
-      message: "La date/heure de fin doit etre apres la date/heure de debut",
+      message: 'La date/heure de fin doit etre apres la date/heure de debut',
       path: ['endTime'],
     }
   )
