@@ -2,10 +2,11 @@
  * Layout pour la page Schedules
  *
  * @description Metadata SEO pour la page de gestion des plannings
- * @ticket SP-395
+ * @ticket SP-395, SP-396
  */
 
 import { Metadata } from 'next'
+import './schedule-calendar.css'
 
 export const metadata: Metadata = {
   title: 'Plannings | SmartPlanning',

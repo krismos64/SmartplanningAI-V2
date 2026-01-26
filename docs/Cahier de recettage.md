@@ -34,7 +34,7 @@ Dans le cadre du diplôme **CDA (Concepteur Développeur d'Applications)**, ce c
 | Métrique              | Objectif  | Atteint |
 | --------------------- | --------- | ------- |
 | Couverture globale    | ≥ 70%     | ✅ 85%  |
-| Tests unitaires       | ≥ 500     | ✅ 3045 |
+| Tests unitaires       | ≥ 500     | ✅ 3063 |
 | Tests E2E             | ≥ 50      | ✅ 430  |
 | Score Lighthouse A11y | ≥ 90%     | ✅ 95%  |
 | Anomalies critiques   | 0 en prod | ✅ 0    |
@@ -397,6 +397,7 @@ Ce tableau recense chaque campagne de tests significative (mise en production, f
 
 | Date       | Sprint    | Version/Commit | Tests unitaires | Tests E2E  | Couverture | Statut  | Notes                                                                                                                                                                                                                                                                                                          |
 | ---------- | --------- | -------------- | --------------- | ---------- | ---------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 26/01/2026 | Sprint 12 | SP-396         | 3063/3063 ✅    | 430/430 ✅ | ~85%       | ✅ PASS | 🆕 SP-396 ScheduleCalendar responsive. +18 tests unitaires. Schedule-X intégré (desktop ≥768px) avec vues jour/semaine/mois. Vue mobile cards empilées (pas de scroll horizontal). Couleurs par type (7 types), badges statut. Temporal API polyfill. useMediaQuery hook. Total : 3493 tests |
 | 26/01/2026 | Sprint 12 | SP-395         | 3045/3045 ✅    | 430/430 ✅ | ~85%       | ✅ PASS | 🆕 SP-395 Page Liste Schedules. Route `/app/dashboard/schedules`. Layout SEO, loading skeleton, SchedulesPageContent (navigation date, vues jour/semaine/mois, filtres), SchedulesList (grille semaine, shifts colorés), SchedulesFilters (recherche, statut, type). Correction Sidebar URL. Total : 3475 tests |
 | 26/01/2026 | Sprint 12 | SP-394         | 3045/3045 ✅    | 430/430 ✅ | ~85%       | ✅ PASS | 🆕 SP-394 Server Actions Schedules CRUD avec RBAC. +30 tests unitaires. 10 actions : getSchedules, getScheduleById, createSchedule (multi-employé), updateSchedule, deleteSchedule, deleteScheduleGroup, duplicateSchedule, updateScheduleStatus, getEmployeeSchedules, getTeamSchedules. Permissions RBAC complètes. Total : 3475 tests 🎉 |
 | 26/01/2026 | Sprint 12 | SP-393         | 3015/3015 ✅    | 430/430 ✅ | ~85%       | ✅ PASS | 🆕 SP-393 Validations Zod Plannings. +81 tests unitaires (schedule: 47, availability: 34). Schemas createScheduleSchema, updateScheduleSchema, scheduleFiltersSchema, recurrenceRuleSchema. Support multi-employés employeeIds. Labels FR, couleurs, icônes. Total : 3445 tests 🎉 |
@@ -1604,8 +1605,9 @@ not-found.tsx (Server Component)
 | 26/01/2026 (SP-393)         | 3015            | 430       | 3445  | ~85%       | 📈 +81   |
 | 26/01/2026 (SP-394)         | 3045            | 430       | 3475  | ~85%       | 📈 +30   |
 | 26/01/2026 (SP-395)         | 3045            | 430       | 3475  | ~85%       | 🖥️ Page   |
+| 26/01/2026 (SP-396)         | 3063            | 430       | 3493  | ~85%       | 📈 +18   |
 
-**Graphique d'évolution** : De 27 tests (04/12) à 3475 tests (26/01) = **+12770% de croissance** 🚀
+**Graphique d'évolution** : De 27 tests (04/12) à 3493 tests (26/01) = **+12837% de croissance** 🚀
 
 ---
 
@@ -1615,11 +1617,11 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
 
 | N°  | Compétence                                                       | Preuve                                                                                                                                      |
 | --- | ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | Tester les composants d'une application                          | 3045 tests unitaires documentés                                                                                                             |
+| 1   | Tester les composants d'une application                          | 3063 tests unitaires documentés                                                                                                             |
 | 2   | Contribuer à la qualité du code                                  | Couverture 85%, anomalies tracées                                                                                                           |
 | 3   | Documenter les procédures                                        | Procédure de recette formalisée                                                                                                             |
 | 4   | Utiliser une méthodologie                                        | Approche structurée par sprints                                                                                                             |
-| 5   | Développer des tests automatisés                                 | 3475 tests (unitaires + E2E)                                                                                                                |
+| 5   | Développer des tests automatisés                                 | 3493 tests (unitaires + E2E)                                                                                                                |
 | 6   | Sécuriser une application                                        | Tests RBAC (92 unitaires, 27 E2E), rate limiting, protection énumération                                                                    |
 | 7   | Concevoir une architecture logicielle                            | Pattern ServiceResult<T>, multi-tenant                                                                                                      |
 | 8   | Développer des composants métier                                 | 4 dashboards par rôle                                                                                                                       |
@@ -1704,6 +1706,7 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
 
 | Date       | Modification                                                                                                                                                                                                                                                                                                                                     |
 | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 26/01/2026 | 🆕 SP-396 ScheduleCalendar responsive : +18 tests unitaires. Intégration Schedule-X (desktop ≥768px) avec vues jour/semaine/mois, drag & drop. Vue mobile cards empilées verticalement (pas de scroll horizontal). Couleurs par type (7 types : travail, pause, réunion, formation, télétravail, astreinte, heures sup.). Temporal API polyfill. Total : 3493 tests |
 | 26/01/2026 | 🆕 SP-395 Page Liste Schedules : Route `/app/dashboard/schedules`. Layout SEO, loading skeleton grille semaine. `SchedulesPageContent` (navigation date, vues jour/semaine/mois, filtres collapsibles, stats rapides). `SchedulesList` (grille semaine, shifts colorés par type). `SchedulesFilters` (recherche, statut, type). Correction Sidebar URL. Total : 3475 tests |
 | 26/01/2026 | 🆕 SP-394 Server Actions Schedules CRUD : +30 tests unitaires. 10 actions CRUD (`getSchedules`, `getScheduleById`, `createSchedule`, `updateSchedule`, `deleteSchedule`, `deleteScheduleGroup`, `duplicateSchedule`, `updateScheduleStatus`, `getEmployeeSchedules`, `getTeamSchedules`). RBAC complet (SYSTEM_ADMIN, DIRECTOR, MANAGER, EMPLOYEE). Multi-employé via `employeeIds`. Total : 3475 tests 🎉 |
 | 26/01/2026 | 🆕 SP-393 Validations Zod Plannings : +81 tests unitaires (schedule: 47, availability: 34). Schemas `createScheduleSchema`, `updateScheduleSchema`, `scheduleFiltersSchema`, `recurrenceRuleSchema`. Support multi-employés `employeeIds`. `timeSchema` et `hexColorSchema` dans common.ts. Labels FR, couleurs, icônes. Total : 3445 tests 🎉 |
@@ -1763,7 +1766,12 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
   - Composants : SchedulesPageContent, SchedulesList, SchedulesFilters
   - Navigation date (jour/semaine/mois), filtres, stats rapides
   - Correction URL Sidebar
-- Prochaines étapes : SP-396+ (Formulaire création/édition, modale détails)
+- SP-396 : ScheduleCalendar responsive ✅ TERMINÉ
+  - Intégration Schedule-X (desktop ≥768px) avec vues jour/semaine/mois
+  - Vue mobile cards empilées verticalement (pas de scroll horizontal)
+  - Couleurs par type (7 types), badges statut, locale française
+  - 18 tests unitaires, Temporal API polyfill
+- Prochaines étapes : SP-397+ (Formulaire création/édition, modale détails)
 
 ### Sprint 11 - Réinitialisation mot de passe (SP-263)
 
