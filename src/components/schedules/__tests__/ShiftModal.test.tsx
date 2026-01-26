@@ -48,6 +48,14 @@ vi.mock('@/lib/actions/schedules', () => ({
     mockUpdateSchedule(data) as Promise<unknown>,
 }))
 
+// Mock checkAvailabilityConflicts Server Action
+const mockCheckAvailabilityConflicts = vi.fn()
+
+vi.mock('@/lib/actions/availabilities', () => ({
+  checkAvailabilityConflicts: (...args: unknown[]) =>
+    mockCheckAvailabilityConflicts(...args) as Promise<unknown>,
+}))
+
 // ============================================================================
 // Données de test
 // ============================================================================
@@ -93,6 +101,17 @@ describe('ShiftModal', () => {
     vi.clearAllMocks()
     mockCreateSchedule.mockResolvedValue({ success: true, data: [] })
     mockUpdateSchedule.mockResolvedValue({ success: true, data: mockSchedule })
+    mockCheckAvailabilityConflicts.mockResolvedValue({
+      success: true,
+      data: {
+        hasConflict: false,
+        hasHardConflict: false,
+        hasSoftConflict: false,
+        conflicts: [],
+        hardConflicts: [],
+        softConflicts: [],
+      },
+    })
   })
 
   describe('Rendering', () => {

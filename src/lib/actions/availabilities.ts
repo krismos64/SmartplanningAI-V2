@@ -829,3 +829,145 @@ export async function getAvailabilitiesStats(
     return { success: false, error: prismaError.error }
   }
 }
+
+// ============================================================================
+// Détection de conflits (SP-400)
+// ============================================================================
+
+/**
+ * Types d'indisponibilité considérés comme "hard" (bloquants)
+ */
+const HARD_CONFLICT_TYPES: AvailabilityType[] = [
+  'VACATION',
+  'SICK',
+  'UNAVAILABLE',
+]
+
+/**
+ * Availability avec informations employé pour affichage des conflits
+ */
+export type AvailabilityConflict = AvailabilityWithRelations & {
+  isHardConflict: boolean
+}
+
+/**
+ * Résultat de la vérification de conflits
+ */
+export type ConflictCheckResult = {
+  hasConflict: boolean
+  hasHardConflict: boolean
+  hasSoftConflict: boolean
+  conflicts: AvailabilityConflict[]
+  hardConflicts: AvailabilityConflict[]
+  softConflicts: AvailabilityConflict[]
+}
+
+/**
+ * Vérifie les conflits entre une période et les indisponibilités d'employés
+ *
+ * @param employeeIds - Liste des IDs des employés à vérifier
+ * @param startDate - Date de début de la période à vérifier
+ * @param endDate - Date de fin de la période à vérifier
+ * @param startTime - Heure de début (optionnelle, format HH:mm)
+ * @param endTime - Heure de fin (optionnelle, format HH:mm)
+ * @param excludeAvailabilityId - ID d'une availability à exclure (pour l'édition)
+ *
+ * @returns Résultat avec conflits séparés en hard/soft
+ */
+export async function checkAvailabilityConflicts(
+  employeeIds: string[],
+  startDate: Date,
+  endDate: Date,
+  startTime?: string | null,
+  endTime?: string | null,
+  excludeAvailabilityId?: string
+): Promise<CrudActionResult<ConflictCheckResult>> {
+  const authResult = await getAuthenticatedUser()
+
+  if (!authResult.success) {
+    return { success: false, error: authResult.error }
+  }
+
+  if (!employeeIds.length) {
+    return {
+      success: true,
+      data: {
+        hasConflict: false,
+        hasHardConflict: false,
+        hasSoftConflict: false,
+        conflicts: [],
+        hardConflicts: [],
+        softConflicts: [],
+      },
+    }
+  }
+
+  try {
+    // Récupérer toutes les indisponibilités qui chevauchent la période
+    const whereClause: Prisma.AvailabilityWhereInput = {
+      employeeId: { in: employeeIds },
+      // Chevauchement de dates : l'indispo commence avant la fin ET finit après le début
+      startDate: { lte: endDate },
+      endDate: { gte: startDate },
+    }
+
+    // Exclure une availability spécifique (pour l'édition)
+    if (excludeAvailabilityId) {
+      whereClause.id = { not: excludeAvailabilityId }
+    }
+
+    const availabilities = await prisma.availability.findMany({
+      where: whereClause,
+      include: {
+        employee: {
+          select: { id: true, firstName: true, lastName: true },
+        },
+      },
+      orderBy: [{ startDate: 'asc' }, { employee: { lastName: 'asc' } }],
+    })
+
+    // Filtrer les conflits en tenant compte des heures si spécifiées
+    const filteredAvailabilities = availabilities.filter((avail) => {
+      // Si l'indisponibilité est sur toute la journée, c'est toujours un conflit
+      if (!avail.startTime || !avail.endTime) {
+        return true
+      }
+
+      // Si le créneau à créer est sur toute la journée, c'est toujours un conflit
+      if (!startTime || !endTime) {
+        return true
+      }
+
+      // Vérifier le chevauchement des heures
+      // L'indisponibilité commence avant la fin du créneau ET finit après le début
+      return avail.startTime < endTime && avail.endTime > startTime
+    })
+
+    // Séparer en hard et soft conflicts
+    const conflicts: AvailabilityConflict[] = filteredAvailabilities.map(
+      (avail) => ({
+        ...avail,
+        isHardConflict: HARD_CONFLICT_TYPES.includes(avail.type),
+      })
+    ) as AvailabilityConflict[]
+
+    const hardConflicts = conflicts.filter((c) => c.isHardConflict)
+    const softConflicts = conflicts.filter((c) => !c.isHardConflict)
+
+    return {
+      success: true,
+      data: {
+        hasConflict: conflicts.length > 0,
+        hasHardConflict: hardConflicts.length > 0,
+        hasSoftConflict: softConflicts.length > 0,
+        conflicts,
+        hardConflicts,
+        softConflicts,
+      },
+    }
+  } catch (error) {
+    console.error('[checkAvailabilityConflicts] Error:', error)
+    const prismaError = handlePrismaError(error)
+    return { success: false, error: prismaError.error }
+  }
+}
