@@ -34,7 +34,7 @@ Dans le cadre du diplôme **CDA (Concepteur Développeur d'Applications)**, ce c
 | Métrique              | Objectif  | Atteint |
 | --------------------- | --------- | ------- |
 | Couverture globale    | ≥ 70%     | ✅ 85%  |
-| Tests unitaires       | ≥ 500     | ✅ 3063 |
+| Tests unitaires       | ≥ 500     | ✅ 3093 |
 | Tests E2E             | ≥ 50      | ✅ 430  |
 | Score Lighthouse A11y | ≥ 90%     | ✅ 95%  |
 | Anomalies critiques   | 0 en prod | ✅ 0    |
@@ -397,6 +397,7 @@ Ce tableau recense chaque campagne de tests significative (mise en production, f
 
 | Date       | Sprint    | Version/Commit | Tests unitaires | Tests E2E  | Couverture | Statut  | Notes                                                                                                                                                                                                                                                                                                          |
 | ---------- | --------- | -------------- | --------------- | ---------- | ---------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 26/01/2026 | Sprint 12 | SP-397         | 3093/3093 ✅    | 430/430 ✅ | ~85%       | ✅ PASS | 🆕 SP-397 ShiftModal création/édition créneaux. +30 tests unitaires (17 modal + 13 hook). Sélection multi-employés avec recherche et filtrage équipe. Date/time pickers locale FR. Types/statuts FR. Intégration createSchedule/updateSchedule. Total : 3523 tests |
 | 26/01/2026 | Sprint 12 | SP-396         | 3063/3063 ✅    | 430/430 ✅ | ~85%       | ✅ PASS | 🆕 SP-396 ScheduleCalendar responsive. +18 tests unitaires. Schedule-X intégré (desktop ≥768px) avec vues jour/semaine/mois. Vue mobile cards empilées (pas de scroll horizontal). Couleurs par type (7 types), badges statut. Temporal API polyfill. useMediaQuery hook. Total : 3493 tests |
 | 26/01/2026 | Sprint 12 | SP-395         | 3045/3045 ✅    | 430/430 ✅ | ~85%       | ✅ PASS | 🆕 SP-395 Page Liste Schedules. Route `/app/dashboard/schedules`. Layout SEO, loading skeleton, SchedulesPageContent (navigation date, vues jour/semaine/mois, filtres), SchedulesList (grille semaine, shifts colorés), SchedulesFilters (recherche, statut, type). Correction Sidebar URL. Total : 3475 tests |
 | 26/01/2026 | Sprint 12 | SP-394         | 3045/3045 ✅    | 430/430 ✅ | ~85%       | ✅ PASS | 🆕 SP-394 Server Actions Schedules CRUD avec RBAC. +30 tests unitaires. 10 actions : getSchedules, getScheduleById, createSchedule (multi-employé), updateSchedule, deleteSchedule, deleteScheduleGroup, duplicateSchedule, updateScheduleStatus, getEmployeeSchedules, getTeamSchedules. Permissions RBAC complètes. Total : 3475 tests 🎉 |
