@@ -113,7 +113,9 @@ describe('ResetPasswordForm', () => {
       await user.type(passwordInput, 'Password123!')
       await user.type(confirmInput, 'DifferentPassword123!')
 
-      const submitButton = screen.getByRole('button', { name: /réinitialiser/i })
+      const submitButton = screen.getByRole('button', {
+        name: /réinitialiser/i,
+      })
       await user.click(submitButton)
 
       await waitFor(() => {
@@ -132,7 +134,9 @@ describe('ResetPasswordForm', () => {
       await user.type(passwordInput, 'weak')
       await user.type(confirmInput, 'weak')
 
-      const submitButton = screen.getByRole('button', { name: /réinitialiser/i })
+      const submitButton = screen.getByRole('button', {
+        name: /réinitialiser/i,
+      })
       await user.click(submitButton)
 
       await waitFor(() => {
@@ -144,7 +148,9 @@ describe('ResetPasswordForm', () => {
       const user = userEvent.setup()
       render(<ResetPasswordForm token={VALID_TOKEN} />)
 
-      const submitButton = screen.getByRole('button', { name: /réinitialiser/i })
+      const submitButton = screen.getByRole('button', {
+        name: /réinitialiser/i,
+      })
       await user.click(submitButton)
 
       await waitFor(() => {
@@ -169,7 +175,9 @@ describe('ResetPasswordForm', () => {
       await user.type(passwordInput, 'NewPassword123!')
       await user.type(confirmInput, 'NewPassword123!')
 
-      const submitButton = screen.getByRole('button', { name: /réinitialiser/i })
+      const submitButton = screen.getByRole('button', {
+        name: /réinitialiser/i,
+      })
       await user.click(submitButton)
 
       await waitFor(() => {
@@ -197,7 +205,9 @@ describe('ResetPasswordForm', () => {
       await user.type(passwordInput, 'NewPassword123!')
       await user.type(confirmInput, 'NewPassword123!')
 
-      const submitButton = screen.getByRole('button', { name: /réinitialiser/i })
+      const submitButton = screen.getByRole('button', {
+        name: /réinitialiser/i,
+      })
       await user.click(submitButton)
 
       expect(screen.getByText(/réinitialisation.../i)).toBeInTheDocument()
@@ -214,7 +224,9 @@ describe('ResetPasswordForm', () => {
       await user.type(passwordInput, 'NewPassword123!')
       await user.type(confirmInput, 'NewPassword123!')
 
-      const submitButton = screen.getByRole('button', { name: /réinitialiser/i })
+      const submitButton = screen.getByRole('button', {
+        name: /réinitialiser/i,
+      })
       await user.click(submitButton)
 
       await waitFor(() => {
@@ -235,7 +247,8 @@ describe('ResetPasswordForm', () => {
       const { toast } = await import('sonner')
       mockResetPasswordAction.mockResolvedValue({
         success: false,
-        error: 'Ce lien de réinitialisation est invalide ou a déjà été utilisé.',
+        error:
+          'Ce lien de réinitialisation est invalide ou a déjà été utilisé.',
       })
 
       render(<ResetPasswordForm token="invalid-token" />)
@@ -245,7 +258,9 @@ describe('ResetPasswordForm', () => {
       await user.type(passwordInput, 'NewPassword123!')
       await user.type(confirmInput, 'NewPassword123!')
 
-      const submitButton = screen.getByRole('button', { name: /réinitialiser/i })
+      const submitButton = screen.getByRole('button', {
+        name: /réinitialiser/i,
+      })
       await user.click(submitButton)
 
       // Toast.error devrait être appelé avec le message d'erreur
@@ -273,7 +288,9 @@ describe('ResetPasswordForm', () => {
       await user.type(passwordInput, 'NewPassword123!')
       await user.type(confirmInput, 'NewPassword123!')
 
-      const submitButton = screen.getByRole('button', { name: /réinitialiser/i })
+      const submitButton = screen.getByRole('button', {
+        name: /réinitialiser/i,
+      })
       await user.click(submitButton)
 
       await waitFor(() => {
@@ -339,7 +356,9 @@ describe('ResetPasswordForm', () => {
       await user.type(passwordInput, 'NewPassword123!')
       await user.type(confirmInput, 'NewPassword123!')
 
-      const submitButton = screen.getByRole('button', { name: /réinitialiser/i })
+      const submitButton = screen.getByRole('button', {
+        name: /réinitialiser/i,
+      })
       await user.click(submitButton)
 
       await waitFor(() => {
@@ -358,7 +377,9 @@ describe('ResetPasswordForm', () => {
       await user.type(passwordInput, 'NewPassword123!')
       await user.type(confirmInput, 'NewPassword123!')
 
-      const submitButton = screen.getByRole('button', { name: /réinitialiser/i })
+      const submitButton = screen.getByRole('button', {
+        name: /réinitialiser/i,
+      })
       await user.click(submitButton)
 
       await waitFor(() => {

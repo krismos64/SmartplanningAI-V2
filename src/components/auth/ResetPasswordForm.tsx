@@ -165,10 +165,7 @@ export function ResetPasswordForm({
           )}
         >
           <CheckCircle2
-            className={cn(
-              'h-8 w-8',
-              isDark ? 'text-cyan-400' : 'text-primary'
-            )}
+            className={cn('h-8 w-8', isDark ? 'text-cyan-400' : 'text-primary')}
           />
         </div>
 

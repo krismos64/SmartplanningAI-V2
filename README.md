@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 25 janvier 2026 (Sprint 11 - SP-263 Réinitialisation mot de passe)
+- **Dernière mise à jour** : 26 janvier 2026 (Sprint 12 - SP-392 Gestion des Plannings)
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -123,9 +123,15 @@ Système de design unifié et centralisé :
 - **CSS Modules** (`landing.module.css`) : Styles spécifiques landing (glassmorphism, gradients)
 
 **Import unifié** :
+
 ```typescript
 // Animation system - import unique
-import { motion, fadeInUp, staggerContainer, floatAnimation } from '@/lib/animations'
+import {
+  motion,
+  fadeInUp,
+  staggerContainer,
+  floatAnimation,
+} from '@/lib/animations'
 
 // Design tokens - import unique
 import { tokens, colors, spacing } from '@/styles/tokens'
@@ -208,6 +214,26 @@ import { tokens, colors, spacing } from '@/styles/tokens'
 - **Boutons gradient** : from-blue-500 to-cyan-400 avec shadow glow
 - **Support variant** : LoginForm et RegisterForm acceptent variant="dark" | "light"
 - **Tests** : 34 tests unitaires + 20 tests E2E passent
+
+### Gestion des Plannings - Base de données (SP-392 - 26 janvier 2026)
+
+Fondations Prisma pour le module de gestion des plannings :
+
+- **Modèle Availability** : Gestion des disponibilités/indisponibilités employés
+  - Périodes avec dates de début/fin et horaires optionnels
+  - Types : UNAVAILABLE, PREFERRED, VACATION, SICK, TRAINING, OTHER
+  - Support récurrence (isRecurring, recurrenceRule en JSON)
+  - Relations Employee et Company avec onDelete: Cascade
+  - Index optimisés pour les requêtes par employé et période
+
+- **Enrichissement modèle Schedule** :
+  - `isRecurring` : Flag pour les créneaux récurrents
+  - `recurrenceRule` : Règle de récurrence (JSON)
+  - `recurrenceGroupId` : Regroupe les occurrences d'une série récurrente
+  - `scheduleGroupId` : Regroupe les créneaux créés simultanément pour plusieurs employés
+  - Index ajoutés pour recurrenceGroupId et scheduleGroupId
+
+- **Migration** : `20260126113942_add_availability_model_and_schedule_recurrence`
 
 ### Réinitialisation du mot de passe (SP-263 - 25 janvier 2026)
 
@@ -420,12 +446,16 @@ Système de palette de commandes accessible via `Cmd+K` (Mac) ou `Ctrl+K` (Windo
 - **Tests** : 55 tests unitaires (25 hook + 23 component + 7 provider)
 
 **Import** :
+
 ```typescript
 // Hook raccourcis clavier
 import { useKeyboardShortcuts, useKeyboardShortcut } from '@/hooks'
 
 // Provider et hook command palette
-import { CommandPaletteProvider, useCommandPalette } from '@/components/providers'
+import {
+  CommandPaletteProvider,
+  useCommandPalette,
+} from '@/components/providers'
 ```
 
 ### Dynamic Breadcrumbs (SP-264 - 22 janvier 2026)
@@ -460,12 +490,17 @@ Fil d'Ariane dynamique avec résolution automatique des IDs vers des noms lisibl
 - **Tests** : 43 tests unitaires (8 API + 12 hook + 23 component)
 
 **Import** :
+
 ```typescript
 // Composant breadcrumbs
 import { DynamicBreadcrumbs } from '@/components/ui/dynamic-breadcrumbs'
 
 // Hook et utilitaires
-import { useBreadcrumbResolver, isIdSegment, getEntityTypeFromPreviousSegment } from '@/hooks'
+import {
+  useBreadcrumbResolver,
+  isIdSegment,
+  getEntityTypeFromPreviousSegment,
+} from '@/hooks'
 ```
 
 ### Navigation Shortcuts & Keyboard Shortcuts Modal (SP-264 Phase 3 - 22 janvier 2026)
@@ -507,9 +542,13 @@ Système de raccourcis clavier Vim-style pour la navigation rapide + modal d'aid
 - **Tests** : 35 tests unitaires (15 hook + 10 modal + 10 provider)
 
 **Import** :
+
 ```typescript
 // Provider et hook
-import { KeyboardShortcutsProvider, useKeyboardShortcutsContext } from '@/providers'
+import {
+  KeyboardShortcutsProvider,
+  useKeyboardShortcutsContext,
+} from '@/providers'
 
 // Hook navigation Vim-style
 import { useNavigationShortcuts, DEFAULT_NAVIGATION_SHORTCUTS } from '@/hooks'
@@ -525,7 +564,7 @@ Système de navigation mobile avec drawer swipeable et gestes tactiles Framer Mo
 - **SwipeableDrawer** : Composant drawer mobile avec gestes tactiles
   - Swipe horizontal pour fermer (seuil 100px ou vélocité 500px/s)
   - Animation spring fluide (damping: 30, stiffness: 400)
-  - Support iOS safe-area (env(safe-area-inset-*))
+  - Support iOS safe-area (env(safe-area-inset-\*))
   - Body scroll lock quand ouvert
   - Focus trap et accessibilité (aria-modal, role="dialog")
   - Portal rendering (z-index correct)
@@ -557,6 +596,7 @@ Système de navigation mobile avec drawer swipeable et gestes tactiles Framer Mo
   - Drag configuration
 
 **Import** :
+
 ```typescript
 // Composant drawer mobile
 import { SwipeableDrawer, type SwipeableDrawerProps } from '@/components/mobile'
@@ -603,6 +643,7 @@ Adaptations mobiles des composants UI principaux avec zones tactiles WCAG 2.5.5 
   - 25 tests unitaires
 
 **Import** :
+
 ```typescript
 // Boutons adaptatifs
 import { TouchableButton, useIsMobile } from '@/components/ui/button'
@@ -655,15 +696,22 @@ Système de pages récentes stockées en localStorage avec affichage dans la Com
 - **Tests** : 53 tests unitaires (27 format-relative-time + 18 recent-pages-store + 8 use-recent-pages)
 
 **Import** :
+
 ```typescript
 // Store et types
-import { recentPagesStore, type RecentPage } from '@/lib/storage/recent-pages-store'
+import {
+  recentPagesStore,
+  type RecentPage,
+} from '@/lib/storage/recent-pages-store'
 
 // Hook React
 import { useRecentPages } from '@/hooks/use-recent-pages'
 
 // Formatage temps relatif
-import { formatRelativeTime, formatRelativeTimeLong } from '@/lib/utils/format-relative-time'
+import {
+  formatRelativeTime,
+  formatRelativeTimeLong,
+} from '@/lib/utils/format-relative-time'
 
 // Tracking automatique (à placer dans le layout)
 import { PageTracker } from '@/components/layout/PageTracker'
@@ -1337,6 +1385,7 @@ SmartPlanning utilise **Umami** comme solution d'analytics privacy-friendly et R
 - **Intégration RGPD** : Respecte le consentement cookies (catégorie "analytics")
 
 **Architecture** :
+
 - `UmamiAnalyticsWrapper` : Server Component qui injecte la config au runtime
 - `UmamiAnalytics` : Client Component avec chargement conditionnel
 - **Config hardcodée** : Les valeurs Umami sont intégrées en fallback pour contourner la limitation des `NEXT_PUBLIC_*` au build-time Docker
@@ -1379,20 +1428,21 @@ function CTAButton() {
 
 ### Pages optimisées SEO
 
-| Page | Meta Title | Meta Description | Structured Data |
-|------|-----------|------------------|-----------------|
-| Landing | ✅ | ✅ | Organization |
-| À propos | ✅ | ✅ | AboutPage + Organization |
-| Mentions légales | ✅ | ✅ | - |
-| CGU | ✅ | ✅ | - |
-| CGV | ✅ | ✅ | - |
-| Confidentialité | ✅ | ✅ | - |
-| Cookies | ✅ | ✅ | - |
-| Login/Register | ✅ | ✅ | - |
+| Page             | Meta Title | Meta Description | Structured Data          |
+| ---------------- | ---------- | ---------------- | ------------------------ |
+| Landing          | ✅         | ✅               | Organization             |
+| À propos         | ✅         | ✅               | AboutPage + Organization |
+| Mentions légales | ✅         | ✅               | -                        |
+| CGU              | ✅         | ✅               | -                        |
+| CGV              | ✅         | ✅               | -                        |
+| Confidentialité  | ✅         | ✅               | -                        |
+| Cookies          | ✅         | ✅               | -                        |
+| Login/Register   | ✅         | ✅               | -                        |
 
 ### Optimisation LLMs
 
 La page À propos est optimisée pour être indexée par les LLMs (ChatGPT, Claude, Perplexity) avec :
+
 - Keywords riches et contextuels
 - Structured Data JSON-LD étendu
 - Descriptions longues pour Open Graph
@@ -1411,76 +1461,76 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 
 ### Couverture actuelle (25 janvier 2026)
 
-| Catégorie            | Coverage | Tests    |
-| -------------------- | -------- | -------- |
-| **Global**           | **~85%** | **2881** |
-| loading              | 100%     | 152      |
-| modals               | 100%     | 52       |
-| cards                | 77.09%   | 88       |
-| forms                | 76.65%   | 170      |
-| auth                 | ~95%     | 34       |
-| permissions          | 100%     | 62       |
-| dashboard components | 100%     | 57       |
-| charts               | 100%     | 88       |
-| dashboard services   | 100%     | 119      |
-| dashboard employee   | 100%     | 91       |
-| dashboard director   | 100%     | 87       |
-| dashboard admin      | 100%     | 115      |
-| cookies              | 100%     | 83       |
-| analytics            | 100%     | 13       |
-| emails (Sprint 9)    | 100%     | 129      |
-| contact (SP-287/289) | 100%     | 95       |
-| error boundary       | 100%     | 22       |
-| animations (SP-379)  | 100%     | 102      |
-| design tokens        | 100%     | 99       |
-| dark/light mode      | 100%     | 30       |
-| loading states (SP-266) | 100%  | 131      |
-| command palette (SP-264) | 100% | 55       |
-| navigation shortcuts (SP-264) | 100% | 15    |
-| keyboard shortcuts modal (SP-264) | 100% | 10 |
-| keyboard shortcuts provider (SP-264) | 100% | 10 |
-| recent pages store (SP-264 Phase 4) | 100% | 18 |
-| use-recent-pages hook (SP-264 Phase 4) | 100% | 8 |
-| format-relative-time (SP-264 Phase 4) | 100% | 27 |
-| swipeable-drawer (SP-383) | 100% | 21 |
-| touchable-button (SP-385) | 100% | 31 |
-| command-palette-mobile (SP-386) | 100% | 32 |
-| data-table-pagination (SP-387) | 100% | 22 |
-| responsive-breadcrumb (SP-388) | 100% | 25 |
+| Catégorie                              | Coverage | Tests    |
+| -------------------------------------- | -------- | -------- |
+| **Global**                             | **~85%** | **2881** |
+| loading                                | 100%     | 152      |
+| modals                                 | 100%     | 52       |
+| cards                                  | 77.09%   | 88       |
+| forms                                  | 76.65%   | 170      |
+| auth                                   | ~95%     | 34       |
+| permissions                            | 100%     | 62       |
+| dashboard components                   | 100%     | 57       |
+| charts                                 | 100%     | 88       |
+| dashboard services                     | 100%     | 119      |
+| dashboard employee                     | 100%     | 91       |
+| dashboard director                     | 100%     | 87       |
+| dashboard admin                        | 100%     | 115      |
+| cookies                                | 100%     | 83       |
+| analytics                              | 100%     | 13       |
+| emails (Sprint 9)                      | 100%     | 129      |
+| contact (SP-287/289)                   | 100%     | 95       |
+| error boundary                         | 100%     | 22       |
+| animations (SP-379)                    | 100%     | 102      |
+| design tokens                          | 100%     | 99       |
+| dark/light mode                        | 100%     | 30       |
+| loading states (SP-266)                | 100%     | 131      |
+| command palette (SP-264)               | 100%     | 55       |
+| navigation shortcuts (SP-264)          | 100%     | 15       |
+| keyboard shortcuts modal (SP-264)      | 100%     | 10       |
+| keyboard shortcuts provider (SP-264)   | 100%     | 10       |
+| recent pages store (SP-264 Phase 4)    | 100%     | 18       |
+| use-recent-pages hook (SP-264 Phase 4) | 100%     | 8        |
+| format-relative-time (SP-264 Phase 4)  | 100%     | 27       |
+| swipeable-drawer (SP-383)              | 100%     | 21       |
+| touchable-button (SP-385)              | 100%     | 31       |
+| command-palette-mobile (SP-386)        | 100%     | 32       |
+| data-table-pagination (SP-387)         | 100%     | 22       |
+| responsive-breadcrumb (SP-388)         | 100%     | 25       |
 
 ### Tests E2E
 
-| Suite                        | Tests | Status |
-| ---------------------------- | ----- | ------ |
-| Auth (login/register)        | 20    | ✅     |
-| Middleware RBAC              | 26    | ✅     |
-| Smoke tests                  | 4     | ✅     |
-| **Dashboard Employee**       | 15    | ✅     |
-| **Dashboard Manager**        | 1     | ⏸️ (22 skipped - UI en attente) |
-| **Dashboard Director**       | 22    | ✅     |
-| **Dashboard Super Admin**    | 25    | ✅     |
-| **RBAC Protection**          | 21    | ✅     |
-| **CRUD Companies**           | 18    | ✅     |
-| **CRUD Employees**           | 18    | ✅     |
-| **CRUD Teams**               | 15    | ✅     |
-| **Empty States**             | 8     | ✅     |
-| **Cookies RGPD**             | 18    | ✅     |
-| **Analytics Umami**          | 8     | ✅     |
-| **Error Boundary**           | 5     | ✅     |
-| **Page 404**                 | 8     | ✅     |
-| **Page 500**                 | 22    | ✅     |
-| **Command Palette (SP-264)** | 6     | ✅     |
-| **Recent Pages (SP-264)**    | 6     | ✅     |
-| **Keyboard Shortcuts (SP-264)** | 6  | ✅     |
-| **Mobile Navigation (SP-389)** | 9 | ✅ (+ 4 échouent - bugs UX réels) |
-| **Mobile Command Palette (SP-389)** | 15 | ✅ |
-| **Mobile Breadcrumbs (SP-389)** | 20 | ✅ |
-| **Mobile Data Table (SP-389)** | 15 | ✅ |
-| **Mobile Touch Targets (SP-389)** | 16 | ✅ |
-| **Accessibility WCAG (SP-269)** | 14 | ✅ |
-| **Total E2E actifs**         | **361** | ✅   |
-| **Total E2E skipped**        | **69**  | ⏸️   |
-| **Total E2E**                | **430** |      |
+| Suite                               | Tests   | Status                            |
+| ----------------------------------- | ------- | --------------------------------- |
+| Auth (login/register)               | 20      | ✅                                |
+| Middleware RBAC                     | 26      | ✅                                |
+| Smoke tests                         | 4       | ✅                                |
+| **Dashboard Employee**              | 15      | ✅                                |
+| **Dashboard Manager**               | 1       | ⏸️ (22 skipped - UI en attente)   |
+| **Dashboard Director**              | 22      | ✅                                |
+| **Dashboard Super Admin**           | 25      | ✅                                |
+| **RBAC Protection**                 | 21      | ✅                                |
+| **CRUD Companies**                  | 18      | ✅                                |
+| **CRUD Employees**                  | 18      | ✅                                |
+| **CRUD Teams**                      | 15      | ✅                                |
+| **Empty States**                    | 8       | ✅                                |
+| **Cookies RGPD**                    | 18      | ✅                                |
+| **Analytics Umami**                 | 8       | ✅                                |
+| **Error Boundary**                  | 5       | ✅                                |
+| **Page 404**                        | 8       | ✅                                |
+| **Page 500**                        | 22      | ✅                                |
+| **Command Palette (SP-264)**        | 6       | ✅                                |
+| **Recent Pages (SP-264)**           | 6       | ✅                                |
+| **Keyboard Shortcuts (SP-264)**     | 6       | ✅                                |
+| **Mobile Navigation (SP-389)**      | 9       | ✅ (+ 4 échouent - bugs UX réels) |
+| **Mobile Command Palette (SP-389)** | 15      | ✅                                |
+| **Mobile Breadcrumbs (SP-389)**     | 20      | ✅                                |
+| **Mobile Data Table (SP-389)**      | 15      | ✅                                |
+| **Mobile Touch Targets (SP-389)**   | 16      | ✅                                |
+| **Accessibility WCAG (SP-269)**     | 14      | ✅                                |
+| **Total E2E actifs**                | **361** | ✅                                |
+| **Total E2E skipped**               | **69**  | ⏸️                                |
+| **Total E2E**                       | **430** |                                   |
 
 **Note** : Tests desktop exécutés sur Chromium uniquement. Tests mobiles exécutés sur 5 devices (iPhone SE, iPhone 14 Pro, Pixel 7, iPad Mini, iPad Pro 11") via Chromium avec émulation mobile (WebKit supprimé car bug HTTPS upgrade sur localhost).
 
@@ -1712,12 +1762,14 @@ Conformité WCAG 2.1 niveau AA avec tests automatisés axe-core et audit Lightho
   - Pages conformes : Accueil, Login, Register
 
 **Scripts NPM** :
+
 ```bash
 npm run test:a11y     # Tests E2E accessibilité (14 tests)
 npm run a11y:audit    # Audit Lighthouse (nécessite serveur actif)
 ```
 
 **Import** :
+
 ```typescript
 // Skip Link (intégré automatiquement dans layout.tsx)
 import { SkipLink } from '@/components/layout/skip-link'
@@ -1764,6 +1816,7 @@ git push origin feature/SP-XX-description
 📚 **Voir le guide de déploiement détaillé** : [`.github/DEPLOY.md`](.github/DEPLOY.md)
 
 Le guide inclut :
+
 - Configuration initiale du VPS (script automatisé)
 - Configuration UFW compatible Docker ⚠️
 - Résolution des problèmes courants
@@ -1781,7 +1834,7 @@ Le guide inclut :
 | **URL**           | https://smartplanning.fr                        |
 | **Serveur**       | VPS OVH (4 vCores, 8GB RAM, 75GB SSD)           |
 | **OS**            | Ubuntu 24.04 LTS                                |
-| **IP**            | 51.77.146.72 (smartplanning.fr)                  |
+| **IP**            | 51.77.146.72 (smartplanning.fr)                 |
 | **SSL**           | Let's Encrypt (auto-renew jusqu'au 2 mars 2026) |
 | **Reverse Proxy** | Nginx 1.24.0                                    |
 | **Firewall**      | UFW (allow outgoing - compatible Docker)        |
@@ -1805,11 +1858,11 @@ Merge main → Build Docker → Push GHCR → Deploy VPS (~8-10 min)
 
 **Stratégie optimisée (SP-113)** :
 
-| Scénario | Tests Unit | Tests E2E | Déploiement | Temps |
-|----------|------------|-----------|-------------|-------|
-| Push feature branch | ✅ | ❌ | ❌ | ~3-5 min |
-| PR vers main | ✅ | ✅ (3 navigateurs) | ❌ | ~15-20 min |
-| Merge sur main | ✅ | ❌ | ✅ | ~8-10 min |
+| Scénario            | Tests Unit | Tests E2E          | Déploiement | Temps      |
+| ------------------- | ---------- | ------------------ | ----------- | ---------- |
+| Push feature branch | ✅         | ❌                 | ❌          | ~3-5 min   |
+| PR vers main        | ✅         | ✅ (3 navigateurs) | ❌          | ~15-20 min |
+| Merge sur main      | ✅         | ❌                 | ✅          | ~8-10 min  |
 
 - **CI** (`.github/workflows/ci.yml`) : Lint, Type-check, Tests unitaires, Build, Tests E2E (PR uniquement)
 - **CD** (`.github/workflows/cd.yml`) : Build image Docker, Push sur ghcr.io, Deploy via SSH
@@ -1821,16 +1874,17 @@ Merge main → Build Docker → Push GHCR → Deploy VPS (~8-10 min)
 
 ### Sécurité Infrastructure
 
-| Élément             | Status |
-| ------------------- | ------ |
-| Docker Hardening    | ✅     |
-| UFW Firewall        | ✅     |
-| Fail2ban            | ✅     |
-| SSH Key Auth        | ✅     |
-| IPs malveillantes   | ✅ (5 IPs bloquées) |
-| SSL/TLS             | ✅     |
+| Élément           | Status              |
+| ----------------- | ------------------- |
+| Docker Hardening  | ✅                  |
+| UFW Firewall      | ✅                  |
+| Fail2ban          | ✅                  |
+| SSH Key Auth      | ✅                  |
+| IPs malveillantes | ✅ (5 IPs bloquées) |
+| SSL/TLS           | ✅                  |
 
 **Documentation sécurité** :
+
 - [Plan de sécurisation](docs/security/security-hardening-plan.md)
 - [Script de sécurisation VPS](scripts/secure-vps-part1.sh)
 - [Incident UFW + Docker](docs/security/incident-2026-01-06-ufw-docker.md)
