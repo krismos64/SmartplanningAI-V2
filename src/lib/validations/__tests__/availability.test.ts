@@ -66,7 +66,7 @@ describe('createAvailabilitySchema', () => {
         isRecurring: true,
         recurrenceRule: {
           frequency: 'WEEKLY',
-          daysOfWeek: [3], // Mercredi
+          daysOfWeek: ['WEDNESDAY'],
           occurrences: 12,
         },
       })
