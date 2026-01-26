@@ -35,7 +35,9 @@ vi.mock('sonner', () => ({
 // Import après les mocks
 import { forgotPasswordAction } from '@/lib/actions/password-actions'
 
-const mockForgotPasswordAction = forgotPasswordAction as ReturnType<typeof vi.fn>
+const mockForgotPasswordAction = forgotPasswordAction as ReturnType<
+  typeof vi.fn
+>
 
 describe('ForgotPasswordForm', () => {
   beforeEach(() => {
@@ -50,7 +52,9 @@ describe('ForgotPasswordForm', () => {
     it('renders email input and submit button', () => {
       render(<ForgotPasswordForm />)
 
-      expect(screen.getByPlaceholderText(/vous@entreprise.com/i)).toBeInTheDocument()
+      expect(
+        screen.getByPlaceholderText(/vous@entreprise.com/i)
+      ).toBeInTheDocument()
       expect(
         screen.getByRole('button', { name: /envoyer le lien/i })
       ).toBeInTheDocument()
@@ -199,7 +203,9 @@ describe('ForgotPasswordForm', () => {
       await user.click(submitButton)
 
       await waitFor(() => {
-        expect(screen.getByText(/vérifiez votre boîte mail/i)).toBeInTheDocument()
+        expect(
+          screen.getByText(/vérifiez votre boîte mail/i)
+        ).toBeInTheDocument()
       })
     })
 
@@ -218,7 +224,9 @@ describe('ForgotPasswordForm', () => {
       await user.click(submitButton)
 
       await waitFor(() => {
-        expect(screen.queryByPlaceholderText(/vous@entreprise.com/i)).not.toBeInTheDocument()
+        expect(
+          screen.queryByPlaceholderText(/vous@entreprise.com/i)
+        ).not.toBeInTheDocument()
       })
     })
   })
@@ -244,7 +252,9 @@ describe('ForgotPasswordForm', () => {
       await user.click(submitButton)
 
       await waitFor(() => {
-        expect(screen.getByText(/vérifiez votre boîte mail/i)).toBeInTheDocument()
+        expect(
+          screen.getByText(/vérifiez votre boîte mail/i)
+        ).toBeInTheDocument()
         expect(
           screen.getByText(/si un compte existe avec cet email/i)
         ).toBeInTheDocument()
@@ -266,7 +276,9 @@ describe('ForgotPasswordForm', () => {
       await user.click(submitButton)
 
       await waitFor(() => {
-        expect(screen.getByText(/vérifiez votre boîte mail/i)).toBeInTheDocument()
+        expect(
+          screen.getByText(/vérifiez votre boîte mail/i)
+        ).toBeInTheDocument()
       })
     })
   })
@@ -291,7 +303,9 @@ describe('ForgotPasswordForm', () => {
       await user.click(submitButton)
 
       await waitFor(() => {
-        expect(screen.getByText(/vérifiez votre boîte mail/i)).toBeInTheDocument()
+        expect(
+          screen.getByText(/vérifiez votre boîte mail/i)
+        ).toBeInTheDocument()
       })
 
       // Click retry button
@@ -299,7 +313,9 @@ describe('ForgotPasswordForm', () => {
       await user.click(retryButton)
 
       // Form should be visible again
-      expect(screen.getByPlaceholderText(/vous@entreprise.com/i)).toBeInTheDocument()
+      expect(
+        screen.getByPlaceholderText(/vous@entreprise.com/i)
+      ).toBeInTheDocument()
     })
   })
 })
