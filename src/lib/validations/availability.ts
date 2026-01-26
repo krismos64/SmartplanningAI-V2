@@ -26,10 +26,10 @@ import { recurrenceRuleSchema } from './schedule'
  */
 export const availabilityBaseSchema = z.object({
   /** ID de l'employe */
-  employeeId: z.string().cuid("ID employe invalide"),
+  employeeId: z.string().cuid('ID employe invalide'),
 
   /** ID de l'entreprise */
-  companyId: z.string().cuid("ID entreprise invalide"),
+  companyId: z.string().cuid('ID entreprise invalide'),
 
   /** Date de debut */
   startDate: z.coerce.date({
@@ -137,7 +137,7 @@ export const updateAvailabilitySchema = availabilityBaseSchema
   .partial()
   .extend({
     /** ID de l'indisponibilite a modifier (requis) */
-    id: z.string().cuid("ID indisponibilite invalide"),
+    id: z.string().cuid('ID indisponibilite invalide'),
   })
   .superRefine((data, ctx) => {
     // Valider les dates seulement si les deux sont fournies
