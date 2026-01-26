@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 26 janvier 2026 (Sprint 12 - SP-396 ScheduleCalendar)
+- **Dernière mise à jour** : 26 janvier 2026 (Sprint 12 - SP-397 ShiftModal)
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -285,6 +285,64 @@ Page Next.js complète pour la gestion des plannings :
   - Filtre par type (travail, pause, réunion, formation, etc.)
 
 - **Correction Sidebar** : URL `/schedules` → `/app/dashboard/schedules`
+
+### Calendrier Schedule-X (SP-396 - 26 janvier 2026)
+
+Composant calendrier interactif avec Schedule-X pour la visualisation des plannings :
+
+- **ScheduleCalendar** : Wrapper responsive avec détection automatique desktop/mobile
+  - Breakpoint 768px avec `useMediaQuery` hook
+  - Skeleton loading pendant la détection
+
+- **ScheduleCalendarDesktop** : Calendrier Schedule-X complet
+  - Vues jour, semaine, mois (`createViewDay`, `createViewWeek`, `createViewMonthGrid`)
+  - Drag & drop natif (`createDragAndDropPlugin`)
+  - Events synchronisés via `createEventsServicePlugin`
+  - Temporal API polyfill pour dates
+  - Couleurs par type de schedule (7 types avec palettes light/dark)
+  - Légende des couleurs intégrée
+  - Callbacks : `onScheduleClick`, `onScheduleUpdate`
+
+- **ScheduleCalendarMobile** : Vue cards pour mobile
+  - Cards avec informations condensées
+  - Badges colorés par type
+  - Scroll vertical natif (pas de scroll horizontal)
+  - Empty state dédié
+
+- **CSS Theme** : Personnalisation Schedule-X
+  - Variables CSS intégrées au design system Shadcn/ui
+  - Support dark mode automatique
+  - Responsive adjustments
+
+- **Tests** : 18 tests unitaires (responsive behavior, props transmission)
+
+### ShiftModal - Création/Édition de créneaux (SP-397 - 26 janvier 2026)
+
+Modal complet pour la création et modification de créneaux :
+
+- **ShiftModal** : Modal avec modes création et édition
+  - Sélection multi-employés avec recherche et filtrage par équipe
+  - Date/time pickers avec locale française (date-fns)
+  - Sélecteur de type (Travail, Pause, Réunion, Formation, Télétravail, Astreinte, Heures sup.)
+  - Sélecteur de statut (Brouillon, Confirmé, Annulé, Terminé)
+  - Champs optionnels : titre, description, lieu
+  - Validation Zod complète avec message d'erreur FR
+  - Intégration Server Actions (`createSchedule`, `updateSchedule`)
+
+- **useShiftFormData** : Hook pour charger les données du formulaire
+  - Chargement parallèle employés et équipes
+  - RBAC automatique via Server Actions
+  - Gestion états loading/error
+  - Fonction `refetch` pour rafraîchissement
+
+- **Intégration SchedulesPageContent** :
+  - Bouton "Nouveau créneau" ouvre le modal en mode création
+  - Clic sur un créneau ouvre le modal en mode édition
+  - Rechargement automatique après succès
+
+- **Terminologie française** : "Créneau" (singulier) / "Créneaux" (pluriel) dans toute l'UI
+
+- **Tests** : 30 tests unitaires (17 ShiftModal + 13 useShiftFormData)
 
 ### Gestion des Plannings - Base de données (SP-392 - 26 janvier 2026)
 
