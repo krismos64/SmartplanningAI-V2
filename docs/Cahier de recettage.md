@@ -34,7 +34,7 @@ Dans le cadre du diplôme **CDA (Concepteur Développeur d'Applications)**, ce c
 | Métrique              | Objectif  | Atteint |
 | --------------------- | --------- | ------- |
 | Couverture globale    | ≥ 70%     | ✅ 85%  |
-| Tests unitaires       | ≥ 500     | ✅ 3152 |
+| Tests unitaires       | ≥ 500     | ✅ 3206 |
 | Tests E2E             | ≥ 50      | ✅ 430  |
 | Score Lighthouse A11y | ≥ 90%     | ✅ 95%  |
 | Anomalies critiques   | 0 en prod | ✅ 0    |
@@ -397,6 +397,7 @@ Ce tableau recense chaque campagne de tests significative (mise en production, f
 
 | Date       | Sprint    | Version/Commit | Tests unitaires | Tests E2E  | Couverture | Statut  | Notes                                                                                                                                                                                                                                                                                                          |
 | ---------- | --------- | -------------- | --------------- | ---------- | ---------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 26/01/2026 | Sprint 12 | SP-401         | 3206/3206 ✅    | 430/430 ✅ | ~85%       | ✅ PASS | 🆕 SP-401 CRUD Availabilities. +54 tests unitaires (Server Actions: 22, AvailabilityCard: 18, AvailabilityModal: 14). 8 Server Actions RBAC : getAvailabilities, getAvailabilityById, createAvailability, updateAvailability, deleteAvailability, getEmployeeAvailabilities, getTeamAvailabilities, getAvailabilitiesStats. Composants UI : AvailabilityCard, AvailabilityModal, AvailabilitiesList. 6 types d'indisponibilité avec icônes/couleurs. Total : 3636 tests |
 | 26/01/2026 | Sprint 12 | SP-399         | 3152/3152 ✅    | 430/430 ✅ | ~85%       | ✅ PASS | 🆕 SP-399 Récurrence des Shifts. +40 tests unitaires (recurrence: 24, RecurrenceConfig: 12, availability fix: 4). Fréquences DAILY/WEEKLY/BIWEEKLY/MONTHLY. Sélection jours semaine. Limites: 52 occurrences max, 200 créneaux max. Server Actions groupées (delete/update par scope). RecurrenceEditDialog. Total : 3582 tests |
 | 26/01/2026 | Sprint 12 | SP-398         | 3112/3112 ✅    | 430/430 ✅ | ~85%       | ✅ PASS | 🆕 SP-398 Drag & Drop calendrier. +19 tests unitaires. Plugin @schedule-x/resize ajouté. Déplacer créneaux par drag, resize par bord. Persistance updateSchedule avec rollback erreur. RBAC: DIRECTOR/MANAGER uniquement. Toast feedback. Total : 3542 tests |
 | 26/01/2026 | Sprint 12 | SP-397         | 3093/3093 ✅    | 430/430 ✅ | ~85%       | ✅ PASS | 🆕 SP-397 ShiftModal création/édition créneaux. +30 tests unitaires (17 modal + 13 hook). Sélection multi-employés avec recherche et filtrage équipe. Date/time pickers locale FR. Types/statuts FR. Intégration createSchedule/updateSchedule. Total : 3523 tests |
@@ -1709,6 +1710,7 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
 
 | Date       | Modification                                                                                                                                                                                                                                                                                                                                     |
 | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 26/01/2026 | 🆕 SP-401 CRUD Availabilities : +54 tests unitaires (Server Actions: 22, AvailabilityCard: 18, AvailabilityModal: 14). 8 Server Actions RBAC complet (getAvailabilities, getAvailabilityById, createAvailability, updateAvailability, deleteAvailability, getEmployeeAvailabilities, getTeamAvailabilities, getAvailabilitiesStats). Composants UI : AvailabilityCard, AvailabilityModal, AvailabilitiesList. 6 types d'indisponibilité avec icônes/couleurs. Total : 3636 tests |
 | 26/01/2026 | 🆕 SP-399 Récurrence des Shifts : +40 tests unitaires (recurrence: 24, RecurrenceConfig: 12, availability fix: 4). Fréquences DAILY/WEEKLY/BIWEEKLY/MONTHLY. Sélection jours semaine. Limites : 52 occurrences max, 200 créneaux max. Server Actions groupées (getRecurrenceGroupCounts, deleteRecurringSchedules, updateRecurringSchedules). RecurrenceEditDialog pour scope single/future/all. Total : 3582 tests |
 | 26/01/2026 | 🆕 SP-398 Drag & Drop Calendrier : +19 tests unitaires. Plugin @schedule-x/drag-and-drop + @schedule-x/resize. Déplacer créneaux par drag, redimensionner par bord. Persistance updateSchedule avec rollback erreur. RBAC : DIRECTOR/MANAGER uniquement. Toast feedback. Total : 3542 tests |
 | 26/01/2026 | 🆕 SP-397 ShiftModal : +30 tests unitaires (17 modal + 13 hook). Modal création/édition avec React Hook Form + Zod. Sélection multi-employés avec recherche et filtrage équipe. Date/time pickers locale française. Types/statuts FR. Total : 3523 tests |
@@ -1797,7 +1799,13 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
   - RecurrenceEditDialog pour opérations groupées (scope: single/future/all)
   - Server Actions : getRecurrenceGroupCounts, deleteRecurringSchedules, updateRecurringSchedules
   - 40 tests unitaires (recurrence: 24, RecurrenceConfig: 12, availability fix: 4)
-- Prochaines étapes : SP-400+ (Gestion des disponibilités)
+- SP-401 : CRUD Availabilities ✅ TERMINÉ
+  - 8 Server Actions RBAC : getAvailabilities, getAvailabilityById, createAvailability, updateAvailability, deleteAvailability, getEmployeeAvailabilities, getTeamAvailabilities, getAvailabilitiesStats
+  - Permissions : SYSTEM_ADMIN (lecture), DIRECTOR (tout), MANAGER (équipe), EMPLOYEE (ses propres)
+  - Composants UI : AvailabilityCard, AvailabilityModal, AvailabilitiesList
+  - 6 types d'indisponibilité : UNAVAILABLE, PREFERRED, VACATION, SICK, TRAINING, OTHER
+  - 54 tests unitaires (Server Actions: 22, AvailabilityCard: 18, AvailabilityModal: 14)
+- Prochaines étapes : SP-402+ (Page gestion des disponibilités)
 
 ### Sprint 11 - Réinitialisation mot de passe (SP-263)
 
