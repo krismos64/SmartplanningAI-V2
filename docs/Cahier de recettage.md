@@ -34,7 +34,7 @@ Dans le cadre du diplôme **CDA (Concepteur Développeur d'Applications)**, ce c
 | Métrique              | Objectif  | Atteint |
 | --------------------- | --------- | ------- |
 | Couverture globale    | ≥ 70%     | ✅ 85%  |
-| Tests unitaires       | ≥ 500     | ✅ 2934 |
+| Tests unitaires       | ≥ 500     | ✅ 3045 |
 | Tests E2E             | ≥ 50      | ✅ 430  |
 | Score Lighthouse A11y | ≥ 90%     | ✅ 95%  |
 | Anomalies critiques   | 0 en prod | ✅ 0    |
@@ -397,6 +397,7 @@ Ce tableau recense chaque campagne de tests significative (mise en production, f
 
 | Date       | Sprint    | Version/Commit | Tests unitaires | Tests E2E  | Couverture | Statut  | Notes                                                                                                                                                                                                                                                                                                          |
 | ---------- | --------- | -------------- | --------------- | ---------- | ---------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 26/01/2026 | Sprint 12 | SP-394         | 3045/3045 ✅    | 430/430 ✅ | ~85%       | ✅ PASS | 🆕 SP-394 Server Actions Schedules CRUD avec RBAC. +30 tests unitaires. 10 actions : getSchedules, getScheduleById, createSchedule (multi-employé), updateSchedule, deleteSchedule, deleteScheduleGroup, duplicateSchedule, updateScheduleStatus, getEmployeeSchedules, getTeamSchedules. Permissions RBAC complètes. Total : 3475 tests 🎉 |
 | 26/01/2026 | Sprint 12 | SP-393         | 3015/3015 ✅    | 430/430 ✅ | ~85%       | ✅ PASS | 🆕 SP-393 Validations Zod Plannings. +81 tests unitaires (schedule: 47, availability: 34). Schemas createScheduleSchema, updateScheduleSchema, scheduleFiltersSchema, recurrenceRuleSchema. Support multi-employés employeeIds. Labels FR, couleurs, icônes. Total : 3445 tests 🎉 |
 | 26/01/2026 | Sprint 12 | SP-392         | 2934/2934 ✅    | 430/430 ✅ | ~85%       | ✅ PASS | 🆕 SP-392 Gestion Plannings - Prisma. Modèle Availability (disponibilités employés), enum AvailabilityType (6 types). Enrichissement Schedule (isRecurring, recurrenceRule, recurrenceGroupId, scheduleGroupId). Migration + indexes optimisés. Fondations Sprint 12. Total : 3364 tests |
 | 25/01/2026 | Sprint 11 | SP-263         | 2934/2934 ✅    | 430/430 ✅ | ~85%       | ✅ PASS | 🆕 SP-263 Réinitialisation mot de passe. +39 tests unitaires (ForgotPasswordForm: 14, ResetPasswordForm: 17, reset-password page: 8). Pages /forgot-password et /reset-password. Server Actions avec tokens sécurisés. Validation Zod. Anti-énumération OWASP. Framer Motion animations. Total : 3364 tests 🎉 |
@@ -1600,8 +1601,9 @@ not-found.tsx (Server Component)
 | 25/01/2026 (SP-263)         | 2934            | 430       | 3364  | ~85%       | 📈 +39   |
 | 26/01/2026 (SP-392)         | 2934            | 430       | 3364  | ~85%       | ⚙️ Prisma |
 | 26/01/2026 (SP-393)         | 3015            | 430       | 3445  | ~85%       | 📈 +81   |
+| 26/01/2026 (SP-394)         | 3045            | 430       | 3475  | ~85%       | 📈 +30   |
 
-**Graphique d'évolution** : De 27 tests (04/12) à 3445 tests (26/01) = **+12659% de croissance** 🚀
+**Graphique d'évolution** : De 27 tests (04/12) à 3475 tests (26/01) = **+12770% de croissance** 🚀
 
 ---
 
@@ -1611,16 +1613,16 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
 
 | N°  | Compétence                                                       | Preuve                                                                                                                                      |
 | --- | ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | Tester les composants d'une application                          | 2934 tests unitaires documentés                                                                                                             |
+| 1   | Tester les composants d'une application                          | 3045 tests unitaires documentés                                                                                                             |
 | 2   | Contribuer à la qualité du code                                  | Couverture 85%, anomalies tracées                                                                                                           |
 | 3   | Documenter les procédures                                        | Procédure de recette formalisée                                                                                                             |
 | 4   | Utiliser une méthodologie                                        | Approche structurée par sprints                                                                                                             |
-| 5   | Développer des tests automatisés                                 | 3364 tests (unitaires + E2E)                                                                                                                |
-| 6   | Sécuriser une application                                        | Tests RBAC (62 unitaires, 27 E2E), rate limiting, protection énumération                                                                    |
+| 5   | Développer des tests automatisés                                 | 3475 tests (unitaires + E2E)                                                                                                                |
+| 6   | Sécuriser une application                                        | Tests RBAC (92 unitaires, 27 E2E), rate limiting, protection énumération                                                                    |
 | 7   | Concevoir une architecture logicielle                            | Pattern ServiceResult<T>, multi-tenant                                                                                                      |
 | 8   | Développer des composants métier                                 | 4 dashboards par rôle                                                                                                                       |
 | 9   | Réaliser des tests E2E cross-browser                             | Playwright multi-navigateurs                                                                                                                |
-| 10  | Implémenter des fonctionnalités CRUD                             | Server Actions, Zod, React Hook Form                                                                                                        |
+| 10  | Implémenter des fonctionnalités CRUD                             | Server Actions Schedules (SP-394), Zod, React Hook Form                                                                                     |
 | 11  | Implémenter un contrôle d'accès RBAC                             | 4 rôles, filtres dynamiques                                                                                                                 |
 | 12  | Gérer des relations many-to-many                                 | Pattern Prisma connect/disconnect                                                                                                           |
 | 13  | Implémenter une navigation dynamique                             | Breadcrumbs, Sidebar, Empty States                                                                                                          |
@@ -1700,6 +1702,7 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
 
 | Date       | Modification                                                                                                                                                                                                                                                                                                                                     |
 | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 26/01/2026 | 🆕 SP-394 Server Actions Schedules CRUD : +30 tests unitaires. 10 actions CRUD (`getSchedules`, `getScheduleById`, `createSchedule`, `updateSchedule`, `deleteSchedule`, `deleteScheduleGroup`, `duplicateSchedule`, `updateScheduleStatus`, `getEmployeeSchedules`, `getTeamSchedules`). RBAC complet (SYSTEM_ADMIN, DIRECTOR, MANAGER, EMPLOYEE). Multi-employé via `employeeIds`. Total : 3475 tests 🎉 |
 | 26/01/2026 | 🆕 SP-393 Validations Zod Plannings : +81 tests unitaires (schedule: 47, availability: 34). Schemas `createScheduleSchema`, `updateScheduleSchema`, `scheduleFiltersSchema`, `recurrenceRuleSchema`. Support multi-employés `employeeIds`. `timeSchema` et `hexColorSchema` dans common.ts. Labels FR, couleurs, icônes. Total : 3445 tests 🎉 |
 | 26/01/2026 | 🆕 SP-392 Gestion Plannings - Fondations Prisma : Modèle `Availability` (disponibilités/indisponibilités employés), enum `AvailabilityType` (UNAVAILABLE, PREFERRED, VACATION, SICK, TRAINING, OTHER). Enrichissement `Schedule` (isRecurring, recurrenceRule JSON, recurrenceGroupId, scheduleGroupId). Migration + indexes. Début Sprint 12. |
 | 25/01/2026 | 🆕 SP-263 Réinitialisation mot de passe : +39 tests unitaires (ForgotPasswordForm: 14, ResetPasswordForm: 17, reset-password page: 8). Pages /forgot-password et /reset-password avec Server Actions sécurisées. Tokens aléatoires, anti-énumération OWASP, validation Zod. Compétence CDA #47 ajoutée. Total : 3364 tests 🎉                    |
@@ -1747,11 +1750,12 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
 ### Sprint 12 - Gestion des Plannings (SP-392+) 🆕
 
 - SP-392 : Schéma Prisma Availability + Migration ✅ TERMINÉ
-- Modèle `Availability` : Disponibilités/indisponibilités employés
-- Enum `AvailabilityType` : UNAVAILABLE, PREFERRED, VACATION, SICK, TRAINING, OTHER
-- Enrichissement `Schedule` : isRecurring, recurrenceRule, recurrenceGroupId, scheduleGroupId
-- Migration : `20260126113942_add_availability_model_and_schedule_recurrence`
-- Prochaines étapes : SP-393 (Validations Zod), SP-394 (Server Actions), SP-395+ (UI)
+- SP-393 : Validations Zod Schedules/Availability ✅ TERMINÉ
+- SP-394 : Server Actions CRUD Schedules avec RBAC ✅ TERMINÉ
+  - 10 actions : getSchedules, getScheduleById, createSchedule, updateSchedule, deleteSchedule, deleteScheduleGroup, duplicateSchedule, updateScheduleStatus, getEmployeeSchedules, getTeamSchedules
+  - RBAC : SYSTEM_ADMIN (lecture cross-tenant), DIRECTOR (CRUD complet), MANAGER (équipes), EMPLOYEE (lecture propres schedules)
+  - 30 tests unitaires
+- Prochaines étapes : SP-395+ (UI Composants Planning)
 
 ### Sprint 11 - Réinitialisation mot de passe (SP-263)
 

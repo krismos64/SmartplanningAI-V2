@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 26 janvier 2026 (Sprint 12 - SP-393 Validations Zod Plannings)
+- **Dernière mise à jour** : 26 janvier 2026 (Sprint 12 - SP-394 Server Actions Schedules)
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -233,6 +233,30 @@ Schémas de validation Zod pour le module de gestion des plannings :
   - `availabilityFiltersSchema` : Filtres par type, employé, période
 
 - **Tests** : 81 tests unitaires (47 schedule + 34 availability)
+
+### Gestion des Plannings - Server Actions (SP-394 - 26 janvier 2026)
+
+Server Actions CRUD complets avec RBAC pour le module de gestion des plannings :
+
+- **10 Server Actions** (`src/lib/actions/schedules.ts`) :
+  - `getSchedules` : Liste avec filtres, pagination et tri
+  - `getScheduleById` : Lecture unitaire avec contrôle d'accès
+  - `createSchedule` : Création mono/multi-employé via `employeeIds`
+  - `updateSchedule` : Modification partielle avec validation
+  - `deleteSchedule` : Suppression unitaire avec RBAC
+  - `deleteScheduleGroup` : Suppression batch par `scheduleGroupId`
+  - `duplicateSchedule` : Duplication avec décalage de date
+  - `updateScheduleStatus` : Changement rapide de statut
+  - `getEmployeeSchedules` : Schedules d'un employé spécifique
+  - `getTeamSchedules` : Schedules d'une équipe
+
+- **Permissions RBAC** :
+  - `SYSTEM_ADMIN` : Lecture seule cross-tenant
+  - `DIRECTOR` : CRUD complet sur l'entreprise
+  - `MANAGER` : CRUD scopé aux équipes gérées
+  - `EMPLOYEE` : Lecture de ses propres schedules uniquement
+
+- **Tests** : 30 tests unitaires couvrant tous les cas RBAC
 
 ### Gestion des Plannings - Base de données (SP-392 - 26 janvier 2026)
 
