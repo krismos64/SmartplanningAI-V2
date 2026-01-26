@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 26 janvier 2026 (Sprint 12 - SP-392 Gestion des Plannings)
+- **Dernière mise à jour** : 26 janvier 2026 (Sprint 12 - SP-393 Validations Zod Plannings)
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -214,6 +214,25 @@ import { tokens, colors, spacing } from '@/styles/tokens'
 - **Boutons gradient** : from-blue-500 to-cyan-400 avec shadow glow
 - **Support variant** : LoginForm et RegisterForm acceptent variant="dark" | "light"
 - **Tests** : 34 tests unitaires + 20 tests E2E passent
+
+### Gestion des Plannings - Validations Zod (SP-393 - 26 janvier 2026)
+
+Schémas de validation Zod pour le module de gestion des plannings :
+
+- **Schedule Schemas** (`src/lib/validations/schedule.ts`) :
+  - `createScheduleSchema` : Création de shifts avec validation date/heure
+  - `updateScheduleSchema` : Modification partielle avec ID requis
+  - `scheduleFiltersSchema` : Pagination, tri et filtres
+  - `recurrenceRuleSchema` : DAILY/WEEKLY/BIWEEKLY/MONTHLY avec endDate OU occurrences
+  - Support multi-employés via `employeeIds`
+  - Labels français, couleurs et icônes pour l'UI
+
+- **Availability Schemas** (`src/lib/validations/availability.ts`) :
+  - `createAvailabilitySchema` : Périodes d'indisponibilité avec horaires optionnels
+  - `updateAvailabilitySchema` : Modification partielle avec ID requis
+  - `availabilityFiltersSchema` : Filtres par type, employé, période
+
+- **Tests** : 81 tests unitaires (47 schedule + 34 availability)
 
 ### Gestion des Plannings - Base de données (SP-392 - 26 janvier 2026)
 
