@@ -31,6 +31,14 @@ vi.mock('@/lib/actions/schedules', () => ({
     mockUpdateSchedule(data) as Promise<unknown>,
 }))
 
+// Mock checkAvailabilityConflicts Server Action
+const mockCheckAvailabilityConflicts = vi.fn()
+
+vi.mock('@/lib/actions/availabilities', () => ({
+  checkAvailabilityConflicts: (...args: unknown[]) =>
+    mockCheckAvailabilityConflicts(...args) as Promise<unknown>,
+}))
+
 // Mock Schedule-X components
 vi.mock('@schedule-x/react', () => ({
   useCalendarApp: vi.fn(() => ({
@@ -159,6 +167,17 @@ describe('ScheduleCalendarDesktop', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockUpdateSchedule.mockResolvedValue({ success: true, data: {} })
+    mockCheckAvailabilityConflicts.mockResolvedValue({
+      success: true,
+      data: {
+        hasConflict: false,
+        hasHardConflict: false,
+        hasSoftConflict: false,
+        conflicts: [],
+        hardConflicts: [],
+        softConflicts: [],
+      },
+    })
   })
 
   describe('Rendering', () => {
