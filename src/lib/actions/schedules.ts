@@ -7,7 +7,7 @@
  * - MANAGER : CRUD sur ses equipes uniquement
  * - EMPLOYEE : Lecture seule de ses schedules
  *
- * @ticket SP-394
+ * @ticket SP-394, SP-399
  * @see Context7 - Next.js 15 Server Actions + Prisma transactions
  */
 
@@ -26,6 +26,12 @@ import {
   type UpdateScheduleInput,
 } from '@/lib/validations/schedule'
 import type { CrudActionResult, DeleteActionResult } from '@/types'
+import {
+  generateOccurrences,
+  generateRecurrenceGroupId,
+  MAX_TOTAL_SCHEDULES,
+  type RecurrenceRule,
+} from '@/lib/utils/recurrence'
 
 // ============================================================================
 // Types
@@ -556,16 +562,48 @@ export async function createSchedule(
         ? `group_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`
         : undefined
 
-    // Creer les schedules en transaction
-    const schedules = await prisma.$transaction(
-      employeeIds.map((employeeId) =>
-        prisma.schedule.create({
+    // Gestion de la récurrence (SP-399)
+    let occurrenceDates: { startDate: Date; endDate: Date }[] = [
+      { startDate: validated.startDate, endDate: validated.endDate },
+    ]
+    let recurrenceGroupId: string | undefined
+
+    if (validated.isRecurring && validated.recurrenceRule) {
+      // Parser et valider la règle de récurrence
+      const rule = validated.recurrenceRule as RecurrenceRule
+
+      // Générer toutes les occurrences
+      occurrenceDates = generateOccurrences(
+        validated.startDate,
+        validated.endDate,
+        rule
+      )
+
+      // Vérifier la limite totale de créneaux
+      const totalSchedules = occurrenceDates.length * employeeIds.length
+      if (totalSchedules > MAX_TOTAL_SCHEDULES) {
+        return {
+          success: false,
+          error: `Le nombre total de créneaux (${totalSchedules}) dépasse la limite autorisée (${MAX_TOTAL_SCHEDULES})`,
+        }
+      }
+
+      // Générer l'ID de groupe de récurrence
+      recurrenceGroupId = generateRecurrenceGroupId()
+    }
+
+    // Construire la liste des créations (employés × occurrences)
+    const createOperations: Prisma.ScheduleCreateArgs[] = []
+
+    for (const employeeId of employeeIds) {
+      for (const occurrence of occurrenceDates) {
+        createOperations.push({
           data: {
             employeeId,
             companyId: validated.companyId,
             teamId: validated.teamId ?? null,
-            startDate: validated.startDate,
-            endDate: validated.endDate,
+            startDate: occurrence.startDate,
+            endDate: occurrence.endDate,
             startTime: validated.startTime,
             endTime: validated.endTime,
             type: validated.type,
@@ -576,6 +614,7 @@ export async function createSchedule(
             color: validated.color ?? null,
             isRecurring: validated.isRecurring,
             recurrenceRule: validated.recurrenceRule ?? Prisma.JsonNull,
+            recurrenceGroupId: recurrenceGroupId ?? null,
             scheduleGroupId: scheduleGroupId ?? null,
             createdById: user.id,
           },
@@ -588,13 +627,21 @@ export async function createSchedule(
             },
           },
         })
-      )
+      }
+    }
+
+    // Creer les schedules en transaction
+    const schedules = await prisma.$transaction(
+      createOperations.map((op) => prisma.schedule.create(op))
     )
 
     revalidatePath('/app/schedules')
     revalidatePath('/app/dashboard')
 
-    return { success: true, data: schedules as ScheduleWithRelations[] }
+    return {
+      success: true,
+      data: schedules as unknown as ScheduleWithRelations[],
+    }
   } catch (error) {
     console.error('[createSchedule] Error:', error)
     const prismaError = handlePrismaError(error)
@@ -1095,6 +1142,375 @@ export async function getTeamSchedules(
     return { success: true, data: schedules as ScheduleWithRelations[] }
   } catch (error) {
     console.error('[getTeamSchedules] Error:', error)
+    const prismaError = handlePrismaError(error)
+    return { success: false, error: prismaError.error }
+  }
+}
+
+// ============================================================================
+// FONCTIONS POUR CRÉNEAUX RÉCURRENTS (SP-399)
+// ============================================================================
+
+/**
+ * Récupère le nombre de créneaux d'une série récurrente
+ */
+export async function getRecurrenceGroupCounts(
+  scheduleId: string
+): Promise<CrudActionResult<{ single: number; future: number; all: number }>> {
+  const authResult = await getAuthenticatedUser()
+
+  if (!authResult.success) {
+    return { success: false, error: authResult.error }
+  }
+
+  try {
+    // Récupérer le schedule
+    const schedule = await prisma.schedule.findUnique({
+      where: { id: scheduleId },
+      select: {
+        id: true,
+        recurrenceGroupId: true,
+        startDate: true,
+        employeeId: true,
+        companyId: true,
+      },
+    })
+
+    if (!schedule) {
+      return { success: false, error: 'Planning non trouvé' }
+    }
+
+    if (!schedule.recurrenceGroupId) {
+      return {
+        success: true,
+        data: { single: 1, future: 0, all: 1 },
+      }
+    }
+
+    // Compter tous les créneaux de la série
+    const allCount = await prisma.schedule.count({
+      where: { recurrenceGroupId: schedule.recurrenceGroupId },
+    })
+
+    // Compter les créneaux futurs (y compris celui-ci)
+    const futureCount = await prisma.schedule.count({
+      where: {
+        recurrenceGroupId: schedule.recurrenceGroupId,
+        startDate: { gte: schedule.startDate },
+      },
+    })
+
+    return {
+      success: true,
+      data: {
+        single: 1,
+        future: futureCount,
+        all: allCount,
+      },
+    }
+  } catch (error) {
+    console.error('[getRecurrenceGroupCounts] Error:', error)
+    const prismaError = handlePrismaError(error)
+    return { success: false, error: prismaError.error }
+  }
+}
+
+/**
+ * Supprime des créneaux récurrents selon la portée choisie
+ * @param scheduleId - ID du créneau de référence
+ * @param scope - 'single' | 'future' | 'all'
+ */
+export async function deleteRecurringSchedules(
+  scheduleId: string,
+  scope: 'single' | 'future' | 'all'
+): Promise<CrudActionResult<{ deletedCount: number }>> {
+  const authResult = await getAuthenticatedUser()
+
+  if (!authResult.success) {
+    return { success: false, error: authResult.error }
+  }
+
+  const user = authResult.user
+
+  try {
+    // Récupérer le schedule de référence
+    const schedule = await prisma.schedule.findUnique({
+      where: { id: scheduleId },
+    })
+
+    if (!schedule) {
+      return { success: false, error: 'Planning non trouvé' }
+    }
+
+    // Vérifier les permissions
+    const canModify = await canModifySchedule(user, schedule)
+    if (!canModify) {
+      return { success: false, error: 'Suppression non autorisée' }
+    }
+
+    let deletedCount = 0
+
+    switch (scope) {
+      case 'single':
+        // Supprimer uniquement ce créneau
+        await prisma.schedule.delete({ where: { id: scheduleId } })
+        deletedCount = 1
+        break
+
+      case 'future':
+        if (!schedule.recurrenceGroupId) {
+          // Pas de groupe, supprimer juste celui-ci
+          await prisma.schedule.delete({ where: { id: scheduleId } })
+          deletedCount = 1
+        } else {
+          // Récupérer tous les créneaux futurs du groupe pour vérifier les permissions
+          const futureSchedules = await prisma.schedule.findMany({
+            where: {
+              recurrenceGroupId: schedule.recurrenceGroupId,
+              startDate: { gte: schedule.startDate },
+            },
+          })
+
+          // Vérifier les permissions pour chacun
+          for (const s of futureSchedules) {
+            const canMod = await canModifySchedule(user, s)
+            if (!canMod) {
+              return {
+                success: false,
+                error: 'Suppression non autorisée pour certains plannings',
+              }
+            }
+          }
+
+          // Supprimer tous les futurs
+          const result = await prisma.schedule.deleteMany({
+            where: {
+              recurrenceGroupId: schedule.recurrenceGroupId,
+              startDate: { gte: schedule.startDate },
+            },
+          })
+          deletedCount = result.count
+        }
+        break
+
+      case 'all':
+        if (!schedule.recurrenceGroupId) {
+          // Pas de groupe, supprimer juste celui-ci
+          await prisma.schedule.delete({ where: { id: scheduleId } })
+          deletedCount = 1
+        } else {
+          // Récupérer tous les créneaux du groupe pour vérifier les permissions
+          const allSchedules = await prisma.schedule.findMany({
+            where: { recurrenceGroupId: schedule.recurrenceGroupId },
+          })
+
+          // Vérifier les permissions pour chacun
+          for (const s of allSchedules) {
+            const canMod = await canModifySchedule(user, s)
+            if (!canMod) {
+              return {
+                success: false,
+                error: 'Suppression non autorisée pour certains plannings',
+              }
+            }
+          }
+
+          // Supprimer tous
+          const result = await prisma.schedule.deleteMany({
+            where: { recurrenceGroupId: schedule.recurrenceGroupId },
+          })
+          deletedCount = result.count
+        }
+        break
+    }
+
+    revalidatePath('/app/schedules')
+    revalidatePath('/app/dashboard')
+
+    return { success: true, data: { deletedCount } }
+  } catch (error) {
+    console.error('[deleteRecurringSchedules] Error:', error)
+    const prismaError = handlePrismaError(error)
+    return { success: false, error: prismaError.error }
+  }
+}
+
+/**
+ * Type pour les mises à jour groupées de créneaux récurrents
+ */
+type RecurringScheduleUpdates = {
+  teamId?: string | null
+  startDate?: Date
+  endDate?: Date
+  startTime?: string
+  endTime?: string
+  type?:
+    | 'WORK'
+    | 'MEETING'
+    | 'BREAK'
+    | 'TRAINING'
+    | 'REMOTE'
+    | 'ON_CALL'
+    | 'OVERTIME'
+  status?: 'DRAFT' | 'CONFIRMED' | 'CANCELLED' | 'COMPLETED'
+  title?: string | null
+  description?: string | null
+  location?: string | null
+  color?: string | null
+}
+
+/**
+ * Met à jour des créneaux récurrents selon la portée choisie
+ * @param scheduleId - ID du créneau de référence
+ * @param scope - 'single' | 'future' | 'all'
+ * @param updates - Données à mettre à jour
+ */
+export async function updateRecurringSchedules(
+  scheduleId: string,
+  scope: 'single' | 'future' | 'all',
+  updates: RecurringScheduleUpdates
+): Promise<CrudActionResult<{ updatedCount: number }>> {
+  const authResult = await getAuthenticatedUser()
+
+  if (!authResult.success) {
+    return { success: false, error: authResult.error }
+  }
+
+  const user = authResult.user
+
+  try {
+    // Récupérer le schedule de référence
+    const schedule = await prisma.schedule.findUnique({
+      where: { id: scheduleId },
+    })
+
+    if (!schedule) {
+      return { success: false, error: 'Planning non trouvé' }
+    }
+
+    // Vérifier les permissions
+    const canModify = await canModifySchedule(user, schedule)
+    if (!canModify) {
+      return { success: false, error: 'Modification non autorisée' }
+    }
+
+    // Préparer les données de mise à jour (exclure id)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const updateData: Record<string, any> = {}
+    if (updates.teamId !== undefined) updateData.teamId = updates.teamId
+    if (updates.startTime) updateData.startTime = updates.startTime
+    if (updates.endTime) updateData.endTime = updates.endTime
+    if (updates.type) updateData.type = updates.type
+    if (updates.status) updateData.status = updates.status
+    if (updates.title !== undefined) updateData.title = updates.title
+    if (updates.description !== undefined)
+      updateData.description = updates.description
+    if (updates.location !== undefined) updateData.location = updates.location
+    if (updates.color !== undefined) updateData.color = updates.color
+
+    let updatedCount = 0
+
+    switch (scope) {
+      case 'single':
+        // Mettre à jour uniquement ce créneau
+        // Pour single, on peut aussi mettre à jour les dates
+        if (updates.startDate) updateData.startDate = updates.startDate
+        if (updates.endDate) updateData.endDate = updates.endDate
+
+        await prisma.schedule.update({
+          where: { id: scheduleId },
+          data: updateData,
+        })
+        updatedCount = 1
+        break
+
+      case 'future':
+        if (!schedule.recurrenceGroupId) {
+          // Pas de groupe, mettre à jour juste celui-ci
+          if (updates.startDate) updateData.startDate = updates.startDate
+          if (updates.endDate) updateData.endDate = updates.endDate
+
+          await prisma.schedule.update({
+            where: { id: scheduleId },
+            data: updateData,
+          })
+          updatedCount = 1
+        } else {
+          // Récupérer tous les créneaux futurs du groupe
+          const futureSchedules = await prisma.schedule.findMany({
+            where: {
+              recurrenceGroupId: schedule.recurrenceGroupId,
+              startDate: { gte: schedule.startDate },
+            },
+          })
+
+          // Vérifier les permissions pour chacun
+          for (const s of futureSchedules) {
+            const canMod = await canModifySchedule(user, s)
+            if (!canMod) {
+              return {
+                success: false,
+                error: 'Modification non autorisée pour certains plannings',
+              }
+            }
+          }
+
+          // Mettre à jour tous les futurs (sans changer les dates)
+          const result = await prisma.schedule.updateMany({
+            where: {
+              recurrenceGroupId: schedule.recurrenceGroupId,
+              startDate: { gte: schedule.startDate },
+            },
+            data: updateData,
+          })
+          updatedCount = result.count
+        }
+        break
+
+      case 'all':
+        if (!schedule.recurrenceGroupId) {
+          // Pas de groupe, mettre à jour juste celui-ci
+          if (updates.startDate) updateData.startDate = updates.startDate
+          if (updates.endDate) updateData.endDate = updates.endDate
+
+          await prisma.schedule.update({
+            where: { id: scheduleId },
+            data: updateData,
+          })
+          updatedCount = 1
+        } else {
+          // Récupérer tous les créneaux du groupe
+          const allSchedules = await prisma.schedule.findMany({
+            where: { recurrenceGroupId: schedule.recurrenceGroupId },
+          })
+
+          // Vérifier les permissions pour chacun
+          for (const s of allSchedules) {
+            const canMod = await canModifySchedule(user, s)
+            if (!canMod) {
+              return {
+                success: false,
+                error: 'Modification non autorisée pour certains plannings',
+              }
+            }
+          }
+
+          // Mettre à jour tous (sans changer les dates)
+          const result = await prisma.schedule.updateMany({
+            where: { recurrenceGroupId: schedule.recurrenceGroupId },
+            data: updateData,
+          })
+          updatedCount = result.count
+        }
+        break
+    }
+
+    revalidatePath('/app/schedules')
+    revalidatePath('/app/dashboard')
+
+    return { success: true, data: { updatedCount } }
+  } catch (error) {
+    console.error('[updateRecurringSchedules] Error:', error)
     const prismaError = handlePrismaError(error)
     return { success: false, error: prismaError.error }
   }

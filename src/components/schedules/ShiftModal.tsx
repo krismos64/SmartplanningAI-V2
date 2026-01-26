@@ -2,9 +2,9 @@
  * Composant ShiftModal - Création et édition de créneaux
  *
  * @description Modal pour créer ou éditer des créneaux (shifts)
- * Supporte la sélection multi-employés avec recherche
+ * Supporte la sélection multi-employés avec recherche et la récurrence
  *
- * @ticket SP-397
+ * @ticket SP-397, SP-399
  */
 
 'use client'
@@ -23,6 +23,7 @@ import {
   X,
   Check,
   Loader2,
+  Repeat,
 } from 'lucide-react'
 import { ScheduleType, ScheduleStatus } from '@prisma/client'
 
@@ -64,6 +65,12 @@ import {
 import { createSchedule, updateSchedule } from '@/lib/actions/schedules'
 import type { ScheduleWithRelations } from '@/lib/actions/schedules'
 import { useShiftFormData, type EmployeeOption } from './useShiftFormData'
+import { RecurrenceConfig } from './RecurrenceConfig'
+import {
+  type RecurrenceRule,
+  MAX_TOTAL_SCHEDULES,
+  calculateTotalSchedules,
+} from '@/lib/utils/recurrence'
 
 // ============================================================================
 // Types
@@ -145,6 +152,12 @@ export function ShiftModal({
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [employeeSearch, setEmployeeSearch] = useState('')
 
+  // État pour la récurrence (mode création uniquement)
+  const [isRecurring, setIsRecurring] = useState(false)
+  const [recurrenceRule, setRecurrenceRule] = useState<RecurrenceRule | null>(
+    null
+  )
+
   // Formulaire
   const {
     register,
@@ -178,6 +191,9 @@ export function ShiftModal({
       setEmployeeSearch('')
 
       if (mode === 'edit' && schedule) {
+        // Mode édition : pas de récurrence modifiable pour le moment
+        setIsRecurring(false)
+        setRecurrenceRule(null)
         reset({
           employeeIds: [schedule.employeeId],
           teamId: schedule.teamId,
@@ -192,6 +208,9 @@ export function ShiftModal({
           location: schedule.location ?? '',
         })
       } else {
+        // Mode création : réinitialiser la récurrence
+        setIsRecurring(false)
+        setRecurrenceRule(null)
         reset({
           employeeIds: [],
           teamId: null,
@@ -280,6 +299,23 @@ export function ShiftModal({
 
     try {
       if (mode === 'create') {
+        // Vérifier la limite de créneaux pour la récurrence
+        if (isRecurring && recurrenceRule) {
+          const totalSchedules = calculateTotalSchedules(
+            recurrenceRule,
+            data.employeeIds.length,
+            data.startDate,
+            data.endDate
+          )
+          if (totalSchedules > MAX_TOTAL_SCHEDULES) {
+            setSubmitError(
+              `Le nombre total de créneaux (${totalSchedules}) dépasse la limite autorisée (${MAX_TOTAL_SCHEDULES}). Réduisez le nombre d'occurrences ou d'employés.`
+            )
+            setIsSubmitting(false)
+            return
+          }
+        }
+
         const result = await createSchedule({
           employeeIds: data.employeeIds,
           companyId,
@@ -293,7 +329,8 @@ export function ShiftModal({
           title: data.title || null,
           description: data.description || null,
           location: data.location || null,
-          isRecurring: false,
+          isRecurring,
+          recurrenceRule: isRecurring ? recurrenceRule : null,
         })
 
         if (!result.success) {
@@ -742,6 +779,28 @@ export function ShiftModal({
               </p>
             )}
           </div>
+
+          {/* Récurrence (mode création uniquement) */}
+          {mode === 'create' && (
+            <RecurrenceConfig
+              value={recurrenceRule}
+              onChange={setRecurrenceRule}
+              isEnabled={isRecurring}
+              onEnabledChange={setIsRecurring}
+              startDate={watch('startDate')}
+              endDate={watch('endDate')}
+              employeeCount={selectedEmployeeIds.length || 1}
+              disabled={isSubmitting}
+            />
+          )}
+
+          {/* Indicateur récurrence en mode édition */}
+          {mode === 'edit' && schedule?.isRecurring && (
+            <div className="flex items-center gap-2 rounded-md bg-muted p-3 text-sm text-muted-foreground">
+              <Repeat className="h-4 w-4" />
+              <span>Ce créneau fait partie d&apos;une série récurrente</span>
+            </div>
+          )}
 
           {/* Actions */}
           <DialogFooter className="gap-2 sm:gap-0">
