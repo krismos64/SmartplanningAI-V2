@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 26 janvier 2026 (Sprint 12 - SP-399 Récurrence des Shifts)
+- **Dernière mise à jour** : 26 janvier 2026 (Sprint 12 - SP-401 CRUD Availabilities)
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -406,6 +406,41 @@ Système complet de récurrence pour les créneaux horaires :
   - Confirmation avant action
 
 - **Tests** : 24 tests utilitaire recurrence + 12 tests RecurrenceConfig
+
+### CRUD Availabilities (SP-401 - 26 janvier 2026)
+
+Système complet de gestion des indisponibilités employés :
+
+- **Server Actions avec RBAC** :
+  - `getAvailabilities` : Liste paginée avec filtres (type, dates)
+  - `getAvailabilityById` : Récupération unitaire
+  - `createAvailability` : Création avec permissions
+  - `updateAvailability` : Modification avec permissions
+  - `deleteAvailability` : Suppression avec permissions
+  - `getEmployeeAvailabilities` : Indisponibilités d'un employé sur une période
+  - `getTeamAvailabilities` : Indisponibilités d'une équipe
+  - `getAvailabilitiesStats` : Statistiques par type
+
+- **Permissions RBAC** :
+  - SYSTEM_ADMIN : Lecture seule (supervision)
+  - DIRECTOR : CRUD complet sur toute l'entreprise
+  - MANAGER : CRUD sur les membres de ses équipes
+  - EMPLOYEE : CRUD sur ses propres indisponibilités
+
+- **Composants UI** :
+  - `AvailabilityCard` : Carte d'affichage avec icône et couleur par type
+  - `AvailabilityModal` : Modal création/édition avec React Hook Form + Zod
+  - `AvailabilitiesList` : Liste paginée avec filtres (type, période)
+
+- **Types d'indisponibilité** :
+  - UNAVAILABLE (Indisponible) - Rouge
+  - PREFERRED (Préférence horaire) - Jaune
+  - VACATION (Congés/Vacances) - Bleu
+  - SICK (Maladie) - Orange
+  - TRAINING (Formation) - Violet
+  - OTHER (Autre) - Gris
+
+- **Tests** : 54 tests unitaires (22 Server Actions + 18 AvailabilityCard + 14 AvailabilityModal)
 
 ### Gestion des Plannings - Base de données (SP-392 - 26 janvier 2026)
 
@@ -1693,6 +1728,9 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 | RecurrenceConfig (SP-399)              | 100%     | 12       |
 | schedules actions (SP-397/399)         | 100%     | 30       |
 | schedule validation (SP-393/399)       | 100%     | 47       |
+| availabilities actions (SP-401)        | 100%     | 22       |
+| AvailabilityCard (SP-401)              | 100%     | 18       |
+| AvailabilityModal (SP-401)             | 100%     | 14       |
 
 ### Tests E2E
 
