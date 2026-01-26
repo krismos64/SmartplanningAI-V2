@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 26 janvier 2026 (Sprint 12 - SP-401 CRUD Availabilities)
+- **Dernière mise à jour** : 26 janvier 2026 (Sprint 12 - SP-400 Détection Conflits Horaires)
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -406,6 +406,36 @@ Système complet de récurrence pour les créneaux horaires :
   - Confirmation avant action
 
 - **Tests** : 24 tests utilitaire recurrence + 12 tests RecurrenceConfig
+
+### Détection de Conflits Horaires (SP-400 - 26 janvier 2026)
+
+Système de détection et affichage des conflits entre plannings et indisponibilités :
+
+- **Server Action `checkAvailabilityConflicts`** :
+  - Détection des chevauchements entre créneaux et indisponibilités
+  - Support multi-employés en un seul appel
+  - Classification automatique hard/soft conflicts
+  - Exclusion optionnelle d'une availability (pour édition)
+
+- **Classification des conflits** :
+  - **Hard conflicts (rouge)** : VACATION, SICK, UNAVAILABLE - Bloquants
+  - **Soft conflicts (jaune)** : PREFERRED, TRAINING, OTHER - Avertissements
+
+- **Composants UI** :
+  - `ConflictAlert` : Alerte visuelle avec détails des conflits (employé, type, dates, raison)
+  - `ConflictConfirmDialog` : Dialog de confirmation pour drag & drop avec conflits
+
+- **Hook `useConflictDetection`** :
+  - Détection temps réel avec debounce (300ms par défaut)
+  - Support multi-employés
+  - États : isChecking, hasConflict, hasHardConflict, hasSoftConflict
+  - Méthodes : refetch(), reset()
+
+- **Intégrations** :
+  - `ShiftModal` : Affichage temps réel des conflits lors de la création/édition
+  - `ScheduleCalendarDesktop` : Vérification avant sauvegarde du drag & drop
+
+- **Tests** : 25 tests unitaires (12 useConflictDetection + 13 ConflictAlert)
 
 ### CRUD Availabilities (SP-401 - 26 janvier 2026)
 
@@ -1731,6 +1761,8 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 | availabilities actions (SP-401)        | 100%     | 22       |
 | AvailabilityCard (SP-401)              | 100%     | 18       |
 | AvailabilityModal (SP-401)             | 100%     | 14       |
+| useConflictDetection (SP-400)          | 100%     | 12       |
+| ConflictAlert (SP-400)                 | 100%     | 13       |
 
 ### Tests E2E
 
