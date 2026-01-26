@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 26 janvier 2026 (Sprint 12 - SP-395 Page Schedules)
+- **Dernière mise à jour** : 26 janvier 2026 (Sprint 12 - SP-396 ScheduleCalendar)
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -74,7 +74,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - Gestion multi-tenant (isolation complète par entreprise)
 - Dashboard personnalisé par rôle avec KPIs
 - Gestion des employés et départements
-- Planning drag & drop (à venir)
+- Planning avec calendrier Schedule-X (vues jour/semaine/mois, responsive mobile)
 - Gestion des shifts et affectations
 - Demandes de congés avec workflow validation
 - Système de notifications temps réel

@@ -56,6 +56,12 @@
     "@radix-ui/react-toast": "^1.2.4",
     "@radix-ui/react-tooltip": "^1.2.8",
     "@react-email/components": "^1.0.4",
+    "@schedule-x/calendar": "^4.1.0",
+    "@schedule-x/drag-and-drop": "^3.7.3",
+    "@schedule-x/event-recurrence": "^4.1.0",
+    "@schedule-x/events-service": "^4.1.0",
+    "@schedule-x/react": "^4.1.0",
+    "@schedule-x/theme-default": "^4.1.0",
     "@tanstack/match-sorter-utils": "^8.19.4",
     "@tanstack/react-table": "^8.21.3",
     "bcryptjs": "^2.4.3",
@@ -83,6 +89,7 @@
     "swr": "^2.3.8",
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
+    "temporal-polyfill": "^0.3.0",
     "zod": "^3.25.76"
   },
   "devDependencies": {

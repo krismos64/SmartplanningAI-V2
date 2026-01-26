@@ -25,7 +25,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { getSchedules, ScheduleWithRelations } from '@/lib/actions/schedules'
-import { SchedulesList } from './SchedulesList'
+import { ScheduleCalendar } from '@/components/schedules'
 import { SchedulesFilters } from './SchedulesFilters'
 import {
   format,
@@ -346,15 +346,21 @@ export function SchedulesPageContent({
         )}
       </Card>
 
-      {/* Liste/Calendrier des schedules */}
+      {/* Calendrier des schedules (responsive) */}
       <Card>
         <CardContent className="pt-6">
-          <SchedulesList
+          <ScheduleCalendar
             schedules={schedules}
             viewMode={viewMode}
-            startDate={dateRange.start}
-            endDate={dateRange.end}
+            currentDate={currentDate}
+            onScheduleClick={(_schedule) => {
+              // TODO SP-397: Ouvrir modal d'édition
+            }}
+            onScheduleUpdate={(_id, _startDate, _endDate) => {
+              // TODO SP-397: Appeler updateSchedule via Server Action
+            }}
             isLoading={isPending}
+            canEdit={canCreate}
           />
         </CardContent>
       </Card>
