@@ -25,8 +25,13 @@ import '@schedule-x/theme-default/dist/index.css'
 import { format } from 'date-fns'
 import { ScheduleCalendarProps } from './ScheduleCalendar'
 import { ScheduleWithRelations, updateSchedule } from '@/lib/actions/schedules'
+import {
+  checkAvailabilityConflicts,
+  type AvailabilityConflict,
+} from '@/lib/actions/availabilities'
 import { CalendarX, GripVertical } from 'lucide-react'
 import { useToast } from '@/components/toast/use-toast'
+import { ConflictConfirmDialog } from './ConflictConfirmDialog'
 
 // ============================================================================
 // Configuration des couleurs par type de schedule
@@ -165,6 +170,24 @@ export function ScheduleCalendarDesktop({
   // État de mise à jour en cours
   const [isUpdating, setIsUpdating] = useState(false)
 
+  // État pour la détection de conflits lors du drag & drop
+  const [pendingUpdate, setPendingUpdate] = useState<{
+    eventId: string
+    startDate: Date
+    endDate: Date
+    startTime: string
+    endTime: string
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    originalEvent: any
+  } | null>(null)
+  const [conflictDialogOpen, setConflictDialogOpen] = useState(false)
+  const [detectedConflicts, setDetectedConflicts] = useState<{
+    conflicts: AvailabilityConflict[]
+    hardConflicts: AvailabilityConflict[]
+    softConflicts: AvailabilityConflict[]
+  }>({ conflicts: [], hardConflicts: [], softConflicts: [] })
+  const [isCheckingConflicts, setIsCheckingConflicts] = useState(false)
+
   // Ref pour le service d'events
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const eventsServiceRef = useRef<any>(null)
@@ -183,33 +206,20 @@ export function ScheduleCalendarDesktop({
     return service
   })
 
-  // Handler pour la mise à jour d'un événement (drag ou resize)
-  const handleEventUpdate = useCallback(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async (event: any) => {
-      if (!canEdit || isUpdating) return
-
+  // Fonction pour effectuer la mise à jour réelle
+  const performUpdate = useCallback(
+    async (
+      eventId: string,
+      startDate: Date,
+      endDate: Date,
+      startTime: string,
+      endTime: string,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      originalEvent: any
+    ) => {
       setIsUpdating(true)
-      /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-argument */
-      const eventId = event.id as string
-
-      // Sauvegarder l'événement original pour rollback
-      const originalEvent = originalEventsRef.current.get(eventId)
 
       try {
-        // Parser les dates Temporal
-        const startStr = String(event.start.toString())
-        const endStr = String(event.end.toString())
-
-        // Extraire date et heure du format ISO Temporal
-        const startDate = new Date(startStr)
-        const endDate = new Date(endStr)
-
-        // Extraire les heures au format HH:mm
-        const startTime = format(startDate, 'HH:mm')
-        const endTime = format(endDate, 'HH:mm')
-
-        // Appeler la Server Action
         const result = await updateSchedule({
           id: eventId,
           startDate,
@@ -224,15 +234,21 @@ export function ScheduleCalendarDesktop({
           })
 
           // Mettre à jour la référence originale
-          originalEventsRef.current.set(eventId, event)
+          originalEventsRef.current.set(eventId, {
+            id: eventId,
+            start: startDate,
+            end: endDate,
+          })
 
           // Notifier le parent pour refresh
           onScheduleUpdate?.(eventId, startDate, endDate)
         } else {
           // Rollback en cas d'erreur
+          /* eslint-disable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call */
           if (originalEvent && eventsServiceRef.current) {
             eventsServiceRef.current.update(originalEvent)
           }
+          /* eslint-enable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call */
 
           toastError('Erreur', {
             description: result.error || 'Impossible de modifier le créneau.',
@@ -240,9 +256,11 @@ export function ScheduleCalendarDesktop({
         }
       } catch (err) {
         // Rollback en cas d'exception
+        /* eslint-disable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call */
         if (originalEvent && eventsServiceRef.current) {
           eventsServiceRef.current.update(originalEvent)
         }
+        /* eslint-enable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call */
 
         toastError('Erreur', {
           description: 'Une erreur est survenue lors de la modification.',
@@ -250,10 +268,138 @@ export function ScheduleCalendarDesktop({
         console.error('[ScheduleCalendarDesktop] Update error:', err)
       } finally {
         setIsUpdating(false)
+        setPendingUpdate(null)
+      }
+    },
+    [onScheduleUpdate, success, toastError]
+  )
+
+  // Handler pour confirmer la mise à jour malgré les conflits
+  const handleConfirmWithConflicts = useCallback(async () => {
+    if (!pendingUpdate) return
+
+    setConflictDialogOpen(false)
+    await performUpdate(
+      pendingUpdate.eventId,
+      pendingUpdate.startDate,
+      pendingUpdate.endDate,
+      pendingUpdate.startTime,
+      pendingUpdate.endTime,
+      pendingUpdate.originalEvent
+    )
+  }, [pendingUpdate, performUpdate])
+
+  // Handler pour annuler la mise à jour (rollback)
+  const handleCancelUpdate = useCallback(() => {
+    if (pendingUpdate?.originalEvent && eventsServiceRef.current) {
+      /* eslint-disable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call */
+      eventsServiceRef.current.update(pendingUpdate.originalEvent)
+      /* eslint-enable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call */
+    }
+    setConflictDialogOpen(false)
+    setPendingUpdate(null)
+    setDetectedConflicts({
+      conflicts: [],
+      hardConflicts: [],
+      softConflicts: [],
+    })
+  }, [pendingUpdate])
+
+  // Handler pour la mise à jour d'un événement (drag ou resize)
+  const handleEventUpdate = useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async (event: any) => {
+      if (!canEdit || isUpdating || isCheckingConflicts) return
+
+      /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-argument */
+      const eventId = event.id as string
+
+      // Sauvegarder l'événement original pour rollback
+      const originalEvent = originalEventsRef.current.get(eventId)
+
+      // Parser les dates Temporal
+      const startStr = String(event.start.toString())
+      const endStr = String(event.end.toString())
+
+      // Extraire date et heure du format ISO Temporal
+      const startDate = new Date(startStr)
+      const endDate = new Date(endStr)
+
+      // Extraire les heures au format HH:mm
+      const startTime = format(startDate, 'HH:mm')
+      const endTime = format(endDate, 'HH:mm')
+
+      // Récupérer le schedule pour obtenir l'employeeId
+      const schedule = schedulesMapRef.current.get(eventId)
+      if (!schedule?.employeeId) {
+        // Pas d'employé associé, on fait la mise à jour directement
+        await performUpdate(
+          eventId,
+          startDate,
+          endDate,
+          startTime,
+          endTime,
+          originalEvent
+        )
+        return
+      }
+
+      // Vérifier les conflits avant de sauvegarder
+      setIsCheckingConflicts(true)
+
+      try {
+        const conflictResult = await checkAvailabilityConflicts(
+          [schedule.employeeId],
+          startDate,
+          endDate,
+          startTime,
+          endTime
+        )
+
+        if (conflictResult.success && conflictResult.data?.hasConflict) {
+          // Stocker les infos pour le dialog de confirmation
+          setPendingUpdate({
+            eventId,
+            startDate,
+            endDate,
+            startTime,
+            endTime,
+            originalEvent,
+          })
+          setDetectedConflicts({
+            conflicts: conflictResult.data.conflicts,
+            hardConflicts: conflictResult.data.hardConflicts,
+            softConflicts: conflictResult.data.softConflicts,
+          })
+          setConflictDialogOpen(true)
+        } else {
+          // Pas de conflit, mise à jour directe
+          await performUpdate(
+            eventId,
+            startDate,
+            endDate,
+            startTime,
+            endTime,
+            originalEvent
+          )
+        }
+      } catch (err) {
+        console.error('[ScheduleCalendarDesktop] Conflict check error:', err)
+        // En cas d'erreur de vérification, on propose quand même la mise à jour
+        await performUpdate(
+          eventId,
+          startDate,
+          endDate,
+          startTime,
+          endTime,
+          originalEvent
+        )
+      } finally {
+        setIsCheckingConflicts(false)
       }
       /* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-argument */
     },
-    [canEdit, isUpdating, onScheduleUpdate, success, toastError]
+    [canEdit, isUpdating, isCheckingConflicts, performUpdate]
   )
 
   // Convertir les schedules en events Schedule-X avec Temporal API
@@ -405,11 +551,15 @@ export function ScheduleCalendarDesktop({
   return (
     <div className="schedule-calendar-desktop relative space-y-4">
       {/* Indicateur de mise à jour */}
-      {isUpdating && (
+      {(isUpdating || isCheckingConflicts) && (
         <div className="absolute inset-0 z-50 flex items-center justify-center rounded-lg bg-background/50">
           <div className="flex items-center gap-2 rounded-md bg-background p-4 shadow-lg">
             <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-            <span className="text-sm">Mise à jour en cours...</span>
+            <span className="text-sm">
+              {isCheckingConflicts
+                ? 'Vérification des conflits...'
+                : 'Mise à jour en cours...'}
+            </span>
           </div>
         </div>
       )}
@@ -443,6 +593,35 @@ export function ScheduleCalendarDesktop({
           ))}
         </div>
       </div>
+
+      {/* Dialog de confirmation de conflits */}
+      <ConflictConfirmDialog
+        open={conflictDialogOpen}
+        onOpenChange={setConflictDialogOpen}
+        conflicts={detectedConflicts.conflicts}
+        hardConflicts={detectedConflicts.hardConflicts}
+        softConflicts={detectedConflicts.softConflicts}
+        onConfirm={() => void handleConfirmWithConflicts()}
+        onCancel={handleCancelUpdate}
+        employeeName={
+          pendingUpdate
+            ? (() => {
+                const schedule = schedulesMapRef.current.get(
+                  pendingUpdate.eventId
+                )
+                return schedule?.employee
+                  ? `${schedule.employee.firstName} ${schedule.employee.lastName}`
+                  : undefined
+              })()
+            : undefined
+        }
+        scheduleDate={
+          pendingUpdate
+            ? format(pendingUpdate.startDate, 'dd/MM/yyyy')
+            : undefined
+        }
+        isLoading={isUpdating}
+      />
     </div>
   )
 }
