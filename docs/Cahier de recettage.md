@@ -34,7 +34,7 @@ Dans le cadre du diplôme **CDA (Concepteur Développeur d'Applications)**, ce c
 | Métrique              | Objectif  | Atteint |
 | --------------------- | --------- | ------- |
 | Couverture globale    | ≥ 70%     | ✅ 85%  |
-| Tests unitaires       | ≥ 500     | ✅ 3278 |
+| Tests unitaires       | ≥ 500     | ✅ 3284 |
 | Tests E2E             | ≥ 50      | ✅ 430  |
 | Score Lighthouse A11y | ≥ 90%     | ✅ 95%  |
 | Anomalies critiques   | 0 en prod | ✅ 0    |
@@ -397,6 +397,7 @@ Ce tableau recense chaque campagne de tests significative (mise en production, f
 
 | Date       | Sprint    | Version/Commit | Tests unitaires | Tests E2E  | Couverture | Statut  | Notes                                                                                                                                                                                                                                                                                                          |
 | ---------- | --------- | -------------- | --------------- | ---------- | ---------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 27/01/2026 | Sprint 12 | SP-403         | 3284/3284 ✅    | 430/430 ✅ | ~85%       | ✅ PASS | 🆕 SP-403 Export PDF Planning. +6 tests unitaires (SchedulePdfDocument: 6). API Route GET `/api/schedules/export/pdf` avec auth et RBAC (MANAGER/DIRECTOR). Composant React PDF `SchedulePdfDocument` (A4 paysage, tableau employés × jours, légende 7 types). `ExportDropdown` dans toolbar schedules (PDF + placeholder Excel). Total : 3714 tests |
 | 27/01/2026 | Sprint 12 | SP-402         | 3278/3278 ✅    | 430/430 ✅ | ~85%       | ✅ PASS | 🆕 SP-402 Overlay Indisponibilités Calendrier. +47 tests unitaires (useCalendarAvailabilities: 10, AvailabilityBadge: 20, AvailabilityOverlay: 17). Server Action getAvailabilitiesForCalendar avec RBAC. Hook useCalendarAvailabilities avec debounce et cache. Composants AvailabilityBadge, AvailabilityPopover, AvailabilityOverlay. Intégration Schedule-X desktop + badges mobile. Toggle Eye/EyeOff. Total : 3708 tests |
 | 26/01/2026 | Sprint 12 | SP-400         | 3231/3231 ✅    | 430/430 ✅ | ~85%       | ✅ PASS | 🆕 SP-400 Détection Conflits Horaires. +25 tests unitaires (useConflictDetection: 12, ConflictAlert: 13). Server Action checkAvailabilityConflicts. Classification hard/soft conflicts. Composants ConflictAlert, ConflictConfirmDialog. Hook useConflictDetection avec debounce. Intégration ShiftModal + ScheduleCalendarDesktop (drag & drop). Total : 3661 tests |
 | 26/01/2026 | Sprint 12 | SP-401         | 3206/3206 ✅    | 430/430 ✅ | ~85%       | ✅ PASS | 🆕 SP-401 CRUD Availabilities. +54 tests unitaires (Server Actions: 22, AvailabilityCard: 18, AvailabilityModal: 14). 8 Server Actions RBAC : getAvailabilities, getAvailabilityById, createAvailability, updateAvailability, deleteAvailability, getEmployeeAvailabilities, getTeamAvailabilities, getAvailabilitiesStats. Composants UI : AvailabilityCard, AvailabilityModal, AvailabilitiesList. 6 types d'indisponibilité avec icônes/couleurs. Total : 3636 tests |
@@ -1712,6 +1713,7 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
 
 | Date       | Modification                                                                                                                                                                                                                                                                                                                                     |
 | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 27/01/2026 | 🆕 SP-403 Export PDF Planning : +6 tests unitaires (SchedulePdfDocument: 6). API Route GET `/api/schedules/export/pdf` avec auth NextAuth v5 et RBAC (MANAGER/DIRECTOR). Composant React PDF `SchedulePdfDocument` via `@react-pdf/renderer` (A4 paysage, tableau employés × jours, légende 7 types de shift). `ExportDropdown` dans toolbar schedules (export PDF fonctionnel + placeholder Excel). Total : 3714 tests |
 | 27/01/2026 | 🆕 SP-402 Overlay Indisponibilités Calendrier : +47 tests unitaires (useCalendarAvailabilities: 10, AvailabilityBadge: 20, AvailabilityOverlay: 17). Server Action `getAvailabilitiesForCalendar` avec RBAC. Hook `useCalendarAvailabilities` avec debounce 200ms et cache local. Composants `AvailabilityBadge`, `AvailabilityPopover`, `AvailabilityOverlay`. Intégration Schedule-X desktop (events colorés) + badges mobile. Toggle Eye/EyeOff dans SchedulesPageContent. Total : 3708 tests |
 | 26/01/2026 | 🆕 SP-401 CRUD Availabilities : +54 tests unitaires (Server Actions: 22, AvailabilityCard: 18, AvailabilityModal: 14). 8 Server Actions RBAC complet (getAvailabilities, getAvailabilityById, createAvailability, updateAvailability, deleteAvailability, getEmployeeAvailabilities, getTeamAvailabilities, getAvailabilitiesStats). Composants UI : AvailabilityCard, AvailabilityModal, AvailabilitiesList. 6 types d'indisponibilité avec icônes/couleurs. Total : 3636 tests |
 | 26/01/2026 | 🆕 SP-399 Récurrence des Shifts : +40 tests unitaires (recurrence: 24, RecurrenceConfig: 12, availability fix: 4). Fréquences DAILY/WEEKLY/BIWEEKLY/MONTHLY. Sélection jours semaine. Limites : 52 occurrences max, 200 créneaux max. Server Actions groupées (getRecurrenceGroupCounts, deleteRecurringSchedules, updateRecurringSchedules). RecurrenceEditDialog pour scope single/future/all. Total : 3582 tests |
@@ -1821,7 +1823,15 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
   - Composants UI : AvailabilityBadge (emoji par type), AvailabilityPopover (détails), AvailabilityOverlay (events Schedule-X)
   - Intégration : ScheduleCalendarDesktop (events colorés RGBA), ScheduleCalendarMobile (badges par jour), toggle Eye/EyeOff
   - 47 tests unitaires (useCalendarAvailabilities: 10, AvailabilityBadge: 20, AvailabilityOverlay: 17)
-- Prochaines étapes : SP-403+
+- SP-403 : Export PDF Planning ✅ TERMINÉ
+  - API Route GET `/api/schedules/export/pdf` avec auth NextAuth v5
+  - RBAC : MANAGER et DIRECTOR uniquement, isolation multi-tenant par companyId
+  - Composant React PDF `SchedulePdfDocument` via `@react-pdf/renderer` (A4 paysage)
+  - Tableau employés × jours avec badges horaires colorés par type
+  - Légende 7 types : Travail, Réunion, Pause, Formation, Télétravail, Astreinte, Heures sup.
+  - `ExportDropdown` dans toolbar schedules (PDF fonctionnel + placeholder Excel)
+  - 6 tests unitaires (buffer valide, header %PDF-, liste vide, vue mois, multi-employés, 7 types)
+- Prochaines étapes : SP-404+
 
 ### Sprint 11 - Réinitialisation mot de passe (SP-263)
 
