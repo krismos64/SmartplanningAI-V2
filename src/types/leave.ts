@@ -13,6 +13,7 @@ export type LeaveType =
   | 'RTT' // RTT
   | 'SICK_LEAVE' // Maladie
   | 'UNPAID_LEAVE' // Sans solde
+  | 'PARENTAL_LEAVE' // Congé parental
   | 'FAMILY_EVENT' // Événement familial
   | 'OTHER' // Autre
 
@@ -24,6 +25,7 @@ export const leaveTypeLabels: Record<LeaveType, string> = {
   RTT: 'RTT',
   SICK_LEAVE: 'Arrêt maladie',
   UNPAID_LEAVE: 'Congé sans solde',
+  PARENTAL_LEAVE: 'Congé parental',
   FAMILY_EVENT: 'Événement familial',
   OTHER: 'Autre',
 }
