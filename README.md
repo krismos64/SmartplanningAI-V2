@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 27 janvier 2026 (Sprint 12 - SP-403 Export PDF Planning)
+- **Dernière mise à jour** : 27 janvier 2026 (Sprint 12 - SP-404 Export Excel Planning)
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -407,6 +407,30 @@ Système complet de récurrence pour les créneaux horaires :
 
 - **Tests** : 24 tests utilitaire recurrence + 12 tests RecurrenceConfig
 
+### Export Excel Planning (SP-404 - 27 janvier 2026)
+
+Export du planning en fichier .xlsx via `SheetJS (xlsx)` :
+
+- **API Route `GET /api/schedules/export/excel`** :
+  - Authentification via `auth()` (NextAuth v5)
+  - RBAC : MANAGER et DIRECTOR uniquement
+  - Query params : startDate, endDate, teamId (optionnel)
+  - Isolation multi-tenant par `companyId`
+  - Réponse binaire .xlsx avec Content-Disposition attachment
+
+- **Générateur `generateScheduleExcel`** :
+  - Feuille 1 "Planning" : colonnes Employé, Date, Jour, Début, Fin, Durée (h), Type, Statut, Équipe, Lieu, Description
+  - Feuille 2 "Résumé" : heures totales par employé ventilées par type de shift
+  - Feuille 3 "Statistiques" : totaux globaux (shifts, heures, employés, moyenne)
+  - Largeurs de colonnes adaptées, dates FR, types/statuts traduits
+
+- **`ExportDropdown` mis à jour** :
+  - Export Excel fonctionnel (remplace le placeholder toast)
+  - État de chargement distinct PDF/Excel via `isExporting`
+  - Helpers partagés `downloadBlob` et `buildParams`
+
+- **Tests** : 7 tests unitaires (buffer valide, 3 feuilles, colonnes, durées, liste vide, statistiques, résumé par employé)
+
 ### Export PDF Planning (SP-403 - 27 janvier 2026)
 
 Export du planning en PDF via `@react-pdf/renderer` :
@@ -427,7 +451,7 @@ Export du planning en PDF via `@react-pdf/renderer` :
 - **Composant `ExportDropdown`** :
   - Dropdown Shadcn/ui avec icône Download
   - Export PDF fonctionnel (fetch → blob → download)
-  - Export Excel placeholder (toast "bientôt disponible")
+  - Export Excel fonctionnel (ajouté en SP-404)
   - Loading state avec spinner Loader2
 
 - **Tests** : 6 tests unitaires (buffer valide, header %PDF-, liste vide, vue mois, multi-employés, 7 types)
@@ -1771,7 +1795,7 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 
 | Catégorie                              | Coverage | Tests    |
 | -------------------------------------- | -------- | -------- |
-| **Global**                             | **~85%** | **3158** |
+| **Global**                             | **~85%** | **3165** |
 | loading                                | 100%     | 152      |
 | modals                                 | 100%     | 52       |
 | cards                                  | 77.09%   | 88       |
@@ -1818,6 +1842,7 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 | AvailabilityBadge (SP-402)             | 100%     | 20       |
 | AvailabilityOverlay (SP-402)           | 100%     | 17       |
 | SchedulePdfDocument (SP-403)           | 100%     | 6        |
+| generateScheduleExcel (SP-404)         | 100%     | 7        |
 
 ### Tests E2E
 
