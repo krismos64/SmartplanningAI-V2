@@ -189,12 +189,6 @@ test.describe('Schedules - Stats & Options', () => {
     await expect(schedulesPage.availabilityToggle).toBeVisible()
   })
 
-  test('affiche le bouton filtres', async ({ managerPage }) => {
-    const schedulesPage = new SchedulesPage(managerPage)
-    await schedulesPage.goto()
-
-    await expect(schedulesPage.filtersButton).toBeVisible()
-  })
 })
 
 // =============================================================================
@@ -235,13 +229,13 @@ test.describe('Schedules - Modal', () => {
 // =============================================================================
 
 test.describe('Schedules - Filtres', () => {
-  test('ouvre les filtres au clic sur le bouton', async ({ managerPage }) => {
+  test('affiche les filtres directement sur la page', async ({
+    managerPage,
+  }) => {
     const schedulesPage = new SchedulesPage(managerPage)
     await schedulesPage.goto()
 
-    await schedulesPage.openFilters()
-
-    // Le panel de filtres doit apparaître (contient des selects/inputs)
+    // Les filtres sont toujours visibles (pas de bouton toggle)
     await expect(
       managerPage.locator('[class*="border-t"]').first()
     ).toBeVisible()
