@@ -156,7 +156,9 @@ export function ScheduleCalendarMobile({
 
       return {
         date: day,
-        schedules: schedules.filter((s) => isSameDay(new Date(s.startDate), day)),
+        schedules: schedules.filter((s) =>
+          isSameDay(new Date(s.startDate), day)
+        ),
         availabilities: dayAvailabilities,
       }
     })
@@ -180,17 +182,23 @@ export function ScheduleCalendarMobile({
 
   return (
     <div className="space-y-4">
-      {schedulesByDay.map(({ date, schedules: daySchedules, availabilities: dayAvailabilities }) => (
-        <DaySection
-          key={date.toISOString()}
-          date={date}
-          schedules={daySchedules}
-          availabilities={dayAvailabilities}
-          onScheduleClick={onScheduleClick}
-          onAvailabilityClick={handleAvailabilityClick}
-          showEmptyDays={viewMode !== 'month'}
-        />
-      ))}
+      {schedulesByDay.map(
+        ({
+          date,
+          schedules: daySchedules,
+          availabilities: dayAvailabilities,
+        }) => (
+          <DaySection
+            key={date.toISOString()}
+            date={date}
+            schedules={daySchedules}
+            availabilities={dayAvailabilities}
+            onScheduleClick={onScheduleClick}
+            onAvailabilityClick={handleAvailabilityClick}
+            showEmptyDays={viewMode !== 'month'}
+          />
+        )
+      )}
 
       {/* Popover de détail d'indisponibilité (SP-402) */}
       {selectedAvailability && (

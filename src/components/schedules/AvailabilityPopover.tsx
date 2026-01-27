@@ -73,8 +73,14 @@ export function AvailabilityPopover({
   const config = AVAILABILITY_TYPE_CONFIG[availability.type]
   const isHard = HARD_AVAILABILITY_TYPES.includes(availability.type)
   const employeeName = `${availability.employee.firstName} ${availability.employee.lastName}`
-  const dateRange = formatDateRange(availability.startDate, availability.endDate)
-  const timeRange = formatTimeRange(availability.startTime, availability.endTime)
+  const dateRange = formatDateRange(
+    availability.startDate,
+    availability.endDate
+  )
+  const timeRange = formatTimeRange(
+    availability.startTime,
+    availability.endTime
+  )
 
   return (
     <Popover open={open} onOpenChange={onOpenChange}>
@@ -82,7 +88,7 @@ export function AvailabilityPopover({
       <PopoverContent className="w-80 p-0" align="start">
         {/* Header */}
         <div
-          className={`flex items-center justify-between p-3 border-b ${config.bgColor}`}
+          className={`flex items-center justify-between border-b p-3 ${config.bgColor}`}
         >
           <div className="flex items-center gap-2">
             <span className="text-xl" aria-hidden="true">
@@ -112,10 +118,10 @@ export function AvailabilityPopover({
         </div>
 
         {/* Content */}
-        <div className="p-3 space-y-3">
+        <div className="space-y-3 p-3">
           {/* Employe */}
           <div>
-            <p className="text-sm font-medium text-muted-foreground mb-1">
+            <p className="mb-1 text-sm font-medium text-muted-foreground">
               Employe
             </p>
             <p className="font-medium">{employeeName}</p>
@@ -123,9 +129,9 @@ export function AvailabilityPopover({
 
           {/* Dates */}
           <div className="flex items-start gap-2">
-            <Calendar className="h-4 w-4 mt-0.5 text-muted-foreground" />
+            <Calendar className="mt-0.5 h-4 w-4 text-muted-foreground" />
             <div>
-              <p className="text-sm font-medium text-muted-foreground mb-0.5">
+              <p className="mb-0.5 text-sm font-medium text-muted-foreground">
                 Periode
               </p>
               <p className="text-sm">{dateRange}</p>
@@ -135,9 +141,9 @@ export function AvailabilityPopover({
           {/* Heures */}
           {timeRange && (
             <div className="flex items-start gap-2">
-              <Clock className="h-4 w-4 mt-0.5 text-muted-foreground" />
+              <Clock className="mt-0.5 h-4 w-4 text-muted-foreground" />
               <div>
-                <p className="text-sm font-medium text-muted-foreground mb-0.5">
+                <p className="mb-0.5 text-sm font-medium text-muted-foreground">
                   Horaires
                 </p>
                 <p className="text-sm">{timeRange}</p>
@@ -148,9 +154,9 @@ export function AvailabilityPopover({
           {/* Raison */}
           {availability.reason && (
             <div className="flex items-start gap-2">
-              <MessageSquare className="h-4 w-4 mt-0.5 text-muted-foreground" />
+              <MessageSquare className="mt-0.5 h-4 w-4 text-muted-foreground" />
               <div>
-                <p className="text-sm font-medium text-muted-foreground mb-0.5">
+                <p className="mb-0.5 text-sm font-medium text-muted-foreground">
                   Raison
                 </p>
                 <p className="text-sm">{availability.reason}</p>

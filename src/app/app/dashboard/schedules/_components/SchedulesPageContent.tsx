@@ -157,11 +157,7 @@ export function SchedulesPageContent({
 
       setIsLoadingAvailabilities(true)
       try {
-        const result = await getAvailabilitiesForCalendar(
-          companyId,
-          start,
-          end
-        )
+        const result = await getAvailabilitiesForCalendar(companyId, start, end)
 
         if (result.success && result.data) {
           setAvailabilities(result.data)
@@ -169,7 +165,10 @@ export function SchedulesPageContent({
           setAvailabilities([])
         }
       } catch (error) {
-        console.error('[SchedulesPageContent] Error loading availabilities:', error)
+        console.error(
+          '[SchedulesPageContent] Error loading availabilities:',
+          error
+        )
         setAvailabilities([])
       } finally {
         setIsLoadingAvailabilities(false)

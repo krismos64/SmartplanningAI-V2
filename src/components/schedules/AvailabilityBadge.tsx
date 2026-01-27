@@ -125,11 +125,12 @@ export function AvailabilityBadge({
         onClick={onClick ? handleClick : undefined}
         onKeyDown={onClick ? handleKeyDown : undefined}
         className={cn(
-          'inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-medium border',
+          'inline-flex items-center gap-1 rounded border px-1.5 py-0.5 text-xs font-medium',
           config.bgColor,
           config.textColor,
           config.borderColor,
-          onClick && 'cursor-pointer hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-offset-1',
+          onClick &&
+            'cursor-pointer hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-offset-1',
           isHard && 'ring-1 ring-red-400/50',
           className
         )}
@@ -137,7 +138,7 @@ export function AvailabilityBadge({
       >
         <span aria-hidden="true">{config.emoji}</span>
         {employeeName && (
-          <span className="truncate max-w-[80px]">{employeeName}</span>
+          <span className="max-w-[80px] truncate">{employeeName}</span>
         )}
       </span>
     )
@@ -150,11 +151,12 @@ export function AvailabilityBadge({
       onClick={onClick ? handleClick : undefined}
       onKeyDown={onClick ? handleKeyDown : undefined}
       className={cn(
-        'flex items-center gap-2 px-2 py-1 rounded-md border',
+        'flex items-center gap-2 rounded-md border px-2 py-1',
         config.bgColor,
         config.textColor,
         config.borderColor,
-        onClick && 'cursor-pointer hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-offset-1',
+        onClick &&
+          'cursor-pointer hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-offset-1',
         isHard && 'ring-1 ring-red-400/50',
         className
       )}
@@ -163,9 +165,9 @@ export function AvailabilityBadge({
       <span className="text-base" aria-hidden="true">
         {config.emoji}
       </span>
-      <div className="flex flex-col min-w-0">
+      <div className="flex min-w-0 flex-col">
         {employeeName && (
-          <span className="text-sm font-medium truncate">{employeeName}</span>
+          <span className="truncate text-sm font-medium">{employeeName}</span>
         )}
         <span className="text-xs opacity-75">{config.label}</span>
       </div>
