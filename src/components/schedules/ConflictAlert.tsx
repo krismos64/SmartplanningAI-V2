@@ -161,7 +161,7 @@ export function ConflictAlert({
   const hasSoftConflicts = softConflicts.length > 0
 
   return (
-    <div className={cn('space-y-3', className)}>
+    <div className={cn('space-y-3', className)} data-testid="conflict-alert">
       {/* Alerte Hard Conflicts */}
       {hasHardConflicts && (
         <Alert variant="destructive">

@@ -322,7 +322,7 @@ export function SchedulesPageContent({
   const draftCount = schedules.filter((s) => s.status === 'DRAFT').length
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="schedules-page">
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
@@ -330,7 +330,12 @@ export function SchedulesPageContent({
             <CalendarDays className="h-6 w-6 text-primary" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">Plannings</h1>
+            <h1
+              className="text-2xl font-bold tracking-tight"
+              data-testid="schedules-title"
+            >
+              Plannings
+            </h1>
             <p className="text-sm text-muted-foreground">
               Gérez les horaires de travail de vos équipes
             </p>
@@ -338,6 +343,7 @@ export function SchedulesPageContent({
         </div>
         {canCreate && (
           <Button
+            data-testid="new-shift-button"
             onClick={() => {
               setShiftModalMode('create')
               setSelectedSchedule(null)
@@ -357,6 +363,7 @@ export function SchedulesPageContent({
             {/* Navigation date */}
             <div className="flex items-center gap-2">
               <Button
+                data-testid="nav-prev"
                 variant="outline"
                 size="icon"
                 onClick={() => navigate('prev')}
@@ -366,6 +373,7 @@ export function SchedulesPageContent({
                 <ChevronLeft className="h-4 w-4" />
               </Button>
               <Button
+                data-testid="nav-today"
                 variant="outline"
                 onClick={goToToday}
                 className="min-w-[100px]"
@@ -374,6 +382,7 @@ export function SchedulesPageContent({
                 Aujourd&apos;hui
               </Button>
               <Button
+                data-testid="nav-next"
                 variant="outline"
                 size="icon"
                 onClick={() => navigate('next')}
@@ -382,7 +391,10 @@ export function SchedulesPageContent({
               >
                 <ChevronRight className="h-4 w-4" />
               </Button>
-              <span className="ml-4 text-lg font-medium capitalize">
+              <span
+                className="ml-4 text-lg font-medium capitalize"
+                data-testid="date-range-label"
+              >
                 {dateRange.label}
               </span>
             </div>
@@ -402,6 +414,7 @@ export function SchedulesPageContent({
               <div className="flex items-center gap-2 rounded-md border px-3 py-1.5">
                 <Switch
                   id="show-availabilities"
+                  data-testid="availability-toggle"
                   checked={showAvailabilities}
                   onCheckedChange={setShowAvailabilities}
                   aria-label="Afficher les indisponibilités"
@@ -420,6 +433,7 @@ export function SchedulesPageContent({
               </div>
 
               <Button
+                data-testid="filters-button"
                 variant="outline"
                 size="sm"
                 onClick={() => setIsFiltersOpen(!isFiltersOpen)}
@@ -436,7 +450,10 @@ export function SchedulesPageContent({
                 value={viewMode}
                 onValueChange={(value: ViewMode) => handleViewModeChange(value)}
               >
-                <SelectTrigger className="w-[130px]">
+                <SelectTrigger
+                  className="w-[130px]"
+                  data-testid="view-mode-select"
+                >
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -497,7 +514,7 @@ export function SchedulesPageContent({
 
       {/* Stats rapides */}
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-        <Card>
+        <Card data-testid="stats-total">
           <CardContent className="pt-6">
             <div className="text-2xl font-bold">{totalCount}</div>
             <p className="text-sm text-muted-foreground">
@@ -505,13 +522,13 @@ export function SchedulesPageContent({
             </p>
           </CardContent>
         </Card>
-        <Card>
+        <Card data-testid="stats-employees">
           <CardContent className="pt-6">
             <div className="text-2xl font-bold">{uniqueEmployees}</div>
             <p className="text-sm text-muted-foreground">Employés planifiés</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card data-testid="stats-confirmed">
           <CardContent className="pt-6">
             <div className="text-2xl font-bold text-green-600">
               {confirmedCount}
@@ -519,7 +536,7 @@ export function SchedulesPageContent({
             <p className="text-sm text-muted-foreground">Shifts confirmés</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card data-testid="stats-draft">
           <CardContent className="pt-6">
             <div className="text-2xl font-bold text-amber-600">
               {draftCount}

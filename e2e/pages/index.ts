@@ -23,3 +23,6 @@ export {
   type EmployeeFormData,
   type TeamFormData,
 } from './crud'
+
+// Schedules Pages
+export { SchedulesPage } from './schedules.page'
