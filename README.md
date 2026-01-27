@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 27 janvier 2026 (Sprint 12 - SP-402 Overlay Indisponibilités Calendrier)
+- **Dernière mise à jour** : 27 janvier 2026 (Sprint 12 - SP-403 Export PDF Planning)
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -406,6 +406,31 @@ Système complet de récurrence pour les créneaux horaires :
   - Confirmation avant action
 
 - **Tests** : 24 tests utilitaire recurrence + 12 tests RecurrenceConfig
+
+### Export PDF Planning (SP-403 - 27 janvier 2026)
+
+Export du planning en PDF via `@react-pdf/renderer` :
+
+- **API Route `GET /api/schedules/export/pdf`** :
+  - Authentification via `auth()` (NextAuth v5)
+  - RBAC : MANAGER et DIRECTOR uniquement
+  - Query params : startDate, endDate, teamId (optionnel), view (week|month)
+  - Isolation multi-tenant par `companyId`
+  - Réponse binaire PDF avec Content-Disposition attachment
+
+- **Composant React PDF `SchedulePdfDocument`** :
+  - Document A4 paysage avec header (entreprise, période, date génération)
+  - Tableau employés × jours avec badges horaires colorés par type
+  - Légende des 7 types : Travail, Réunion, Pause, Formation, Télétravail, Astreinte, Heures sup.
+  - Helpers : groupByEmployee, getDaysInPeriod, getSchedulesForDay
+
+- **Composant `ExportDropdown`** :
+  - Dropdown Shadcn/ui avec icône Download
+  - Export PDF fonctionnel (fetch → blob → download)
+  - Export Excel placeholder (toast "bientôt disponible")
+  - Loading state avec spinner Loader2
+
+- **Tests** : 6 tests unitaires (buffer valide, header %PDF-, liste vide, vue mois, multi-employés, 7 types)
 
 ### Overlay Indisponibilités Calendrier (SP-402 - 27 janvier 2026)
 
@@ -1746,7 +1771,7 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 
 | Catégorie                              | Coverage | Tests    |
 | -------------------------------------- | -------- | -------- |
-| **Global**                             | **~85%** | **3152** |
+| **Global**                             | **~85%** | **3158** |
 | loading                                | 100%     | 152      |
 | modals                                 | 100%     | 52       |
 | cards                                  | 77.09%   | 88       |
@@ -1792,6 +1817,7 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 | useCalendarAvailabilities (SP-402)     | 100%     | 10       |
 | AvailabilityBadge (SP-402)             | 100%     | 20       |
 | AvailabilityOverlay (SP-402)           | 100%     | 17       |
+| SchedulePdfDocument (SP-403)           | 100%     | 6        |
 
 ### Tests E2E
 
