@@ -1,7 +1,7 @@
 /**
  * Barrel export pour les composants Schedule
  *
- * @ticket SP-396, SP-397, SP-399, SP-400
+ * @ticket SP-396, SP-397, SP-399, SP-400, SP-402
  */
 
 export {
@@ -29,3 +29,22 @@ export {
   ConflictConfirmDialog,
   type ConflictConfirmDialogProps,
 } from './ConflictConfirmDialog'
+
+// SP-402: Overlay Indisponibilités
+export {
+  AvailabilityBadge,
+  AVAILABILITY_TYPE_CONFIG,
+  HARD_AVAILABILITY_TYPES,
+  type AvailabilityBadgeProps,
+} from './AvailabilityBadge'
+export {
+  AvailabilityPopover,
+  type AvailabilityPopoverProps,
+} from './AvailabilityPopover'
+export {
+  AvailabilityOverlay,
+  useAvailabilityOverlayEvents,
+  AVAILABILITY_CALENDAR_CONFIG,
+  type AvailabilityOverlayProps,
+  type ScheduleXBackgroundEvent,
+} from './AvailabilityOverlay'

@@ -16,6 +16,7 @@ import { ScheduleWithRelations } from '@/lib/actions/schedules'
 import { ScheduleCalendarDesktop } from './ScheduleCalendarDesktop'
 import { ScheduleCalendarMobile } from './ScheduleCalendarMobile'
 import { Skeleton } from '@/components/ui/skeleton'
+import type { AvailabilityWithEmployee } from '@/lib/actions/availabilities'
 
 // ============================================================================
 // Types
@@ -38,6 +39,12 @@ export interface ScheduleCalendarProps {
   isLoading?: boolean
   /** Autorise l'édition (drag & drop) */
   canEdit?: boolean
+  /** Indisponibilités à afficher en overlay (SP-402) */
+  availabilities?: AvailabilityWithEmployee[]
+  /** Afficher les indisponibilités (SP-402) */
+  showAvailabilities?: boolean
+  /** Callback au clic sur une indisponibilité (SP-402) */
+  onAvailabilityClick?: (availability: AvailabilityWithEmployee) => void
 }
 
 // ============================================================================

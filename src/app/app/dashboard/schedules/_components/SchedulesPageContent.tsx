@@ -2,18 +2,21 @@
  * Contenu principal de la page Schedules
  *
  * @description Client Component avec navigation date, filtres et vue calendrier
- * @ticket SP-395
+ * Affiche les indisponibilités en overlay (SP-402)
+ * @ticket SP-395, SP-402
  */
 
 'use client'
 
-import { useState, useTransition, useCallback } from 'react'
+import { useState, useTransition, useCallback, useEffect } from 'react'
 import {
   CalendarDays,
   Plus,
   Filter,
   ChevronLeft,
   ChevronRight,
+  Eye,
+  EyeOff,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
@@ -24,7 +27,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { Switch } from '@/components/ui/switch'
+import { Label } from '@/components/ui/label'
 import { getSchedules, ScheduleWithRelations } from '@/lib/actions/schedules'
+import {
+  getAvailabilitiesForCalendar,
+  type AvailabilityWithEmployee,
+} from '@/lib/actions/availabilities'
 import { ScheduleCalendar, ShiftModal } from '@/components/schedules'
 import { SchedulesFilters } from './SchedulesFilters'
 import {
@@ -92,6 +101,13 @@ export function SchedulesPageContent({
     'create'
   )
 
+  // État pour les indisponibilités (SP-402)
+  const [availabilities, setAvailabilities] = useState<
+    AvailabilityWithEmployee[]
+  >([])
+  const [showAvailabilities, setShowAvailabilities] = useState(true)
+  const [isLoadingAvailabilities, setIsLoadingAvailabilities] = useState(false)
+
   // Permissions RBAC
   const canCreate = userRole === 'DIRECTOR' || userRole === 'MANAGER'
 
@@ -126,6 +142,42 @@ export function SchedulesPageContent({
   }, [viewMode, currentDate])
 
   const dateRange = getDateRange()
+
+  // Chargement des indisponibilités (SP-402)
+  const loadAvailabilities = useCallback(
+    async (start: Date, end: Date) => {
+      if (!showAvailabilities) {
+        setAvailabilities([])
+        return
+      }
+
+      setIsLoadingAvailabilities(true)
+      try {
+        const result = await getAvailabilitiesForCalendar(
+          companyId,
+          start,
+          end
+        )
+
+        if (result.success && result.data) {
+          setAvailabilities(result.data)
+        } else {
+          setAvailabilities([])
+        }
+      } catch (error) {
+        console.error('[SchedulesPageContent] Error loading availabilities:', error)
+        setAvailabilities([])
+      } finally {
+        setIsLoadingAvailabilities(false)
+      }
+    },
+    [companyId, showAvailabilities]
+  )
+
+  // Charger les indisponibilités au changement de période ou toggle
+  useEffect(() => {
+    void loadAvailabilities(dateRange.start, dateRange.end)
+  }, [dateRange.start, dateRange.end, showAvailabilities, loadAvailabilities])
 
   // Rechargement des données
   const reloadSchedules = useCallback(
@@ -334,6 +386,27 @@ export function SchedulesPageContent({
 
             {/* Contrôles de vue */}
             <div className="flex items-center gap-2">
+              {/* Toggle indisponibilités (SP-402) */}
+              <div className="flex items-center gap-2 rounded-md border px-3 py-1.5">
+                <Switch
+                  id="show-availabilities"
+                  checked={showAvailabilities}
+                  onCheckedChange={setShowAvailabilities}
+                  aria-label="Afficher les indisponibilités"
+                />
+                <Label
+                  htmlFor="show-availabilities"
+                  className="flex cursor-pointer items-center gap-1.5 text-sm"
+                >
+                  {showAvailabilities ? (
+                    <Eye className="h-4 w-4" />
+                  ) : (
+                    <EyeOff className="h-4 w-4" />
+                  )}
+                  <span className="hidden sm:inline">Indispos</span>
+                </Label>
+              </div>
+
               <Button
                 variant="outline"
                 size="sm"
@@ -387,8 +460,10 @@ export function SchedulesPageContent({
               }
             }}
             onScheduleUpdate={handleScheduleUpdate}
-            isLoading={isPending}
+            isLoading={isPending || isLoadingAvailabilities}
             canEdit={canCreate}
+            availabilities={availabilities}
+            showAvailabilities={showAvailabilities}
           />
         </CardContent>
       </Card>

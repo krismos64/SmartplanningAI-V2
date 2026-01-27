@@ -3,8 +3,9 @@
  *
  * @description Calendrier interactif Schedule-X pour desktop (≥768px)
  * Intègre les vues jour/semaine/mois avec drag & drop et resize
+ * Affiche les indisponibilités en overlay (SP-402)
  *
- * @ticket SP-396, SP-398
+ * @ticket SP-396, SP-398, SP-402
  * @see https://schedule-x.dev/
  */
 
@@ -28,10 +29,13 @@ import { ScheduleWithRelations, updateSchedule } from '@/lib/actions/schedules'
 import {
   checkAvailabilityConflicts,
   type AvailabilityConflict,
+  type AvailabilityWithEmployee,
 } from '@/lib/actions/availabilities'
 import { CalendarX, GripVertical } from 'lucide-react'
 import { useToast } from '@/components/toast/use-toast'
 import { ConflictConfirmDialog } from './ConflictConfirmDialog'
+import { AvailabilityPopover } from './AvailabilityPopover'
+import { AvailabilityType } from '@prisma/client'
 
 // ============================================================================
 // Configuration des couleurs par type de schedule
@@ -153,6 +157,107 @@ const typeLabels: Record<string, string> = {
 }
 
 // ============================================================================
+// Configuration des calendriers pour les indisponibilités (SP-402)
+// ============================================================================
+
+const availabilityCalendars = {
+  'availability-vacation': {
+    colorName: 'availability-vacation',
+    lightColors: {
+      main: '#3b82f6',
+      container: 'rgba(59, 130, 246, 0.20)',
+      onContainer: '#1e40af',
+    },
+    darkColors: {
+      main: '#60a5fa',
+      container: 'rgba(59, 130, 246, 0.30)',
+      onContainer: '#93c5fd',
+    },
+  },
+  'availability-sick': {
+    colorName: 'availability-sick',
+    lightColors: {
+      main: '#ef4444',
+      container: 'rgba(239, 68, 68, 0.20)',
+      onContainer: '#991b1b',
+    },
+    darkColors: {
+      main: '#f87171',
+      container: 'rgba(239, 68, 68, 0.30)',
+      onContainer: '#fca5a5',
+    },
+  },
+  'availability-training': {
+    colorName: 'availability-training',
+    lightColors: {
+      main: '#8b5cf6',
+      container: 'rgba(139, 92, 246, 0.15)',
+      onContainer: '#5b21b6',
+    },
+    darkColors: {
+      main: '#a78bfa',
+      container: 'rgba(139, 92, 246, 0.25)',
+      onContainer: '#c4b5fd',
+    },
+  },
+  'availability-unavailable': {
+    colorName: 'availability-unavailable',
+    lightColors: {
+      main: '#6b7280',
+      container: 'rgba(107, 114, 128, 0.20)',
+      onContainer: '#374151',
+    },
+    darkColors: {
+      main: '#9ca3af',
+      container: 'rgba(107, 114, 128, 0.30)',
+      onContainer: '#d1d5db',
+    },
+  },
+  'availability-preferred': {
+    colorName: 'availability-preferred',
+    lightColors: {
+      main: '#eab308',
+      container: 'rgba(234, 179, 8, 0.12)',
+      onContainer: '#854d0e',
+    },
+    darkColors: {
+      main: '#facc15',
+      container: 'rgba(234, 179, 8, 0.18)',
+      onContainer: '#fde047',
+    },
+  },
+  'availability-other': {
+    colorName: 'availability-other',
+    lightColors: {
+      main: '#64748b',
+      container: 'rgba(100, 116, 139, 0.15)',
+      onContainer: '#334155',
+    },
+    darkColors: {
+      main: '#94a3b8',
+      container: 'rgba(100, 116, 139, 0.25)',
+      onContainer: '#cbd5e1',
+    },
+  },
+}
+
+// Tous les calendriers combinés
+const allCalendars = {
+  ...calendars,
+  ...availabilityCalendars,
+}
+
+// Labels des types d'indisponibilité avec emojis
+const availabilityTypeLabels: Record<AvailabilityType, string> = {
+  VACATION: '\u{1F3D6}\u{FE0F} Vacances',
+  SICK: '\u{1F912} Maladie',
+  TRAINING: '\u{1F4DA} Formation',
+  UNAVAILABLE: '\u{26D4} Indisponible',
+  PREFERRED: '\u{2B50} Preference',
+  OTHER: '\u{1F4DD} Autre',
+}
+
+// ============================================================================
 // Composant principal
 // ============================================================================
 
@@ -164,8 +269,21 @@ export function ScheduleCalendarDesktop({
   onScheduleUpdate,
   isLoading,
   canEdit = false,
+  availabilities = [],
+  showAvailabilities = true,
+  onAvailabilityClick,
 }: ScheduleCalendarProps) {
   const { success, error: toastError } = useToast()
+
+  // État pour le popover d'indisponibilité
+  const [selectedAvailability, setSelectedAvailability] =
+    useState<AvailabilityWithEmployee | null>(null)
+  const [availabilityPopoverOpen, setAvailabilityPopoverOpen] = useState(false)
+
+  // Map pour accéder aux availabilities par ID d'event
+  const availabilitiesMapRef = useRef<Map<string, AvailabilityWithEmployee>>(
+    new Map()
+  )
 
   // État de mise à jour en cours
   const [isUpdating, setIsUpdating] = useState(false)
@@ -403,7 +521,7 @@ export function ScheduleCalendarDesktop({
   )
 
   // Convertir les schedules en events Schedule-X avec Temporal API
-  const events = useMemo(() => {
+  const scheduleEvents = useMemo(() => {
     // Mettre à jour la map pour les callbacks
     schedulesMapRef.current.clear()
     schedules.forEach((s) => schedulesMapRef.current.set(s.id, s))
@@ -430,6 +548,51 @@ export function ScheduleCalendarDesktop({
       }
     })
   }, [schedules])
+
+  // Convertir les availabilities en events Schedule-X (SP-402)
+  const availabilityEvents = useMemo(() => {
+    if (!showAvailabilities || availabilities.length === 0) {
+      availabilitiesMapRef.current.clear()
+      return []
+    }
+
+    // Mettre à jour la map pour les callbacks
+    availabilitiesMapRef.current.clear()
+
+    return availabilities.map((avail) => {
+      const eventId = `avail-${avail.id}`
+      availabilitiesMapRef.current.set(eventId, avail)
+
+      const startDateStr = format(new Date(avail.startDate), 'yyyy-MM-dd')
+      const endDateStr = format(new Date(avail.endDate), 'yyyy-MM-dd')
+
+      // Utiliser les heures si définies, sinon journée complète
+      const startTime = avail.startTime || '00:00'
+      const endTime = avail.endTime || '23:59'
+      const [startHour, startMin] = startTime.split(':')
+      const [endHour, endMin] = endTime.split(':')
+
+      const employeeName = `${avail.employee.firstName} ${avail.employee.lastName}`
+      const typeLabel = availabilityTypeLabels[avail.type]
+
+      return {
+        id: eventId,
+        title: `${employeeName} - ${typeLabel}`,
+        start: Temporal.ZonedDateTime.from(
+          `${startDateStr}T${startHour}:${startMin}:00[Europe/Paris]`
+        ),
+        end: Temporal.ZonedDateTime.from(
+          `${endDateStr}T${endHour}:${endMin}:00[Europe/Paris]`
+        ),
+        calendarId: `availability-${avail.type.toLowerCase()}`,
+      }
+    })
+  }, [availabilities, showAvailabilities])
+
+  // Combiner tous les events
+  const events = useMemo(() => {
+    return [...scheduleEvents, ...availabilityEvents]
+  }, [scheduleEvents, availabilityEvents])
 
   // Mapper le viewMode vers les vues Schedule-X
   const getDefaultView = () => {
@@ -470,7 +633,7 @@ export function ScheduleCalendarDesktop({
       defaultView: getDefaultView(),
       selectedDate: Temporal.PlainDate.from(format(currentDate, 'yyyy-MM-dd')),
       events,
-      calendars,
+      calendars: allCalendars,
       locale: 'fr-FR',
       firstDayOfWeek: 1, // Lundi
       dayBoundaries: {
@@ -484,14 +647,39 @@ export function ScheduleCalendarDesktop({
       },
       callbacks: {
         onEventClick: (event) => {
+          const eventId = event.id as string
+
+          // Vérifier si c'est une indisponibilité (SP-402)
+          if (eventId.startsWith('avail-')) {
+            const availability = availabilitiesMapRef.current.get(eventId)
+            if (availability) {
+              if (onAvailabilityClick) {
+                onAvailabilityClick(availability)
+              } else {
+                // Afficher le popover par défaut
+                setSelectedAvailability(availability)
+                setAvailabilityPopoverOpen(true)
+              }
+            }
+            return
+          }
+
+          // Sinon c'est un schedule
           if (onScheduleClick) {
-            const schedule = schedulesMapRef.current.get(event.id as string)
+            const schedule = schedulesMapRef.current.get(eventId)
             if (schedule) {
               onScheduleClick(schedule)
             }
           }
         },
         onEventUpdate: (event) => {
+          const eventId = event.id as string
+
+          // Ne pas permettre le drag & drop des indisponibilités
+          if (eventId.startsWith('avail-')) {
+            return
+          }
+
           if (canEdit) {
             // Utiliser le handler async avec persistance
             void handleEventUpdate(event)
@@ -622,6 +810,23 @@ export function ScheduleCalendarDesktop({
         }
         isLoading={isUpdating}
       />
+
+      {/* Popover de détail d'indisponibilité (SP-402) */}
+      {selectedAvailability && (
+        <AvailabilityPopover
+          availability={selectedAvailability}
+          open={availabilityPopoverOpen}
+          onOpenChange={(open) => {
+            setAvailabilityPopoverOpen(open)
+            if (!open) {
+              setSelectedAvailability(null)
+            }
+          }}
+        >
+          {/* Trigger invisible - le popover est déclenché par état */}
+          <span />
+        </AvailabilityPopover>
+      )}
     </div>
   )
 }
