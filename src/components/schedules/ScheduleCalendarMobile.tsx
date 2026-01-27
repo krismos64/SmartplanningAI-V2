@@ -3,19 +3,21 @@
  *
  * @description Vue en cards empilées verticalement pour mobile/tablette (<768px)
  * Pas de scroll horizontal - design mobile-first
+ * Affiche les indisponibilités en badges (SP-402)
  *
- * @ticket SP-396
+ * @ticket SP-396, SP-402
  */
 
 'use client'
 
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import {
   format,
   isSameDay,
   eachDayOfInterval,
   isToday,
   addDays,
+  isWithinInterval,
 } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { Card, CardContent } from '@/components/ui/card'
@@ -26,6 +28,9 @@ import { cn } from '@/lib/utils'
 import { ScheduleCalendarProps } from './ScheduleCalendar'
 import { ScheduleWithRelations } from '@/lib/actions/schedules'
 import { Skeleton } from '@/components/ui/skeleton'
+import { AvailabilityBadge } from './AvailabilityBadge'
+import { AvailabilityPopover } from './AvailabilityPopover'
+import type { AvailabilityWithEmployee } from '@/lib/actions/availabilities'
 
 // ============================================================================
 // Configuration des couleurs et labels
@@ -93,7 +98,25 @@ export function ScheduleCalendarMobile({
   currentDate,
   onScheduleClick,
   isLoading,
+  availabilities = [],
+  showAvailabilities = true,
+  onAvailabilityClick,
 }: ScheduleCalendarProps) {
+  // État pour le popover d'indisponibilité
+  const [selectedAvailability, setSelectedAvailability] =
+    useState<AvailabilityWithEmployee | null>(null)
+  const [popoverOpen, setPopoverOpen] = useState(false)
+
+  // Handler pour le clic sur une indisponibilité
+  const handleAvailabilityClick = (avail: AvailabilityWithEmployee) => {
+    if (onAvailabilityClick) {
+      onAvailabilityClick(avail)
+    } else {
+      setSelectedAvailability(avail)
+      setPopoverOpen(true)
+    }
+  }
+
   // Calculer les jours à afficher selon le mode de vue
   const schedulesByDay = useMemo(() => {
     let days: Date[]
@@ -121,11 +144,23 @@ export function ScheduleCalendarMobile({
         days = [currentDate]
     }
 
-    return days.map((day) => ({
-      date: day,
-      schedules: schedules.filter((s) => isSameDay(new Date(s.startDate), day)),
-    }))
-  }, [schedules, viewMode, currentDate])
+    return days.map((day) => {
+      // Filtrer les indisponibilités pour ce jour (SP-402)
+      const dayAvailabilities = showAvailabilities
+        ? availabilities.filter((avail) => {
+            const startDate = new Date(avail.startDate)
+            const endDate = new Date(avail.endDate)
+            return isWithinInterval(day, { start: startDate, end: endDate })
+          })
+        : []
+
+      return {
+        date: day,
+        schedules: schedules.filter((s) => isSameDay(new Date(s.startDate), day)),
+        availabilities: dayAvailabilities,
+      }
+    })
+  }, [schedules, viewMode, currentDate, availabilities, showAvailabilities])
 
   // État de chargement
   if (isLoading) {
@@ -145,15 +180,33 @@ export function ScheduleCalendarMobile({
 
   return (
     <div className="space-y-4">
-      {schedulesByDay.map(({ date, schedules: daySchedules }) => (
+      {schedulesByDay.map(({ date, schedules: daySchedules, availabilities: dayAvailabilities }) => (
         <DaySection
           key={date.toISOString()}
           date={date}
           schedules={daySchedules}
+          availabilities={dayAvailabilities}
           onScheduleClick={onScheduleClick}
+          onAvailabilityClick={handleAvailabilityClick}
           showEmptyDays={viewMode !== 'month'}
         />
       ))}
+
+      {/* Popover de détail d'indisponibilité (SP-402) */}
+      {selectedAvailability && (
+        <AvailabilityPopover
+          availability={selectedAvailability}
+          open={popoverOpen}
+          onOpenChange={(open) => {
+            setPopoverOpen(open)
+            if (!open) {
+              setSelectedAvailability(null)
+            }
+          }}
+        >
+          <span />
+        </AvailabilityPopover>
+      )}
     </div>
   )
 }
@@ -165,14 +218,18 @@ export function ScheduleCalendarMobile({
 interface DaySectionProps {
   date: Date
   schedules: ScheduleWithRelations[]
+  availabilities?: AvailabilityWithEmployee[]
   onScheduleClick?: (schedule: ScheduleWithRelations) => void
+  onAvailabilityClick?: (availability: AvailabilityWithEmployee) => void
   showEmptyDays?: boolean
 }
 
 function DaySection({
   date,
   schedules,
+  availabilities = [],
   onScheduleClick,
+  onAvailabilityClick,
   showEmptyDays = true,
 }: DaySectionProps) {
   const today = isToday(date)
@@ -203,6 +260,20 @@ function DaySection({
           {schedules.length} shift{schedules.length > 1 ? 's' : ''}
         </span>
       </div>
+
+      {/* Badges d'indisponibilités (SP-402) */}
+      {availabilities.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 px-1">
+          {availabilities.map((avail) => (
+            <AvailabilityBadge
+              key={avail.id}
+              availability={avail}
+              compact
+              onClick={onAvailabilityClick}
+            />
+          ))}
+        </div>
+      )}
 
       {/* Cards des schedules */}
       {schedules.length === 0 ? (

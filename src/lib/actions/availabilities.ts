@@ -831,6 +831,181 @@ export async function getAvailabilitiesStats(
 }
 
 // ============================================================================
+// Récupération des indisponibilités pour le calendrier (SP-402)
+// ============================================================================
+
+/**
+ * Availability avec employé pour affichage calendrier
+ */
+export type AvailabilityWithEmployee = {
+  id: string
+  startDate: Date
+  endDate: Date
+  startTime: string | null
+  endTime: string | null
+  type: AvailabilityType
+  reason: string | null
+  isRecurring: boolean
+  recurrenceRule: Prisma.JsonValue
+  employeeId: string
+  companyId: string
+  createdAt: Date
+  updatedAt: Date
+  employee: {
+    id: string
+    firstName: string
+    lastName: string
+  }
+}
+
+/**
+ * Récupère les indisponibilités pour une période donnée (pour overlay calendrier)
+ *
+ * RBAC:
+ * - EMPLOYEE : ses propres indisponibilités uniquement
+ * - MANAGER : indisponibilités de ses équipes
+ * - DIRECTOR : toutes les indisponibilités de la company
+ * - SYSTEM_ADMIN : lecture cross-tenant
+ *
+ * @ticket SP-402
+ */
+export async function getAvailabilitiesForCalendar(
+  companyId: string,
+  startDate: Date,
+  endDate: Date,
+  teamId?: string,
+  employeeIds?: string[]
+): Promise<CrudActionResult<AvailabilityWithEmployee[]>> {
+  const authResult = await getAuthenticatedUser()
+
+  if (!authResult.success) {
+    return { success: false, error: authResult.error }
+  }
+
+  const user = authResult.user
+
+  try {
+    // Construire la clause WHERE de base
+    const where: Prisma.AvailabilityWhereInput = {
+      // Chevauchement de dates : l'indispo commence avant la fin ET finit après le début
+      startDate: { lte: endDate },
+      endDate: { gte: startDate },
+    }
+
+    // Filtrer par company selon le rôle
+    if (user.role === 'SYSTEM_ADMIN') {
+      // SYSTEM_ADMIN : cross-tenant avec companyId obligatoire
+      where.companyId = companyId
+    } else {
+      // Autres rôles : uniquement leur company
+      if (!user.companyId || user.companyId !== companyId) {
+        return {
+          success: false,
+          error: "Vous n'avez pas accès à cette entreprise",
+        }
+      }
+      where.companyId = user.companyId
+    }
+
+    // Filtrer selon le rôle
+    if (user.role === 'EMPLOYEE') {
+      // EMPLOYEE : uniquement ses propres indisponibilités
+      if (!user.employeeId) {
+        return { success: true, data: [] }
+      }
+      where.employeeId = user.employeeId
+    } else if (user.role === 'MANAGER') {
+      // MANAGER : indisponibilités de ses équipes
+      if (user.managedTeamIds.length === 0) {
+        return { success: true, data: [] }
+      }
+
+      // Récupérer les employés des équipes gérées
+      const teamEmployees = await prisma.employee.findMany({
+        where: {
+          teamId: { in: user.managedTeamIds },
+        },
+        select: { id: true },
+      })
+
+      const managedEmployeeIds = teamEmployees.map((e) => e.id)
+
+      if (managedEmployeeIds.length === 0) {
+        return { success: true, data: [] }
+      }
+
+      // Appliquer le filtre employeeIds si fourni (intersection)
+      if (employeeIds && employeeIds.length > 0) {
+        const filteredIds = employeeIds.filter((id) =>
+          managedEmployeeIds.includes(id)
+        )
+        if (filteredIds.length === 0) {
+          return { success: true, data: [] }
+        }
+        where.employeeId = { in: filteredIds }
+      } else {
+        where.employeeId = { in: managedEmployeeIds }
+      }
+    } else {
+      // DIRECTOR : toutes les indisponibilités de la company
+      // Filtrer par employeeIds si fourni
+      if (employeeIds && employeeIds.length > 0) {
+        where.employeeId = { in: employeeIds }
+      }
+    }
+
+    // Filtrer par équipe si spécifié
+    if (teamId) {
+      const teamEmployees = await prisma.employee.findMany({
+        where: { teamId },
+        select: { id: true },
+      })
+
+      const teamEmployeeIds = teamEmployees.map((e) => e.id)
+
+      if (teamEmployeeIds.length === 0) {
+        return { success: true, data: [] }
+      }
+
+      // Intersection avec le filtre existant
+      if (where.employeeId && typeof where.employeeId === 'object' && 'in' in where.employeeId) {
+        const existingIds = where.employeeId.in as string[]
+        const intersection = existingIds.filter((id) =>
+          teamEmployeeIds.includes(id)
+        )
+        if (intersection.length === 0) {
+          return { success: true, data: [] }
+        }
+        where.employeeId = { in: intersection }
+      } else if (!where.employeeId) {
+        where.employeeId = { in: teamEmployeeIds }
+      }
+    }
+
+    // Récupérer les indisponibilités (limité à 200 pour performance)
+    const availabilities = await prisma.availability.findMany({
+      where,
+      include: {
+        employee: {
+          select: { id: true, firstName: true, lastName: true },
+        },
+      },
+      orderBy: [{ startDate: 'asc' }, { employee: { lastName: 'asc' } }],
+      take: 200,
+    })
+
+    return {
+      success: true,
+      data: availabilities as AvailabilityWithEmployee[],
+    }
+  } catch (error) {
+    console.error('[getAvailabilitiesForCalendar] Error:', error)
+    const prismaError = handlePrismaError(error)
+    return { success: false, error: prismaError.error }
+  }
+}
+
+// ============================================================================
 // Détection de conflits (SP-400)
 // ============================================================================
 
