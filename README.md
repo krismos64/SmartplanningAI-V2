@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 26 janvier 2026 (Sprint 12 - SP-400 Détection Conflits Horaires)
+- **Dernière mise à jour** : 27 janvier 2026 (Sprint 12 - SP-402 Overlay Indisponibilités Calendrier)
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -406,6 +406,32 @@ Système complet de récurrence pour les créneaux horaires :
   - Confirmation avant action
 
 - **Tests** : 24 tests utilitaire recurrence + 12 tests RecurrenceConfig
+
+### Overlay Indisponibilités Calendrier (SP-402 - 27 janvier 2026)
+
+Affichage visuel des indisponibilités directement sur le calendrier des plannings :
+
+- **Server Action `getAvailabilitiesForCalendar`** :
+  - Requête optimisée avec filtres date range, équipe, employés
+  - RBAC : EMPLOYEE voit les siennes, MANAGER son équipe, DIRECTOR toute l'entreprise
+
+- **Hook `useCalendarAvailabilities`** :
+  - Chargement avec debounce (200ms) et cache local (10 entrées max)
+  - Annulation des requêtes obsolètes
+  - Rechargement automatique au changement de période
+  - Méthode refetch() manuelle
+
+- **Composants UI** :
+  - `AvailabilityOverlay` : Transformation des indisponibilités en events Schedule-X avec couleurs RGBA par type
+  - `AvailabilityBadge` : Badge compact avec emoji par type (🏖️ Vacances, 🤒 Maladie, 📚 Formation, ⛔ Indisponible, ⭐ Préférence, 📝 Autre)
+  - `AvailabilityPopover` : Popover de détails au clic (employé, type, dates, heures, raison)
+
+- **Intégrations** :
+  - `ScheduleCalendarDesktop` : Events colorés Schedule-X avec calendrier configs par type
+  - `ScheduleCalendarMobile` : Badges d'indisponibilité par jour
+  - `SchedulesPageContent` : Toggle Eye/EyeOff pour afficher/masquer
+
+- **Tests** : 47 tests unitaires (10 useCalendarAvailabilities + 20 AvailabilityBadge + 17 AvailabilityOverlay)
 
 ### Détection de Conflits Horaires (SP-400 - 26 janvier 2026)
 
@@ -1763,6 +1789,9 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 | AvailabilityModal (SP-401)             | 100%     | 14       |
 | useConflictDetection (SP-400)          | 100%     | 12       |
 | ConflictAlert (SP-400)                 | 100%     | 13       |
+| useCalendarAvailabilities (SP-402)     | 100%     | 10       |
+| AvailabilityBadge (SP-402)             | 100%     | 20       |
+| AvailabilityOverlay (SP-402)           | 100%     | 17       |
 
 ### Tests E2E
 
