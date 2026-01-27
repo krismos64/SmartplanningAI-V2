@@ -34,7 +34,11 @@ import {
   getAvailabilitiesForCalendar,
   type AvailabilityWithEmployee,
 } from '@/lib/actions/availabilities'
-import { ScheduleCalendar, ShiftModal } from '@/components/schedules'
+import {
+  ScheduleCalendar,
+  ShiftModal,
+  ExportDropdown,
+} from '@/components/schedules'
 import { SchedulesFilters } from './SchedulesFilters'
 import {
   format,
@@ -386,6 +390,15 @@ export function SchedulesPageContent({
 
             {/* Contrôles de vue */}
             <div className="flex items-center gap-2">
+              {/* Export PDF (SP-403) */}
+              {canCreate && (
+                <ExportDropdown
+                  startDate={dateRange.start}
+                  endDate={dateRange.end}
+                  viewMode={viewMode === 'day' ? 'week' : viewMode}
+                />
+              )}
+
               {/* Toggle indisponibilités (SP-402) */}
               <div className="flex items-center gap-2 rounded-md border px-3 py-1.5">
                 <Switch
