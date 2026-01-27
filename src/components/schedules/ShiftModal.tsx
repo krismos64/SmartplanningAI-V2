@@ -398,7 +398,10 @@ export function ShiftModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
+      <DialogContent
+        className="max-h-[90vh] max-w-2xl overflow-y-auto"
+        data-testid="shift-modal"
+      >
         <DialogHeader>
           <DialogTitle>
             {mode === 'create' ? 'Créer un créneau' : 'Modifier le créneau'}
@@ -857,6 +860,7 @@ export function ShiftModal({
             </Button>
             <Button
               type="submit"
+              data-testid="shift-save-button"
               disabled={isSubmitting || isLoadingData}
               variant={hasHardConflict ? 'destructive' : 'default'}
             >

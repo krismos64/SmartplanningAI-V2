@@ -123,7 +123,12 @@ export function ExportDropdown({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" disabled={isLoading}>
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={isLoading}
+          data-testid="export-button"
+        >
           {isLoading ? (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
           ) : (
@@ -134,6 +139,7 @@ export function ExportDropdown({
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuItem
+          data-testid="export-pdf"
           onClick={() => void handleExportPdf()}
           disabled={isLoading}
         >
@@ -141,6 +147,7 @@ export function ExportDropdown({
           Export PDF
         </DropdownMenuItem>
         <DropdownMenuItem
+          data-testid="export-excel"
           onClick={() => void handleExportExcel()}
           disabled={isLoading}
         >

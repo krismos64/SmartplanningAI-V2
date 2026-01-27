@@ -67,10 +67,14 @@ export function ScheduleCalendar(props: ScheduleCalendarProps) {
 
   // Desktop : Schedule-X calendar
   // Mobile/Tablet : Cards view
-  return isDesktop ? (
-    <ScheduleCalendarDesktop {...props} />
-  ) : (
-    <ScheduleCalendarMobile {...props} />
+  return (
+    <div data-testid="schedule-calendar">
+      {isDesktop ? (
+        <ScheduleCalendarDesktop {...props} />
+      ) : (
+        <ScheduleCalendarMobile {...props} />
+      )}
+    </div>
   )
 }
 
