@@ -138,10 +138,7 @@ const TYPE_LABELS: Record<AvailabilityType, string> = {
 /**
  * Formate une date pour Schedule-X (format ISO avec timezone)
  */
-function formatScheduleXDate(
-  date: Date,
-  time?: string | null
-): string {
+function formatScheduleXDate(date: Date, time?: string | null): string {
   const plainDate = Temporal.PlainDate.from({
     year: date.getFullYear(),
     month: date.getMonth() + 1,
@@ -167,10 +164,7 @@ function formatScheduleXDate(
  * Formate l'heure de fin pour Schedule-X
  * Si pas d'heure de fin, utiliser 23:59 pour une journée complète
  */
-function formatScheduleXEndDate(
-  date: Date,
-  time?: string | null
-): string {
+function formatScheduleXEndDate(date: Date, time?: string | null): string {
   const plainDate = Temporal.PlainDate.from({
     year: date.getFullYear(),
     month: date.getMonth() + 1,
@@ -258,7 +252,7 @@ export function AvailabilityOverlayItem({
       tabIndex={onClick ? 0 : undefined}
       onClick={onClick ? handleClick : undefined}
       onKeyDown={onClick ? handleKeyDown : undefined}
-      className="absolute inset-0 pointer-events-auto cursor-pointer hover:opacity-90 transition-opacity"
+      className="pointer-events-auto absolute inset-0 cursor-pointer transition-opacity hover:opacity-90"
       style={{
         backgroundColor: config.lightColors.container,
         borderLeft: `3px solid ${config.lightColors.main}`,
@@ -267,7 +261,7 @@ export function AvailabilityOverlayItem({
       aria-label={`${employeeName} - ${typeLabel}`}
     >
       <div
-        className="p-1 text-xs font-medium truncate"
+        className="truncate p-1 text-xs font-medium"
         style={{ color: config.lightColors.onContainer }}
       >
         <span>{employeeName}</span>

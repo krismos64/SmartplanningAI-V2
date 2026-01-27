@@ -105,8 +105,10 @@ describe('useCalendarAvailabilities', () => {
       expect(result.current.error).toBeNull()
     })
 
-    it('ne fait pas d\'appel si startDate est null', async () => {
-      vi.mocked(getAvailabilitiesForCalendar).mockResolvedValue(mockSuccessResult)
+    it("ne fait pas d'appel si startDate est null", async () => {
+      vi.mocked(getAvailabilitiesForCalendar).mockResolvedValue(
+        mockSuccessResult
+      )
 
       renderHook(() =>
         useCalendarAvailabilities({
@@ -123,8 +125,10 @@ describe('useCalendarAvailabilities', () => {
       expect(getAvailabilitiesForCalendar).not.toHaveBeenCalled()
     })
 
-    it('ne fait pas d\'appel si endDate est null', async () => {
-      vi.mocked(getAvailabilitiesForCalendar).mockResolvedValue(mockSuccessResult)
+    it("ne fait pas d'appel si endDate est null", async () => {
+      vi.mocked(getAvailabilitiesForCalendar).mockResolvedValue(
+        mockSuccessResult
+      )
 
       renderHook(() =>
         useCalendarAvailabilities({
@@ -140,8 +144,10 @@ describe('useCalendarAvailabilities', () => {
       expect(getAvailabilitiesForCalendar).not.toHaveBeenCalled()
     })
 
-    it('ne fait pas d\'appel si enabled=false', async () => {
-      vi.mocked(getAvailabilitiesForCalendar).mockResolvedValue(mockSuccessResult)
+    it("ne fait pas d'appel si enabled=false", async () => {
+      vi.mocked(getAvailabilitiesForCalendar).mockResolvedValue(
+        mockSuccessResult
+      )
 
       renderHook(() =>
         useCalendarAvailabilities({
@@ -161,7 +167,9 @@ describe('useCalendarAvailabilities', () => {
 
   describe('Chargement des indisponibilités', () => {
     it('charge les indisponibilités après le debounce', async () => {
-      vi.mocked(getAvailabilitiesForCalendar).mockResolvedValue(mockSuccessResult)
+      vi.mocked(getAvailabilitiesForCalendar).mockResolvedValue(
+        mockSuccessResult
+      )
 
       const { result } = renderHook(() =>
         useCalendarAvailabilities({
@@ -186,7 +194,9 @@ describe('useCalendarAvailabilities', () => {
     })
 
     it('recharge quand startDate change', async () => {
-      vi.mocked(getAvailabilitiesForCalendar).mockResolvedValue(mockSuccessResult)
+      vi.mocked(getAvailabilitiesForCalendar).mockResolvedValue(
+        mockSuccessResult
+      )
 
       const { result, rerender } = renderHook(
         ({ startDate }) =>
@@ -215,7 +225,7 @@ describe('useCalendarAvailabilities', () => {
   })
 
   describe('Gestion des erreurs', () => {
-    it('gère les erreurs de l\'API', async () => {
+    it("gère les erreurs de l'API", async () => {
       vi.mocked(getAvailabilitiesForCalendar).mockResolvedValue(mockErrorResult)
 
       const { result } = renderHook(() =>
@@ -237,7 +247,9 @@ describe('useCalendarAvailabilities', () => {
 
   describe('Refetch', () => {
     it('refetch force une nouvelle requête', async () => {
-      vi.mocked(getAvailabilitiesForCalendar).mockResolvedValue(mockSuccessResult)
+      vi.mocked(getAvailabilitiesForCalendar).mockResolvedValue(
+        mockSuccessResult
+      )
 
       const { result } = renderHook(() =>
         useCalendarAvailabilities({
@@ -264,8 +276,10 @@ describe('useCalendarAvailabilities', () => {
   })
 
   describe('Filtres optionnels', () => {
-    it('passe le teamId à l\'API', async () => {
-      vi.mocked(getAvailabilitiesForCalendar).mockResolvedValue(mockSuccessResult)
+    it("passe le teamId à l'API", async () => {
+      vi.mocked(getAvailabilitiesForCalendar).mockResolvedValue(
+        mockSuccessResult
+      )
 
       const { result } = renderHook(() =>
         useCalendarAvailabilities({
@@ -290,9 +304,11 @@ describe('useCalendarAvailabilities', () => {
       )
     })
 
-    it('passe les employeeIds à l\'API', async () => {
+    it("passe les employeeIds à l'API", async () => {
       const empIds = ['emp-1', 'emp-2']
-      vi.mocked(getAvailabilitiesForCalendar).mockResolvedValue(mockSuccessResult)
+      vi.mocked(getAvailabilitiesForCalendar).mockResolvedValue(
+        mockSuccessResult
+      )
 
       const { result } = renderHook(() =>
         useCalendarAvailabilities({

@@ -69,9 +69,19 @@ describe('useAvailabilityOverlayEvents', () => {
 
     it('transforme plusieurs indisponibilités', () => {
       const availabilities = [
-        createMockAvailability('avail-1', 'VACATION', '2026-02-01', '2026-02-05'),
+        createMockAvailability(
+          'avail-1',
+          'VACATION',
+          '2026-02-01',
+          '2026-02-05'
+        ),
         createMockAvailability('avail-2', 'SICK', '2026-02-10', '2026-02-10'),
-        createMockAvailability('avail-3', 'TRAINING', '2026-02-15', '2026-02-16'),
+        createMockAvailability(
+          'avail-3',
+          'TRAINING',
+          '2026-02-15',
+          '2026-02-16'
+        ),
       ]
 
       const { result } = renderHook(() =>
@@ -84,7 +94,7 @@ describe('useAvailabilityOverlayEvents', () => {
       expect(result.current[2]!.calendarId).toBe('availability-training')
     })
 
-    it('retourne un tableau vide si pas d\'indisponibilités', () => {
+    it("retourne un tableau vide si pas d'indisponibilités", () => {
       const { result } = renderHook(() => useAvailabilityOverlayEvents([]))
 
       expect(result.current).toEqual([])
@@ -237,10 +247,15 @@ describe('useAvailabilityOverlayEvents', () => {
     })
   })
 
-  describe('Titre de l\'event', () => {
-    it('inclut le nom complet de l\'employé', () => {
+  describe("Titre de l'event", () => {
+    it("inclut le nom complet de l'employé", () => {
       const availability: AvailabilityWithEmployee = {
-        ...createMockAvailability('avail-1', 'VACATION', '2026-02-01', '2026-02-01'),
+        ...createMockAvailability(
+          'avail-1',
+          'VACATION',
+          '2026-02-01',
+          '2026-02-01'
+        ),
         employee: { id: 'emp-1', firstName: 'Marie', lastName: 'Martin' },
       }
 

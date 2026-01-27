@@ -968,7 +968,11 @@ export async function getAvailabilitiesForCalendar(
       }
 
       // Intersection avec le filtre existant
-      if (where.employeeId && typeof where.employeeId === 'object' && 'in' in where.employeeId) {
+      if (
+        where.employeeId &&
+        typeof where.employeeId === 'object' &&
+        'in' in where.employeeId
+      ) {
         const existingIds = where.employeeId.in as string[]
         const intersection = existingIds.filter((id) =>
           teamEmployeeIds.includes(id)

@@ -47,7 +47,7 @@ const createMockAvailability = (
 
 describe('AvailabilityBadge', () => {
   describe('Affichage', () => {
-    it('affiche le nom de l\'employé', () => {
+    it("affiche le nom de l'employé", () => {
       const availability = createMockAvailability('VACATION', 'Marie', 'Martin')
 
       render(<AvailabilityBadge availability={availability} />)
@@ -55,7 +55,7 @@ describe('AvailabilityBadge', () => {
       expect(screen.getByText('Marie Martin')).toBeInTheDocument()
     })
 
-    it('affiche l\'emoji du type VACATION', () => {
+    it("affiche l'emoji du type VACATION", () => {
       const availability = createMockAvailability('VACATION')
 
       render(<AvailabilityBadge availability={availability} />)
@@ -64,7 +64,7 @@ describe('AvailabilityBadge', () => {
       expect(screen.getByText('🏖️')).toBeInTheDocument()
     })
 
-    it('affiche l\'emoji du type SICK', () => {
+    it("affiche l'emoji du type SICK", () => {
       const availability = createMockAvailability('SICK')
 
       render(<AvailabilityBadge availability={availability} />)
@@ -72,7 +72,7 @@ describe('AvailabilityBadge', () => {
       expect(screen.getByText('🤒')).toBeInTheDocument()
     })
 
-    it('affiche l\'emoji du type TRAINING', () => {
+    it("affiche l'emoji du type TRAINING", () => {
       const availability = createMockAvailability('TRAINING')
 
       render(<AvailabilityBadge availability={availability} />)
@@ -80,7 +80,7 @@ describe('AvailabilityBadge', () => {
       expect(screen.getByText('📚')).toBeInTheDocument()
     })
 
-    it('affiche l\'emoji du type UNAVAILABLE', () => {
+    it("affiche l'emoji du type UNAVAILABLE", () => {
       const availability = createMockAvailability('UNAVAILABLE')
 
       render(<AvailabilityBadge availability={availability} />)
@@ -88,7 +88,7 @@ describe('AvailabilityBadge', () => {
       expect(screen.getByText('⛔')).toBeInTheDocument()
     })
 
-    it('affiche l\'emoji du type PREFERRED', () => {
+    it("affiche l'emoji du type PREFERRED", () => {
       const availability = createMockAvailability('PREFERRED')
 
       render(<AvailabilityBadge availability={availability} />)
@@ -96,7 +96,7 @@ describe('AvailabilityBadge', () => {
       expect(screen.getByText('⭐')).toBeInTheDocument()
     })
 
-    it('affiche l\'emoji du type OTHER', () => {
+    it("affiche l'emoji du type OTHER", () => {
       const availability = createMockAvailability('OTHER')
 
       render(<AvailabilityBadge availability={availability} />)
@@ -112,7 +112,7 @@ describe('AvailabilityBadge', () => {
       expect(screen.getByText('Vacances')).toBeInTheDocument()
     })
 
-    it('n\'affiche pas le nom si showEmployee=false', () => {
+    it("n'affiche pas le nom si showEmployee=false", () => {
       const availability = createMockAvailability('VACATION', 'Jean', 'Dupont')
 
       render(
@@ -154,7 +154,9 @@ describe('AvailabilityBadge', () => {
       const onClick = vi.fn()
       const availability = createMockAvailability('VACATION')
 
-      render(<AvailabilityBadge availability={availability} onClick={onClick} />)
+      render(
+        <AvailabilityBadge availability={availability} onClick={onClick} />
+      )
 
       const badge = screen.getByRole('button')
       await user.click(badge)
@@ -167,7 +169,9 @@ describe('AvailabilityBadge', () => {
       const onClick = vi.fn()
       const availability = createMockAvailability('VACATION')
 
-      render(<AvailabilityBadge availability={availability} onClick={onClick} />)
+      render(
+        <AvailabilityBadge availability={availability} onClick={onClick} />
+      )
 
       const badge = screen.getByRole('button')
       badge.focus()
@@ -181,7 +185,9 @@ describe('AvailabilityBadge', () => {
       const onClick = vi.fn()
       const availability = createMockAvailability('VACATION')
 
-      render(<AvailabilityBadge availability={availability} onClick={onClick} />)
+      render(
+        <AvailabilityBadge availability={availability} onClick={onClick} />
+      )
 
       const badge = screen.getByRole('button')
       badge.focus()
@@ -190,7 +196,7 @@ describe('AvailabilityBadge', () => {
       expect(onClick).toHaveBeenCalledWith(availability)
     })
 
-    it('n\'a pas de role button sans onClick', () => {
+    it("n'a pas de role button sans onClick", () => {
       const availability = createMockAvailability('VACATION')
 
       render(<AvailabilityBadge availability={availability} />)
@@ -239,10 +245,7 @@ describe('AvailabilityBadge', () => {
       )
 
       const badge = screen.getByRole('button')
-      expect(badge).toHaveAttribute(
-        'aria-label',
-        'Vacances - Jean Dupont'
-      )
+      expect(badge).toHaveAttribute('aria-label', 'Vacances - Jean Dupont')
     })
 
     it('a un aria-label sans nom si showEmployee=false', () => {

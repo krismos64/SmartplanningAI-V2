@@ -171,7 +171,15 @@ export function useCalendarAvailabilities({
         clearTimeout(debounceTimerRef.current)
       }
     }
-  }, [enabled, startDate, endDate, teamId, employeeIds, debounceMs, fetchAvailabilities])
+  }, [
+    enabled,
+    startDate,
+    endDate,
+    teamId,
+    employeeIds,
+    debounceMs,
+    fetchAvailabilities,
+  ])
 
   return {
     availabilities,
