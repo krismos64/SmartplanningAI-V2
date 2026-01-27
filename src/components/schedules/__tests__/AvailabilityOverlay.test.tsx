@@ -115,7 +115,7 @@ describe('useAvailabilityOverlayEvents', () => {
       )
 
       // Le format Temporal contient l'heure
-      expect(result.current[0]!.start).toContain('T00:00')
+      expect(result.current[0]!.start).toContain('00:00')
     })
 
     it('utilise 23:59 si endTime est null', () => {
@@ -133,7 +133,7 @@ describe('useAvailabilityOverlayEvents', () => {
       )
 
       // Le format Temporal contient l'heure
-      expect(result.current[0]!.end).toContain('T23:59')
+      expect(result.current[0]!.end).toContain('23:59')
     })
 
     it('utilise les heures spécifiées si fournies', () => {
@@ -150,8 +150,8 @@ describe('useAvailabilityOverlayEvents', () => {
         useAvailabilityOverlayEvents([availability])
       )
 
-      expect(result.current[0]!.start).toContain('T09:00')
-      expect(result.current[0]!.end).toContain('T12:00')
+      expect(result.current[0]!.start).toContain('09:00')
+      expect(result.current[0]!.end).toContain('12:00')
     })
   })
 

@@ -17,8 +17,9 @@ import {
   getCoreRowModel,
   flexRender,
   PaginationState,
+  RowSelectionState,
 } from '@tanstack/react-table'
-import { Plus, Users, RefreshCw } from 'lucide-react'
+import { Plus, Users, RefreshCw, Trash2 } from 'lucide-react'
 import Link from 'next/link'
 
 import { Button } from '@/components/ui/button'
@@ -35,6 +36,8 @@ import {
   createEmployeeColumns,
   EmployeeFilters,
   DeleteEmployeeDialog,
+  BulkDeleteDialog,
+  EmployeeCard,
 } from '@/components/admin/employees'
 import {
   listEmployees,
@@ -70,6 +73,8 @@ export function EmployeesDataTable({ userRole }: EmployeesDataTableProps) {
   const [deleteEmployee, setDeleteEmployee] =
     useState<EmployeeWithCounts | null>(null)
   const [teams, setTeams] = useState<{ id: string; name: string }[]>([])
+  const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false)
 
   // Pagination TanStack
   const [pagination, setPagination] = useState<PaginationState>({
@@ -176,10 +181,13 @@ export function EmployeesDataTable({ userRole }: EmployeesDataTableProps) {
     pageCount: Math.ceil(totalCount / pagination.pageSize),
     state: {
       pagination,
+      rowSelection,
     },
     onPaginationChange: setPagination,
+    onRowSelectionChange: setRowSelection,
     getCoreRowModel: getCoreRowModel(),
     manualPagination: true,
+    enableRowSelection: true,
   })
 
   return (
@@ -229,8 +237,27 @@ export function EmployeesDataTable({ userRole }: EmployeesDataTableProps) {
           showCompanyFilter={userRole === 'SYSTEM_ADMIN'}
         />
 
-        {/* Table */}
-        <div className="rounded-md border">
+        {/* Barre d'actions bulk */}
+        {canDelete && Object.keys(rowSelection).length > 0 && (
+          <div className="flex items-center justify-between rounded-md border border-destructive/30 bg-destructive/5 px-4 py-2">
+            <span className="text-sm font-medium">
+              {Object.keys(rowSelection).length} employe
+              {Object.keys(rowSelection).length > 1 ? 's' : ''} selectionne
+              {Object.keys(rowSelection).length > 1 ? 's' : ''}
+            </span>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => setBulkDeleteOpen(true)}
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Supprimer la selection
+            </Button>
+          </div>
+        )}
+
+        {/* Table desktop */}
+        <div className="hidden rounded-md border md:block">
           <Table>
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (
@@ -291,6 +318,44 @@ export function EmployeesDataTable({ userRole }: EmployeesDataTableProps) {
           </Table>
         </div>
 
+        {/* Cards mobile */}
+        <div className="space-y-3 md:hidden">
+          {isLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+              Chargement...
+            </div>
+          ) : data.length > 0 ? (
+            data.map((employee, idx) => (
+              <EmployeeCard
+                key={employee.id}
+                employee={employee}
+                selected={!!rowSelection[idx]}
+                onSelectChange={(v) =>
+                  setRowSelection((prev) => {
+                    const next = { ...prev }
+                    if (v) {
+                      next[idx] = true
+                    } else {
+                      delete next[idx]
+                    }
+                    return next
+                  })
+                }
+                onView={() => handleView(employee)}
+                onEdit={() => handleEdit(employee)}
+                onDelete={canDelete ? () => handleDelete(employee) : undefined}
+                onToggleStatus={() => handleToggleStatus(employee)}
+                canDelete={canDelete}
+              />
+            ))
+          ) : (
+            <p className="py-12 text-center text-muted-foreground">
+              Aucun employe trouve.
+            </p>
+          )}
+        </div>
+
         {/* Pagination */}
         <div className="flex items-center justify-between px-2">
           <div className="text-sm text-muted-foreground">
@@ -318,12 +383,26 @@ export function EmployeesDataTable({ userRole }: EmployeesDataTableProps) {
         </div>
       </div>
 
-      {/* Dialog suppression */}
+      {/* Dialog suppression individuelle */}
       <DeleteEmployeeDialog
         employee={deleteEmployee}
         open={!!deleteEmployee}
         onOpenChange={(open) => !open && setDeleteEmployee(null)}
         onSuccess={() => void fetchData()}
+      />
+
+      {/* Dialog suppression en masse */}
+      <BulkDeleteDialog
+        selectedCount={Object.keys(rowSelection).length}
+        selectedIds={Object.keys(rowSelection)
+          .map((idx) => data[Number(idx)]?.id)
+          .filter((id): id is string => !!id)}
+        open={bulkDeleteOpen}
+        onOpenChange={setBulkDeleteOpen}
+        onSuccess={() => {
+          setRowSelection({})
+          void fetchData()
+        }}
       />
     </TooltipProvider>
   )

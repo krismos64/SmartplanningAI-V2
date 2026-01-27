@@ -154,7 +154,7 @@ describe('manager-stats.service', () => {
           startTime: '09:00',
           endTime: '17:00',
           type: 'WORK',
-          status: 'COMPLETED',
+          status: 'CONFIRMED',
           title: null,
           description: null,
           location: null,

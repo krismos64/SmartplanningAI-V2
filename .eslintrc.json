@@ -60,6 +60,9 @@
     "dist/",
     "coverage/",
     "*.config.js",
-    "*.config.ts"
+    "*.config.ts",
+    "next-env.d.ts",
+    "emails/",
+    "prisma/"
   ]
 }

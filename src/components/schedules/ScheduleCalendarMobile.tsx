@@ -79,13 +79,17 @@ const typeConfig = {
     text: 'text-pink-700 dark:text-pink-300',
     label: 'Heures sup.',
   },
+  REST: {
+    bg: 'bg-gray-50 dark:bg-gray-950',
+    border: 'border-l-gray-500',
+    text: 'text-gray-700 dark:text-gray-300',
+    label: 'Repos',
+  },
 } as const
 
 const statusConfig = {
   DRAFT: { variant: 'outline' as const, label: 'Brouillon' },
   CONFIRMED: { variant: 'default' as const, label: 'Confirmé' },
-  CANCELLED: { variant: 'destructive' as const, label: 'Annulé' },
-  COMPLETED: { variant: 'secondary' as const, label: 'Terminé' },
 } as const
 
 // ============================================================================
@@ -175,7 +179,7 @@ export function ScheduleCalendarMobile({
       <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
         <CalendarX className="mb-4 h-12 w-12 opacity-50" />
         <p className="text-lg font-medium">Aucun planning</p>
-        <p className="text-sm">Pas de shifts pour cette période</p>
+        <p className="text-sm">Pas de plannings pour cette période</p>
       </div>
     )
   }
@@ -265,7 +269,7 @@ function DaySection({
           </Badge>
         )}
         <span className="ml-auto text-sm opacity-75">
-          {schedules.length} shift{schedules.length > 1 ? 's' : ''}
+          {schedules.length} planning{schedules.length > 1 ? 's' : ''}
         </span>
       </div>
 
@@ -286,7 +290,7 @@ function DaySection({
       {/* Cards des schedules */}
       {schedules.length === 0 ? (
         <p className="py-2 pl-3 text-sm text-muted-foreground">
-          Aucun shift prévu
+          Aucun planning prévu
         </p>
       ) : (
         <div className="space-y-2">
@@ -329,7 +333,9 @@ function ScheduleCard({ schedule, onClick }: ScheduleCardProps) {
         'cursor-pointer border-l-4 transition-all',
         'hover:shadow-md active:scale-[0.98]',
         type.bg,
-        type.border
+        type.border,
+        schedule.status === 'DRAFT' &&
+          'border-dashed opacity-60 hover:opacity-80'
       )}
       onClick={onClick}
     >
@@ -364,7 +370,9 @@ function ScheduleCard({ schedule, onClick }: ScheduleCardProps) {
             <div className="flex items-center gap-1 text-sm text-muted-foreground">
               <Clock className="h-3.5 w-3.5" />
               <span>
-                {schedule.startTime} - {schedule.endTime}
+                {schedule.type === 'REST'
+                  ? 'Journée entière'
+                  : `${schedule.startTime} - ${schedule.endTime}`}
               </span>
             </div>
 

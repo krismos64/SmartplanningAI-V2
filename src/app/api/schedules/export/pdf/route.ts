@@ -11,6 +11,7 @@ import { renderToBuffer } from '@react-pdf/renderer'
 import React from 'react'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import type { Prisma, ScheduleStatus, ScheduleType } from '@prisma/client'
 import {
   SchedulePdfDocument,
   type ScheduleForPdf,
@@ -42,6 +43,10 @@ export async function GET(request: NextRequest) {
     const startDateStr = searchParams.get('startDate')
     const endDateStr = searchParams.get('endDate')
     const teamId = searchParams.get('teamId')
+    const employeeId = searchParams.get('employeeId')
+    const status = searchParams.get('status')
+    const type = searchParams.get('type')
+    const search = searchParams.get('search')
     const view = (searchParams.get('view') as 'week' | 'month') || 'week'
 
     if (!startDateStr || !endDateStr) {
@@ -59,8 +64,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Build where clause with tenant isolation
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const where: Record<string, any> = {
+    const where: Prisma.ScheduleWhereInput = {
       companyId,
       endDate: { gte: startDate },
       startDate: { lte: endDate },
@@ -88,13 +92,35 @@ export async function GET(request: NextRequest) {
     if (teamId) {
       where.teamId = teamId
     }
+    if (employeeId) {
+      where.employeeId = employeeId
+    }
+    if (status) {
+      where.status = status as ScheduleStatus
+    }
+    if (type) {
+      where.type = type as ScheduleType
+    }
+    if (search) {
+      where.OR = [
+        ...(where.OR ?? []),
+        { employee: { firstName: { contains: search, mode: 'insensitive' } } },
+        { employee: { lastName: { contains: search, mode: 'insensitive' } } },
+        { title: { contains: search, mode: 'insensitive' } },
+      ]
+    }
 
     // Fetch schedules
     const schedules = await prisma.schedule.findMany({
       where,
       include: {
         employee: {
-          select: { id: true, firstName: true, lastName: true },
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            weeklyHours: true,
+          },
         },
       },
       orderBy: [{ startDate: 'asc' }, { employee: { lastName: 'asc' } }],
@@ -114,7 +140,12 @@ export async function GET(request: NextRequest) {
       endTime: s.endTime,
       type: s.type,
       title: s.title,
-      employee: s.employee,
+      employee: {
+        id: s.employee.id,
+        firstName: s.employee.firstName,
+        lastName: s.employee.lastName,
+        weeklyHours: s.employee.weeklyHours,
+      },
     }))
 
     // Render PDF — cast nécessaire pour compatibilité React 19 / @react-pdf

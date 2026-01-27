@@ -206,7 +206,7 @@ async function getTeamStats(
         where: {
           teamId: team.id,
           startDate: { gte: dateRange.from, lte: dateRange.to },
-          status: { in: ['CONFIRMED', 'COMPLETED'] },
+          status: 'CONFIRMED',
           type: 'WORK',
         },
         select: { startTime: true, endTime: true },

@@ -10,6 +10,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { format } from 'date-fns'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import type { Prisma, ScheduleStatus, ScheduleType } from '@prisma/client'
 import { generateScheduleExcel } from '@/lib/excel'
 
 export async function GET(request: NextRequest) {
@@ -38,6 +39,10 @@ export async function GET(request: NextRequest) {
     const startDateStr = searchParams.get('startDate')
     const endDateStr = searchParams.get('endDate')
     const teamId = searchParams.get('teamId')
+    const employeeId = searchParams.get('employeeId')
+    const status = searchParams.get('status')
+    const type = searchParams.get('type')
+    const search = searchParams.get('search')
 
     if (!startDateStr || !endDateStr) {
       return NextResponse.json(
@@ -54,8 +59,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Build where clause with tenant isolation
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const where: Record<string, any> = {
+    const where: Prisma.ScheduleWhereInput = {
       companyId,
       endDate: { gte: startDate },
       startDate: { lte: endDate },
@@ -83,13 +87,30 @@ export async function GET(request: NextRequest) {
     if (teamId) {
       where.teamId = teamId
     }
+    if (employeeId) {
+      where.employeeId = employeeId
+    }
+    if (status) {
+      where.status = status as ScheduleStatus
+    }
+    if (type) {
+      where.type = type as ScheduleType
+    }
+    if (search) {
+      where.OR = [
+        ...(where.OR ?? []),
+        { employee: { firstName: { contains: search, mode: 'insensitive' } } },
+        { employee: { lastName: { contains: search, mode: 'insensitive' } } },
+        { title: { contains: search, mode: 'insensitive' } },
+      ]
+    }
 
     // Fetch schedules
     const schedules = await prisma.schedule.findMany({
       where,
       include: {
         employee: {
-          select: { firstName: true, lastName: true },
+          select: { firstName: true, lastName: true, weeklyHours: true },
         },
         team: {
           select: { name: true },

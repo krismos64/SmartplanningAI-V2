@@ -33,6 +33,7 @@ export interface ScheduleForPdf {
     id: string
     firstName: string
     lastName: string
+    weeklyHours: number
   }
 }
 
@@ -50,8 +51,20 @@ export interface SchedulePdfDocumentProps {
 
 type GroupedByEmployee = Record<
   string,
-  { name: string; schedules: ScheduleForPdf[] }
+  {
+    name: string
+    schedules: ScheduleForPdf[]
+    weeklyHours: number
+    totalPlanned: number
+  }
 >
+
+function computeDuration(startTime: string, endTime: string): number {
+  const [sh = 0, sm = 0] = startTime.split(':').map(Number)
+  const [eh = 0, em = 0] = endTime.split(':').map(Number)
+  const diff = eh * 60 + em - (sh * 60 + sm)
+  return diff > 0 ? diff / 60 : 0
+}
 
 function groupByEmployee(schedules: ScheduleForPdf[]): GroupedByEmployee {
   const grouped: GroupedByEmployee = {}
@@ -61,9 +74,15 @@ function groupByEmployee(schedules: ScheduleForPdf[]): GroupedByEmployee {
       grouped[key] = {
         name: `${s.employee.lastName} ${s.employee.firstName}`,
         schedules: [],
+        weeklyHours: s.employee.weeklyHours,
+        totalPlanned: 0,
       }
     }
     grouped[key].schedules.push(s)
+    // Ne pas compter les repos dans le total heures
+    if (s.type !== 'REST') {
+      grouped[key].totalPlanned += computeDuration(s.startTime, s.endTime)
+    }
   }
   return grouped
 }
@@ -149,6 +168,7 @@ export function SchedulePdfDocument({
                 {format(day, 'EEE d', { locale: fr })}
               </Text>
             ))}
+            <Text style={styles.hoursCell}>Heures</Text>
           </View>
 
           {/* Employee rows */}
@@ -167,35 +187,69 @@ export function SchedulePdfDocument({
               </Text>
             </View>
           ) : (
-            employees.map(([empId, { name, schedules: empSchedules }]) => (
-              <View key={empId} style={styles.tableRow}>
-                <Text style={styles.employeeCell}>{name}</Text>
-                {days.map((day) => {
-                  const daySchedules = getSchedulesForDay(empSchedules, day)
-                  return (
-                    <View key={day.toISOString()} style={styles.dayCell}>
-                      {daySchedules.map((s) => {
-                        const color =
-                          scheduleTypeColors[s.type as ScheduleType] ||
-                          '#9CA3AF'
-                        return (
-                          <Text
-                            key={s.id}
-                            style={{
-                              ...styles.shiftBadge,
-                              backgroundColor: getBgColor(color),
-                              color,
-                            }}
-                          >
-                            {s.startTime}-{s.endTime}
-                          </Text>
-                        )
-                      })}
+            employees.map(
+              ([
+                empId,
+                { name, schedules: empSchedules, weeklyHours, totalPlanned },
+              ]) => {
+                const diff = totalPlanned - weeklyHours
+                const diffLabel =
+                  diff === 0
+                    ? '0h'
+                    : diff > 0
+                      ? `+${diff.toFixed(1).replace('.0', '')}h`
+                      : `${diff.toFixed(1).replace('.0', '')}h`
+                const diffColor =
+                  diff === 0 ? '#16A34A' : diff > 0 ? '#DC2626' : '#EA580C'
+
+                return (
+                  <View key={empId} style={styles.tableRow}>
+                    <Text style={styles.employeeCell}>{name}</Text>
+                    {days.map((day) => {
+                      const daySchedules = getSchedulesForDay(empSchedules, day)
+                      return (
+                        <View key={day.toISOString()} style={styles.dayCell}>
+                          {daySchedules.map((s) => {
+                            const color =
+                              scheduleTypeColors[s.type as ScheduleType] ||
+                              '#9CA3AF'
+                            return (
+                              <Text
+                                key={s.id}
+                                style={{
+                                  ...styles.shiftBadge,
+                                  backgroundColor: getBgColor(color),
+                                  color,
+                                }}
+                              >
+                                {s.type === 'REST'
+                                  ? 'Repos'
+                                  : `${s.startTime}-${s.endTime}`}
+                              </Text>
+                            )
+                          })}
+                        </View>
+                      )
+                    })}
+                    <View style={styles.hoursCell}>
+                      <Text style={{ fontSize: 7 }}>
+                        {totalPlanned.toFixed(1).replace('.0', '')}h /{' '}
+                        {weeklyHours}h
+                      </Text>
+                      <Text
+                        style={{
+                          fontSize: 6,
+                          color: diffColor,
+                          fontWeight: 'bold',
+                        }}
+                      >
+                        {diffLabel}
+                      </Text>
                     </View>
-                  )
-                })}
-              </View>
-            ))
+                  </View>
+                )
+              }
+            )
           )}
         </View>
 

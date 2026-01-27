@@ -97,8 +97,14 @@ export default async function EmployeeDashboardPage() {
   }
 
   // Verification du role - Employee ou redirection vers le dashboard approprié
-  if (session.user.role !== 'EMPLOYEE') {
-    redirect('/app/dashboard')
+  if (session.user.role === 'SYSTEM_ADMIN') {
+    redirect('/app/admin/dashboard')
+  }
+  if (session.user.role === 'DIRECTOR') {
+    redirect('/app/director/dashboard')
+  }
+  if (session.user.role === 'MANAGER') {
+    redirect('/app/manager/dashboard')
   }
 
   // Recuperer l'utilisateur avec son profil employe

@@ -364,6 +364,7 @@ export const scheduleTypeLabels: Record<ScheduleType, string> = {
   REMOTE: 'Teletravail',
   ON_CALL: 'Astreinte',
   OVERTIME: 'Heures supplementaires',
+  REST: 'Repos',
 }
 
 /**
@@ -372,8 +373,6 @@ export const scheduleTypeLabels: Record<ScheduleType, string> = {
 export const scheduleStatusLabels: Record<ScheduleStatus, string> = {
   DRAFT: 'Brouillon',
   CONFIRMED: 'Confirme',
-  CANCELLED: 'Annule',
-  COMPLETED: 'Termine',
 }
 
 /**
@@ -407,4 +406,5 @@ export const scheduleTypeColors: Record<ScheduleType, string> = {
   REMOTE: '#06B6D4', // Cyan
   ON_CALL: '#EF4444', // Red
   OVERTIME: '#F97316', // Orange
+  REST: '#6B7280', // Gray
 }

@@ -29,6 +29,7 @@ interface DashboardLayoutProps {
     avatar?: string
     role: UserRole
     organizationId?: string
+    companyName?: string
   }
   notificationsCount?: number
 }

@@ -8,15 +8,15 @@
 
 'use client'
 
-import { useState, useTransition, useCallback, useEffect } from 'react'
+import { useState, useTransition, useCallback, useEffect, useMemo } from 'react'
 import {
   CalendarDays,
   Plus,
-  Filter,
   ChevronLeft,
   ChevronRight,
   Eye,
   EyeOff,
+  Clock,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
@@ -35,10 +35,23 @@ import {
   type AvailabilityWithEmployee,
 } from '@/lib/actions/availabilities'
 import {
+  getTeamsForSelect,
+  getEmployeesForSelect,
+} from '@/lib/actions/employees'
+import {
   ScheduleCalendar,
   ShiftModal,
   ExportDropdown,
+  WeeklyHoursPanel,
 } from '@/components/schedules'
+import type { EmployeeWithHours } from '@/components/schedules'
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet'
 import { SchedulesFilters } from './SchedulesFilters'
 import {
   format,
@@ -91,7 +104,6 @@ export function SchedulesPageContent({
   const [totalCount, setTotalCount] = useState(initialTotal)
   const [viewMode, setViewMode] = useState<ViewMode>('week')
   const [currentDate, setCurrentDate] = useState(new Date())
-  const [isFiltersOpen, setIsFiltersOpen] = useState(false)
   const [isPending, startTransition] = useTransition()
   const [activeFilters, setActiveFilters] = useState<Record<string, unknown>>(
     {}
@@ -112,11 +124,36 @@ export function SchedulesPageContent({
   const [showAvailabilities, setShowAvailabilities] = useState(true)
   const [isLoadingAvailabilities, setIsLoadingAvailabilities] = useState(false)
 
+  // État pour les équipes (filtre)
+  const [teams, setTeams] = useState<{ id: string; name: string }[]>([])
+
+  // État pour les employés (filtre + heures)
+  const [employees, setEmployees] = useState<
+    { id: string; firstName: string; lastName: string; weeklyHours: number }[]
+  >([])
+
+  // État pour le panneau heures semaine (SP-406)
+  const [showHoursPanel, setShowHoursPanel] = useState(true)
+
+  // Chargement des équipes et employés au mount
+  useEffect(() => {
+    void getTeamsForSelect().then((result) => {
+      if (result.success && result.data) {
+        setTeams(result.data)
+      }
+    })
+    void getEmployeesForSelect().then((result) => {
+      if (result.success && result.data) {
+        setEmployees(result.data)
+      }
+    })
+  }, [])
+
   // Permissions RBAC
   const canCreate = userRole === 'DIRECTOR' || userRole === 'MANAGER'
 
-  // Calcul des dates selon le mode de vue
-  const getDateRange = useCallback(() => {
+  // Calcul des dates selon le mode de vue (stabilisé par timestamps)
+  const dateRange = useMemo(() => {
     switch (viewMode) {
       case 'day':
         return {
@@ -144,8 +181,6 @@ export function SchedulesPageContent({
       }
     }
   }, [viewMode, currentDate])
-
-  const dateRange = getDateRange()
 
   // Chargement des indisponibilités (SP-402)
   const loadAvailabilities = useCallback(
@@ -178,9 +213,14 @@ export function SchedulesPageContent({
   )
 
   // Charger les indisponibilités au changement de période ou toggle
+  // On utilise getTime() pour des dépendances primitives stables
+  const rangeStartTime = dateRange.start.getTime()
+  const rangeEndTime = dateRange.end.getTime()
+
   useEffect(() => {
-    void loadAvailabilities(dateRange.start, dateRange.end)
-  }, [dateRange.start, dateRange.end, showAvailabilities, loadAvailabilities])
+    void loadAvailabilities(new Date(rangeStartTime), new Date(rangeEndTime))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rangeStartTime, rangeEndTime, showAvailabilities, companyId])
 
   // Rechargement des données
   const reloadSchedules = useCallback(
@@ -300,18 +340,26 @@ export function SchedulesPageContent({
   const handleFiltersChange = useCallback(
     (filters: Record<string, unknown>) => {
       setActiveFilters(filters)
-      void reloadSchedules(dateRange.start, dateRange.end, filters)
+      void reloadSchedules(
+        new Date(rangeStartTime),
+        new Date(rangeEndTime),
+        filters
+      )
     },
-    [dateRange.start, dateRange.end, reloadSchedules]
+    [rangeStartTime, rangeEndTime, reloadSchedules]
   )
 
   // Callback pour les mises à jour drag & drop
   const handleScheduleUpdate = useCallback(
     (_scheduleId: string, _startDate: Date, _endDate: Date) => {
       // Rafraîchir les données après une mise à jour réussie via drag & drop
-      void reloadSchedules(dateRange.start, dateRange.end, activeFilters)
+      void reloadSchedules(
+        new Date(rangeStartTime),
+        new Date(rangeEndTime),
+        activeFilters
+      )
     },
-    [dateRange.start, dateRange.end, activeFilters, reloadSchedules]
+    [rangeStartTime, rangeEndTime, activeFilters, reloadSchedules]
   )
 
   // Calculs pour les stats
@@ -331,7 +379,7 @@ export function SchedulesPageContent({
           </div>
           <div>
             <h1
-              className="text-2xl font-bold tracking-tight"
+              className="font-display text-2xl font-bold tracking-tight"
               data-testid="schedules-title"
             >
               Plannings
@@ -344,6 +392,7 @@ export function SchedulesPageContent({
         {canCreate && (
           <Button
             data-testid="new-shift-button"
+            className="shadow-sm transition-all duration-150 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:shadow-none dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_1px_3px_0_rgba(0,0,0,0.3)] dark:hover:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_4px_6px_-1px_rgba(0,0,0,0.35)] dark:active:shadow-[inset_0_2px_4px_0_rgba(0,0,0,0.3)]"
             onClick={() => {
               setShiftModalMode('create')
               setSelectedSchedule(null)
@@ -351,7 +400,7 @@ export function SchedulesPageContent({
             }}
           >
             <Plus className="mr-2 h-4 w-4" />
-            Nouveau créneau
+            Nouveau planning
           </Button>
         )}
       </div>
@@ -392,7 +441,7 @@ export function SchedulesPageContent({
                 <ChevronRight className="h-4 w-4" />
               </Button>
               <span
-                className="ml-4 text-lg font-medium capitalize"
+                className="ml-4 font-display text-lg font-semibold capitalize tracking-tight"
                 data-testid="date-range-label"
               >
                 {dateRange.label}
@@ -407,11 +456,12 @@ export function SchedulesPageContent({
                   startDate={dateRange.start}
                   endDate={dateRange.end}
                   viewMode={viewMode === 'day' ? 'week' : viewMode}
+                  filters={activeFilters}
                 />
               )}
 
               {/* Toggle indisponibilités (SP-402) */}
-              <div className="flex items-center gap-2 rounded-md border px-3 py-1.5">
+              <div className="flex items-center gap-2 rounded-md border px-3 py-1.5 transition-shadow duration-150 dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]">
                 <Switch
                   id="show-availabilities"
                   data-testid="availability-toggle"
@@ -432,20 +482,19 @@ export function SchedulesPageContent({
                 </Label>
               </div>
 
+              {/* Toggle heures semaine (SP-406) */}
               <Button
-                data-testid="filters-button"
-                variant="outline"
+                variant={showHoursPanel ? 'default' : 'outline'}
                 size="sm"
-                onClick={() => setIsFiltersOpen(!isFiltersOpen)}
+                className="hidden items-center gap-1.5 md:flex"
+                onClick={() => setShowHoursPanel((v) => !v)}
+                aria-label="Afficher les heures semaine"
+                data-testid="hours-panel-toggle"
               >
-                <Filter className="mr-2 h-4 w-4" />
-                Filtres
-                {Object.keys(activeFilters).length > 0 && (
-                  <span className="ml-2 rounded-full bg-primary px-2 py-0.5 text-xs text-primary-foreground">
-                    {Object.keys(activeFilters).length}
-                  </span>
-                )}
+                <Clock className="h-4 w-4" />
+                <span className="hidden lg:inline">Heures</span>
               </Button>
+
               <Select
                 value={viewMode}
                 onValueChange={(value: ViewMode) => handleViewModeChange(value)}
@@ -466,36 +515,80 @@ export function SchedulesPageContent({
           </div>
         </CardHeader>
 
-        {/* Filtres (collapsible) */}
-        {isFiltersOpen && (
-          <CardContent className="border-t pt-4">
-            <SchedulesFilters onFiltersChange={handleFiltersChange} />
-          </CardContent>
-        )}
-      </Card>
-
-      {/* Calendrier des schedules (responsive) */}
-      <Card>
-        <CardContent className="pt-6">
-          <ScheduleCalendar
-            schedules={schedules}
-            viewMode={viewMode}
-            currentDate={currentDate}
-            onScheduleClick={(schedule) => {
-              if (canCreate) {
-                setShiftModalMode('edit')
-                setSelectedSchedule(schedule)
-                setIsShiftModalOpen(true)
-              }
-            }}
-            onScheduleUpdate={handleScheduleUpdate}
-            isLoading={isPending || isLoadingAvailabilities}
-            canEdit={canCreate}
-            availabilities={availabilities}
-            showAvailabilities={showAvailabilities}
+        {/* Filtres */}
+        <CardContent className="border-t pt-4">
+          <SchedulesFilters
+            onFiltersChange={handleFiltersChange}
+            teams={teams}
+            employees={employees}
           />
         </CardContent>
       </Card>
+
+      {/* Calendrier + Panneau heures (SP-406) */}
+      <div className="flex gap-6">
+        <Card className="min-w-0 flex-1">
+          <CardContent className="pt-6">
+            <ScheduleCalendar
+              schedules={schedules}
+              viewMode={viewMode}
+              currentDate={currentDate}
+              onScheduleClick={(schedule) => {
+                if (canCreate) {
+                  setShiftModalMode('edit')
+                  setSelectedSchedule(schedule)
+                  setIsShiftModalOpen(true)
+                }
+              }}
+              onScheduleUpdate={handleScheduleUpdate}
+              isLoading={isPending || isLoadingAvailabilities}
+              canEdit={canCreate}
+              availabilities={availabilities}
+              showAvailabilities={showAvailabilities}
+            />
+          </CardContent>
+        </Card>
+
+        {/* Panneau heures desktop */}
+        <div className="hidden md:block">
+          <WeeklyHoursPanel
+            schedules={schedules}
+            employees={employees as EmployeeWithHours[]}
+            isOpen={showHoursPanel}
+            onToggle={() => setShowHoursPanel((v) => !v)}
+          />
+        </div>
+      </div>
+
+      {/* Bouton flottant mobile + Sheet (SP-406) */}
+      <div className="md:hidden">
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button
+              size="icon"
+              className="fixed bottom-6 right-6 z-50 h-12 w-12 rounded-full shadow-lg"
+              aria-label="Voir les heures semaine"
+              data-testid="hours-panel-mobile-trigger"
+            >
+              <Clock className="h-5 w-5" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="right" className="w-80 p-0">
+            <SheetHeader className="border-b px-4 py-3">
+              <SheetTitle className="flex items-center gap-2 text-sm">
+                <Clock className="h-4 w-4" />
+                Heures semaine
+              </SheetTitle>
+            </SheetHeader>
+            <WeeklyHoursPanel
+              schedules={schedules}
+              employees={employees as EmployeeWithHours[]}
+              isOpen={true}
+              onToggle={() => {}}
+            />
+          </SheetContent>
+        </Sheet>
+      </div>
 
       {/* Modal création/édition de créneau */}
       <ShiftModal
@@ -508,37 +601,59 @@ export function SchedulesPageContent({
         schedule={selectedSchedule}
         companyId={companyId}
         onSuccess={() => {
-          void reloadSchedules(dateRange.start, dateRange.end, activeFilters)
+          setIsShiftModalOpen(false)
+          setSelectedSchedule(null)
+          void reloadSchedules(
+            new Date(rangeStartTime),
+            new Date(rangeEndTime),
+            activeFilters
+          )
         }}
       />
 
       {/* Stats rapides */}
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-        <Card data-testid="stats-total">
+        <Card
+          data-testid="stats-total"
+          className="border-l-4 border-l-primary shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+        >
           <CardContent className="pt-6">
-            <div className="text-2xl font-bold">{totalCount}</div>
+            <div className="font-display text-3xl font-bold tracking-tight">
+              {totalCount}
+            </div>
             <p className="text-sm text-muted-foreground">
-              Shifts cette période
+              Plannings cette période
             </p>
           </CardContent>
         </Card>
-        <Card data-testid="stats-employees">
+        <Card
+          data-testid="stats-employees"
+          className="border-l-4 border-l-info shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+        >
           <CardContent className="pt-6">
-            <div className="text-2xl font-bold">{uniqueEmployees}</div>
+            <div className="font-display text-3xl font-bold tracking-tight">
+              {uniqueEmployees}
+            </div>
             <p className="text-sm text-muted-foreground">Employés planifiés</p>
           </CardContent>
         </Card>
-        <Card data-testid="stats-confirmed">
+        <Card
+          data-testid="stats-confirmed"
+          className="border-l-4 border-l-success shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+        >
           <CardContent className="pt-6">
-            <div className="text-2xl font-bold text-green-600">
+            <div className="font-display text-3xl font-bold tracking-tight text-success">
               {confirmedCount}
             </div>
-            <p className="text-sm text-muted-foreground">Shifts confirmés</p>
+            <p className="text-sm text-muted-foreground">Plannings confirmés</p>
           </CardContent>
         </Card>
-        <Card data-testid="stats-draft">
+        <Card
+          data-testid="stats-draft"
+          className="border-l-4 border-l-warning shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+        >
           <CardContent className="pt-6">
-            <div className="text-2xl font-bold text-amber-600">
+            <div className="font-display text-3xl font-bold tracking-tight text-warning">
               {draftCount}
             </div>
             <p className="text-sm text-muted-foreground">Brouillons</p>

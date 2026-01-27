@@ -47,6 +47,7 @@ interface SidebarProps {
     email: string
     role: UserRole
     organizationId?: string
+    companyName?: string
   }
 }
 
@@ -193,7 +194,9 @@ export function Sidebar({ user }: SidebarProps) {
               transition={{ duration: 0.2 }}
               className="flex flex-col"
             >
-              <span className="text-lg font-semibold">SmartPlanning</span>
+              <span className="text-lg font-semibold">
+                {user.companyName || 'SmartPlanning'}
+              </span>
               <span className="text-xs text-muted-foreground">
                 {getRoleLabel(user.role)}
               </span>

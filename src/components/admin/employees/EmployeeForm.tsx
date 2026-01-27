@@ -16,7 +16,15 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useRouter } from 'next/navigation'
 import { z } from 'zod'
-import { User, Phone, Briefcase, Users, Calendar, Clock } from 'lucide-react'
+import {
+  User,
+  Phone,
+  Mail,
+  Briefcase,
+  Users,
+  Calendar,
+  Clock,
+} from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -40,12 +48,7 @@ import { Switch } from '@/components/ui/switch'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 import { useCrudMutation } from '@/hooks/use-crud-mutation'
-import {
-  departmentLabels,
-  weeklyHoursOptions,
-  type Department,
-  type EmployeeWithCounts,
-} from '@/lib/validations/employee'
+import { type EmployeeWithCounts } from '@/lib/validations/employee'
 import { createEmployee, updateEmployee } from '@/lib/actions/employees'
 
 // ============================================================================
@@ -82,26 +85,14 @@ const employeeFormSchema = z.object({
     .string()
     .min(2, 'Le nom doit contenir au moins 2 caracteres')
     .max(50),
-  jobTitle: z.string().max(100).optional().or(z.literal('')),
-  department: z
-    .enum([
-      'DIRECTION',
-      'RESSOURCES_HUMAINES',
-      'COMMERCIAL',
-      'MARKETING',
-      'TECHNIQUE',
-      'PRODUCTION',
-      'LOGISTIQUE',
-      'FINANCE',
-      'JURIDIQUE',
-      'SUPPORT',
-      'AUTRE',
-    ])
+  phone: z.string().optional().or(z.literal('')),
+  email: z
+    .string()
+    .email('Adresse email invalide')
     .optional()
     .or(z.literal('')),
-  phone: z.string().optional().or(z.literal('')),
   hireDate: z.string().optional().or(z.literal('')),
-  weeklyHours: z.number().min(1).max(60),
+  weeklyHours: z.number().min(1, 'Minimum 1h').max(60, 'Maximum 60h'),
   teamId: z.string().optional().or(z.literal('')),
   isActive: z.boolean(),
 })
@@ -152,9 +143,8 @@ export function EmployeeForm({
       ? {
           firstName: employee.firstName,
           lastName: employee.lastName,
-          jobTitle: employee.jobTitle || '',
-          department: (employee.department as Department) || '',
           phone: employee.phone || '',
+          email: employee.email || '',
           hireDate: employee.hireDate
             ? new Date(employee.hireDate).toISOString().split('T')[0]
             : '',
@@ -165,9 +155,8 @@ export function EmployeeForm({
       : {
           firstName: '',
           lastName: '',
-          jobTitle: '',
-          department: '',
           phone: '',
+          email: '',
           hireDate: '',
           weeklyHours: 35,
           teamId: '',
@@ -195,10 +184,9 @@ export function EmployeeForm({
       lastName: data.lastName,
       weeklyHours: data.weeklyHours,
       isActive: data.isActive,
-      skills: [] as string[], // Valeur par defaut
-      jobTitle: data.jobTitle || undefined,
-      department: data.department || undefined,
+      skills: [] as string[],
       phone: data.phone || undefined,
+      email: data.email || undefined,
       hireDate: data.hireDate || undefined,
       teamId: data.teamId || undefined,
     }
@@ -294,6 +282,30 @@ export function EmployeeForm({
                 </FormItem>
               )}
             />
+
+            {/* Email */}
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                      <Input
+                        type="email"
+                        placeholder="jean.dupont@exemple.fr"
+                        className="pl-10"
+                        {...field}
+                        disabled={isPending}
+                      />
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </CardContent>
         </Card>
 
@@ -306,59 +318,6 @@ export function EmployeeForm({
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              {/* Poste */}
-              <FormField
-                control={form.control}
-                name="jobTitle"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Intitule du poste</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Developpeur Full-Stack"
-                        {...field}
-                        disabled={isPending}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Departement */}
-              <FormField
-                control={form.control}
-                name="department"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Departement</FormLabel>
-                    <FormControl>
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value || ''}
-                        disabled={isPending}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selectionner un departement" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {(Object.keys(departmentLabels) as Department[]).map(
-                            (dept) => (
-                              <SelectItem key={dept} value={dept}>
-                                {departmentLabels[dept]}
-                              </SelectItem>
-                            )
-                          )}
-                        </SelectContent>
-                      </Select>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
             {/* Equipe */}
             <FormField
               control={form.control}
@@ -433,28 +392,25 @@ export function EmployeeForm({
                     <FormLabel>Heures hebdomadaires *</FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <Clock className="absolute left-3 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                        <Select
-                          onValueChange={(v) => field.onChange(Number(v))}
-                          value={String(field.value)}
+                        <Clock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                        <Input
+                          type="number"
+                          min={1}
+                          max={60}
+                          step={0.25}
+                          placeholder="35"
+                          className="pl-10"
+                          {...field}
+                          onChange={(e) =>
+                            field.onChange(Number(e.target.value))
+                          }
                           disabled={isPending}
-                        >
-                          <SelectTrigger className="pl-10">
-                            <SelectValue placeholder="Heures/semaine" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {weeklyHoursOptions.map((opt) => (
-                              <SelectItem
-                                key={opt.value}
-                                value={String(opt.value)}
-                              >
-                                {opt.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        />
                       </div>
                     </FormControl>
+                    <FormDescription>
+                      Entre 1 et 60 heures par semaine
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
