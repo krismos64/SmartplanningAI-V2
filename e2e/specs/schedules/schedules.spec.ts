@@ -45,9 +45,8 @@ test.describe('Schedules - Navigation & Affichage', () => {
 
     const initialLabel = await schedulesPage.dateRangeLabel.textContent()
     await schedulesPage.navigateNext()
-    const newLabel = await schedulesPage.dateRangeLabel.textContent()
-
-    expect(newLabel).not.toBe(initialLabel)
+    // Attendre que le label change (React state update)
+    await expect(schedulesPage.dateRangeLabel).not.toHaveText(initialLabel!)
   })
 
   test('navigue vers la période précédente', async ({ managerPage }) => {
@@ -56,9 +55,8 @@ test.describe('Schedules - Navigation & Affichage', () => {
 
     const initialLabel = await schedulesPage.dateRangeLabel.textContent()
     await schedulesPage.navigatePrev()
-    const newLabel = await schedulesPage.dateRangeLabel.textContent()
-
-    expect(newLabel).not.toBe(initialLabel)
+    // Attendre que le label change (React state update)
+    await expect(schedulesPage.dateRangeLabel).not.toHaveText(initialLabel!)
   })
 
   test('change le mode de vue', async ({ managerPage }) => {

@@ -90,39 +90,37 @@ export class SchedulesPage {
   }
 
   async goto() {
-    await this.page.goto('/app/dashboard/schedules')
+    await this.page.goto('/app/dashboard/schedules', {
+      waitUntil: 'domcontentloaded',
+    })
     await this.waitForLoad()
   }
 
   async waitForLoad() {
-    await this.schedulesPage.waitFor({ state: 'visible' })
-    await this.page.waitForLoadState('networkidle')
+    await this.schedulesPage.waitFor({ state: 'visible', timeout: 15000 })
   }
 
   async navigateNext() {
     const currentLabel = await this.dateRangeLabel.textContent()
     await this.navNext.click()
-    await this.page.waitForLoadState('networkidle')
     return currentLabel
   }
 
   async navigatePrev() {
     const currentLabel = await this.dateRangeLabel.textContent()
     await this.navPrev.click()
-    await this.page.waitForLoadState('networkidle')
     return currentLabel
   }
 
   async goToToday() {
     await this.navToday.click()
-    await this.page.waitForLoadState('networkidle')
   }
 
   async setViewMode(mode: 'day' | 'week' | 'month') {
     await this.viewModeSelect.click()
-    const label = mode === 'day' ? 'Jour' : mode === 'week' ? 'Semaine' : 'Mois'
+    const label =
+      mode === 'day' ? 'Jour' : mode === 'week' ? 'Semaine' : 'Mois'
     await this.page.getByRole('option', { name: label }).click()
-    await this.page.waitForLoadState('networkidle')
   }
 
   async clickNewShift() {
