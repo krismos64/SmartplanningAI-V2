@@ -32,7 +32,7 @@ export interface ScheduleForExcel {
   title: string | null
   description: string | null
   location: string | null
-  employee: { firstName: string; lastName: string }
+  employee: { firstName: string; lastName: string; weeklyHours: number }
   team: { name: string } | null
 }
 
@@ -57,7 +57,12 @@ function calculateDuration(startTime: string, endTime: string): number {
 function generateSummaryByEmployee(schedules: ScheduleForExcel[]) {
   const byEmployee = new Map<
     string,
-    { total: number; count: number; byType: Record<string, number> }
+    {
+      total: number
+      count: number
+      byType: Record<string, number>
+      weeklyHours: number
+    }
   >()
 
   for (const s of schedules) {
@@ -65,11 +70,19 @@ function generateSummaryByEmployee(schedules: ScheduleForExcel[]) {
     const duration = calculateDuration(s.startTime, s.endTime)
 
     if (!byEmployee.has(name)) {
-      byEmployee.set(name, { total: 0, count: 0, byType: {} })
+      byEmployee.set(name, {
+        total: 0,
+        count: 0,
+        byType: {},
+        weeklyHours: s.employee.weeklyHours,
+      })
     }
 
     const emp = byEmployee.get(name)!
-    emp.total += duration
+    // Ne pas compter les repos dans le total heures travaillées
+    if (s.type !== 'REST') {
+      emp.total += duration
+    }
     emp.count += 1
     emp.byType[s.type] = (emp.byType[s.type] || 0) + duration
   }
@@ -78,7 +91,9 @@ function generateSummaryByEmployee(schedules: ScheduleForExcel[]) {
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([name, data]) => ({
       Employé: name,
+      'Heures contrat': data.weeklyHours,
       'Total heures': Number(data.total.toFixed(2)),
+      Différence: Number((data.total - data.weeklyHours).toFixed(2)),
       'Nb shifts': data.count,
       Travail: Number((data.byType['WORK'] || 0).toFixed(2)),
       Réunion: Number((data.byType['MEETING'] || 0).toFixed(2)),
@@ -87,6 +102,7 @@ function generateSummaryByEmployee(schedules: ScheduleForExcel[]) {
       Télétravail: Number((data.byType['REMOTE'] || 0).toFixed(2)),
       Astreinte: Number((data.byType['ON_CALL'] || 0).toFixed(2)),
       'Heures sup.': Number((data.byType['OVERTIME'] || 0).toFixed(2)),
+      'Repos (jours)': Number((data.byType['REST'] || 0).toFixed(2)),
     }))
 }
 
@@ -172,16 +188,19 @@ export function generateScheduleExcel({
   const summaryByEmployee = generateSummaryByEmployee(schedules)
   const wsSummary = XLSX.utils.json_to_sheet(summaryByEmployee)
   wsSummary['!cols'] = [
-    { wch: 22 },
-    { wch: 12 },
-    { wch: 10 },
-    { wch: 14 },
-    { wch: 14 },
-    { wch: 14 },
-    { wch: 14 },
-    { wch: 14 },
-    { wch: 14 },
-    { wch: 14 },
+    { wch: 22 }, // Employé
+    { wch: 14 }, // Heures contrat
+    { wch: 12 }, // Total heures
+    { wch: 12 }, // Différence
+    { wch: 10 }, // Nb shifts
+    { wch: 14 }, // Travail
+    { wch: 14 }, // Réunion
+    { wch: 14 }, // Pause
+    { wch: 14 }, // Formation
+    { wch: 14 }, // Télétravail
+    { wch: 14 }, // Astreinte
+    { wch: 14 }, // Heures sup.
+    { wch: 14 }, // Repos (jours)
   ]
   XLSX.utils.book_append_sheet(wb, wsSummary, 'Résumé')
 

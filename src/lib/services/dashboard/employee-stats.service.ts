@@ -110,7 +110,7 @@ async function getHoursWorked(
       employeeId,
       startDate: { gte: dateRange.from },
       endDate: { lte: dateRange.to },
-      status: 'COMPLETED',
+      status: 'CONFIRMED',
       type: 'WORK',
     },
     select: {
@@ -125,7 +125,7 @@ async function getHoursWorked(
       employeeId,
       startDate: { gte: previousPeriod.from },
       endDate: { lte: previousPeriod.to },
-      status: 'COMPLETED',
+      status: 'CONFIRMED',
       type: 'WORK',
     },
     select: {
@@ -254,7 +254,7 @@ async function getWeeklySchedule(
     where: {
       employeeId,
       startDate: { gte: weekStart, lte: weekEnd },
-      status: { in: ['CONFIRMED', 'COMPLETED'] },
+      status: 'CONFIRMED',
       type: 'WORK',
     },
     select: {

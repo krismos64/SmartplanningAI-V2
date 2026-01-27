@@ -60,6 +60,7 @@ import {
   formatMembersCount,
   getFullName,
 } from '@/lib/validations/team'
+import { TeamCard } from './TeamCard'
 
 // ============================================================================
 // Types
@@ -337,8 +338,8 @@ export function TeamsDataTable({
         )}
       </div>
 
-      {/* Table */}
-      <div className="rounded-md border">
+      {/* Table desktop */}
+      <div className="hidden rounded-md border md:block">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -398,6 +399,35 @@ export function TeamsDataTable({
             )}
           </TableBody>
         </Table>
+      </div>
+
+      {/* Cards mobile */}
+      <div className="space-y-3 md:hidden">
+        {table.getRowModel().rows?.length ? (
+          table
+            .getRowModel()
+            .rows.map((row) => (
+              <TeamCard
+                key={row.id}
+                team={row.original}
+                showActions
+                onDelete={onDelete}
+              />
+            ))
+        ) : (
+          <div className="flex flex-col items-center justify-center gap-2 py-12">
+            <Users className="h-8 w-8 text-muted-foreground" />
+            <p className="text-muted-foreground">Aucune équipe trouvée</p>
+            {showCreateButton && (
+              <Button variant="outline" size="sm" asChild>
+                <Link href="/app/director/teams/new">
+                  <Plus className="mr-2 h-4 w-4" />
+                  Créer une équipe
+                </Link>
+              </Button>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Pagination */}

@@ -18,18 +18,16 @@ import {
   User,
   Pencil,
   Phone,
-  Briefcase,
+  Mail,
   Users,
   Calendar,
   Clock,
-  Building2,
 } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { getEmployee } from '@/lib/actions/employees'
-import { departmentLabels, type Department } from '@/lib/validations/employee'
 
 interface EmployeeDetailPageProps {
   params: Promise<{ id: string }>
@@ -104,9 +102,6 @@ export default async function EmployeeDetailPage({
               <h1 className="text-2xl font-bold tracking-tight">
                 {employee.firstName} {employee.lastName}
               </h1>
-              <p className="text-sm text-muted-foreground">
-                {employee.jobTitle || 'Poste non defini'}
-              </p>
             </div>
           </div>
         </div>
@@ -125,131 +120,69 @@ export default async function EmployeeDetailPage({
       </div>
 
       {/* Content */}
-      <div className="grid gap-6 md:grid-cols-2">
-        {/* Informations personnelles */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <User className="h-5 w-5" />
-              Informations personnelles
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="text-sm text-muted-foreground">Prenom</p>
-                <p className="font-medium">{employee.firstName}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Nom</p>
-                <p className="font-medium">{employee.lastName}</p>
-              </div>
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <User className="h-5 w-5" />
+            Informations
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <p className="text-sm text-muted-foreground">Prenom</p>
+              <p className="font-medium">{employee.firstName}</p>
             </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Nom</p>
+              <p className="font-medium">{employee.lastName}</p>
+            </div>
+          </div>
 
-            {employee.phone && (
-              <div className="flex items-center gap-2">
-                <Phone className="h-4 w-4 text-muted-foreground" />
-                <span>{employee.phone}</span>
-              </div>
-            )}
+          {(employee.email || employee.user?.email) && (
+            <a
+              href={`mailto:${employee.email || employee.user?.email}`}
+              className="flex items-center gap-2 hover:underline"
+            >
+              <Mail className="h-4 w-4 text-muted-foreground" />
+              <span>{employee.email || employee.user?.email}</span>
+            </a>
+          )}
 
-            {employee.user?.email && (
-              <div>
-                <p className="text-sm text-muted-foreground">Email</p>
-                <p className="font-medium">{employee.user.email}</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+          {employee.phone && (
+            <a
+              href={`tel:${employee.phone}`}
+              className="flex items-center gap-2 hover:underline"
+            >
+              <Phone className="h-4 w-4 text-muted-foreground" />
+              <span>{employee.phone}</span>
+            </a>
+          )}
 
-        {/* Informations professionnelles */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Briefcase className="h-5 w-5" />
-              Informations professionnelles
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {employee.jobTitle && (
-              <div className="flex items-center gap-2">
-                <Briefcase className="h-4 w-4 text-muted-foreground" />
-                <span>{employee.jobTitle}</span>
-              </div>
-            )}
-
-            {employee.department && (
-              <div>
-                <p className="text-sm text-muted-foreground">Departement</p>
-                <Badge variant="outline">
-                  {departmentLabels[employee.department as Department]}
-                </Badge>
-              </div>
-            )}
-
-            {employee.team && (
-              <div className="flex items-center gap-2">
-                <Users className="h-4 w-4 text-muted-foreground" />
-                <span>{employee.team.name}</span>
-              </div>
-            )}
-
-            {employee.company && (
-              <div className="flex items-center gap-2">
-                <Building2 className="h-4 w-4 text-muted-foreground" />
-                <span>{employee.company.name}</span>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Contrat */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Calendar className="h-5 w-5" />
-              Contrat
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {employee.hireDate && (
-              <div>
-                <p className="text-sm text-muted-foreground">
-                  Date d&apos;embauche
-                </p>
-                <p className="font-medium">
-                  {format(new Date(employee.hireDate), 'dd MMMM yyyy', {
-                    locale: fr,
-                  })}
-                </p>
-              </div>
-            )}
-
+          {employee.team && (
             <div className="flex items-center gap-2">
-              <Clock className="h-4 w-4 text-muted-foreground" />
-              <span>{employee.weeklyHours}h/semaine</span>
+              <Users className="h-4 w-4 text-muted-foreground" />
+              <span>{employee.team.name}</span>
             </div>
-          </CardContent>
-        </Card>
+          )}
 
-        {/* Competences */}
-        {employee.skills && employee.skills.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Competences</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-wrap gap-2">
-                {employee.skills.map((skill: string, index: number) => (
-                  <Badge key={index} variant="secondary">
-                    {skill}
-                  </Badge>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-      </div>
+          {employee.hireDate && (
+            <div className="flex items-center gap-2">
+              <Calendar className="h-4 w-4 text-muted-foreground" />
+              <span>
+                {format(new Date(employee.hireDate), 'dd MMMM yyyy', {
+                  locale: fr,
+                })}
+              </span>
+            </div>
+          )}
+
+          <div className="flex items-center gap-2">
+            <Clock className="h-4 w-4 text-muted-foreground" />
+            <span>{employee.weeklyHours}h/semaine</span>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }

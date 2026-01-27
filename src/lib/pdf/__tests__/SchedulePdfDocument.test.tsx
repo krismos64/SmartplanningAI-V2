@@ -18,10 +18,11 @@ const render = (el: React.ReactElement) => renderToBuffer(el as any)
 
 // Helper pour créer un schedule de test
 function makeSchedule(
-  overrides: Partial<ScheduleForPdf> & {
+  overrides: Omit<Partial<ScheduleForPdf>, 'employee'> & {
     employee?: Partial<ScheduleForPdf['employee']>
   } = {}
 ): ScheduleForPdf {
+  const { employee: empOverrides, ...rest } = overrides
   return {
     id: `sched-${Math.random().toString(36).slice(2, 8)}`,
     startDate: new Date('2026-01-26'),
@@ -34,9 +35,10 @@ function makeSchedule(
       id: 'emp-1',
       firstName: 'Jean',
       lastName: 'Dupont',
-      ...overrides.employee,
+      weeklyHours: 35,
+      ...empOverrides,
     },
-    ...overrides,
+    ...rest,
   }
 }
 

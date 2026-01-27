@@ -32,6 +32,7 @@ interface HeaderProps {
     email: string
     avatar?: string
     role: UserRole
+    companyName?: string
   }
   notificationsCount?: number
 }

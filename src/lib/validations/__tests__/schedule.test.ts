@@ -427,12 +427,7 @@ describe('Labels francais', () => {
   })
 
   it('scheduleStatusLabels contient tous les statuts', () => {
-    const statuses: ScheduleStatus[] = [
-      'DRAFT',
-      'CONFIRMED',
-      'CANCELLED',
-      'COMPLETED',
-    ]
+    const statuses: ScheduleStatus[] = ['DRAFT', 'CONFIRMED']
     statuses.forEach((status) => {
       expect(scheduleStatusLabels[status]).toBeDefined()
       expect(typeof scheduleStatusLabels[status]).toBe('string')

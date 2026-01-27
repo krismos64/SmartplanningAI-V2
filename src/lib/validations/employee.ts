@@ -84,6 +84,15 @@ export const employeeBaseSchema = z.object({
   /** Telephone de contact */
   phone: phoneSchema,
 
+  /** Email de contact (optionnel) */
+  email: z
+    .string()
+    .email('Adresse email invalide')
+    .max(255)
+    .trim()
+    .optional()
+    .or(z.literal('')),
+
   /** Date d'embauche (optionnel) */
   hireDate: optionalDateSchema,
 
@@ -224,6 +233,7 @@ export interface EmployeeWithCounts {
   jobTitle: string | null
   department: string | null
   phone: string | null
+  email: string | null
   hireDate: Date | null
   weeklyHours: number
   skills: string[]

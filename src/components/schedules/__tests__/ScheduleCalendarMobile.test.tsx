@@ -95,7 +95,7 @@ describe('ScheduleCalendarMobile', () => {
 
       expect(screen.getByText('Aucun planning')).toBeInTheDocument()
       expect(
-        screen.getByText('Pas de shifts pour cette période')
+        screen.getByText('Pas de plannings pour cette période')
       ).toBeInTheDocument()
     })
   })
@@ -200,7 +200,7 @@ describe('ScheduleCalendarMobile', () => {
         />
       )
 
-      expect(screen.getByText('2 shifts')).toBeInTheDocument()
+      expect(screen.getByText('2 plannings')).toBeInTheDocument()
     })
   })
 
@@ -275,8 +275,6 @@ describe('ScheduleCalendarMobile', () => {
       const schedulesWithStatuses = [
         createMockSchedule({ id: '1', status: 'DRAFT' }),
         createMockSchedule({ id: '2', status: 'CONFIRMED' }),
-        createMockSchedule({ id: '3', status: 'CANCELLED' }),
-        createMockSchedule({ id: '4', status: 'COMPLETED' }),
       ]
 
       render(
@@ -289,8 +287,6 @@ describe('ScheduleCalendarMobile', () => {
 
       expect(screen.getByText('Brouillon')).toBeInTheDocument()
       expect(screen.getByText('Confirmé')).toBeInTheDocument()
-      expect(screen.getByText('Annulé')).toBeInTheDocument()
-      expect(screen.getByText('Terminé')).toBeInTheDocument()
     })
   })
 

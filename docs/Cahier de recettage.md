@@ -34,8 +34,8 @@ Dans le cadre du diplôme **CDA (Concepteur Développeur d'Applications)**, ce c
 | Métrique              | Objectif  | Atteint |
 | --------------------- | --------- | ------- |
 | Couverture globale    | ≥ 70%     | ✅ 85%  |
-| Tests unitaires       | ≥ 500     | ✅ 3291 |
-| Tests E2E             | ≥ 50      | ✅ 430  |
+| Tests unitaires       | ≥ 500     | ✅ 3475 |
+| Tests E2E             | ≥ 50      | ✅ 446  |
 | Score Lighthouse A11y | ≥ 90%     | ✅ 95%  |
 | Anomalies critiques   | 0 en prod | ✅ 0    |
 
@@ -397,6 +397,7 @@ Ce tableau recense chaque campagne de tests significative (mise en production, f
 
 | Date       | Sprint    | Version/Commit | Tests unitaires | Tests E2E  | Couverture | Statut  | Notes                                                                                                                                                                                                                                                                                                          |
 | ---------- | --------- | -------------- | --------------- | ---------- | ---------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 27/01/2026 | Sprint 12 | SP-406         | 3475/3475 ✅    | 446/446 ✅ | ~85%       | ✅ PASS | 🆕 SP-406 Améliorations Plannings. +16 tests E2E (schedules.spec.ts). WeeklyHoursPanel (compteur heures hebdo). Type REST (repos journée entière). Simplification statuts (DRAFT/PUBLISHED). Suppression en masse employés (BulkDeleteDialog). Nom entreprise dans Sidebar. Corrections boucles infinies React 19. Refonte CSS calendrier Schedule-X. Exports PDF/Excel avec filtres et heures. Downgrade @schedule-x 2.11.0 + patch-package. Email employé (migration Prisma). Total : 3921 tests |
 | 27/01/2026 | Sprint 12 | SP-404         | 3291/3291 ✅    | 430/430 ✅ | ~85%       | ✅ PASS | 🆕 SP-404 Export Excel Planning. +7 tests unitaires (generateScheduleExcel: 7). API Route GET `/api/schedules/export/excel` avec auth et RBAC (MANAGER/DIRECTOR). Générateur `generateScheduleExcel` via SheetJS : 3 feuilles (Planning détaillé, Résumé par employé, Statistiques). `ExportDropdown` mis à jour (Excel fonctionnel). Total : 3721 tests |
 | 27/01/2026 | Sprint 12 | SP-403         | 3284/3284 ✅    | 430/430 ✅ | ~85%       | ✅ PASS | 🆕 SP-403 Export PDF Planning. +6 tests unitaires (SchedulePdfDocument: 6). API Route GET `/api/schedules/export/pdf` avec auth et RBAC (MANAGER/DIRECTOR). Composant React PDF `SchedulePdfDocument` (A4 paysage, tableau employés × jours, légende 7 types). `ExportDropdown` dans toolbar schedules (PDF + placeholder Excel). Total : 3714 tests |
 | 27/01/2026 | Sprint 12 | SP-402         | 3278/3278 ✅    | 430/430 ✅ | ~85%       | ✅ PASS | 🆕 SP-402 Overlay Indisponibilités Calendrier. +47 tests unitaires (useCalendarAvailabilities: 10, AvailabilityBadge: 20, AvailabilityOverlay: 17). Server Action getAvailabilitiesForCalendar avec RBAC. Hook useCalendarAvailabilities avec debounce et cache. Composants AvailabilityBadge, AvailabilityPopover, AvailabilityOverlay. Intégration Schedule-X desktop + badges mobile. Toggle Eye/EyeOff. Total : 3708 tests |
@@ -1577,6 +1578,8 @@ not-found.tsx (Server Component)
 | ANO-018 | 19/01/2026 | vi.mock() ne fonctionne pas avec ESM dynamique                 | Majeure  | Utilisation vi.doMock() + vi.resetModules() + import dynamique                                                                                                                          |
 | ANO-019 | 23/01/2026 | Test E2E "click overlay to close" Command Palette flaky en CI  | Mineure  | Suppression du test - le z-index du dialog cmdk intercepte les pointer events de l'overlay. Comportement déjà couvert par le test Escape.                                               |
 | ANO-020 | 25/01/2026 | WebKit upgrade http://localhost en https://localhost en mobile | Majeure  | Bug connu WebKit causant erreurs TLS et échecs login sur tous tests mobiles. Solution : Migration vers Chromium avec viewports personnalisés et paramètres isMobile/hasTouch conservés. |
+| ANO-021 | 27/01/2026 | Boucles infinies React 19 dans ScheduleCalendar et composants liés | Majeure  | useEffect/useCallback avec dépendances circulaires causant re-renders infinis. Solution : stabilisation avec useRef pour les callbacks, suppression des dépendances instables, memoization stricte. |
+| ANO-022 | 27/01/2026 | @schedule-x v4.1.0 incompatible Temporal API polyfill | Majeure  | Typing DragAndDrop cassé et conflit Temporal API. Solution : Downgrade vers @schedule-x 2.11.0, patch-package pour corriger le typing DragAndDrop, postinstall script. |
 
 ---
 
@@ -1614,8 +1617,9 @@ not-found.tsx (Server Component)
 | 26/01/2026 (SP-394)         | 3045            | 430       | 3475  | ~85%       | 📈 +30   |
 | 26/01/2026 (SP-395)         | 3045            | 430       | 3475  | ~85%       | 🖥️ Page   |
 | 26/01/2026 (SP-396)         | 3063            | 430       | 3493  | ~85%       | 📈 +18   |
+| 27/01/2026 (SP-406)         | 3475            | 446       | 3921  | ~85%       | 📈 +428  |
 
-**Graphique d'évolution** : De 27 tests (04/12) à 3493 tests (26/01) = **+12837% de croissance** 🚀
+**Graphique d'évolution** : De 27 tests (04/12) à 3921 tests (27/01) = **+14422% de croissance** 🚀
 
 ---
 
@@ -1625,11 +1629,11 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
 
 | N°  | Compétence                                                       | Preuve                                                                                                                                      |
 | --- | ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | Tester les composants d'une application                          | 3063 tests unitaires documentés                                                                                                             |
+| 1   | Tester les composants d'une application                          | 3475 tests unitaires documentés                                                                                                             |
 | 2   | Contribuer à la qualité du code                                  | Couverture 85%, anomalies tracées                                                                                                           |
 | 3   | Documenter les procédures                                        | Procédure de recette formalisée                                                                                                             |
 | 4   | Utiliser une méthodologie                                        | Approche structurée par sprints                                                                                                             |
-| 5   | Développer des tests automatisés                                 | 3493 tests (unitaires + E2E)                                                                                                                |
+| 5   | Développer des tests automatisés                                 | 3921 tests (unitaires + E2E)                                                                                                                |
 | 6   | Sécuriser une application                                        | Tests RBAC (92 unitaires, 27 E2E), rate limiting, protection énumération                                                                    |
 | 7   | Concevoir une architecture logicielle                            | Pattern ServiceResult<T>, multi-tenant                                                                                                      |
 | 8   | Développer des composants métier                                 | 4 dashboards par rôle                                                                                                                       |
@@ -1672,6 +1676,12 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
 | 45  | Développer des tests E2E multi-devices mobile                    | Suite Playwright 5 devices (iPhone SE/14 Pro, Pixel 7, iPad Mini/Pro), fixtures mobiles, touch gestures utilities (SP-389) 🆕               |
 | 46  | Implémenter l'accessibilité WCAG 2.1 automatisée                 | Skip to main content (WCAG 2.4.1), tests axe-core/Playwright, audit Lighthouse 95%, script a11y:audit (SP-269) 🆕                           |
 | 47  | Implémenter un flux sécurisé de réinitialisation de mot de passe | Pages /forgot-password et /reset-password, Server Actions sécurisées, tokens aléatoires, anti-énumération OWASP, validation Zod (SP-263) 🆕 |
+| 48  | Développer des tests E2E Plannings avec Page Object Pattern      | Suite Playwright 16 tests schedules (navigation, création shift, édition, suppression, filtres, vues), Page Object SchedulesPage, data-testid (SP-406) 🆕 |
+| 49  | Implémenter un panneau de suivi heures hebdomadaires             | WeeklyHoursPanel avec calcul temps réel, barres de progression colorées, comparaison heures contrat, responsive desktop/mobile Sheet (SP-406) 🆕 |
+| 50  | Gérer le type REST comme planning journée entière                | ScheduleType REST avec isAllDay automatique, exclusion exports, affichage spécifique calendrier (SP-406) 🆕 |
+| 51  | Implémenter la suppression en masse avec confirmation            | BulkDeleteDialog avec sélection multiple DataTable, Server Action bulk delete RBAC, AlertDialog confirmation (SP-406) 🆕 |
+| 52  | Corriger les boucles infinies React 19                           | Diagnostic et fix useEffect/useCallback dépendances circulaires, stabilisation références avec useRef (SP-406) 🆕 |
+| 53  | Appliquer patch-package pour corriger une dépendance             | Downgrade @schedule-x 2.11.0, patch DragAndDrop typing, résolution conflit Temporal API polyfill (SP-406) 🆕 |
 
 ---
 
@@ -1700,6 +1710,10 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
    - Raccourcis clavier (G+H/E/P/T/C, modal ?) 🆕
    - Tests E2E mobile multi-devices (5 appareils, touch gestures) 🆕
    - Accessibilité WCAG 2.1 (Skip link focus, audit Lighthouse ≥90%) 🆕
+   - Plannings : création/édition/suppression shifts, type REST, drag & drop 🆕
+   - WeeklyHoursPanel : compteur heures vs contrat, mise à jour temps réel 🆕
+   - Exports PDF/Excel avec filtres (employé, équipe, type, statut) 🆕
+   - Suppression en masse employés (sélection multiple, confirmation) 🆕
 
 ### Après chaque mise en production
 
@@ -1714,6 +1728,7 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
 
 | Date       | Modification                                                                                                                                                                                                                                                                                                                                     |
 | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 27/01/2026 | 🆕 SP-406 Améliorations Plannings : +16 tests E2E Playwright (schedules.spec.ts avec Page Object SchedulesPage). WeeklyHoursPanel (compteur heures hebdo vs contrat). Type REST (repos journée entière, isAllDay). Simplification statuts DRAFT/PUBLISHED. BulkDeleteDialog (suppression en masse employés). Nom entreprise dans Sidebar layout. Corrections boucles infinies React 19 (ANO-021). Refonte CSS calendrier Schedule-X. Exports PDF/Excel avec filtres et colonne heures. Downgrade @schedule-x 2.11.0 + patch-package (ANO-022). Email employé (migration Prisma). Compétences CDA #48-53 ajoutées. Total : 3921 tests |
 | 27/01/2026 | 🆕 SP-404 Export Excel Planning : +7 tests unitaires (generateScheduleExcel: 7). API Route GET `/api/schedules/export/excel` avec auth NextAuth v5 et RBAC (MANAGER/DIRECTOR). Générateur `generateScheduleExcel` via SheetJS (`xlsx`) : 3 feuilles (Planning détaillé 11 colonnes, Résumé par employé avec heures par type, Statistiques globales). `ExportDropdown` mis à jour : export Excel fonctionnel remplaçant le placeholder. Total : 3721 tests |
 | 27/01/2026 | 🆕 SP-403 Export PDF Planning : +6 tests unitaires (SchedulePdfDocument: 6). API Route GET `/api/schedules/export/pdf` avec auth NextAuth v5 et RBAC (MANAGER/DIRECTOR). Composant React PDF `SchedulePdfDocument` via `@react-pdf/renderer` (A4 paysage, tableau employés × jours, légende 7 types de shift). `ExportDropdown` dans toolbar schedules (export PDF fonctionnel + placeholder Excel). Total : 3714 tests |
 | 27/01/2026 | 🆕 SP-402 Overlay Indisponibilités Calendrier : +47 tests unitaires (useCalendarAvailabilities: 10, AvailabilityBadge: 20, AvailabilityOverlay: 17). Server Action `getAvailabilitiesForCalendar` avec RBAC. Hook `useCalendarAvailabilities` avec debounce 200ms et cache local. Composants `AvailabilityBadge`, `AvailabilityPopover`, `AvailabilityOverlay`. Intégration Schedule-X desktop (events colorés) + badges mobile. Toggle Eye/EyeOff dans SchedulesPageContent. Total : 3708 tests |
@@ -1842,7 +1857,19 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
   - Feuille 3 "Statistiques" : totaux globaux (shifts, heures, employés, moyenne heures/employé)
   - `ExportDropdown` mis à jour : export Excel fonctionnel remplaçant le placeholder
   - 7 tests unitaires (buffer valide, 3 feuilles, colonnes, durées, liste vide, statistiques, résumé)
-- Prochaines étapes : SP-405+
+- SP-406 : Améliorations Plannings ✅ TERMINÉ
+  - WeeklyHoursPanel : compteur heures hebdomadaires vs contrat, barres de progression, responsive
+  - Type REST (repos) : isAllDay automatique, exclusion exports, affichage calendrier
+  - Simplification statuts : DRAFT/PUBLISHED uniquement (suppression APPROVED/REJECTED/ARCHIVED)
+  - BulkDeleteDialog : suppression en masse employés avec DataTable sélection
+  - Nom entreprise dans Sidebar layout (companyName depuis Prisma)
+  - Corrections boucles infinies React 19 (useEffect/useCallback stabilisation)
+  - Refonte CSS calendrier Schedule-X (design moderne SaaS)
+  - Exports PDF/Excel avec filtres (employé, équipe, type, statut) et colonne heures
+  - Downgrade @schedule-x 2.11.0 + patch-package (ANO-022)
+  - Email employé (migration Prisma add_email_to_employee)
+  - 16 tests E2E Playwright (schedules.spec.ts + Page Object SchedulesPage)
+- Prochaines étapes : SP-407+
 
 ### Sprint 11 - Réinitialisation mot de passe (SP-263)
 

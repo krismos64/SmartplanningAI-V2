@@ -49,6 +49,39 @@ const scheduleTypeToCalendarId: Record<string, string> = {
   REMOTE: 'remote',
   ON_CALL: 'oncall',
   OVERTIME: 'overtime',
+  REST: 'rest',
+}
+
+/**
+ * Retourne le calendarId selon le type ET le statut.
+ * Les DRAFT utilisent un variant atténué (ex: 'work-draft')
+ */
+function getCalendarId(type: string, status: string): string {
+  const base = scheduleTypeToCalendarId[type] || 'work'
+  return status === 'DRAFT' ? `${base}-draft` : base
+}
+
+/**
+ * Génère les calendriers DRAFT (couleurs atténuées + opacité réduite)
+ */
+function buildDraftCalendars() {
+  const draft: Record<string, (typeof calendars)[keyof typeof calendars]> = {}
+  for (const [key, cal] of Object.entries(calendars)) {
+    draft[`${key}-draft`] = {
+      colorName: `${cal.colorName}-draft`,
+      lightColors: {
+        main: cal.lightColors.main,
+        container: `${cal.lightColors.container}80`,
+        onContainer: `${cal.lightColors.onContainer}99`,
+      },
+      darkColors: {
+        main: cal.darkColors.main,
+        container: `${cal.darkColors.container}80`,
+        onContainer: `${cal.darkColors.onContainer}99`,
+      },
+    }
+  }
+  return draft
 }
 
 const calendars = {
@@ -143,6 +176,19 @@ const calendars = {
       onContainer: '#fbcfe8',
     },
   },
+  rest: {
+    colorName: 'rest',
+    lightColors: {
+      main: '#6b7280',
+      container: '#f3f4f6',
+      onContainer: '#374151',
+    },
+    darkColors: {
+      main: '#9ca3af',
+      container: '#1f2937',
+      onContainer: '#d1d5db',
+    },
+  },
 }
 
 // Labels pour la légende
@@ -154,6 +200,7 @@ const typeLabels: Record<string, string> = {
   remote: 'Télétravail',
   oncall: 'Astreinte',
   overtime: 'Heures sup.',
+  rest: 'Repos',
 }
 
 // ============================================================================
@@ -241,9 +288,11 @@ const availabilityCalendars = {
   },
 }
 
-// Tous les calendriers combinés
+// Tous les calendriers combinés (incluant les variants DRAFT)
+const draftCalendars = buildDraftCalendars()
 const allCalendars = {
   ...calendars,
+  ...draftCalendars,
   ...availabilityCalendars,
 }
 
@@ -347,8 +396,8 @@ export function ScheduleCalendarDesktop({
         })
 
         if (result.success) {
-          success('Créneau modifié', {
-            description: 'Le créneau a été déplacé avec succès.',
+          success('Planning modifié', {
+            description: 'Le planning a été déplacé avec succès.',
           })
 
           // Mettre à jour la référence originale
@@ -369,7 +418,7 @@ export function ScheduleCalendarDesktop({
           /* eslint-enable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call */
 
           toastError('Erreur', {
-            description: result.error || 'Impossible de modifier le créneau.',
+            description: result.error || 'Impossible de modifier le planning.',
           })
         }
       } catch (err) {
@@ -435,15 +484,15 @@ export function ScheduleCalendarDesktop({
       // Sauvegarder l'événement original pour rollback
       const originalEvent = originalEventsRef.current.get(eventId)
 
-      // Parser les dates Temporal
-      const startStr = String(event.start.toString())
-      const endStr = String(event.end.toString())
+      // En v3.7.3, event.start/end sont des Temporal.ZonedDateTime
+      // toString() produit '2026-01-27T09:00:00+01:00[Europe/Paris]'
+      // new Date() ne sait pas parser le bracket → on le retire
+      const startStr = String(event.start.toString()).replace(/\[.*\]$/, '')
+      const endStr = String(event.end.toString()).replace(/\[.*\]$/, '')
 
-      // Extraire date et heure du format ISO Temporal
       const startDate = new Date(startStr)
       const endDate = new Date(endStr)
 
-      // Extraire les heures au format HH:mm
       const startTime = format(startDate, 'HH:mm')
       const endTime = format(endDate, 'HH:mm')
 
@@ -532,19 +581,28 @@ export function ScheduleCalendarDesktop({
       const [startHour, startMin] = schedule.startTime.split(':')
       const [endHour, endMin] = schedule.endTime.split(':')
 
+      const employeeName =
+        `${schedule.employee?.firstName ?? ''} ${schedule.employee?.lastName ?? ''}`.trim()
+
+      // REST = journée entière (PlainDate), autres = horaires (ZonedDateTime)
+      const isRest = schedule.type === 'REST'
+
       return {
         id: schedule.id,
-        title:
-          schedule.title ||
-          `${schedule.employee?.firstName ?? ''} ${schedule.employee?.lastName ?? ''}`.trim() ||
-          'Sans titre',
-        start: Temporal.ZonedDateTime.from(
-          `${startDateStr}T${startHour}:${startMin}:00[Europe/Paris]`
-        ),
-        end: Temporal.ZonedDateTime.from(
-          `${endDateStr}T${endHour}:${endMin}:00[Europe/Paris]`
-        ),
-        calendarId: scheduleTypeToCalendarId[schedule.type] || 'work',
+        title: isRest
+          ? `🛌 ${schedule.title || 'Repos'} — ${employeeName}`
+          : schedule.title || employeeName || 'Sans titre',
+        start: isRest
+          ? Temporal.PlainDate.from(startDateStr)
+          : Temporal.ZonedDateTime.from(
+              `${startDateStr}T${startHour}:${startMin}:00[Europe/Paris]`
+            ),
+        end: isRest
+          ? Temporal.PlainDate.from(endDateStr)
+          : Temporal.ZonedDateTime.from(
+              `${endDateStr}T${endHour}:${endMin}:00[Europe/Paris]`
+            ),
+        calendarId: getCalendarId(schedule.type, schedule.status),
       }
     })
   }, [schedules])
@@ -635,6 +693,7 @@ export function ScheduleCalendarDesktop({
       events,
       calendars: allCalendars,
       locale: 'fr-FR',
+      timezone: 'Europe/Paris',
       firstDayOfWeek: 1, // Lundi
       dayBoundaries: {
         start: '06:00',
@@ -690,31 +749,38 @@ export function ScheduleCalendarDesktop({
     plugins
   )
 
-  // Synchroniser les events quand schedules change
+  // Sauvegarder les events originaux pour rollback après drag & drop
   useEffect(() => {
-    if (eventsServiceRef.current && events.length > 0) {
-      /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access */
-      const service = eventsServiceRef.current
+    if (!calendar) return
+    originalEventsRef.current.clear()
+    events.forEach((event) => {
+      originalEventsRef.current.set(event.id, { ...event })
+    })
+  }, [events, calendar])
 
-      // Clear existing events
-      const existingEvents = service.getAll()
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      existingEvents.forEach((event: any) => {
-        service.remove(event.id as string)
+  // Marquer visuellement les events DRAFT dans le DOM
+  useEffect(() => {
+    const draftIds = new Set(
+      schedules.filter((s) => s.status === 'DRAFT').map((s) => s.id)
+    )
+    if (draftIds.size === 0) return
+
+    // Schedule-X injecte l'id dans data-event-id
+    const timer = setTimeout(() => {
+      const eventEls = document.querySelectorAll<HTMLElement>(
+        '.sx__time-grid-event, .sx__month-grid-event'
+      )
+      eventEls.forEach((el) => {
+        const eventId = el.getAttribute('data-event-id')
+        if (eventId && draftIds.has(eventId)) {
+          el.classList.add('sx__event--draft')
+        } else {
+          el.classList.remove('sx__event--draft')
+        }
       })
-
-      // Clear original events ref
-      originalEventsRef.current.clear()
-
-      // Add new events and save originals for rollback
-      events.forEach((event) => {
-        service.add(event)
-        // Sauvegarder une copie pour rollback potentiel
-        originalEventsRef.current.set(event.id, { ...event })
-      })
-      /* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access */
-    }
-  }, [events])
+    }, 50)
+    return () => clearTimeout(timer)
+  }, [schedules, events])
 
   // État de chargement
   if (isLoading) {
@@ -731,7 +797,7 @@ export function ScheduleCalendarDesktop({
       <div className="flex h-64 flex-col items-center justify-center text-muted-foreground">
         <CalendarX className="mb-4 h-12 w-12 opacity-50" />
         <p className="text-lg font-medium">Aucun planning pour cette période</p>
-        <p className="text-sm">Créez un nouveau shift pour commencer</p>
+        <p className="text-sm">Créez un nouveau planning pour commencer</p>
       </div>
     )
   }
@@ -763,7 +829,7 @@ export function ScheduleCalendarDesktop({
         {canEdit && (
           <p className="flex items-center gap-2 text-xs text-muted-foreground">
             <GripVertical className="h-4 w-4" />
-            Glissez-déposez les créneaux pour les déplacer. Redimensionnez-les
+            Glissez-déposez les plannings pour les déplacer. Redimensionnez-les
             en tirant sur les bords.
           </p>
         )}

@@ -962,6 +962,195 @@ export async function getEmployeesByTeam(
  *
  * @returns Liste des equipes selon le role
  */
+export async function getEmployeesForSelect(): Promise<
+  CrudActionResult<
+    { id: string; firstName: string; lastName: string; weeklyHours: number }[]
+  >
+> {
+  const authResult = await getAuthenticatedUser()
+
+  if (!authResult.success) {
+    return {
+      success: false,
+      error: authResult.error,
+    }
+  }
+
+  const user = authResult.user
+
+  try {
+    const where: Record<string, unknown> = { isActive: true }
+
+    switch (user.role) {
+      case 'SYSTEM_ADMIN':
+        break
+
+      case 'DIRECTOR':
+        where.companyId = user.companyId
+        break
+
+      case 'MANAGER':
+        where.teams = {
+          some: {
+            teamId: { in: user.managedTeamIds },
+          },
+        }
+        break
+    }
+
+    const employees = await prisma.employee.findMany({
+      where,
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        weeklyHours: true,
+      },
+      orderBy: [{ lastName: 'asc' }, { firstName: 'asc' }],
+    })
+
+    return {
+      success: true,
+      data: employees,
+    }
+  } catch (error) {
+    console.error('[getEmployeesForSelect] Error:', error)
+    const prismaError = handlePrismaError(error)
+    return {
+      success: false,
+      error: prismaError.error,
+    }
+  }
+}
+
+// ============================================================================
+// BULK DELETE - Supprimer plusieurs Employees
+// ============================================================================
+
+/**
+ * Resultat de la suppression en masse
+ */
+export interface BulkDeleteResult {
+  deletedCount: number
+  skippedNames: string[]
+}
+
+/**
+ * Supprime plusieurs Employees en une seule operation
+ *
+ * ATTENTION : Seuls SUPER_ADMIN et DIRECTOR peuvent supprimer.
+ * Les employes avec des schedules associes sont ignores.
+ *
+ * @param ids - IDs des Employees a supprimer
+ * @returns Nombre supprimes + noms ignores
+ */
+export async function bulkDeleteEmployees(
+  ids: string[]
+): Promise<CrudActionResult<BulkDeleteResult>> {
+  const authResult = await getAuthenticatedUser()
+
+  if (!authResult.success) {
+    return {
+      success: false,
+      error: authResult.error,
+    }
+  }
+
+  const user = authResult.user
+
+  // MANAGER ne peut pas supprimer
+  if (user.role === 'MANAGER') {
+    return {
+      success: false,
+      error:
+        'Vous ne pouvez pas supprimer des employés. Désactivez-les à la place.',
+    }
+  }
+
+  if (!ids.length) {
+    return {
+      success: false,
+      error: 'Aucun employé sélectionné',
+    }
+  }
+
+  try {
+    // Recupere les employes avec leurs counts pour verifier l'acces et les dependances
+    const employees = await prisma.employee.findMany({
+      where: { id: { in: ids } },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        companyId: true,
+        teamId: true,
+        _count: {
+          select: { schedules: true },
+        },
+      },
+    })
+
+    const toDelete: string[] = []
+    const skippedNames: string[] = []
+
+    for (const emp of employees) {
+      // Verification RBAC
+      let hasAccess = false
+      switch (user.role) {
+        case 'SYSTEM_ADMIN':
+          hasAccess = true
+          break
+        case 'DIRECTOR':
+          hasAccess = emp.companyId === user.companyId
+          break
+      }
+
+      if (!hasAccess) {
+        skippedNames.push(`${emp.firstName} ${emp.lastName}`)
+        continue
+      }
+
+      toDelete.push(emp.id)
+    }
+
+    // Suppression en batch : d'abord les dependances, puis les employes
+    if (toDelete.length > 0) {
+      await prisma.$transaction([
+        prisma.team.updateMany({
+          where: { managerId: { in: toDelete } },
+          data: { managerId: null },
+        }),
+        prisma.leaveRequest.deleteMany({
+          where: { employeeId: { in: toDelete } },
+        }),
+        prisma.schedule.deleteMany({
+          where: { employeeId: { in: toDelete } },
+        }),
+        prisma.employee.deleteMany({
+          where: { id: { in: toDelete } },
+        }),
+      ])
+    }
+
+    revalidatePath('/app/dashboard/employees')
+
+    return {
+      success: true,
+      data: {
+        deletedCount: toDelete.length,
+        skippedNames,
+      },
+    }
+  } catch (error) {
+    console.error('[bulkDeleteEmployees] Error:', error)
+    const prismaError = handlePrismaError(error)
+    return {
+      success: false,
+      error: prismaError.error,
+    }
+  }
+}
+
 export async function getTeamsForSelect(): Promise<
   CrudActionResult<{ id: string; name: string }[]>
 > {

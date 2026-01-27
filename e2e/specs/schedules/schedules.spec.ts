@@ -16,6 +16,51 @@ import { test, expect } from '../../fixtures/auth.fixture'
 import { SchedulesPage } from '../../pages'
 
 // =============================================================================
+// Stabilité (pas de boucle infinie)
+// =============================================================================
+
+test.describe('Schedules - Stabilité', () => {
+  test('charge la page sans boucle infinie de re-renders', async ({
+    managerPage,
+  }) => {
+    const consoleErrors: string[] = []
+    managerPage.on('console', (msg) => {
+      if (msg.type() === 'error') {
+        consoleErrors.push(msg.text())
+      }
+    })
+
+    const schedulesPage = new SchedulesPage(managerPage)
+    await schedulesPage.goto()
+
+    // La page doit se charger et afficher le contenu
+    await expect(schedulesPage.schedulesPage).toBeVisible()
+    await expect(schedulesPage.title).toBeVisible()
+
+    // Aucune erreur de boucle infinie dans la console
+    const loopErrors = consoleErrors.filter(
+      (e) =>
+        e.includes('Maximum update depth exceeded') ||
+        e.includes('getServerSnapshot should be cached')
+    )
+    expect(loopErrors).toHaveLength(0)
+  })
+
+  test('les stats se chargent sans spinner infini', async ({
+    managerPage,
+  }) => {
+    const schedulesPage = new SchedulesPage(managerPage)
+    await schedulesPage.goto()
+
+    // Les 4 stats doivent être visibles (prouve que le chargement se termine)
+    await expect(schedulesPage.statsTotal).toBeVisible({ timeout: 10000 })
+    await expect(schedulesPage.statsEmployees).toBeVisible()
+    await expect(schedulesPage.statsConfirmed).toBeVisible()
+    await expect(schedulesPage.statsDraft).toBeVisible()
+  })
+})
+
+// =============================================================================
 // Navigation & Affichage
 // =============================================================================
 

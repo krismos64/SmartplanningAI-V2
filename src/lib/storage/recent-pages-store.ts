@@ -49,6 +49,9 @@ const listeners = new Set<() => void>()
 /** Cache mémoire pour éviter de parser JSON à chaque lecture */
 let cachedPages: RecentPage[] | null = null
 
+/** Snapshot SSR constant (même référence pour éviter boucle infinie) */
+const SERVER_SNAPSHOT: RecentPage[] = []
+
 /**
  * Notifie tous les listeners d'un changement
  */
@@ -134,7 +137,7 @@ export const recentPagesStore = {
    * Évite les erreurs d'hydratation SSR
    */
   getServerSnapshot(): RecentPage[] {
-    return []
+    return SERVER_SNAPSHOT
   },
 
   /**

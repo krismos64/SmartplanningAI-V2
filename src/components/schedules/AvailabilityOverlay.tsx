@@ -8,7 +8,7 @@
 'use client'
 
 import { useMemo } from 'react'
-import { Temporal } from 'temporal-polyfill'
+import { format as fnsFormat } from 'date-fns'
 import { AvailabilityType } from '@prisma/client'
 import type { AvailabilityWithEmployee } from '@/lib/actions/availabilities'
 
@@ -136,54 +136,20 @@ const TYPE_LABELS: Record<AvailabilityType, string> = {
 // ============================================================================
 
 /**
- * Formate une date pour Schedule-X (format ISO avec timezone)
+ * Formate une date pour Schedule-X v3 (format 'YYYY-MM-DD HH:mm')
  */
 function formatScheduleXDate(date: Date, time?: string | null): string {
-  const plainDate = Temporal.PlainDate.from({
-    year: date.getFullYear(),
-    month: date.getMonth() + 1,
-    day: date.getDate(),
-  })
-
-  if (time) {
-    const [hours, minutes] = time.split(':').map(Number)
-    const plainTime = Temporal.PlainTime.from({
-      hour: hours,
-      minute: minutes,
-    })
-    const dateTime = plainDate.toPlainDateTime(plainTime)
-    return dateTime.toZonedDateTime('Europe/Paris').toString()
-  }
-
-  // Par défaut, début de journée
-  const dateTime = plainDate.toPlainDateTime({ hour: 0, minute: 0 })
-  return dateTime.toZonedDateTime('Europe/Paris').toString()
+  const dateStr = fnsFormat(new Date(date), 'yyyy-MM-dd')
+  return `${dateStr} ${time || '00:00'}`
 }
 
 /**
- * Formate l'heure de fin pour Schedule-X
+ * Formate l'heure de fin pour Schedule-X v3
  * Si pas d'heure de fin, utiliser 23:59 pour une journée complète
  */
 function formatScheduleXEndDate(date: Date, time?: string | null): string {
-  const plainDate = Temporal.PlainDate.from({
-    year: date.getFullYear(),
-    month: date.getMonth() + 1,
-    day: date.getDate(),
-  })
-
-  if (time) {
-    const [hours, minutes] = time.split(':').map(Number)
-    const plainTime = Temporal.PlainTime.from({
-      hour: hours,
-      minute: minutes,
-    })
-    const dateTime = plainDate.toPlainDateTime(plainTime)
-    return dateTime.toZonedDateTime('Europe/Paris').toString()
-  }
-
-  // Par défaut, fin de journée
-  const dateTime = plainDate.toPlainDateTime({ hour: 23, minute: 59 })
-  return dateTime.toZonedDateTime('Europe/Paris').toString()
+  const dateStr = fnsFormat(new Date(date), 'yyyy-MM-dd')
+  return `${dateStr} ${time || '23:59'}`
 }
 
 // ============================================================================

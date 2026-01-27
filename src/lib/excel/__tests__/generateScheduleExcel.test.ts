@@ -23,7 +23,7 @@ const mockSchedules: ScheduleForExcel[] = [
     title: 'Shift matin',
     description: null,
     location: 'Bureau A',
-    employee: { firstName: 'Jean', lastName: 'Dupont' },
+    employee: { firstName: 'Jean', lastName: 'Dupont', weeklyHours: 35 },
     team: { name: 'Équipe A' },
   },
   {
@@ -37,7 +37,7 @@ const mockSchedules: ScheduleForExcel[] = [
     title: 'Réunion',
     description: 'Réunion hebdomadaire',
     location: 'Salle B',
-    employee: { firstName: 'Marie', lastName: 'Martin' },
+    employee: { firstName: 'Marie', lastName: 'Martin', weeklyHours: 35 },
     team: { name: 'Équipe B' },
   },
 ]

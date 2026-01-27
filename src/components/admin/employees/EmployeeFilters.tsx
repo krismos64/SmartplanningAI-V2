@@ -9,7 +9,7 @@
 
 'use client'
 
-import { useCallback } from 'react'
+import { useCallback, useState, useEffect, useRef } from 'react'
 import { Search, X, Filter } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
@@ -21,11 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import {
-  departmentLabels,
-  type Department,
-  type EmployeeFilters as EmployeeFiltersType,
-} from '@/lib/validations/employee'
+import { type EmployeeFilters as EmployeeFiltersType } from '@/lib/validations/employee'
 
 // ============================================================================
 // Types
@@ -63,27 +59,36 @@ export function EmployeeFilters({
   showCompanyFilter = false,
   companies = [],
 }: EmployeeFiltersProps) {
-  // Handler pour la recherche textuelle
+  // État local pour la recherche (évite la perte de focus pendant le re-render parent)
+  const [searchValue, setSearchValue] = useState(filters.search || '')
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>(null)
+
+  // Sync état local si le parent reset les filtres
+  useEffect(() => {
+    setSearchValue(filters.search || '')
+  }, [filters.search])
+
+  // Debounce de la recherche (300ms)
   const handleSearchChange = useCallback(
     (value: string) => {
-      onFiltersChange({
-        ...filters,
-        search: value || undefined,
-      })
+      setSearchValue(value)
+      if (debounceRef.current) clearTimeout(debounceRef.current)
+      debounceRef.current = setTimeout(() => {
+        onFiltersChange({
+          ...filters,
+          search: value || undefined,
+        })
+      }, 300)
     },
     [filters, onFiltersChange]
   )
 
-  // Handler pour le filtre departement
-  const handleDepartmentChange = useCallback(
-    (value: string) => {
-      onFiltersChange({
-        ...filters,
-        department: value === 'all' ? undefined : (value as Department),
-      })
-    },
-    [filters, onFiltersChange]
-  )
+  // Cleanup du timeout au démontage
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current)
+    }
+  }, [])
 
   // Handler pour le filtre equipe
   const handleTeamChange = useCallback(
@@ -120,13 +125,13 @@ export function EmployeeFilters({
 
   // Reset tous les filtres
   const handleReset = useCallback(() => {
+    setSearchValue('')
     onFiltersChange({})
   }, [onFiltersChange])
 
   // Verifie si des filtres sont actifs
   const hasActiveFilters =
     filters.search ||
-    filters.department ||
     filters.teamId ||
     filters.companyId ||
     filters.isActive !== undefined
@@ -138,10 +143,9 @@ export function EmployeeFilters({
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           placeholder="Rechercher un employe..."
-          value={filters.search || ''}
+          value={searchValue}
           onChange={(e) => handleSearchChange(e.target.value)}
           className="pl-10"
-          disabled={disabled}
         />
       </div>
 
@@ -169,25 +173,6 @@ export function EmployeeFilters({
             </SelectContent>
           </Select>
         )}
-
-        {/* Filtre par departement */}
-        <Select
-          value={filters.department || 'all'}
-          onValueChange={handleDepartmentChange}
-          disabled={disabled}
-        >
-          <SelectTrigger className="w-[160px]">
-            <SelectValue placeholder="Departement" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Tous departements</SelectItem>
-            {(Object.keys(departmentLabels) as Department[]).map((dept) => (
-              <SelectItem key={dept} value={dept}>
-                {departmentLabels[dept]}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
 
         {/* Filtre par equipe */}
         {teams.length > 0 && (

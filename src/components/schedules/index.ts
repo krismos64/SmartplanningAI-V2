@@ -33,6 +33,13 @@ export {
 // SP-403: Export PDF
 export { ExportDropdown } from './ExportDropdown'
 
+// SP-406: Weekly Hours Panel
+export {
+  WeeklyHoursPanel,
+  type WeeklyHoursPanelProps,
+  type EmployeeWithHours,
+} from './WeeklyHoursPanel'
+
 // SP-402: Overlay Indisponibilités
 export {
   AvailabilityBadge,

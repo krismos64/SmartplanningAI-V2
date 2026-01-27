@@ -25,6 +25,7 @@ import {
   Check,
   Loader2,
   Repeat,
+  Trash2,
 } from 'lucide-react'
 import { ScheduleType, ScheduleStatus } from '@prisma/client'
 
@@ -53,7 +54,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
-import { Checkbox } from '@/components/ui/checkbox'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { cn } from '@/lib/utils'
@@ -63,7 +63,11 @@ import {
   scheduleStatusLabels,
   scheduleTypeColors,
 } from '@/lib/validations/schedule'
-import { createSchedule, updateSchedule } from '@/lib/actions/schedules'
+import {
+  createSchedule,
+  updateSchedule,
+  deleteSchedule,
+} from '@/lib/actions/schedules'
 import type { ScheduleWithRelations } from '@/lib/actions/schedules'
 import { useShiftFormData, type EmployeeOption } from './useShiftFormData'
 import { RecurrenceConfig } from './RecurrenceConfig'
@@ -152,6 +156,7 @@ export function ShiftModal({
 
   // États locaux
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [employeeSearch, setEmployeeSearch] = useState('')
 
@@ -238,6 +243,16 @@ export function ShiftModal({
   const watchedEndDate = watch('endDate')
   const watchedStartTime = watch('startTime')
   const watchedEndTime = watch('endTime')
+  const watchedType = watch('type')
+
+  // Si type REST, forcer les horaires journée entière
+  const isRestType = watchedType === 'REST'
+  useEffect(() => {
+    if (isRestType) {
+      setValue('startTime', '00:00')
+      setValue('endTime', '23:59')
+    }
+  }, [isRestType, setValue])
 
   // Détection des conflits avec les indisponibilités (SP-400)
   const {
@@ -334,7 +349,7 @@ export function ShiftModal({
           )
           if (totalSchedules > MAX_TOTAL_SCHEDULES) {
             setSubmitError(
-              `Le nombre total de créneaux (${totalSchedules}) dépasse la limite autorisée (${MAX_TOTAL_SCHEDULES}). Réduisez le nombre d'occurrences ou d'employés.`
+              `Le nombre total de plannings (${totalSchedules}) dépasse la limite autorisée (${MAX_TOTAL_SCHEDULES}). Réduisez le nombre d'occurrences ou d'employés.`
             )
             setIsSubmitting(false)
             return
@@ -383,12 +398,43 @@ export function ShiftModal({
         }
       }
 
-      onSuccess?.()
-      onClose()
+      if (onSuccess) {
+        onSuccess()
+      } else {
+        onClose()
+      }
     } catch {
       setSubmitError('Une erreur inattendue est survenue')
     } finally {
       setIsSubmitting(false)
+    }
+  }
+
+  // Supprimer un planning (mode edit uniquement)
+  const handleDelete = async () => {
+    if (!schedule) return
+    const confirmed = window.confirm(
+      'Êtes-vous sûr de vouloir supprimer ce planning ? Cette action est irréversible.'
+    )
+    if (!confirmed) return
+
+    setIsDeleting(true)
+    setSubmitError(null)
+    try {
+      const result = await deleteSchedule(schedule.id)
+      if (!result.success) {
+        setSubmitError(result.error ?? 'Erreur lors de la suppression')
+        return
+      }
+      if (onSuccess) {
+        onSuccess()
+      } else {
+        onClose()
+      }
+    } catch {
+      setSubmitError('Une erreur inattendue est survenue')
+    } finally {
+      setIsDeleting(false)
     }
   }
 
@@ -404,12 +450,12 @@ export function ShiftModal({
       >
         <DialogHeader>
           <DialogTitle>
-            {mode === 'create' ? 'Créer un créneau' : 'Modifier le créneau'}
+            {mode === 'create' ? 'Créer un planning' : 'Modifier le planning'}
           </DialogTitle>
           <DialogDescription>
             {mode === 'create'
-              ? 'Remplissez les informations pour créer un nouveau créneau'
-              : 'Modifiez les informations du créneau'}
+              ? 'Remplissez les informations pour créer un nouveau planning'
+              : 'Modifiez les informations du planning'}
           </DialogDescription>
         </DialogHeader>
 
@@ -537,27 +583,35 @@ export function ShiftModal({
                         : 'Tout sélectionner'}
                     </button>
 
-                    {filteredEmployees.map((emp) => (
-                      <div
-                        key={emp.id}
-                        className={cn(
-                          'flex cursor-pointer items-center gap-3 rounded-md px-2 py-1.5 hover:bg-muted',
-                          selectedEmployeeIds.includes(emp.id) && 'bg-muted'
-                        )}
-                        onClick={() => toggleEmployee(emp.id)}
-                      >
-                        <Checkbox
-                          checked={selectedEmployeeIds.includes(emp.id)}
-                          onCheckedChange={() => toggleEmployee(emp.id)}
-                        />
-                        <span className="flex-1 text-sm">
-                          {emp.firstName} {emp.lastName}
-                        </span>
-                        {selectedEmployeeIds.includes(emp.id) && (
-                          <Check className="h-4 w-4 text-primary" />
-                        )}
-                      </div>
-                    ))}
+                    {filteredEmployees.map((emp) => {
+                      const isSelected = selectedEmployeeIds.includes(emp.id)
+                      return (
+                        <div
+                          key={emp.id}
+                          className={cn(
+                            'flex cursor-pointer items-center gap-3 rounded-md px-2 py-1.5 hover:bg-muted',
+                            isSelected && 'bg-muted'
+                          )}
+                          onClick={() => toggleEmployee(emp.id)}
+                        >
+                          <div
+                            className={cn(
+                              'flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border border-primary',
+                              isSelected && 'bg-primary text-primary-foreground'
+                            )}
+                            aria-hidden="true"
+                          >
+                            {isSelected && <Check className="h-3 w-3" />}
+                          </div>
+                          <span className="flex-1 text-sm">
+                            {emp.firstName} {emp.lastName}
+                          </span>
+                          {isSelected && (
+                            <Check className="h-4 w-4 text-primary" />
+                          )}
+                        </div>
+                      )
+                    })}
                   </div>
                 )}
               </ScrollArea>
@@ -673,40 +727,51 @@ export function ShiftModal({
               )}
             </div>
 
-            {/* Heure de début */}
-            <div className="space-y-2">
-              <Label className="flex items-center gap-2">
-                <Clock className="h-4 w-4" />
-                Heure de début
-              </Label>
-              <Input type="time" {...register('startTime')} />
-              {errors.startTime && (
-                <p className="text-sm text-destructive">
-                  {errors.startTime.message}
-                </p>
-              )}
-            </div>
+            {/* Heure de début — masqué pour REST (journée entière) */}
+            {!isRestType && (
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2">
+                  <Clock className="h-4 w-4" />
+                  Heure de début
+                </Label>
+                <Input type="time" {...register('startTime')} />
+                {errors.startTime && (
+                  <p className="text-sm text-destructive">
+                    {errors.startTime.message}
+                  </p>
+                )}
+              </div>
+            )}
 
-            {/* Heure de fin */}
-            <div className="space-y-2">
-              <Label className="flex items-center gap-2">
-                <Clock className="h-4 w-4" />
-                Heure de fin
-              </Label>
-              <Input type="time" {...register('endTime')} />
-              {errors.endTime && (
-                <p className="text-sm text-destructive">
-                  {errors.endTime.message}
-                </p>
-              )}
-            </div>
+            {/* Heure de fin — masqué pour REST (journée entière) */}
+            {!isRestType && (
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2">
+                  <Clock className="h-4 w-4" />
+                  Heure de fin
+                </Label>
+                <Input type="time" {...register('endTime')} />
+                {errors.endTime && (
+                  <p className="text-sm text-destructive">
+                    {errors.endTime.message}
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* Indication journée entière pour REST */}
+            {isRestType && (
+              <div className="col-span-2 rounded-md bg-muted p-3 text-sm text-muted-foreground">
+                Journée entière (repos)
+              </div>
+            )}
           </div>
 
           {/* Type et Statut */}
           <div className="grid gap-4 sm:grid-cols-2">
             {/* Type */}
             <div className="space-y-2">
-              <Label>Type de créneau</Label>
+              <Label>Type de planning</Label>
               <Controller
                 name="type"
                 control={control}
@@ -826,7 +891,7 @@ export function ShiftModal({
           {mode === 'edit' && schedule?.isRecurring && (
             <div className="flex items-center gap-2 rounded-md bg-muted p-3 text-sm text-muted-foreground">
               <Repeat className="h-4 w-4" />
-              <span>Ce créneau fait partie d&apos;une série récurrente</span>
+              <span>Ce planning fait partie d&apos;une série récurrente</span>
             </div>
           )}
 
@@ -850,18 +915,35 @@ export function ShiftModal({
 
           {/* Actions */}
           <DialogFooter className="gap-2 sm:gap-0">
+            {mode === 'edit' && schedule && (
+              <Button
+                type="button"
+                variant="destructive"
+                onClick={() => void handleDelete()}
+                disabled={isDeleting || isSubmitting}
+                data-testid="shift-delete-button"
+                className="mr-auto"
+              >
+                {isDeleting ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Trash2 className="mr-2 h-4 w-4" />
+                )}
+                Supprimer
+              </Button>
+            )}
             <Button
               type="button"
               variant="outline"
               onClick={onClose}
-              disabled={isSubmitting}
+              disabled={isSubmitting || isDeleting}
             >
               Annuler
             </Button>
             <Button
               type="submit"
               data-testid="shift-save-button"
-              disabled={isSubmitting || isLoadingData}
+              disabled={isSubmitting || isDeleting || isLoadingData}
               variant={hasHardConflict ? 'destructive' : 'default'}
             >
               {isSubmitting && (
@@ -870,7 +952,7 @@ export function ShiftModal({
               {hasHardConflict
                 ? 'Créer malgré le conflit'
                 : mode === 'create'
-                  ? 'Créer le créneau'
+                  ? 'Créer le planning'
                   : 'Enregistrer'}
             </Button>
           </DialogFooter>

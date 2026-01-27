@@ -179,7 +179,7 @@ async function getCoverageRate(
     where: {
       teamId,
       startDate: { gte: dateRange.from, lte: dateRange.to },
-      status: { in: ['CONFIRMED', 'COMPLETED'] },
+      status: 'CONFIRMED',
     },
   })
 
@@ -210,7 +210,7 @@ async function getTeamHoursWorked(
     where: {
       teamId,
       startDate: { gte: dateRange.from, lte: dateRange.to },
-      status: 'COMPLETED',
+      status: 'CONFIRMED',
       type: 'WORK',
     },
     select: { startTime: true, endTime: true },
@@ -225,7 +225,7 @@ async function getTeamHoursWorked(
     where: {
       teamId,
       startDate: { gte: previousPeriod.from, lte: previousPeriod.to },
-      status: 'COMPLETED',
+      status: 'CONFIRMED',
       type: 'WORK',
     },
     select: { startTime: true, endTime: true },
@@ -267,7 +267,7 @@ async function getTeamPerformance(
         where: {
           employeeId: employee.id,
           startDate: { gte: dateRange.from, lte: dateRange.to },
-          status: { in: ['CONFIRMED', 'COMPLETED'] },
+          status: 'CONFIRMED',
           type: 'WORK',
         },
         select: { startTime: true, endTime: true },

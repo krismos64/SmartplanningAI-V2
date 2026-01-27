@@ -247,6 +247,7 @@ model Employee {
   jobTitle   String?
   department String?
   phone      String?
+  email      String?
   hireDate   DateTime?
 
   // Planning
@@ -490,13 +491,12 @@ enum ScheduleType {
   REMOTE // Télétravail
   ON_CALL // Astreinte
   OVERTIME // Heures supplémentaires
+  REST // Repos (journée entière)
 }
 
 enum ScheduleStatus {
   DRAFT // Brouillon
   CONFIRMED // Confirmé
-  CANCELLED // Annulé
-  COMPLETED // Terminé
 }
 
 enum LeaveType {

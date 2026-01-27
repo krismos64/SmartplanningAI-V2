@@ -7,6 +7,7 @@
  */
 import { redirect } from 'next/navigation'
 import { auth } from '@/lib/auth'
+import { prisma } from '@/lib/prisma'
 import { DashboardLayout } from '@/components/layout/DashboardLayout'
 
 export default async function AppLayout({
@@ -20,6 +21,18 @@ export default async function AppLayout({
     redirect('/login')
   }
 
+  // Récupérer le nom de l'entreprise
+  let companyName = 'SmartPlanning'
+  if (session.user.companyId) {
+    const company = await prisma.company.findUnique({
+      where: { id: session.user.companyId },
+      select: { name: true },
+    })
+    if (company?.name) {
+      companyName = company.name
+    }
+  }
+
   const user = {
     id: session.user.id,
     name:
@@ -31,6 +44,7 @@ export default async function AppLayout({
       | 'MANAGER'
       | 'EMPLOYEE',
     organizationId: session.user.companyId || undefined,
+    companyName,
   }
 
   return (

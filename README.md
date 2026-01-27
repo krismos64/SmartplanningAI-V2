@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 27 janvier 2026 (Sprint 12 - SP-404 Export Excel Planning)
+- **Dernière mise à jour** : 27 janvier 2026 (Sprint 12 - SP-406 Panneau heures hebdomadaires, type REST, exports filtrés, suppression en masse employés)
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -74,11 +74,17 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - Gestion multi-tenant (isolation complète par entreprise)
 - Dashboard personnalisé par rôle avec KPIs
 - Gestion des employés et départements
-- Planning avec calendrier Schedule-X (vues jour/semaine/mois, responsive mobile)
-- Gestion des shifts et affectations
+- Planning avec calendrier Schedule-X (vues jour/semaine/mois, responsive mobile, drag & drop)
+- Gestion des shifts et affectations (8 types dont REST)
+- Panneau heures hebdomadaires (planifié vs contrat, code couleur)
+- Détection de conflits horaires temps réel
+- Gestion des indisponibilités avec overlay calendrier
+- Récurrence des shifts (quotidien, hebdomadaire, bi-hebdomadaire, mensuel)
+- Export PDF/Excel des plannings (avec filtres actifs et compteur heures)
+- Suppression en masse employés avec cascade sécurisée
+- Nom d'entreprise dynamique dans le layout
 - Demandes de congés avec workflow validation
 - Système de notifications temps réel
-- Export PDF/Excel des plannings
 - Analytics et rapports
 
 ### CRUD Opérationnels
@@ -297,9 +303,13 @@ Composant calendrier interactif avec Schedule-X pour la visualisation des planni
 - **ScheduleCalendarDesktop** : Calendrier Schedule-X complet
   - Vues jour, semaine, mois (`createViewDay`, `createViewWeek`, `createViewMonthGrid`)
   - Drag & drop natif (`createDragAndDropPlugin`)
+  - Support 8 types de shift (WORK, MEETING, BREAK, TRAINING, REMOTE, ON_CALL, OVERTIME, REST)
+  - **REST** : Événements all-day via `Temporal.PlainDate` avec emoji 🛌
+  - Variants DRAFT : opacité réduite + bordure pointillée
+  - Palettes light/dark par type de calendrier
   - Events synchronisés via `createEventsServicePlugin`
   - Temporal API polyfill pour dates
-  - Couleurs par type de schedule (7 types avec palettes light/dark)
+  - Couleurs par type de schedule (8 types avec palettes light/dark)
   - Légende des couleurs intégrée
   - Callbacks : `onScheduleClick`, `onScheduleUpdate`
 
@@ -323,11 +333,13 @@ Modal complet pour la création et modification de créneaux :
 - **ShiftModal** : Modal avec modes création et édition
   - Sélection multi-employés avec recherche et filtrage par équipe
   - Date/time pickers avec locale française (date-fns)
-  - Sélecteur de type (Travail, Pause, Réunion, Formation, Télétravail, Astreinte, Heures sup.)
-  - Sélecteur de statut (Brouillon, Confirmé, Annulé, Terminé)
+  - Sélecteur de type (Travail, Pause, Réunion, Formation, Télétravail, Astreinte, Heures sup., Repos)
+  - Sélecteur de statut (Brouillon, Confirmé)
+  - Support type **REST** (Repos) : masquage automatique des champs horaires, forçage 00:00-23:59, bannière "Journée entière (repos)"
+  - Bouton **Supprimer** en mode édition avec confirmation
   - Champs optionnels : titre, description, lieu
   - Validation Zod complète avec message d'erreur FR
-  - Intégration Server Actions (`createSchedule`, `updateSchedule`)
+  - Intégration Server Actions (`createSchedule`, `updateSchedule`, `deleteSchedule`)
 
 - **useShiftFormData** : Hook pour charger les données du formulaire
   - Chargement parallèle employés et équipes
@@ -414,18 +426,21 @@ Export du planning en fichier .xlsx via `SheetJS (xlsx)` :
 - **API Route `GET /api/schedules/export/excel`** :
   - Authentification via `auth()` (NextAuth v5)
   - RBAC : MANAGER et DIRECTOR uniquement
-  - Query params : startDate, endDate, teamId (optionnel)
+  - Query params : startDate, endDate, teamId, employeeId, status, type, search
+  - **Respect des filtres actifs** de la vue planning (équipe, employé, statut, type, recherche)
   - Isolation multi-tenant par `companyId`
   - Réponse binaire .xlsx avec Content-Disposition attachment
 
 - **Générateur `generateScheduleExcel`** :
   - Feuille 1 "Planning" : colonnes Employé, Date, Jour, Début, Fin, Durée (h), Type, Statut, Équipe, Lieu, Description
-  - Feuille 2 "Résumé" : heures totales par employé ventilées par type de shift
+  - Feuille 2 "Résumé" : heures contrat, heures totales, différence, nombre de shifts, ventilation par type (incluant Repos)
   - Feuille 3 "Statistiques" : totaux globaux (shifts, heures, employés, moyenne)
   - Largeurs de colonnes adaptées, dates FR, types/statuts traduits
+  - **REST exclu** du comptage heures travaillées
 
 - **`ExportDropdown` mis à jour** :
   - Export Excel fonctionnel (remplace le placeholder toast)
+  - **Passe les filtres actifs** (teamId, employeeId, status, type, search) en query params
   - État de chargement distinct PDF/Excel via `isExporting`
   - Helpers partagés `downloadBlob` et `buildParams`
 
@@ -438,15 +453,19 @@ Export du planning en PDF via `@react-pdf/renderer` :
 - **API Route `GET /api/schedules/export/pdf`** :
   - Authentification via `auth()` (NextAuth v5)
   - RBAC : MANAGER et DIRECTOR uniquement
-  - Query params : startDate, endDate, teamId (optionnel), view (week|month)
+  - Query params : startDate, endDate, teamId, employeeId, status, type, search, view (week|month)
+  - **Respect des filtres actifs** de la vue planning (équipe, employé, statut, type, recherche)
   - Isolation multi-tenant par `companyId`
   - Réponse binaire PDF avec Content-Disposition attachment
 
 - **Composant React PDF `SchedulePdfDocument`** :
   - Document A4 paysage avec header (entreprise, période, date génération)
   - Tableau employés × jours avec badges horaires colorés par type
-  - Légende des 7 types : Travail, Réunion, Pause, Formation, Télétravail, Astreinte, Heures sup.
-  - Helpers : groupByEmployee, getDaysInPeriod, getSchedulesForDay
+  - **Colonne "Heures"** : heures planifiées / heures contrat + différence colorée (+Xh rouge, -Xh orange, 0h vert)
+  - **REST affiché "Repos"** au lieu de "00:00-23:59"
+  - REST exclu du comptage heures travaillées
+  - Légende des 8 types : Travail, Réunion, Pause, Formation, Télétravail, Astreinte, Heures sup., Repos
+  - Helpers : groupByEmployee, getDaysInPeriod, getSchedulesForDay, computeDuration
 
 - **Composant `ExportDropdown`** :
   - Dropdown Shadcn/ui avec icône Download
@@ -455,6 +474,109 @@ Export du planning en PDF via `@react-pdf/renderer` :
   - Loading state avec spinner Loader2
 
 - **Tests** : 6 tests unitaires (buffer valide, header %PDF-, liste vide, vue mois, multi-employés, 7 types)
+
+### Panneau Heures Hebdomadaires (SP-406 - 27 janvier 2026)
+
+Panneau latéral affichant les heures planifiées vs contractuelles par employé :
+
+- **`WeeklyHoursPanel`** : Composant panneau latéral desktop + Sheet mobile
+  - Calcul automatique des heures planifiées par employé pour la période affichée
+  - Comparaison avec les heures contractuelles (`weeklyHours`)
+  - Barre de progression colorée : vert (<90%), orange (90-100%), rouge (>100%)
+  - Différentiel affiché : `+Xh` (rouge), `-Xh` (orange), `0h` (vert)
+  - Tri par différentiel croissant (sous-staffés en premier)
+  - Exclusion des jours de repos (`REST`) du comptage
+  - État vide : "Aucun employé planifié"
+
+- **Intégration `SchedulesPageContent`** :
+  - Bouton toggle Clock dans les contrôles (desktop)
+  - Layout flex : calendrier (`flex-1`) + panneau (`w-80`)
+  - Mobile : bouton flottant ouvrant un Sheet avec le même contenu
+
+- **`getEmployeesForSelect`** : Nouvelle Server Action
+  - Retourne `{ id, firstName, lastName, weeklyHours }` pour chaque employé
+  - RBAC : SYSTEM_ADMIN (tous), DIRECTOR (entreprise), MANAGER (équipes gérées)
+
+### Type de Planning REST - Repos (SP-406 - 27 janvier 2026)
+
+Nouveau type de planning "Repos" pour les journées de repos complètes :
+
+- **Schema Prisma** : Ajout `REST` à l'enum `ScheduleType` (migration `20260127154930`)
+- **Validations** : Label "Repos", couleur `#6B7280` (gris)
+- **ShiftModal** : Masquage automatique des champs horaires, forçage 00:00-23:59, bannière "Journée entière (repos)"
+- **Calendrier Desktop** : Événement all-day via `Temporal.PlainDate` (au lieu de `ZonedDateTime`), emoji 🛌
+- **Calendrier Mobile** : Affiche "Journée entière" au lieu des horaires
+- **Filtres** : Option "Repos" ajoutée au filtre par type
+- **Export PDF** : Affiche "Repos" au lieu de "00:00-23:59"
+- **Comptage heures** : REST exclu du total dans le panneau, le PDF et l'Excel
+
+### Simplification Statuts Planning (SP-406 - 27 janvier 2026)
+
+Simplification du cycle de vie des plannings :
+
+- **Migration Prisma** (`20260127140000_simplify_schedule_status`) :
+  - Suppression des statuts `CANCELLED` et `COMPLETED` de l'enum `ScheduleStatus`
+  - Conversion automatique des plannings existants vers `CONFIRMED`
+  - Enum simplifiée : `DRAFT` | `CONFIRMED`
+- **Filtres mis à jour** : Suppression des options "Annulé" et "Terminé"
+- **Calendrier Desktop** : Variants DRAFT visuels (opacité réduite, bordure pointillée)
+
+### Suppression en Masse Employés (SP-406 - 27 janvier 2026)
+
+Fonctionnalité de suppression groupée d'employés :
+
+- **`BulkDeleteDialog`** : Dialog de confirmation avec comptage dynamique
+  - Warning cascade : suppression des plannings + congés associés
+  - Gestion des suppressions partielles (employés ignorés par RBAC)
+  - Messages toast différenciés (succès, warning, erreur)
+
+- **`bulkDeleteEmployees` Server Action** :
+  - RBAC strict : DIRECTOR et SYSTEM_ADMIN uniquement (MANAGER bloqué)
+  - Vérification accès par employé individuellement
+  - Suppression cascade en transaction Prisma (teams.managerId, leaveRequests, schedules, employees)
+  - Retour différencié : `deletedCount` + `skippedNames`
+
+- **`EmployeesDataTable`** :
+  - Sélection multiple avec checkboxes
+  - Bouton "Supprimer (X)" apparaît quand sélection active
+  - Vue responsive : Table desktop / Cards mobile (`EmployeeCard`)
+
+- **`EmployeeCard`** : Carte employé mobile responsive
+  - Avatar, badge statut, menu actions dropdown
+  - Email, téléphone, équipe, date embauche, heures hebdomadaires
+
+### Nom d'Entreprise dans le Layout (SP-406 - 27 janvier 2026)
+
+Affichage dynamique du nom de l'entreprise dans la sidebar :
+
+- **`src/app/app/layout.tsx`** : Fetch du nom via Prisma (`company.name`) à partir de `session.user.companyId`
+- **Sidebar** : Affiche le nom de l'entreprise (fallback "SmartPlanning")
+- **Header** : Conserve "SmartPlanning" à côté de l'animation Lottie (branding)
+
+### Corrections React 19 — Boucles Infinies (SP-406 - 27 janvier 2026)
+
+Corrections critiques des boucles infinies de re-renders avec React 19 :
+
+- **Patches npm** (via `patch-package`) :
+  - `@radix-ui/react-presence@1.1.5` : Ajout ref guard pour éviter les re-renders infinis
+  - `@radix-ui/react-compose-refs@1.1.2` : Stabilisation des refs composées avec `useRef`
+- **Composants Shadcn/ui** (7 fichiers) : Remplacement animations Radix par transitions CSS simples
+  - Dialog, AlertDialog, Sheet, Popover, Select, Tooltip, DropdownMenu
+- **SchedulesPageContent** : Stabilisation dépendances `useEffect` (objets Date → timestamps primitifs)
+- **Tests E2E stabilité** : Détection automatique des boucles infinies dans la console
+
+### Refonte CSS Calendrier Schedule-X (SP-406 - 27 janvier 2026)
+
+Refonte complète du thème CSS du calendrier (706 lignes) :
+
+- **Design "Precision Engineering"** : Grille quasi-invisible, events dominants
+- **Typography** : Rajdhani (display) + Plus Jakarta Sans (body)
+- **3 niveaux d'élévation** : Grille (0), Panel (1), Events (2)
+- **Events** : Cards flottantes avec bord-gauche coloré, ombres subtiles
+- **Today** : Highlight avec glow bleu et badge circulaire
+- **DRAFT** : Opacité réduite + bordure pointillée
+- **Dark mode** : Glassmorphism léger, fond subtle, contrastes ajustés
+- **Animations** : Transitions hover smooth, micro-interactions
 
 ### Overlay Indisponibilités Calendrier (SP-402 - 27 janvier 2026)
 
@@ -1224,7 +1346,9 @@ SmartplanningAI/
 │   │   ├── providers/    # ThemeProvider (SP-265), CommandPaletteProvider (SP-264), KeyboardShortcutsProvider (SP-264)
 │   │   ├── dashboard/    # StatCard, TrendIndicator, StatsGrid
 │   │   ├── forms/        # FormField, FormInput, FormSelect...
-│   │   ├── layout/       # LandingHeader, LandingFooter, PageTracker (partagés)
+│   │   ├── admin/        # Employees (BulkDeleteDialog, EmployeeCard, EmployeesDataTable, EmployeeForm, columns)
+│   │   ├── schedules/    # ScheduleCalendar, ScheduleCalendarDesktop, ScheduleCalendarMobile, ShiftModal, WeeklyHoursPanel, ExportDropdown, AvailabilityOverlay/Badge/Popover
+│   │   ├── layout/       # LandingHeader, LandingFooter, Sidebar, Header, DashboardLayout, PageTracker
 │   │   ├── loading/      # Spinner, Skeleton, LoadingOverlay
 │   │   ├── modals/       # ConfirmDialog, FormDialog
 │   │   ├── toast/        # Toast system (Sonner)
@@ -1258,7 +1382,9 @@ SmartplanningAI/
 │   │   │   └── templates/        # Fonctions d'envoi par type
 │   │   ├── services/     # Services métier
 │   │   │   └── dashboard/  # Services stats par rôle (SP-144)
-│   │   ├── validations/  # Schémas Zod (auth, user, employee, company, team...)
+│   │   ├── validations/  # Schémas Zod (auth, user, employee, company, team, schedule, availability...)
+│   │   ├── pdf/          # SchedulePdfDocument, styles (SP-403)
+│   │   ├── excel/        # generateScheduleExcel (SP-404)
 │   │   └── utils.ts      # Fonctions utilitaires
 │   ├── types/            # Types TypeScript globaux (+ crud.ts SP-150)
 │   ├── hooks/            # Custom React hooks
@@ -1290,11 +1416,14 @@ SmartplanningAI/
 │   └── ISSUES-TRACKING.md
 ├── e2e/                  # Tests E2E Playwright
 │   ├── fixtures/         # Fixtures auth par rôle (SP-149) + mobile (SP-389)
-│   ├── pages/            # Page Objects dashboards (SP-149)
+│   ├── pages/            # Page Objects dashboards (SP-149) + schedules (SP-406)
 │   ├── utils/            # Utilitaires (touch-gestures.ts pour mobile SP-389)
-│   └── specs/            # middleware-rbac.spec.ts, auth.spec.ts, dashboard/*.spec.ts, mobile/*.spec.ts
+│   └── specs/            # middleware-rbac.spec.ts, auth.spec.ts, dashboard/*.spec.ts, mobile/*.spec.ts, schedules/*.spec.ts
 ├── __tests__/            # Tests unitaires Vitest
 │   └── lib/              # permissions.test.ts
+├── patches/              # Patches npm (patch-package) pour React 19 compat
+│   ├── @radix-ui+react-presence+1.1.5.patch
+│   └── @radix-ui+react-compose-refs+1.1.2.patch
 ├── docker-compose.yml    # Configuration Docker
 └── README.md             # Ce fichier
 ```
@@ -1391,7 +1520,7 @@ npm run test:coverage    # Couverture de code
 10. **ActivityLog** : Logs d'activité (audit)
 11. **CompanySettings** : Paramètres par entreprise
 
-### Enums (8 enums)
+### Enums (10 enums)
 
 1. **Role** : SYSTEM_ADMIN, DIRECTOR, MANAGER, EMPLOYEE
 2. **NotificationType** : INFO, WARNING, ERROR, SUCCESS, SHIFT_ASSIGNED, etc.
@@ -1401,6 +1530,8 @@ npm run test:coverage    # Couverture de code
 6. **DayOfWeek** : MONDAY, TUESDAY, ..., SUNDAY
 7. **EmploymentType** : FULL_TIME, PART_TIME, TEMPORARY, INTERN
 8. **ContractType** : CDI, CDD, INTERIM, FREELANCE, APPRENTICE, INTERN
+9. **ScheduleType** : WORK, MEETING, BREAK, TRAINING, REMOTE, ON_CALL, OVERTIME, REST
+10. **ScheduleStatus** : DRAFT, CONFIRMED
 
 Voir `/docs/database-schema.md` pour le détail complet.
 
@@ -1574,12 +1705,31 @@ Voir `/docs/database-schema.md` pour le détail complet.
 - SP-10 : Layout dashboard + sidebar
 - SP-11 : Pages dashboard Manager
 
-#### Phase 6 : Planning & Congés (À venir)
+#### Phase 6 : Planning & Congés ✅ (En cours - Janvier 2026)
 
-- SP-114 : Gestion plannings (drag & drop, shifts, affectations)
-- SP-115 : Workflow congés (demandes, validation, calendrier)
+- SP-392 : Fondations Prisma (modèles Schedule, Availability, enums) ✅
+- SP-393 : Validations Zod plannings (47 tests) ✅
+- SP-394 : Server Actions CRUD plannings (30 tests) ✅
+- SP-395 : Page liste plannings ✅
+- SP-396 : Calendrier Schedule-X (desktop + mobile, 18 tests) ✅
+- SP-397 : ShiftModal création/édition (30 tests) ✅
+- SP-398 : Drag & drop + resize (19 tests) ✅
+- SP-399 : Récurrence shifts (36 tests) ✅
+- SP-400 : Détection conflits horaires (25 tests) ✅
+- SP-401 : CRUD Indisponibilités (54 tests) ✅
+- SP-402 : Overlay indisponibilités calendrier (47 tests) ✅
+- SP-403 : Export PDF planning (6 tests) ✅
+- SP-404 : Export Excel planning (7 tests) ✅
+- SP-406 : Panneau heures hebdomadaires + Tests E2E plannings (16 tests) ✅
+- SP-406 : Type REST (repos journée entière) ✅
+- SP-406 : Simplification statuts (DRAFT/CONFIRMED) ✅
+- SP-406 : Suppression en masse employés ✅
+- SP-406 : Nom entreprise dynamique dans layout ✅
+- SP-406 : Corrections boucles infinies React 19 ✅
+- SP-406 : Refonte CSS calendrier Schedule-X ✅
+- SP-115 : Workflow congés (demandes, validation, calendrier) 🚧
 
-#### Phase 7+ : Notifications, Export, IA... (À venir)
+#### Phase 7+ : Notifications, IA... (À venir)
 
 ## Documentation complète
 
@@ -1791,11 +1941,11 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 - **E2E** : Playwright (configuré)
 - **Coverage** : v8 provider
 
-### Couverture actuelle (26 janvier 2026)
+### Couverture actuelle (27 janvier 2026)
 
 | Catégorie                              | Coverage | Tests    |
 | -------------------------------------- | -------- | -------- |
-| **Global**                             | **~85%** | **3165** |
+| **Global**                             | **~85%** | **3475** |
 | loading                                | 100%     | 152      |
 | modals                                 | 100%     | 52       |
 | cards                                  | 77.09%   | 88       |
@@ -1843,6 +1993,8 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 | AvailabilityOverlay (SP-402)           | 100%     | 17       |
 | SchedulePdfDocument (SP-403)           | 100%     | 6        |
 | generateScheduleExcel (SP-404)         | 100%     | 7        |
+| WeeklyHoursPanel (SP-406)              | 100%     | -        |
+| ScheduleCalendarMobile (SP-396)        | 100%     | 18       |
 
 ### Tests E2E
 
@@ -1874,9 +2026,10 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 | **Mobile Data Table (SP-389)**      | 15      | ✅                                |
 | **Mobile Touch Targets (SP-389)**   | 16      | ✅                                |
 | **Accessibility WCAG (SP-269)**     | 14      | ✅                                |
-| **Total E2E actifs**                | **361** | ✅                                |
+| **Schedules (SP-406)**              | 16      | ✅                                |
+| **Total E2E actifs**                | **377** | ✅                                |
 | **Total E2E skipped**               | **69**  | ⏸️                                |
-| **Total E2E**                       | **430** |                                   |
+| **Total E2E**                       | **446** |                                   |
 
 **Note** : Tests desktop exécutés sur Chromium uniquement. Tests mobiles exécutés sur 5 devices (iPhone SE, iPhone 14 Pro, Pixel 7, iPad Mini, iPad Pro 11") via Chromium avec émulation mobile (WebKit supprimé car bug HTTPS upgrade sur localhost).
 

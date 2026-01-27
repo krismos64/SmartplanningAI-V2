@@ -22,6 +22,7 @@ interface ExportDropdownProps {
   endDate: Date
   teamId?: string
   viewMode: 'week' | 'month'
+  filters?: Record<string, unknown>
 }
 
 type ExportFormat = 'pdf' | 'excel' | null
@@ -31,6 +32,7 @@ export function ExportDropdown({
   endDate,
   teamId,
   viewMode,
+  filters = {},
 }: ExportDropdownProps) {
   const [isExporting, setIsExporting] = useState<ExportFormat>(null)
   const { success, error: toastError } = useToast()
@@ -52,6 +54,20 @@ export function ExportDropdown({
       endDate: endDate.toISOString(),
     })
     if (teamId) params.set('teamId', teamId)
+    // Passer les filtres actifs de la vue planning
+    const filterKeys = [
+      'teamId',
+      'employeeId',
+      'status',
+      'type',
+      'search',
+    ] as const
+    for (const key of filterKeys) {
+      const value = filters[key]
+      if (value && typeof value === 'string') {
+        params.set(key, value)
+      }
+    }
     return params
   }
 

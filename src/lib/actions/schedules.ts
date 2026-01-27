@@ -99,6 +99,7 @@ export type ScheduleFiltersInput = Partial<{
     | 'REMOTE'
     | 'ON_CALL'
     | 'OVERTIME'
+    | 'REST'
   types: (
     | 'WORK'
     | 'MEETING'
@@ -107,9 +108,10 @@ export type ScheduleFiltersInput = Partial<{
     | 'REMOTE'
     | 'ON_CALL'
     | 'OVERTIME'
+    | 'REST'
   )[]
-  status: 'DRAFT' | 'CONFIRMED' | 'CANCELLED' | 'COMPLETED'
-  statuses: ('DRAFT' | 'CONFIRMED' | 'CANCELLED' | 'COMPLETED')[]
+  status: 'DRAFT' | 'CONFIRMED'
+  statuses: ('DRAFT' | 'CONFIRMED')[]
   startDate: Date
   endDate: Date
   isRecurring: boolean
@@ -275,10 +277,11 @@ function buildWhereClause(
     where.companyId = user.companyId
   }
 
-  // EMPLOYEE : uniquement ses schedules
+  // EMPLOYEE : uniquement ses schedules CONFIRMED
   if (user.role === 'EMPLOYEE') {
     if (user.employeeId) {
       where.employeeId = user.employeeId
+      where.status = 'CONFIRMED'
     } else {
       return { id: 'impossible' }
     }
@@ -968,7 +971,7 @@ export async function duplicateSchedule(
  */
 export async function updateScheduleStatus(
   id: string,
-  status: 'DRAFT' | 'CONFIRMED' | 'CANCELLED' | 'COMPLETED'
+  status: 'DRAFT' | 'CONFIRMED'
 ): Promise<CrudActionResult<ScheduleWithRelations>> {
   const authResult = await getAuthenticatedUser()
 
@@ -1352,7 +1355,7 @@ type RecurringScheduleUpdates = {
     | 'REMOTE'
     | 'ON_CALL'
     | 'OVERTIME'
-  status?: 'DRAFT' | 'CONFIRMED' | 'CANCELLED' | 'COMPLETED'
+  status?: 'DRAFT' | 'CONFIRMED'
   title?: string | null
   description?: string | null
   location?: string | null

@@ -125,10 +125,10 @@ describe('ShiftModal', () => {
         />
       )
 
-      expect(screen.getByText('Créer un créneau')).toBeInTheDocument()
+      expect(screen.getByText('Créer un planning')).toBeInTheDocument()
       expect(
         screen.getByText(
-          'Remplissez les informations pour créer un nouveau créneau'
+          'Remplissez les informations pour créer un nouveau planning'
         )
       ).toBeInTheDocument()
     })
@@ -144,9 +144,9 @@ describe('ShiftModal', () => {
         />
       )
 
-      expect(screen.getByText('Modifier le créneau')).toBeInTheDocument()
+      expect(screen.getByText('Modifier le planning')).toBeInTheDocument()
       expect(
-        screen.getByText('Modifiez les informations du créneau')
+        screen.getByText('Modifiez les informations du planning')
       ).toBeInTheDocument()
     })
 
@@ -160,7 +160,7 @@ describe('ShiftModal', () => {
         />
       )
 
-      expect(screen.queryByText('Créer un créneau')).not.toBeInTheDocument()
+      expect(screen.queryByText('Créer un planning')).not.toBeInTheDocument()
     })
 
     it('affiche la liste des employés en mode création', () => {
@@ -252,7 +252,7 @@ describe('ShiftModal', () => {
       )
 
       expect(
-        screen.getByRole('button', { name: 'Créer le créneau' })
+        screen.getByRole('button', { name: 'Créer le planning' })
       ).toBeInTheDocument()
     })
 
@@ -300,7 +300,7 @@ describe('ShiftModal', () => {
       )
 
       // Vérifier la présence des labels
-      expect(screen.getByText('Type de créneau')).toBeInTheDocument()
+      expect(screen.getByText('Type de planning')).toBeInTheDocument()
       expect(screen.getByText('Statut')).toBeInTheDocument()
 
       // Vérifier la présence des selects (combobox)

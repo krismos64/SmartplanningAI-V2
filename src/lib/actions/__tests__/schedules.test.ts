@@ -571,24 +571,24 @@ describe('schedules actions', () => {
       }
     })
 
-    it('change le statut en CANCELLED', async () => {
+    it('change le statut de DRAFT à CONFIRMED', async () => {
       vi.mocked(auth).mockResolvedValue(mockSession('DIRECTOR') as never)
       vi.mocked(prisma.employee.findUnique).mockResolvedValue(null)
       vi.mocked(prisma.schedule.findUnique).mockResolvedValue(
-        mockSchedule() as never
+        mockSchedule({ status: 'DRAFT' }) as never
       )
       vi.mocked(prisma.schedule.update).mockResolvedValue(
-        mockSchedule({ status: 'CANCELLED' }) as never
+        mockSchedule({ status: 'CONFIRMED' }) as never
       )
 
       const result = await updateScheduleStatus(
         'clschedule000000001',
-        'CANCELLED'
+        'CONFIRMED'
       )
 
       expect(result.success).toBe(true)
       if (result.success) {
-        expect(result.data.status).toBe('CANCELLED')
+        expect(result.data.status).toBe('CONFIRMED')
       }
     })
   })

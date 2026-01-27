@@ -10,7 +10,7 @@
 
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useMediaQuery } from '@/hooks'
 import { ScheduleWithRelations } from '@/lib/actions/schedules'
 import { ScheduleCalendarDesktop } from './ScheduleCalendarDesktop'
@@ -60,6 +60,17 @@ export function ScheduleCalendar(props: ScheduleCalendarProps) {
     setMounted(true)
   }, [])
 
+  // Clé de remount pour Schedule-X quand les schedules changent
+  // Schedule-X ne supporte pas la mise à jour dynamique des events via son API
+  const calendarKey = useMemo(
+    () =>
+      props.schedules
+        .map((s) => s.id)
+        .sort()
+        .join(','),
+    [props.schedules]
+  )
+
   // Afficher skeleton pendant le montage
   if (!mounted) {
     return <ScheduleCalendarSkeleton />
@@ -70,7 +81,7 @@ export function ScheduleCalendar(props: ScheduleCalendarProps) {
   return (
     <div data-testid="schedule-calendar">
       {isDesktop ? (
-        <ScheduleCalendarDesktop {...props} />
+        <ScheduleCalendarDesktop key={calendarKey} {...props} />
       ) : (
         <ScheduleCalendarMobile {...props} />
       )}

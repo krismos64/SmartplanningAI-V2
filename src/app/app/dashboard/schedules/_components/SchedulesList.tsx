@@ -40,14 +40,6 @@ const statusConfig = {
     label: 'Confirmé',
     className: 'bg-green-100 text-green-800 border-green-300',
   },
-  CANCELLED: {
-    label: 'Annulé',
-    className: 'bg-red-100 text-red-800 border-red-300',
-  },
-  COMPLETED: {
-    label: 'Terminé',
-    className: 'bg-blue-100 text-blue-800 border-blue-300',
-  },
 } as const
 
 const typeColors = {
@@ -171,7 +163,9 @@ function ScheduleCard({ schedule, compact = false }: ScheduleCardProps) {
         className={cn(
           'cursor-pointer rounded p-2 text-xs transition-opacity hover:opacity-80',
           typeColor,
-          'text-white'
+          'text-white',
+          schedule.status === 'DRAFT' &&
+            'border border-dashed border-white/40 opacity-60'
         )}
         title={`${schedule.employee?.firstName ?? ''} ${schedule.employee?.lastName ?? ''}`}
       >
@@ -187,7 +181,13 @@ function ScheduleCard({ schedule, compact = false }: ScheduleCardProps) {
   }
 
   return (
-    <div className="flex cursor-pointer items-center gap-4 rounded-lg border p-4 transition-colors hover:bg-muted/50">
+    <div
+      className={cn(
+        'flex cursor-pointer items-center gap-4 rounded-lg border p-4 transition-colors hover:bg-muted/50',
+        schedule.status === 'DRAFT' &&
+          'border-dashed opacity-60 hover:opacity-80'
+      )}
+    >
       <div className={cn('h-12 w-1 rounded-full', typeColor)} />
 
       <Avatar className="h-10 w-10">

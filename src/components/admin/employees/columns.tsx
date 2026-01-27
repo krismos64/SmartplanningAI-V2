@@ -23,7 +23,7 @@ import {
   Power,
   PowerOff,
   Phone,
-  Briefcase,
+  Mail,
 } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
@@ -42,7 +42,6 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { departmentLabels, type Department } from '@/lib/validations/employee'
 import type { EmployeeWithCounts } from '@/lib/validations/employee'
 
 // ============================================================================
@@ -56,30 +55,6 @@ export interface EmployeeActionsProps {
   onToggleStatus?: (employee: EmployeeWithCounts) => void
   /** MANAGER ne peut pas supprimer, seulement desactiver */
   canDelete?: boolean
-}
-
-// ============================================================================
-// Helpers pour badges
-// ============================================================================
-
-/**
- * Couleurs des badges par departement
- */
-const departmentBadgeVariants: Record<
-  Department,
-  'default' | 'secondary' | 'outline' | 'destructive'
-> = {
-  DIRECTION: 'default',
-  RESSOURCES_HUMAINES: 'default',
-  COMMERCIAL: 'outline',
-  MARKETING: 'outline',
-  TECHNIQUE: 'secondary',
-  PRODUCTION: 'secondary',
-  LOGISTIQUE: 'outline',
-  FINANCE: 'default',
-  JURIDIQUE: 'default',
-  SUPPORT: 'secondary',
-  AUTRE: 'outline',
 }
 
 // ============================================================================
@@ -142,55 +117,32 @@ export function createEmployeeColumns(
                 <User className="h-5 w-5 text-primary" />
               )}
             </div>
-            <div className="flex flex-col">
-              <span className="font-medium">
-                {employee.firstName} {employee.lastName}
-              </span>
-              {employee.user?.email && (
-                <span className="text-xs text-muted-foreground">
-                  {employee.user.email}
-                </span>
-              )}
-            </div>
-          </div>
-        )
-      },
-    },
-
-    // Poste
-    {
-      accessorKey: 'jobTitle',
-      header: 'Poste',
-      cell: ({ row }) => {
-        const jobTitle = row.original.jobTitle
-        return (
-          <div className="flex items-center gap-2">
-            <Briefcase className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm">
-              {jobTitle ?? <span className="text-muted-foreground">-</span>}
+            <span className="font-medium">
+              {employee.firstName} {employee.lastName}
             </span>
           </div>
         )
       },
     },
 
-    // Departement
+    // Email
     {
-      accessorKey: 'department',
-      header: 'Departement',
+      accessorKey: 'email',
+      header: 'Email',
       cell: ({ row }) => {
-        const department = row.original.department as Department | null
-        if (!department) {
+        const email = row.original.email || row.original.user?.email
+        if (!email) {
           return <span className="text-muted-foreground">-</span>
         }
         return (
-          <Badge variant={departmentBadgeVariants[department]}>
-            {departmentLabels[department]}
-          </Badge>
+          <a
+            href={`mailto:${email}`}
+            className="flex items-center gap-2 text-sm hover:underline"
+          >
+            <Mail className="h-4 w-4 text-muted-foreground" />
+            {email}
+          </a>
         )
-      },
-      filterFn: (row, _id, value: string[]) => {
-        return value.includes(row.original.department ?? '')
       },
     },
 
@@ -223,10 +175,13 @@ export function createEmployeeColumns(
         return (
           <Tooltip>
             <TooltipTrigger asChild>
-              <div className="flex items-center gap-2">
+              <a
+                href={`tel:${phone}`}
+                className="flex items-center gap-2 text-sm hover:underline"
+              >
                 <Phone className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm">{phone}</span>
-              </div>
+                {phone}
+              </a>
             </TooltipTrigger>
             <TooltipContent>Appeler {phone}</TooltipContent>
           </Tooltip>
