@@ -30,6 +30,9 @@ export {
   type ConflictConfirmDialogProps,
 } from './ConflictConfirmDialog'
 
+// SP-403: Export PDF
+export { ExportDropdown } from './ExportDropdown'
+
 // SP-402: Overlay Indisponibilités
 export {
   AvailabilityBadge,
