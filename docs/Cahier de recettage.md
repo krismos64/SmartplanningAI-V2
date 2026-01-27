@@ -34,7 +34,7 @@ Dans le cadre du diplôme **CDA (Concepteur Développeur d'Applications)**, ce c
 | Métrique              | Objectif  | Atteint |
 | --------------------- | --------- | ------- |
 | Couverture globale    | ≥ 70%     | ✅ 85%  |
-| Tests unitaires       | ≥ 500     | ✅ 3284 |
+| Tests unitaires       | ≥ 500     | ✅ 3291 |
 | Tests E2E             | ≥ 50      | ✅ 430  |
 | Score Lighthouse A11y | ≥ 90%     | ✅ 95%  |
 | Anomalies critiques   | 0 en prod | ✅ 0    |
@@ -397,6 +397,7 @@ Ce tableau recense chaque campagne de tests significative (mise en production, f
 
 | Date       | Sprint    | Version/Commit | Tests unitaires | Tests E2E  | Couverture | Statut  | Notes                                                                                                                                                                                                                                                                                                          |
 | ---------- | --------- | -------------- | --------------- | ---------- | ---------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 27/01/2026 | Sprint 12 | SP-404         | 3291/3291 ✅    | 430/430 ✅ | ~85%       | ✅ PASS | 🆕 SP-404 Export Excel Planning. +7 tests unitaires (generateScheduleExcel: 7). API Route GET `/api/schedules/export/excel` avec auth et RBAC (MANAGER/DIRECTOR). Générateur `generateScheduleExcel` via SheetJS : 3 feuilles (Planning détaillé, Résumé par employé, Statistiques). `ExportDropdown` mis à jour (Excel fonctionnel). Total : 3721 tests |
 | 27/01/2026 | Sprint 12 | SP-403         | 3284/3284 ✅    | 430/430 ✅ | ~85%       | ✅ PASS | 🆕 SP-403 Export PDF Planning. +6 tests unitaires (SchedulePdfDocument: 6). API Route GET `/api/schedules/export/pdf` avec auth et RBAC (MANAGER/DIRECTOR). Composant React PDF `SchedulePdfDocument` (A4 paysage, tableau employés × jours, légende 7 types). `ExportDropdown` dans toolbar schedules (PDF + placeholder Excel). Total : 3714 tests |
 | 27/01/2026 | Sprint 12 | SP-402         | 3278/3278 ✅    | 430/430 ✅ | ~85%       | ✅ PASS | 🆕 SP-402 Overlay Indisponibilités Calendrier. +47 tests unitaires (useCalendarAvailabilities: 10, AvailabilityBadge: 20, AvailabilityOverlay: 17). Server Action getAvailabilitiesForCalendar avec RBAC. Hook useCalendarAvailabilities avec debounce et cache. Composants AvailabilityBadge, AvailabilityPopover, AvailabilityOverlay. Intégration Schedule-X desktop + badges mobile. Toggle Eye/EyeOff. Total : 3708 tests |
 | 26/01/2026 | Sprint 12 | SP-400         | 3231/3231 ✅    | 430/430 ✅ | ~85%       | ✅ PASS | 🆕 SP-400 Détection Conflits Horaires. +25 tests unitaires (useConflictDetection: 12, ConflictAlert: 13). Server Action checkAvailabilityConflicts. Classification hard/soft conflicts. Composants ConflictAlert, ConflictConfirmDialog. Hook useConflictDetection avec debounce. Intégration ShiftModal + ScheduleCalendarDesktop (drag & drop). Total : 3661 tests |
@@ -1713,6 +1714,7 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
 
 | Date       | Modification                                                                                                                                                                                                                                                                                                                                     |
 | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 27/01/2026 | 🆕 SP-404 Export Excel Planning : +7 tests unitaires (generateScheduleExcel: 7). API Route GET `/api/schedules/export/excel` avec auth NextAuth v5 et RBAC (MANAGER/DIRECTOR). Générateur `generateScheduleExcel` via SheetJS (`xlsx`) : 3 feuilles (Planning détaillé 11 colonnes, Résumé par employé avec heures par type, Statistiques globales). `ExportDropdown` mis à jour : export Excel fonctionnel remplaçant le placeholder. Total : 3721 tests |
 | 27/01/2026 | 🆕 SP-403 Export PDF Planning : +6 tests unitaires (SchedulePdfDocument: 6). API Route GET `/api/schedules/export/pdf` avec auth NextAuth v5 et RBAC (MANAGER/DIRECTOR). Composant React PDF `SchedulePdfDocument` via `@react-pdf/renderer` (A4 paysage, tableau employés × jours, légende 7 types de shift). `ExportDropdown` dans toolbar schedules (export PDF fonctionnel + placeholder Excel). Total : 3714 tests |
 | 27/01/2026 | 🆕 SP-402 Overlay Indisponibilités Calendrier : +47 tests unitaires (useCalendarAvailabilities: 10, AvailabilityBadge: 20, AvailabilityOverlay: 17). Server Action `getAvailabilitiesForCalendar` avec RBAC. Hook `useCalendarAvailabilities` avec debounce 200ms et cache local. Composants `AvailabilityBadge`, `AvailabilityPopover`, `AvailabilityOverlay`. Intégration Schedule-X desktop (events colorés) + badges mobile. Toggle Eye/EyeOff dans SchedulesPageContent. Total : 3708 tests |
 | 26/01/2026 | 🆕 SP-401 CRUD Availabilities : +54 tests unitaires (Server Actions: 22, AvailabilityCard: 18, AvailabilityModal: 14). 8 Server Actions RBAC complet (getAvailabilities, getAvailabilityById, createAvailability, updateAvailability, deleteAvailability, getEmployeeAvailabilities, getTeamAvailabilities, getAvailabilitiesStats). Composants UI : AvailabilityCard, AvailabilityModal, AvailabilitiesList. 6 types d'indisponibilité avec icônes/couleurs. Total : 3636 tests |
@@ -1831,7 +1833,16 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
   - Légende 7 types : Travail, Réunion, Pause, Formation, Télétravail, Astreinte, Heures sup.
   - `ExportDropdown` dans toolbar schedules (PDF fonctionnel + placeholder Excel)
   - 6 tests unitaires (buffer valide, header %PDF-, liste vide, vue mois, multi-employés, 7 types)
-- Prochaines étapes : SP-404+
+- SP-404 : Export Excel Planning ✅ TERMINÉ
+  - API Route GET `/api/schedules/export/excel` avec auth NextAuth v5
+  - RBAC : MANAGER et DIRECTOR uniquement, isolation multi-tenant par companyId
+  - Générateur `generateScheduleExcel` via SheetJS (`xlsx`)
+  - Feuille 1 "Planning" : 11 colonnes (Employé, Date, Jour, Début, Fin, Durée, Type, Statut, Équipe, Lieu, Description)
+  - Feuille 2 "Résumé" : heures totales par employé ventilées par type de shift (7 types)
+  - Feuille 3 "Statistiques" : totaux globaux (shifts, heures, employés, moyenne heures/employé)
+  - `ExportDropdown` mis à jour : export Excel fonctionnel remplaçant le placeholder
+  - 7 tests unitaires (buffer valide, 3 feuilles, colonnes, durées, liste vide, statistiques, résumé)
+- Prochaines étapes : SP-405+
 
 ### Sprint 11 - Réinitialisation mot de passe (SP-263)
 
