@@ -64,7 +64,7 @@ describe('generateScheduleExcel', () => {
   it('a les bonnes colonnes dans la feuille Planning', () => {
     const buffer = generateScheduleExcel(defaultOptions)
     const wb = XLSX.read(buffer, { type: 'buffer' })
-    const ws = wb.Sheets['Planning']
+    const ws = wb.Sheets['Planning']!
     const data: string[][] = XLSX.utils.sheet_to_json(ws, { header: 1 })
 
     expect(data[0]).toContain('Employé')
@@ -79,7 +79,7 @@ describe('generateScheduleExcel', () => {
   it('calcule correctement les durées', () => {
     const buffer = generateScheduleExcel(defaultOptions)
     const wb = XLSX.read(buffer, { type: 'buffer' })
-    const ws = wb.Sheets['Planning']
+    const ws = wb.Sheets['Planning']!
     const data: Record<string, unknown>[] = XLSX.utils.sheet_to_json(ws)
 
     // Jean: 09:00-17:00 = 8h
@@ -103,7 +103,7 @@ describe('generateScheduleExcel', () => {
   it('inclut les statistiques correctes', () => {
     const buffer = generateScheduleExcel(defaultOptions)
     const wb = XLSX.read(buffer, { type: 'buffer' })
-    const ws = wb.Sheets['Statistiques']
+    const ws = wb.Sheets['Statistiques']!
     const data: (string | number)[][] = XLSX.utils.sheet_to_json(ws, {
       header: 1,
     })
@@ -118,7 +118,7 @@ describe('generateScheduleExcel', () => {
   it('genere le resume par employe avec heures par type', () => {
     const buffer = generateScheduleExcel(defaultOptions)
     const wb = XLSX.read(buffer, { type: 'buffer' })
-    const ws = wb.Sheets['Résumé']
+    const ws = wb.Sheets['Résumé']!
     const data: Record<string, unknown>[] = XLSX.utils.sheet_to_json(ws)
 
     expect(data).toHaveLength(2)
