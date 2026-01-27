@@ -1526,6 +1526,189 @@ async function main() {
   console.log('✅ 15 notifications créées\n')
 
   // ============================================================================
+  // 9. CRÉER LES SOLDES DE CONGÉS (SP-408)
+  // ============================================================================
+  console.log('💰 Création des soldes de congés (LeaveBalance)...')
+
+  // Tous les employés avec leurs IDs (via include employee)
+  const allEmployeesForBalance = [
+    { employee: johnDoe.employee!, company: techcorp },
+    { employee: janeSmith.employee!, company: techcorp },
+    { employee: bobWilson.employee!, company: techcorp },
+    { employee: evaGarcia.employee!, company: techcorp },
+    { employee: henryLopez.employee!, company: techcorp },
+    { employee: aliceBrown.employee!, company: techcorp },
+    { employee: charlieDavis.employee!, company: techcorp },
+    { employee: davidMiller.employee!, company: techcorp },
+    { employee: frankMartinez.employee!, company: techcorp },
+    { employee: graceRodriguez.employee!, company: techcorp },
+    { employee: emmaJones.employee!, company: designstudio },
+    { employee: liamWhite.employee!, company: designstudio },
+    { employee: oliviaMartin.employee!, company: designstudio },
+    { employee: noahThompson.employee!, company: designstudio },
+    { employee: avaAnderson.employee!, company: designstudio },
+    { employee: williamTaylor.employee!, company: designstudio },
+    { employee: oliverGreen.employee!, company: startupinc },
+    { employee: jamesWalker.employee!, company: startupinc },
+    { employee: sophiaClark.employee!, company: startupinc },
+    { employee: isabellaHall.employee!, company: startupinc },
+  ]
+
+  // Soldes variés pour rendre le seed réaliste
+  const balanceVariants = [
+    { paidLeaveTotal: 25, paidLeaveUsed: 6, rttTotal: 10, rttUsed: 3 },
+    { paidLeaveTotal: 25, paidLeaveUsed: 0, rttTotal: 10, rttUsed: 0 },
+    { paidLeaveTotal: 25, paidLeaveUsed: 2, rttTotal: 10, rttUsed: 1 },
+    { paidLeaveTotal: 25, paidLeaveUsed: 12, rttTotal: 10, rttUsed: 5 },
+    { paidLeaveTotal: 25, paidLeaveUsed: 3, rttTotal: 8, rttUsed: 2 },
+    { paidLeaveTotal: 25, paidLeaveUsed: 8, rttTotal: 10, rttUsed: 4 },
+    { paidLeaveTotal: 25, paidLeaveUsed: 3, rttTotal: 10, rttUsed: 0 },
+    { paidLeaveTotal: 25, paidLeaveUsed: 5, rttTotal: 10, rttUsed: 3 },
+    { paidLeaveTotal: 25, paidLeaveUsed: 0, rttTotal: 10, rttUsed: 0 },
+    { paidLeaveTotal: 25, paidLeaveUsed: 10, rttTotal: 10, rttUsed: 6 },
+    { paidLeaveTotal: 25, paidLeaveUsed: 4, rttTotal: 8, rttUsed: 2 },
+    { paidLeaveTotal: 25, paidLeaveUsed: 7, rttTotal: 10, rttUsed: 3 },
+    { paidLeaveTotal: 25, paidLeaveUsed: 2, rttTotal: 10, rttUsed: 1 },
+    { paidLeaveTotal: 25, paidLeaveUsed: 5, rttTotal: 10, rttUsed: 0 },
+    { paidLeaveTotal: 25, paidLeaveUsed: 0, rttTotal: 8, rttUsed: 0 },
+    { paidLeaveTotal: 25, paidLeaveUsed: 1, rttTotal: 10, rttUsed: 0 },
+    { paidLeaveTotal: 30, paidLeaveUsed: 5, rttTotal: 0, rttUsed: 0 },
+    { paidLeaveTotal: 25, paidLeaveUsed: 0, rttTotal: 10, rttUsed: 2 },
+    { paidLeaveTotal: 25, paidLeaveUsed: 1, rttTotal: 10, rttUsed: 0 },
+    { paidLeaveTotal: 25, paidLeaveUsed: 0, rttTotal: 10, rttUsed: 0 },
+  ]
+
+  for (let i = 0; i < allEmployeesForBalance.length; i++) {
+    const { employee, company } = allEmployeesForBalance[i]!
+    const variant = balanceVariants[i]!
+    await prisma.leaveBalance.upsert({
+      where: {
+        employeeId_year: { employeeId: employee.id, year: 2026 },
+      },
+      update: variant,
+      create: {
+        employeeId: employee.id,
+        companyId: company.id,
+        year: 2026,
+        ...variant,
+      },
+    })
+  }
+
+  console.log(`✅ ${allEmployeesForBalance.length} soldes de congés créés (année 2026)\n`)
+
+  // ============================================================================
+  // 10. DEMANDES DE CONGÉS SUPPLÉMENTAIRES (SP-408)
+  // ============================================================================
+  console.log('🏖️  Création des demandes de congés supplémentaires...')
+
+  // CANCELLED (2 demandes)
+  try {
+    await prisma.leaveRequest.create({
+      data: {
+        startDate: new Date('2026-01-15'),
+        endDate: new Date('2026-01-16'),
+        days: 2,
+        type: LeaveType.PAID_LEAVE,
+        status: LeaveRequestStatus.CANCELLED,
+        reason: 'Plans annulés',
+        employeeId: davidMiller.employee!.id,
+        companyId: techcorp.id,
+      },
+    })
+  } catch { /* skip if already exists */ }
+
+  try {
+    await prisma.leaveRequest.create({
+      data: {
+        startDate: new Date('2026-02-10'),
+        endDate: new Date('2026-02-10'),
+        days: 1,
+        type: LeaveType.RTT,
+        status: LeaveRequestStatus.CANCELLED,
+        reason: 'Réunion client ajoutée',
+        employeeId: graceRodriguez.employee!.id,
+        companyId: techcorp.id,
+      },
+    })
+  } catch { /* skip if already exists */ }
+
+  // halfDay demandes (2 demandes)
+  try {
+    await prisma.leaveRequest.create({
+      data: {
+        startDate: new Date('2026-03-05'),
+        endDate: new Date('2026-03-05'),
+        days: 0.5,
+        type: LeaveType.PAID_LEAVE,
+        status: LeaveRequestStatus.APPROVED,
+        reason: 'Rendez-vous médical',
+        halfDay: true,
+        halfDayPeriod: 'AM',
+        employeeId: bobWilson.employee!.id,
+        companyId: techcorp.id,
+        reviewedById: janeSmith.id,
+        reviewedAt: new Date('2026-02-28T10:00:00Z'),
+        reviewComment: 'Approuvé.',
+      },
+    })
+  } catch { /* skip if already exists */ }
+
+  try {
+    await prisma.leaveRequest.create({
+      data: {
+        startDate: new Date('2026-03-12'),
+        endDate: new Date('2026-03-12'),
+        days: 0.5,
+        type: LeaveType.RTT,
+        status: LeaveRequestStatus.PENDING,
+        reason: 'Démarche administrative',
+        halfDay: true,
+        halfDayPeriod: 'PM',
+        employeeId: oliviaMartin.employee!.id,
+        companyId: designstudio.id,
+      },
+    })
+  } catch { /* skip if already exists */ }
+
+  // FAMILY_EVENT demande
+  try {
+    await prisma.leaveRequest.create({
+      data: {
+        startDate: new Date('2026-04-01'),
+        endDate: new Date('2026-04-02'),
+        days: 2,
+        type: LeaveType.FAMILY_EVENT,
+        status: LeaveRequestStatus.PENDING,
+        reason: 'Mariage frère',
+        employeeId: evaGarcia.employee!.id,
+        companyId: techcorp.id,
+      },
+    })
+  } catch { /* skip if already exists */ }
+
+  // PARENTAL_LEAVE demande
+  try {
+    await prisma.leaveRequest.create({
+      data: {
+        startDate: new Date('2026-05-01'),
+        endDate: new Date('2026-05-30'),
+        days: 22,
+        type: LeaveType.PARENTAL_LEAVE,
+        status: LeaveRequestStatus.APPROVED,
+        reason: 'Congé parental',
+        employeeId: williamTaylor.employee!.id,
+        companyId: designstudio.id,
+        reviewedById: avaAnderson.id,
+        reviewedAt: new Date('2026-04-15T09:00:00Z'),
+        reviewComment: 'Approuvé. Félicitations !',
+      },
+    })
+  } catch { /* skip if already exists */ }
+
+  console.log('✅ 6 demandes de congés supplémentaires créées\n')
+
+  // ============================================================================
   // RÉSUMÉ FINAL
   // ============================================================================
   console.log('🎉 Seeding terminé avec succès !\n')
@@ -1567,10 +1750,16 @@ async function main() {
   console.log('   • DesignStudio: 3 plannings (Designers)')
   console.log('   • StartupInc: 2 plannings (Core Team)\n')
 
-  console.log('🏖️  DEMANDES DE CONGÉS (8) :')
-  console.log('   • 3 APPROVED (Alice Brown, Bob Wilson, Eva Garcia)')
-  console.log('   • 3 PENDING (Olivia Martin, Henry Lopez, Sophia Clark)')
-  console.log('   • 2 REJECTED (Charlie Davis, Noah Thompson)\n')
+  console.log('🏖️  DEMANDES DE CONGÉS (14) :')
+  console.log('   • 5 APPROVED (Alice, Bob x2, Eva, William)')
+  console.log('   • 5 PENDING (Olivia x2, Henry, Sophia, Eva)')
+  console.log('   • 2 REJECTED (Charlie, Noah)')
+  console.log('   • 2 CANCELLED (David, Grace)')
+  console.log('   • 2 avec halfDay (Bob AM, Olivia PM)\n')
+
+  console.log('💰 SOLDES DE CONGÉS (20) :')
+  console.log('   • 1 LeaveBalance par employé (année 2026)')
+  console.log('   • Soldes variés (CP 0-12 utilisés, RTT 0-6 utilisés)\n')
 
   console.log('🔔 NOTIFICATIONS (15) :')
   console.log('   • 8 READ')
