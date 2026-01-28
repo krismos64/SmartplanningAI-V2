@@ -72,9 +72,7 @@
 }
 
 /* ═══════════════════════════════════════════════════
-   2. CALENDAR CONTAINER — Card élevée
-   Fond légèrement plus clair que le background global,
-   ombre bleue conforme aux design tokens shadows.ts
+   2. CALENDAR CONTAINER — Glass 3D elevated card
    ═══════════════════════════════════════════════════ */
 
 .sx-react-calendar {
@@ -89,11 +87,12 @@
 }
 
 .dark .sx-react-calendar {
-  background: hsl(var(--card));
-  border-color: hsl(var(--border) / 0.12);
+  background: hsl(var(--card) / 0.9);
+  border-color: rgba(148, 163, 184, 0.08);
   box-shadow:
-    0 4px 6px -1px rgba(0, 0, 0, 0.35),
-    0 2px 4px -2px rgba(0, 0, 0, 0.25);
+    0 8px 30px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(59, 130, 246, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
 
 /* ═══════════════════════════════════════════════════
@@ -107,9 +106,10 @@
 }
 
 .dark .sx__calendar-header {
-  background: hsl(var(--card) / 0.92);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  background: hsl(var(--card) / 0.88);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom-color: rgba(59, 130, 246, 0.06);
 }
 
 .sx__calendar-header-content {
@@ -222,10 +222,16 @@
   border-radius: 0.625rem;
   font-weight: 700;
   box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
+  animation: sp-today-pulse 3s ease-in-out infinite;
 }
 
 .dark .sx__week-grid__date--is-today .sx__week-grid__date-number {
   box-shadow: 0 0 14px rgba(59, 130, 246, 0.4);
+}
+
+@keyframes sp-today-pulse {
+  0%, 100% { box-shadow: 0 0 10px rgba(59, 130, 246, 0.3); }
+  50% { box-shadow: 0 0 18px rgba(59, 130, 246, 0.5); }
 }
 
 /* ═══════════════════════════════════════════════════
@@ -273,13 +279,15 @@
   background-color: hsl(var(--card));
 }
 
-/* Today column — very subtle tint */
+/* Today column — subtle tint + top glow border */
 .sx__time-grid-day.sx__time-grid-day--is-today {
-  background-color: hsl(var(--primary) / 0.02);
+  background-color: hsl(var(--primary) / 0.025);
+  box-shadow: inset 0 2px 0 hsl(var(--primary) / 0.15);
 }
 
 .dark .sx__time-grid-day.sx__time-grid-day--is-today {
-  background-color: hsl(var(--primary) / 0.035);
+  background-color: hsl(var(--primary) / 0.04);
+  box-shadow: inset 0 2px 0 hsl(var(--primary) / 0.2);
 }
 
 /* ═══════════════════════════════════════════════════
@@ -288,109 +296,107 @@
    Blue-tinted shadows from design tokens
    ═══════════════════════════════════════════════════ */
 
-/* --- Elevation Level 2 : Events (repos) --- */
+/* --- Luminous Glass Badges — Events --- */
 .sx__time-grid-event {
-  border-radius: 0.625rem !important;
+  border-radius: 0.5rem !important;
   border: none !important;
   border-left: 3.5px solid var(--sx-color-primary) !important;
-  /* Tonal elevation : event légèrement plus clair que la grille */
-  background: linear-gradient(
-    180deg,
-    hsl(var(--card) / 0.97) 0%,
-    hsl(var(--card) / 0.92) 100%
-  ) !important;
-  /* Elevation 2 repos : sm shadow token */
-  box-shadow:
-    0 1px 3px 0 rgba(59, 130, 246, 0.06),
-    0 1px 2px -1px rgba(59, 130, 246, 0.06);
-  /* Transition uniquement sur box-shadow et border — PAS sur transform
-     pour ne pas interférer avec le drag & drop Schedule-X qui utilise
-     transform: translateX() pour repositionner les events pendant le drag */
-  transition:
-    box-shadow 0.22s cubic-bezier(0.4, 0, 0.2, 1),
-    border-top-color 0.18s ease;
   overflow: hidden;
-  /* Top-edge light reflex (invisible at rest, visible on hover) */
-  border-top: 1px solid transparent !important;
+  /* Transition on box-shadow only — NOT transform (breaks Schedule-X drag) */
+  transition:
+    box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+    filter 0.2s ease;
+  box-shadow:
+    0 1px 3px 0 rgba(0, 0, 0, 0.08),
+    0 1px 2px -1px rgba(0, 0, 0, 0.04);
+  border-top: 1px solid rgba(255, 255, 255, 0.25) !important;
 }
 
-/* --- Elevation Level 2 : Events (hover = "lift") --- */
+/* Hover — lift + stronger shadow */
 .sx__time-grid-event:hover:not(.is-event-copy) {
-  /* Elevation 2 hover : lg shadow token */
   box-shadow:
-    0 10px 15px -3px rgba(59, 130, 246, 0.08),
-    0 4px 6px -4px rgba(59, 130, 246, 0.05);
-  /* Top-edge light reflex on hover */
-  border-top-color: hsl(var(--background) / 0.5) !important;
+    0 6px 16px -2px rgba(0, 0, 0, 0.12),
+    0 2px 6px -2px rgba(0, 0, 0, 0.08);
+  filter: brightness(1.04);
   cursor: pointer;
   z-index: 10 !important;
 }
 
-/* --- Events (active/click = "press") --- */
+/* Active — pressed flat */
 .sx__time-grid-event:active:not(.is-event-copy) {
-  /* Elevation 2 active : xs shadow token (pressed flat) */
-  box-shadow: 0 1px 2px 0 rgba(59, 130, 246, 0.03);
-  border-top-color: transparent !important;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  filter: brightness(0.97);
 }
 
-/* Dark mode — tonal elevation */
+/* Dark mode — richer depth + inner glow */
 .dark .sx__time-grid-event {
-  background: linear-gradient(
-    180deg,
-    hsl(var(--card) / 1) 0%,
-    hsl(var(--card) / 0.88) 100%
-  ) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
   box-shadow:
-    0 1px 3px 0 rgba(0, 0, 0, 0.3),
-    0 1px 2px -1px rgba(0, 0, 0, 0.2);
+    0 2px 8px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
 .dark .sx__time-grid-event:hover:not(.is-event-copy) {
   box-shadow:
-    0 10px 15px -3px rgba(0, 0, 0, 0.4),
-    0 4px 6px -4px rgba(0, 0, 0, 0.25);
-  /* Light reflex more subtle in dark mode */
-  border-top-color: hsl(var(--foreground) / 0.06) !important;
+    0 8px 20px -2px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  filter: brightness(1.12);
 }
 
 .dark .sx__time-grid-event:active:not(.is-event-copy) {
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.15);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  filter: brightness(0.95);
 }
 
-/* Event inner — clear hierarchy: title dominant, time recessed */
+/* --- Event inner — tight layout, clear hierarchy --- */
 .sx__time-grid-event-inner {
-  padding: 0.375rem 0.5rem;
+  padding: 0.3rem 0.45rem;
   display: flex;
   flex-direction: column;
-  gap: 0.125rem;
+  gap: 0.1rem;
 }
 
-/* Event title — body-level, Plus Jakarta Sans, prominent */
+/* --- Title — bold, high contrast, instantly readable --- */
 .sx__time-grid-event-title {
-  font-weight: 600;
+  font-weight: 700;
   font-size: 0.8125rem;
-  line-height: 1.3;
-  letter-spacing: 0.005em;
+  line-height: 1.25;
+  letter-spacing: -0.005em;
+  text-shadow: 0 0.5px 0 rgba(0, 0, 0, 0.06);
 }
 
-/* Event metadata — caption-level, very recessed */
+.dark .sx__time-grid-event-title {
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* --- Time + meta — visible but secondary --- */
 .sx__time-grid-event-time,
 .sx__time-grid-event-people,
 .sx__time-grid-event-location {
-  font-size: 0.625rem;
-  font-weight: 400;
-  opacity: 0.45;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  opacity: 0.7;
   letter-spacing: 0.01em;
 }
 
-/* Compact layout */
+.dark .sx__time-grid-event-time,
+.dark .sx__time-grid-event-people,
+.dark .sx__time-grid-event-location {
+  opacity: 0.75;
+}
+
+/* --- Compact layout — still readable --- */
 .sx__title-and-time-compact .sx__time-grid-event-title {
   font-size: 0.75rem;
+  font-weight: 700;
 }
 
 .sx__title-and-time-compact .sx__time-grid-event-time {
-  font-size: 0.5625rem;
-  opacity: 0.4;
+  font-size: 0.625rem;
+  font-weight: 600;
+  opacity: 0.65;
 }
 
 /* Resize handle — reveal on hover */
@@ -490,48 +496,52 @@
   box-shadow: 0 0 8px rgba(59, 130, 246, 0.25);
 }
 
-/* Month events — compact pills with colored border + micro-3D */
+/* Month events — vibrant compact pills */
 .sx__month-grid-event {
   border-radius: 0.375rem;
   font-size: 0.6875rem;
-  font-weight: 500;
-  padding: 0.0625rem 0.375rem;
+  font-weight: 600;
+  padding: 0.125rem 0.4rem;
   margin: 0 0.25rem 0.125rem;
   border-left: 2.5px solid var(--sx-color-primary);
-  box-shadow: 0 1px 2px 0 rgba(59, 130, 246, 0.03);
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.06);
   transition:
-    opacity 0.12s ease,
+    filter 0.12s ease,
     transform 0.15s cubic-bezier(0.4, 0, 0.2, 1),
     box-shadow 0.15s ease;
 }
 
 .sx__month-grid-event:hover {
-  transform: translateY(-1px) translateX(1px);
+  transform: translateY(-1px);
   box-shadow:
-    0 4px 6px -1px rgba(59, 130, 246, 0.07),
-    0 2px 4px -2px rgba(59, 130, 246, 0.05);
+    0 4px 8px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -2px rgba(0, 0, 0, 0.06);
+  filter: brightness(1.04);
   cursor: pointer;
 }
 
 .sx__month-grid-event:active {
-  transform: translateY(0) translateX(0);
+  transform: translateY(0);
   box-shadow: none;
+  filter: brightness(0.97);
   transition-duration: 0.06s;
 }
 
 .dark .sx__month-grid-event {
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.2);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3);
 }
 
 .dark .sx__month-grid-event:hover {
   box-shadow:
-    0 4px 6px -1px rgba(0, 0, 0, 0.35),
-    0 2px 4px -2px rgba(0, 0, 0, 0.25);
+    0 4px 10px -1px rgba(0, 0, 0, 0.45),
+    0 2px 4px -2px rgba(0, 0, 0, 0.3);
+  filter: brightness(1.15);
 }
 
 .sx__month-grid-event-time {
   font-size: 0.5625rem;
-  opacity: 0.4;
+  font-weight: 600;
+  opacity: 0.65;
 }
 
 /* "N more" */

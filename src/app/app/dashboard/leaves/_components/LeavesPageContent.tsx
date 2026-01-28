@@ -7,7 +7,7 @@
 
 'use client'
 
-import { useState, useCallback, useTransition } from 'react'
+import { useState, useCallback, useTransition, useMemo } from 'react'
 import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 import type { LeaveRequest, LeaveRequestStatus, UserRole } from '@prisma/client'
 
@@ -136,19 +136,22 @@ export function LeavesPageContent({
   // Responsive
   const isMobile = useMediaQuery('(max-width: 1024px)')
 
-  // Build filters from URL
-  const filters: LeaveRequestFilters = {
-    status: (searchParams.get('status') as LeaveRequestStatus) || undefined,
-    type: searchParams.get('type') as LeaveRequestFilters['type'],
-    employeeId: searchParams.get('employee') || undefined,
-    teamId: searchParams.get('team') || undefined,
-    startDate: searchParams.get('startDate')
-      ? new Date(searchParams.get('startDate')!)
-      : undefined,
-    endDate: searchParams.get('endDate')
-      ? new Date(searchParams.get('endDate')!)
-      : undefined,
-  }
+  // Build filters from URL (memoized to avoid recreation on each render)
+  const filters = useMemo<LeaveRequestFilters>(
+    () => ({
+      status: (searchParams.get('status') as LeaveRequestStatus) || undefined,
+      type: searchParams.get('type') as LeaveRequestFilters['type'],
+      employeeId: searchParams.get('employee') || undefined,
+      teamId: searchParams.get('team') || undefined,
+      startDate: searchParams.get('startDate')
+        ? new Date(searchParams.get('startDate')!)
+        : undefined,
+      endDate: searchParams.get('endDate')
+        ? new Date(searchParams.get('endDate')!)
+        : undefined,
+    }),
+    [searchParams]
+  )
 
   // Refetch data helper
   const refetchData = useCallback(
@@ -291,7 +294,7 @@ export function LeavesPageContent({
   )
 
   const handleCancel = useCallback(
-    async (request: LeaveRequestWithEmployee) => {
+    (request: LeaveRequestWithEmployee) => {
       startTransition(async () => {
         const result = await cancelLeaveRequest(request.id)
         if (result.success) {
@@ -482,7 +485,7 @@ export function LeavesPageContent({
               currentUserId={currentUser.employeeId ?? ''}
               onReview={handleReview}
               onEdit={handleEdit}
-              onCancel={handleCancel}
+              onCancel={(request) => handleCancel(request)}
               isLoading={isPending}
             />
           )}

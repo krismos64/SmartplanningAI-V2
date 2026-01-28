@@ -10,11 +10,7 @@ import { Card, CardContent } from '@/components/ui/card'
 
 export default function LeavesLoading() {
   return (
-    <div
-      className="space-y-6"
-      role="status"
-      aria-label="Chargement des congés"
-    >
+    <div className="space-y-6" role="status" aria-label="Chargement des congés">
       {/* Header skeleton */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="space-y-2">
