@@ -49,7 +49,9 @@ describe('Leave Validations', () => {
       })
       expect(result.success).toBe(false)
       if (!result.success) {
-        expect(result.error.issues.some((i) => i.path.includes('endDate'))).toBe(true)
+        expect(
+          result.error.issues.some((i) => i.path.includes('endDate'))
+        ).toBe(true)
       }
     })
 
@@ -61,7 +63,9 @@ describe('Leave Validations', () => {
       })
       expect(result.success).toBe(false)
       if (!result.success) {
-        expect(result.error.issues.some((i) => i.path.includes('halfDayPeriod'))).toBe(true)
+        expect(
+          result.error.issues.some((i) => i.path.includes('halfDayPeriod'))
+        ).toBe(true)
       }
     })
 
@@ -82,7 +86,9 @@ describe('Leave Validations', () => {
       })
       expect(result.success).toBe(false)
       if (!result.success) {
-        expect(result.error.issues.some((i) => i.path.includes('startDate'))).toBe(true)
+        expect(
+          result.error.issues.some((i) => i.path.includes('startDate'))
+        ).toBe(true)
       }
     })
 
@@ -144,7 +150,9 @@ describe('Leave Validations', () => {
       })
       expect(result.success).toBe(false)
       if (!result.success) {
-        expect(result.error.issues.some((i) => i.path.includes('reviewComment'))).toBe(true)
+        expect(
+          result.error.issues.some((i) => i.path.includes('reviewComment'))
+        ).toBe(true)
       }
     })
 
@@ -181,7 +189,9 @@ describe('Leave Validations', () => {
       })
       expect(result.success).toBe(false)
       if (!result.success) {
-        expect(result.error.issues.some((i) => i.path.includes('paidLeaveUsed'))).toBe(true)
+        expect(
+          result.error.issues.some((i) => i.path.includes('paidLeaveUsed'))
+        ).toBe(true)
       }
     })
 
@@ -192,7 +202,9 @@ describe('Leave Validations', () => {
       })
       expect(result.success).toBe(false)
       if (!result.success) {
-        expect(result.error.issues.some((i) => i.path.includes('rttUsed'))).toBe(true)
+        expect(
+          result.error.issues.some((i) => i.path.includes('rttUsed'))
+        ).toBe(true)
       }
     })
 

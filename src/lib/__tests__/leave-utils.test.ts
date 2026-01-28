@@ -5,13 +5,16 @@
  */
 
 import { describe, it, expect } from 'vitest'
-import { calculateWorkingDays, hasEnoughBalance, getRemainingBalance } from '../leave-utils'
+import {
+  calculateWorkingDays,
+  hasEnoughBalance,
+  getRemainingBalance,
+} from '../leave-utils'
 import type { LeaveBalanceData } from '../leave-utils'
 
 // Helper : crée une date à un jour précis
 // 2026-01-05 = lundi
 const monday = new Date(2026, 0, 5)
-const tuesday = new Date(2026, 0, 6)
 const friday = new Date(2026, 0, 9)
 const saturday = new Date(2026, 0, 10)
 const sunday = new Date(2026, 0, 11)
@@ -33,7 +36,9 @@ describe('calculateWorkingDays', () => {
     })
 
     it('retourne 10 jours pour deux semaines', () => {
-      expect(calculateWorkingDays(monday, nextFriday, false, 'MON_FRI')).toBe(10)
+      expect(calculateWorkingDays(monday, nextFriday, false, 'MON_FRI')).toBe(
+        10
+      )
     })
   })
 
@@ -83,7 +88,7 @@ describe('calculateWorkingDays', () => {
       expect(result).toBe(22)
     })
 
-    it('gère correctement le passage d\'année', () => {
+    it("gère correctement le passage d'année", () => {
       const dec31 = new Date(2025, 11, 31) // mercredi
       const jan2 = new Date(2026, 0, 2) // vendredi
       const result = calculateWorkingDays(dec31, jan2, false, 'MON_FRI')

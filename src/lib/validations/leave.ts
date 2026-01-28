@@ -34,7 +34,10 @@ export const createLeaveRequestSchema = z
     }),
     halfDay: z.boolean().default(false),
     halfDayPeriod: HalfDayPeriodSchema.optional().nullable(),
-    reason: z.string().max(500, 'La raison ne doit pas dépasser 500 caractères').optional(),
+    reason: z
+      .string()
+      .max(500, 'La raison ne doit pas dépasser 500 caractères')
+      .optional(),
     employeeId: z.string().cuid("ID d'employé invalide"),
   })
   .superRefine((data, ctx) => {
@@ -55,7 +58,10 @@ export const createLeaveRequestSchema = z
     }
 
     // Délai minimum 48h (sauf SICK_LEAVE et FAMILY_EVENT)
-    if (data.type !== LeaveType.SICK_LEAVE && data.type !== LeaveType.FAMILY_EVENT) {
+    if (
+      data.type !== LeaveType.SICK_LEAVE &&
+      data.type !== LeaveType.FAMILY_EVENT
+    ) {
       const now = new Date()
       const minDate = new Date(now.getTime() + 48 * 60 * 60 * 1000)
       if (data.startDate < minDate) {
@@ -75,10 +81,16 @@ export type CreateLeaveRequestInput = z.infer<typeof createLeaveRequestSchema>
 export const updateLeaveRequestSchema = z
   .object({
     status: LeaveRequestStatusSchema,
-    reviewComment: z.string().max(500, 'Le commentaire ne doit pas dépasser 500 caractères').optional(),
+    reviewComment: z
+      .string()
+      .max(500, 'Le commentaire ne doit pas dépasser 500 caractères')
+      .optional(),
   })
   .superRefine((data, ctx) => {
-    if (data.status === LeaveRequestStatus.REJECTED && (!data.reviewComment || data.reviewComment.length === 0)) {
+    if (
+      data.status === LeaveRequestStatus.REJECTED &&
+      (!data.reviewComment || data.reviewComment.length === 0)
+    ) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: 'Un commentaire est obligatoire en cas de refus',
@@ -93,7 +105,11 @@ export type UpdateLeaveRequestInput = z.infer<typeof updateLeaveRequestSchema>
 
 export const updateLeaveBalanceSchema = z
   .object({
-    paidLeaveTotal: z.number().min(0, 'Minimum 0').max(100, 'Maximum 100').optional(),
+    paidLeaveTotal: z
+      .number()
+      .min(0, 'Minimum 0')
+      .max(100, 'Maximum 100')
+      .optional(),
     paidLeaveUsed: z.number().min(0, 'Minimum 0').optional(),
     rttTotal: z.number().min(0, 'Minimum 0').max(50, 'Maximum 50').optional(),
     rttUsed: z.number().min(0, 'Minimum 0').optional(),
@@ -110,7 +126,11 @@ export const updateLeaveBalanceSchema = z
         path: ['paidLeaveUsed'],
       })
     }
-    if (data.rttTotal !== undefined && data.rttUsed !== undefined && data.rttUsed > data.rttTotal) {
+    if (
+      data.rttTotal !== undefined &&
+      data.rttUsed !== undefined &&
+      data.rttUsed > data.rttTotal
+    ) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: 'Les RTT utilisés ne peuvent pas dépasser le total',
@@ -160,10 +180,12 @@ export const leaveTypeOptions = Object.values(LeaveType).map((value) => ({
   label: LEAVE_TYPE_LABELS[value],
 }))
 
-export const leaveStatusOptions = Object.values(LeaveRequestStatus).map((value) => ({
-  value,
-  label: LEAVE_STATUS_LABELS[value],
-}))
+export const leaveStatusOptions = Object.values(LeaveRequestStatus).map(
+  (value) => ({
+    value,
+    label: LEAVE_STATUS_LABELS[value],
+  })
+)
 
 // ─── Couleurs Tailwind pour l'UI ────────────────────────────────────
 
