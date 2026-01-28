@@ -267,6 +267,7 @@ export function BalancesPageContent({
                           size="icon"
                           onClick={() => setEditingBalance(balance)}
                           aria-label={`Modifier le solde de ${balance.employee.firstName} ${balance.employee.lastName}`}
+                          data-testid={`edit-balance-${balance.employee.id}`}
                         >
                           <Pencil className="h-4 w-4" />
                         </Button>
