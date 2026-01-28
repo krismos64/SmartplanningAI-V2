@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 27 janvier 2026 (Sprint 12 - SP-406 Panneau heures hebdomadaires, type REST, exports filtrés, suppression en masse employés)
+- **Dernière mise à jour** : 28 janvier 2026 (Sprint 13 - SP-408 Fondations congés : LeaveBalance, halfDay, 7 types de congés)
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -762,7 +762,7 @@ Système complet d'envoi d'emails transactionnels avec React Email et Nodemailer
 - **SP-300 : Email Congé Validé/Refusé** ✅
   - Templates `LeaveApprovedEmail.tsx` et `LeaveRejectedEmail.tsx`
   - Types `LeaveType`, `LeaveEmailData`, `LeaveRejectedEmailData` dans `src/types/leave.ts`
-  - 6 types de congés supportés (PAID_LEAVE, RTT, SICK_LEAVE, UNPAID_LEAVE, FAMILY_EVENT, OTHER)
+  - 7 types de congés supportés (PAID_LEAVE, RTT, SICK_LEAVE, UNPAID_LEAVE, PARENTAL_LEAVE, FAMILY_EVENT, OTHER)
   - Fonctions `sendLeaveApprovedEmail`, `sendLeaveRejectedEmail` dans `src/lib/email/templates/leave-decision.ts`
   - Helpers `formatDateFr` (dates en français) et `getLeaveTypeLabel` (traduction types)
   - 48 tests unitaires (16 + 19 + 13)
@@ -1515,17 +1515,18 @@ npm run test:coverage    # Couverture de code
 5. **Planning** : Plannings par département
 6. **Shift** : Créneaux de travail (templates)
 7. **ShiftAssignment** : Affectations shifts → employés
-8. **LeaveRequest** : Demandes de congés
-9. **Notification** : Système de notifications
-10. **ActivityLog** : Logs d'activité (audit)
-11. **CompanySettings** : Paramètres par entreprise
+8. **LeaveRequest** : Demandes de congés (avec halfDay/halfDayPeriod)
+9. **LeaveBalance** : Soldes de congés par employé et par année (@@unique employeeId+year)
+10. **Notification** : Système de notifications
+11. **ActivityLog** : Logs d'activité (audit)
+12. **CompanySettings** : Paramètres par entreprise
 
 ### Enums (10 enums)
 
 1. **Role** : SYSTEM_ADMIN, DIRECTOR, MANAGER, EMPLOYEE
 2. **NotificationType** : INFO, WARNING, ERROR, SUCCESS, SHIFT_ASSIGNED, etc.
 3. **LeaveStatus** : PENDING, APPROVED, REJECTED, CANCELLED
-4. **LeaveType** : PAID_LEAVE, SICK_LEAVE, UNPAID_LEAVE, OTHER
+4. **LeaveType** : PAID_LEAVE, RTT, SICK_LEAVE, UNPAID_LEAVE, PARENTAL_LEAVE, FAMILY_EVENT, OTHER
 5. **ShiftStatus** : DRAFT, PUBLISHED, ARCHIVED
 6. **DayOfWeek** : MONDAY, TUESDAY, ..., SUNDAY
 7. **EmploymentType** : FULL_TIME, PART_TIME, TEMPORARY, INTERN
@@ -1729,7 +1730,18 @@ Voir `/docs/database-schema.md` pour le détail complet.
 - SP-406 : Refonte CSS calendrier Schedule-X ✅
 - SP-115 : Workflow congés (demandes, validation, calendrier) 🚧
 
-#### Phase 7+ : Notifications, IA... (À venir)
+#### Phase 7 : Gestion des Congés (Sprint 13 - Janvier 2026)
+
+- SP-407 : Epic Gestion des Congés
+- SP-408 : Fondations Prisma — LeaveBalance + enrichissements + seed ✅
+  - Modèle LeaveBalance (soldes congés payés + RTT par employé/année)
+  - Champs halfDay/halfDayPeriod sur LeaveRequest
+  - Ajout FAMILY_EVENT à l'enum LeaveType Prisma
+  - Alignement types TS (PARENTAL_LEAVE ajouté)
+  - Seed : 20 LeaveBalances + 6 nouvelles LeaveRequests (CANCELLED, halfDay, FAMILY_EVENT, PARENTAL_LEAVE)
+- SP-409 à SP-416 : En attente (validations Zod, actions CRUD, pages UI, workflow, notifications) 🚧
+
+#### Phase 8+ : Notifications, IA... (À venir)
 
 ## Documentation complète
 

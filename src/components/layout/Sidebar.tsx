@@ -182,9 +182,9 @@ export function Sidebar({ user }: SidebarProps) {
     .slice(0, 2)
 
   return (
-    <SidebarPrimitive className="border-r">
+    <SidebarPrimitive className="sidebar-neon">
       {/* Header */}
-      <SidebarHeader className="border-b p-4">
+      <SidebarHeader className="border-b border-white/[0.06] p-4">
         <div className="flex items-center justify-between">
           {!isCollapsed && (
             <motion.div
@@ -194,10 +194,10 @@ export function Sidebar({ user }: SidebarProps) {
               transition={{ duration: 0.2 }}
               className="flex flex-col"
             >
-              <span className="text-lg font-semibold">
+              <span className="sidebar-neon-title text-lg">
                 {user.companyName || 'SmartPlanning'}
               </span>
-              <span className="text-xs text-muted-foreground">
+              <span className="text-xs text-slate-400">
                 {getRoleLabel(user.role)}
               </span>
             </motion.div>
@@ -206,7 +206,7 @@ export function Sidebar({ user }: SidebarProps) {
             variant="ghost"
             size="icon"
             onClick={toggleSidebar}
-            className={isCollapsed ? 'mx-auto' : ''}
+            className={`text-slate-400 hover:text-white hover:bg-white/[0.06] ${isCollapsed ? 'mx-auto' : ''}`}
           >
             {isCollapsed ? (
               <ChevronRight className="h-4 w-4" />
@@ -229,26 +229,29 @@ export function Sidebar({ user }: SidebarProps) {
               <SidebarMenuItem key={item.id}>
                 <SidebarMenuButton asChild isActive={isActive}>
                   <Link href={item.href}>
-                    <motion.div
-                      className="flex w-full items-center gap-3"
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.05 }}
-                      whileHover={{ scale: 1.02, x: 4 }}
-                      whileTap={{ scale: 0.98 }}
+                    <div
+                      className="sidebar-nav-item w-full"
+                      data-active={isActive}
                     >
                       <motion.div
-                        whileHover={{ rotate: 5 }}
-                        transition={{ duration: 0.2 }}
+                        className="sidebar-nav-icon"
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.05 }}
                       >
                         <Icon className="h-5 w-5" />
                       </motion.div>
                       {!isCollapsed && (
-                        <span className="text-sm font-medium">
+                        <motion.span
+                          className="text-sm font-medium"
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: index * 0.05 }}
+                        >
                           {item.label}
-                        </span>
+                        </motion.span>
                       )}
-                    </motion.div>
+                    </div>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -272,12 +275,12 @@ export function Sidebar({ user }: SidebarProps) {
       </SidebarContent>
 
       {/* Footer */}
-      <SidebarFooter className="border-t p-4">
+      <SidebarFooter className="border-t border-white/[0.06] p-4">
         <div
           className={`flex items-center gap-3 ${isCollapsed ? 'justify-center' : ''}`}
         >
-          <Avatar className="h-8 w-8">
-            <AvatarFallback className="bg-primary text-xs text-primary-foreground">
+          <Avatar className="sp-avatar-neon h-8 w-8 rounded-full">
+            <AvatarFallback className="bg-transparent text-xs text-blue-300">
               {userInitials}
             </AvatarFallback>
           </Avatar>
@@ -289,8 +292,10 @@ export function Sidebar({ user }: SidebarProps) {
               transition={{ duration: 0.2 }}
               className="flex flex-col overflow-hidden"
             >
-              <span className="truncate text-sm font-medium">{user.name}</span>
-              <span className="truncate text-xs text-muted-foreground">
+              <span className="truncate text-sm font-medium text-slate-200">
+                {user.name}
+              </span>
+              <span className="truncate text-xs text-slate-400">
                 {user.email}
               </span>
             </motion.div>
