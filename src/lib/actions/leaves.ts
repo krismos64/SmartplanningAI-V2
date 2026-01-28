@@ -89,7 +89,7 @@ type LeaveRequestWithEmployee = LeaveRequest & {
     id: string
     firstName: string
     lastName: string
-    email: string
+    email: string | null
     teamId: string | null
   }
 }
@@ -195,7 +195,7 @@ function buildLeaveRBACWhere(user: AuthenticatedUser): Record<string, unknown> {
   }
 }
 
-const LEAVE_PATHS = ['/app/dashboard/conges', '/app/dashboard/leaves']
+const LEAVE_PATH = '/app/dashboard/conges'
 
 // ============================================================================
 // 1. getLeaveRequests - Liste paginée avec filtres RBAC
@@ -399,7 +399,7 @@ export async function createLeaveRequest(
       },
     })
 
-    revalidatePath(LEAVE_PATHS[0])
+    revalidatePath(LEAVE_PATH)
     return { success: true, data: leaveRequest, warning }
   } catch (error) {
     const { error: message } = handlePrismaError(error)
@@ -474,7 +474,7 @@ export async function updateLeaveRequest(
       },
     })
 
-    revalidatePath(LEAVE_PATHS[0])
+    revalidatePath(LEAVE_PATH)
     return { success: true, data: updated }
   } catch (error) {
     const { error: message } = handlePrismaError(error)
@@ -543,7 +543,7 @@ export async function cancelLeaveRequest(
         }),
       ])
 
-      revalidatePath(LEAVE_PATHS[0])
+      revalidatePath(LEAVE_PATH)
       return { success: true, data: updated }
     }
 
@@ -553,7 +553,7 @@ export async function cancelLeaveRequest(
       data: { status: LeaveRequestStatus.CANCELLED },
     })
 
-    revalidatePath(LEAVE_PATHS[0])
+    revalidatePath(LEAVE_PATH)
     return { success: true, data: updated }
   } catch (error) {
     const { error: message } = handlePrismaError(error)
@@ -660,7 +660,7 @@ export async function reviewLeaveRequest(
     try {
       const emailData: LeaveEmailData = {
         firstName: leaveRequest.employee.firstName,
-        email: leaveRequest.employee.email,
+        email: leaveRequest.employee.email ?? '',
         leaveType: leaveRequest.type,
         startDate: leaveRequest.startDate,
         endDate: leaveRequest.endDate,
@@ -679,7 +679,7 @@ export async function reviewLeaveRequest(
       // Ne pas bloquer l'action si l'email échoue
     }
 
-    revalidatePath(LEAVE_PATHS[0])
+    revalidatePath(LEAVE_PATH)
     return { success: true, data: updated }
   } catch (error) {
     const { error: message } = handlePrismaError(error)
@@ -803,7 +803,7 @@ export async function updateLeaveBalance(
       },
     })
 
-    revalidatePath(LEAVE_PATHS[0])
+    revalidatePath(LEAVE_PATH)
     return { success: true, data: balance }
   } catch (error) {
     const { error: message } = handlePrismaError(error)
