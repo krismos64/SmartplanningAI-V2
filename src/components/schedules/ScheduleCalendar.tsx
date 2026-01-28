@@ -17,6 +17,7 @@ import { ScheduleCalendarDesktop } from './ScheduleCalendarDesktop'
 import { ScheduleCalendarMobile } from './ScheduleCalendarMobile'
 import { Skeleton } from '@/components/ui/skeleton'
 import type { AvailabilityWithEmployee } from '@/lib/actions/availabilities'
+import type { LeaveRequestWithEmployee } from '@/lib/actions/leaves'
 
 // ============================================================================
 // Types
@@ -45,6 +46,12 @@ export interface ScheduleCalendarProps {
   showAvailabilities?: boolean
   /** Callback au clic sur une indisponibilité (SP-402) */
   onAvailabilityClick?: (availability: AvailabilityWithEmployee) => void
+  /** Congés approuvés à afficher en overlay (SP-415) */
+  leaveRequests?: LeaveRequestWithEmployee[]
+  /** Afficher les congés (SP-415) */
+  showLeaves?: boolean
+  /** Callback au clic sur un congé (SP-415) */
+  onLeaveClick?: (leave: LeaveRequestWithEmployee) => void
 }
 
 // ============================================================================
