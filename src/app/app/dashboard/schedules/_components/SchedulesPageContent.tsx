@@ -374,12 +374,12 @@ export function SchedulesPageContent({
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
-          <div className="rounded-lg bg-primary/10 p-2">
+          <div className="sp-icon-orb rounded-xl bg-primary/10 p-2.5">
             <CalendarDays className="h-6 w-6 text-primary" />
           </div>
           <div>
             <h1
-              className="font-display text-2xl font-bold tracking-tight"
+              className="sp-page-title font-display text-2xl font-bold tracking-tight"
               data-testid="schedules-title"
             >
               Plannings
@@ -392,7 +392,7 @@ export function SchedulesPageContent({
         {canCreate && (
           <Button
             data-testid="new-shift-button"
-            className="shadow-sm transition-all duration-150 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:shadow-none dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_1px_3px_0_rgba(0,0,0,0.3)] dark:hover:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_4px_6px_-1px_rgba(0,0,0,0.35)] dark:active:shadow-[inset_0_2px_4px_0_rgba(0,0,0,0.3)]"
+            className="sp-btn-glow"
             onClick={() => {
               setShiftModalMode('create')
               setSelectedSchedule(null)
@@ -611,14 +611,14 @@ export function SchedulesPageContent({
         }}
       />
 
-      {/* Stats rapides */}
+      {/* Stats rapides — orbes 3D */}
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
         <Card
           data-testid="stats-total"
-          className="border-l-4 border-l-primary shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+          className="sp-stat-orb sp-stat-orb--primary"
         >
           <CardContent className="pt-6">
-            <div className="font-display text-3xl font-bold tracking-tight">
+            <div className="sp-stat-value font-display text-3xl font-bold tracking-tight">
               {totalCount}
             </div>
             <p className="text-sm text-muted-foreground">
@@ -628,10 +628,10 @@ export function SchedulesPageContent({
         </Card>
         <Card
           data-testid="stats-employees"
-          className="border-l-4 border-l-info shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+          className="sp-stat-orb sp-stat-orb--info"
         >
           <CardContent className="pt-6">
-            <div className="font-display text-3xl font-bold tracking-tight">
+            <div className="sp-stat-value font-display text-3xl font-bold tracking-tight">
               {uniqueEmployees}
             </div>
             <p className="text-sm text-muted-foreground">Employés planifiés</p>
@@ -639,10 +639,10 @@ export function SchedulesPageContent({
         </Card>
         <Card
           data-testid="stats-confirmed"
-          className="border-l-4 border-l-success shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+          className="sp-stat-orb sp-stat-orb--success"
         >
           <CardContent className="pt-6">
-            <div className="font-display text-3xl font-bold tracking-tight text-success">
+            <div className="sp-stat-value font-display text-3xl font-bold tracking-tight text-success">
               {confirmedCount}
             </div>
             <p className="text-sm text-muted-foreground">Plannings confirmés</p>
@@ -650,10 +650,10 @@ export function SchedulesPageContent({
         </Card>
         <Card
           data-testid="stats-draft"
-          className="border-l-4 border-l-warning shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+          className="sp-stat-orb sp-stat-orb--warning"
         >
           <CardContent className="pt-6">
-            <div className="font-display text-3xl font-bold tracking-tight text-warning">
+            <div className="sp-stat-value font-display text-3xl font-bold tracking-tight text-warning">
               {draftCount}
             </div>
             <p className="text-sm text-muted-foreground">Brouillons</p>

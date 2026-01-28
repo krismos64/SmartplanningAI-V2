@@ -99,19 +99,22 @@ export function WeeklyHoursPanel({
 
   return (
     <div className="w-80 shrink-0" data-testid="weekly-hours-panel">
-      <div className="rounded-lg border bg-card shadow-sm">
+      <div className="sp-glass-panel rounded-xl">
         {/* Header */}
-        <div className="flex items-center gap-2 border-b px-4 py-3">
-          <Clock className="h-4 w-4 text-muted-foreground" />
+        <div className="sp-panel-header flex items-center gap-2 px-4 py-3">
+          <Clock className="h-4 w-4 text-primary" />
           <h3 className="text-sm font-semibold">Heures semaine</h3>
         </div>
 
         {/* Content */}
         <div className="max-h-[calc(100vh-320px)] space-y-3 overflow-y-auto p-4">
           {employeeHours.length === 0 ? (
-            <p className="py-4 text-center text-sm text-muted-foreground">
-              Aucun employé planifié
-            </p>
+            <div className="sp-empty-state px-4 py-8 text-center">
+              <Clock className="mx-auto mb-2 h-8 w-8 text-primary/40" />
+              <p className="text-sm text-muted-foreground">
+                Aucun employé planifié
+              </p>
+            </div>
           ) : (
             employeeHours.map((emp) => {
               const barPercent = Math.min(emp.percentage, 100)
@@ -131,16 +134,16 @@ export function WeeklyHoursPanel({
 
               const diffColor =
                 emp.diff === 0
-                  ? 'text-green-600'
+                  ? 'text-green-600 dark:text-green-400'
                   : emp.diff > 0
-                    ? 'text-red-600'
-                    : 'text-orange-600'
+                    ? 'text-red-600 dark:text-red-400'
+                    : 'text-orange-600 dark:text-orange-400'
 
               return (
-                <div key={emp.id} className="space-y-1.5">
+                <div key={emp.id} className="sp-hours-row space-y-1.5">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-xs font-medium text-primary">
+                      <div className="sp-avatar-neon flex h-7 w-7 items-center justify-center rounded-full text-xs font-medium text-primary">
                         {getInitials(emp.firstName, emp.lastName)}
                       </div>
                       <span className="max-w-[120px] truncate text-sm font-medium">
@@ -158,10 +161,10 @@ export function WeeklyHoursPanel({
                     </div>
                   </div>
                   {/* Progress bar */}
-                  <div className="h-1.5 w-full rounded-full bg-muted">
+                  <div className="sp-progress-track h-1.5 w-full rounded-full">
                     <div
                       className={cn(
-                        'h-full rounded-full transition-all',
+                        'sp-progress-bar h-full rounded-full transition-all',
                         barColor
                       )}
                       style={{ width: `${barPercent}%` }}

@@ -73,9 +73,7 @@ export default async function LeavesPage() {
   }
 
   // Préparer les données initiales
-  const initialRequests = requestsResult.success
-    ? requestsResult.data.data
-    : []
+  const initialRequests = requestsResult.success ? requestsResult.data.data : []
   const initialPagination = requestsResult.success
     ? {
         page: requestsResult.data.page,
