@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 28 janvier 2026 (Sprint 13 - SP-415 Leaves Integrations : email manager, overlay calendrier + 49 tests)
+- **Dernière mise à jour** : 28 janvier 2026 (Sprint 13 - SP-416 E2E Tests Leaves : 21 tests E2E Playwright + Page Object)
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -1785,7 +1785,8 @@ Voir `/docs/database-schema.md` pour le détail complet.
   - Review dialog pour managers/directors
   - Sidebar href corrigé `/app/dashboard/leaves`
   - 18 tests unitaires (13 LeavesPageContent + 5 Sidebar)
-- SP-414 à SP-416 : En attente (workflow, notifications) 🚧
+- SP-414 à SP-415 : En attente (workflow, notifications) 🚧
+- SP-416 : Tests E2E Leaves ✅ (21 tests Playwright, Page Object LeavesPage)
 
 #### Phase 8+ : Notifications, IA... (À venir)
 
