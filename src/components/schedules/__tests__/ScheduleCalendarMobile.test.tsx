@@ -240,8 +240,7 @@ describe('ScheduleCalendarMobile', () => {
         />
       )
 
-      // Le skeleton utilise la classe sp-skeleton
-      const skeletons = document.querySelectorAll('.sp-skeleton')
+      const skeletons = document.querySelectorAll('[data-testid="skeleton"]')
       expect(skeletons.length).toBeGreaterThan(0)
     })
   })

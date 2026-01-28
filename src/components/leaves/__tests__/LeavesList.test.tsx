@@ -86,8 +86,7 @@ describe('LeavesList', () => {
 
   it('shows loading skeletons when isLoading', () => {
     render(<LeavesList {...defaultProps} isLoading />)
-    // Le composant Skeleton utilise la classe sp-skeleton
-    const skeletons = document.querySelectorAll('.sp-skeleton')
+    const skeletons = document.querySelectorAll('[data-testid="skeleton"]')
     expect(skeletons.length).toBeGreaterThan(0)
   })
 
