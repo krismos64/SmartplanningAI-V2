@@ -143,6 +143,7 @@ export function LeaveRequestForm({
       <form
         onSubmit={(e) => void form.handleSubmit(onSubmit)(e)}
         className="space-y-4"
+        data-testid="leave-request-form"
       >
         <FormField
           control={form.control}
@@ -152,7 +153,7 @@ export function LeaveRequestForm({
               <FormLabel>Type de congé</FormLabel>
               <FormControl>
                 <Select onValueChange={field.onChange} value={field.value}>
-                  <SelectTrigger>
+                  <SelectTrigger data-testid="leave-type-select">
                     <SelectValue placeholder="Sélectionner" />
                   </SelectTrigger>
                   <SelectContent>
@@ -179,6 +180,7 @@ export function LeaveRequestForm({
                   'w-full justify-start text-left font-normal',
                   !dateRange?.from && 'text-muted-foreground'
                 )}
+                data-testid="leave-date-picker"
               >
                 <CalendarIcon className="mr-2 h-4 w-4" />
                 {dateRange?.from ? (
@@ -271,7 +273,11 @@ export function LeaveRequestForm({
             <FormItem>
               <FormLabel>Motif (optionnel)</FormLabel>
               <FormControl>
-                <Textarea placeholder="Raison de la demande..." {...field} />
+                <Textarea
+                  placeholder="Raison de la demande..."
+                  data-testid="leave-reason"
+                  {...field}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -284,7 +290,7 @@ export function LeaveRequestForm({
               Annuler
             </Button>
           )}
-          <Button type="submit" disabled={isPending}>
+          <Button type="submit" disabled={isPending} data-testid="leave-submit">
             {isPending
               ? 'Envoi...'
               : mode === 'create'

@@ -86,7 +86,7 @@ export function LeaveCalendar({
   ]
 
   return (
-    <div className={cn('space-y-4', className)}>
+    <div className={cn('space-y-4', className)} data-testid="leaves-calendar">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -98,7 +98,10 @@ export function LeaveCalendar({
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <h2 className="min-w-[180px] text-center text-lg font-semibold capitalize">
+          <h2
+            className="min-w-[180px] text-center text-lg font-semibold capitalize"
+            data-testid="calendar-month-year"
+          >
             {format(month, 'MMMM yyyy', { locale: fr })}
           </h2>
           <Button
