@@ -34,7 +34,7 @@ Dans le cadre du diplôme **CDA (Concepteur Développeur d'Applications)**, ce c
 | Métrique              | Objectif  | Atteint |
 | --------------------- | --------- | ------- |
 | Couverture globale    | ≥ 70%     | ✅ 85%  |
-| Tests unitaires       | ≥ 500     | ✅ 3618 |
+| Tests unitaires       | ≥ 500     | ✅ 3666 |
 | Tests E2E             | ≥ 50      | ✅ 446  |
 | Score Lighthouse A11y | ≥ 90%     | ✅ 95%  |
 | Anomalies critiques   | 0 en prod | ✅ 0    |
@@ -397,6 +397,7 @@ Ce tableau recense chaque campagne de tests significative (mise en production, f
 
 | Date       | Sprint    | Version/Commit | Tests unitaires | Tests E2E  | Couverture | Statut  | Notes                                                                                                                                                                                                                                                                                                          |
 | ---------- | --------- | -------------- | --------------- | ---------- | ---------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 28/01/2026 | Sprint 13 | SP-414         | 3539/3539 ✅    | 446/446 ✅ | ~85%       | ✅ PASS | 🆕 SP-414 Leave Detail + Balances. +48 tests unitaires (4 fichiers). Routes `/leaves/[id]` (détail + timeline) et `/leaves/balances` (DIRECTOR). LeaveDetailCard, LeaveTimeline, LeaveDetailContent, BalancesPageContent. getAllLeaveBalances server action. Total : 3985 tests |
 | 28/01/2026 | Sprint 13 | SP-413         | 3491/3491 ✅    | 446/446 ✅ | ~85%       | ✅ PASS | 🆕 SP-413 Page Congés + Orchestrateur. +18 tests unitaires (2 fichiers). Route `/app/dashboard/leaves` avec metadata SEO. Server Component fetch initial. LeavesPageContent : tabs Liste/Calendrier, stats bar cliquable, filtres URL sync, Dialog/Sheet responsive, Review dialog RBAC. Sidebar href corrigé. Total : 3937 tests |
 | 28/01/2026 | Sprint 13 | SP-411         | 3618/3618 ✅    | 446/446 ✅ | ~85%       | ✅ PASS | 🆕 SP-411 Composants UI Leave Management. +50 tests unitaires (7 fichiers). 8 composants React : LeaveTypeBadge (4), LeaveStatusBadge (4), LeaveConflictWarning (4), LeaveBalanceCard (6), LeaveRequestCard (11), LeaveRequestForm (15), LeaveReviewDialog (6). Badges icônes Lucide, ProgressBar seuils couleur, Calendar range, formulaire RHF+Zod, Dialog review avec commentaire obligatoire refus. Total : 4064 tests |
 | 28/01/2026 | Sprint 13 | SP-410         | 3568/3568 ✅    | 446/446 ✅ | ~85%       | ✅ PASS | 🆕 SP-410 Server Actions CRUD Congés. +48 tests unitaires. 11 actions RBAC : getLeaveRequests, getLeaveRequestById, createLeaveRequest, updateLeaveRequest, cancelLeaveRequest (recrédit solde), reviewLeaveRequest (transaction atomique + email), getLeaveBalance, updateLeaveBalance, getTeamAbsences, getLeaveStats, checkLeaveConflicts. Multi-tenant companyId. Total : 4014 tests |
@@ -1628,9 +1629,10 @@ not-found.tsx (Server Component)
 | 28/01/2026 (SP-410)         | 3568            | 446       | 4014  | ~85%       | 📈 +48   |
 | 28/01/2026 (SP-411)         | 3618            | 446       | 4064  | ~85%       | 📈 +50   |
 | 28/01/2026 (SP-412)         | 3657            | 446       | 4103  | ~85%       | 📈 +39   |
+| 28/01/2026 (SP-414)         | 3539            | 446       | 3985  | ~85%       | 📈 +48   |
 | 28/01/2026 (SP-413)         | 3491            | 446       | 3937  | ~85%       | 📈 +18   |
 
-**Graphique d'évolution** : De 27 tests (04/12) à 3937 tests (28/01) = **+14478% de croissance** 🚀
+**Graphique d'évolution** : De 27 tests (04/12) à 3985 tests (28/01) = **+14656% de croissance** 🚀
 
 ---
 
@@ -1640,7 +1642,7 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
 
 | N°  | Compétence                                                       | Preuve                                                                                                                                      |
 | --- | ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | Tester les composants d'une application                          | 3491 tests unitaires documentés                                                                                                             |
+| 1   | Tester les composants d'une application                          | 3539 tests unitaires documentés                                                                                                             |
 | 2   | Contribuer à la qualité du code                                  | Couverture 85%, anomalies tracées                                                                                                           |
 | 3   | Documenter les procédures                                        | Procédure de recette formalisée                                                                                                             |
 | 4   | Utiliser une méthodologie                                        | Approche structurée par sprints                                                                                                             |
@@ -1698,6 +1700,7 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
 | 56  | Concevoir des composants UI métier réutilisables                 | 8 composants Leave Management (badges, cards, formulaires, dialogs) avec React Hook Form + Zod, Calendar range react-day-picker, ProgressBar seuils couleur, actions contextuelles par rôle RBAC, détection conflits équipe temps réel (SP-411) 🆕 |
 | 57  | Implémenter des composants de visualisation données complexes    | 6 composants Liste & Calendrier (LeaveFilters filtres conditionnels par rôle, LeavesList DataTable TanStack v8 pagination manuelle, LeaveCalendar grille CSS Grid employés×jours colonne sticky, LeaveStatsBar badges cliquables avec compteurs) (SP-412) 🆕 |
 | 58  | Concevoir une page Next.js App Router avec Server/Client Components | Route `/app/dashboard/leaves` : Server Component fetch initial (requests, stats, employees, teams), Client Component orchestrateur LeavesPageContent avec tabs, filtres URL sync via searchParams, Dialog/Sheet responsive, metadata SEO (SP-413) 🆕 |
+| 59  | Implémenter des pages dynamiques avec timeline et gestion d'état | Routes `/leaves/[id]` (page détail avec LeaveTimeline événements RBAC) et `/leaves/balances` (gestion soldes CP/RTT DIRECTOR only). Next.js 15 Promise params, LeaveDetailCard, BalancesPageContent avec pagination et édition inline (SP-414) 🆕 |
 
 ---
 
@@ -1776,6 +1779,7 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
 | 20/01/2026 | 🆕 SP-302 Page 404 personnalisée : +40 tests unitaires, +8 tests E2E (48 total). NotFoundIllustration/NotFoundPage, animations Framer Motion (floating, orbit, stagger), accessibilité WCAG 2.1 AA, responsive mobile-first, dark mode. Compétences CDA #26 et #27 ajoutées. Justification technique Framer Motion vs CSS. Total : 2089 tests 🎉 |
 | 20/01/2026 | 🆕 SP-304 Error Boundary React : +22 tests unitaires, +5 tests E2E (27 total). react-error-boundary v5.0.0, ErrorBoundary/ErrorFallback, error.tsx/global-error.tsx Next.js, accessibilité WCAG 2.1 AA. Compétence CDA #25. Justification technique ajoutée. Total : 2041 tests 🎉                                                               |
 | 19/01/2026 | SP-301 : +40 tests templates Contact (ContactConfirmationEmail: 18, ContactNotificationEmail: 22). Complète SP-288. Compétence CDA #24 ajoutée. Total : 2014 tests                                                                                                                                                                               |
+| 28/01/2026 | SP-414 : +48 tests Leave Detail + Balances (4 fichiers). Routes `/leaves/[id]` (page détail demande + timeline événements) et `/leaves/balances` (gestion soldes CP/RTT DIRECTOR only). Composants LeaveDetailCard, LeaveTimeline, LeaveDetailContent, BalancesPageContent. Server action getAllLeaveBalances. Compétence CDA #59. Total : 3985 tests |
 | 28/01/2026 | SP-413 : +18 tests Page Congés + Orchestrateur (2 fichiers). Route `/app/dashboard/leaves` : Server Component fetch initial, LeavesPageContent (tabs Liste/Calendrier, stats bar cliquable, filtres URL sync, Dialog/Sheet responsive), Sidebar href corrigé. Compétence CDA #58. Total : 3937 tests |
 | 28/01/2026 | SP-412 : +39 tests Composants Liste & Calendrier Congés (4 fichiers). 6 composants : LeaveStatsBar (badges filtres rapides), LeaveFilters (status/type/employé/équipe/période), LeaveCalendar (grille mensuelle employés×jours), LeaveCalendarDay (popover, demi-journée), LeavesList (DataTable TanStack v8), LeavesListMobile (cartes responsive). Total : 4103 tests |
 | 28/01/2026 | SP-411 : +50 tests Composants UI Leave Management (7 fichiers). 8 composants : LeaveTypeBadge, LeaveStatusBadge, LeaveConflictWarning, LeaveBalanceCard, LeaveRequestCard, LeaveRequestForm, LeaveReviewDialog, LeaveBalanceEditDialog. Badges Lucide, ProgressBar seuils, Calendar range, RHF+Zod, Dialog review. Compétence CDA #56. Total : 4064 tests |
