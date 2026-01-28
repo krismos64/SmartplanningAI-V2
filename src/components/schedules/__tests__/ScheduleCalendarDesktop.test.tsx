@@ -39,6 +39,9 @@ vi.mock('@/lib/actions/availabilities', () => ({
     mockCheckAvailabilityConflicts(...args) as Promise<unknown>,
 }))
 
+// Mock leaves actions (SP-415)
+vi.mock('@/lib/actions/leaves', () => ({}))
+
 // Mock Schedule-X components
 vi.mock('@schedule-x/react', () => ({
   useCalendarApp: vi.fn(() => ({
@@ -82,6 +85,7 @@ vi.mock('@schedule-x/events-service', () => ({
 // Import du composant APRÈS les mocks
 import { ScheduleCalendarDesktop } from '../ScheduleCalendarDesktop'
 import type { ScheduleWithRelations } from '@/lib/actions/schedules'
+import type { LeaveRequestWithEmployee } from '@/lib/actions/leaves'
 
 // ============================================================================
 // Données de test
@@ -403,5 +407,143 @@ describe('Drag & Drop Integration', () => {
 
       expect(screen.getByText(/glissez-déposez/i)).toBeInTheDocument()
     })
+  })
+})
+
+// ============================================================================
+// Tests Leave Requests Overlay (SP-415)
+// ============================================================================
+
+describe('Leave Requests Overlay (SP-415)', () => {
+  const mockLeaveRequests: LeaveRequestWithEmployee[] = [
+    {
+      id: 'leave-1',
+      employeeId: 'emp-1',
+      companyId: 'company-1',
+      type: 'PAID_LEAVE',
+      status: 'APPROVED',
+      startDate: new Date('2026-01-27'),
+      endDate: new Date('2026-01-30'),
+      days: 4,
+      halfDay: false,
+      halfDayPeriod: null,
+      reason: 'Vacances',
+      reviewComment: null,
+      reviewedById: null,
+      reviewedAt: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      employee: {
+        id: 'emp-1',
+        firstName: 'Jean',
+        lastName: 'Dupont',
+        email: 'jean@test.com',
+        teamId: 'team-1',
+      },
+    },
+    {
+      id: 'leave-2',
+      employeeId: 'emp-2',
+      companyId: 'company-1',
+      type: 'RTT',
+      status: 'APPROVED',
+      startDate: new Date('2026-01-28'),
+      endDate: new Date('2026-01-28'),
+      days: 1,
+      halfDay: false,
+      halfDayPeriod: null,
+      reason: null,
+      reviewComment: null,
+      reviewedById: null,
+      reviewedAt: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      employee: {
+        id: 'emp-2',
+        firstName: 'Marie',
+        lastName: 'Martin',
+        email: 'marie@test.com',
+        teamId: 'team-1',
+      },
+    },
+  ]
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mockCheckAvailabilityConflicts.mockResolvedValue({
+      success: true,
+      data: {
+        hasConflict: false,
+        conflicts: [],
+        hardConflicts: [],
+        softConflicts: [],
+      },
+    })
+  })
+
+  it('rend le calendrier avec les congés quand showLeaves=true', () => {
+    render(
+      <ScheduleCalendarDesktop
+        {...defaultProps}
+        leaveRequests={mockLeaveRequests}
+        showLeaves={true}
+      />
+    )
+
+    expect(screen.getByTestId('schedule-x-calendar')).toBeInTheDocument()
+  })
+
+  it('rend le calendrier sans erreur quand leaveRequests est vide', () => {
+    render(
+      <ScheduleCalendarDesktop
+        {...defaultProps}
+        leaveRequests={[]}
+        showLeaves={true}
+      />
+    )
+
+    expect(screen.getByTestId('schedule-x-calendar')).toBeInTheDocument()
+  })
+
+  it('rend le calendrier sans erreur quand showLeaves=false', () => {
+    render(
+      <ScheduleCalendarDesktop
+        {...defaultProps}
+        leaveRequests={mockLeaveRequests}
+        showLeaves={false}
+      />
+    )
+
+    expect(screen.getByTestId('schedule-x-calendar')).toBeInTheDocument()
+  })
+
+  it('accepte le callback onLeaveClick', () => {
+    const onLeaveClick = vi.fn()
+
+    render(
+      <ScheduleCalendarDesktop
+        {...defaultProps}
+        leaveRequests={mockLeaveRequests}
+        showLeaves={true}
+        onLeaveClick={onLeaveClick}
+      />
+    )
+
+    // Le callback est passé au calendrier - le clic est simulé dans Schedule-X
+    expect(screen.getByTestId('schedule-x-calendar')).toBeInTheDocument()
+  })
+
+  it('rend les schedules et les congés ensemble', () => {
+    render(
+      <ScheduleCalendarDesktop
+        {...defaultProps}
+        leaveRequests={mockLeaveRequests}
+        showLeaves={true}
+        showAvailabilities={true}
+      />
+    )
+
+    // Les deux types d'events sont combinés dans le calendrier
+    expect(screen.getByTestId('schedule-x-calendar')).toBeInTheDocument()
   })
 })
