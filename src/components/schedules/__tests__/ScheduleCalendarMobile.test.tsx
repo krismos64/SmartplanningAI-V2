@@ -240,8 +240,8 @@ describe('ScheduleCalendarMobile', () => {
         />
       )
 
-      // Le skeleton contient des éléments animés
-      const skeletons = document.querySelectorAll('.animate-pulse')
+      // Le skeleton utilise la classe sp-skeleton
+      const skeletons = document.querySelectorAll('.sp-skeleton')
       expect(skeletons.length).toBeGreaterThan(0)
     })
   })

@@ -100,7 +100,7 @@ describe('StatsGrid', () => {
   describe('Loading state', () => {
     it('affiche des skeletons en chargement', () => {
       const { container } = render(<StatsGrid stats={mockStats} isLoading />)
-      const skeletons = container.querySelectorAll('[class*="animate-pulse"]')
+      const skeletons = container.querySelectorAll('.sp-skeleton')
       expect(skeletons.length).toBeGreaterThan(0)
     })
 
