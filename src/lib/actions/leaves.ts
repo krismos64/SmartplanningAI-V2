@@ -41,8 +41,9 @@ import {
   sendLeaveApprovedEmail,
   sendLeaveRejectedEmail,
 } from '@/lib/email/templates/leave-decision'
+import { sendLeaveRequestedEmail } from '@/lib/email/templates/leave-requested'
 import type { ListActionResult, ListQueryParams } from '@/types'
-import type { LeaveEmailData } from '@/types'
+import type { LeaveEmailData, LeaveRequestedEmailData } from '@/types'
 
 // ============================================================================
 // Types
@@ -398,6 +399,19 @@ export async function createLeaveRequest(
         companyId: employee.companyId,
       },
     })
+
+    // SP-415: Notifier les managers de la nouvelle demande (en background)
+    notifyManagersOfNewLeaveRequest(
+      leaveRequest.id,
+      employee,
+      data.type,
+      data.startDate,
+      data.endDate,
+      days,
+      data.reason
+    ).catch((err) =>
+      console.error('[createLeaveRequest] Email notification error:', err)
+    )
 
     revalidatePath(LEAVE_PATH)
     return { success: true, data: leaveRequest, warning }
@@ -1048,5 +1062,92 @@ export async function checkLeaveConflicts(
   } catch (error) {
     const { error: message } = handlePrismaError(error)
     return { success: false, error: message }
+  }
+}
+
+// ============================================================================
+// 13. notifyManagersOfNewLeaveRequest - Helper pour envoi email aux managers
+// ============================================================================
+
+/**
+ * Notifie les managers de l'équipe d'une nouvelle demande de congé
+ * Fallback aux directeurs si aucun manager n'est trouvé
+ *
+ * @ticket SP-415
+ * @internal Cette fonction est appelée en background, elle ne doit pas bloquer
+ */
+async function notifyManagersOfNewLeaveRequest(
+  requestId: string,
+  employee: {
+    id: string
+    companyId: string
+    firstName: string
+    lastName: string
+    teamId: string | null
+  },
+  leaveType: LeaveType,
+  startDate: Date,
+  endDate: Date,
+  totalDays: number,
+  reason?: string
+): Promise<void> {
+  try {
+    const employeeName = `${employee.firstName} ${employee.lastName}`
+
+    // Chercher le(s) manager(s) de l'équipe
+    let managers: { email: string | null; firstName: string }[] = []
+
+    if (employee.teamId) {
+      // Trouver les managers de l'équipe via la relation managedTeams
+      const teamManagers = await prisma.employee.findMany({
+        where: {
+          managedTeams: { some: { id: employee.teamId } },
+          isActive: true,
+        },
+        select: { email: true, firstName: true },
+      })
+      managers = teamManagers
+    }
+
+    // Fallback : si aucun manager, notifier les directeurs de l'entreprise
+    if (managers.length === 0) {
+      const directors = await prisma.user.findMany({
+        where: {
+          companyId: employee.companyId,
+          role: UserRole.DIRECTOR,
+        },
+        select: {
+          email: true,
+          employee: { select: { firstName: true } },
+        },
+      })
+      managers = directors.map((d) => ({
+        email: d.email,
+        firstName: d.employee?.firstName ?? 'Directeur',
+      }))
+    }
+
+    // Envoyer un email à chaque manager/directeur
+    const emailPromises = managers
+      .filter((m) => m.email)
+      .map((manager) => {
+        const emailData: LeaveRequestedEmailData = {
+          managerEmail: manager.email!,
+          managerName: manager.firstName,
+          employeeName,
+          leaveType,
+          startDate,
+          endDate,
+          totalDays,
+          reason,
+          requestId,
+        }
+        return sendLeaveRequestedEmail(emailData)
+      })
+
+    await Promise.allSettled(emailPromises)
+  } catch (error) {
+    // Log mais ne pas propager l'erreur
+    console.error('[notifyManagersOfNewLeaveRequest] Error:', error)
   }
 }
