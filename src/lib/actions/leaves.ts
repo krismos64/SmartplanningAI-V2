@@ -85,7 +85,7 @@ const LEAVE_REQUEST_INCLUDE = {
   },
 } as const
 
-type LeaveRequestWithEmployee = LeaveRequest & {
+export type LeaveRequestWithEmployee = LeaveRequest & {
   employee: {
     id: string
     firstName: string
