@@ -398,7 +398,11 @@ export function LeavesPageContent({
 
   // Create button content
   const createButtonContent = (
-    <Button onClick={() => setIsCreateOpen(true)} disabled={!canCreate}>
+    <Button
+      onClick={() => setIsCreateOpen(true)}
+      disabled={!canCreate}
+      data-testid="create-leave-button"
+    >
       <Plus className="mr-2 h-4 w-4" />
       Nouvelle demande
     </Button>
@@ -463,7 +467,11 @@ export function LeavesPageContent({
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="list" className="mt-4">
+        <TabsContent
+          value="list"
+          className="mt-4"
+          data-testid="leaves-list-tab"
+        >
           {isMobile ? (
             <LeavesListMobile
               requests={requests}
@@ -491,7 +499,11 @@ export function LeavesPageContent({
           )}
         </TabsContent>
 
-        <TabsContent value="calendar" className="mt-4">
+        <TabsContent
+          value="calendar"
+          className="mt-4"
+          data-testid="leaves-calendar-tab"
+        >
           {teams.length > 0 ? (
             <LeaveCalendar
               month={calendarMonth}

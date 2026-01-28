@@ -120,6 +120,7 @@ export function LeaveReviewDialog({
               value={comment}
               onChange={(e) => setComment(e.target.value)}
               placeholder="Ajouter un commentaire..."
+              data-testid="review-comment"
             />
             {commentError && (
               <p className="mt-1 text-sm text-destructive">{commentError}</p>
@@ -132,6 +133,7 @@ export function LeaveReviewDialog({
             variant="destructive"
             onClick={handleReject}
             disabled={isPending}
+            data-testid="reject-button"
           >
             <XCircle className="mr-1 h-4 w-4" />
             Refuser
@@ -140,6 +142,7 @@ export function LeaveReviewDialog({
             onClick={handleApprove}
             disabled={isPending}
             className="bg-green-600 hover:bg-green-700"
+            data-testid="approve-button"
           >
             <CheckCircle className="mr-1 h-4 w-4" />
             Approuver
