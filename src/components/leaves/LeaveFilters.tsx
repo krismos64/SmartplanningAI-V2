@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState } from 'react'
 import { LeaveType, LeaveRequestStatus, UserRole } from '@prisma/client'
 import { X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -62,7 +62,6 @@ export function LeaveFilters({
       ? { from: filters.startDate, to: filters.endDate }
       : undefined
   )
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>(null)
 
   const canFilterByEmployee =
     currentUserRole === 'MANAGER' ||
@@ -121,12 +120,6 @@ export function LeaveFilters({
     setDateRange(undefined)
     onFiltersChange({})
   }
-
-  useEffect(() => {
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current)
-    }
-  }, [])
 
   return (
     <div className={cn('space-y-4', className)}>
