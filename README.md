@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 28 janvier 2026 (Sprint 13 - SP-408 Fondations congés : LeaveBalance, halfDay, 7 types de congés)
+- **Dernière mise à jour** : 28 janvier 2026 (Sprint 13 - SP-411 Composants UI Leave Management : 8 composants + 50 tests)
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -67,6 +67,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Dashboard Employee** (SP-145) : Page dashboard complète avec Server Components, redirection par rôle, 5 composants métier (Welcome, Stats, Schedule, LeaveBalance, QuickActions)
 - **Dashboard Director** (SP-147) : Page dashboard directeur avec Server Components, RBAC, 6 composants métier (Welcome, Stats, TeamsChart, TrendsChart, PendingLeaves, QuickActions)
 - **Dashboard Super Admin** (SP-148) : Page dashboard admin SaaS avec Server Components, protection SYSTEM_ADMIN, 7 composants (Welcome, Stats, MrrChart, SignupsChart, PlansChart, RecentCompanies, QuickActions)
+- **Leave Management UI** (SP-411) : 8 composants congés (LeaveTypeBadge, LeaveStatusBadge, LeaveBalanceCard, LeaveBalanceEditDialog, LeaveRequestCard, LeaveRequestForm, LeaveReviewDialog, LeaveConflictWarning)
 
 ### MVP (Phases 1-4)
 
@@ -1751,7 +1752,17 @@ Voir `/docs/database-schema.md` pour le détail complet.
   - cancelLeaveRequest avec recrédit solde via $transaction
   - getTeamAbsences, getLeaveStats, checkLeaveConflicts
   - Multi-tenant : companyId vérifié systématiquement
-- SP-411 à SP-416 : En attente (pages UI, workflow, notifications) 🚧
+- SP-411 : Composants UI Leave Management (50 tests) ✅
+  - 8 composants React : LeaveTypeBadge, LeaveStatusBadge, LeaveConflictWarning, LeaveBalanceCard, LeaveBalanceEditDialog, LeaveRequestCard, LeaveRequestForm, LeaveReviewDialog
+  - LeaveTypeBadge/LeaveStatusBadge : Badges avec icônes Lucide et couleurs par type/statut
+  - LeaveBalanceCard : Carte CP/RTT avec ProgressBar et seuils couleur (success/warning/destructive)
+  - LeaveBalanceEditDialog : Dialog RHF + Zod pour modifier les soldes (Director)
+  - LeaveRequestCard : Carte demande avec actions contextuelles par rôle (edit/cancel/review)
+  - LeaveRequestForm : Formulaire complet avec Calendar range, demi-journée, détection conflits équipe
+  - LeaveReviewDialog : Dialog approbation/refus avec commentaire obligatoire sur refus
+  - LeaveConflictWarning : Banner alerte quand >50% équipe absente
+  - Barrel export `src/components/leaves/index.ts`
+- SP-412 à SP-416 : En attente (pages UI, workflow, notifications) 🚧
 
 #### Phase 8+ : Notifications, IA... (À venir)
 
@@ -1969,7 +1980,7 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 
 | Catégorie                              | Coverage | Tests    |
 | -------------------------------------- | -------- | -------- |
-| **Global**                             | **~85%** | **3568** |
+| **Global**                             | **~85%** | **3618** |
 | loading                                | 100%     | 152      |
 | modals                                 | 100%     | 52       |
 | cards                                  | 77.09%   | 88       |
@@ -2022,6 +2033,13 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 | leave validation schemas (SP-409)      | 100%     | 22       |
 | leave-utils (SP-409)                   | 100%     | 23       |
 | leaves actions (SP-410)                | 100%     | 48       |
+| LeaveTypeBadge (SP-411)                | 100%     | 4        |
+| LeaveStatusBadge (SP-411)              | 100%     | 4        |
+| LeaveConflictWarning (SP-411)          | 100%     | 4        |
+| LeaveBalanceCard (SP-411)              | 100%     | 6        |
+| LeaveRequestCard (SP-411)              | 100%     | 11       |
+| LeaveRequestForm (SP-411)              | 100%     | 15       |
+| LeaveReviewDialog (SP-411)             | 100%     | 6        |
 
 ### Tests E2E
 
@@ -2392,7 +2410,7 @@ Merge main → Build Docker → Push GHCR → Deploy VPS (~8-10 min)
 
 - **CI** (`.github/workflows/ci.yml`) : Lint, Type-check, Tests unitaires, Build, Tests E2E (PR uniquement)
 - **CD** (`.github/workflows/cd.yml`) : Build image Docker, Push sur ghcr.io, Deploy via SSH
-- Tests unitaires sur tous les push (~2881 tests Vitest)
+- Tests unitaires sur tous les push (~3618 tests Vitest)
 - Tests E2E sur PR vers main (~347 tests Playwright actifs, 5 devices mobiles)
 - Déploiement automatique sur merge main ✅
 - Migrations Prisma automatiques
