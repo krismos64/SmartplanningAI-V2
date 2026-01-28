@@ -131,7 +131,7 @@ export function LeaveFilters({
             value={filters.status ?? 'all'}
             onValueChange={handleStatusChange}
           >
-            <SelectTrigger>
+            <SelectTrigger data-testid="filter-status">
               <SelectValue placeholder="Tous" />
             </SelectTrigger>
             <SelectContent>
@@ -152,7 +152,7 @@ export function LeaveFilters({
             value={filters.type ?? 'all'}
             onValueChange={handleTypeChange}
           >
-            <SelectTrigger>
+            <SelectTrigger data-testid="filter-type">
               <SelectValue placeholder="Tous" />
             </SelectTrigger>
             <SelectContent>
@@ -253,7 +253,12 @@ export function LeaveFilters({
 
         {/* Reset */}
         {activeFiltersCount > 0 && (
-          <Button variant="outline" onClick={handleReset} className="gap-2">
+          <Button
+            variant="outline"
+            onClick={handleReset}
+            className="gap-2"
+            data-testid="filter-reset"
+          >
             <X className="h-4 w-4" />
             Réinitialiser
             <Badge variant="secondary" className="ml-1">

@@ -56,7 +56,10 @@ export function LeaveRequestCard({
   const showReview = canManage && isPending && onReview
 
   return (
-    <Card className={cn(className)}>
+    <Card
+      className={cn(className)}
+      data-testid={`leave-request-card-${request.id}`}
+    >
       <CardHeader className="flex flex-row items-center justify-between gap-2 pb-2">
         <LeaveTypeBadge type={request.type} size="sm" />
         <LeaveStatusBadge status={request.status} size="sm" />

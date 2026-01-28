@@ -26,3 +26,6 @@ export {
 
 // Schedules Pages
 export { SchedulesPage } from './schedules.page'
+
+// Leaves Pages (SP-416)
+export { LeavesPage, type CreateLeaveData } from './leaves.page'

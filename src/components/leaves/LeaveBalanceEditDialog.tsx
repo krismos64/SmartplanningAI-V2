@@ -88,6 +88,7 @@ export function LeaveBalanceEditDialog({
                     <Input
                       type="number"
                       step="0.5"
+                      data-testid="cp-total-input"
                       {...field}
                       onChange={(e) =>
                         field.onChange(parseFloat(e.target.value) || 0)
@@ -112,6 +113,7 @@ export function LeaveBalanceEditDialog({
                     <Input
                       type="number"
                       step="0.5"
+                      data-testid="rtt-total-input"
                       {...field}
                       onChange={(e) =>
                         field.onChange(parseFloat(e.target.value) || 0)
