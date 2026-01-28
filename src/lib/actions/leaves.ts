@@ -904,7 +904,78 @@ export async function getLeaveStats(
 }
 
 // ============================================================================
-// 11. checkLeaveConflicts - Vérifier chevauchements équipe
+// 11. getAllLeaveBalances - Liste paginée des soldes (DIRECTOR)
+// ============================================================================
+
+type LeaveBalanceWithEmployee = LeaveBalance & {
+  employee: {
+    id: string
+    firstName: string
+    lastName: string
+    email: string | null
+    teamId: string | null
+    team: { id: string; name: string } | null
+  }
+  paidLeaveRemaining: number
+  rttRemaining: number
+}
+
+export async function getAllLeaveBalances(
+  year?: number,
+  params: ListQueryParams = {}
+): Promise<ListActionResult<LeaveBalanceWithEmployee>> {
+  const authResult = await getAuthenticatedUser(['DIRECTOR', 'SYSTEM_ADMIN'])
+  if (!authResult.success) return { success: false, error: authResult.error }
+  const { user } = authResult
+
+  try {
+    const targetYear = year ?? new Date().getFullYear()
+    const where: Record<string, unknown> = { year: targetYear }
+    if (user.companyId) where.companyId = user.companyId
+
+    const { skip, take, orderBy } = getPaginationParams(params)
+
+    const [rawData, total] = await Promise.all([
+      prisma.leaveBalance.findMany({
+        where,
+        include: {
+          employee: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              email: true,
+              teamId: true,
+              team: { select: { id: true, name: true } },
+            },
+          },
+        },
+        skip,
+        take,
+        orderBy: orderBy ?? { employee: { lastName: 'asc' } },
+      }),
+      prisma.leaveBalance.count({ where }),
+    ])
+
+    // Ajouter les champs calculés
+    const data = rawData.map((b) => ({
+      ...b,
+      paidLeaveRemaining: b.paidLeaveTotal - b.paidLeaveUsed,
+      rttRemaining: b.rttTotal - b.rttUsed,
+    }))
+
+    return {
+      success: true,
+      data: formatPaginatedResult(data, total, params),
+    }
+  } catch (error) {
+    const { error: message } = handlePrismaError(error)
+    return { success: false, error: message }
+  }
+}
+
+// ============================================================================
+// 12. checkLeaveConflicts - Vérifier chevauchements équipe
 // ============================================================================
 
 export async function checkLeaveConflicts(

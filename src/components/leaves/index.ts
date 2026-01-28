@@ -15,3 +15,7 @@ export { LeavesListMobile } from './LeavesListMobile'
 export { LeaveCalendar } from './LeaveCalendar'
 export { LeaveCalendarDay } from './LeaveCalendarDay'
 export { LeaveStatsBar } from './LeaveStatsBar'
+
+// SP-414 Components
+export { LeaveDetailCard } from './LeaveDetailCard'
+export { LeaveTimeline, type TimelineEvent } from './LeaveTimeline'
