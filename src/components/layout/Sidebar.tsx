@@ -122,7 +122,7 @@ const menuItems: MenuItem[] = [
     id: 'leaves',
     label: 'Congés',
     icon: Plane,
-    href: '/leaves',
+    href: '/app/dashboard/leaves',
     roles: ['DIRECTOR', 'MANAGER', 'EMPLOYEE'],
   },
   {
