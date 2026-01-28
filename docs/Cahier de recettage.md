@@ -14,7 +14,7 @@ Ce document trace l'historique complet des tests réalisés sur SmartPlanning. I
 | Pipeline CI/CD       | GitHub Actions                                         |
 | Responsable          | Christophe Mostefaoui                                  |
 | Date de création     | 4 décembre 2025                                        |
-| Dernière mise à jour | 27 janvier 2026                                        |
+| Dernière mise à jour | 28 janvier 2026                                        |
 
 ---
 
@@ -34,7 +34,7 @@ Dans le cadre du diplôme **CDA (Concepteur Développeur d'Applications)**, ce c
 | Métrique              | Objectif  | Atteint |
 | --------------------- | --------- | ------- |
 | Couverture globale    | ≥ 70%     | ✅ 85%  |
-| Tests unitaires       | ≥ 500     | ✅ 3475 |
+| Tests unitaires       | ≥ 500     | ✅ 3568 |
 | Tests E2E             | ≥ 50      | ✅ 446  |
 | Score Lighthouse A11y | ≥ 90%     | ✅ 95%  |
 | Anomalies critiques   | 0 en prod | ✅ 0    |
@@ -397,6 +397,9 @@ Ce tableau recense chaque campagne de tests significative (mise en production, f
 
 | Date       | Sprint    | Version/Commit | Tests unitaires | Tests E2E  | Couverture | Statut  | Notes                                                                                                                                                                                                                                                                                                          |
 | ---------- | --------- | -------------- | --------------- | ---------- | ---------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 28/01/2026 | Sprint 13 | SP-410         | 3568/3568 ✅    | 446/446 ✅ | ~85%       | ✅ PASS | 🆕 SP-410 Server Actions CRUD Congés. +48 tests unitaires. 11 actions RBAC : getLeaveRequests, getLeaveRequestById, createLeaveRequest, updateLeaveRequest, cancelLeaveRequest (recrédit solde), reviewLeaveRequest (transaction atomique + email), getLeaveBalance, updateLeaveBalance, getTeamAbsences, getLeaveStats, checkLeaveConflicts. Multi-tenant companyId. Total : 4014 tests |
+| 28/01/2026 | Sprint 13 | SP-409         | 3520/3520 ✅    | 446/446 ✅ | ~85%       | ✅ PASS | 🆕 SP-409 Validations Zod + Utilitaires Leave Management. +45 tests unitaires (validation: 22, leave-utils: 23). 6 schémas Zod (createLeaveRequest, updateLeaveRequest, updateLeaveBalance, leaveRequestFilters, enums). calculateWorkingDays (3 modes : MON_FRI, MON_SAT, ALL_DAYS). hasEnoughBalance, getRemainingBalance. Labels, couleurs, icônes UI. Total : 3966 tests |
+| 28/01/2026 | Sprint 13 | SP-408         | 3475/3475 ✅    | 446/446 ✅ | ~85%       | ✅ PASS | 🆕 SP-408 Fondations Prisma Congés. LeaveBalance model, halfDay/halfDayPeriod sur LeaveRequest, FAMILY_EVENT enum. Seed : 20 LeaveBalances + 6 nouvelles LeaveRequests. Total : 3921 tests |
 | 27/01/2026 | Sprint 12 | SP-406         | 3475/3475 ✅    | 446/446 ✅ | ~85%       | ✅ PASS | 🆕 SP-406 Améliorations Plannings. +16 tests E2E (schedules.spec.ts). WeeklyHoursPanel (compteur heures hebdo). Type REST (repos journée entière). Simplification statuts (DRAFT/PUBLISHED). Suppression en masse employés (BulkDeleteDialog). Nom entreprise dans Sidebar. Corrections boucles infinies React 19. Refonte CSS calendrier Schedule-X. Exports PDF/Excel avec filtres et heures. Downgrade @schedule-x 2.11.0 + patch-package. Email employé (migration Prisma). Total : 3921 tests |
 | 27/01/2026 | Sprint 12 | SP-404         | 3291/3291 ✅    | 430/430 ✅ | ~85%       | ✅ PASS | 🆕 SP-404 Export Excel Planning. +7 tests unitaires (generateScheduleExcel: 7). API Route GET `/api/schedules/export/excel` avec auth et RBAC (MANAGER/DIRECTOR). Générateur `generateScheduleExcel` via SheetJS : 3 feuilles (Planning détaillé, Résumé par employé, Statistiques). `ExportDropdown` mis à jour (Excel fonctionnel). Total : 3721 tests |
 | 27/01/2026 | Sprint 12 | SP-403         | 3284/3284 ✅    | 430/430 ✅ | ~85%       | ✅ PASS | 🆕 SP-403 Export PDF Planning. +6 tests unitaires (SchedulePdfDocument: 6). API Route GET `/api/schedules/export/pdf` avec auth et RBAC (MANAGER/DIRECTOR). Composant React PDF `SchedulePdfDocument` (A4 paysage, tableau employés × jours, légende 7 types). `ExportDropdown` dans toolbar schedules (PDF + placeholder Excel). Total : 3714 tests |
@@ -1618,8 +1621,11 @@ not-found.tsx (Server Component)
 | 26/01/2026 (SP-395)         | 3045            | 430       | 3475  | ~85%       | 🖥️ Page   |
 | 26/01/2026 (SP-396)         | 3063            | 430       | 3493  | ~85%       | 📈 +18   |
 | 27/01/2026 (SP-406)         | 3475            | 446       | 3921  | ~85%       | 📈 +428  |
+| 28/01/2026 (SP-408)         | 3475            | 446       | 3921  | ~85%       | ⚙️ Prisma |
+| 28/01/2026 (SP-409)         | 3520            | 446       | 3966  | ~85%       | 📈 +45   |
+| 28/01/2026 (SP-410)         | 3568            | 446       | 4014  | ~85%       | 📈 +48   |
 
-**Graphique d'évolution** : De 27 tests (04/12) à 3921 tests (27/01) = **+14422% de croissance** 🚀
+**Graphique d'évolution** : De 27 tests (04/12) à 4014 tests (28/01) = **+14766% de croissance** 🚀
 
 ---
 
@@ -1629,16 +1635,16 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
 
 | N°  | Compétence                                                       | Preuve                                                                                                                                      |
 | --- | ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | Tester les composants d'une application                          | 3475 tests unitaires documentés                                                                                                             |
+| 1   | Tester les composants d'une application                          | 3568 tests unitaires documentés                                                                                                             |
 | 2   | Contribuer à la qualité du code                                  | Couverture 85%, anomalies tracées                                                                                                           |
 | 3   | Documenter les procédures                                        | Procédure de recette formalisée                                                                                                             |
 | 4   | Utiliser une méthodologie                                        | Approche structurée par sprints                                                                                                             |
-| 5   | Développer des tests automatisés                                 | 3921 tests (unitaires + E2E)                                                                                                                |
+| 5   | Développer des tests automatisés                                 | 4014 tests (unitaires + E2E)                                                                                                                |
 | 6   | Sécuriser une application                                        | Tests RBAC (92 unitaires, 27 E2E), rate limiting, protection énumération                                                                    |
 | 7   | Concevoir une architecture logicielle                            | Pattern ServiceResult<T>, multi-tenant                                                                                                      |
 | 8   | Développer des composants métier                                 | 4 dashboards par rôle                                                                                                                       |
 | 9   | Réaliser des tests E2E cross-browser                             | Playwright multi-navigateurs                                                                                                                |
-| 10  | Implémenter des fonctionnalités CRUD                             | Server Actions Schedules (SP-394), Zod, React Hook Form                                                                                     |
+| 10  | Implémenter des fonctionnalités CRUD                             | Server Actions Schedules (SP-394) et Leave Management (SP-410), Zod, React Hook Form                                                        |
 | 11  | Implémenter un contrôle d'accès RBAC                             | 4 rôles, filtres dynamiques                                                                                                                 |
 | 12  | Gérer des relations many-to-many                                 | Pattern Prisma connect/disconnect                                                                                                           |
 | 13  | Implémenter une navigation dynamique                             | Breadcrumbs, Sidebar, Empty States                                                                                                          |
@@ -1682,6 +1688,8 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
 | 51  | Implémenter la suppression en masse avec confirmation            | BulkDeleteDialog avec sélection multiple DataTable, Server Action bulk delete RBAC, AlertDialog confirmation (SP-406) 🆕 |
 | 52  | Corriger les boucles infinies React 19                           | Diagnostic et fix useEffect/useCallback dépendances circulaires, stabilisation références avec useRef (SP-406) 🆕 |
 | 53  | Appliquer patch-package pour corriger une dépendance             | Downgrade @schedule-x 2.11.0, patch DragAndDrop typing, résolution conflit Temporal API polyfill (SP-406) 🆕 |
+| 54  | Concevoir des validations métier avec Zod et superRefine         | 6 schémas Zod congés avec règles métier (délai 48h, halfDay, commentaire obligatoire refus), calculateWorkingDays 3 modes (MON_FRI/MON_SAT/ALL_DAYS), hasEnoughBalance (SP-409) 🆕 |
+| 55  | Implémenter un workflow CRUD avec transactions atomiques         | 11 Server Actions congés RBAC 4 rôles, $transaction pour review (débit solde) et cancel (recrédit solde), emails non-bloquants post-transaction, checkLeaveConflicts >50% équipe (SP-410) 🆕 |
 
 ---
 
