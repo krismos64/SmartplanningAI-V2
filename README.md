@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 28 janvier 2026 (Sprint 13 - SP-413 Leaves Pages : page + orchestrateur + 18 tests)
+- **Dernière mise à jour** : 28 janvier 2026 (Sprint 13 - SP-414 Leave Detail + Balances : pages détail et soldes + 48 tests)
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -67,7 +67,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Dashboard Employee** (SP-145) : Page dashboard complète avec Server Components, redirection par rôle, 5 composants métier (Welcome, Stats, Schedule, LeaveBalance, QuickActions)
 - **Dashboard Director** (SP-147) : Page dashboard directeur avec Server Components, RBAC, 6 composants métier (Welcome, Stats, TeamsChart, TrendsChart, PendingLeaves, QuickActions)
 - **Dashboard Super Admin** (SP-148) : Page dashboard admin SaaS avec Server Components, protection SYSTEM_ADMIN, 7 composants (Welcome, Stats, MrrChart, SignupsChart, PlansChart, RecentCompanies, QuickActions)
-- **Leave Management UI** (SP-411/SP-412/SP-413) : 14 composants congés + page orchestrateur (LeaveTypeBadge, LeaveStatusBadge, LeaveBalanceCard, LeaveBalanceEditDialog, LeaveRequestCard, LeaveRequestForm, LeaveReviewDialog, LeaveConflictWarning, LeaveFilters, LeavesList, LeavesListMobile, LeaveCalendar, LeaveCalendarDay, LeaveStatsBar, LeavesPageContent)
+- **Leave Management UI** (SP-411/SP-412/SP-413/SP-414) : 16 composants congés + pages (LeaveTypeBadge, LeaveStatusBadge, LeaveBalanceCard, LeaveBalanceEditDialog, LeaveRequestCard, LeaveRequestForm, LeaveReviewDialog, LeaveConflictWarning, LeaveFilters, LeavesList, LeavesListMobile, LeaveCalendar, LeaveCalendarDay, LeaveStatsBar, LeaveDetailCard, LeaveTimeline) + pages orchestrateur, détail [id], balances
 
 ### MVP (Phases 1-4)
 
@@ -1774,6 +1774,11 @@ Voir `/docs/database-schema.md` pour le détail complet.
   - Route `/app/dashboard/leaves` avec metadata SEO (title, description, OpenGraph)
   - Server Component avec fetch initial (requests, stats, employees, teams)
   - LeavesPageContent : Client Component orchestrateur avec tabs (Liste/Calendrier)
+- SP-414 : Pages Détail et Balances (48 tests) ✅
+  - Route `/app/dashboard/leaves/[id]` : Page détail demande avec timeline événements
+  - Route `/app/dashboard/leaves/balances` : Gestion soldes CP/RTT (DIRECTOR only)
+  - LeaveDetailCard, LeaveTimeline : Composants détail avec historique
+  - getAllLeaveBalances : Server action liste paginée des soldes
   - Stats bar avec filtres rapides cliquables par statut
   - Filtres URL sync (searchParams) avec refetch automatique
   - Dialog création/édition (desktop) / Sheet (mobile) responsive
@@ -1998,7 +2003,7 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 
 | Catégorie                              | Coverage | Tests    |
 | -------------------------------------- | -------- | -------- |
-| **Global**                             | **~85%** | **3618** |
+| **Global**                             | **~85%** | **3666** |
 | loading                                | 100%     | 152      |
 | modals                                 | 100%     | 52       |
 | cards                                  | 77.09%   | 88       |
@@ -2064,6 +2069,10 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 | LeavesList (SP-412)                    | 100%     | 13       |
 | LeavesPageContent (SP-413)             | 100%     | 13       |
 | Sidebar leaves link (SP-413)           | 100%     | 5        |
+| LeaveDetailCard (SP-414)               | 100%     | 11       |
+| LeaveTimeline (SP-414)                 | 100%     | 9        |
+| LeaveDetailContent (SP-414)            | 100%     | 13       |
+| BalancesPageContent (SP-414)           | 100%     | 15       |
 
 ### Tests E2E
 
@@ -2434,7 +2443,7 @@ Merge main → Build Docker → Push GHCR → Deploy VPS (~8-10 min)
 
 - **CI** (`.github/workflows/ci.yml`) : Lint, Type-check, Tests unitaires, Build, Tests E2E (PR uniquement)
 - **CD** (`.github/workflows/cd.yml`) : Build image Docker, Push sur ghcr.io, Deploy via SSH
-- Tests unitaires sur tous les push (~3618 tests Vitest)
+- Tests unitaires sur tous les push (~3666 tests Vitest)
 - Tests E2E sur PR vers main (~347 tests Playwright actifs, 5 devices mobiles)
 - Déploiement automatique sur merge main ✅
 - Migrations Prisma automatiques
