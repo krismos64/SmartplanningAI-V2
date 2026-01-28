@@ -1626,8 +1626,9 @@ not-found.tsx (Server Component)
 | 28/01/2026 (SP-409)         | 3520            | 446       | 3966  | ~85%       | 📈 +45   |
 | 28/01/2026 (SP-410)         | 3568            | 446       | 4014  | ~85%       | 📈 +48   |
 | 28/01/2026 (SP-411)         | 3618            | 446       | 4064  | ~85%       | 📈 +50   |
+| 28/01/2026 (SP-412)         | 3657            | 446       | 4103  | ~85%       | 📈 +39   |
 
-**Graphique d'évolution** : De 27 tests (04/12) à 4064 tests (28/01) = **+14948% de croissance** 🚀
+**Graphique d'évolution** : De 27 tests (04/12) à 4103 tests (28/01) = **+15092% de croissance** 🚀
 
 ---
 
@@ -1637,11 +1638,11 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
 
 | N°  | Compétence                                                       | Preuve                                                                                                                                      |
 | --- | ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | Tester les composants d'une application                          | 3618 tests unitaires documentés                                                                                                             |
+| 1   | Tester les composants d'une application                          | 3657 tests unitaires documentés                                                                                                             |
 | 2   | Contribuer à la qualité du code                                  | Couverture 85%, anomalies tracées                                                                                                           |
 | 3   | Documenter les procédures                                        | Procédure de recette formalisée                                                                                                             |
 | 4   | Utiliser une méthodologie                                        | Approche structurée par sprints                                                                                                             |
-| 5   | Développer des tests automatisés                                 | 4064 tests (unitaires + E2E)                                                                                                                |
+| 5   | Développer des tests automatisés                                 | 4103 tests (unitaires + E2E)                                                                                                                |
 | 6   | Sécuriser une application                                        | Tests RBAC (92 unitaires, 27 E2E), rate limiting, protection énumération                                                                    |
 | 7   | Concevoir une architecture logicielle                            | Pattern ServiceResult<T>, multi-tenant                                                                                                      |
 | 8   | Développer des composants métier                                 | 4 dashboards par rôle                                                                                                                       |
@@ -1693,6 +1694,7 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
 | 54  | Concevoir des validations métier avec Zod et superRefine         | 6 schémas Zod congés avec règles métier (délai 48h, halfDay, commentaire obligatoire refus), calculateWorkingDays 3 modes (MON_FRI/MON_SAT/ALL_DAYS), hasEnoughBalance (SP-409) 🆕 |
 | 55  | Implémenter un workflow CRUD avec transactions atomiques         | 11 Server Actions congés RBAC 4 rôles, $transaction pour review (débit solde) et cancel (recrédit solde), emails non-bloquants post-transaction, checkLeaveConflicts >50% équipe (SP-410) 🆕 |
 | 56  | Concevoir des composants UI métier réutilisables                 | 8 composants Leave Management (badges, cards, formulaires, dialogs) avec React Hook Form + Zod, Calendar range react-day-picker, ProgressBar seuils couleur, actions contextuelles par rôle RBAC, détection conflits équipe temps réel (SP-411) 🆕 |
+| 57  | Implémenter des composants de visualisation données complexes    | 6 composants Liste & Calendrier (LeaveFilters filtres conditionnels par rôle, LeavesList DataTable TanStack v8 pagination manuelle, LeaveCalendar grille CSS Grid employés×jours colonne sticky, LeaveStatsBar badges cliquables avec compteurs) (SP-412) 🆕 |
 
 ---
 
@@ -1771,6 +1773,7 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
 | 20/01/2026 | 🆕 SP-302 Page 404 personnalisée : +40 tests unitaires, +8 tests E2E (48 total). NotFoundIllustration/NotFoundPage, animations Framer Motion (floating, orbit, stagger), accessibilité WCAG 2.1 AA, responsive mobile-first, dark mode. Compétences CDA #26 et #27 ajoutées. Justification technique Framer Motion vs CSS. Total : 2089 tests 🎉 |
 | 20/01/2026 | 🆕 SP-304 Error Boundary React : +22 tests unitaires, +5 tests E2E (27 total). react-error-boundary v5.0.0, ErrorBoundary/ErrorFallback, error.tsx/global-error.tsx Next.js, accessibilité WCAG 2.1 AA. Compétence CDA #25. Justification technique ajoutée. Total : 2041 tests 🎉                                                               |
 | 19/01/2026 | SP-301 : +40 tests templates Contact (ContactConfirmationEmail: 18, ContactNotificationEmail: 22). Complète SP-288. Compétence CDA #24 ajoutée. Total : 2014 tests                                                                                                                                                                               |
+| 28/01/2026 | SP-412 : +39 tests Composants Liste & Calendrier Congés (4 fichiers). 6 composants : LeaveStatsBar (badges filtres rapides), LeaveFilters (status/type/employé/équipe/période), LeaveCalendar (grille mensuelle employés×jours), LeaveCalendarDay (popover, demi-journée), LeavesList (DataTable TanStack v8), LeavesListMobile (cartes responsive). Total : 4103 tests |
 | 28/01/2026 | SP-411 : +50 tests Composants UI Leave Management (7 fichiers). 8 composants : LeaveTypeBadge, LeaveStatusBadge, LeaveConflictWarning, LeaveBalanceCard, LeaveRequestCard, LeaveRequestForm, LeaveReviewDialog, LeaveBalanceEditDialog. Badges Lucide, ProgressBar seuils, Calendar range, RHF+Zod, Dialog review. Compétence CDA #56. Total : 4064 tests |
 | 19/01/2026 | SP-300 : +48 tests Email Congé Validé/Refusé Phase 1 (templates: 28, fonctions: 20). Types LeaveType (6 types), templates LeaveApprovedEmail/LeaveRejectedEmail, fonctions sendLeaveApprovedEmail/sendLeaveRejectedEmail. Architecture modulaire découplée. Compétence CDA #23.                                                                  |
 | 19/01/2026 | SP-289 : +54 tests UX Contact (hook: 21, success: 12, error: 10, integration: 11), Framer Motion, state machine, compétence CDA #22                                                                                                                                                                                                              |
