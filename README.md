@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 28 janvier 2026 (Sprint 13 - SP-412 Leave List & Calendar : 6 composants + 39 tests)
+- **Dernière mise à jour** : 28 janvier 2026 (Sprint 13 - SP-413 Leaves Pages : page + orchestrateur + 18 tests)
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -67,7 +67,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Dashboard Employee** (SP-145) : Page dashboard complète avec Server Components, redirection par rôle, 5 composants métier (Welcome, Stats, Schedule, LeaveBalance, QuickActions)
 - **Dashboard Director** (SP-147) : Page dashboard directeur avec Server Components, RBAC, 6 composants métier (Welcome, Stats, TeamsChart, TrendsChart, PendingLeaves, QuickActions)
 - **Dashboard Super Admin** (SP-148) : Page dashboard admin SaaS avec Server Components, protection SYSTEM_ADMIN, 7 composants (Welcome, Stats, MrrChart, SignupsChart, PlansChart, RecentCompanies, QuickActions)
-- **Leave Management UI** (SP-411/SP-412) : 14 composants congés (LeaveTypeBadge, LeaveStatusBadge, LeaveBalanceCard, LeaveBalanceEditDialog, LeaveRequestCard, LeaveRequestForm, LeaveReviewDialog, LeaveConflictWarning, LeaveFilters, LeavesList, LeavesListMobile, LeaveCalendar, LeaveCalendarDay, LeaveStatsBar)
+- **Leave Management UI** (SP-411/SP-412/SP-413) : 14 composants congés + page orchestrateur (LeaveTypeBadge, LeaveStatusBadge, LeaveBalanceCard, LeaveBalanceEditDialog, LeaveRequestCard, LeaveRequestForm, LeaveReviewDialog, LeaveConflictWarning, LeaveFilters, LeavesList, LeavesListMobile, LeaveCalendar, LeaveCalendarDay, LeaveStatsBar, LeavesPageContent)
 
 ### MVP (Phases 1-4)
 
@@ -1770,7 +1770,17 @@ Voir `/docs/database-schema.md` pour le détail complet.
   - LeaveCalendarDay : Cellule calendrier avec Popover tooltip, support demi-journée (AM/PM), weekend grisé
   - LeavesList : DataTable TanStack Table v8 avec pagination manuelle, actions contextuelles par rôle
   - LeavesListMobile : Vue responsive en cartes avec "Voir plus" et compteur
-- SP-413 à SP-416 : En attente (pages UI, workflow, notifications) 🚧
+- SP-413 : Page Congés + Orchestrateur (18 tests) ✅
+  - Route `/app/dashboard/leaves` avec metadata SEO (title, description, OpenGraph)
+  - Server Component avec fetch initial (requests, stats, employees, teams)
+  - LeavesPageContent : Client Component orchestrateur avec tabs (Liste/Calendrier)
+  - Stats bar avec filtres rapides cliquables par statut
+  - Filtres URL sync (searchParams) avec refetch automatique
+  - Dialog création/édition (desktop) / Sheet (mobile) responsive
+  - Review dialog pour managers/directors
+  - Sidebar href corrigé `/app/dashboard/leaves`
+  - 18 tests unitaires (13 LeavesPageContent + 5 Sidebar)
+- SP-414 à SP-416 : En attente (workflow, notifications) 🚧
 
 #### Phase 8+ : Notifications, IA... (À venir)
 
@@ -2052,6 +2062,8 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 | LeaveFilters (SP-412)                  | 100%     | 10       |
 | LeaveCalendar (SP-412)                 | 100%     | 10       |
 | LeavesList (SP-412)                    | 100%     | 13       |
+| LeavesPageContent (SP-413)             | 100%     | 13       |
+| Sidebar leaves link (SP-413)           | 100%     | 5        |
 
 ### Tests E2E
 
