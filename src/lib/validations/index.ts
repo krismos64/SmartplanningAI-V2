@@ -28,3 +28,6 @@ export * from './schedule'
 
 // Availability schemas (SP-393)
 export * from './availability'
+
+// Leave schemas (SP-409)
+export * from './leave'
