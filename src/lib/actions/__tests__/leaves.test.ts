@@ -5,13 +5,13 @@
  */
 
 /* eslint-disable @typescript-eslint/unbound-method */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import {
   getLeaveRequests,
   getLeaveRequestById,
   createLeaveRequest,
-  updateLeaveRequest,
   cancelLeaveRequest,
   reviewLeaveRequest,
   getLeaveBalance,
@@ -156,7 +156,7 @@ beforeEach(() => {
 // ─── getLeaveRequests ─────────────────────────────────────────────
 
 describe('getLeaveRequests', () => {
-  it('refuse l\'accès si non authentifié', async () => {
+  it("refuse l'accès si non authentifié", async () => {
     vi.mocked(auth).mockResolvedValue(null as never)
     const result = await getLeaveRequests()
     expect(result.success).toBe(false)
@@ -164,7 +164,9 @@ describe('getLeaveRequests', () => {
 
   it('EMPLOYEE voit uniquement ses propres demandes', async () => {
     setupAuth('EMPLOYEE')
-    vi.mocked(prisma.leaveRequest.findMany).mockResolvedValue([mockLeaveRequest()] as never)
+    vi.mocked(prisma.leaveRequest.findMany).mockResolvedValue([
+      mockLeaveRequest(),
+    ] as never)
     vi.mocked(prisma.leaveRequest.count).mockResolvedValue(1 as never)
 
     const result = await getLeaveRequests()
@@ -176,7 +178,7 @@ describe('getLeaveRequests', () => {
     )
   })
 
-  it('DIRECTOR voit toutes les demandes de l\'entreprise', async () => {
+  it("DIRECTOR voit toutes les demandes de l'entreprise", async () => {
     setupAuth('DIRECTOR', DIRECTOR_USER_ID)
     vi.mocked(prisma.leaveRequest.findMany).mockResolvedValue([] as never)
     vi.mocked(prisma.leaveRequest.count).mockResolvedValue(0 as never)
@@ -251,7 +253,9 @@ describe('getLeaveRequests', () => {
 describe('getLeaveRequestById', () => {
   it('retourne la demande si accès autorisé', async () => {
     setupAuth('EMPLOYEE')
-    vi.mocked(prisma.leaveRequest.findUnique).mockResolvedValue(mockLeaveRequest() as never)
+    vi.mocked(prisma.leaveRequest.findUnique).mockResolvedValue(
+      mockLeaveRequest() as never
+    )
 
     const result = await getLeaveRequestById('clleave0000000000001')
     expect(result.success).toBe(true)
@@ -300,10 +304,14 @@ describe('createLeaveRequest', () => {
         email: 'jean@test.com',
         teamId: TEAM_ID,
       } as never) // employee check
-    vi.mocked(prisma.leaveBalance.findUnique).mockResolvedValue(mockBalance() as never)
+    vi.mocked(prisma.leaveBalance.findUnique).mockResolvedValue(
+      mockBalance() as never
+    )
     vi.mocked(prisma.leaveRequest.findMany).mockResolvedValue([] as never) // conflict check
     vi.mocked(prisma.employee.count).mockResolvedValue(5 as never) // team count
-    vi.mocked(prisma.leaveRequest.create).mockResolvedValue(mockLeaveRequest() as never)
+    vi.mocked(prisma.leaveRequest.create).mockResolvedValue(
+      mockLeaveRequest() as never
+    )
 
     const result = await createLeaveRequest(validInput)
     expect(result.success).toBe(true)
@@ -365,14 +373,19 @@ describe('createLeaveRequest', () => {
         email: 'jean@test.com',
         teamId: null,
       } as never)
-    vi.mocked(prisma.leaveRequest.create).mockResolvedValue(mockLeaveRequest({ type: 'UNPAID_LEAVE' }) as never)
+    vi.mocked(prisma.leaveRequest.create).mockResolvedValue(
+      mockLeaveRequest({ type: 'UNPAID_LEAVE' }) as never
+    )
 
-    const result = await createLeaveRequest({ ...validInput, type: 'UNPAID_LEAVE' })
+    const result = await createLeaveRequest({
+      ...validInput,
+      type: 'UNPAID_LEAVE',
+    })
     expect(result.success).toBe(true)
     expect(prisma.leaveBalance.findUnique).not.toHaveBeenCalled()
   })
 
-  it('refuse pour un employé d\'une autre entreprise', async () => {
+  it("refuse pour un employé d'une autre entreprise", async () => {
     setupAuth('EMPLOYEE')
     vi.mocked(prisma.employee.findUnique)
       .mockResolvedValueOnce({ id: EMPLOYEE_ID, managedTeams: [] } as never)
@@ -402,7 +415,10 @@ describe('createLeaveRequest', () => {
         teamId: null,
       } as never)
 
-    const result = await createLeaveRequest({ ...validInput, employeeId: 'other_employee' })
+    const result = await createLeaveRequest({
+      ...validInput,
+      employeeId: 'other_employee',
+    })
     expect(result.success).toBe(false)
   })
 
@@ -418,8 +434,12 @@ describe('createLeaveRequest', () => {
         email: 'jean@test.com',
         teamId: null,
       } as never) // employee check
-    vi.mocked(prisma.leaveBalance.findUnique).mockResolvedValue(mockBalance() as never)
-    vi.mocked(prisma.leaveRequest.create).mockResolvedValue(mockLeaveRequest({ days: 0.5, halfDay: true }) as never)
+    vi.mocked(prisma.leaveBalance.findUnique).mockResolvedValue(
+      mockBalance() as never
+    )
+    vi.mocked(prisma.leaveRequest.create).mockResolvedValue(
+      mockLeaveRequest({ days: 0.5, halfDay: true }) as never
+    )
 
     const result = await createLeaveRequest({
       ...validInput,
@@ -448,12 +468,18 @@ describe('reviewLeaveRequest', () => {
   it('MANAGER peut approuver une demande de son équipe', async () => {
     setupAuth('MANAGER', MANAGER_USER_ID)
     // findUnique is called again inside reviewLeaveRequest for the leave request
-    vi.mocked(prisma.leaveRequest.findUnique).mockResolvedValue(mockLeaveRequest() as never)
+    vi.mocked(prisma.leaveRequest.findUnique).mockResolvedValue(
+      mockLeaveRequest() as never
+    )
     vi.mocked(prisma.$transaction).mockImplementation(async (fn) => {
       if (typeof fn === 'function') {
         // Interactive transaction - provide mock tx
         const tx = {
-          leaveRequest: { update: vi.fn().mockResolvedValue(mockLeaveRequest({ status: 'APPROVED' })) },
+          leaveRequest: {
+            update: vi
+              .fn()
+              .mockResolvedValue(mockLeaveRequest({ status: 'APPROVED' })),
+          },
           leaveBalance: { upsert: vi.fn().mockResolvedValue(mockBalance()) },
         }
         return fn(tx as never)
@@ -470,7 +496,9 @@ describe('reviewLeaveRequest', () => {
   it('MANAGER ne peut pas approuver une demande hors équipe', async () => {
     setupAuth('MANAGER', MANAGER_USER_ID)
     vi.mocked(prisma.leaveRequest.findUnique).mockResolvedValue(
-      mockLeaveRequest({ employee: { ...mockLeaveRequest().employee, teamId: 'other_team' } }) as never
+      mockLeaveRequest({
+        employee: { ...mockLeaveRequest().employee, teamId: 'other_team' },
+      }) as never
     )
 
     const result = await reviewLeaveRequest('clleave0000000000001', {
@@ -479,10 +507,14 @@ describe('reviewLeaveRequest', () => {
     expect(result.success).toBe(false)
   })
 
-  it('DIRECTOR peut approuver toute demande de l\'entreprise', async () => {
+  it("DIRECTOR peut approuver toute demande de l'entreprise", async () => {
     setupAuth('DIRECTOR', DIRECTOR_USER_ID)
-    vi.mocked(prisma.leaveRequest.findUnique).mockResolvedValue(mockLeaveRequest() as never)
-    vi.mocked(prisma.$transaction).mockResolvedValue(mockLeaveRequest({ status: 'APPROVED' }) as never)
+    vi.mocked(prisma.leaveRequest.findUnique).mockResolvedValue(
+      mockLeaveRequest() as never
+    )
+    vi.mocked(prisma.$transaction).mockResolvedValue(
+      mockLeaveRequest({ status: 'APPROVED' }) as never
+    )
 
     const result = await reviewLeaveRequest('clleave0000000000001', {
       status: 'APPROVED',
@@ -500,8 +532,12 @@ describe('reviewLeaveRequest', () => {
 
   it('accepte un refus avec commentaire', async () => {
     setupAuth('MANAGER', MANAGER_USER_ID)
-    vi.mocked(prisma.leaveRequest.findUnique).mockResolvedValue(mockLeaveRequest() as never)
-    vi.mocked(prisma.$transaction).mockResolvedValue(mockLeaveRequest({ status: 'REJECTED' }) as never)
+    vi.mocked(prisma.leaveRequest.findUnique).mockResolvedValue(
+      mockLeaveRequest() as never
+    )
+    vi.mocked(prisma.$transaction).mockResolvedValue(
+      mockLeaveRequest({ status: 'REJECTED' }) as never
+    )
 
     const result = await reviewLeaveRequest('clleave0000000000001', {
       status: 'REJECTED',
@@ -537,7 +573,9 @@ describe('reviewLeaveRequest', () => {
 describe('cancelLeaveRequest', () => {
   it('annule une demande PENDING sans recrédit', async () => {
     setupAuth('EMPLOYEE')
-    vi.mocked(prisma.leaveRequest.findUnique).mockResolvedValue(mockLeaveRequest() as never)
+    vi.mocked(prisma.leaveRequest.findUnique).mockResolvedValue(
+      mockLeaveRequest() as never
+    )
     vi.mocked(prisma.leaveRequest.update).mockResolvedValue(
       mockLeaveRequest({ status: 'CANCELLED' }) as never
     )
@@ -577,7 +615,7 @@ describe('cancelLeaveRequest', () => {
     expect(prisma.$transaction).toHaveBeenCalled()
   })
 
-  it('refuse l\'annulation par un non-owner', async () => {
+  it("refuse l'annulation par un non-owner", async () => {
     setupAuth('EMPLOYEE')
     vi.mocked(prisma.leaveRequest.findUnique).mockResolvedValue(
       mockLeaveRequest({ employeeId: 'other_employee' }) as never
@@ -587,7 +625,7 @@ describe('cancelLeaveRequest', () => {
     expect(result.success).toBe(false)
   })
 
-  it('refuse l\'annulation d\'une demande déjà annulée', async () => {
+  it("refuse l'annulation d'une demande déjà annulée", async () => {
     setupAuth('EMPLOYEE')
     vi.mocked(prisma.leaveRequest.findUnique).mockResolvedValue(
       mockLeaveRequest({ status: 'CANCELLED' }) as never
@@ -597,7 +635,7 @@ describe('cancelLeaveRequest', () => {
     expect(result.success).toBe(false)
   })
 
-  it('refuse l\'annulation d\'une demande refusée', async () => {
+  it("refuse l'annulation d'une demande refusée", async () => {
     setupAuth('EMPLOYEE')
     vi.mocked(prisma.leaveRequest.findUnique).mockResolvedValue(
       mockLeaveRequest({ status: 'REJECTED' }) as never
@@ -611,7 +649,7 @@ describe('cancelLeaveRequest', () => {
 // ─── getLeaveBalance ──────────────────────────────────────────────
 
 describe('getLeaveBalance', () => {
-  it('retourne le solde de l\'employé connecté', async () => {
+  it("retourne le solde de l'employé connecté", async () => {
     setupAuth('EMPLOYEE')
     const balance = mockBalance()
     vi.mocked(prisma.leaveBalance.upsert).mockResolvedValue(balance as never)
@@ -634,17 +672,24 @@ describe('getLeaveBalance', () => {
     setupAuth('MANAGER', MANAGER_USER_ID)
     // Mock pour la vérification RBAC du target employee
     vi.mocked(prisma.employee.findUnique)
-      .mockResolvedValueOnce({ id: MANAGER_EMPLOYEE_ID, managedTeams: [{ id: TEAM_ID }] } as never) // auth
+      .mockResolvedValueOnce({
+        id: MANAGER_EMPLOYEE_ID,
+        managedTeams: [{ id: TEAM_ID }],
+      } as never) // auth
       .mockResolvedValueOnce({ teamId: TEAM_ID } as never) // RBAC check
-    vi.mocked(prisma.leaveBalance.upsert).mockResolvedValue(mockBalance() as never)
+    vi.mocked(prisma.leaveBalance.upsert).mockResolvedValue(
+      mockBalance() as never
+    )
 
     const result = await getLeaveBalance(EMPLOYEE_ID)
     expect(result.success).toBe(true)
   })
 
-  it('DIRECTOR peut voir tout solde de l\'entreprise', async () => {
+  it("DIRECTOR peut voir tout solde de l'entreprise", async () => {
     setupAuth('DIRECTOR', DIRECTOR_USER_ID)
-    vi.mocked(prisma.leaveBalance.upsert).mockResolvedValue(mockBalance() as never)
+    vi.mocked(prisma.leaveBalance.upsert).mockResolvedValue(
+      mockBalance() as never
+    )
 
     const result = await getLeaveBalance(EMPLOYEE_ID)
     expect(result.success).toBe(true)
@@ -657,33 +702,49 @@ describe('updateLeaveBalance', () => {
   it('DIRECTOR peut modifier un solde', async () => {
     setupAuth('DIRECTOR', DIRECTOR_USER_ID)
     vi.mocked(prisma.employee.findUnique)
-      .mockResolvedValueOnce({ id: MANAGER_EMPLOYEE_ID, managedTeams: [] } as never) // auth
+      .mockResolvedValueOnce({
+        id: MANAGER_EMPLOYEE_ID,
+        managedTeams: [],
+      } as never) // auth
       .mockResolvedValueOnce({ companyId: COMPANY_ID } as never) // employee check
-    vi.mocked(prisma.leaveBalance.upsert).mockResolvedValue(mockBalance({ paidLeaveTotal: 30 }) as never)
+    vi.mocked(prisma.leaveBalance.upsert).mockResolvedValue(
+      mockBalance({ paidLeaveTotal: 30 }) as never
+    )
 
-    const result = await updateLeaveBalance(EMPLOYEE_ID, 2026, { paidLeaveTotal: 30 })
+    const result = await updateLeaveBalance(EMPLOYEE_ID, 2026, {
+      paidLeaveTotal: 30,
+    })
     expect(result.success).toBe(true)
   })
 
   it('MANAGER ne peut pas modifier un solde', async () => {
     setupAuth('MANAGER', MANAGER_USER_ID)
-    const result = await updateLeaveBalance(EMPLOYEE_ID, 2026, { paidLeaveTotal: 30 })
+    const result = await updateLeaveBalance(EMPLOYEE_ID, 2026, {
+      paidLeaveTotal: 30,
+    })
     expect(result.success).toBe(false)
   })
 
   it('EMPLOYEE ne peut pas modifier un solde', async () => {
     setupAuth('EMPLOYEE')
-    const result = await updateLeaveBalance(EMPLOYEE_ID, 2026, { paidLeaveTotal: 30 })
+    const result = await updateLeaveBalance(EMPLOYEE_ID, 2026, {
+      paidLeaveTotal: 30,
+    })
     expect(result.success).toBe(false)
   })
 
-  it('refuse si employé d\'une autre entreprise', async () => {
+  it("refuse si employé d'une autre entreprise", async () => {
     setupAuth('DIRECTOR', DIRECTOR_USER_ID)
     vi.mocked(prisma.employee.findUnique)
-      .mockResolvedValueOnce({ id: MANAGER_EMPLOYEE_ID, managedTeams: [] } as never)
+      .mockResolvedValueOnce({
+        id: MANAGER_EMPLOYEE_ID,
+        managedTeams: [],
+      } as never)
       .mockResolvedValueOnce({ companyId: 'other_company' } as never)
 
-    const result = await updateLeaveBalance(EMPLOYEE_ID, 2026, { paidLeaveTotal: 30 })
+    const result = await updateLeaveBalance(EMPLOYEE_ID, 2026, {
+      paidLeaveTotal: 30,
+    })
     expect(result.success).toBe(false)
   })
 })
@@ -693,7 +754,9 @@ describe('updateLeaveBalance', () => {
 describe('getTeamAbsences', () => {
   it('retourne les absences APPROVED de la période', async () => {
     setupAuth('MANAGER', MANAGER_USER_ID)
-    vi.mocked(prisma.leaveRequest.findMany).mockResolvedValue([mockLeaveRequest({ status: 'APPROVED' })] as never)
+    vi.mocked(prisma.leaveRequest.findMany).mockResolvedValue([
+      mockLeaveRequest({ status: 'APPROVED' }),
+    ] as never)
 
     const result = await getTeamAbsences(TEAM_ID, new Date(), futureDate(30))
     expect(result.success).toBe(true)
@@ -704,7 +767,11 @@ describe('getTeamAbsences', () => {
 
   it('MANAGER ne peut voir que son équipe', async () => {
     setupAuth('MANAGER', MANAGER_USER_ID)
-    const result = await getTeamAbsences('other_team', new Date(), futureDate(30))
+    const result = await getTeamAbsences(
+      'other_team',
+      new Date(),
+      futureDate(30)
+    )
     expect(result.success).toBe(false)
   })
 
@@ -716,7 +783,7 @@ describe('getTeamAbsences', () => {
     expect(result.success).toBe(true)
   })
 
-  it('EMPLOYEE ne peut pas voir les absences d\'équipe', async () => {
+  it("EMPLOYEE ne peut pas voir les absences d'équipe", async () => {
     setupAuth('EMPLOYEE')
     const result = await getTeamAbsences(TEAM_ID, new Date(), futureDate(30))
     expect(result.success).toBe(false)
@@ -757,13 +824,19 @@ describe('checkLeaveConflicts', () => {
   it('retourne hasConflict=false si <50% absents', async () => {
     // Note: checkLeaveConflicts calls prisma.employee.findUnique internally
     // We need to set up auth first, then mock the internal calls
-    vi.mocked(prisma.employee.findUnique).mockResolvedValue({ teamId: TEAM_ID } as never)
+    vi.mocked(prisma.employee.findUnique).mockResolvedValue({
+      teamId: TEAM_ID,
+    } as never)
     vi.mocked(prisma.employee.count).mockResolvedValue(10 as never)
     vi.mocked(prisma.leaveRequest.findMany).mockResolvedValue([
       { employee: { firstName: 'Marie', lastName: 'Martin' } },
     ] as never)
 
-    const result = await checkLeaveConflicts(EMPLOYEE_ID, futureDate(5), futureDate(10))
+    const result = await checkLeaveConflicts(
+      EMPLOYEE_ID,
+      futureDate(5),
+      futureDate(10)
+    )
     expect(result.success).toBe(true)
     if (result.success) {
       expect(result.data.hasConflict).toBe(false)
@@ -772,14 +845,20 @@ describe('checkLeaveConflicts', () => {
   })
 
   it('retourne hasConflict=true si >50% absents', async () => {
-    vi.mocked(prisma.employee.findUnique).mockResolvedValue({ teamId: TEAM_ID } as never)
+    vi.mocked(prisma.employee.findUnique).mockResolvedValue({
+      teamId: TEAM_ID,
+    } as never)
     vi.mocked(prisma.employee.count).mockResolvedValue(4 as never)
     vi.mocked(prisma.leaveRequest.findMany).mockResolvedValue([
       { employee: { firstName: 'Marie', lastName: 'Martin' } },
       { employee: { firstName: 'Paul', lastName: 'Durand' } },
     ] as never)
 
-    const result = await checkLeaveConflicts(EMPLOYEE_ID, futureDate(5), futureDate(10))
+    const result = await checkLeaveConflicts(
+      EMPLOYEE_ID,
+      futureDate(5),
+      futureDate(10)
+    )
     expect(result.success).toBe(true)
     if (result.success) {
       expect(result.data.hasConflict).toBe(true)
@@ -788,10 +867,16 @@ describe('checkLeaveConflicts', () => {
     }
   })
 
-  it('retourne hasConflict=false si pas d\'équipe', async () => {
-    vi.mocked(prisma.employee.findUnique).mockResolvedValue({ teamId: null } as never)
+  it("retourne hasConflict=false si pas d'équipe", async () => {
+    vi.mocked(prisma.employee.findUnique).mockResolvedValue({
+      teamId: null,
+    } as never)
 
-    const result = await checkLeaveConflicts(EMPLOYEE_ID, futureDate(5), futureDate(10))
+    const result = await checkLeaveConflicts(
+      EMPLOYEE_ID,
+      futureDate(5),
+      futureDate(10)
+    )
     expect(result.success).toBe(true)
     if (result.success) {
       expect(result.data.hasConflict).toBe(false)

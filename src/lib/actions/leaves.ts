@@ -41,13 +41,8 @@ import {
   sendLeaveApprovedEmail,
   sendLeaveRejectedEmail,
 } from '@/lib/email/templates/leave-decision'
-import type {
-  CrudActionResult,
-  ListActionResult,
-  PaginatedResult,
-  ListQueryParams,
-} from '@/types'
-import type { LeaveEmailData, LeaveRejectedEmailData } from '@/types'
+import type { ListActionResult, ListQueryParams } from '@/types'
+import type { LeaveEmailData } from '@/types'
 
 // ============================================================================
 // Types
@@ -71,17 +66,32 @@ type ActionResult<T> =
   | { success: false; error: string; field?: string }
 
 /** Types de congé qui décomptent un solde */
-const LEAVE_TYPES_WITH_BALANCE: LeaveType[] = [LeaveType.PAID_LEAVE, LeaveType.RTT]
+const LEAVE_TYPES_WITH_BALANCE: LeaveType[] = [
+  LeaveType.PAID_LEAVE,
+  LeaveType.RTT,
+]
 
 /** Include standard pour les demandes de congé */
 const LEAVE_REQUEST_INCLUDE = {
   employee: {
-    select: { id: true, firstName: true, lastName: true, email: true, teamId: true },
+    select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      email: true,
+      teamId: true,
+    },
   },
 } as const
 
 type LeaveRequestWithEmployee = LeaveRequest & {
-  employee: { id: string; firstName: string; lastName: string; email: string; teamId: string | null }
+  employee: {
+    id: string
+    firstName: string
+    lastName: string
+    email: string
+    teamId: string | null
+  }
 }
 
 type LeaveBalanceWithRemaining = LeaveBalance & {
@@ -106,7 +116,12 @@ type ConflictCheckResult = {
 // Auth + RBAC
 // ============================================================================
 
-const ALL_ROLES: UserRole[] = ['SYSTEM_ADMIN', 'DIRECTOR', 'MANAGER', 'EMPLOYEE']
+const ALL_ROLES: UserRole[] = [
+  'SYSTEM_ADMIN',
+  'DIRECTOR',
+  'MANAGER',
+  'EMPLOYEE',
+]
 
 async function getAuthenticatedUser(
   allowedRoles: UserRole[] = ALL_ROLES
@@ -115,12 +130,18 @@ async function getAuthenticatedUser(
     const session = await auth()
 
     if (!session?.user?.id) {
-      return { success: false, error: 'Vous devez être connecté pour effectuer cette action' }
+      return {
+        success: false,
+        error: 'Vous devez être connecté pour effectuer cette action',
+      }
     }
 
     const role = session.user.role
     if (!allowedRoles.includes(role)) {
-      return { success: false, error: "Vous n'avez pas les permissions nécessaires" }
+      return {
+        success: false,
+        error: "Vous n'avez pas les permissions nécessaires",
+      }
     }
 
     const userId = session.user.id
@@ -192,7 +213,8 @@ export async function getLeaveRequests(
     // Valider les filtres si fournis
     if (filters) {
       const validation = validateData(leaveRequestFiltersSchema, filters)
-      if (!validation.success) return { success: false, error: validation.error }
+      if (!validation.success)
+        return { success: false, error: validation.error }
     }
 
     const rbacWhere = buildLeaveRBACWhere(user)
@@ -260,7 +282,10 @@ export async function getLeaveRequestById(
     }
 
     // Vérification RBAC
-    if (user.role === 'EMPLOYEE' && leaveRequest.employeeId !== user.employeeId) {
+    if (
+      user.role === 'EMPLOYEE' &&
+      leaveRequest.employeeId !== user.employeeId
+    ) {
       return { success: false, error: "Vous n'avez pas accès à cette demande" }
     }
     if (
@@ -291,14 +316,22 @@ export async function createLeaveRequest(
 
   // Validation Zod
   const validation = validateData(createLeaveRequestSchema, input)
-  if (!validation.success) return { success: false, error: validation.error, field: validation.field }
+  if (!validation.success)
+    return { success: false, error: validation.error, field: validation.field }
   const data = validation.data
 
   try {
     // Vérifier que l'employé existe et appartient à la même entreprise
     const employee = await prisma.employee.findUnique({
       where: { id: data.employeeId },
-      select: { id: true, companyId: true, firstName: true, lastName: true, email: true, teamId: true },
+      select: {
+        id: true,
+        companyId: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        teamId: true,
+      },
     })
 
     if (!employee) {
@@ -310,11 +343,18 @@ export async function createLeaveRequest(
 
     // Seul le propriétaire ou un supérieur peut créer une demande
     if (user.role === 'EMPLOYEE' && user.employeeId !== data.employeeId) {
-      return { success: false, error: 'Vous ne pouvez créer une demande que pour vous-même' }
+      return {
+        success: false,
+        error: 'Vous ne pouvez créer une demande que pour vous-même',
+      }
     }
 
     // Calculer les jours ouvrés
-    const days = calculateWorkingDays(data.startDate, data.endDate, data.halfDay)
+    const days = calculateWorkingDays(
+      data.startDate,
+      data.endDate,
+      data.halfDay
+    )
 
     // Vérifier le solde si CP ou RTT
     if (LEAVE_TYPES_WITH_BALANCE.includes(data.type)) {
@@ -324,7 +364,8 @@ export async function createLeaveRequest(
       })
 
       if (balance && !hasEnoughBalance(balance, data.type, days)) {
-        const typeLabel = data.type === LeaveType.PAID_LEAVE ? 'congés payés' : 'RTT'
+        const typeLabel =
+          data.type === LeaveType.PAID_LEAVE ? 'congés payés' : 'RTT'
         return { success: false, error: `Solde de ${typeLabel} insuffisant` }
       }
     }
@@ -379,7 +420,8 @@ export async function updateLeaveRequest(
   const { user } = authResult
 
   const validation = validateData(createLeaveRequestSchema, input)
-  if (!validation.success) return { success: false, error: validation.error, field: validation.field }
+  if (!validation.success)
+    return { success: false, error: validation.error, field: validation.field }
   const data = validation.data
 
   try {
@@ -388,15 +430,25 @@ export async function updateLeaveRequest(
 
     // Seul le propriétaire peut modifier
     if (existing.employeeId !== user.employeeId) {
-      return { success: false, error: 'Vous ne pouvez modifier que vos propres demandes' }
+      return {
+        success: false,
+        error: 'Vous ne pouvez modifier que vos propres demandes',
+      }
     }
 
     // Seulement si PENDING
     if (existing.status !== LeaveRequestStatus.PENDING) {
-      return { success: false, error: 'Seules les demandes en attente peuvent être modifiées' }
+      return {
+        success: false,
+        error: 'Seules les demandes en attente peuvent être modifiées',
+      }
     }
 
-    const days = calculateWorkingDays(data.startDate, data.endDate, data.halfDay)
+    const days = calculateWorkingDays(
+      data.startDate,
+      data.endDate,
+      data.halfDay
+    )
 
     // Revérifier le solde
     if (LEAVE_TYPES_WITH_BALANCE.includes(data.type)) {
@@ -447,7 +499,10 @@ export async function cancelLeaveRequest(
 
     // Seul le propriétaire peut annuler
     if (leaveRequest.employeeId !== user.employeeId) {
-      return { success: false, error: 'Vous ne pouvez annuler que vos propres demandes' }
+      return {
+        success: false,
+        error: 'Vous ne pouvez annuler que vos propres demandes',
+      }
     }
 
     // Vérifier le statut
@@ -455,7 +510,10 @@ export async function cancelLeaveRequest(
       return { success: false, error: 'Cette demande est déjà annulée' }
     }
     if (leaveRequest.status === LeaveRequestStatus.REJECTED) {
-      return { success: false, error: 'Impossible d\u2019annuler une demande refusée' }
+      return {
+        success: false,
+        error: 'Impossible d\u2019annuler une demande refusée',
+      }
     }
 
     // Si APPROVED et type avec solde → recrédit via transaction
@@ -463,9 +521,14 @@ export async function cancelLeaveRequest(
       leaveRequest.status === LeaveRequestStatus.APPROVED &&
       LEAVE_TYPES_WITH_BALANCE.includes(leaveRequest.type)
     ) {
-      const days = calculateWorkingDays(leaveRequest.startDate, leaveRequest.endDate, leaveRequest.halfDay)
+      const days = calculateWorkingDays(
+        leaveRequest.startDate,
+        leaveRequest.endDate,
+        leaveRequest.halfDay
+      )
       const year = leaveRequest.startDate.getFullYear()
-      const balanceField = leaveRequest.type === LeaveType.PAID_LEAVE ? 'paidLeaveUsed' : 'rttUsed'
+      const balanceField =
+        leaveRequest.type === LeaveType.PAID_LEAVE ? 'paidLeaveUsed' : 'rttUsed'
 
       const [updated] = await prisma.$transaction([
         prisma.leaveRequest.update({
@@ -473,7 +536,9 @@ export async function cancelLeaveRequest(
           data: { status: LeaveRequestStatus.CANCELLED },
         }),
         prisma.leaveBalance.update({
-          where: { employeeId_year: { employeeId: leaveRequest.employeeId, year } },
+          where: {
+            employeeId_year: { employeeId: leaveRequest.employeeId, year },
+          },
           data: { [balanceField]: { decrement: days } },
         }),
       ])
@@ -504,12 +569,17 @@ export async function reviewLeaveRequest(
   id: string,
   input: unknown
 ): Promise<ActionResult<LeaveRequest>> {
-  const authResult = await getAuthenticatedUser(['MANAGER', 'DIRECTOR', 'SYSTEM_ADMIN'])
+  const authResult = await getAuthenticatedUser([
+    'MANAGER',
+    'DIRECTOR',
+    'SYSTEM_ADMIN',
+  ])
   if (!authResult.success) return { success: false, error: authResult.error }
   const { user } = authResult
 
   const validation = validateData(updateLeaveRequestSchema, input)
-  if (!validation.success) return { success: false, error: validation.error, field: validation.field }
+  if (!validation.success)
+    return { success: false, error: validation.error, field: validation.field }
   const data = validation.data
 
   try {
@@ -531,12 +601,18 @@ export async function reviewLeaveRequest(
       leaveRequest.employee.teamId &&
       !user.managedTeamIds.includes(leaveRequest.employee.teamId)
     ) {
-      return { success: false, error: "Vous ne pouvez valider que les demandes de votre équipe" }
+      return {
+        success: false,
+        error: 'Vous ne pouvez valider que les demandes de votre équipe',
+      }
     }
 
     // Seulement les demandes PENDING
     if (leaveRequest.status !== LeaveRequestStatus.PENDING) {
-      return { success: false, error: 'Seules les demandes en attente peuvent être validées' }
+      return {
+        success: false,
+        error: 'Seules les demandes en attente peuvent être validées',
+      }
     }
 
     // Transaction : mise à jour + débit solde si APPROVED
@@ -556,9 +632,14 @@ export async function reviewLeaveRequest(
         data.status === LeaveRequestStatus.APPROVED &&
         LEAVE_TYPES_WITH_BALANCE.includes(result.type)
       ) {
-        const days = calculateWorkingDays(result.startDate, result.endDate, result.halfDay)
+        const days = calculateWorkingDays(
+          result.startDate,
+          result.endDate,
+          result.halfDay
+        )
         const year = result.startDate.getFullYear()
-        const balanceField = result.type === LeaveType.PAID_LEAVE ? 'paidLeaveUsed' : 'rttUsed'
+        const balanceField =
+          result.type === LeaveType.PAID_LEAVE ? 'paidLeaveUsed' : 'rttUsed'
 
         await tx.leaveBalance.upsert({
           where: { employeeId_year: { employeeId: result.employeeId, year } },
@@ -628,7 +709,10 @@ export async function getLeaveBalance(
 
     // RBAC : vérifier l'accès
     if (user.role === 'EMPLOYEE' && targetEmployeeId !== user.employeeId) {
-      return { success: false, error: 'Vous ne pouvez consulter que votre propre solde' }
+      return {
+        success: false,
+        error: 'Vous ne pouvez consulter que votre propre solde',
+      }
     }
 
     if (user.role === 'MANAGER') {
@@ -636,14 +720,22 @@ export async function getLeaveBalance(
         where: { id: targetEmployeeId },
         select: { teamId: true },
       })
-      if (targetEmployee?.teamId && !user.managedTeamIds.includes(targetEmployee.teamId)) {
-        return { success: false, error: "Vous n'avez pas accès au solde de cet employé" }
+      if (
+        targetEmployee?.teamId &&
+        !user.managedTeamIds.includes(targetEmployee.teamId)
+      ) {
+        return {
+          success: false,
+          error: "Vous n'avez pas accès au solde de cet employé",
+        }
       }
     }
 
     // Récupérer ou créer le solde
     const balance = await prisma.leaveBalance.upsert({
-      where: { employeeId_year: { employeeId: targetEmployeeId, year: targetYear } },
+      where: {
+        employeeId_year: { employeeId: targetEmployeeId, year: targetYear },
+      },
       create: {
         employeeId: targetEmployeeId,
         companyId: user.companyId!,
@@ -680,7 +772,8 @@ export async function updateLeaveBalance(
   const { user } = authResult
 
   const validation = validateData(updateLeaveBalanceSchema, input)
-  if (!validation.success) return { success: false, error: validation.error, field: validation.field }
+  if (!validation.success)
+    return { success: false, error: validation.error, field: validation.field }
   const data = validation.data
 
   try {
@@ -727,7 +820,11 @@ export async function getTeamAbsences(
   startDate: Date,
   endDate: Date
 ): Promise<ActionResult<LeaveRequestWithEmployee[]>> {
-  const authResult = await getAuthenticatedUser(['MANAGER', 'DIRECTOR', 'SYSTEM_ADMIN'])
+  const authResult = await getAuthenticatedUser([
+    'MANAGER',
+    'DIRECTOR',
+    'SYSTEM_ADMIN',
+  ])
   if (!authResult.success) return { success: false, error: authResult.error }
   const { user } = authResult
 
@@ -764,7 +861,11 @@ export async function getTeamAbsences(
 export async function getLeaveStats(
   teamId?: string
 ): Promise<ActionResult<LeaveStats>> {
-  const authResult = await getAuthenticatedUser(['MANAGER', 'DIRECTOR', 'SYSTEM_ADMIN'])
+  const authResult = await getAuthenticatedUser([
+    'MANAGER',
+    'DIRECTOR',
+    'SYSTEM_ADMIN',
+  ])
   if (!authResult.success) return { success: false, error: authResult.error }
   const { user } = authResult
 
@@ -772,7 +873,8 @@ export async function getLeaveStats(
     const where: Record<string, unknown> = {}
     if (user.companyId) where.companyId = user.companyId
     if (teamId) where.employee = { teamId }
-    else if (user.role === 'MANAGER') where.employee = { teamId: { in: user.managedTeamIds } }
+    else if (user.role === 'MANAGER')
+      where.employee = { teamId: { in: user.managedTeamIds } }
 
     const requests = await prisma.leaveRequest.findMany({
       where,
@@ -818,7 +920,10 @@ export async function checkLeaveConflicts(
     })
 
     if (!employee?.teamId) {
-      return { success: true, data: { hasConflict: false, percentAbsent: 0, absentEmployees: [] } }
+      return {
+        success: true,
+        data: { hasConflict: false, percentAbsent: 0, absentEmployees: [] },
+      }
     }
 
     // Compter les membres de l'équipe
@@ -827,7 +932,10 @@ export async function checkLeaveConflicts(
     })
 
     if (teamMemberCount === 0) {
-      return { success: true, data: { hasConflict: false, percentAbsent: 0, absentEmployees: [] } }
+      return {
+        success: true,
+        data: { hasConflict: false, percentAbsent: 0, absentEmployees: [] },
+      }
     }
 
     // Compter les absences APPROVED/PENDING qui chevauchent la période
@@ -835,7 +943,9 @@ export async function checkLeaveConflicts(
       where: {
         employee: { teamId: employee.teamId },
         employeeId: { not: employeeId },
-        status: { in: [LeaveRequestStatus.APPROVED, LeaveRequestStatus.PENDING] },
+        status: {
+          in: [LeaveRequestStatus.APPROVED, LeaveRequestStatus.PENDING],
+        },
         startDate: { lte: endDate },
         endDate: { gte: startDate },
       },
@@ -845,7 +955,9 @@ export async function checkLeaveConflicts(
       distinct: ['employeeId'],
     })
 
-    const percentAbsent = Math.round(((absentMembers.length + 1) / teamMemberCount) * 100)
+    const percentAbsent = Math.round(
+      ((absentMembers.length + 1) / teamMemberCount) * 100
+    )
     const hasConflict = percentAbsent > 50
     const absentEmployees = absentMembers.map(
       (m) => `${m.employee.firstName} ${m.employee.lastName}`
