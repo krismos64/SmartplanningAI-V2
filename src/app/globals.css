@@ -2,7 +2,7 @@
  * Styles globaux SmartPlanning V2
  *
  * Design Tokens intégrés via CSS Variables
- * Direction esthétique : "Precision Engineering"
+ * Direction esthétique : "Neon Soft — Blue 3D Glow"
  *
  * @see SP-259 - Design Tokens
  */
@@ -22,9 +22,9 @@
     /* =================================================================
        BACKGROUNDS & FOREGROUNDS
        ================================================================= */
-    --background: 0 0% 100%;
-    --background-subtle: 210 40% 98%;
-    --background-muted: 210 40% 96.1%;
+    --background: 226 100% 97%;
+    --background-subtle: 226 80% 96%;
+    --background-muted: 220 50% 94%;
     --background-emphasis: 222.2 84% 4.9%;
 
     --foreground: 222.2 84% 4.9%;
@@ -32,31 +32,31 @@
     --foreground-subtle: 215 20% 65%;
 
     /* =================================================================
-       PRIMARY - Bleu SmartPlanning
+       PRIMARY - Bleu néon SmartPlanning (#3B82F6)
        ================================================================= */
     --primary: 217 91% 60%;
     --primary-hover: 217 91% 55%;
     --primary-active: 217 91% 50%;
-    --primary-foreground: 210 40% 98%;
+    --primary-foreground: 0 0% 100%;
     --primary-muted: 217 91% 95%;
 
     /* =================================================================
-       SECONDARY - Bleu foncé
+       SECONDARY - Bleu profond (#2563EB)
        ================================================================= */
-    --secondary: 217 78% 51%;
-    --secondary-hover: 217 78% 46%;
-    --secondary-active: 217 78% 41%;
-    --secondary-foreground: 210 40% 98%;
-    --secondary-muted: 217 78% 95%;
+    --secondary: 217 91% 53%;
+    --secondary-hover: 217 91% 48%;
+    --secondary-active: 217 91% 43%;
+    --secondary-foreground: 0 0% 100%;
+    --secondary-muted: 217 91% 95%;
 
     /* =================================================================
-       ACCENT - Cyan moderne
+       ACCENT - Violet néon (#8B5CF6)
        ================================================================= */
-    --accent: 189 94% 43%;
-    --accent-hover: 189 94% 38%;
-    --accent-active: 189 94% 33%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --accent-muted: 189 94% 95%;
+    --accent: 258 90% 66%;
+    --accent-hover: 258 90% 60%;
+    --accent-active: 258 90% 54%;
+    --accent-foreground: 0 0% 100%;
+    --accent-muted: 258 90% 95%;
 
     /* =================================================================
        SUCCESS - Emerald
@@ -109,16 +109,16 @@
     --popover-foreground: 222.2 84% 4.9%;
 
     /* =================================================================
-       MUTED
+       MUTED — bleu très pâle
        ================================================================= */
-    --muted: 210 40% 96.1%;
+    --muted: 220 50% 94%;
     --muted-foreground: 215.4 20% 40%;
 
     /* =================================================================
-       UI ELEMENTS
+       UI ELEMENTS — bordures bleu pâle (#E5EDFF)
        ================================================================= */
-    --border: 214.3 31.8% 85%;
-    --input: 214.3 31.8% 85%;
+    --border: 222 60% 90%;
+    --input: 222 60% 90%;
     --ring: 217 91% 60%;
 
     /* =================================================================
@@ -127,34 +127,40 @@
     --radius: 0.5rem;
 
     /* =================================================================
-       SIDEBAR
+       SIDEBAR - Noir bleuté profond (#050816)
        ================================================================= */
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-background: 230 67% 5%;
+    --sidebar-foreground: 220 14% 90%;
     --sidebar-primary: 217 91% 60%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 222 47% 11%;
+    --sidebar-accent-foreground: 220 14% 96%;
+    --sidebar-border: 215 28% 17%;
     --sidebar-ring: 217 91% 60%;
+
+    /* Néon tokens sidebar */
+    --sp-neon-blue: 217 91% 60%;
+    --sp-neon-violet: 258 90% 66%;
+    --sp-neon-glow: 0 0 18px rgba(59, 130, 246, 0.40);
+    --sp-neon-glow-soft: 0 0 12px rgba(59, 130, 246, 0.25);
 
     /* =================================================================
        CHART COLORS (pour visualisations)
        ================================================================= */
     --chart-1: 217 91% 60%;
-    --chart-2: 189 94% 43%;
+    --chart-2: 258 90% 66%;
     --chart-3: 160 84% 39%;
     --chart-4: 38 92% 50%;
-    --chart-5: 262 83% 58%;
+    --chart-5: 189 94% 43%;
   }
 
   /* =======================================================================
      DARK MODE
      ======================================================================= */
   .dark {
-    /* Backgrounds */
-    --background: 222.2 84% 4.9%;
-    --background-subtle: 217 32.6% 10%;
+    /* Backgrounds — remonté légèrement (#030712) pour détacher les cards */
+    --background: 224 71% 3%;
+    --background-subtle: 222 47% 7%;
     --background-muted: 217 32.6% 17.5%;
     --background-emphasis: 210 40% 98%;
 
@@ -163,26 +169,26 @@
     --foreground-muted: 215 20.2% 65.1%;
     --foreground-subtle: 215 20% 45%;
 
-    /* Primary - Plus lumineux en dark */
+    /* Primary - Bleu néon lumineux en dark */
     --primary: 217 91% 65%;
     --primary-hover: 217 91% 70%;
     --primary-active: 217 91% 75%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary-foreground: 0 0% 100%;
     --primary-muted: 217 91% 15%;
 
-    /* Secondary */
-    --secondary: 217 78% 60%;
-    --secondary-hover: 217 78% 65%;
-    --secondary-active: 217 78% 70%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --secondary-muted: 217 78% 15%;
+    /* Secondary - Bleu profond */
+    --secondary: 217 91% 58%;
+    --secondary-hover: 217 91% 63%;
+    --secondary-active: 217 91% 68%;
+    --secondary-foreground: 0 0% 100%;
+    --secondary-muted: 217 91% 15%;
 
-    /* Accent */
-    --accent: 189 94% 50%;
-    --accent-hover: 189 94% 55%;
-    --accent-active: 189 94% 60%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --accent-muted: 189 94% 15%;
+    /* Accent - Violet néon */
+    --accent: 258 90% 70%;
+    --accent-hover: 258 90% 75%;
+    --accent-active: 258 90% 80%;
+    --accent-foreground: 0 0% 100%;
+    --accent-muted: 258 90% 15%;
 
     /* Success */
     --success: 160 84% 45%;
@@ -216,39 +222,39 @@
     --info-muted: 199 89% 15%;
     --info-border: 199 70% 40%;
 
-    /* Surfaces */
-    --card: 222.2 84% 4.9%;
+    /* Surfaces — card plus clair que le layout (#0B1220) */
+    --card: 220 47% 8%;
     --card-foreground: 210 40% 98%;
-    --card-hover: 217 32.6% 10%;
+    --card-hover: 220 40% 11%;
 
-    --popover: 222.2 84% 4.9%;
+    --popover: 220 47% 8%;
     --popover-foreground: 210 40% 98%;
 
     /* Muted */
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
 
-    /* UI Elements */
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
+    /* UI Elements — bordures bleutées subtiles */
+    --border: 215 25% 16%;
+    --input: 215 25% 16%;
     --ring: 217 91% 65%;
 
-    /* Sidebar */
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
+    /* Sidebar - Noir bleuté deep dark */
+    --sidebar-background: 230 67% 3%;
+    --sidebar-foreground: 220 14% 90%;
     --sidebar-primary: 217 91% 65%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-accent: 222 47% 9%;
+    --sidebar-accent-foreground: 220 14% 96%;
+    --sidebar-border: 215 28% 13%;
     --sidebar-ring: 217 91% 65%;
 
     /* Chart colors dark */
     --chart-1: 217 91% 65%;
-    --chart-2: 189 94% 50%;
+    --chart-2: 258 90% 70%;
     --chart-3: 160 84% 45%;
     --chart-4: 38 92% 55%;
-    --chart-5: 262 83% 65%;
+    --chart-5: 189 94% 50%;
   }
 }
 
@@ -303,12 +309,104 @@
 
   /* Gradient text utility */
   .text-gradient-primary {
-    @apply bg-gradient-to-r from-blue-500 via-cyan-500 to-emerald-500 bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-blue-500 via-blue-400 to-violet-500 bg-clip-text text-transparent;
   }
 
   /* Glass effect */
   .glass {
     @apply bg-white/80 backdrop-blur-lg dark:bg-slate-900/80;
+  }
+
+  /* ---------------------------------------------------------------
+     SIDEBAR NEON SOFT — Gradient + glow subtil
+     --------------------------------------------------------------- */
+  .sidebar-neon {
+    background: radial-gradient(
+      ellipse at 10% 0%,
+      hsl(222 47% 11%) 0%,
+      #050816 40%,
+      #020617 100%
+    );
+    border-right: 1px solid rgba(148, 163, 184, 0.12);
+    box-shadow: 1px 0 30px rgba(59, 130, 246, 0.06);
+  }
+
+  .dark .sidebar-neon {
+    background: radial-gradient(
+      ellipse at 10% 0%,
+      hsl(222 47% 8%) 0%,
+      #030510 40%,
+      #010208 100%
+    );
+    box-shadow: 1px 0 30px rgba(59, 130, 246, 0.08);
+  }
+
+  /* Header title néon — soft par défaut, plein glow au hover (Perplexity #3) */
+  .sidebar-neon-title {
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: hsl(220 14% 96%);
+    opacity: 0.96;
+    text-shadow:
+      0 0 10px rgba(15, 23, 42, 0.9),
+      0 0 16px rgba(59, 130, 246, 0.35);
+    transition: text-shadow 200ms ease-out, opacity 200ms ease-out;
+  }
+
+  .sidebar-neon-title:hover {
+    opacity: 1;
+    text-shadow:
+      0 0 12px rgba(59, 130, 246, 0.65),
+      0 0 26px rgba(139, 92, 246, 0.6);
+  }
+
+  /* Nav item — base */
+  .sidebar-nav-item {
+    border-radius: 9999px;
+    padding: 0.55rem 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    color: hsl(220 14% 62%);
+    transition:
+      background 160ms ease-out,
+      box-shadow 160ms ease-out,
+      transform 160ms ease-out,
+      color 160ms ease-out;
+  }
+
+  /* Nav item — hover */
+  .sidebar-nav-item:hover {
+    background-color: rgba(15, 23, 42, 0.9);
+    color: hsl(220 14% 96%);
+    box-shadow:
+      0 0 0 1px rgba(59, 130, 246, 0.20),
+      0 8px 20px rgba(15, 23, 42, 0.85);
+    transform: translateY(-1px);
+  }
+
+  .sidebar-nav-item:hover .sidebar-nav-icon {
+    transform: translateY(-1px);
+    filter: drop-shadow(0 0 6px rgba(59, 130, 246, 0.6));
+  }
+
+  /* Nav item — active */
+  .sidebar-nav-item[data-active='true'] {
+    background: radial-gradient(
+      circle at 0% 50%,
+      rgba(59, 130, 246, 0.18) 0%,
+      transparent 65%
+    );
+    color: hsl(220 14% 98%);
+    box-shadow:
+      0 0 0 1px rgba(59, 130, 246, 0.35),
+      0 10px 25px rgba(15, 23, 42, 0.9),
+      0 0 18px rgba(37, 99, 235, 0.35);
+    transform: translateY(-1px);
+  }
+
+  .sidebar-nav-item[data-active='true'] .sidebar-nav-icon {
+    filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.7));
   }
 
   /* Focus ring utility */
@@ -323,6 +421,243 @@
 
   .glow-accent {
     box-shadow: 0 0 20px hsl(var(--accent) / 0.4);
+  }
+
+  /* ---------------------------------------------------------------
+     SURFACE "VERRE SOMBRE" — Cards dark premium (Perplexity #1)
+     --------------------------------------------------------------- */
+  .sp-surface {
+    background: radial-gradient(circle at top, #0b1120 0%, #020617 60%);
+    box-shadow:
+      0 18px 45px rgba(15, 23, 42, 0.90),
+      inset 0 0 0 1px rgba(148, 163, 184, 0.10);
+    border-radius: 18px;
+  }
+
+  :root .sp-surface {
+    background: radial-gradient(circle at top, #ffffff 0%, #f3f6ff 60%);
+    box-shadow:
+      0 18px 40px rgba(15, 23, 42, 0.06),
+      inset 0 0 0 1px rgba(148, 163, 184, 0.18);
+  }
+
+  /* ---------------------------------------------------------------
+     TOGGLE PILL — Filtres avec glow actif (Perplexity #2)
+     --------------------------------------------------------------- */
+  .sp-toggle-pill {
+    border-radius: 9999px;
+    padding: 0.45rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: hsl(var(--muted-foreground));
+    background: transparent;
+    border: 1px solid hsl(var(--border));
+    transition:
+      background 160ms ease-out,
+      box-shadow 160ms ease-out,
+      color 160ms ease-out,
+      border-color 160ms ease-out;
+  }
+
+  .sp-toggle-pill:hover {
+    color: hsl(var(--foreground));
+    border-color: hsl(var(--primary) / 0.3);
+  }
+
+  .sp-toggle-pill[data-active='true'] {
+    color: hsl(var(--primary-foreground));
+    background: hsl(var(--primary));
+    border-color: transparent;
+    box-shadow:
+      0 0 0 1px rgba(59, 130, 246, 0.55),
+      0 10px 26px rgba(15, 23, 42, 0.4);
+  }
+
+  .dark .sp-toggle-pill[data-active='true'] {
+    background: radial-gradient(
+      circle at 50% 35%,
+      rgba(59, 130, 246, 0.25) 0%,
+      hsl(var(--primary)) 55%,
+      hsl(var(--primary)) 100%
+    );
+    box-shadow:
+      0 0 0 1px rgba(59, 130, 246, 0.55),
+      0 10px 26px rgba(15, 23, 42, 0.95);
+  }
+
+  /* Icon pop on click */
+  .sp-toggle-pill:active .sp-toggle-icon {
+    transform: scale(1.15);
+  }
+
+  .sp-toggle-icon {
+    transition: transform 80ms ease-out;
+  }
+
+  /* ---------------------------------------------------------------
+     EMPTY STATE — Card engageante avec dashed border (Perplexity #2)
+     --------------------------------------------------------------- */
+  .sp-empty-state {
+    background: linear-gradient(
+      135deg,
+      rgba(59, 130, 246, 0.06) 0%,
+      rgba(37, 99, 235, 0.02) 100%
+    );
+    border: 2px dashed rgba(59, 130, 246, 0.25);
+    border-radius: 16px;
+    backdrop-filter: blur(16px);
+    transition:
+      border-color 200ms ease-out,
+      transform 200ms ease-out,
+      box-shadow 200ms ease-out;
+  }
+
+  .sp-empty-state:hover {
+    border-color: rgba(59, 130, 246, 0.45);
+    transform: scale(1.01);
+    box-shadow: 0 0 30px rgba(59, 130, 246, 0.08);
+  }
+
+  .dark .sp-empty-state {
+    background: linear-gradient(
+      135deg,
+      rgba(59, 130, 246, 0.08) 0%,
+      rgba(37, 99, 235, 0.03) 100%
+    );
+    border-color: rgba(59, 130, 246, 0.20);
+  }
+
+  .dark .sp-empty-state:hover {
+    border-color: rgba(59, 130, 246, 0.50);
+    box-shadow: 0 0 40px rgba(59, 130, 246, 0.12);
+  }
+
+  /* ---------------------------------------------------------------
+     HEADER GLASSMORPHISM — Top bar premium
+     --------------------------------------------------------------- */
+  .sp-header {
+    background: rgba(243, 246, 255, 0.92);
+    backdrop-filter: blur(24px);
+    border-bottom: 1px solid rgba(148, 163, 184, 0.15);
+    box-shadow: 0 2px 20px rgba(15, 23, 42, 0.06);
+  }
+
+  .dark .sp-header {
+    background: rgba(5, 8, 22, 0.85);
+    border-bottom: 1px solid rgba(148, 163, 184, 0.08);
+    box-shadow: 0 2px 30px rgba(15, 23, 42, 0.75);
+  }
+
+  /* ---------------------------------------------------------------
+     AVATAR FOOTER SIDEBAR — Ring animé au hover
+     --------------------------------------------------------------- */
+  .sp-avatar-neon {
+    background: linear-gradient(
+      135deg,
+      rgba(59, 130, 246, 0.15) 0%,
+      rgba(139, 92, 246, 0.12) 100%
+    );
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25);
+    transition:
+      box-shadow 160ms ease-out;
+  }
+
+  .sp-avatar-neon:hover {
+    box-shadow:
+      0 0 0 2px rgba(59, 130, 246, 0.65),
+      0 0 24px rgba(59, 130, 246, 0.30);
+  }
+
+  /* ---------------------------------------------------------------
+     CARD HOVER — Micro lift 3D (Perplexity #4)
+     --------------------------------------------------------------- */
+  .sp-card {
+    transform-origin: center;
+    transition:
+      transform 160ms ease-out,
+      box-shadow 160ms ease-out,
+      background 160ms ease-out;
+  }
+
+  .sp-card:hover {
+    transform: scale(1.005) translateY(-1px);
+    box-shadow:
+      0 22px 50px rgba(15, 23, 42, 0.12),
+      0 0 22px rgba(59, 130, 246, 0.06);
+  }
+
+  .dark .sp-card:hover {
+    box-shadow:
+      0 22px 50px rgba(15, 23, 42, 0.95),
+      0 0 22px rgba(59, 130, 246, 0.15);
+  }
+
+  /* ---------------------------------------------------------------
+     SKELETON LOADER — Shimmer cohérent avec le design system
+     --------------------------------------------------------------- */
+  .sp-skeleton {
+    background: linear-gradient(
+      90deg,
+      hsl(var(--muted)) 0%,
+      hsl(var(--primary) / 0.08) 50%,
+      hsl(var(--muted)) 100%
+    );
+    background-size: 200% 100%;
+    animation: sp-shimmer 1.5s ease-in-out infinite;
+    border-radius: var(--radius);
+  }
+
+  .dark .sp-skeleton {
+    background: linear-gradient(
+      90deg,
+      #0b1220 0%,
+      rgba(59, 130, 246, 0.08) 50%,
+      #0b1220 100%
+    );
+    background-size: 200% 100%;
+  }
+
+  @keyframes sp-shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+
+  /* ---------------------------------------------------------------
+     TOOLTIP NÉON — Instantané, glassmorphism dark
+     --------------------------------------------------------------- */
+  .sp-tooltip {
+    background: rgba(5, 8, 22, 0.98);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(59, 130, 246, 0.35);
+    border-radius: 10px;
+    padding: 0.4rem 0.75rem;
+    font-size: 0.8125rem;
+    color: hsl(220 14% 92%);
+    box-shadow:
+      0 8px 32px rgba(15, 23, 42, 0.95),
+      0 0 16px rgba(59, 130, 246, 0.20);
+  }
+
+  :root .sp-tooltip {
+    background: rgba(255, 255, 255, 0.98);
+    border: 1px solid rgba(59, 130, 246, 0.18);
+    color: hsl(222.2 84% 4.9%);
+    box-shadow:
+      0 8px 32px rgba(15, 23, 42, 0.12),
+      0 0 16px rgba(59, 130, 246, 0.06);
+  }
+
+  /* ---------------------------------------------------------------
+     MODAL BACKDROP — Blur profond
+     --------------------------------------------------------------- */
+  .sp-modal-backdrop {
+    background: rgba(5, 8, 22, 0.92);
+    backdrop-filter: blur(32px);
+  }
+
+  :root .sp-modal-backdrop {
+    background: rgba(15, 23, 42, 0.45);
+    backdrop-filter: blur(24px);
   }
 }
 

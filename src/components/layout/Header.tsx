@@ -67,7 +67,7 @@ export function Header({ user, notificationsCount = 0 }: HeaderProps) {
   }
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b bg-background/80 backdrop-blur-md">
+    <header className="sp-header sticky top-0 z-40 w-full">
       <div className="flex h-16 items-center justify-between px-4 md:px-6">
         {/* Left: Burger + Logo */}
         <div className="flex items-center gap-4">
