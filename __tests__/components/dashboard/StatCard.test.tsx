@@ -124,7 +124,7 @@ describe('StatCard', () => {
       const { container } = render(
         <StatCard title="Utilisateurs" value={100} isLoading />
       )
-      const skeletons = container.querySelectorAll('.sp-skeleton')
+      const skeletons = container.querySelectorAll('[data-testid="skeleton"]')
       expect(skeletons.length).toBeGreaterThan(0)
     })
 
