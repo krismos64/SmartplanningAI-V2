@@ -55,3 +55,28 @@ export interface LeaveRejectedEmailData extends LeaveEmailData {
   /** Motif du refus de la demande */
   rejectionReason: string
 }
+
+/**
+ * Données pour notifier un manager d'une nouvelle demande de congé
+ * @ticket SP-415
+ */
+export interface LeaveRequestedEmailData {
+  /** Email du manager */
+  managerEmail: string
+  /** Prénom du manager */
+  managerName: string
+  /** Nom complet de l'employé */
+  employeeName: string
+  /** Type de congé demandé */
+  leaveType: LeaveType
+  /** Date de début du congé */
+  startDate: Date
+  /** Date de fin du congé */
+  endDate: Date
+  /** Nombre de jours */
+  totalDays: number
+  /** Motif de la demande (optionnel) */
+  reason?: string
+  /** ID de la demande pour l'URL */
+  requestId: string
+}
