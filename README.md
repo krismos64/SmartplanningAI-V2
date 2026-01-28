@@ -1739,7 +1739,19 @@ Voir `/docs/database-schema.md` pour le détail complet.
   - Ajout FAMILY_EVENT à l'enum LeaveType Prisma
   - Alignement types TS (PARENTAL_LEAVE ajouté)
   - Seed : 20 LeaveBalances + 6 nouvelles LeaveRequests (CANCELLED, halfDay, FAMILY_EVENT, PARENTAL_LEAVE)
-- SP-409 à SP-416 : En attente (validations Zod, actions CRUD, pages UI, workflow, notifications) 🚧
+- SP-409 : Validations Zod + utilitaires Leave Management (45 tests) ✅
+  - 6 schémas Zod (create, update, updateBalance, filters, enums)
+  - calculateWorkingDays (3 modes : MON_FRI, MON_SAT, ALL_DAYS)
+  - hasEnoughBalance, getRemainingBalance
+  - Labels, couleurs, icônes pour l'UI
+- SP-410 : Server Actions CRUD Congés + Workflow Validation (48 tests) ✅
+  - 11 server actions avec RBAC strict (EMPLOYEE/MANAGER/DIRECTOR/SYSTEM_ADMIN)
+  - createLeaveRequest avec validation solde CP/RTT et warning conflit >50% équipe
+  - reviewLeaveRequest avec transaction atomique (débit solde + email)
+  - cancelLeaveRequest avec recrédit solde via $transaction
+  - getTeamAbsences, getLeaveStats, checkLeaveConflicts
+  - Multi-tenant : companyId vérifié systématiquement
+- SP-411 à SP-416 : En attente (pages UI, workflow, notifications) 🚧
 
 #### Phase 8+ : Notifications, IA... (À venir)
 
@@ -1953,11 +1965,11 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 - **E2E** : Playwright (configuré)
 - **Coverage** : v8 provider
 
-### Couverture actuelle (27 janvier 2026)
+### Couverture actuelle (28 janvier 2026)
 
 | Catégorie                              | Coverage | Tests    |
 | -------------------------------------- | -------- | -------- |
-| **Global**                             | **~85%** | **3475** |
+| **Global**                             | **~85%** | **3568** |
 | loading                                | 100%     | 152      |
 | modals                                 | 100%     | 52       |
 | cards                                  | 77.09%   | 88       |
@@ -2007,6 +2019,9 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 | generateScheduleExcel (SP-404)         | 100%     | 7        |
 | WeeklyHoursPanel (SP-406)              | 100%     | -        |
 | ScheduleCalendarMobile (SP-396)        | 100%     | 18       |
+| leave validation schemas (SP-409)      | 100%     | 22       |
+| leave-utils (SP-409)                   | 100%     | 23       |
+| leaves actions (SP-410)                | 100%     | 48       |
 
 ### Tests E2E
 
