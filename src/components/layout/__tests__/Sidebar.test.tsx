@@ -51,7 +51,7 @@ vi.mock('@/components/ui/sidebar', () => ({
   ),
   SidebarMenuButton: ({
     children,
-    asChild,
+    asChild: _asChild,
     ...props
   }: React.PropsWithChildren<{ asChild?: boolean }>) => (
     <div data-testid="sidebar-menu-button" {...props}>
