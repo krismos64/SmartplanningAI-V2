@@ -31,7 +31,9 @@ import {
   type AvailabilityConflict,
   type AvailabilityWithEmployee,
 } from '@/lib/actions/availabilities'
+import type { LeaveRequestWithEmployee } from '@/lib/actions/leaves'
 import { CalendarX, GripVertical } from 'lucide-react'
+import { LeaveType } from '@prisma/client'
 import { useToast } from '@/components/toast/use-toast'
 import { ConflictConfirmDialog } from './ConflictConfirmDialog'
 import { AvailabilityPopover } from './AvailabilityPopover'
@@ -288,12 +290,133 @@ const availabilityCalendars = {
   },
 }
 
+// ============================================================================
+// Configuration des calendriers pour les congés (SP-415)
+// ============================================================================
+
+const leaveCalendars = {
+  'leave-paid': {
+    colorName: 'leave-paid',
+    lightColors: {
+      main: '#22c55e',
+      container: 'rgba(34, 197, 94, 0.20)',
+      onContainer: '#166534',
+    },
+    darkColors: {
+      main: '#4ade80',
+      container: 'rgba(34, 197, 94, 0.30)',
+      onContainer: '#86efac',
+    },
+  },
+  'leave-rtt': {
+    colorName: 'leave-rtt',
+    lightColors: {
+      main: '#06b6d4',
+      container: 'rgba(6, 182, 212, 0.20)',
+      onContainer: '#155e75',
+    },
+    darkColors: {
+      main: '#22d3ee',
+      container: 'rgba(6, 182, 212, 0.30)',
+      onContainer: '#67e8f9',
+    },
+  },
+  'leave-sick': {
+    colorName: 'leave-sick',
+    lightColors: {
+      main: '#ef4444',
+      container: 'rgba(239, 68, 68, 0.20)',
+      onContainer: '#991b1b',
+    },
+    darkColors: {
+      main: '#f87171',
+      container: 'rgba(239, 68, 68, 0.30)',
+      onContainer: '#fca5a5',
+    },
+  },
+  'leave-unpaid': {
+    colorName: 'leave-unpaid',
+    lightColors: {
+      main: '#6b7280',
+      container: 'rgba(107, 114, 128, 0.20)',
+      onContainer: '#374151',
+    },
+    darkColors: {
+      main: '#9ca3af',
+      container: 'rgba(107, 114, 128, 0.30)',
+      onContainer: '#d1d5db',
+    },
+  },
+  'leave-parental': {
+    colorName: 'leave-parental',
+    lightColors: {
+      main: '#ec4899',
+      container: 'rgba(236, 72, 153, 0.20)',
+      onContainer: '#9d174d',
+    },
+    darkColors: {
+      main: '#f472b6',
+      container: 'rgba(236, 72, 153, 0.30)',
+      onContainer: '#fbcfe8',
+    },
+  },
+  'leave-family': {
+    colorName: 'leave-family',
+    lightColors: {
+      main: '#f59e0b',
+      container: 'rgba(245, 158, 11, 0.20)',
+      onContainer: '#92400e',
+    },
+    darkColors: {
+      main: '#fbbf24',
+      container: 'rgba(245, 158, 11, 0.30)',
+      onContainer: '#fde68a',
+    },
+  },
+  'leave-other': {
+    colorName: 'leave-other',
+    lightColors: {
+      main: '#8b5cf6',
+      container: 'rgba(139, 92, 246, 0.20)',
+      onContainer: '#5b21b6',
+    },
+    darkColors: {
+      main: '#a78bfa',
+      container: 'rgba(139, 92, 246, 0.30)',
+      onContainer: '#c4b5fd',
+    },
+  },
+}
+
+// Mapping LeaveType → calendarId
+const leaveTypeToCalendarId: Record<LeaveType, string> = {
+  PAID_LEAVE: 'leave-paid',
+  RTT: 'leave-rtt',
+  SICK_LEAVE: 'leave-sick',
+  UNPAID_LEAVE: 'leave-unpaid',
+  PARENTAL_LEAVE: 'leave-parental',
+  FAMILY_EVENT: 'leave-family',
+  OTHER: 'leave-other',
+}
+
+// Labels des types de congé avec emojis
+const leaveTypeLabels: Record<LeaveType, string> = {
+  PAID_LEAVE: '🌴 CP',
+  RTT: '⏰ RTT',
+  SICK_LEAVE: '🤒 Maladie',
+  UNPAID_LEAVE: '📋 Sans solde',
+  PARENTAL_LEAVE: '👶 Parental',
+  FAMILY_EVENT: '👨‍👩‍👧 Famille',
+  OTHER: '📝 Autre',
+}
+
 // Tous les calendriers combinés (incluant les variants DRAFT)
 const draftCalendars = buildDraftCalendars()
 const allCalendars = {
   ...calendars,
   ...draftCalendars,
   ...availabilityCalendars,
+  ...leaveCalendars,
 }
 
 // Labels des types d'indisponibilité avec emojis
@@ -321,6 +444,9 @@ export function ScheduleCalendarDesktop({
   availabilities = [],
   showAvailabilities = true,
   onAvailabilityClick,
+  leaveRequests = [],
+  showLeaves = true,
+  onLeaveClick,
 }: ScheduleCalendarProps) {
   const { success, error: toastError } = useToast()
 
@@ -333,6 +459,9 @@ export function ScheduleCalendarDesktop({
   const availabilitiesMapRef = useRef<Map<string, AvailabilityWithEmployee>>(
     new Map()
   )
+
+  // Map pour accéder aux leaves par ID d'event (SP-415)
+  const leavesMapRef = useRef<Map<string, LeaveRequestWithEmployee>>(new Map())
 
   // État de mise à jour en cours
   const [isUpdating, setIsUpdating] = useState(false)
@@ -647,10 +776,41 @@ export function ScheduleCalendarDesktop({
     })
   }, [availabilities, showAvailabilities])
 
+  // Convertir les congés en events Schedule-X (SP-415)
+  const leaveEvents = useMemo(() => {
+    if (!showLeaves || leaveRequests.length === 0) {
+      leavesMapRef.current.clear()
+      return []
+    }
+
+    // Mettre à jour la map pour les callbacks
+    leavesMapRef.current.clear()
+
+    return leaveRequests.map((leave) => {
+      const eventId = `leave-${leave.id}`
+      leavesMapRef.current.set(eventId, leave)
+
+      const startDateStr = format(new Date(leave.startDate), 'yyyy-MM-dd')
+      const endDateStr = format(new Date(leave.endDate), 'yyyy-MM-dd')
+
+      const employeeName = `${leave.employee.firstName} ${leave.employee.lastName}`
+      const typeLabel = leaveTypeLabels[leave.type]
+
+      // Congés = journée entière (PlainDate)
+      return {
+        id: eventId,
+        title: `${employeeName} - ${typeLabel}`,
+        start: Temporal.PlainDate.from(startDateStr),
+        end: Temporal.PlainDate.from(endDateStr),
+        calendarId: leaveTypeToCalendarId[leave.type],
+      }
+    })
+  }, [leaveRequests, showLeaves])
+
   // Combiner tous les events
   const events = useMemo(() => {
-    return [...scheduleEvents, ...availabilityEvents]
-  }, [scheduleEvents, availabilityEvents])
+    return [...scheduleEvents, ...availabilityEvents, ...leaveEvents]
+  }, [scheduleEvents, availabilityEvents, leaveEvents])
 
   // Mapper le viewMode vers les vues Schedule-X
   const getDefaultView = () => {
@@ -723,6 +883,15 @@ export function ScheduleCalendarDesktop({
             return
           }
 
+          // Vérifier si c'est un congé (SP-415)
+          if (eventId.startsWith('leave-')) {
+            const leave = leavesMapRef.current.get(eventId)
+            if (leave && onLeaveClick) {
+              onLeaveClick(leave)
+            }
+            return
+          }
+
           // Sinon c'est un schedule
           if (onScheduleClick) {
             const schedule = schedulesMapRef.current.get(eventId)
@@ -736,6 +905,11 @@ export function ScheduleCalendarDesktop({
 
           // Ne pas permettre le drag & drop des indisponibilités
           if (eventId.startsWith('avail-')) {
+            return
+          }
+
+          // Ne pas permettre le drag & drop des congés (SP-415)
+          if (eventId.startsWith('leave-')) {
             return
           }
 

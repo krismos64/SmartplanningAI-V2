@@ -88,7 +88,12 @@ export type {
 // ============================================================================
 // TYPES CONGÉS (LEAVE)
 // ============================================================================
-export type { LeaveType, LeaveEmailData, LeaveRejectedEmailData } from './leave'
+export type {
+  LeaveType,
+  LeaveEmailData,
+  LeaveRejectedEmailData,
+  LeaveRequestedEmailData,
+} from './leave'
 export { leaveTypeLabels } from './leave'
 
 // ============================================================================
