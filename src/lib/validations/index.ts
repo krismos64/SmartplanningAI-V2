@@ -31,3 +31,6 @@ export * from './availability'
 
 // Leave schemas (SP-409)
 export * from './leave'
+
+// Personal Task schemas (SP-417)
+export * from './personal-task'
