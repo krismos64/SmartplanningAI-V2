@@ -292,7 +292,40 @@ export async function togglePersonalTask(
 }
 
 // ============================================================================
-// 6. reorderPersonalTasks - Réorganiser les tâches (drag & drop)
+// 6. getPersonalTasksForWidget - Tâches limitées pour le widget dashboard
+// ============================================================================
+
+/**
+ * Récupère les tâches non complétées pour le widget dashboard
+ * @param limit Nombre maximum de tâches à retourner (défaut: 5)
+ * @returns Liste des tâches triées par order ASC
+ */
+export async function getPersonalTasksForWidget(
+  limit: number = 5
+): Promise<ActionResult<PersonalTask[]>> {
+  const authResult = await getAuthenticatedUserId()
+  if (!authResult.success) return { success: false, error: authResult.error }
+  const { userId } = authResult
+
+  try {
+    const tasks = await prisma.personalTask.findMany({
+      where: {
+        userId,
+        completed: false,
+      },
+      orderBy: { order: 'asc' },
+      take: limit,
+    })
+
+    return { success: true, data: tasks }
+  } catch (error) {
+    const { error: message } = handlePrismaError(error)
+    return { success: false, error: message }
+  }
+}
+
+// ============================================================================
+// 7. reorderPersonalTasks - Réorganiser les tâches (drag & drop)
 // ============================================================================
 
 /**

@@ -32,6 +32,7 @@ vi.mock('next/cache', () => ({
 // Import après les mocks
 import {
   getPersonalTasks,
+  getPersonalTasksForWidget,
   createPersonalTask,
   updatePersonalTask,
   deletePersonalTask,
@@ -164,6 +165,94 @@ describe('getPersonalTasks', () => {
     expect(prismaMock.personalTask.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { userId: USER_ID },
+      })
+    )
+  })
+})
+
+// ============================================================================
+// Tests getPersonalTasksForWidget
+// ============================================================================
+
+describe('getPersonalTasksForWidget', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    setMockSession(USER_ID)
+  })
+
+  it('should return only uncompleted tasks', async () => {
+    prismaMock.personalTask.findMany.mockResolvedValue([mockTask1, mockTask3])
+
+    const result = await getPersonalTasksForWidget()
+
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(result.data).toHaveLength(2)
+      // Tous doivent être non complétés
+      expect(result.data.every((t) => !t.completed)).toBe(true)
+    }
+
+    expect(prismaMock.personalTask.findMany).toHaveBeenCalledWith({
+      where: { userId: USER_ID, completed: false },
+      orderBy: { order: 'asc' },
+      take: 5,
+    })
+  })
+
+  it('should respect the limit parameter', async () => {
+    prismaMock.personalTask.findMany.mockResolvedValue([mockTask1])
+
+    await getPersonalTasksForWidget(3)
+
+    expect(prismaMock.personalTask.findMany).toHaveBeenCalledWith({
+      where: { userId: USER_ID, completed: false },
+      orderBy: { order: 'asc' },
+      take: 3,
+    })
+  })
+
+  it('should use default limit of 5', async () => {
+    prismaMock.personalTask.findMany.mockResolvedValue([])
+
+    await getPersonalTasksForWidget()
+
+    expect(prismaMock.personalTask.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        take: 5,
+      })
+    )
+  })
+
+  it('should return empty array if no uncompleted tasks', async () => {
+    prismaMock.personalTask.findMany.mockResolvedValue([])
+
+    const result = await getPersonalTasksForWidget()
+
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(result.data).toHaveLength(0)
+    }
+  })
+
+  it('should fail if not authenticated', async () => {
+    setMockSession(null)
+
+    const result = await getPersonalTasksForWidget()
+
+    expect(result.success).toBe(false)
+    if (!result.success) {
+      expect(result.error).toContain('connecté')
+    }
+  })
+
+  it('should filter by userId and completed=false', async () => {
+    prismaMock.personalTask.findMany.mockResolvedValue([mockTask1])
+
+    await getPersonalTasksForWidget()
+
+    expect(prismaMock.personalTask.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { userId: USER_ID, completed: false },
       })
     )
   })

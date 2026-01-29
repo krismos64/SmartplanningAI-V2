@@ -11,6 +11,8 @@ import { redirect } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
+import { PersonalTasksWidget } from '@/components/dashboard'
+import { getPersonalTasksForWidget } from '@/lib/actions/personal-tasks'
 
 export const metadata = {
   title: 'Dashboard Manager | SmartPlanning',
@@ -27,6 +29,11 @@ export default async function ManagerDashboardPage() {
   // Nom d'affichage
   const displayName =
     session.user.name || session.user.email?.split('@')[0] || 'Manager'
+
+  // Recuperer les taches personnelles pour le widget (SP-420)
+  const tasksResult = await getPersonalTasksForWidget(5)
+  const personalTasks = tasksResult.success ? tasksResult.data : []
+  const totalPendingCount = tasksResult.success ? personalTasks.length : 0
 
   return (
     <div className="space-y-6">
@@ -113,6 +120,12 @@ export default async function ManagerDashboardPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Widget Taches Personnelles (SP-420) */}
+      <PersonalTasksWidget
+        initialTasks={personalTasks}
+        totalPendingCount={totalPendingCount}
+      />
 
       {/* Info role */}
       <Card>
