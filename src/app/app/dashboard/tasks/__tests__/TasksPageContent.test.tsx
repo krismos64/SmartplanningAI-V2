@@ -74,9 +74,9 @@ describe('TasksPageContent', () => {
     render(<TasksPageContent initialTasks={mockTasks} />)
 
     expect(
-      screen.getByRole('heading', { name: /mes tâches personnelles/i })
+      screen.getByRole('heading', { name: /notes perso/i })
     ).toBeInTheDocument()
-    expect(screen.getByText(/vos tâches sont privées/i)).toBeInTheDocument()
+    expect(screen.getByText(/vos notes sont privées/i)).toBeInTheDocument()
   })
 
   it('affiche la liste des tâches', () => {

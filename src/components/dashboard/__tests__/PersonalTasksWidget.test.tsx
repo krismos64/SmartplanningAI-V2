@@ -91,13 +91,13 @@ describe('PersonalTasksWidget', () => {
   it('affiche le titre du widget', () => {
     render(<PersonalTasksWidget initialTasks={mockTasks} />)
 
-    expect(screen.getByText('Mes tâches personnelles')).toBeInTheDocument()
+    expect(screen.getByText('Notes perso')).toBeInTheDocument()
   })
 
   it('affiche le badge de confidentialité', () => {
     render(<PersonalTasksWidget initialTasks={mockTasks} />)
 
-    expect(screen.getByText('Vos tâches sont privées')).toBeInTheDocument()
+    expect(screen.getByText('Vos notes sont privées')).toBeInTheDocument()
   })
 
   it('affiche la liste des tâches', () => {

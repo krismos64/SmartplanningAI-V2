@@ -227,9 +227,7 @@ export function PersonalTasksWidget({
           <div className="rounded-md bg-primary/10 p-1.5">
             <ListTodo className="h-4 w-4 text-primary" aria-hidden="true" />
           </div>
-          <CardTitle className="text-base font-medium">
-            Mes tâches personnelles
-          </CardTitle>
+          <CardTitle className="text-base font-medium">Notes perso</CardTitle>
         </div>
         <Button asChild variant="outline" size="sm">
           <Link
@@ -247,7 +245,7 @@ export function PersonalTasksWidget({
         {/* Badge de confidentialité */}
         <div className="mb-4 flex items-center gap-1 text-xs text-muted-foreground">
           <Lock className="h-3 w-3" aria-hidden="true" />
-          <span>Vos tâches sont privées</span>
+          <span>Vos notes sont privées</span>
         </div>
 
         {/* Liste des tâches ou empty state */}

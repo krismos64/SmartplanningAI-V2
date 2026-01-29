@@ -1,7 +1,7 @@
 /**
- * Page Tasks (Tâches personnelles) - Server Component
+ * Page Notes perso - Server Component
  *
- * @description Page principale de gestion des tâches personnelles privées
+ * @description Page principale de gestion des notes personnelles privées
  * @ticket SP-419
  */
 
@@ -14,9 +14,9 @@ import { TasksPageContent } from './_components/TasksPageContent'
 import TasksLoading from './loading'
 
 export const metadata: Metadata = {
-  title: 'Mes tâches personnelles | SmartPlanning',
+  title: 'Notes perso | SmartPlanning',
   description:
-    'Gérez vos tâches personnelles privées avec drag & drop pour réorganiser',
+    'Gérez vos notes personnelles privées avec drag & drop pour réorganiser',
 }
 
 export default async function TasksPage() {
