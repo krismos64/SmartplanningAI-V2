@@ -157,11 +157,12 @@ export const navigationItems: NavigationItem[] = [
   },
   {
     id: 'tasks',
-    label: 'Tâches',
+    label: 'Mes tâches',
     icon: ClipboardList,
-    href: '/tasks',
-    roles: ['DIRECTOR', 'MANAGER', 'EMPLOYEE'],
-    keywords: ['task', 'tâche', 'todo', 'à faire'],
+    href: '/app/dashboard/tasks',
+    roles: 'ALL',
+    keywords: ['task', 'tâche', 'todo', 'à faire', 'personnel'],
+    shortcut: 'G M',
   },
   {
     id: 'stats',
