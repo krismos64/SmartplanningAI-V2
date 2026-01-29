@@ -29,3 +29,9 @@ export { SchedulesPage } from './schedules.page'
 
 // Leaves Pages (SP-416)
 export { LeavesPage, type CreateLeaveData } from './leaves.page'
+
+// Personal Tasks Pages (SP-421)
+export {
+  PersonalTasksPage,
+  type CreateNoteData,
+} from './personal-tasks.page'
