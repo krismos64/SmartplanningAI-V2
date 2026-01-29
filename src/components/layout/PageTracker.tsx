@@ -42,7 +42,7 @@ const ROUTE_INFO_MAP: Record<string, { title: string; icon: string }> = {
   '/app/director/teams': { title: 'Équipes', icon: 'UsersRound' },
   '/schedules': { title: 'Plannings', icon: 'Calendar' },
   '/leaves': { title: 'Congés', icon: 'Plane' },
-  '/tasks': { title: 'Tâches', icon: 'ClipboardList' },
+  '/app/dashboard/tasks': { title: 'Notes perso', icon: 'ClipboardList' },
   '/stats': { title: 'Statistiques', icon: 'BarChart' },
   '/incidents': { title: 'Incidents', icon: 'AlertCircle' },
   '/ai-planning': { title: 'IA Planning', icon: 'Brain' },

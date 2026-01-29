@@ -127,10 +127,10 @@ const menuItems: MenuItem[] = [
   },
   {
     id: 'tasks',
-    label: 'Tâches',
+    label: 'Notes perso',
     icon: ClipboardList,
-    href: '/tasks',
-    roles: ['DIRECTOR', 'MANAGER', 'EMPLOYEE'],
+    href: '/app/dashboard/tasks',
+    roles: 'ALL',
   },
   {
     id: 'stats',
