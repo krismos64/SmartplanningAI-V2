@@ -14,7 +14,7 @@ Ce document trace l'historique complet des tests réalisés sur SmartPlanning. I
 | Pipeline CI/CD       | GitHub Actions                                         |
 | Responsable          | Christophe Mostefaoui                                  |
 | Date de création     | 4 décembre 2025                                        |
-| Dernière mise à jour | 28 janvier 2026                                        |
+| Dernière mise à jour | 29 janvier 2026                                        |
 
 ---
 
@@ -34,8 +34,8 @@ Dans le cadre du diplôme **CDA (Concepteur Développeur d'Applications)**, ce c
 | Métrique              | Objectif  | Atteint |
 | --------------------- | --------- | ------- |
 | Couverture globale    | ≥ 70%     | ✅ 85%  |
-| Tests unitaires       | ≥ 500     | ✅ 3569 |
-| Tests E2E             | ≥ 50      | ✅ 446  |
+| Tests unitaires       | ≥ 500     | ✅ 3598 |
+| Tests E2E             | ≥ 50      | ✅ 467  |
 | Score Lighthouse A11y | ≥ 90%     | ✅ 95%  |
 | Anomalies critiques   | 0 en prod | ✅ 0    |
 
@@ -397,6 +397,8 @@ Ce tableau recense chaque campagne de tests significative (mise en production, f
 
 | Date       | Sprint    | Version/Commit | Tests unitaires | Tests E2E  | Couverture | Statut  | Notes                                                                                                                                                                                                                                                                                                          |
 | ---------- | --------- | -------------- | --------------- | ---------- | ---------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 29/01/2026 | Sprint 14 | SP-417         | 3598/3598 ✅    | 467/467 ✅ | ~85%       | ✅ PASS | 🆕 SP-417 Personal Task Model. +29 tests unitaires (1 fichier). Modèle Prisma PersonalTask avec 3 index (userId, userId+completed, userId+order). 5 schémas Zod (create, update, reorder, toggle, filters). Validation titre max 200, description max 2000, dueDate coerce. Total : 4065 tests |
+| 28/01/2026 | Sprint 13 | SP-416         | 3569/3569 ✅    | 467/467 ✅ | ~85%       | ✅ PASS | 🆕 SP-416 E2E Tests Leaves. +21 tests E2E (5 fichiers). Page Object LeavesPage avec helpers navigation, filtres, formulaires, review. Tests : navigation (5), création (4), review manager/director (5), soldes RBAC (5), calendrier (2). data-testid ajoutés aux composants leaves. Total : 4036 tests |
 | 28/01/2026 | Sprint 13 | SP-415         | 3569/3569 ✅    | 446/446 ✅ | ~85%       | ✅ PASS | 🆕 SP-415 Leaves Integrations. +49 tests unitaires (3 fichiers). Email LeaveRequestedEmail (template + send function) notifiant manager lors création demande. Overlay congés approuvés sur Schedule-X calendrier (7 types couleurs). Props leaveRequests/showLeaves/onLeaveClick ajoutées. Dashboard stats déjà implémentées (pendingLeaveRequests). Total : 4015 tests |
 | 28/01/2026 | Sprint 13 | SP-414         | 3539/3539 ✅    | 446/446 ✅ | ~85%       | ✅ PASS | 🆕 SP-414 Leave Detail + Balances. +48 tests unitaires (4 fichiers). Routes `/leaves/[id]` (détail + timeline) et `/leaves/balances` (DIRECTOR). LeaveDetailCard, LeaveTimeline, LeaveDetailContent, BalancesPageContent. getAllLeaveBalances server action. Total : 3985 tests |
 | 28/01/2026 | Sprint 13 | SP-413         | 3491/3491 ✅    | 446/446 ✅ | ~85%       | ✅ PASS | 🆕 SP-413 Page Congés + Orchestrateur. +18 tests unitaires (2 fichiers). Route `/app/dashboard/leaves` avec metadata SEO. Server Component fetch initial. LeavesPageContent : tabs Liste/Calendrier, stats bar cliquable, filtres URL sync, Dialog/Sheet responsive, Review dialog RBAC. Sidebar href corrigé. Total : 3937 tests |
