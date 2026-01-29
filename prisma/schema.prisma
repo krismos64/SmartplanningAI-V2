@@ -35,6 +35,9 @@ model User {
   // Congés
   leaveBalanceUpdates LeaveBalance[] @relation("LeaveBalanceUpdatedBy")
 
+  // Tâches personnelles (todolist privée)
+  personalTasks PersonalTask[] @relation("UserPersonalTasks")
+
   // Permissions & sécurité
   isActive        Boolean   @default(true)
   isEmailVerified Boolean   @default(false)
@@ -498,6 +501,32 @@ model Notification {
   @@index([companyId])
   @@index([createdAt(sort: Desc)])
   @@map("notifications")
+}
+
+// ============================================================================
+// TÂCHES PERSONNELLES (Todolist privée - SP-417)
+// ============================================================================
+
+model PersonalTask {
+  id          String    @id @default(cuid())
+  title       String    @db.VarChar(200)
+  description String?   @db.Text
+  dueDate     DateTime?
+  completed   Boolean   @default(false)
+  order       Int       @default(0)
+
+  // Propriétaire unique - 100% privé
+  userId String
+  user   User   @relation("UserPersonalTasks", fields: [userId], references: [id], onDelete: Cascade)
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([userId, completed])
+  @@index([userId, order])
+  @@map("personal_tasks")
 }
 
 // ============================================================================
