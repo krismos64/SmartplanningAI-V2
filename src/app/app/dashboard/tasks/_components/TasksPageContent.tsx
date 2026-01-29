@@ -164,16 +164,14 @@ export function TasksPageContent({ initialTasks }: TasksPageContentProps) {
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">
-            Mes tâches personnelles
-          </h1>
+          <h1 className="text-2xl font-bold tracking-tight">Notes perso</h1>
           <p className="text-muted-foreground">
-            Organisez vos tâches par glisser-déposer
+            Organisez vos notes par glisser-déposer
           </p>
         </div>
         <Button onClick={handleCreateTask} data-testid="create-task-button">
           <Plus className="mr-2 h-4 w-4" aria-hidden="true" />
-          Nouvelle tâche
+          Nouvelle note
         </Button>
       </div>
 
