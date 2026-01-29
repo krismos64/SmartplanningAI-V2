@@ -19,6 +19,8 @@ import { DirectorTrendsChart } from './_components/DirectorTrendsChart'
 import { DirectorPendingLeaves } from './_components/DirectorPendingLeaves'
 import { DirectorQuickActions } from './_components/DirectorQuickActions'
 import type { PendingLeaveItem } from './_components/DirectorPendingLeaves'
+import { PersonalTasksWidget } from '@/components/dashboard'
+import { getPersonalTasksForWidget } from '@/lib/actions/personal-tasks'
 
 export const metadata = {
   title: 'Dashboard Director | SmartPlanning',
@@ -182,6 +184,11 @@ export default async function DirectorDashboardPage() {
   const displayName =
     user.name || session.user.email?.split('@')[0] || 'Directeur'
 
+  // Recuperer les taches personnelles pour le widget (SP-420)
+  const tasksResult = await getPersonalTasksForWidget(5)
+  const personalTasks = tasksResult.success ? tasksResult.data : []
+  const totalPendingCount = tasksResult.success ? personalTasks.length : 0
+
   return (
     <div className="space-y-6">
       {/* Message de bienvenue */}
@@ -205,6 +212,12 @@ export default async function DirectorDashboardPage() {
       <DirectorPendingLeaves
         pendingLeaves={pendingLeavesFormatted}
         totalPending={stats.pendingLeaveRequests}
+      />
+
+      {/* Widget Taches Personnelles (SP-420) */}
+      <PersonalTasksWidget
+        initialTasks={personalTasks}
+        totalPendingCount={totalPendingCount}
       />
 
       {/* Actions rapides */}

@@ -11,6 +11,18 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+
+// Mock next-auth pour éviter l'erreur d'import next/server
+// (nécessaire car @/components/dashboard exporte PersonalTasksWidget qui importe des actions)
+vi.mock('@/lib/auth', () => ({
+  auth: vi.fn().mockResolvedValue({ user: { id: 'user-1' } }),
+}))
+
+// Mock des actions personal-tasks pour éviter les imports de auth
+vi.mock('@/lib/actions/personal-tasks', () => ({
+  togglePersonalTask: vi.fn(),
+  getPersonalTasksForWidget: vi.fn(),
+}))
 import { render, screen } from '@testing-library/react'
 import { EmployeeStats } from '@/app/app/dashboard/_components/EmployeeStats'
 import type { EmployeeStatsResult } from '@/lib/services/dashboard/types'

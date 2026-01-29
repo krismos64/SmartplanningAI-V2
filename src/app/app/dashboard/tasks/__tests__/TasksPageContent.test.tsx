@@ -105,9 +105,10 @@ describe('TasksPageContent', () => {
   })
 
   it('gère le toggle completed', async () => {
+    const firstTask = mockTasks[0]!
     vi.mocked(togglePersonalTask).mockResolvedValue({
       success: true,
-      data: { ...mockTasks[0], completed: true },
+      data: { ...firstTask, completed: true },
     })
 
     render(<TasksPageContent initialTasks={mockTasks} />)

@@ -16,6 +16,8 @@ import { EmployeeStats } from './_components/EmployeeStats'
 import { EmployeeSchedule } from './_components/EmployeeSchedule'
 import { EmployeeLeaveBalance } from './_components/EmployeeLeaveBalance'
 import { EmployeeQuickActions } from './_components/EmployeeQuickActions'
+import { PersonalTasksWidget } from '@/components/dashboard'
+import { getPersonalTasksForWidget } from '@/lib/actions/personal-tasks'
 
 export const metadata = {
   title: 'Mon Dashboard | SmartPlanning',
@@ -140,6 +142,13 @@ export default async function EmployeeDashboardPage() {
 
   const stats = statsResult.data
 
+  // Recuperer les taches personnelles pour le widget (SP-420)
+  const tasksResult = await getPersonalTasksForWidget(5)
+  const personalTasks = tasksResult.success ? tasksResult.data : []
+
+  // Compter le total des taches non completees
+  const totalPendingCount = tasksResult.success ? personalTasks.length : 0
+
   // Nom d'affichage : prenom de l'employe ou nom du compte
   const displayName =
     user.employee.firstName ||
@@ -160,6 +169,12 @@ export default async function EmployeeDashboardPage() {
         <EmployeeSchedule weeklySchedule={stats.weeklySchedule} />
         <EmployeeLeaveBalance leaveBalance={stats.leaveBalance} />
       </div>
+
+      {/* Widget Taches Personnelles (SP-420) */}
+      <PersonalTasksWidget
+        initialTasks={personalTasks}
+        totalPendingCount={totalPendingCount}
+      />
 
       {/* Actions rapides */}
       <EmployeeQuickActions pendingRequests={stats.pendingRequests} />
