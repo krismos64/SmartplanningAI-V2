@@ -34,7 +34,7 @@ Dans le cadre du diplôme **CDA (Concepteur Développeur d'Applications)**, ce c
 | Métrique              | Objectif  | Atteint |
 | --------------------- | --------- | ------- |
 | Couverture globale    | ≥ 70%     | ✅ 85%  |
-| Tests unitaires       | ≥ 500     | ✅ 3626 |
+| Tests unitaires       | ≥ 500     | ✅ 3653 |
 | Tests E2E             | ≥ 50      | ✅ 467  |
 | Score Lighthouse A11y | ≥ 90%     | ✅ 95%  |
 | Anomalies critiques   | 0 en prod | ✅ 0    |
@@ -397,6 +397,7 @@ Ce tableau recense chaque campagne de tests significative (mise en production, f
 
 | Date       | Sprint    | Version/Commit | Tests unitaires | Tests E2E  | Couverture | Statut  | Notes                                                                                                                                                                                                                                                                                                          |
 | ---------- | --------- | -------------- | --------------- | ---------- | ---------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 29/01/2026 | Sprint 14 | SP-419         | 3653/3653 ✅    | 467/467 ✅ | ~85%       | ✅ PASS | 🆕 SP-419 Personal Tasks Page. +27 tests unitaires (4 fichiers). Page /dashboard/tasks avec drag & drop @dnd-kit. 6 composants : TasksPageContent, PersonalTaskList, PersonalTaskCard, PersonalTaskForm (Dialog/Sheet responsive), PrivacyBadge, EmptyState. Optimistic updates. Total : 4120 tests |
 | 29/01/2026 | Sprint 14 | SP-418         | 3626/3626 ✅    | 467/467 ✅ | ~85%       | ✅ PASS | 🆕 SP-418 Personal Task Actions. +28 tests unitaires (1 fichier). 6 Server Actions CRUD : getPersonalTasks, createPersonalTask, updatePersonalTask, deletePersonalTask, togglePersonalTask, reorderPersonalTasks. Sécurité 100% privée (vérification userId). Transaction Prisma pour reorder. Total : 4093 tests |
 | 29/01/2026 | Sprint 14 | SP-417         | 3598/3598 ✅    | 467/467 ✅ | ~85%       | ✅ PASS | 🆕 SP-417 Personal Task Model. +29 tests unitaires (1 fichier). Modèle Prisma PersonalTask avec 3 index (userId, userId+completed, userId+order). 5 schémas Zod (create, update, reorder, toggle, filters). Validation titre max 200, description max 2000, dueDate coerce. Total : 4065 tests |
 | 28/01/2026 | Sprint 13 | SP-416         | 3569/3569 ✅    | 467/467 ✅ | ~85%       | ✅ PASS | 🆕 SP-416 E2E Tests Leaves. +21 tests E2E (5 fichiers). Page Object LeavesPage avec helpers navigation, filtres, formulaires, review. Tests : navigation (5), création (4), review manager/director (5), soldes RBAC (5), calendrier (2). data-testid ajoutés aux composants leaves. Total : 4036 tests |
