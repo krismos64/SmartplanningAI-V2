@@ -1,0 +1,119 @@
+/**
+ * Schémas de validation Zod pour les notes d'incident
+ *
+ * @ticket SP-424
+ * @description Validation des notes d'incident avec visibilité RBAC
+ */
+
+import { z } from 'zod'
+import { IncidentNoteVisibility } from '@prisma/client'
+
+// ─── Enum Zod synchronisé avec Prisma ───────────────────────────────
+
+export const IncidentNoteVisibilitySchema = z.nativeEnum(IncidentNoteVisibility)
+
+// ─── Schéma de création de note d'incident ──────────────────────────
+
+export const incidentNoteCreateSchema = z.object({
+  title: z
+    .string()
+    .min(1, 'Le titre est requis')
+    .max(200, 'Le titre ne doit pas dépasser 200 caractères'),
+  content: z
+    .string()
+    .min(1, 'Le contenu est requis')
+    .max(5000, 'Le contenu ne doit pas dépasser 5000 caractères'),
+  date: z.coerce.date({
+    errorMap: () => ({ message: "Date de l'incident invalide" }),
+  }),
+  visibility: IncidentNoteVisibilitySchema.default('DIRECTOR_ONLY'),
+  subjectId: z.string().cuid("ID d'employé invalide"),
+})
+
+export type IncidentNoteCreateInput = z.infer<typeof incidentNoteCreateSchema>
+
+// ─── Schéma de mise à jour (tous optionnels) ────────────────────────
+
+export const incidentNoteUpdateSchema = z.object({
+  title: z
+    .string()
+    .min(1, 'Le titre ne peut pas être vide')
+    .max(200, 'Le titre ne doit pas dépasser 200 caractères')
+    .optional(),
+  content: z
+    .string()
+    .min(1, 'Le contenu ne peut pas être vide')
+    .max(5000, 'Le contenu ne doit pas dépasser 5000 caractères')
+    .optional(),
+  date: z.coerce.date().optional(),
+  visibility: IncidentNoteVisibilitySchema.optional(),
+})
+
+export type IncidentNoteUpdateInput = z.infer<typeof incidentNoteUpdateSchema>
+
+// ─── Schéma de filtrage ─────────────────────────────────────────────
+
+export const incidentNoteFiltersSchema = z.object({
+  subjectId: z.string().cuid().optional(),
+  authorId: z.string().cuid().optional(),
+  visibility: IncidentNoteVisibilitySchema.optional(),
+  startDate: z.coerce.date().optional(),
+  endDate: z.coerce.date().optional(),
+  search: z.string().optional(),
+})
+
+export type IncidentNoteFilters = z.infer<typeof incidentNoteFiltersSchema>
+
+// ─── Labels français ────────────────────────────────────────────────
+
+export const INCIDENT_NOTE_VISIBILITY_LABELS: Record<
+  IncidentNoteVisibility,
+  string
+> = {
+  DIRECTOR_ONLY: 'Directeur uniquement',
+  MANAGER_DIRECTOR: 'Managers & Directeurs',
+  ALL: 'Tous les rôles',
+}
+
+// ─── Descriptions pour UI ───────────────────────────────────────────
+
+export const INCIDENT_NOTE_VISIBILITY_DESCRIPTIONS: Record<
+  IncidentNoteVisibility,
+  string
+> = {
+  DIRECTOR_ONLY: "Visible uniquement par les directeurs de l'entreprise",
+  MANAGER_DIRECTOR: 'Visible par les managers et directeurs',
+  ALL: "Visible par tous les membres de l'entreprise",
+}
+
+// ─── Couleurs Tailwind pour l'UI ────────────────────────────────────
+
+export const INCIDENT_NOTE_VISIBILITY_COLORS: Record<
+  IncidentNoteVisibility,
+  string
+> = {
+  DIRECTOR_ONLY: 'bg-red-100 text-red-800',
+  MANAGER_DIRECTOR: 'bg-amber-100 text-amber-800',
+  ALL: 'bg-green-100 text-green-800',
+}
+
+// ─── Icônes Lucide React ────────────────────────────────────────────
+
+export const INCIDENT_NOTE_VISIBILITY_ICONS: Record<
+  IncidentNoteVisibility,
+  string
+> = {
+  DIRECTOR_ONLY: 'ShieldAlert',
+  MANAGER_DIRECTOR: 'Users',
+  ALL: 'Globe',
+}
+
+// ─── Options pour les selects UI ────────────────────────────────────
+
+export const incidentNoteVisibilityOptions = Object.values(
+  IncidentNoteVisibility
+).map((value) => ({
+  value,
+  label: INCIDENT_NOTE_VISIBILITY_LABELS[value],
+  description: INCIDENT_NOTE_VISIBILITY_DESCRIPTIONS[value],
+}))
