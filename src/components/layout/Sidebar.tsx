@@ -143,8 +143,8 @@ const menuItems: MenuItem[] = [
     id: 'incidents',
     label: 'Incidents',
     icon: AlertCircle,
-    href: '/incidents',
-    roles: ['DIRECTOR', 'MANAGER'],
+    href: '/app/dashboard/incidents',
+    roles: ['DIRECTOR', 'MANAGER', 'EMPLOYEE'],
   },
   {
     id: 'ai-planning',
