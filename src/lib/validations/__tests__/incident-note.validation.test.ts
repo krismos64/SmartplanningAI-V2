@@ -5,6 +5,8 @@
  * @description Tests unitaires pour les validations Zod des notes d'incident
  */
 
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
+
 import { describe, it, expect } from 'vitest'
 import {
   incidentNoteCreateSchema,
@@ -59,8 +61,8 @@ describe('IncidentNote Validations', () => {
       })
       expect(result.success).toBe(false)
       if (!result.success) {
-        expect(result.error.issues[0].path).toContain('title')
-        expect(result.error.issues[0].message).toBe('Le titre est requis')
+        expect(result.error.issues[0]!.path).toContain('title')
+        expect(result.error.issues[0]!.message).toBe('Le titre est requis')
       }
     })
 
@@ -71,8 +73,8 @@ describe('IncidentNote Validations', () => {
       })
       expect(result.success).toBe(false)
       if (!result.success) {
-        expect(result.error.issues[0].path).toContain('title')
-        expect(result.error.issues[0].message).toContain('200 caractères')
+        expect(result.error.issues[0]!.path).toContain('title')
+        expect(result.error.issues[0]!.message).toContain('200 caractères')
       }
     })
 
@@ -83,8 +85,8 @@ describe('IncidentNote Validations', () => {
       })
       expect(result.success).toBe(false)
       if (!result.success) {
-        expect(result.error.issues[0].path).toContain('content')
-        expect(result.error.issues[0].message).toBe('Le contenu est requis')
+        expect(result.error.issues[0]!.path).toContain('content')
+        expect(result.error.issues[0]!.message).toBe('Le contenu est requis')
       }
     })
 
@@ -95,8 +97,8 @@ describe('IncidentNote Validations', () => {
       })
       expect(result.success).toBe(false)
       if (!result.success) {
-        expect(result.error.issues[0].path).toContain('content')
-        expect(result.error.issues[0].message).toContain('5000 caractères')
+        expect(result.error.issues[0]!.path).toContain('content')
+        expect(result.error.issues[0]!.message).toContain('5000 caractères')
       }
     })
 
@@ -107,7 +109,7 @@ describe('IncidentNote Validations', () => {
       })
       expect(result.success).toBe(false)
       if (!result.success) {
-        expect(result.error.issues[0].path).toContain('subjectId')
+        expect(result.error.issues[0]!.path).toContain('subjectId')
       }
     })
 
@@ -148,7 +150,7 @@ describe('IncidentNote Validations', () => {
       })
       expect(result.success).toBe(false)
       if (!result.success) {
-        expect(result.error.issues[0].message).toContain('invalide')
+        expect(result.error.issues[0]!.message).toContain('invalide')
       }
     })
   })
@@ -188,7 +190,7 @@ describe('IncidentNote Validations', () => {
       })
       expect(result.success).toBe(false)
       if (!result.success) {
-        expect(result.error.issues[0].message).toBe(
+        expect(result.error.issues[0]!.message).toBe(
           'Le titre ne peut pas être vide'
         )
       }
@@ -200,7 +202,7 @@ describe('IncidentNote Validations', () => {
       })
       expect(result.success).toBe(false)
       if (!result.success) {
-        expect(result.error.issues[0].message).toBe(
+        expect(result.error.issues[0]!.message).toBe(
           'Le contenu ne peut pas être vide'
         )
       }
