@@ -6,12 +6,10 @@ import { motion } from 'framer-motion'
 import {
   Home,
   Calendar,
-  Brain,
   Plane,
   ClipboardList,
   Users,
   UsersRound,
-  BarChart,
   Settings,
   Building,
   Activity,
@@ -133,25 +131,11 @@ const menuItems: MenuItem[] = [
     roles: 'ALL',
   },
   {
-    id: 'stats',
-    label: 'Statistiques',
-    icon: BarChart,
-    href: '/stats',
-    roles: ['DIRECTOR', 'MANAGER'],
-  },
-  {
     id: 'incidents',
     label: 'Incidents',
     icon: AlertCircle,
     href: '/app/dashboard/incidents',
     roles: ['DIRECTOR', 'MANAGER', 'EMPLOYEE'],
-  },
-  {
-    id: 'ai-planning',
-    label: 'IA Planning',
-    icon: Brain,
-    href: '/ai-planning',
-    roles: ['DIRECTOR', 'MANAGER'],
   },
   {
     id: 'settings',
