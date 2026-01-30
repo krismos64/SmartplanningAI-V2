@@ -97,6 +97,23 @@ export type {
 export { leaveTypeLabels } from './leave'
 
 // ============================================================================
+// TYPES NOTES D'INCIDENT (SP-424)
+// ============================================================================
+export type {
+  IncidentNoteVisibility,
+  IncidentNoteWithSubject,
+  IncidentNoteWithAuthor,
+  IncidentNoteWithRelations,
+  IncidentNoteListItem,
+} from './incident-note'
+export {
+  INCIDENT_NOTE_VISIBILITY_LABELS,
+  INCIDENT_NOTE_VISIBILITY_DESCRIPTIONS,
+  INCIDENT_NOTE_VISIBILITY_ICONS,
+  INCIDENT_NOTE_VISIBILITY_COLORS,
+} from './incident-note'
+
+// ============================================================================
 // TYPES GÉNÉRIQUES UTILITAIRES
 // ============================================================================
 

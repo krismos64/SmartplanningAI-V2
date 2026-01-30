@@ -34,3 +34,6 @@ export * from './leave'
 
 // Personal Task schemas (SP-417)
 export * from './personal-task'
+
+// Incident Note schemas (SP-424)
+export * from './incident-note'
