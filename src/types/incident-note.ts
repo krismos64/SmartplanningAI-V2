@@ -5,7 +5,13 @@
  * @description Types pour le module de suivi comportemental avec visibilité RBAC
  */
 
-import type { IncidentNote, IncidentNoteVisibility, User, Employee, Company } from '@prisma/client'
+import type {
+  IncidentNote,
+  IncidentNoteVisibility,
+  User,
+  Employee,
+  Company,
+} from '@prisma/client'
 
 // ─── Types de visibilité ────────────────────────────────────────────
 

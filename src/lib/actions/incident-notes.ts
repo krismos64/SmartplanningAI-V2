@@ -262,7 +262,8 @@ export async function createIncidentNote(
       if (!subject.teamId || !user.managedTeamIds.includes(subject.teamId)) {
         return {
           success: false,
-          error: 'Vous ne pouvez créer des notes que pour les membres de vos équipes',
+          error:
+            'Vous ne pouvez créer des notes que pour les membres de vos équipes',
           field: 'subjectId',
         }
       }

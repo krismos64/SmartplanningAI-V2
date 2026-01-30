@@ -200,7 +200,7 @@ describe('createIncidentNote', () => {
     }
   })
 
-  it("refuse si le MANAGER essaie de créer une note pour un employé hors de son équipe", async () => {
+  it('refuse si le MANAGER essaie de créer une note pour un employé hors de son équipe', async () => {
     setupAuth('MANAGER', MANAGER_USER_ID, [TEAM_ID])
 
     // Sujet dans une autre équipe
@@ -209,9 +209,7 @@ describe('createIncidentNote', () => {
         id: 'clemployee_manager',
         managedTeams: [{ id: TEAM_ID }],
       } as never)
-      .mockResolvedValueOnce(
-        mockEmployee({ teamId: OTHER_TEAM_ID }) as never
-      )
+      .mockResolvedValueOnce(mockEmployee({ teamId: OTHER_TEAM_ID }) as never)
 
     const result = await createIncidentNote(validInput)
 
@@ -596,7 +594,10 @@ describe('getIncidentNotesForEmployee', () => {
     setupAuth('DIRECTOR', DIRECTOR_USER_ID)
 
     vi.mocked(prisma.employee.findUnique)
-      .mockResolvedValueOnce({ id: 'clemployee_director', managedTeams: [] } as never)
+      .mockResolvedValueOnce({
+        id: 'clemployee_director',
+        managedTeams: [],
+      } as never)
       .mockResolvedValueOnce(mockEmployee() as never)
 
     vi.mocked(prisma.incidentNote.findMany).mockResolvedValue([
