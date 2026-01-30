@@ -427,6 +427,168 @@ describe('director-stats.service', () => {
   })
 
   // ==========================================================================
+  // plannedHoursThisMonth (SP-317)
+  // ==========================================================================
+
+  describe('plannedHoursThisMonth', () => {
+    it('devrait calculer les heures planifiees du mois', async () => {
+      prismaMock.user.findUnique.mockResolvedValue({
+        id: 'user-1',
+        role: 'DIRECTOR',
+        companyId: 'company-1',
+        email: 'director@test.com',
+        password: 'hash',
+        name: 'Director',
+        emailVerified: null,
+        image: null,
+        isActive: true,
+        isEmailVerified: true,
+        lastLoginAt: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+
+      prismaMock.employee.count.mockResolvedValue(10)
+      prismaMock.team.count.mockResolvedValue(2)
+      prismaMock.leaveRequest.count.mockResolvedValue(0)
+      prismaMock.leaveRequest.findMany.mockResolvedValue([])
+      prismaMock.team.findMany.mockResolvedValue([])
+      prismaMock.employee.findMany.mockResolvedValue([])
+      prismaMock.leaveRequest.groupBy.mockResolvedValue([])
+
+      // Mock des schedules avec des heures planifiees
+      // 3 creneaux de 8h chacun = 24h
+      prismaMock.schedule.findMany.mockResolvedValue([
+        { startTime: '09:00', endTime: '17:00' },
+        { startTime: '09:00', endTime: '17:00' },
+        { startTime: '09:00', endTime: '17:00' },
+      ] as any)
+
+      const result = await getDirectorStats({
+        userId: 'user-1',
+        companyId: 'company-1',
+      })
+
+      expect(result.success).toBe(true)
+      expect(result.data?.plannedHoursThisMonth).toBe(24)
+    })
+
+    it('devrait retourner 0 si aucun planning', async () => {
+      prismaMock.user.findUnique.mockResolvedValue({
+        id: 'user-1',
+        role: 'DIRECTOR',
+        companyId: 'company-1',
+        email: 'director@test.com',
+        password: 'hash',
+        name: 'Director',
+        emailVerified: null,
+        image: null,
+        isActive: true,
+        isEmailVerified: true,
+        lastLoginAt: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+
+      prismaMock.employee.count.mockResolvedValue(10)
+      prismaMock.team.count.mockResolvedValue(2)
+      prismaMock.leaveRequest.count.mockResolvedValue(0)
+      prismaMock.leaveRequest.findMany.mockResolvedValue([])
+      prismaMock.team.findMany.mockResolvedValue([])
+      prismaMock.schedule.findMany.mockResolvedValue([])
+      prismaMock.employee.findMany.mockResolvedValue([])
+      prismaMock.leaveRequest.groupBy.mockResolvedValue([])
+
+      const result = await getDirectorStats({
+        userId: 'user-1',
+        companyId: 'company-1',
+      })
+
+      expect(result.success).toBe(true)
+      expect(result.data?.plannedHoursThisMonth).toBe(0)
+    })
+  })
+
+  // ==========================================================================
+  // absencesLast7Days (SP-317)
+  // ==========================================================================
+
+  describe('absencesLast7Days', () => {
+    it('devrait compter les absences des 7 derniers jours', async () => {
+      prismaMock.user.findUnique.mockResolvedValue({
+        id: 'user-1',
+        role: 'DIRECTOR',
+        companyId: 'company-1',
+        email: 'director@test.com',
+        password: 'hash',
+        name: 'Director',
+        emailVerified: null,
+        image: null,
+        isActive: true,
+        isEmailVerified: true,
+        lastLoginAt: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+
+      prismaMock.employee.count.mockResolvedValue(10)
+      prismaMock.team.count.mockResolvedValue(2)
+      // Premier count pour pending, deuxieme pour absences 7j
+      prismaMock.leaveRequest.count
+        .mockResolvedValueOnce(0) // pending
+        .mockResolvedValueOnce(5) // absences 7j
+      prismaMock.leaveRequest.findMany.mockResolvedValue([])
+      prismaMock.team.findMany.mockResolvedValue([])
+      prismaMock.schedule.findMany.mockResolvedValue([])
+      prismaMock.employee.findMany.mockResolvedValue([])
+      prismaMock.leaveRequest.groupBy.mockResolvedValue([])
+
+      const result = await getDirectorStats({
+        userId: 'user-1',
+        companyId: 'company-1',
+      })
+
+      expect(result.success).toBe(true)
+      expect(result.data?.absencesLast7Days).toBe(5)
+    })
+
+    it('devrait retourner 0 si aucune absence', async () => {
+      prismaMock.user.findUnique.mockResolvedValue({
+        id: 'user-1',
+        role: 'DIRECTOR',
+        companyId: 'company-1',
+        email: 'director@test.com',
+        password: 'hash',
+        name: 'Director',
+        emailVerified: null,
+        image: null,
+        isActive: true,
+        isEmailVerified: true,
+        lastLoginAt: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+
+      prismaMock.employee.count.mockResolvedValue(10)
+      prismaMock.team.count.mockResolvedValue(2)
+      prismaMock.leaveRequest.count.mockResolvedValue(0)
+      prismaMock.leaveRequest.findMany.mockResolvedValue([])
+      prismaMock.team.findMany.mockResolvedValue([])
+      prismaMock.schedule.findMany.mockResolvedValue([])
+      prismaMock.employee.findMany.mockResolvedValue([])
+      prismaMock.leaveRequest.groupBy.mockResolvedValue([])
+
+      const result = await getDirectorStats({
+        userId: 'user-1',
+        companyId: 'company-1',
+      })
+
+      expect(result.success).toBe(true)
+      expect(result.data?.absencesLast7Days).toBe(0)
+    })
+  })
+
+  // ==========================================================================
   // Edge cases
   // ==========================================================================
 

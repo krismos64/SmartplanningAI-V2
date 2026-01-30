@@ -19,6 +19,7 @@ import type {
   DirectorStatsResult,
   ServiceResult,
 } from './types'
+import { startOfMonth, endOfMonth, subDays } from 'date-fns'
 import {
   getDefaultDateRange,
   verifyCompanyAccess,
@@ -55,6 +56,8 @@ export async function getDirectorStats(
       totalTeams,
       pendingLeaveRequests,
       averageAttendanceRate,
+      plannedHoursThisMonth,
+      absencesLast7Days,
       teamStats,
       leaveTypeDistribution,
       employeeGrowth,
@@ -63,6 +66,8 @@ export async function getDirectorStats(
       getTotalTeams(companyId),
       getPendingLeaveRequestsCount(companyId),
       getAverageAttendanceRate(companyId, dateRange),
+      getPlannedHoursThisMonth(companyId),
+      getAbsencesLast7Days(companyId),
       getTeamStats(companyId, dateRange),
       getLeaveTypeDistribution(companyId),
       getEmployeeGrowth(companyId),
@@ -75,6 +80,8 @@ export async function getDirectorStats(
         totalTeams,
         pendingLeaveRequests,
         averageAttendanceRate,
+        plannedHoursThisMonth,
+        absencesLast7Days,
         teamStats,
         leaveTypeDistribution,
         employeeGrowth,
@@ -122,6 +129,67 @@ async function getPendingLeaveRequestsCount(
     where: {
       companyId,
       status: 'PENDING',
+    },
+  })
+}
+
+/**
+ * Calcule les heures planifiees pour le mois en cours
+ * @ticket SP-317
+ */
+async function getPlannedHoursThisMonth(companyId: string): Promise<number> {
+  const now = new Date()
+  const monthStart = startOfMonth(now)
+  const monthEnd = endOfMonth(now)
+
+  // Recuperer tous les schedules du mois
+  const schedules = await prisma.schedule.findMany({
+    where: {
+      companyId,
+      startDate: { gte: monthStart, lte: monthEnd },
+      type: 'WORK', // Seulement les creneaux de travail
+    },
+    select: {
+      startTime: true,
+      endTime: true,
+    },
+  })
+
+  // Calculer le total des heures
+  const totalHours = schedules.reduce((total, schedule) => {
+    return total + calculateHoursBetween(schedule.startTime, schedule.endTime)
+  }, 0)
+
+  return roundToOneDecimal(totalHours)
+}
+
+/**
+ * Compte les absences sur les 7 derniers jours
+ * (conges approuves qui chevauchent la periode)
+ * @ticket SP-317
+ */
+async function getAbsencesLast7Days(companyId: string): Promise<number> {
+  const now = new Date()
+  const sevenDaysAgo = subDays(now, 7)
+
+  // Conges approuves qui chevauchent les 7 derniers jours
+  return prisma.leaveRequest.count({
+    where: {
+      companyId,
+      status: 'APPROVED',
+      OR: [
+        // Commence dans la periode
+        { startDate: { gte: sevenDaysAgo, lte: now } },
+        // Finit dans la periode
+        { endDate: { gte: sevenDaysAgo, lte: now } },
+        // Englobe la periode
+        {
+          AND: [
+            { startDate: { lte: sevenDaysAgo } },
+            { endDate: { gte: now } },
+          ],
+        },
+      ],
     },
   })
 }
