@@ -67,7 +67,9 @@ describe('IncidentNoteCard', () => {
 
   it('affiche le badge de visibilité DIRECTOR_ONLY', () => {
     render(<IncidentNoteCard {...defaultProps} />)
-    expect(screen.getByTestId('visibility-badge-DIRECTOR_ONLY')).toBeInTheDocument()
+    expect(
+      screen.getByTestId('visibility-badge-DIRECTOR_ONLY')
+    ).toBeInTheDocument()
   })
 
   it('appelle onView au clic sur la carte', () => {
@@ -83,7 +85,9 @@ describe('IncidentNoteCard', () => {
 
   it('affiche le bouton supprimer pour DIRECTOR', () => {
     render(<IncidentNoteCard {...defaultProps} />)
-    expect(screen.getByTestId(`delete-button-${mockNote.id}`)).toBeInTheDocument()
+    expect(
+      screen.getByTestId(`delete-button-${mockNote.id}`)
+    ).toBeInTheDocument()
   })
 
   it('masque les boutons modifier/supprimer pour EMPLOYEE', () => {

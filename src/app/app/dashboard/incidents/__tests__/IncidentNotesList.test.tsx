@@ -100,9 +100,7 @@ describe('IncidentNotesList', () => {
 
   it("affiche l'état vide avec bouton créer pour DIRECTOR", () => {
     render(<IncidentNotesList {...defaultProps} notes={[]} />)
-    expect(
-      screen.getByTestId('empty-state-create-button')
-    ).toBeInTheDocument()
+    expect(screen.getByTestId('empty-state-create-button')).toBeInTheDocument()
   })
 
   it("affiche l'état vide sans bouton créer pour EMPLOYEE", () => {
@@ -118,9 +116,7 @@ describe('IncidentNotesList', () => {
     render(
       <IncidentNotesList {...defaultProps} notes={[]} userRole="MANAGER" />
     )
-    expect(
-      screen.getByTestId('empty-state-create-button')
-    ).toBeInTheDocument()
+    expect(screen.getByTestId('empty-state-create-button')).toBeInTheDocument()
   })
 
   it('utilise une grille responsive', () => {

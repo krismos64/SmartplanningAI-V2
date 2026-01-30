@@ -51,7 +51,9 @@ describe('VisibilityBadge', () => {
   it('affiche le tooltip par défaut', () => {
     render(<VisibilityBadge visibility="DIRECTOR_ONLY" showTooltip={true} />)
     // Le tooltip est rendu dans un provider
-    expect(screen.getByTestId('visibility-badge-DIRECTOR_ONLY')).toBeInTheDocument()
+    expect(
+      screen.getByTestId('visibility-badge-DIRECTOR_ONLY')
+    ).toBeInTheDocument()
   })
 
   it('peut masquer le tooltip', () => {

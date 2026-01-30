@@ -109,48 +109,34 @@ describe('IncidentNotesPageContent', () => {
   })
 
   it('affiche le titre de la page', () => {
-    render(
-      <IncidentNotesPageContent initialNotes={[]} userRole="DIRECTOR" />
-    )
+    render(<IncidentNotesPageContent initialNotes={[]} userRole="DIRECTOR" />)
     expect(screen.getByText("Notes d'incident")).toBeInTheDocument()
   })
 
   it('affiche la description', () => {
-    render(
-      <IncidentNotesPageContent initialNotes={[]} userRole="DIRECTOR" />
-    )
+    render(<IncidentNotesPageContent initialNotes={[]} userRole="DIRECTOR" />)
     expect(
       screen.getByText(/Suivi comportemental avec contrôle de visibilité/)
     ).toBeInTheDocument()
   })
 
   it('affiche le bouton créer pour DIRECTOR', () => {
-    render(
-      <IncidentNotesPageContent initialNotes={[]} userRole="DIRECTOR" />
-    )
+    render(<IncidentNotesPageContent initialNotes={[]} userRole="DIRECTOR" />)
     expect(screen.getByTestId('create-note-button')).toBeInTheDocument()
   })
 
   it('affiche le bouton créer pour MANAGER', () => {
-    render(
-      <IncidentNotesPageContent initialNotes={[]} userRole="MANAGER" />
-    )
+    render(<IncidentNotesPageContent initialNotes={[]} userRole="MANAGER" />)
     expect(screen.getByTestId('create-note-button')).toBeInTheDocument()
   })
 
   it('masque le bouton créer pour EMPLOYEE', () => {
-    render(
-      <IncidentNotesPageContent initialNotes={[]} userRole="EMPLOYEE" />
-    )
-    expect(
-      screen.queryByTestId('create-note-button')
-    ).not.toBeInTheDocument()
+    render(<IncidentNotesPageContent initialNotes={[]} userRole="EMPLOYEE" />)
+    expect(screen.queryByTestId('create-note-button')).not.toBeInTheDocument()
   })
 
   it('affiche les filtres', () => {
-    render(
-      <IncidentNotesPageContent initialNotes={[]} userRole="DIRECTOR" />
-    )
+    render(<IncidentNotesPageContent initialNotes={[]} userRole="DIRECTOR" />)
     expect(screen.getByTestId('incidents-filters')).toBeInTheDocument()
     expect(screen.getByTestId('search-input')).toBeInTheDocument()
   })
@@ -166,9 +152,7 @@ describe('IncidentNotesPageContent', () => {
   })
 
   it("affiche l'état vide quand aucune note", () => {
-    render(
-      <IncidentNotesPageContent initialNotes={[]} userRole="DIRECTOR" />
-    )
+    render(<IncidentNotesPageContent initialNotes={[]} userRole="DIRECTOR" />)
     expect(screen.getByTestId('empty-state')).toBeInTheDocument()
   })
 
@@ -205,9 +189,7 @@ describe('IncidentNotesPageContent', () => {
   })
 
   it('a le data-testid incidents-page-content', () => {
-    render(
-      <IncidentNotesPageContent initialNotes={[]} userRole="DIRECTOR" />
-    )
+    render(<IncidentNotesPageContent initialNotes={[]} userRole="DIRECTOR" />)
     expect(screen.getByTestId('incidents-page-content')).toBeInTheDocument()
   })
 })
