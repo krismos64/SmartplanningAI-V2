@@ -6,11 +6,23 @@
  */
 
 import { z } from 'zod'
-import { IncidentNoteVisibility } from '@prisma/client'
+
+// ─── Valeurs de visibilité (synchronisées avec Prisma enum) ─────────
+// Note: On définit les valeurs ici au lieu d'utiliser @prisma/client
+// car l'enum Prisma n'est pas disponible côté client (undefined)
+
+export const INCIDENT_NOTE_VISIBILITY_VALUES = [
+  'DIRECTOR_ONLY',
+  'MANAGER_DIRECTOR',
+  'ALL',
+] as const
+
+export type IncidentNoteVisibility =
+  (typeof INCIDENT_NOTE_VISIBILITY_VALUES)[number]
 
 // ─── Enum Zod synchronisé avec Prisma ───────────────────────────────
 
-export const IncidentNoteVisibilitySchema = z.nativeEnum(IncidentNoteVisibility)
+export const IncidentNoteVisibilitySchema = z.enum(INCIDENT_NOTE_VISIBILITY_VALUES)
 
 // ─── Schéma de création de note d'incident ──────────────────────────
 
@@ -110,10 +122,10 @@ export const INCIDENT_NOTE_VISIBILITY_ICONS: Record<
 
 // ─── Options pour les selects UI ────────────────────────────────────
 
-export const incidentNoteVisibilityOptions = Object.values(
-  IncidentNoteVisibility
-).map((value) => ({
-  value,
-  label: INCIDENT_NOTE_VISIBILITY_LABELS[value],
-  description: INCIDENT_NOTE_VISIBILITY_DESCRIPTIONS[value],
-}))
+export const incidentNoteVisibilityOptions = INCIDENT_NOTE_VISIBILITY_VALUES.map(
+  (value) => ({
+    value,
+    label: INCIDENT_NOTE_VISIBILITY_LABELS[value],
+    description: INCIDENT_NOTE_VISIBILITY_DESCRIPTIONS[value],
+  })
+)
