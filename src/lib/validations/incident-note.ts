@@ -22,7 +22,9 @@ export type IncidentNoteVisibility =
 
 // ─── Enum Zod synchronisé avec Prisma ───────────────────────────────
 
-export const IncidentNoteVisibilitySchema = z.enum(INCIDENT_NOTE_VISIBILITY_VALUES)
+export const IncidentNoteVisibilitySchema = z.enum(
+  INCIDENT_NOTE_VISIBILITY_VALUES
+)
 
 // ─── Schéma de création de note d'incident ──────────────────────────
 
@@ -122,10 +124,9 @@ export const INCIDENT_NOTE_VISIBILITY_ICONS: Record<
 
 // ─── Options pour les selects UI ────────────────────────────────────
 
-export const incidentNoteVisibilityOptions = INCIDENT_NOTE_VISIBILITY_VALUES.map(
-  (value) => ({
+export const incidentNoteVisibilityOptions =
+  INCIDENT_NOTE_VISIBILITY_VALUES.map((value) => ({
     value,
     label: INCIDENT_NOTE_VISIBILITY_LABELS[value],
     description: INCIDENT_NOTE_VISIBILITY_DESCRIPTIONS[value],
-  })
-)
+  }))
