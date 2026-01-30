@@ -176,9 +176,10 @@ export const navigationItems: NavigationItem[] = [
     id: 'incidents',
     label: 'Incidents',
     icon: AlertCircle,
-    href: '/incidents',
-    roles: ['DIRECTOR', 'MANAGER'],
-    keywords: ['incident', 'problème', 'alerte', 'issue'],
+    href: '/app/dashboard/incidents',
+    roles: ['DIRECTOR', 'MANAGER', 'EMPLOYEE'],
+    keywords: ['incident', 'problème', 'alerte', 'issue', 'note'],
+    shortcut: 'G I',
   },
   {
     id: 'ai-planning',
