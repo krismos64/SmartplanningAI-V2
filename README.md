@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 30 janvier 2026 (Sprint 14 - SP-426 IncidentNote UI : 10 composants + 53 tests)
+- **Dernière mise à jour** : 30 janvier 2026 (Sprint 14 - SP-316 Dashboard Manager : 5 composants + 63 tests)
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -66,6 +66,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Dashboard Services Prisma** (SP-144) : Services data layer par rôle (Employee, Manager, Director, Admin) avec architecture multi-tenant
 - **Dashboard Employee** (SP-145) : Page dashboard complète avec Server Components, redirection par rôle, 5 composants métier (Welcome, Stats, Schedule, LeaveBalance, QuickActions)
 - **Dashboard Director** (SP-147) : Page dashboard directeur avec Server Components, RBAC, 6 composants métier (Welcome, Stats, TeamsChart, TrendsChart, PendingLeaves, QuickActions)
+- **Dashboard Manager** (SP-316) : Page dashboard manager avec Server Components, RBAC, 5 composants métier (ManagerWelcome, ManagerStats, ManagerTeamChart, ManagerPendingLeaves, ManagerQuickActions)
 - **Dashboard Super Admin** (SP-148) : Page dashboard admin SaaS avec Server Components, protection SYSTEM_ADMIN, 7 composants (Welcome, Stats, MrrChart, SignupsChart, PlansChart, RecentCompanies, QuickActions)
 - **Leave Management UI** (SP-411/SP-412/SP-413/SP-414/SP-415) : 16 composants congés + pages (LeaveTypeBadge, LeaveStatusBadge, LeaveBalanceCard, LeaveBalanceEditDialog, LeaveRequestCard, LeaveRequestForm, LeaveReviewDialog, LeaveConflictWarning, LeaveFilters, LeavesList, LeavesListMobile, LeaveCalendar, LeaveCalendarDay, LeaveStatsBar, LeaveDetailCard, LeaveTimeline) + pages orchestrateur, détail [id], balances + email notification manager + overlay congés Schedule-X
 
@@ -2083,7 +2084,7 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 | Middleware RBAC                     | 26      | ✅                                |
 | Smoke tests                         | 4       | ✅                                |
 | **Dashboard Employee**              | 15      | ✅                                |
-| **Dashboard Manager**               | 1       | ⏸️ (22 skipped - UI en attente)   |
+| **Dashboard Manager**               | 23      | ✅                                |
 | **Dashboard Director**              | 22      | ✅                                |
 | **Dashboard Super Admin**           | 25      | ✅                                |
 | **RBAC Protection**                 | 21      | ✅                                |
@@ -2169,6 +2170,14 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 - EmployeeSchedule (BarChartWidget heures hebdomadaires)
 - EmployeeLeaveBalance (PieChartWidget donut solde congés)
 - EmployeeQuickActions (boutons actions rapides avec badge)
+
+#### Dashboard Manager (5 composants - SP-316)
+
+- ManagerWelcome (message bienvenue contextuel + badges alertes conges/absences)
+- ManagerStats (4 KPIs : membres equipe, conges a valider, absents, heures equipe avec tendance)
+- ManagerTeamChart (BarChartWidget performance equipe heures travaillees)
+- ManagerPendingLeaves (liste demandes conges en attente avec actions approuver/refuser)
+- ManagerQuickActions (4 boutons actions rapides : equipe, planning, conges, incidents)
 
 #### CRUD Infrastructure (SP-150)
 
@@ -2444,7 +2453,7 @@ Merge main → Build Docker → Push GHCR → Deploy VPS (~8-10 min)
 
 - **CI** (`.github/workflows/ci.yml`) : Lint, Type-check, Tests unitaires, Build, Tests E2E (PR uniquement)
 - **CD** (`.github/workflows/cd.yml`) : Build image Docker, Push sur ghcr.io, Deploy via SSH
-- Tests unitaires sur tous les push (~3784 tests Vitest)
+- Tests unitaires sur tous les push (~3847 tests Vitest)
 - Tests E2E sur PR vers main (~487 tests Playwright actifs, 5 devices mobiles)
 - Déploiement automatique sur merge main ✅
 - Migrations Prisma automatiques
