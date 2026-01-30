@@ -34,7 +34,7 @@ Dans le cadre du diplôme **CDA (Concepteur Développeur d'Applications)**, ce c
 | Métrique              | Objectif  | Atteint |
 | --------------------- | --------- | ------- |
 | Couverture globale    | ≥ 70%     | ✅ 85%  |
-| Tests unitaires       | ≥ 500     | ✅ 3707 |
+| Tests unitaires       | ≥ 500     | ✅ 3731 |
 | Tests E2E             | ≥ 50      | ✅ 487  |
 | Score Lighthouse A11y | ≥ 90%     | ✅ 95%  |
 | Anomalies critiques   | 0 en prod | ✅ 0    |
@@ -397,6 +397,7 @@ Ce tableau recense chaque campagne de tests significative (mise en production, f
 
 | Date       | Sprint    | Version/Commit | Tests unitaires | Tests E2E  | Couverture | Statut  | Notes                                                                                                                                                                                                                                                                                                          |
 | ---------- | --------- | -------------- | --------------- | ---------- | ---------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 30/01/2026 | Sprint 14 | SP-425         | 3731/3731 ✅    | 487/487 ✅ | ~85%       | ✅ PASS | 🆕 SP-425 IncidentNote Actions. +24 tests unitaires (1 fichier). 7 Server Actions CRUD : createIncidentNote, getIncidentNotes, getIncidentNoteById, getMyIncidentNotes, updateIncidentNote, deleteIncidentNote, getIncidentNotesForEmployee. RBAC visibility (DIRECTOR_ONLY, MANAGER_DIRECTOR, ALL). Helper checkNoteAccess. Total : 4218 tests |
 | 30/01/2026 | Sprint 14 | SP-424         | 3707/3707 ✅    | 487/487 ✅ | ~85%       | ✅ PASS | 🆕 SP-424 IncidentNote Model. +35 tests unitaires (1 fichier). Modèle Prisma IncidentNote avec relations subject/author/company. Enum IncidentNoteVisibility (DIRECTOR_ONLY, MANAGER_DIRECTOR, ALL). 3 schémas Zod (create, update, filters). Types TypeScript avec labels, descriptions, couleurs, icônes. Migration DB. Total : 4194 tests |
 | 29/01/2026 | Sprint 14 | SP-421         | 3680/3680 ✅    | 487/487 ✅ | ~85%       | ✅ PASS | 🆕 SP-421 Notes perso E2E. +20 tests E2E (2 fichiers). Page Object PersonalTasksPage. Tests CRUD (navigation, création, modification, suppression, annulation), widget (4 dashboards), sécurité (isolation multi-user, persistance). Total : 4167 tests |
 | 29/01/2026 | Sprint 14 | SP-420         | 3680/3680 ✅    | 467/467 ✅ | ~85%       | ✅ PASS | 🆕 SP-420 Personal Tasks Widget. +19 tests unitaires (2 fichiers). Server Action getPersonalTasksForWidget(limit=5). Composant PersonalTasksWidget avec Skeleton, EmptyState, toggle optimiste. Intégration dans 4 dashboards (Employee, Manager, Director, Admin). Total : 4147 tests |
