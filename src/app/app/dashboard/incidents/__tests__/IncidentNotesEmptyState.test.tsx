@@ -16,9 +16,7 @@ describe('IncidentNotesEmptyState', () => {
 
   it('affiche le bouton créer si canCreate=true', () => {
     render(<IncidentNotesEmptyState onCreateNote={vi.fn()} canCreate={true} />)
-    expect(
-      screen.getByTestId('empty-state-create-button')
-    ).toBeInTheDocument()
+    expect(screen.getByTestId('empty-state-create-button')).toBeInTheDocument()
     expect(screen.getByText('Nouvelle note')).toBeInTheDocument()
   })
 
@@ -31,9 +29,7 @@ describe('IncidentNotesEmptyState', () => {
 
   it('affiche le message approprié pour canCreate=true', () => {
     render(<IncidentNotesEmptyState onCreateNote={vi.fn()} canCreate={true} />)
-    expect(
-      screen.getByText(/Créez votre première note/)
-    ).toBeInTheDocument()
+    expect(screen.getByText(/Créez votre première note/)).toBeInTheDocument()
   })
 
   it('affiche le message approprié pour canCreate=false', () => {

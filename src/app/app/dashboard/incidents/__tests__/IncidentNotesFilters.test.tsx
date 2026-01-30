@@ -39,7 +39,10 @@ describe('IncidentNotesFilters', () => {
   it('appelle onFiltersChange quand on tape dans la recherche', () => {
     const onFiltersChange = vi.fn()
     render(
-      <IncidentNotesFilters {...defaultProps} onFiltersChange={onFiltersChange} />
+      <IncidentNotesFilters
+        {...defaultProps}
+        onFiltersChange={onFiltersChange}
+      />
     )
     fireEvent.change(screen.getByTestId('search-input'), {
       target: { value: 'test' },
@@ -50,7 +53,10 @@ describe('IncidentNotesFilters', () => {
   it('appelle onFiltersChange quand on change la date de début', () => {
     const onFiltersChange = vi.fn()
     render(
-      <IncidentNotesFilters {...defaultProps} onFiltersChange={onFiltersChange} />
+      <IncidentNotesFilters
+        {...defaultProps}
+        onFiltersChange={onFiltersChange}
+      />
     )
     fireEvent.change(screen.getByTestId('start-date-input'), {
       target: { value: '2026-01-01' },
@@ -61,7 +67,10 @@ describe('IncidentNotesFilters', () => {
   it('appelle onFiltersChange quand on change la date de fin', () => {
     const onFiltersChange = vi.fn()
     render(
-      <IncidentNotesFilters {...defaultProps} onFiltersChange={onFiltersChange} />
+      <IncidentNotesFilters
+        {...defaultProps}
+        onFiltersChange={onFiltersChange}
+      />
     )
     fireEvent.change(screen.getByTestId('end-date-input'), {
       target: { value: '2026-01-31' },
@@ -71,9 +80,7 @@ describe('IncidentNotesFilters', () => {
 
   it("n'affiche pas le bouton reset quand aucun filtre n'est actif", () => {
     render(<IncidentNotesFilters {...defaultProps} />)
-    expect(
-      screen.queryByTestId('reset-filters-button')
-    ).not.toBeInTheDocument()
+    expect(screen.queryByTestId('reset-filters-button')).not.toBeInTheDocument()
   })
 
   it('affiche le bouton reset quand un filtre est actif', () => {
