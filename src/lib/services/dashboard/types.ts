@@ -153,6 +153,10 @@ export interface DirectorStatsResult {
   pendingLeaveRequests: number
   /** Taux de presence moyen (%) */
   averageAttendanceRate: number
+  /** Heures planifiees ce mois (SP-317) */
+  plannedHoursThisMonth: number
+  /** Absences sur les 7 derniers jours (SP-317) */
+  absencesLast7Days: number
   /** Statistiques par equipe (pour chart) */
   teamStats: Array<{
     name: string

@@ -83,7 +83,7 @@ describe('ManagerPendingLeaves', () => {
   })
 
   it('affiche singulier pour 1 demande', () => {
-    render(<ManagerPendingLeaves pendingLeaves={[mockLeaves[0]]} />)
+    render(<ManagerPendingLeaves pendingLeaves={[mockLeaves[0]!]} />)
 
     expect(screen.getByText('1 demande en attente')).toBeInTheDocument()
   })
@@ -96,7 +96,7 @@ describe('ManagerPendingLeaves', () => {
   })
 
   it('affiche date unique si meme jour', () => {
-    render(<ManagerPendingLeaves pendingLeaves={[mockLeaves[1]]} />)
+    render(<ManagerPendingLeaves pendingLeaves={[mockLeaves[1]!]} />)
 
     // Date unique 20 fevrier (avec accent)
     expect(screen.getByText(/20 févr\./i)).toBeInTheDocument()

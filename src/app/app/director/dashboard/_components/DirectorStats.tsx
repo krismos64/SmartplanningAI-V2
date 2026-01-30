@@ -5,11 +5,12 @@
  * - Employes actifs
  * - Equipes
  * - Conges en attente
- * - Heures planifiees (placeholder)
+ * - Heures planifiees (mois)
  * - Taux de presence
- * - Absences a venir (placeholder)
+ * - Absences 7 jours
  *
  * @ticket SP-147
+ * @ticket SP-317 - Ajout heures planifiees et absences 7j
  */
 'use client'
 
@@ -71,9 +72,10 @@ export function DirectorStats({
     },
     {
       title: 'Heures planifiees',
-      value: '-',
+      value: stats.plannedHoursThisMonth,
+      unit: 'h',
       icon: Calendar,
-      description: 'Cette semaine',
+      description: 'Ce mois',
     },
     {
       title: 'Taux de presence',
@@ -84,9 +86,10 @@ export function DirectorStats({
     },
     {
       title: 'Absences 7j',
-      value: '-',
+      value: stats.absencesLast7Days,
       icon: UserMinus,
-      description: 'Prochains 7 jours',
+      description:
+        stats.absencesLast7Days > 0 ? 'Derniers 7 jours' : 'Aucune absence',
     },
   ]
 
