@@ -8,11 +8,18 @@
  * - Demandes en attente
  *
  * @ticket SP-145
+ * @ticket SP-431 - Animations Framer Motion
  */
 'use client'
 
+import { motion } from 'framer-motion'
+import {
+  staggerContainer,
+  staggerItem,
+  useReducedMotion,
+} from '@/lib/animations'
 import { Clock, Calendar, Plane, FileText } from 'lucide-react'
-import { StatsGrid } from '@/components/dashboard'
+import { StatCard } from '@/components/dashboard'
 import type { StatCardProps, TrendDirection } from '@/types/dashboard'
 import type {
   EmployeeStatsResult,
@@ -74,7 +81,7 @@ export function EmployeeStats({
   isLoading = false,
   className,
 }: EmployeeStatsProps) {
-  // Construction des StatCards
+  // Construction des StatCards avec variants Cyber Glass 3D
   const statCards: StatCardProps[] = [
     {
       title: 'Heures travaillees',
@@ -82,12 +89,14 @@ export function EmployeeStats({
       icon: Clock,
       trend: formatTrend(stats.hoursWorked),
       description: 'Ce mois',
+      variant: 'primary',
     },
     {
       title: 'Shifts a venir',
       value: stats.upcomingShifts,
       icon: Calendar,
       description: 'Planifies',
+      variant: 'info',
     },
     {
       title: 'Solde conges',
@@ -95,6 +104,7 @@ export function EmployeeStats({
       icon: Plane,
       unit: ' jours',
       description: `${stats.leaveBalance.used}/${stats.leaveBalance.total} utilises`,
+      variant: 'success',
     },
     {
       title: 'Demandes en attente',
@@ -102,17 +112,42 @@ export function EmployeeStats({
       icon: FileText,
       description:
         stats.pendingRequests > 0 ? 'En cours de traitement' : 'Aucune demande',
+      variant: stats.pendingRequests > 0 ? 'warning' : 'default',
     },
   ]
 
+  const shouldReduceMotion = useReducedMotion()
+
+  // Version sans animation pour reduced motion ou loading
+  if (shouldReduceMotion || isLoading) {
+    return (
+      <div
+        className={cn('grid grid-cols-2 gap-4 md:grid-cols-4', className)}
+        role="region"
+        aria-label="Statistiques employee"
+      >
+        {statCards.map((stat, index) => (
+          <StatCard key={index} {...stat} isLoading={isLoading} />
+        ))}
+      </div>
+    )
+  }
+
   return (
-    <div
-      className={cn(className)}
+    <motion.div
+      variants={staggerContainer}
+      initial="hidden"
+      animate="visible"
+      className={cn('grid grid-cols-2 gap-4 md:grid-cols-4', className)}
       role="region"
       aria-label="Statistiques employee"
     >
-      <StatsGrid stats={statCards} columns={4} isLoading={isLoading} />
-    </div>
+      {statCards.map((stat, index) => (
+        <motion.div key={index} variants={staggerItem}>
+          <StatCard {...stat} />
+        </motion.div>
+      ))}
+    </motion.div>
   )
 }
 

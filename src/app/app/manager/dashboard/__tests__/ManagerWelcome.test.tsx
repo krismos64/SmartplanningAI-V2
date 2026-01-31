@@ -28,7 +28,9 @@ describe('ManagerWelcome', () => {
       />
     )
 
-    expect(screen.getByText(/Bonjour, Marie/)).toBeInTheDocument()
+    // Le nom est maintenant dans un span séparé avec effet neon
+    expect(screen.getByText(/Bonjour/)).toBeInTheDocument()
+    expect(screen.getByText(/Marie/)).toBeInTheDocument()
   })
 
   it('affiche la date du jour', () => {
