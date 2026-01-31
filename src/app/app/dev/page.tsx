@@ -18,6 +18,12 @@ export default function DevIndexPage() {
 
   const testPages = [
     {
+      title: 'Design System',
+      description: 'Cyber Glass 3D - Tokens, effets, animations (SP-259)',
+      href: '/app/dev/design-system',
+      icon: '✨',
+    },
+    {
       title: 'Test Components',
       description: 'UserCard, TeamCard, AvatarStack (SP-123)',
       href: '/app/dev/test-components',
