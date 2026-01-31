@@ -373,6 +373,103 @@ export const semanticDark = {
 } as const
 
 // =============================================================================
+// GLOW TOKENS - Couleurs avec opacité pour effets lumineux
+// =============================================================================
+
+/**
+ * Tokens de glow pour effets néon et lumineux
+ * Direction esthétique : "Cyber Glass 3D"
+ *
+ * @see SP-259 - Design Tokens Enhancement
+ */
+export const glowColors = {
+  /** Cyan électrique pour highlights tech */
+  cyan: {
+    light: 'rgba(6, 182, 212, 0.15)',
+    medium: 'rgba(6, 182, 212, 0.3)',
+    strong: 'rgba(6, 182, 212, 0.5)',
+    intense: 'rgba(6, 182, 212, 0.7)',
+  },
+  /** Blue primary glow */
+  blue: {
+    light: 'rgba(59, 130, 246, 0.15)',
+    medium: 'rgba(59, 130, 246, 0.3)',
+    strong: 'rgba(59, 130, 246, 0.5)',
+    intense: 'rgba(59, 130, 246, 0.7)',
+  },
+  /** Violet accent glow */
+  violet: {
+    light: 'rgba(139, 92, 246, 0.15)',
+    medium: 'rgba(139, 92, 246, 0.3)',
+    strong: 'rgba(139, 92, 246, 0.5)',
+    intense: 'rgba(139, 92, 246, 0.7)',
+  },
+  /** Success green glow */
+  emerald: {
+    light: 'rgba(16, 185, 129, 0.15)',
+    medium: 'rgba(16, 185, 129, 0.3)',
+    strong: 'rgba(16, 185, 129, 0.5)',
+    intense: 'rgba(16, 185, 129, 0.7)',
+  },
+  /** Warning amber glow */
+  amber: {
+    light: 'rgba(245, 158, 11, 0.15)',
+    medium: 'rgba(245, 158, 11, 0.3)',
+    strong: 'rgba(245, 158, 11, 0.5)',
+    intense: 'rgba(245, 158, 11, 0.7)',
+  },
+  /** Error rose glow */
+  rose: {
+    light: 'rgba(225, 29, 72, 0.15)',
+    medium: 'rgba(225, 29, 72, 0.3)',
+    strong: 'rgba(225, 29, 72, 0.5)',
+    intense: 'rgba(225, 29, 72, 0.7)',
+  },
+} as const
+
+// =============================================================================
+// GRADIENTS PREMIUM - Dégradés pour effets visuels avancés
+// =============================================================================
+
+/**
+ * Gradients premium pour l'interface
+ * Utilisés pour hero sections, CTAs, backgrounds
+ */
+export const gradients = {
+  /** Gradient principal (hero, CTA) - Blue → Violet → Cyan */
+  primary: 'linear-gradient(135deg, #3B82F6 0%, #8B5CF6 50%, #06B6D4 100%)',
+
+  /** Gradient subtil pour reflet sur cards */
+  cardShine:
+    'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 50%)',
+
+  /** Gradient radial pour sidebar glow */
+  sidebarGlow:
+    'radial-gradient(ellipse at top, rgba(59,130,246,0.15) 0%, transparent 50%)',
+
+  /** Mesh gradient dark mode */
+  meshDark: `
+    radial-gradient(at 40% 20%, rgba(59,130,246,0.08) 0px, transparent 50%),
+    radial-gradient(at 80% 0%, rgba(139,92,246,0.08) 0px, transparent 50%),
+    radial-gradient(at 0% 50%, rgba(6,182,212,0.05) 0px, transparent 50%)
+  `,
+
+  /** Mesh gradient light mode */
+  meshLight: `
+    radial-gradient(at 40% 20%, rgba(59,130,246,0.05) 0px, transparent 50%),
+    radial-gradient(at 80% 0%, rgba(139,92,246,0.05) 0px, transparent 50%),
+    radial-gradient(at 0% 50%, rgba(6,182,212,0.03) 0px, transparent 50%)
+  `,
+
+  /** Gradient pour texte hero */
+  textPrimary: 'linear-gradient(135deg, #3B82F6 0%, #8B5CF6 100%)',
+
+  /** Gradient border animé */
+  borderAnimated:
+    'conic-gradient(from var(--gradient-angle, 0deg), #3B82F6, #8B5CF6, rgba(59,130,246,0.5), #3B82F6)',
+} as const
+
+// =============================================================================
 // EXPORTS & UTILITIES
 // =============================================================================
 
@@ -433,6 +530,12 @@ export function toHslVar(name: string): string {
 export const colors = {
   primitive: primitiveColors,
   semantic: semanticColors,
+  glow: glowColors,
+  gradients,
   withOpacity,
   toHslVar,
 }
+
+export type GlowColor = keyof typeof glowColors
+export type GlowIntensity = 'light' | 'medium' | 'strong' | 'intense'
+export type GradientName = keyof typeof gradients
