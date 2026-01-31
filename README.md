@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 30 janvier 2026 (Sprint 14 - SP-431 Animations Dashboards Framer Motion : 15 composants)
+- **Dernière mise à jour** : 31 janvier 2026 (Sprint 14 - SP-259 Design System Cyber Glass 3D : tokens, effets, dashboards)
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -96,30 +96,35 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Collaborateurs** (DIRECTOR, MANAGER) : Gestion complète avec permissions RBAC
 - **Équipes** (DIRECTOR) : CRUD + gestion des membres
 
-### Architecture CSS & Animations (SP-379 - 21 janvier 2026)
+### Architecture CSS & Animations (SP-379, SP-259 - 31 janvier 2026)
 
-Système de design unifié et centralisé :
+Système de design unifié et centralisé avec direction esthétique **"Cyber Glass 3D"** :
 
 - **Design Tokens** (`src/styles/tokens/`) :
-  - `colors.ts` : Palettes primitives et sémantiques (light/dark)
+  - `colors.ts` : Palettes primitives, sémantiques, **glowColors** (6 couleurs × 4 intensités), **gradients** (7 types)
   - `typography.ts` : Fonts, tailles, styles de texte
   - `spacing.ts` : Échelle d'espacement, breakpoints, containers
-  - `shadows.ts` : Box shadows, drop shadows, glows
+  - `shadows.ts` : Box shadows, drop shadows, glows, **shadow3D** (float, inset, cardPremium, stat), **neonGlow**, **textNeon**
   - `radius.ts` : Border radius, ring, outline
   - `index.ts` : Export centralisé `tokens` + `tailwindTheme`
-  - Tests complets : 99 tests unitaires
+  - Tests complets : 129 tests unitaires
 
-- **Animations Framer Motion** (`src/lib/animations/`) :
+- **Animations Framer Motion** (`src/lib/animations/` + `src/components/ui/animated-container.tsx`) :
   - `variants.ts` : Tous les variants d'animation centralisés
   - `presets.ts` : Configurations d'animation prédéfinies
   - `config.ts` : Durées, easings, breakpoints motion
   - `hooks/` : `useReducedMotion`, `useScrollAnimation`
-  - `index.ts` : Re-export de `motion` + tous les variants
+  - `AnimatedContainer` : Composant avec variants fadeInUp/Down/Left/Right, scaleIn, stagger
+  - `AnimatedItem` : Élément enfant pour animations stagger
   - Tests complets : 102 tests unitaires
 
 - **Styles globaux** (`src/app/globals.css`) :
   - CSS Variables pour le theming (couleurs HSL, radius, sidebar)
-  - Classes utilitaires : `container-custom`, `transition-smooth`, `text-truncate`
+  - **Cyber Glass 3D** : `.glass`, `.glass-strong`, `.card-3d`, `.hover-lift`, `.hover-lift-glow`
+  - **Effets Glow** : `.glow-primary`, `.glow-accent`, `.glow-cyan`
+  - **Texte Neon** : `.text-neon-primary`, `.text-neon-accent`, `.text-neon-cyan`
+  - **Bordures animées** : `.border-gradient-primary`, `.border-gradient-animated`
+  - **Animations** : `.shimmer-premium`, `.pulse-glow`, `.float`, `.bg-mesh`
   - Support dark mode préparé (variables `.dark`)
   - Scrollbar personnalisée (Webkit)
 
@@ -127,9 +132,13 @@ Système de design unifié et centralisé :
   - Intègre les design tokens TypeScript
   - Keyframes Radix : `accordion-down`, `accordion-up`
   - Keyframes custom : `fade-in`, `scale-in`, `slide-up/down/left/right`
+  - **Keyframes Cyber Glass** : `shimmer-slide`, `pulse-glow`, `float`, `gradient-rotate`, `border-pulse`
+  - **BoxShadow Cyber Glass** : `float-*`, `glow-*`, `card-premium`, `stat-*`, `glass-*`
   - Plugin `tailwindcss-animate` pour Shadcn/ui
 
 - **CSS Modules** (`landing.module.css`) : Styles spécifiques landing (glassmorphism, gradients)
+
+- **Page Démo** (`/app/dev/design-system`) : Référentiel visuel interactif de tous les effets Cyber Glass 3D
 
 **Import unifié** :
 
@@ -142,8 +151,11 @@ import {
   floatAnimation,
 } from '@/lib/animations'
 
+// AnimatedContainer pour les pages
+import { AnimatedContainer, AnimatedItem } from '@/components/ui/animated-container'
+
 // Design tokens - import unique
-import { tokens, colors, spacing } from '@/styles/tokens'
+import { tokens, colors, glowColors, gradients, shadow3D } from '@/styles/tokens'
 ```
 
 > **Note** : L'ancien répertoire `src/app/(landing)/animations/` a été supprimé. Tous les composants utilisent maintenant `@/lib/animations`.
