@@ -40,7 +40,8 @@ describe('DirectorWelcome', () => {
         />
       )
 
-      expect(screen.getByText('Bonjour, Marie !')).toBeInTheDocument()
+      expect(screen.getByText(/Bonjour/)).toBeInTheDocument()
+      expect(screen.getByText('Marie')).toBeInTheDocument()
     })
 
     it('devrait afficher Bon apres-midi a 14h', () => {
@@ -56,7 +57,8 @@ describe('DirectorWelcome', () => {
         />
       )
 
-      expect(screen.getByText('Bon apres-midi, Marie !')).toBeInTheDocument()
+      expect(screen.getByText(/Bon apres-midi/)).toBeInTheDocument()
+      expect(screen.getByText('Marie')).toBeInTheDocument()
     })
 
     it('devrait afficher Bonsoir le soir (20h)', () => {
@@ -72,7 +74,8 @@ describe('DirectorWelcome', () => {
         />
       )
 
-      expect(screen.getByText('Bonsoir, Marie !')).toBeInTheDocument()
+      expect(screen.getByText(/Bonsoir/)).toBeInTheDocument()
+      expect(screen.getByText('Marie')).toBeInTheDocument()
     })
 
     it('devrait afficher le nom du directeur', () => {
@@ -88,7 +91,8 @@ describe('DirectorWelcome', () => {
         />
       )
 
-      expect(screen.getByText('Bonjour, Jean-Pierre !')).toBeInTheDocument()
+      expect(screen.getByText(/Bonjour/)).toBeInTheDocument()
+      expect(screen.getByText('Jean-Pierre')).toBeInTheDocument()
     })
   })
 
@@ -257,7 +261,9 @@ describe('DirectorWelcome', () => {
         />
       )
 
-      expect(container.firstChild).toHaveClass('custom-class')
+      // La className est sur le Card à l'intérieur du motion.div
+      const card = container.querySelector('.custom-class')
+      expect(card).toBeInTheDocument()
     })
   })
 

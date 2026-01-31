@@ -174,7 +174,9 @@ describe('EmployeeWelcome', () => {
         />
       )
 
-      expect(container.firstChild).toHaveClass('custom-class')
+      // La className est sur le Card à l'intérieur du motion.div
+      const card = container.querySelector('.custom-class')
+      expect(card).toBeInTheDocument()
     })
   })
 
