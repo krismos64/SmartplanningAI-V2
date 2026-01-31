@@ -16,15 +16,38 @@ import type { AdminStatsResult } from '@/lib/services/dashboard/types'
 
 // Mock des composants
 vi.mock('@/components/dashboard', () => ({
-  StatsGrid: ({
-    stats,
+  StatCard: ({
+    title,
+    value,
+    trend,
+    description,
+    unit,
+    variant,
     isLoading,
   }: {
-    stats: unknown[]
+    title: string
+    value: string | number
+    trend?: { value: number; direction: string; label: string }
+    description?: string
+    unit?: string
+    variant?: string
     isLoading?: boolean
   }) => (
-    <div data-testid="stats-grid" data-loading={isLoading}>
-      {JSON.stringify(stats)}
+    <div
+      data-testid="stat-card"
+      data-title={title}
+      data-value={unit ? `${value}${unit}` : value}
+      data-trend-direction={trend?.direction}
+      data-trend-value={trend?.value}
+      data-description={description}
+      data-variant={variant}
+      data-loading={isLoading}
+    >
+      <span>{title}</span>
+      <span>{unit ? `${value}${unit}` : value}</span>
+      {trend && <span>{trend.direction}</span>}
+      {trend && <span>{trend.value}</span>}
+      {description && <span>{description}</span>}
     </div>
   ),
 }))
@@ -67,28 +90,29 @@ describe('AdminStats', () => {
   // ==========================================================================
 
   describe('rendu de base', () => {
-    it('devrait rendre le composant StatsGrid', () => {
+    it('devrait rendre les StatCards', () => {
       render(<AdminStats stats={mockStats} />)
 
-      expect(screen.getByTestId('stats-grid')).toBeInTheDocument()
+      const statCards = screen.getAllByTestId('stat-card')
+      expect(statCards.length).toBe(6)
     })
 
     it('devrait passer isLoading false par defaut', () => {
       render(<AdminStats stats={mockStats} />)
 
-      expect(screen.getByTestId('stats-grid')).toHaveAttribute(
-        'data-loading',
-        'false'
-      )
+      const statCards = screen.getAllByTestId('stat-card')
+      statCards.forEach((card) => {
+        expect(card).not.toHaveAttribute('data-loading', 'true')
+      })
     })
 
     it('devrait passer isLoading true quand specifie', () => {
       render(<AdminStats stats={mockStats} isLoading />)
 
-      expect(screen.getByTestId('stats-grid')).toHaveAttribute(
-        'data-loading',
-        'true'
-      )
+      const statCards = screen.getAllByTestId('stat-card')
+      statCards.forEach((card) => {
+        expect(card).toHaveAttribute('data-loading', 'true')
+      })
     })
   })
 
@@ -96,53 +120,47 @@ describe('AdminStats', () => {
   // KPIs passes a StatsGrid
   // ==========================================================================
 
-  describe('KPIs passes a StatsGrid', () => {
+  describe('KPIs affiches', () => {
     it('devrait inclure le KPI Entreprises', () => {
       render(<AdminStats stats={mockStats} />)
 
-      const gridContent = screen.getByTestId('stats-grid').textContent
-      expect(gridContent).toContain('Entreprises')
-      expect(gridContent).toContain('150')
+      expect(screen.getByText('Entreprises')).toBeInTheDocument()
+      expect(screen.getByText('150')).toBeInTheDocument()
     })
 
     it('devrait inclure le KPI Utilisateurs', () => {
       render(<AdminStats stats={mockStats} />)
 
-      const gridContent = screen.getByTestId('stats-grid').textContent
-      expect(gridContent).toContain('Utilisateurs')
-      expect(gridContent).toContain('2500')
+      expect(screen.getByText('Utilisateurs')).toBeInTheDocument()
+      expect(screen.getByText('2500')).toBeInTheDocument()
     })
 
     it('devrait inclure le KPI Abonnements actifs', () => {
       render(<AdminStats stats={mockStats} />)
 
-      const gridContent = screen.getByTestId('stats-grid').textContent
-      expect(gridContent).toContain('Abonnements actifs')
-      expect(gridContent).toContain('130')
+      expect(screen.getByText('Abonnements actifs')).toBeInTheDocument()
+      expect(screen.getByText('130')).toBeInTheDocument()
     })
 
     it('devrait inclure le KPI MRR formate', () => {
       render(<AdminStats stats={mockStats} />)
 
-      const gridContent = screen.getByTestId('stats-grid').textContent
-      expect(gridContent).toContain('MRR')
+      expect(screen.getByText('MRR')).toBeInTheDocument()
       // formatCurrency retourne "45.0k EUR"
-      expect(gridContent).toContain('45.0k EUR')
+      expect(screen.getByText('45.0k EUR')).toBeInTheDocument()
     })
 
     it('devrait inclure le KPI Taux conversion', () => {
       render(<AdminStats stats={mockStats} />)
 
-      const gridContent = screen.getByTestId('stats-grid').textContent
-      expect(gridContent).toContain('Taux conversion')
+      expect(screen.getByText('Taux conversion')).toBeInTheDocument()
     })
 
     it('devrait inclure le KPI Taux churn', () => {
       render(<AdminStats stats={mockStats} />)
 
-      const gridContent = screen.getByTestId('stats-grid').textContent
-      expect(gridContent).toContain('Taux churn')
-      expect(gridContent).toContain('2.5')
+      expect(screen.getByText('Taux churn')).toBeInTheDocument()
+      expect(screen.getByText('2.5%')).toBeInTheDocument()
     })
   })
 
@@ -154,17 +172,23 @@ describe('AdminStats', () => {
     it('devrait calculer les trends pour Entreprises', () => {
       render(<AdminStats stats={mockStats} />)
 
-      const gridContent = screen.getByTestId('stats-grid').textContent
-      // Le trend de 25% devrait etre inclus
-      expect(gridContent).toContain('up')
+      // Le trend de 25% devrait etre inclus avec direction up
+      const statCards = screen.getAllByTestId('stat-card')
+      const entreprisesCard = statCards.find(
+        (card) => card.getAttribute('data-title') === 'Entreprises'
+      )
+      expect(entreprisesCard).toHaveAttribute('data-trend-direction', 'up')
     })
 
     it('devrait calculer les trends pour MRR', () => {
       render(<AdminStats stats={mockStats} />)
 
-      const gridContent = screen.getByTestId('stats-grid').textContent
       // Le trend de 18.4% devrait etre inclus
-      expect(gridContent).toContain('18.4')
+      const statCards = screen.getAllByTestId('stat-card')
+      const mrrCard = statCards.find(
+        (card) => card.getAttribute('data-title') === 'MRR'
+      )
+      expect(mrrCard).toHaveAttribute('data-trend-value', '18.4')
     })
 
     it('devrait gerer les trends negatifs', () => {
@@ -179,8 +203,11 @@ describe('AdminStats', () => {
 
       render(<AdminStats stats={statsWithNegativeTrend} />)
 
-      const gridContent = screen.getByTestId('stats-grid').textContent
-      expect(gridContent).toContain('down')
+      const statCards = screen.getAllByTestId('stat-card')
+      const entreprisesCard = statCards.find(
+        (card) => card.getAttribute('data-title') === 'Entreprises'
+      )
+      expect(entreprisesCard).toHaveAttribute('data-trend-direction', 'down')
     })
 
     it('devrait gerer les trends neutres (0)', () => {
@@ -195,8 +222,11 @@ describe('AdminStats', () => {
 
       render(<AdminStats stats={statsWithNeutralTrend} />)
 
-      const gridContent = screen.getByTestId('stats-grid').textContent
-      expect(gridContent).toContain('neutral')
+      const statCards = screen.getAllByTestId('stat-card')
+      const entreprisesCard = statCards.find(
+        (card) => card.getAttribute('data-title') === 'Entreprises'
+      )
+      expect(entreprisesCard).toHaveAttribute('data-trend-direction', 'neutral')
     })
   })
 
@@ -209,8 +239,7 @@ describe('AdminStats', () => {
       render(<AdminStats stats={mockStats} />)
 
       // 100 actifs / (100 + 30 essai) = 77%
-      const gridContent = screen.getByTestId('stats-grid').textContent
-      expect(gridContent).toContain('77')
+      expect(screen.getByText('77%')).toBeInTheDocument()
     })
 
     it('devrait retourner 0 si aucun abonnement', () => {
@@ -221,8 +250,11 @@ describe('AdminStats', () => {
 
       render(<AdminStats stats={statsWithNoSubs} />)
 
-      const gridContent = screen.getByTestId('stats-grid').textContent
-      expect(gridContent).toContain('"value":0')
+      const statCards = screen.getAllByTestId('stat-card')
+      const conversionCard = statCards.find(
+        (card) => card.getAttribute('data-title') === 'Taux conversion'
+      )
+      expect(conversionCard).toHaveAttribute('data-value', '0%')
     })
 
     it('devrait retourner 100% si tous actifs', () => {
@@ -233,8 +265,11 @@ describe('AdminStats', () => {
 
       render(<AdminStats stats={statsAllActive} />)
 
-      const gridContent = screen.getByTestId('stats-grid').textContent
-      expect(gridContent).toContain('"value":100')
+      const statCards = screen.getAllByTestId('stat-card')
+      const conversionCard = statCards.find(
+        (card) => card.getAttribute('data-title') === 'Taux conversion'
+      )
+      expect(conversionCard).toHaveAttribute('data-value', '100%')
     })
   })
 
@@ -246,9 +281,8 @@ describe('AdminStats', () => {
     it('devrait formater les montants >= 1000 en k EUR', () => {
       render(<AdminStats stats={mockStats} />)
 
-      const gridContent = screen.getByTestId('stats-grid').textContent
       // formatCurrency retourne "45.0k EUR"
-      expect(gridContent).toContain('45.0k EUR')
+      expect(screen.getByText('45.0k EUR')).toBeInTheDocument()
     })
 
     it('devrait formater les montants < 1000 sans k', () => {
@@ -259,8 +293,7 @@ describe('AdminStats', () => {
 
       render(<AdminStats stats={statsLowMrr} />)
 
-      const gridContent = screen.getByTestId('stats-grid').textContent
-      expect(gridContent).toContain('500 EUR')
+      expect(screen.getByText('500 EUR')).toBeInTheDocument()
     })
 
     it('devrait afficher 0 EUR pour MRR = 0', () => {
@@ -271,8 +304,7 @@ describe('AdminStats', () => {
 
       render(<AdminStats stats={statsZeroMrr} />)
 
-      const gridContent = screen.getByTestId('stats-grid').textContent
-      expect(gridContent).toContain('0 EUR')
+      expect(screen.getByText('0 EUR')).toBeInTheDocument()
     })
   })
 
@@ -284,8 +316,7 @@ describe('AdminStats', () => {
     it('devrait afficher Retention saine pour churn <= 5%', () => {
       render(<AdminStats stats={mockStats} />)
 
-      const gridContent = screen.getByTestId('stats-grid').textContent
-      expect(gridContent).toContain('Retention saine')
+      expect(screen.getByText('Retention saine')).toBeInTheDocument()
     })
 
     it('devrait afficher Attention requise pour churn > 5%', () => {
@@ -296,8 +327,7 @@ describe('AdminStats', () => {
 
       render(<AdminStats stats={statsHighChurn} />)
 
-      const gridContent = screen.getByTestId('stats-grid').textContent
-      expect(gridContent).toContain('Attention requise')
+      expect(screen.getByText('Attention requise')).toBeInTheDocument()
     })
   })
 

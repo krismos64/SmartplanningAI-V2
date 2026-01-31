@@ -40,7 +40,8 @@ describe('AdminWelcome', () => {
         />
       )
 
-      expect(screen.getByText('Bonjour, Admin !')).toBeInTheDocument()
+      expect(screen.getByText(/Bonjour/)).toBeInTheDocument()
+      expect(screen.getByText('Admin')).toBeInTheDocument()
     })
 
     it('devrait afficher Bon apres-midi a 14h', () => {
@@ -57,7 +58,8 @@ describe('AdminWelcome', () => {
         />
       )
 
-      expect(screen.getByText('Bon apres-midi, Admin !')).toBeInTheDocument()
+      expect(screen.getByText(/Bon apres-midi/)).toBeInTheDocument()
+      expect(screen.getByText('Admin')).toBeInTheDocument()
     })
 
     it('devrait afficher Bonsoir le soir (20h)', () => {
@@ -74,7 +76,8 @@ describe('AdminWelcome', () => {
         />
       )
 
-      expect(screen.getByText('Bonsoir, Admin !')).toBeInTheDocument()
+      expect(screen.getByText(/Bonsoir/)).toBeInTheDocument()
+      expect(screen.getByText('Admin')).toBeInTheDocument()
     })
 
     it('devrait afficher le nom de l administrateur', () => {
@@ -91,7 +94,8 @@ describe('AdminWelcome', () => {
         />
       )
 
-      expect(screen.getByText('Bonjour, Christophe !')).toBeInTheDocument()
+      expect(screen.getByText(/Bonjour/)).toBeInTheDocument()
+      expect(screen.getByText('Christophe')).toBeInTheDocument()
     })
   })
 
@@ -314,6 +318,7 @@ describe('AdminWelcome', () => {
         />
       )
 
+      // La className est sur le Card à l'intérieur du motion.div
       const card = container.querySelector('.custom-class')
       expect(card).toBeInTheDocument()
     })
@@ -332,7 +337,8 @@ describe('AdminWelcome', () => {
         />
       )
 
-      const card = container.querySelector('.from-rose-500\\/10')
+      // Chercher les classes glass-strong sur le Card
+      const card = container.querySelector('.glass-strong')
       expect(card).toBeInTheDocument()
     })
   })

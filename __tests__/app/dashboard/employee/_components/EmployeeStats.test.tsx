@@ -236,16 +236,17 @@ describe('EmployeeStats', () => {
         <EmployeeStats stats={mockStats} className="custom-class" />
       )
 
-      expect(container.firstChild).toHaveClass('custom-class')
+      // La className est sur le conteneur (motion.div ou div)
+      const element = container.querySelector('.custom-class')
+      expect(element).toBeInTheDocument()
     })
 
     it('devrait accepter isLoading', () => {
       render(<EmployeeStats stats={mockStats} isLoading={true} />)
 
-      // En mode loading, StatsGrid affiche des skeletons
-      expect(
-        screen.getByLabelText('Chargement des statistiques')
-      ).toBeInTheDocument()
+      // En mode loading, les StatCards affichent des skeletons
+      const skeletons = screen.getAllByTestId('skeleton')
+      expect(skeletons.length).toBeGreaterThan(0)
     })
   })
 
