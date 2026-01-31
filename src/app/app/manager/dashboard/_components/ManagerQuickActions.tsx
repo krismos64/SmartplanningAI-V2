@@ -7,8 +7,13 @@
  * - Tous les conges
  *
  * @ticket SP-316
+ * @ticket SP-431 - Animations Framer Motion
  */
+'use client'
+
 import Link from 'next/link'
+import { motion } from 'framer-motion'
+import { fadeSlideUpVariants, useReducedMotion } from '@/lib/animations'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -30,7 +35,9 @@ export function ManagerQuickActions({
   pendingLeaveRequests = 0,
   className,
 }: ManagerQuickActionsProps) {
-  return (
+  const shouldReduceMotion = useReducedMotion()
+
+  const content = (
     <Card
       className={cn('overflow-hidden', className)}
       data-testid="manager-quick-actions"
@@ -152,6 +159,21 @@ export function ManagerQuickActions({
         </div>
       </CardContent>
     </Card>
+  )
+
+  if (shouldReduceMotion) {
+    return content
+  }
+
+  return (
+    <motion.div
+      variants={fadeSlideUpVariants}
+      initial="hidden"
+      animate="visible"
+      transition={{ delay: 0.5 }}
+    >
+      {content}
+    </motion.div>
   )
 }
 

@@ -5,9 +5,12 @@
  * travaillees par membre de l'equipe.
  *
  * @ticket SP-316
+ * @ticket SP-431 - Animations Framer Motion
  */
 'use client'
 
+import { motion } from 'framer-motion'
+import { fadeSlideUpVariants, useReducedMotion } from '@/lib/animations'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { BarChartWidget } from '@/components/charts'
 import { cn } from '@/lib/utils'
@@ -79,6 +82,7 @@ export function ManagerTeamChart({
 }: ManagerTeamChartProps) {
   const chartData = formatChartData(teamPerformance)
   const { totalWorked, averageCompletion } = calculateTeamStats(teamPerformance)
+  const shouldReduceMotion = useReducedMotion()
 
   // Format total heures
   const formatTotal = (hours: number): string => {
@@ -88,7 +92,7 @@ export function ManagerTeamChart({
     return `${h}h${m.toString().padStart(2, '0')}`
   }
 
-  return (
+  const content = (
     <Card
       className={cn('overflow-hidden', className)}
       data-testid="manager-team-chart"
@@ -149,6 +153,21 @@ export function ManagerTeamChart({
         )}
       </CardContent>
     </Card>
+  )
+
+  if (shouldReduceMotion) {
+    return content
+  }
+
+  return (
+    <motion.div
+      variants={fadeSlideUpVariants}
+      initial="hidden"
+      animate="visible"
+      transition={{ delay: 0.3 }}
+    >
+      {content}
+    </motion.div>
   )
 }
 

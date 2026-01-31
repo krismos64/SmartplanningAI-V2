@@ -5,11 +5,14 @@
  * avec actions rapides Approuver/Refuser.
  *
  * @ticket SP-316
+ * @ticket SP-431 - Animations Framer Motion
  */
 'use client'
 
 import { useState, useTransition } from 'react'
 import Link from 'next/link'
+import { motion } from 'framer-motion'
+import { fadeSlideUpVariants, useReducedMotion } from '@/lib/animations'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -106,6 +109,7 @@ export function ManagerPendingLeaves({
 }: ManagerPendingLeavesProps) {
   const [isPending, startTransition] = useTransition()
   const [processingId, setProcessingId] = useState<string | null>(null)
+  const shouldReduceMotion = useReducedMotion()
 
   const isEmpty = pendingLeaves.length === 0
 
@@ -139,7 +143,7 @@ export function ManagerPendingLeaves({
     })
   }
 
-  return (
+  const content = (
     <Card
       className={cn('overflow-hidden', className)}
       data-testid="manager-pending-leaves"
@@ -296,6 +300,21 @@ export function ManagerPendingLeaves({
         )}
       </CardContent>
     </Card>
+  )
+
+  if (shouldReduceMotion) {
+    return content
+  }
+
+  return (
+    <motion.div
+      variants={fadeSlideUpVariants}
+      initial="hidden"
+      animate="visible"
+      transition={{ delay: 0.3 }}
+    >
+      {content}
+    </motion.div>
   )
 }
 

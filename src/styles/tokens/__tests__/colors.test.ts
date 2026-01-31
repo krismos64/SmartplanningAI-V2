@@ -167,7 +167,14 @@ describe('Design Tokens - Colors', () => {
   })
 
   describe('Glow Colors - Cyber Glass 3D', () => {
-    const glowColorNames = ['cyan', 'blue', 'violet', 'emerald', 'amber', 'rose']
+    const glowColorNames = [
+      'cyan',
+      'blue',
+      'violet',
+      'emerald',
+      'amber',
+      'rose',
+    ]
     const intensityLevels = ['light', 'medium', 'strong', 'intense']
 
     it('should export all glow color palettes', () => {

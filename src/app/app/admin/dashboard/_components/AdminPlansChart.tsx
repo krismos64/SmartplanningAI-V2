@@ -5,9 +5,12 @@
  * avec legende et statistiques.
  *
  * @ticket SP-148
+ * @ticket SP-431 - Animations Framer Motion
  */
 'use client'
 
+import { motion } from 'framer-motion'
+import { fadeSlideUpVariants, useReducedMotion } from '@/lib/animations'
 import { PieChartWidget } from '@/components/charts'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
@@ -64,6 +67,8 @@ export function AdminPlansChart({
 }: AdminPlansChartProps) {
   // Reserved for future status pie chart
   void _subscriptionStatusDistribution
+  const shouldReduceMotion = useReducedMotion()
+
   // Transformer les donnees pour le PieChart (par nombre d'abonnements)
   const chartData = revenueByPlan
     .filter((item) => item.count > 0)
@@ -85,7 +90,7 @@ export function AdminPlansChart({
     0
   )
 
-  return (
+  const content = (
     <Card className={cn(className)}>
       <CardHeader className="pb-2">
         <CardTitle className="text-base font-medium">
@@ -147,6 +152,21 @@ export function AdminPlansChart({
         )}
       </CardContent>
     </Card>
+  )
+
+  if (shouldReduceMotion) {
+    return content
+  }
+
+  return (
+    <motion.div
+      variants={fadeSlideUpVariants}
+      initial="hidden"
+      animate="visible"
+      custom={0.3}
+    >
+      {content}
+    </motion.div>
   )
 }
 

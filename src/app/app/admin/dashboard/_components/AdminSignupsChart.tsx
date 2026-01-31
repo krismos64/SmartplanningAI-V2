@@ -4,9 +4,12 @@
  * Affiche un BarChart des nouvelles inscriptions par mois.
  *
  * @ticket SP-148
+ * @ticket SP-431 - Animations Framer Motion
  */
 'use client'
 
+import { motion } from 'framer-motion'
+import { fadeSlideUpVariants, useReducedMotion } from '@/lib/animations'
 import { BarChartWidget } from '@/components/charts'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
@@ -65,8 +68,9 @@ export function AdminSignupsChart({
 }: AdminSignupsChartProps) {
   const chartData = calculateMonthlySignups(companiesGrowth)
   const totalSignups = calculateTotalSignups(chartData)
+  const shouldReduceMotion = useReducedMotion()
 
-  return (
+  const content = (
     <Card className={cn(className)}>
       <CardHeader className="pb-2">
         <div className="space-y-1">
@@ -95,6 +99,21 @@ export function AdminSignupsChart({
         )}
       </CardContent>
     </Card>
+  )
+
+  if (shouldReduceMotion) {
+    return content
+  }
+
+  return (
+    <motion.div
+      variants={fadeSlideUpVariants}
+      initial="hidden"
+      animate="visible"
+      custom={0.3}
+    >
+      {content}
+    </motion.div>
   )
 }
 

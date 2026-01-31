@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 30 janvier 2026 (Sprint 14 - SP-317 Dashboard Director KPIs : 2 métriques + 4 tests)
+- **Dernière mise à jour** : 30 janvier 2026 (Sprint 14 - SP-431 Animations Dashboards Framer Motion : 15 composants)
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -68,6 +68,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Dashboard Director** (SP-147) : Page dashboard directeur avec Server Components, RBAC, 6 composants métier (Welcome, Stats, TeamsChart, TrendsChart, PendingLeaves, QuickActions)
 - **Dashboard Manager** (SP-316) : Page dashboard manager avec Server Components, RBAC, 5 composants métier (ManagerWelcome, ManagerStats, ManagerTeamChart, ManagerPendingLeaves, ManagerQuickActions)
 - **Dashboard Super Admin** (SP-148) : Page dashboard admin SaaS avec Server Components, protection SYSTEM_ADMIN, 7 composants (Welcome, Stats, MrrChart, SignupsChart, PlansChart, RecentCompanies, QuickActions)
+- **Animations Dashboards** (SP-431) : Animations Framer Motion sur 15 composants (4 dashboards), variants fadeSlideUp/stagger, support prefers-reduced-motion
 - **Leave Management UI** (SP-411/SP-412/SP-413/SP-414/SP-415) : 16 composants congés + pages (LeaveTypeBadge, LeaveStatusBadge, LeaveBalanceCard, LeaveBalanceEditDialog, LeaveRequestCard, LeaveRequestForm, LeaveReviewDialog, LeaveConflictWarning, LeaveFilters, LeavesList, LeavesListMobile, LeaveCalendar, LeaveCalendarDay, LeaveStatsBar, LeaveDetailCard, LeaveTimeline) + pages orchestrateur, détail [id], balances + email notification manager + overlay congés Schedule-X
 
 ### MVP (Phases 1-4)

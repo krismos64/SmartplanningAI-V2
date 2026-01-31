@@ -5,9 +5,12 @@
  * de la plateforme.
  *
  * @ticket SP-148
+ * @ticket SP-431 - Animations Framer Motion
  */
 'use client'
 
+import { motion } from 'framer-motion'
+import { fadeSlideUpVariants, useReducedMotion } from '@/lib/animations'
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -33,7 +36,9 @@ export function AdminQuickActions({
   activeSubscriptions,
   className,
 }: AdminQuickActionsProps) {
-  return (
+  const shouldReduceMotion = useReducedMotion()
+
+  const content = (
     <Card className={cn(className)}>
       <CardHeader className="pb-3">
         <CardTitle className="text-base font-medium">Actions rapides</CardTitle>
@@ -152,6 +157,21 @@ export function AdminQuickActions({
         </div>
       </CardContent>
     </Card>
+  )
+
+  if (shouldReduceMotion) {
+    return content
+  }
+
+  return (
+    <motion.div
+      variants={fadeSlideUpVariants}
+      initial="hidden"
+      animate="visible"
+      custom={0.5}
+    >
+      {content}
+    </motion.div>
   )
 }
 
