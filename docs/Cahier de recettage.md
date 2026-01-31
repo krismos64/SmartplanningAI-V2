@@ -14,7 +14,7 @@ Ce document trace l'historique complet des tests réalisés sur SmartPlanning. I
 | Pipeline CI/CD       | GitHub Actions                                         |
 | Responsable          | Christophe Mostefaoui                                  |
 | Date de création     | 4 décembre 2025                                        |
-| Dernière mise à jour | 30 janvier 2026                                        |
+| Dernière mise à jour | 31 janvier 2026                                        |
 
 ---
 
@@ -199,6 +199,51 @@ test('should login', async ({ loginPage }) => {
 - **-40%** de lignes de code dans les specs
 - **Maintenance centralisée** : 1 seul fichier à modifier si l'UI change
 - **Lisibilité améliorée** : les tests lisent comme des user stories
+
+### Pourquoi une architecture Design Tokens plutôt que CSS-in-JS ? (Sprint 14) 🆕
+
+| Critère               | CSS-in-JS (Emotion)   | Design Tokens TypeScript    | Mon choix     |
+| --------------------- | --------------------- | --------------------------- | ------------- |
+| Typage                | ⚠️ Runtime            | ✅ Compile-time             | Design Tokens |
+| Performance           | ⚠️ Runtime overhead   | ✅ CSS statique             | Design Tokens |
+| Intégration Tailwind  | ❌ Conflits           | ✅ tailwindTheme natif      | Design Tokens |
+| Thème centralisé      | ⚠️ Provider requis    | ✅ Import direct            | Design Tokens |
+| Dark mode             | ⚠️ Context API        | ✅ CSS Variables .dark      | Design Tokens |
+| Tests                 | ⚠️ Mocks complexes    | ✅ Tests unitaires simples  | Design Tokens |
+
+**Justification du choix (SP-259)** :
+
+- **Tokens TypeScript** : Types stricts pour `colors`, `spacing`, `shadows`, etc.
+- **Export Tailwind** : `tailwindTheme` intégré directement dans `tailwind.config.ts`
+- **CSS Variables** : Thème dynamique sans JavaScript runtime
+- **129 tests unitaires** : Couverture complète des tokens
+
+**Conclusion** : L'architecture Design Tokens permet une source de vérité unique, typée, testable et performante, parfaitement adaptée à Next.js 15 et Tailwind CSS.
+
+### Pourquoi l'esthétique "Cyber Glass 3D" ? (Sprint 14) 🆕
+
+| Critère                 | Design plat (Flat)    | Glassmorphism + 3D          | Mon choix       |
+| ----------------------- | --------------------- | --------------------------- | --------------- |
+| Différenciation visuelle| ⚠️ Standard           | ✅ Premium, moderne         | Cyber Glass 3D  |
+| Perception utilisateur  | ⚠️ Neutre             | ✅ Effet "wow"              | Cyber Glass 3D  |
+| Accessibilité           | ✅ Simple             | ⚠️ Contraste à vérifier     | ⚖️ Équilibré    |
+| Performance CSS         | ✅ Minimal            | ⚠️ backdrop-filter coûteux  | ⚖️ Équilibré    |
+| Modernité 2026          | ⚠️ Dépassé            | ✅ Tendance actuelle        | Cyber Glass 3D  |
+
+**Implémentation (SP-259)** :
+
+- **Glass Morphism** : `.glass`, `.glass-strong` avec `backdrop-blur` et bordures semi-transparentes
+- **Effets 3D** : `.card-3d` avec `perspective`, `rotateX`, `translateY` au hover
+- **Neon Glow** : `.glow-primary`, `.text-neon-primary` pour les accents lumineux
+- **Animations CSS** : `shimmer-premium`, `pulse-glow`, `float`, `border-gradient-animated`
+- **AnimatedContainer** : Composant Framer Motion avec variants `fadeInUp`, `staggerContainer`
+
+**Mesures d'accessibilité** :
+- Contrastes WCAG 2.1 AA vérifiés sur tous les textes
+- `prefers-reduced-motion` respecté via `useReducedMotion`
+- Effets visuels non-bloquants pour la compréhension du contenu
+
+**Conclusion** : L'esthétique Cyber Glass 3D apporte une identité visuelle distinctive tout en respectant les critères d'accessibilité. La page de démo `/app/dev/design-system` documente tous les effets disponibles.
 
 ---
 
