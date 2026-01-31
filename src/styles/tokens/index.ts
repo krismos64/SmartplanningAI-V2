@@ -24,10 +24,15 @@ import {
   amber,
   rose,
   violet,
+  glowColors,
+  gradients,
   withOpacity,
   toHslVar,
   type PrimitiveColor,
   type ColorShade,
+  type GlowColor as GlowColorType,
+  type GlowIntensity,
+  type GradientName,
 } from './colors'
 
 import typography, {
@@ -64,11 +69,17 @@ import shadows, {
   dropShadow,
   textShadow,
   glow,
+  shadow3D,
+  neonGlow,
+  textNeon,
   type BoxShadowSize,
   type DropShadowSize,
   type TextShadowSize,
   type GlowColor,
   type GlowSize,
+  type Shadow3DType,
+  type NeonGlowColor,
+  type NeonGlowIntensity,
 } from './shadows'
 
 import radius, {
@@ -110,6 +121,8 @@ export const tokens = {
   colors: {
     primitive: primitiveColors,
     semantic: semanticColors,
+    glow: glowColors,
+    gradients,
     // Accès direct aux palettes
     slate,
     blue,
@@ -150,6 +163,9 @@ export const tokens = {
     dropShadow,
     textShadow,
     glow,
+    shadow3D,
+    neonGlow,
+    textNeon,
   },
 
   // Border Radius
@@ -268,6 +284,9 @@ export type {
   // Colors
   PrimitiveColor,
   ColorShade,
+  GlowColorType,
+  GlowIntensity,
+  GradientName,
   // Typography
   FontSize,
   FontWeight,
@@ -285,6 +304,9 @@ export type {
   TextShadowSize,
   GlowColor,
   GlowSize,
+  Shadow3DType,
+  NeonGlowColor,
+  NeonGlowIntensity,
   // Radius
   BorderRadiusSize,
   BorderWidthSize,
@@ -310,6 +332,8 @@ export {
   amber,
   rose,
   violet,
+  glowColors,
+  gradients,
   withOpacity,
   toHslVar,
   // Typography module
@@ -336,6 +360,9 @@ export {
   dropShadow,
   textShadow,
   glow,
+  shadow3D,
+  neonGlow,
+  textNeon,
   // Radius module
   radius,
   borderRadius,

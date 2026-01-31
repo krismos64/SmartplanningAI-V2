@@ -19,6 +19,8 @@ import {
   semanticDark,
   withOpacity,
   toHslVar,
+  glowColors,
+  gradients,
 } from '../colors'
 
 describe('Design Tokens - Colors', () => {
@@ -161,6 +163,121 @@ describe('Design Tokens - Colors', () => {
       expect(semanticColors).toHaveProperty('dark')
       expect(semanticColors.light).toBe(semanticLight)
       expect(semanticColors.dark).toBe(semanticDark)
+    })
+  })
+
+  describe('Glow Colors - Cyber Glass 3D', () => {
+    const glowColorNames = ['cyan', 'blue', 'violet', 'emerald', 'amber', 'rose']
+    const intensityLevels = ['light', 'medium', 'strong', 'intense']
+
+    it('should export all glow color palettes', () => {
+      glowColorNames.forEach((color) => {
+        expect(glowColors).toHaveProperty(color)
+      })
+    })
+
+    it('should have all intensity levels for each glow color', () => {
+      glowColorNames.forEach((colorName) => {
+        const color = glowColors[colorName as keyof typeof glowColors]
+        intensityLevels.forEach((intensity) => {
+          expect(color).toHaveProperty(intensity)
+        })
+      })
+    })
+
+    it('should have valid rgba format for all glow colors', () => {
+      const rgbaRegex = /^rgba\(\d+,\s*\d+,\s*\d+,\s*[\d.]+\)$/
+
+      glowColorNames.forEach((colorName) => {
+        const color = glowColors[colorName as keyof typeof glowColors]
+        Object.values(color).forEach((value) => {
+          expect(value).toMatch(rgbaRegex)
+        })
+      })
+    })
+
+    it('should have increasing opacity for intensity levels', () => {
+      const extractOpacity = (rgba: string): number => {
+        const match = rgba.match(/rgba\(\d+,\s*\d+,\s*\d+,\s*([\d.]+)\)/)
+        return match && match[1] ? parseFloat(match[1]) : 0
+      }
+
+      glowColorNames.forEach((colorName) => {
+        const color = glowColors[colorName as keyof typeof glowColors]
+        const lightOpacity = extractOpacity(color.light)
+        const mediumOpacity = extractOpacity(color.medium)
+        const strongOpacity = extractOpacity(color.strong)
+        const intenseOpacity = extractOpacity(color.intense)
+
+        expect(lightOpacity).toBeLessThan(mediumOpacity)
+        expect(mediumOpacity).toBeLessThan(strongOpacity)
+        expect(strongOpacity).toBeLessThan(intenseOpacity)
+      })
+    })
+
+    it('should have correct cyan glow values', () => {
+      expect(glowColors.cyan.light).toBe('rgba(6, 182, 212, 0.15)')
+      expect(glowColors.cyan.intense).toBe('rgba(6, 182, 212, 0.7)')
+    })
+
+    it('should have correct blue glow values', () => {
+      expect(glowColors.blue.light).toBe('rgba(59, 130, 246, 0.15)')
+      expect(glowColors.blue.intense).toBe('rgba(59, 130, 246, 0.7)')
+    })
+  })
+
+  describe('Gradients - Cyber Glass 3D', () => {
+    const gradientNames = [
+      'primary',
+      'cardShine',
+      'sidebarGlow',
+      'meshDark',
+      'meshLight',
+      'textPrimary',
+      'borderAnimated',
+    ]
+
+    it('should export all gradient definitions', () => {
+      gradientNames.forEach((name) => {
+        expect(gradients).toHaveProperty(name)
+      })
+    })
+
+    it('should have valid CSS gradient format', () => {
+      // All gradients should contain 'gradient' keyword
+      Object.values(gradients).forEach((value) => {
+        expect(value).toContain('gradient')
+      })
+    })
+
+    it('primary gradient should use SmartPlanning brand colors', () => {
+      // Primary should include blue (#3B82F6), violet (#8B5CF6), and cyan (#06B6D4)
+      expect(gradients.primary).toContain('#3B82F6')
+      expect(gradients.primary).toContain('#8B5CF6')
+      expect(gradients.primary).toContain('#06B6D4')
+    })
+
+    it('cardShine gradient should be semi-transparent', () => {
+      expect(gradients.cardShine).toContain('rgba')
+      expect(gradients.cardShine).toContain('linear-gradient')
+    })
+
+    it('sidebarGlow should be a radial gradient', () => {
+      expect(gradients.sidebarGlow).toContain('radial-gradient')
+    })
+
+    it('mesh gradients should contain multiple radial gradients', () => {
+      expect(gradients.meshDark).toContain('radial-gradient')
+      expect(gradients.meshLight).toContain('radial-gradient')
+    })
+
+    it('borderAnimated should use conic-gradient for rotation effect', () => {
+      expect(gradients.borderAnimated).toContain('conic-gradient')
+      expect(gradients.borderAnimated).toContain('--gradient-angle')
+    })
+
+    it('textPrimary should be a linear gradient for text effect', () => {
+      expect(gradients.textPrimary).toContain('linear-gradient')
     })
   })
 })

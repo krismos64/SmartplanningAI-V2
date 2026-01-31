@@ -152,6 +152,45 @@
     --chart-3: 160 84% 39%;
     --chart-4: 38 92% 50%;
     --chart-5: 189 94% 43%;
+
+    /* =================================================================
+       GLASS MORPHISM - Variables pour effets glass
+       Direction : "Cyber Glass 3D"
+       ================================================================= */
+    --glass-bg: rgba(255, 255, 255, 0.7);
+    --glass-bg-strong: rgba(255, 255, 255, 0.85);
+    --glass-border: rgba(255, 255, 255, 0.2);
+    --glass-blur: 16px;
+    --glass-blur-strong: 24px;
+
+    /* =================================================================
+       3D EFFECTS - Variables pour effets de profondeur
+       ================================================================= */
+    --perspective: 1000px;
+    --card-rotate-x: 2deg;
+    --card-lift: -8px;
+    --card-lift-lg: -12px;
+
+    /* =================================================================
+       MESH GRADIENT - Background gradient mesh
+       ================================================================= */
+    --mesh-gradient:
+      radial-gradient(at 40% 20%, rgba(59, 130, 246, 0.05) 0px, transparent 50%),
+      radial-gradient(at 80% 0%, rgba(139, 92, 246, 0.05) 0px, transparent 50%),
+      radial-gradient(at 0% 50%, rgba(6, 182, 212, 0.03) 0px, transparent 50%);
+
+    /* =================================================================
+       GLOW INTENSITIES - Niveaux de glow
+       ================================================================= */
+    --glow-primary-subtle: 0 0 20px rgba(59, 130, 246, 0.3);
+    --glow-primary-medium: 0 0 20px rgba(59, 130, 246, 0.3), 0 0 40px rgba(59, 130, 246, 0.15);
+    --glow-primary-intense: 0 0 20px rgba(59, 130, 246, 0.4), 0 0 40px rgba(59, 130, 246, 0.25), 0 0 60px rgba(59, 130, 246, 0.1);
+
+    --glow-accent-subtle: 0 0 20px rgba(139, 92, 246, 0.3);
+    --glow-accent-medium: 0 0 20px rgba(139, 92, 246, 0.3), 0 0 40px rgba(139, 92, 246, 0.15);
+
+    --glow-cyan-subtle: 0 0 20px rgba(6, 182, 212, 0.3);
+    --glow-cyan-medium: 0 0 20px rgba(6, 182, 212, 0.3), 0 0 40px rgba(6, 182, 212, 0.15);
   }
 
   /* =======================================================================
@@ -255,6 +294,36 @@
     --chart-3: 160 84% 45%;
     --chart-4: 38 92% 55%;
     --chart-5: 189 94% 50%;
+
+    /* =================================================================
+       DARK MODE - Glass Morphism
+       ================================================================= */
+    --glass-bg: rgba(15, 23, 42, 0.75);
+    --glass-bg-strong: rgba(15, 23, 42, 0.9);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --glass-blur: 20px;
+    --glass-blur-strong: 28px;
+
+    /* =================================================================
+       DARK MODE - Mesh Gradient
+       ================================================================= */
+    --mesh-gradient:
+      radial-gradient(at 40% 20%, rgba(59, 130, 246, 0.08) 0px, transparent 50%),
+      radial-gradient(at 80% 0%, rgba(139, 92, 246, 0.08) 0px, transparent 50%),
+      radial-gradient(at 0% 50%, rgba(6, 182, 212, 0.05) 0px, transparent 50%);
+
+    /* =================================================================
+       DARK MODE - Enhanced Glows
+       ================================================================= */
+    --glow-primary-subtle: 0 0 20px rgba(59, 130, 246, 0.35);
+    --glow-primary-medium: 0 0 20px rgba(59, 130, 246, 0.35), 0 0 40px rgba(59, 130, 246, 0.2);
+    --glow-primary-intense: 0 0 20px rgba(59, 130, 246, 0.45), 0 0 40px rgba(59, 130, 246, 0.3), 0 0 60px rgba(59, 130, 246, 0.15);
+
+    --glow-accent-subtle: 0 0 20px rgba(139, 92, 246, 0.35);
+    --glow-accent-medium: 0 0 20px rgba(139, 92, 246, 0.35), 0 0 40px rgba(139, 92, 246, 0.2);
+
+    --glow-cyan-subtle: 0 0 20px rgba(6, 182, 212, 0.35);
+    --glow-cyan-medium: 0 0 20px rgba(6, 182, 212, 0.35), 0 0 40px rgba(6, 182, 212, 0.2);
   }
 }
 
@@ -312,9 +381,273 @@
     @apply bg-gradient-to-r from-blue-500 via-blue-400 to-violet-500 bg-clip-text text-transparent;
   }
 
-  /* Glass effect */
+  /* ---------------------------------------------------------------
+     GLASS MORPHISM - Effets verre avancés
+     Direction : "Cyber Glass 3D"
+     --------------------------------------------------------------- */
   .glass {
-    @apply bg-white/80 backdrop-blur-lg dark:bg-slate-900/80;
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur)) saturate(180%);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(180%);
+    border: 1px solid var(--glass-border);
+  }
+
+  .glass-strong {
+    background: var(--glass-bg-strong);
+    backdrop-filter: blur(var(--glass-blur-strong)) saturate(200%);
+    -webkit-backdrop-filter: blur(var(--glass-blur-strong)) saturate(200%);
+    border: 1px solid var(--glass-border);
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.05) inset,
+      0 8px 32px rgba(0, 0, 0, 0.12);
+  }
+
+  .dark .glass-strong {
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.03) inset,
+      0 8px 32px rgba(0, 0, 0, 0.4);
+  }
+
+  /* ---------------------------------------------------------------
+     CARD 3D PREMIUM - Effet de profondeur
+     --------------------------------------------------------------- */
+  .card-3d {
+    transform: perspective(var(--perspective)) rotateX(var(--card-rotate-x));
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transform-style: preserve-3d;
+  }
+
+  .card-3d:hover {
+    transform: perspective(var(--perspective)) rotateX(0deg) translateY(var(--card-lift));
+  }
+
+  .card-3d-lg:hover {
+    transform: perspective(var(--perspective)) rotateX(0deg) translateY(var(--card-lift-lg));
+  }
+
+  /* ---------------------------------------------------------------
+     GLOW EFFECTS AMÉLIORÉS - Multicouche
+     --------------------------------------------------------------- */
+  .glow-primary {
+    box-shadow: var(--glow-primary-medium);
+  }
+
+  .glow-primary-subtle {
+    box-shadow: var(--glow-primary-subtle);
+  }
+
+  .glow-primary-intense {
+    box-shadow: var(--glow-primary-intense);
+  }
+
+  .glow-accent {
+    box-shadow: var(--glow-accent-medium);
+  }
+
+  .glow-accent-subtle {
+    box-shadow: var(--glow-accent-subtle);
+  }
+
+  .glow-cyan {
+    box-shadow: var(--glow-cyan-medium);
+  }
+
+  .glow-cyan-subtle {
+    box-shadow: var(--glow-cyan-subtle);
+  }
+
+  /* ---------------------------------------------------------------
+     NEON TEXT - Effets texte lumineux
+     --------------------------------------------------------------- */
+  .text-neon-primary {
+    text-shadow:
+      0 0 10px rgba(59, 130, 246, 0.5),
+      0 0 20px rgba(59, 130, 246, 0.3),
+      0 0 40px rgba(59, 130, 246, 0.15);
+  }
+
+  .text-neon-accent {
+    text-shadow:
+      0 0 10px rgba(139, 92, 246, 0.5),
+      0 0 20px rgba(139, 92, 246, 0.3),
+      0 0 40px rgba(139, 92, 246, 0.15);
+  }
+
+  .text-neon-cyan {
+    text-shadow:
+      0 0 10px rgba(6, 182, 212, 0.5),
+      0 0 20px rgba(6, 182, 212, 0.3),
+      0 0 40px rgba(6, 182, 212, 0.15);
+  }
+
+  .text-neon-subtle {
+    text-shadow: 0 0 30px rgba(59, 130, 246, 0.15);
+  }
+
+  .dark .text-neon-subtle {
+    text-shadow: 0 0 30px rgba(59, 130, 246, 0.25);
+  }
+
+  /* ---------------------------------------------------------------
+     MESH BACKGROUND - Gradient mesh subtil
+     --------------------------------------------------------------- */
+  .bg-mesh {
+    background: var(--mesh-gradient);
+  }
+
+  /* ---------------------------------------------------------------
+     BORDER GRADIENT - Bordures dégradées
+     --------------------------------------------------------------- */
+  .border-gradient-primary {
+    position: relative;
+    border: none;
+    background:
+      linear-gradient(hsl(var(--card)), hsl(var(--card))) padding-box,
+      linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent))) border-box;
+    border: 1px solid transparent;
+    border-radius: var(--radius);
+  }
+
+  /* ---------------------------------------------------------------
+     ANIMATED GRADIENT BORDER - Bordure animée
+     --------------------------------------------------------------- */
+  @property --gradient-angle {
+    syntax: '<angle>';
+    initial-value: 0deg;
+    inherits: false;
+  }
+
+  .border-gradient-animated {
+    --gradient-angle: 0deg;
+    background:
+      linear-gradient(hsl(var(--card)), hsl(var(--card))) padding-box,
+      conic-gradient(
+        from var(--gradient-angle),
+        hsl(var(--primary)),
+        hsl(var(--accent)),
+        hsl(var(--primary) / 0.5),
+        hsl(var(--primary))
+      ) border-box;
+    border: 2px solid transparent;
+    border-radius: var(--radius);
+    animation: gradient-rotate 4s linear infinite;
+  }
+
+  @keyframes gradient-rotate {
+    to {
+      --gradient-angle: 360deg;
+    }
+  }
+
+  /* ---------------------------------------------------------------
+     SHIMMER PREMIUM - Effet de brillance
+     --------------------------------------------------------------- */
+  .shimmer-premium {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .shimmer-premium::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.1),
+      transparent
+    );
+    transform: translateX(-100%);
+    animation: shimmer-slide 2s ease-in-out infinite;
+  }
+
+  @keyframes shimmer-slide {
+    100% {
+      transform: translateX(100%);
+    }
+  }
+
+  /* ---------------------------------------------------------------
+     PULSE GLOW - Effet pulsation lumineuse
+     --------------------------------------------------------------- */
+  .pulse-glow {
+    animation: pulse-glow-anim 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse-glow-anim {
+    0%, 100% {
+      box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+    }
+    50% {
+      box-shadow: 0 0 40px rgba(59, 130, 246, 0.6);
+    }
+  }
+
+  .pulse-glow-accent {
+    animation: pulse-glow-accent-anim 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse-glow-accent-anim {
+    0%, 100% {
+      box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+    }
+    50% {
+      box-shadow: 0 0 40px rgba(139, 92, 246, 0.6);
+    }
+  }
+
+  /* ---------------------------------------------------------------
+     FLOATING ANIMATION - Effet de flottement
+     --------------------------------------------------------------- */
+  .float {
+    animation: float-anim 3s ease-in-out infinite;
+  }
+
+  @keyframes float-anim {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  .float-slow {
+    animation: float-anim 4s ease-in-out infinite;
+  }
+
+  .float-fast {
+    animation: float-anim 2s ease-in-out infinite;
+  }
+
+  /* ---------------------------------------------------------------
+     HOVER LIFT - Effet de levée au survol
+     --------------------------------------------------------------- */
+  .hover-lift {
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+                box-shadow 0.3s ease;
+  }
+
+  .hover-lift:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.15);
+  }
+
+  .dark .hover-lift:hover {
+    box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.4);
+  }
+
+  .hover-lift-glow:hover {
+    transform: translateY(-4px);
+    box-shadow:
+      0 12px 24px -8px rgba(0, 0, 0, 0.15),
+      var(--glow-primary-subtle);
+  }
+
+  .dark .hover-lift-glow:hover {
+    box-shadow:
+      0 12px 24px -8px rgba(0, 0, 0, 0.4),
+      var(--glow-primary-subtle);
   }
 
   /* ---------------------------------------------------------------

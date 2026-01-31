@@ -256,6 +256,147 @@ export const glow = {
 } as const
 
 // =============================================================================
+// 3D SHADOWS - Effets de profondeur avancés
+// =============================================================================
+
+/**
+ * Ombres 3D pour effet de lévitation et profondeur
+ * Direction esthétique : "Cyber Glass 3D"
+ *
+ * @see SP-259 - Design Tokens Enhancement
+ */
+export const shadow3D = {
+  /** Effet de lévitation subtile */
+  float: {
+    sm: '0 4px 12px -2px rgba(0, 0, 0, 0.12), 0 2px 4px -2px rgba(0, 0, 0, 0.08)',
+    md: '0 8px 24px -4px rgba(0, 0, 0, 0.15), 0 4px 8px -4px rgba(0, 0, 0, 0.1)',
+    lg: '0 16px 40px -8px rgba(0, 0, 0, 0.2), 0 8px 16px -8px rgba(0, 0, 0, 0.12)',
+  },
+
+  /** Effet pressed/inset */
+  inset: {
+    sm: 'inset 0 1px 2px rgba(0, 0, 0, 0.1)',
+    md: 'inset 0 2px 4px rgba(0, 0, 0, 0.15)',
+    lg: 'inset 0 4px 8px rgba(0, 0, 0, 0.2)',
+  },
+
+  /** Cards premium avec glow + shadow */
+  cardPremium: {
+    default: `
+      0 0 0 1px rgba(255, 255, 255, 0.05),
+      0 4px 16px -4px rgba(0, 0, 0, 0.3),
+      0 0 32px -8px rgba(59, 130, 246, 0.15)
+    `.trim(),
+    hover: `
+      0 0 0 1px rgba(255, 255, 255, 0.1),
+      0 8px 32px -8px rgba(0, 0, 0, 0.4),
+      0 0 48px -12px rgba(59, 130, 246, 0.25)
+    `.trim(),
+  },
+
+  /** Shadow colorée pour stat cards */
+  stat: {
+    blue: '0 8px 24px -8px rgba(59, 130, 246, 0.4)',
+    violet: '0 8px 24px -8px rgba(139, 92, 246, 0.4)',
+    cyan: '0 8px 24px -8px rgba(6, 182, 212, 0.4)',
+    emerald: '0 8px 24px -8px rgba(16, 185, 129, 0.4)',
+    amber: '0 8px 24px -8px rgba(245, 158, 11, 0.4)',
+    rose: '0 8px 24px -8px rgba(225, 29, 72, 0.4)',
+  },
+
+  /** Effet glass morphism shadow */
+  glass: {
+    light:
+      '0 8px 32px rgba(0, 0, 0, 0.12), inset 0 0 0 1px rgba(255, 255, 255, 0.1)',
+    dark: '0 8px 32px rgba(0, 0, 0, 0.4), inset 0 0 0 1px rgba(255, 255, 255, 0.05)',
+  },
+} as const
+
+// =============================================================================
+// NEON GLOW - Effets néon avancés
+// =============================================================================
+
+/**
+ * Effets néon multicouches pour look cyberpunk
+ */
+export const neonGlow = {
+  /** Glow primary multicouche */
+  primary: {
+    subtle: '0 0 20px rgba(59, 130, 246, 0.3)',
+    medium: `
+      0 0 20px rgba(59, 130, 246, 0.3),
+      0 0 40px rgba(59, 130, 246, 0.15)
+    `.trim(),
+    intense: `
+      0 0 20px rgba(59, 130, 246, 0.4),
+      0 0 40px rgba(59, 130, 246, 0.25),
+      0 0 60px rgba(59, 130, 246, 0.1)
+    `.trim(),
+  },
+
+  /** Glow accent (violet) multicouche */
+  accent: {
+    subtle: '0 0 20px rgba(139, 92, 246, 0.3)',
+    medium: `
+      0 0 20px rgba(139, 92, 246, 0.3),
+      0 0 40px rgba(139, 92, 246, 0.15)
+    `.trim(),
+    intense: `
+      0 0 20px rgba(139, 92, 246, 0.4),
+      0 0 40px rgba(139, 92, 246, 0.25),
+      0 0 60px rgba(139, 92, 246, 0.1)
+    `.trim(),
+  },
+
+  /** Glow cyan multicouche */
+  cyan: {
+    subtle: '0 0 20px rgba(6, 182, 212, 0.3)',
+    medium: `
+      0 0 20px rgba(6, 182, 212, 0.3),
+      0 0 40px rgba(6, 182, 212, 0.15)
+    `.trim(),
+    intense: `
+      0 0 20px rgba(6, 182, 212, 0.4),
+      0 0 40px rgba(6, 182, 212, 0.25),
+      0 0 60px rgba(6, 182, 212, 0.1)
+    `.trim(),
+  },
+} as const
+
+// =============================================================================
+// TEXT NEON - Effets néon pour texte
+// =============================================================================
+
+/**
+ * Text shadows néon pour titres et highlights
+ */
+export const textNeon = {
+  /** Néon bleu primary */
+  primary: `
+    0 0 10px rgba(59, 130, 246, 0.5),
+    0 0 20px rgba(59, 130, 246, 0.3),
+    0 0 40px rgba(59, 130, 246, 0.15)
+  `.trim(),
+
+  /** Néon violet accent */
+  accent: `
+    0 0 10px rgba(139, 92, 246, 0.5),
+    0 0 20px rgba(139, 92, 246, 0.3),
+    0 0 40px rgba(139, 92, 246, 0.15)
+  `.trim(),
+
+  /** Néon cyan */
+  cyan: `
+    0 0 10px rgba(6, 182, 212, 0.5),
+    0 0 20px rgba(6, 182, 212, 0.3),
+    0 0 40px rgba(6, 182, 212, 0.15)
+  `.trim(),
+
+  /** Néon subtil (pour body text) */
+  subtle: '0 0 30px rgba(59, 130, 246, 0.15)',
+} as const
+
+// =============================================================================
 // EXPORTS
 // =============================================================================
 
@@ -268,6 +409,9 @@ export const shadows = {
   dropShadow,
   textShadow,
   glow,
+  shadow3D,
+  neonGlow,
+  textNeon,
 } as const
 
 export type BoxShadowSize = keyof typeof boxShadowLight
@@ -275,5 +419,8 @@ export type DropShadowSize = keyof typeof dropShadow
 export type TextShadowSize = keyof typeof textShadow
 export type GlowColor = keyof typeof glow
 export type GlowSize = 'sm' | 'md' | 'lg'
+export type Shadow3DType = keyof typeof shadow3D
+export type NeonGlowColor = keyof typeof neonGlow
+export type NeonGlowIntensity = 'subtle' | 'medium' | 'intense'
 
 export default shadows

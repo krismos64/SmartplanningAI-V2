@@ -19,6 +19,12 @@ import {
   spacing,
   shadows,
   radius,
+  // Cyber Glass 3D tokens
+  glowColors,
+  gradients,
+  shadow3D,
+  neonGlow,
+  textNeon,
 } from '../index'
 
 describe('Design Tokens - Integration', () => {
@@ -192,6 +198,124 @@ describe('Design Tokens - Integration', () => {
       expect(tokens).toBeDefined()
       expect(typeof tokens).toBe('object')
       expect(tokens.colors.blue[500]).toBe('#3b82f6')
+    })
+  })
+
+  describe('Cyber Glass 3D - Glow Colors', () => {
+    it('should export glow colors with all intensity levels', () => {
+      expect(glowColors).toBeDefined()
+      expect(glowColors.cyan).toBeDefined()
+      expect(glowColors.blue).toBeDefined()
+      expect(glowColors.violet).toBeDefined()
+      expect(glowColors.emerald).toBeDefined()
+      expect(glowColors.amber).toBeDefined()
+      expect(glowColors.rose).toBeDefined()
+    })
+
+    it('should have all intensity levels per color', () => {
+      const intensities = ['light', 'medium', 'strong', 'intense'] as const
+      intensities.forEach((intensity) => {
+        expect(glowColors.cyan[intensity]).toBeDefined()
+        expect(glowColors.blue[intensity]).toBeDefined()
+      })
+    })
+
+    it('should be accessible via tokens.colors.glow', () => {
+      expect(tokens.colors.glow).toBe(glowColors)
+    })
+  })
+
+  describe('Cyber Glass 3D - Gradients', () => {
+    it('should export all gradient definitions', () => {
+      expect(gradients).toBeDefined()
+      expect(gradients.primary).toBeDefined()
+      expect(gradients.cardShine).toBeDefined()
+      expect(gradients.sidebarGlow).toBeDefined()
+      expect(gradients.meshDark).toBeDefined()
+      expect(gradients.meshLight).toBeDefined()
+      expect(gradients.textPrimary).toBeDefined()
+      expect(gradients.borderAnimated).toBeDefined()
+    })
+
+    it('should be accessible via tokens.colors.gradients', () => {
+      expect(tokens.colors.gradients).toBe(gradients)
+    })
+  })
+
+  describe('Cyber Glass 3D - Shadow3D', () => {
+    it('should export shadow3D with all categories', () => {
+      expect(shadow3D).toBeDefined()
+      expect(shadow3D.float).toBeDefined()
+      expect(shadow3D.inset).toBeDefined()
+      expect(shadow3D.cardPremium).toBeDefined()
+      expect(shadow3D.stat).toBeDefined()
+      expect(shadow3D.glass).toBeDefined()
+    })
+
+    it('should have float shadows with size variants', () => {
+      expect(shadow3D.float.sm).toBeDefined()
+      expect(shadow3D.float.md).toBeDefined()
+      expect(shadow3D.float.lg).toBeDefined()
+    })
+
+    it('should have stat shadows for all brand colors', () => {
+      expect(shadow3D.stat.blue).toBeDefined()
+      expect(shadow3D.stat.violet).toBeDefined()
+      expect(shadow3D.stat.cyan).toBeDefined()
+      expect(shadow3D.stat.emerald).toBeDefined()
+      expect(shadow3D.stat.amber).toBeDefined()
+      expect(shadow3D.stat.rose).toBeDefined()
+    })
+
+    it('should have glass shadows for light and dark modes', () => {
+      expect(shadow3D.glass.light).toBeDefined()
+      expect(shadow3D.glass.dark).toBeDefined()
+    })
+
+    it('should be accessible via tokens.shadows.shadow3D', () => {
+      expect(tokens.shadows.shadow3D).toBe(shadow3D)
+    })
+  })
+
+  describe('Cyber Glass 3D - Neon Glow', () => {
+    it('should export neonGlow with all color variants', () => {
+      expect(neonGlow).toBeDefined()
+      expect(neonGlow.primary).toBeDefined()
+      expect(neonGlow.accent).toBeDefined()
+      expect(neonGlow.cyan).toBeDefined()
+    })
+
+    it('should have intensity variants for each color', () => {
+      const intensities = ['subtle', 'medium', 'intense'] as const
+      intensities.forEach((intensity) => {
+        expect(neonGlow.primary[intensity]).toBeDefined()
+        expect(neonGlow.accent[intensity]).toBeDefined()
+        expect(neonGlow.cyan[intensity]).toBeDefined()
+      })
+    })
+
+    it('should be accessible via tokens.shadows.neonGlow', () => {
+      expect(tokens.shadows.neonGlow).toBe(neonGlow)
+    })
+  })
+
+  describe('Cyber Glass 3D - Text Neon', () => {
+    it('should export textNeon with all variants', () => {
+      expect(textNeon).toBeDefined()
+      expect(textNeon.primary).toBeDefined()
+      expect(textNeon.accent).toBeDefined()
+      expect(textNeon.cyan).toBeDefined()
+      expect(textNeon.subtle).toBeDefined()
+    })
+
+    it('should contain text-shadow CSS values', () => {
+      // Text shadows should have "0 0" pattern for glow effect
+      expect(textNeon.primary).toContain('0 0')
+      expect(textNeon.accent).toContain('0 0')
+    })
+
+    it('should be accessible via tokens.shadows.textNeon', () => {
+      expect(tokens.shadows.textNeon).toBe(textNeon)
     })
   })
 })

@@ -321,6 +321,48 @@ const config: Config = {
         'focus-primary': '0 0 0 3px rgba(59, 130, 246, 0.15)',
         'focus-error': '0 0 0 3px rgba(225, 29, 72, 0.15)',
         'focus-success': '0 0 0 3px rgba(16, 185, 129, 0.15)',
+
+        // === NOUVELLES OMBRES 3D (Cyber Glass 3D) ===
+        // Float shadows (effet lévitation)
+        'float-sm':
+          '0 4px 12px -2px rgba(0, 0, 0, 0.12), 0 2px 4px -2px rgba(0, 0, 0, 0.08)',
+        'float-md':
+          '0 8px 24px -4px rgba(0, 0, 0, 0.15), 0 4px 8px -4px rgba(0, 0, 0, 0.1)',
+        'float-lg':
+          '0 16px 40px -8px rgba(0, 0, 0, 0.2), 0 8px 16px -8px rgba(0, 0, 0, 0.12)',
+
+        // Glow multicouche
+        'glow-primary-subtle': '0 0 20px rgba(59, 130, 246, 0.3)',
+        'glow-primary-medium':
+          '0 0 20px rgba(59, 130, 246, 0.3), 0 0 40px rgba(59, 130, 246, 0.15)',
+        'glow-primary-intense':
+          '0 0 20px rgba(59, 130, 246, 0.4), 0 0 40px rgba(59, 130, 246, 0.25), 0 0 60px rgba(59, 130, 246, 0.1)',
+        'glow-accent-subtle': '0 0 20px rgba(139, 92, 246, 0.3)',
+        'glow-accent-medium':
+          '0 0 20px rgba(139, 92, 246, 0.3), 0 0 40px rgba(139, 92, 246, 0.15)',
+        'glow-cyan-subtle': '0 0 20px rgba(6, 182, 212, 0.3)',
+        'glow-cyan-medium':
+          '0 0 20px rgba(6, 182, 212, 0.3), 0 0 40px rgba(6, 182, 212, 0.15)',
+
+        // Card premium
+        'card-premium':
+          '0 0 0 1px rgba(255, 255, 255, 0.05), 0 4px 16px -4px rgba(0, 0, 0, 0.3), 0 0 32px -8px rgba(59, 130, 246, 0.15)',
+        'card-premium-hover':
+          '0 0 0 1px rgba(255, 255, 255, 0.1), 0 8px 32px -8px rgba(0, 0, 0, 0.4), 0 0 48px -12px rgba(59, 130, 246, 0.25)',
+
+        // Stat card shadows
+        'stat-blue': '0 8px 24px -8px rgba(59, 130, 246, 0.4)',
+        'stat-violet': '0 8px 24px -8px rgba(139, 92, 246, 0.4)',
+        'stat-cyan': '0 8px 24px -8px rgba(6, 182, 212, 0.4)',
+        'stat-emerald': '0 8px 24px -8px rgba(16, 185, 129, 0.4)',
+        'stat-amber': '0 8px 24px -8px rgba(245, 158, 11, 0.4)',
+        'stat-rose': '0 8px 24px -8px rgba(225, 29, 72, 0.4)',
+
+        // Glass shadows
+        'glass-light':
+          '0 8px 32px rgba(0, 0, 0, 0.12), inset 0 0 0 1px rgba(255, 255, 255, 0.1)',
+        'glass-dark':
+          '0 8px 32px rgba(0, 0, 0, 0.4), inset 0 0 0 1px rgba(255, 255, 255, 0.05)',
       },
 
       dropShadow: {
@@ -387,6 +429,34 @@ const config: Config = {
           '0%, 100%': { opacity: '1' },
           '50%': { opacity: '0.7' },
         },
+        // === NOUVELLES ANIMATIONS (Cyber Glass 3D) ===
+        'shimmer-slide': {
+          '100%': { transform: 'translateX(100%)' },
+        },
+        'pulse-glow': {
+          '0%, 100%': { boxShadow: '0 0 20px rgba(59, 130, 246, 0.3)' },
+          '50%': { boxShadow: '0 0 40px rgba(59, 130, 246, 0.6)' },
+        },
+        'pulse-glow-accent': {
+          '0%, 100%': { boxShadow: '0 0 20px rgba(139, 92, 246, 0.3)' },
+          '50%': { boxShadow: '0 0 40px rgba(139, 92, 246, 0.6)' },
+        },
+        float: {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-10px)' },
+        },
+        'float-slow': {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-6px)' },
+        },
+        'gradient-rotate': {
+          '0%': { '--gradient-angle': '0deg' },
+          '100%': { '--gradient-angle': '360deg' },
+        },
+        'border-pulse': {
+          '0%, 100%': { borderColor: 'rgba(59, 130, 246, 0.3)' },
+          '50%': { borderColor: 'rgba(59, 130, 246, 0.6)' },
+        },
       },
 
       animation: {
@@ -402,6 +472,14 @@ const config: Config = {
         'slide-right': 'slide-right 0.3s ease-in-out forwards',
         shimmer: 'shimmer 2s infinite linear',
         'pulse-soft': 'pulse-soft 2s ease-in-out infinite',
+        // === NOUVELLES ANIMATIONS (Cyber Glass 3D) ===
+        'shimmer-slide': 'shimmer-slide 2s ease-in-out infinite',
+        'pulse-glow': 'pulse-glow 2s ease-in-out infinite',
+        'pulse-glow-accent': 'pulse-glow-accent 2s ease-in-out infinite',
+        float: 'float 3s ease-in-out infinite',
+        'float-slow': 'float-slow 4s ease-in-out infinite',
+        'gradient-rotate': 'gradient-rotate 4s linear infinite',
+        'border-pulse': 'border-pulse 2s ease-in-out infinite',
       },
 
       // =================================================================
