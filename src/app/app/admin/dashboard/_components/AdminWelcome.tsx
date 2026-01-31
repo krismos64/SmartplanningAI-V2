@@ -137,8 +137,7 @@ export function AdminWelcome({
           {/* Texte de bienvenue */}
           <div className="space-y-1">
             <h1 className="text-2xl font-bold tracking-tight">
-              {greeting},{' '}
-              <span className="text-neon-accent">{userName}</span> !
+              {greeting}, <span className="text-neon-accent">{userName}</span> !
             </h1>
             <p className="text-muted-foreground">{today}</p>
             <p className="text-sm text-muted-foreground">

@@ -86,7 +86,7 @@ export function StatCard({
   return (
     <Card
       className={cn(
-        'glass overflow-hidden transition-all duration-300 hover-lift',
+        'glass hover-lift overflow-hidden transition-all duration-300',
         glowVariants[variant],
         className
       )}

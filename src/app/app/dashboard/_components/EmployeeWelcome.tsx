@@ -114,8 +114,7 @@ export function EmployeeWelcome({
       <CardContent className="pt-6">
         <div className="space-y-1">
           <h1 className="text-2xl font-bold tracking-tight">
-            {greeting},{' '}
-            <span className="text-neon-primary">{userName}</span> !
+            {greeting}, <span className="text-neon-primary">{userName}</span> !
           </h1>
           <p className="text-muted-foreground">{today}</p>
         </div>

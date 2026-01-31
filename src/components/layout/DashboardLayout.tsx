@@ -70,7 +70,7 @@ function DashboardLayoutContent({
             <Header user={user} notificationsCount={notificationsCount} />
 
             {/* Page content */}
-            <main className="flex-1 bg-mesh transition-all duration-300">
+            <main className="bg-mesh flex-1 transition-all duration-300">
               <ScrollArea className="h-[calc(100vh-4rem-3.5rem)]">
                 <div className="container mx-auto p-6">
                   {/* Dynamic Breadcrumbs - SP-264 */}

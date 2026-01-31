@@ -5,9 +5,12 @@
  * (proxy pour l'evolution du MRR).
  *
  * @ticket SP-148
+ * @ticket SP-431 - Animations Framer Motion
  */
 'use client'
 
+import { motion } from 'framer-motion'
+import { fadeSlideUpVariants, useReducedMotion } from '@/lib/animations'
 import { AreaChartWidget } from '@/components/charts'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
@@ -47,6 +50,7 @@ export function AdminMrrChart({
 }: AdminMrrChartProps) {
   const growth = calculateGrowth(companiesGrowth)
   const isPositive = growth >= 0
+  const shouldReduceMotion = useReducedMotion()
 
   // Transformer les donnees pour le chart
   const chartData = companiesGrowth.map((item) => ({
@@ -54,7 +58,7 @@ export function AdminMrrChart({
     value: item.count,
   }))
 
-  return (
+  const content = (
     <Card className={cn(className)}>
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
@@ -126,6 +130,21 @@ export function AdminMrrChart({
         )}
       </CardContent>
     </Card>
+  )
+
+  if (shouldReduceMotion) {
+    return content
+  }
+
+  return (
+    <motion.div
+      variants={fadeSlideUpVariants}
+      initial="hidden"
+      animate="visible"
+      custom={0.3}
+    >
+      {content}
+    </motion.div>
   )
 }
 

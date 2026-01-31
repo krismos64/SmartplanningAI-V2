@@ -31,10 +31,10 @@ export default function DesignSystemPage() {
   const replayStagger = () => setStaggerKey((k) => k + 1)
 
   return (
-    <div className="min-h-screen bg-background bg-mesh p-8">
+    <div className="bg-mesh min-h-screen bg-background p-8">
       <AnimatedContainer animation="fadeInDown" className="mx-auto max-w-7xl">
         <header className="mb-12">
-          <h1 className="mb-2 text-4xl font-bold text-neon-primary">
+          <h1 className="text-neon-primary mb-2 text-4xl font-bold">
             Design System - Cyber Glass 3D
           </h1>
           <p className="text-muted-foreground">
@@ -126,18 +126,18 @@ export default function DesignSystemPage() {
         {/* Section 4: Text Neon */}
         <Section title="💡 Text Neon" id="neon">
           <div className="glass space-y-4 rounded-xl p-8">
-            <h2 className="text-3xl font-bold text-neon-primary">
+            <h2 className="text-neon-primary text-3xl font-bold">
               Texte Neon Primary
             </h2>
-            <h2 className="text-3xl font-bold text-neon-accent">
+            <h2 className="text-neon-accent text-3xl font-bold">
               Texte Neon Accent
             </h2>
-            <h2 className="text-3xl font-bold text-neon-cyan">
+            <h2 className="text-neon-cyan text-3xl font-bold">
               Texte Neon Cyan
             </h2>
             <p className="text-lg">
               Texte normal avec{' '}
-              <span className="font-semibold text-neon-primary">
+              <span className="text-neon-primary font-semibold">
                 highlight neon
               </span>{' '}
               intégré.
@@ -198,7 +198,12 @@ export default function DesignSystemPage() {
               </h3>
               <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
                 {(
-                  ['fadeInUp', 'fadeInDown', 'fadeInLeft', 'fadeInRight'] as const
+                  [
+                    'fadeInUp',
+                    'fadeInDown',
+                    'fadeInLeft',
+                    'fadeInRight',
+                  ] as const
                 ).map((anim) => (
                   <AnimatedContainer key={anim} animation={anim}>
                     <div className="glass rounded-lg p-4 text-center">

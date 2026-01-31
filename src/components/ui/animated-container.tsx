@@ -174,7 +174,12 @@ export interface AnimatedContainerProps extends HTMLMotionProps<'div'> {
   /** Délai avant le début de l'animation (en secondes) */
   delay?: number
   /** Type d'animation */
-  animation?: 'fadeInUp' | 'fadeInDown' | 'fadeInLeft' | 'fadeInRight' | 'scaleIn'
+  animation?:
+    | 'fadeInUp'
+    | 'fadeInDown'
+    | 'fadeInLeft'
+    | 'fadeInRight'
+    | 'scaleIn'
   /** Désactiver l'animation (pour les tests ou préférences utilisateur) */
   disabled?: boolean
 }
@@ -263,7 +268,12 @@ export interface AnimatedItemProps extends HTMLMotionProps<'div'> {
   /** Classes CSS additionnelles */
   className?: string
   /** Type d'animation (doit correspondre au parent stagger) */
-  animation?: 'fadeInUp' | 'fadeInDown' | 'fadeInLeft' | 'fadeInRight' | 'scaleIn'
+  animation?:
+    | 'fadeInUp'
+    | 'fadeInDown'
+    | 'fadeInLeft'
+    | 'fadeInRight'
+    | 'scaleIn'
 }
 
 /**
