@@ -69,6 +69,19 @@ export interface TrendIndicatorProps {
 }
 
 /**
+ * Variante de couleur pour StatCard (Cyber Glass 3D)
+ * @ticket SP-259
+ */
+export type StatCardVariant =
+  | 'default'
+  | 'primary'
+  | 'success'
+  | 'warning'
+  | 'danger'
+  | 'info'
+  | 'accent'
+
+/**
  * Props pour le composant StatCard
  */
 export interface StatCardProps {
@@ -86,6 +99,8 @@ export interface StatCardProps {
   description?: string
   /** Etat de chargement */
   isLoading?: boolean
+  /** Variante de couleur Cyber Glass 3D */
+  variant?: StatCardVariant
   /** Classes CSS additionnelles */
   className?: string
 }

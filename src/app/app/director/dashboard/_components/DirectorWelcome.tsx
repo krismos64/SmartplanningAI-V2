@@ -5,7 +5,12 @@
  * indicateur de sante et alertes.
  *
  * @ticket SP-147
+ * @ticket SP-431 - Animations Framer Motion
  */
+'use client'
+
+import { motion } from 'framer-motion'
+import { fadeSlideUpVariants, useReducedMotion } from '@/lib/animations'
 import { Card, CardContent } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 
@@ -99,11 +104,12 @@ export function DirectorWelcome({
   const greeting = getGreeting()
   const today = formatDate(new Date())
   const healthStatus = getHealthStatus(attendanceRate)
+  const shouldReduceMotion = useReducedMotion()
 
-  return (
+  const content = (
     <Card
       className={cn(
-        'border-none bg-gradient-to-r from-violet-500/10 to-violet-500/5',
+        'glass-strong border-none bg-gradient-to-r from-violet-500/10 to-violet-500/5',
         className
       )}
     >
@@ -112,7 +118,8 @@ export function DirectorWelcome({
           {/* Texte de bienvenue */}
           <div className="space-y-1">
             <h1 className="text-2xl font-bold tracking-tight">
-              {greeting}, {userName} !
+              {greeting},{' '}
+              <span className="text-neon-primary">{userName}</span> !
             </h1>
             <p className="text-muted-foreground">{today}</p>
             <p className="text-sm text-muted-foreground">
@@ -186,6 +193,20 @@ export function DirectorWelcome({
         </div>
       </CardContent>
     </Card>
+  )
+
+  if (shouldReduceMotion) {
+    return content
+  }
+
+  return (
+    <motion.div
+      variants={fadeSlideUpVariants}
+      initial="hidden"
+      animate="visible"
+    >
+      {content}
+    </motion.div>
   )
 }
 

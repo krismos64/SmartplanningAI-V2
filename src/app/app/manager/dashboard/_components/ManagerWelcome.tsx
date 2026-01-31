@@ -5,7 +5,12 @@
  * avec badge alerte si conges en attente.
  *
  * @ticket SP-316
+ * @ticket SP-431 - Animations Framer Motion
  */
+'use client'
+
+import { motion } from 'framer-motion'
+import { fadeSlideUpVariants, useReducedMotion } from '@/lib/animations'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
@@ -66,11 +71,12 @@ export function ManagerWelcome({
 }: ManagerWelcomeProps) {
   const greeting = getGreeting()
   const today = formatDate(new Date())
+  const shouldReduceMotion = useReducedMotion()
 
-  return (
+  const content = (
     <Card
       className={cn(
-        'border-none bg-gradient-to-r from-blue-500/10 to-indigo-500/5',
+        'glass-strong border-none bg-gradient-to-r from-blue-500/10 to-indigo-500/5',
         className
       )}
       data-testid="manager-welcome"
@@ -79,7 +85,8 @@ export function ManagerWelcome({
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="space-y-1">
             <h1 className="text-2xl font-bold tracking-tight">
-              {greeting}, {userName} !
+              {greeting},{' '}
+              <span className="text-neon-primary">{userName}</span> !
             </h1>
             <p className="text-muted-foreground">{today}</p>
             <p className="text-sm text-muted-foreground">
@@ -165,6 +172,20 @@ export function ManagerWelcome({
         </div>
       </CardContent>
     </Card>
+  )
+
+  if (shouldReduceMotion) {
+    return content
+  }
+
+  return (
+    <motion.div
+      variants={fadeSlideUpVariants}
+      initial="hidden"
+      animate="visible"
+    >
+      {content}
+    </motion.div>
   )
 }
 
