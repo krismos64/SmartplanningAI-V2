@@ -39,6 +39,15 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 
 type UserRole = 'SYSTEM_ADMIN' | 'DIRECTOR' | 'MANAGER' | 'EMPLOYEE'
 
+/**
+ * Variantes de style pour la sidebar
+ * - neon: Style néon bleu/violet par défaut (original)
+ * - gradient-glass: Glassmorphism avec dégradé sophistiqué
+ * - aurora: Aurores boréales animées (vert/cyan/violet)
+ * - cosmic: Effet cosmique 3D avec étoiles et nébuleuses
+ */
+export type SidebarVariant = 'neon' | 'gradient-glass' | 'aurora' | 'cosmic'
+
 interface SidebarProps {
   user: {
     name: string
@@ -47,6 +56,8 @@ interface SidebarProps {
     organizationId?: string
     companyName?: string
   }
+  /** Variante de style de la sidebar (défaut: 'neon') */
+  variant?: SidebarVariant
 }
 
 interface MenuItem {
@@ -152,7 +163,17 @@ function getMenuItemsByRole(role: UserRole): MenuItem[] {
   )
 }
 
-export function Sidebar({ user }: SidebarProps) {
+/**
+ * Mapping des variantes vers les classes CSS
+ */
+const variantClasses: Record<SidebarVariant, string> = {
+  neon: 'sidebar-neon',
+  'gradient-glass': 'sidebar-gradient-glass',
+  aurora: 'sidebar-aurora',
+  cosmic: 'sidebar-cosmic',
+}
+
+export function Sidebar({ user, variant = 'neon' }: SidebarProps) {
   const pathname = usePathname()
   const { state, toggleSidebar } = useSidebar()
   const isCollapsed = state === 'collapsed'
@@ -165,8 +186,10 @@ export function Sidebar({ user }: SidebarProps) {
     .toUpperCase()
     .slice(0, 2)
 
+  const sidebarClassName = variantClasses[variant]
+
   return (
-    <SidebarPrimitive className="sidebar-neon">
+    <SidebarPrimitive className={sidebarClassName}>
       {/* Header */}
       <SidebarHeader className="border-b border-white/[0.06] p-4">
         <div className="flex items-center justify-between">
