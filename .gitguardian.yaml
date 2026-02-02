@@ -1,0 +1,17 @@
+# GitGuardian configuration
+# Ignore false positives in test files containing dummy passwords
+
+paths-ignore:
+  # Test files with mock/dummy passwords
+  - "__tests__/**"
+  - "e2e/**"
+  - "**/*.test.ts"
+  - "**/*.test.tsx"
+  - "**/*.spec.ts"
+  - "**/*.spec.tsx"
+
+# Ignore specific patterns that are clearly test data
+matches-ignore:
+  # Test passwords patterns
+  - name: "Test password patterns"
+    match: "(OldPass|NewPass|TestPass|WrongPass|SamePass|DifferentPass)\\d+!"
