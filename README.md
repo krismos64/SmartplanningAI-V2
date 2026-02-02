@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 2 février 2026 (Sprint 14 - SP-271 Edit Profile Page avec React Hook Form + Zod)
+- **Dernière mise à jour** : 2 février 2026 (Sprint 14 - SP-273 Change Password Page avec indicateur de force)
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -70,7 +70,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Dashboard Super Admin** (SP-148) : Page dashboard admin SaaS avec Server Components, protection SYSTEM_ADMIN, 7 composants (Welcome, Stats, MrrChart, SignupsChart, PlansChart, RecentCompanies, QuickActions)
 - **Animations Dashboards** (SP-431) : Animations Framer Motion sur 15 composants (4 dashboards), variants fadeSlideUp/stagger, support prefers-reduced-motion
 - **Leave Management UI** (SP-411/SP-412/SP-413/SP-414/SP-415) : 16 composants congés + pages (LeaveTypeBadge, LeaveStatusBadge, LeaveBalanceCard, LeaveBalanceEditDialog, LeaveRequestCard, LeaveRequestForm, LeaveReviewDialog, LeaveConflictWarning, LeaveFilters, LeavesList, LeavesListMobile, LeaveCalendar, LeaveCalendarDay, LeaveStatsBar, LeaveDetailCard, LeaveTimeline) + pages orchestrateur, détail [id], balances + email notification manager + overlay congés Schedule-X
-- **Profile Page** (SP-270, SP-271) : Page profil utilisateur avec Server Components, 7 composants UI (ProfileHeader, PersonalInfoCard, ProfessionalInfoCard, AccountInfoCard, ProfileActions, ProfilePageContent, InfoRow), Server Action getProfile, design Cyber Glass 3D avec AnimatedContainer, skeleton loading + **Edit Profile Page** avec React Hook Form + Zod validation, Server Action updateProfile, gestion SYSTEM_ADMIN sans Employee, 131 tests unitaires + 37 tests E2E
+- **Profile Page** (SP-270, SP-271, SP-273) : Page profil utilisateur avec Server Components, 7 composants UI (ProfileHeader, PersonalInfoCard, ProfessionalInfoCard, AccountInfoCard, ProfileActions, ProfilePageContent, InfoRow), Server Action getProfile, design Cyber Glass 3D avec AnimatedContainer, skeleton loading + **Edit Profile Page** avec React Hook Form + Zod validation, Server Action updateProfile, gestion SYSTEM_ADMIN sans Employee + **Change Password Page** avec indicateur de force en temps réel (5 critères, 4 niveaux), 3 toggles visibilité indépendants, Server Action changePassword sécurisée (bcrypt), 187 tests unitaires + 56 tests E2E
 
 ### MVP (Phases 1-4)
 
@@ -2123,9 +2123,10 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 | **Schedules (SP-406)**              | 16      | ✅                                |
 | **Profile (SP-270)**                | 15      | ✅                                |
 | **Edit Profile (SP-271)**           | 22      | ✅                                |
-| **Total E2E actifs**                | **414** | ✅                                |
+| **Change Password (SP-273)**        | 19      | ✅                                |
+| **Total E2E actifs**                | **433** | ✅                                |
 | **Total E2E skipped**               | **69**  | ⏸️                                |
-| **Total E2E**                       | **483** |                                   |
+| **Total E2E**                       | **502** |                                   |
 
 **Note** : Tests desktop exécutés sur Chromium uniquement. Tests mobiles exécutés sur 5 devices (iPhone SE, iPhone 14 Pro, Pixel 7, iPad Mini, iPad Pro 11") via Chromium avec émulation mobile (WebKit supprimé car bug HTTPS upgrade sur localhost).
 
@@ -2469,8 +2470,8 @@ Merge main → Build Docker → Push GHCR → Deploy VPS (~8-10 min)
 
 - **CI** (`.github/workflows/ci.yml`) : Lint, Type-check, Tests unitaires, Build, Tests E2E (PR uniquement)
 - **CD** (`.github/workflows/cd.yml`) : Build image Docker, Push sur ghcr.io, Deploy via SSH
-- Tests unitaires sur tous les push (~4017 tests Vitest)
-- Tests E2E sur PR vers main (~524 tests Playwright actifs, 5 devices mobiles)
+- Tests unitaires sur tous les push (~4073 tests Vitest)
+- Tests E2E sur PR vers main (~543 tests Playwright actifs, 5 devices mobiles)
 - Déploiement automatique sur merge main ✅
 - Migrations Prisma automatiques
 - Healthcheck endpoint : `/api/health` ✅
