@@ -72,9 +72,13 @@ export default defineConfig({
   // === SERVEUR WEB ===
 
   webServer: {
-    command: 'npm run start',
+    // NOTE: On utilise 'npm run dev' car 'npm run start' en CI cause des
+    // problèmes de redirections infinies (ERR_TOO_MANY_REDIRECTS).
+    command: 'npm run dev',
     url: 'http://localhost:3000',
     reuseExistingServer: false,
     timeout: 120_000,
+    stdout: 'pipe',
+    stderr: 'pipe',
   },
 })
