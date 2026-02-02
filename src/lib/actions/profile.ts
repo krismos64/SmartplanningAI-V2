@@ -6,7 +6,7 @@
  * @description Actions serveur pour récupérer et gérer le profil utilisateur.
  * Combine les données User (compte) et Employee (profil RH) si disponible.
  *
- * @ticket SP-270, SP-271, SP-273, SP-277
+ * @ticket SP-270, SP-271, SP-273, SP-277, SP-278
  */
 
 import { revalidatePath } from 'next/cache'
@@ -24,7 +24,19 @@ import {
   type ChangePasswordFormData,
   type DeleteAccountInput,
 } from '@/lib/validations/user'
-import type { CrudActionResult } from '@/types'
+import type {
+  CrudActionResult,
+  ExportAccount,
+  ExportProfile,
+  ExportSchedule,
+  ExportLeaveRequest,
+  ExportLeaveBalance,
+  ExportAvailability,
+  ExportPersonalTask,
+  ExportNotification,
+  ExportIncidentNote,
+  UserDataExport,
+} from '@/types'
 
 // ============================================================================
 // TYPES
@@ -484,5 +496,481 @@ export async function deleteAccount(
       success: false,
       error: 'Une erreur est survenue lors de la suppression',
     }
+  }
+}
+
+// ============================================================================
+// EXPORT DONNÉES RGPD (SP-278)
+// ============================================================================
+
+/**
+ * Résultat de l'export des données
+ */
+export interface ExportDataResult {
+  filename: string
+  data: string
+  mimeType: string
+}
+
+/**
+ * Exporte toutes les données personnelles de l'utilisateur
+ *
+ * RGPD Article 20 - Droit à la portabilité des données
+ *
+ * Format : JSON structuré, lisible par machine
+ *
+ * Contenu :
+ * - Données compte (User)
+ * - Profil employé (Employee)
+ * - Plannings (Schedule)
+ * - Demandes de congés (LeaveRequest)
+ * - Soldes de congés (LeaveBalance)
+ * - Disponibilités (Availability)
+ * - Tâches personnelles (PersonalTask)
+ * - Notifications (Notification)
+ * - Notes d'incident rédigées (IncidentNote)
+ *
+ * Exclusions :
+ * - Mot de passe (même hashé)
+ * - IDs internes techniques
+ * - Tokens OAuth
+ * - Sessions
+ * - Notes d'incident où l'utilisateur est le sujet (données tierces)
+ *
+ * @returns CrudActionResult avec les données à télécharger
+ *
+ * @ticket SP-278
+ */
+export async function exportUserData(): Promise<
+  CrudActionResult<ExportDataResult>
+> {
+  try {
+    // 1. Vérifier l'authentification
+    const session = await auth()
+    if (!session?.user?.id) {
+      return {
+        success: false,
+        error: 'Vous devez être connecté pour exporter vos données',
+      }
+    }
+
+    const userId = session.user.id
+
+    // 2. Récupérer toutes les données en parallèle
+    const [
+      user,
+      employee,
+      schedules,
+      leaveRequests,
+      leaveBalances,
+      availabilities,
+      personalTasks,
+      notifications,
+      incidentNotesAuthored,
+    ] = await Promise.all([
+      // Données User
+      prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+          email: true,
+          name: true,
+          image: true,
+          role: true,
+          emailVerified: true,
+          isActive: true,
+          createdAt: true,
+          lastLoginAt: true,
+        },
+      }),
+
+      // Données Employee
+      prisma.employee.findFirst({
+        where: { userId },
+        select: {
+          firstName: true,
+          lastName: true,
+          phone: true,
+          email: true,
+          jobTitle: true,
+          department: true,
+          hireDate: true,
+          weeklyHours: true,
+          skills: true,
+          preferences: true,
+          isActive: true,
+          createdAt: true,
+          team: {
+            select: { name: true },
+          },
+        },
+      }),
+
+      // Plannings
+      prisma.schedule.findMany({
+        where: { employee: { userId } },
+        select: {
+          startDate: true,
+          endDate: true,
+          startTime: true,
+          endTime: true,
+          type: true,
+          status: true,
+          title: true,
+          description: true,
+          location: true,
+        },
+        orderBy: { startDate: 'desc' },
+      }),
+
+      // Demandes de congés
+      prisma.leaveRequest.findMany({
+        where: { employee: { userId } },
+        select: {
+          startDate: true,
+          endDate: true,
+          days: true,
+          type: true,
+          status: true,
+          halfDay: true,
+          halfDayPeriod: true,
+          reason: true,
+          comment: true,
+          reviewedAt: true,
+          reviewComment: true,
+        },
+        orderBy: { createdAt: 'desc' },
+      }),
+
+      // Soldes de congés
+      prisma.leaveBalance.findMany({
+        where: { employee: { userId } },
+        select: {
+          year: true,
+          paidLeaveTotal: true,
+          paidLeaveUsed: true,
+          rttTotal: true,
+          rttUsed: true,
+        },
+        orderBy: { year: 'desc' },
+      }),
+
+      // Disponibilités
+      prisma.availability.findMany({
+        where: { employee: { userId } },
+        select: {
+          startDate: true,
+          endDate: true,
+          startTime: true,
+          endTime: true,
+          type: true,
+          reason: true,
+          isRecurring: true,
+        },
+        orderBy: { startDate: 'desc' },
+      }),
+
+      // Tâches personnelles
+      prisma.personalTask.findMany({
+        where: { userId },
+        select: {
+          title: true,
+          description: true,
+          dueDate: true,
+          completed: true,
+          createdAt: true,
+        },
+        orderBy: { createdAt: 'desc' },
+      }),
+
+      // Notifications
+      prisma.notification.findMany({
+        where: { userId },
+        select: {
+          title: true,
+          message: true,
+          type: true,
+          isRead: true,
+          readAt: true,
+          createdAt: true,
+        },
+        orderBy: { createdAt: 'desc' },
+      }),
+
+      // Notes d'incident rédigées par l'utilisateur
+      prisma.incidentNote.findMany({
+        where: { authorId: userId },
+        select: {
+          title: true,
+          content: true,
+          date: true,
+          visibility: true,
+          createdAt: true,
+        },
+        orderBy: { date: 'desc' },
+      }),
+    ])
+
+    // 3. Vérifier que l'utilisateur existe
+    if (!user) {
+      return {
+        success: false,
+        error: 'Compte introuvable',
+      }
+    }
+
+    // 4. Formater les données pour l'export
+    const exportData: UserDataExport = {
+      exportInfo: {
+        exportDate: new Date().toISOString(),
+        format: 'RGPD Article 20 - Portabilité des données',
+        version: '1.0',
+      },
+
+      account: formatAccount(user),
+      profile: employee ? formatProfile(employee) : null,
+      schedules: schedules.map(formatSchedule),
+      leaveRequests: leaveRequests.map(formatLeaveRequest),
+      leaveBalances: leaveBalances.map(formatLeaveBalance),
+      availabilities: availabilities.map(formatAvailability),
+      personalTasks: personalTasks.map(formatPersonalTask),
+      notifications: notifications.map(formatNotification),
+      incidentNotesAuthored: incidentNotesAuthored.map(formatIncidentNote),
+    }
+
+    // 5. Générer le JSON avec indentation pour lisibilité
+    const jsonData = JSON.stringify(exportData, null, 2)
+
+    // 6. Générer le nom de fichier
+    const dateStr = new Date().toISOString().split('T')[0]
+    const emailSlug = user.email?.split('@')[0] || 'user'
+    const filename = `smartplanning-export-${emailSlug}-${dateStr}.json`
+
+    // 7. Log de traçabilité RGPD
+    console.warn(
+      `[exportUserData] User ${userId} exported their data at ${new Date().toISOString()}`
+    )
+
+    return {
+      success: true,
+      data: {
+        filename,
+        data: jsonData,
+        mimeType: 'application/json',
+      },
+    }
+  } catch (error) {
+    console.error('[exportUserData] Error:', error)
+    return {
+      success: false,
+      error: "Une erreur est survenue lors de l'export",
+    }
+  }
+}
+
+// ============================================================================
+// FONCTIONS DE FORMATAGE POUR L'EXPORT
+// ============================================================================
+
+/**
+ * Extrait la partie date (YYYY-MM-DD) d'une Date
+ */
+function toDateString(date: Date): string {
+  return date.toISOString().split('T')[0] ?? ''
+}
+
+function formatAccount(user: {
+  email: string
+  name: string | null
+  image: string | null
+  role: string
+  emailVerified: Date | null
+  isActive: boolean
+  createdAt: Date
+  lastLoginAt: Date | null
+}): ExportAccount {
+  return {
+    email: user.email,
+    name: user.name,
+    image: user.image,
+    role: user.role,
+    emailVerified: user.emailVerified?.toISOString() || null,
+    isActive: user.isActive,
+    createdAt: user.createdAt.toISOString(),
+    lastLoginAt: user.lastLoginAt?.toISOString() || null,
+  }
+}
+
+function formatProfile(employee: {
+  firstName: string
+  lastName: string
+  phone: string | null
+  email: string | null
+  jobTitle: string | null
+  department: string | null
+  hireDate: Date | null
+  weeklyHours: number
+  skills: string[]
+  preferences: unknown
+  isActive: boolean
+  createdAt: Date
+  team: { name: string } | null
+}): ExportProfile {
+  return {
+    firstName: employee.firstName,
+    lastName: employee.lastName,
+    phone: employee.phone,
+    email: employee.email,
+    jobTitle: employee.jobTitle,
+    department: employee.department,
+    hireDate: employee.hireDate ? toDateString(employee.hireDate) : null,
+    weeklyHours: employee.weeklyHours,
+    skills: employee.skills,
+    preferences: employee.preferences as Record<string, unknown> | null,
+    team: employee.team?.name || null,
+    isActive: employee.isActive,
+    createdAt: employee.createdAt.toISOString(),
+  }
+}
+
+function formatSchedule(schedule: {
+  startDate: Date
+  endDate: Date
+  startTime: string
+  endTime: string
+  type: string
+  status: string
+  title: string | null
+  description: string | null
+  location: string | null
+}): ExportSchedule {
+  return {
+    date: toDateString(schedule.startDate),
+    startTime: schedule.startTime,
+    endTime: schedule.endTime,
+    type: schedule.type,
+    status: schedule.status,
+    title: schedule.title,
+    description: schedule.description,
+    location: schedule.location,
+  }
+}
+
+function formatLeaveRequest(request: {
+  startDate: Date
+  endDate: Date
+  days: number
+  type: string
+  status: string
+  halfDay: boolean
+  halfDayPeriod: string | null
+  reason: string | null
+  comment: string | null
+  reviewedAt: Date | null
+  reviewComment: string | null
+}): ExportLeaveRequest {
+  return {
+    startDate: toDateString(request.startDate),
+    endDate: toDateString(request.endDate),
+    days: request.days,
+    type: request.type,
+    status: request.status,
+    halfDay: request.halfDay,
+    halfDayPeriod: request.halfDayPeriod,
+    reason: request.reason,
+    comment: request.comment,
+    reviewedAt: request.reviewedAt?.toISOString() || null,
+    reviewComment: request.reviewComment,
+  }
+}
+
+function formatLeaveBalance(balance: {
+  year: number
+  paidLeaveTotal: number
+  paidLeaveUsed: number
+  rttTotal: number
+  rttUsed: number
+}): ExportLeaveBalance {
+  return {
+    year: balance.year,
+    paidLeave: {
+      total: balance.paidLeaveTotal,
+      used: balance.paidLeaveUsed,
+      remaining: balance.paidLeaveTotal - balance.paidLeaveUsed,
+    },
+    rtt: {
+      total: balance.rttTotal,
+      used: balance.rttUsed,
+      remaining: balance.rttTotal - balance.rttUsed,
+    },
+  }
+}
+
+function formatAvailability(availability: {
+  startDate: Date
+  endDate: Date
+  startTime: string | null
+  endTime: string | null
+  type: string
+  reason: string | null
+  isRecurring: boolean
+}): ExportAvailability {
+  return {
+    startDate: toDateString(availability.startDate),
+    endDate: toDateString(availability.endDate),
+    startTime: availability.startTime,
+    endTime: availability.endTime,
+    type: availability.type,
+    reason: availability.reason,
+    isRecurring: availability.isRecurring,
+  }
+}
+
+function formatPersonalTask(task: {
+  title: string
+  description: string | null
+  dueDate: Date | null
+  completed: boolean
+  createdAt: Date
+}): ExportPersonalTask {
+  return {
+    title: task.title,
+    description: task.description,
+    dueDate: task.dueDate ? toDateString(task.dueDate) : null,
+    completed: task.completed,
+    createdAt: task.createdAt.toISOString(),
+  }
+}
+
+function formatNotification(notification: {
+  title: string
+  message: string
+  type: string
+  isRead: boolean
+  readAt: Date | null
+  createdAt: Date
+}): ExportNotification {
+  return {
+    title: notification.title,
+    message: notification.message,
+    type: notification.type,
+    isRead: notification.isRead,
+    readAt: notification.readAt?.toISOString() || null,
+    createdAt: notification.createdAt.toISOString(),
+  }
+}
+
+function formatIncidentNote(note: {
+  title: string
+  content: string
+  date: Date
+  visibility: string
+  createdAt: Date
+}): ExportIncidentNote {
+  return {
+    title: note.title,
+    content: note.content,
+    date: toDateString(note.date),
+    visibility: note.visibility,
+    createdAt: note.createdAt.toISOString(),
   }
 }

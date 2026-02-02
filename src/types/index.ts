@@ -114,6 +114,23 @@ export {
 } from './incident-note'
 
 // ============================================================================
+// TYPES EXPORT RGPD (SP-278)
+// ============================================================================
+export type {
+  ExportInfo,
+  ExportAccount,
+  ExportProfile,
+  ExportSchedule,
+  ExportLeaveRequest,
+  ExportLeaveBalance,
+  ExportAvailability,
+  ExportPersonalTask,
+  ExportNotification,
+  ExportIncidentNote,
+  UserDataExport,
+} from './export'
+
+// ============================================================================
 // TYPES GÉNÉRIQUES UTILITAIRES
 // ============================================================================
 
