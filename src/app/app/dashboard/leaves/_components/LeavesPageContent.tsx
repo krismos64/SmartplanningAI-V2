@@ -13,6 +13,7 @@ import type { LeaveRequest, LeaveRequestStatus, UserRole } from '@prisma/client'
 
 // UI Components
 import { Button } from '@/components/ui/button'
+import { ExportCsvButton } from '@/components/exports'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   Dialog,
@@ -48,6 +49,7 @@ import {
   getLeaveStats,
   getTeamAbsences,
   cancelLeaveRequest,
+  exportLeavesCsv,
 } from '@/lib/actions/leaves'
 
 // Types
@@ -435,7 +437,22 @@ export function LeavesPageContent({
               : 'Gérez les demandes de congés de votre équipe'}
           </p>
         </div>
-        {createButtonContent}
+        <div className="flex items-center gap-2">
+          <ExportCsvButton
+            action={exportLeavesCsv}
+            filters={{
+              status: filters.status,
+              type: filters.type,
+              teamId: filters.teamId,
+              startDate: filters.startDate?.toISOString(),
+              endDate: filters.endDate?.toISOString(),
+            }}
+            label="Export CSV"
+            variant="outline"
+            size="sm"
+          />
+          {createButtonContent}
+        </div>
       </div>
 
       {/* Stats Bar */}

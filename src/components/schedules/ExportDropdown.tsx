@@ -7,7 +7,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Download, FileText, Table, Loader2 } from 'lucide-react'
+import { Download, FileText, Table, Loader2, FileSpreadsheet } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -16,6 +16,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { useToast } from '@/components/toast/use-toast'
+import { exportSchedulesCsv } from '@/lib/actions/schedules'
 
 interface ExportDropdownProps {
   startDate: Date
@@ -25,7 +26,7 @@ interface ExportDropdownProps {
   filters?: Record<string, unknown>
 }
 
-type ExportFormat = 'pdf' | 'excel' | null
+type ExportFormat = 'pdf' | 'excel' | 'csv' | null
 
 export function ExportDropdown({
   startDate,
@@ -134,6 +135,37 @@ export function ExportDropdown({
     }
   }
 
+  const handleExportCsv = async () => {
+    setIsExporting('csv')
+    try {
+      const result = await exportSchedulesCsv({
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString(),
+        teamId: (filters.teamId as string) || teamId,
+        employeeId: filters.employeeId as string,
+      })
+
+      if (!result.success) {
+        throw new Error(
+          ('error' in result ? result.error : null) || "Erreur lors de l'export"
+        )
+      }
+
+      const blob = new Blob([result.data.data], { type: result.data.mimeType })
+      downloadBlob(blob, result.data.filename)
+      success('Le fichier CSV a été téléchargé.')
+    } catch (err) {
+      console.error('[ExportDropdown] CSV error:', err)
+      toastError(
+        err instanceof Error
+          ? err.message
+          : 'Impossible de générer le fichier CSV'
+      )
+    } finally {
+      setIsExporting(null)
+    }
+  }
+
   const isLoading = isExporting !== null
 
   return (
@@ -169,6 +201,14 @@ export function ExportDropdown({
         >
           <Table className="mr-2 h-4 w-4" />
           Export Excel
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          data-testid="export-csv"
+          onClick={() => void handleExportCsv()}
+          disabled={isLoading}
+        >
+          <FileSpreadsheet className="mr-2 h-4 w-4" />
+          Export CSV
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
