@@ -1,7 +1,7 @@
 /**
  * Exports des Page Objects pour les tests E2E
  *
- * @ticket SP-149, SP-156
+ * @ticket SP-149, SP-156, SP-277
  */
 
 // Dashboard Pages
@@ -35,3 +35,9 @@ export {
   PersonalTasksPage,
   type CreateNoteData,
 } from './personal-tasks.page'
+
+// Profile Pages (SP-270, SP-271, SP-273, SP-277)
+export { ProfilePage } from './profile.page'
+export { EditProfilePage } from './edit-profile.page'
+export { ChangePasswordPage } from './change-password.page'
+export { DeleteAccountPage } from './delete-account.page'
