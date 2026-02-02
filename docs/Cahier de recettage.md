@@ -14,7 +14,7 @@ Ce document trace l'historique complet des tests réalisés sur SmartPlanning. I
 | Pipeline CI/CD       | GitHub Actions                                         |
 | Responsable          | Christophe Mostefaoui                                  |
 | Date de création     | 4 décembre 2025                                        |
-| Dernière mise à jour | 31 janvier 2026                                        |
+| Dernière mise à jour | 2 février 2026                                         |
 
 ---
 
@@ -34,8 +34,8 @@ Dans le cadre du diplôme **CDA (Concepteur Développeur d'Applications)**, ce c
 | Métrique              | Objectif  | Atteint |
 | --------------------- | --------- | ------- |
 | Couverture globale    | ≥ 70%     | ✅ 85%  |
-| Tests unitaires       | ≥ 500     | ✅ 3851 |
-| Tests E2E             | ≥ 50      | ✅ 487  |
+| Tests unitaires       | ≥ 500     | ✅ 3957 |
+| Tests E2E             | ≥ 50      | ✅ 502  |
 | Score Lighthouse A11y | ≥ 90%     | ✅ 95%  |
 | Anomalies critiques   | 0 en prod | ✅ 0    |
 
@@ -442,6 +442,7 @@ Ce tableau recense chaque campagne de tests significative (mise en production, f
 
 | Date       | Sprint    | Version/Commit | Tests unitaires | Tests E2E  | Couverture | Statut  | Notes                                                                                                                                                                                                                                                                                                          |
 | ---------- | --------- | -------------- | --------------- | ---------- | ---------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 02/02/2026 | Sprint 14 | SP-270         | 3957/3957 ✅    | 502/502 ✅ | ~85%       | ✅ PASS | 🆕 SP-270 Page Profil Utilisateur. +62 tests unitaires (6 fichiers), +15 tests E2E (1 fichier). Server Action getProfile avec données User + Employee. 7 composants UI : ProfileHeader (avatar, initiales, badge rôle), PersonalInfoCard, ProfessionalInfoCard, AccountInfoCard, ProfileActions, ProfilePageContent (AnimatedContainer), InfoRow. Design Cyber Glass 3D. Skeleton loading. Page Object ProfilePage. Tests par rôle (Employee, Manager, Director, Admin). Total : 4459 tests |
 | 30/01/2026 | Sprint 14 | SP-431         | 3851/3851 ✅    | 487/487 ✅ | ~85%       | ✅ PASS | 🆕 SP-431 Animations Dashboards Framer Motion. 15 composants animés (4 dashboards). Variants fadeSlideUpVariants + staggerContainer/staggerItem. Hook useReducedMotion pour accessibilité WCAG. Stagger delay sur KPIs grids, charts delay 0.3s, quick actions delay 0.5s. Employee (2), Manager (5), Director (2), Admin (6 composants). Total : 4338 tests |
 | 30/01/2026 | Sprint 14 | SP-317         | 3851/3851 ✅    | 487/487 ✅ | ~85%       | ✅ PASS | 🆕 SP-317 Dashboard Director KPIs. +4 tests unitaires. 2 métriques ajoutées : plannedHoursThisMonth (heures planifiées ce mois via Schedule), absencesLast7Days (congés approuvés 7 derniers jours via LeaveRequest). Service getDirectorStats() mis à jour avec date-fns. Composant DirectorStats affiche les vraies valeurs au lieu de '-'. Total : 4338 tests |
 | 30/01/2026 | Sprint 14 | SP-316         | 3847/3847 ✅    | 487/487 ✅ | ~85%       | ✅ PASS | 🆕 SP-316 Dashboard Manager. +63 tests unitaires (5 fichiers). 5 composants : ManagerWelcome (bienvenue + badges alertes), ManagerStats (4 KPIs via StatsGrid), ManagerTeamChart (BarChartWidget performance equipe), ManagerPendingLeaves (liste conges + actions approve/reject), ManagerQuickActions (4 boutons). Service getManagerStats() integre. Loading skeleton. Total : 4334 tests |

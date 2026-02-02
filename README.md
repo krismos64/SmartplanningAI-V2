@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 31 janvier 2026 (Sprint 14 - SP-259 Design System Cyber Glass 3D : tokens, effets, dashboards)
+- **Dernière mise à jour** : 2 février 2026 (Sprint 14 - SP-270 Page Profil avec Server Components et animations Cyber Glass 3D)
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -70,6 +70,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Dashboard Super Admin** (SP-148) : Page dashboard admin SaaS avec Server Components, protection SYSTEM_ADMIN, 7 composants (Welcome, Stats, MrrChart, SignupsChart, PlansChart, RecentCompanies, QuickActions)
 - **Animations Dashboards** (SP-431) : Animations Framer Motion sur 15 composants (4 dashboards), variants fadeSlideUp/stagger, support prefers-reduced-motion
 - **Leave Management UI** (SP-411/SP-412/SP-413/SP-414/SP-415) : 16 composants congés + pages (LeaveTypeBadge, LeaveStatusBadge, LeaveBalanceCard, LeaveBalanceEditDialog, LeaveRequestCard, LeaveRequestForm, LeaveReviewDialog, LeaveConflictWarning, LeaveFilters, LeavesList, LeavesListMobile, LeaveCalendar, LeaveCalendarDay, LeaveStatsBar, LeaveDetailCard, LeaveTimeline) + pages orchestrateur, détail [id], balances + email notification manager + overlay congés Schedule-X
+- **Profile Page** (SP-270) : Page profil utilisateur avec Server Components, 7 composants UI (ProfileHeader, PersonalInfoCard, ProfessionalInfoCard, AccountInfoCard, ProfileActions, ProfilePageContent, InfoRow), Server Action getProfile, design Cyber Glass 3D avec AnimatedContainer, skeleton loading, 62 tests unitaires + 15 tests E2E
 
 ### MVP (Phases 1-4)
 
@@ -2466,8 +2467,8 @@ Merge main → Build Docker → Push GHCR → Deploy VPS (~8-10 min)
 
 - **CI** (`.github/workflows/ci.yml`) : Lint, Type-check, Tests unitaires, Build, Tests E2E (PR uniquement)
 - **CD** (`.github/workflows/cd.yml`) : Build image Docker, Push sur ghcr.io, Deploy via SSH
-- Tests unitaires sur tous les push (~3851 tests Vitest)
-- Tests E2E sur PR vers main (~487 tests Playwright actifs, 5 devices mobiles)
+- Tests unitaires sur tous les push (~3957 tests Vitest)
+- Tests E2E sur PR vers main (~502 tests Playwright actifs, 5 devices mobiles)
 - Déploiement automatique sur merge main ✅
 - Migrations Prisma automatiques
 - Healthcheck endpoint : `/api/health` ✅
