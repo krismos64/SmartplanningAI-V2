@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 2 février 2026 (Sprint 14 - SP-278 Export Data RGPD Article 20)
+- **Dernière mise à jour** : 2 février 2026 (Sprint 14 - SP-333 Exports CSV Employés/Plannings/Congés)
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -84,7 +84,8 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - Détection de conflits horaires temps réel
 - Gestion des indisponibilités avec overlay calendrier
 - Récurrence des shifts (quotidien, hebdomadaire, bi-hebdomadaire, mensuel)
-- Export PDF/Excel des plannings (avec filtres actifs et compteur heures)
+- Export PDF/Excel/CSV des plannings (avec filtres actifs et compteur heures)
+- Export CSV employés et congés avec RBAC
 - Suppression en masse employés avec cascade sécurisée
 - Nom d'entreprise dynamique dans le layout
 - Demandes de congés avec workflow validation
