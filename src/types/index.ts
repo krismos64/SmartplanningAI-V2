@@ -131,6 +131,17 @@ export type {
 } from './export'
 
 // ============================================================================
+// TYPES EXPORT CSV (SP-333)
+// ============================================================================
+export type {
+  CsvExportResult,
+  CsvExportActionResult,
+  ScheduleExportFilters,
+  LeaveExportFilters,
+  EmployeeExportFilters,
+} from './csv-export'
+
+// ============================================================================
 // TYPES GÉNÉRIQUES UTILITAIRES
 // ============================================================================
 
