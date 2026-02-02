@@ -34,8 +34,8 @@ Dans le cadre du diplôme **CDA (Concepteur Développeur d'Applications)**, ce c
 | Métrique              | Objectif  | Atteint |
 | --------------------- | --------- | ------- |
 | Couverture globale    | ≥ 70%     | ✅ 85%  |
-| Tests unitaires       | ≥ 500     | ✅ 4017 |
-| Tests E2E             | ≥ 50      | ✅ 524  |
+| Tests unitaires       | ≥ 500     | ✅ 4073 |
+| Tests E2E             | ≥ 50      | ✅ 543  |
 | Score Lighthouse A11y | ≥ 90%     | ✅ 95%  |
 | Anomalies critiques   | 0 en prod | ✅ 0    |
 
@@ -442,6 +442,7 @@ Ce tableau recense chaque campagne de tests significative (mise en production, f
 
 | Date       | Sprint    | Version/Commit | Tests unitaires | Tests E2E  | Couverture | Statut  | Notes                                                                                                                                                                                                                                                                                                          |
 | ---------- | --------- | -------------- | --------------- | ---------- | ---------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 02/02/2026 | Sprint 14 | SP-273         | 4073/4073 ✅    | 543/543 ✅ | ~85%       | ✅ PASS | 🆕 SP-273 Change Password Page. +56 tests unitaires (3 fichiers : action 16, PasswordStrengthIndicator 19, ChangePasswordForm 21), +19 tests E2E (1 fichier). Server Action changePassword sécurisée (bcrypt verify + hash). PasswordStrengthIndicator avec 4 niveaux (Faible/Moyen/Fort/Très fort) et 5 critères temps réel. ChangePasswordForm avec 3 toggles visibilité indépendants. Validation changePasswordSchema (refine : match + différent ancien). Messages erreur génériques (sécurité). Page Object ChangePasswordPage. Tests multi-rôles (4 rôles). Total : 4616 tests |
 | 02/02/2026 | Sprint 14 | SP-271         | 4017/4017 ✅    | 524/524 ✅ | ~85%       | ✅ PASS | 🆕 SP-271 Edit Profile Page. +69 tests unitaires (3 fichiers : validation 26, action 19, component 24), +22 tests E2E (1 fichier). Server Action updateProfile synchronisant User + Employee. Composant EditProfileForm avec React Hook Form + Zod (zodResolver). Gestion SYSTEM_ADMIN sans Employee (notice alert, champs limités firstName/lastName). Validation nameSchema (lettres/accents), phoneSchema (format FR). Page Object EditProfilePage. Tests idempotents (valeurs dynamiques). Total : 4541 tests |
 | 02/02/2026 | Sprint 14 | SP-270         | 3957/3957 ✅    | 502/502 ✅ | ~85%       | ✅ PASS | 🆕 SP-270 Page Profil Utilisateur. +62 tests unitaires (6 fichiers), +15 tests E2E (1 fichier). Server Action getProfile avec données User + Employee. 7 composants UI : ProfileHeader (avatar, initiales, badge rôle), PersonalInfoCard, ProfessionalInfoCard, AccountInfoCard, ProfileActions, ProfilePageContent (AnimatedContainer), InfoRow. Design Cyber Glass 3D. Skeleton loading. Page Object ProfilePage. Tests par rôle (Employee, Manager, Director, Admin). Total : 4459 tests |
 | 30/01/2026 | Sprint 14 | SP-431         | 3851/3851 ✅    | 487/487 ✅ | ~85%       | ✅ PASS | 🆕 SP-431 Animations Dashboards Framer Motion. 15 composants animés (4 dashboards). Variants fadeSlideUpVariants + staggerContainer/staggerItem. Hook useReducedMotion pour accessibilité WCAG. Stagger delay sur KPIs grids, charts delay 0.3s, quick actions delay 0.5s. Employee (2), Manager (5), Director (2), Admin (6 composants). Total : 4338 tests |
