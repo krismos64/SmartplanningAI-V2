@@ -6,7 +6,7 @@
  * @description Actions serveur pour récupérer et gérer le profil utilisateur.
  * Combine les données User (compte) et Employee (profil RH) si disponible.
  *
- * @ticket SP-270, SP-271, SP-273
+ * @ticket SP-270, SP-271, SP-273, SP-277
  */
 
 import { revalidatePath } from 'next/cache'
@@ -20,7 +20,9 @@ import {
 } from '@/lib/validations/profile'
 import {
   changePasswordSchema,
+  deleteAccountSchema,
   type ChangePasswordFormData,
+  type DeleteAccountInput,
 } from '@/lib/validations/user'
 import type { CrudActionResult } from '@/types'
 
@@ -342,6 +344,145 @@ export async function changePassword(
     return {
       success: false,
       error: 'Une erreur est survenue lors de la modification du mot de passe',
+    }
+  }
+}
+
+/**
+ * Supprime définitivement le compte utilisateur et toutes ses données
+ *
+ * RGPD Article 17 - Droit à l'effacement
+ *
+ * Sécurité :
+ * 1. Vérifie l'authentification
+ * 2. Vérifie que l'email saisi correspond à l'utilisateur
+ * 3. Vérifie le mot de passe (timing-safe avec bcrypt)
+ * 4. Transaction Prisma pour intégrité des données
+ *
+ * Cascade automatique Prisma :
+ * - Account (OAuth)
+ * - Session
+ * - Employee → Schedules, LeaveRequests, LeaveBalances, Availabilities
+ * - Notifications
+ * - PersonalTasks
+ * - IncidentNotes (authored)
+ *
+ * Traitement manuel :
+ * - LeaveBalance.updatedById → mis à null avant suppression
+ *
+ * @param input - Données de confirmation (email + password + checkbox)
+ * @returns CrudActionResult avec message de succès
+ *
+ * @ticket SP-277
+ */
+export async function deleteAccount(
+  input: DeleteAccountInput
+): Promise<CrudActionResult<{ message: string }>> {
+  try {
+    // 1. Vérifier l'authentification
+    const session = await auth()
+    if (!session?.user?.id) {
+      return {
+        success: false,
+        error: 'Vous devez être connecté pour supprimer votre compte',
+      }
+    }
+
+    // 2. Valider les données d'entrée
+    const validation = deleteAccountSchema.safeParse(input)
+    if (!validation.success) {
+      const firstError = validation.error.errors[0]
+      return {
+        success: false,
+        error: firstError?.message ?? 'Données invalides',
+        field: (firstError?.path[0] as string) ?? undefined,
+      }
+    }
+
+    const { confirmEmail, password } = validation.data
+
+    // 3. Récupérer l'utilisateur avec email et mot de passe
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: {
+        id: true,
+        email: true,
+        password: true,
+        name: true,
+      },
+    })
+
+    if (!user) {
+      return {
+        success: false,
+        error: 'Compte introuvable',
+      }
+    }
+
+    // 4. Vérifier que l'email saisi correspond (case-insensitive)
+    if (user.email.toLowerCase() !== confirmEmail.toLowerCase()) {
+      return {
+        success: false,
+        error: "L'email saisi ne correspond pas à votre compte",
+        field: 'confirmEmail',
+      }
+    }
+
+    // 5. Vérifier le mot de passe (timing-safe)
+    if (!user.password) {
+      return {
+        success: false,
+        error: 'Impossible de supprimer ce compte (authentification externe)',
+      }
+    }
+
+    const isPasswordValid = await verifyPassword(password, user.password)
+    if (!isPasswordValid) {
+      return {
+        success: false,
+        error: 'Mot de passe incorrect',
+        field: 'password',
+      }
+    }
+
+    // 6. Log avant suppression (traçabilité RGPD Article 30)
+    // Note: utilisation de console.warn pour la traçabilité (autorisé par ESLint)
+    console.warn(
+      `[deleteAccount] User ${user.id} (${user.email}) requested account deletion at ${new Date().toISOString()}`
+    )
+
+    // 7. Transaction : Nettoyer les FK puis supprimer
+    await prisma.$transaction(async (tx) => {
+      // Mettre à null les références updatedById dans LeaveBalance
+      // (pas de cascade configurée sur cette relation)
+      await tx.leaveBalance.updateMany({
+        where: { updatedById: user.id },
+        data: { updatedById: null },
+      })
+
+      // Supprimer l'utilisateur (cascade automatique pour le reste)
+      await tx.user.delete({
+        where: { id: user.id },
+      })
+    })
+
+    // 8. Log après suppression
+    console.warn(
+      `[deleteAccount] User ${user.id} account successfully deleted at ${new Date().toISOString()}`
+    )
+
+    // Pas de revalidatePath car l'utilisateur sera déconnecté
+    return {
+      success: true,
+      data: {
+        message: 'Votre compte a été supprimé définitivement',
+      },
+    }
+  } catch (error) {
+    console.error('[deleteAccount] Error:', error)
+    return {
+      success: false,
+      error: 'Une erreur est survenue lors de la suppression',
     }
   }
 }
