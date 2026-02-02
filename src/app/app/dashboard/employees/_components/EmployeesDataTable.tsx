@@ -43,7 +43,9 @@ import {
   listEmployees,
   toggleEmployeeStatus,
   getTeamsForSelect,
+  exportEmployeesCsv,
 } from '@/lib/actions/employees'
+import { ExportCsvButton } from '@/components/exports'
 import type {
   EmployeeWithCounts,
   EmployeeFilters as EmployeeFiltersType,
@@ -208,6 +210,13 @@ export function EmployeesDataTable({ userRole }: EmployeesDataTableProps) {
           </div>
 
           <div className="flex items-center gap-2">
+            <ExportCsvButton
+              action={exportEmployeesCsv}
+              filters={{ teamId: filters.teamId, isActive: filters.isActive }}
+              label="Export CSV"
+              variant="outline"
+              size="sm"
+            />
             <Button
               variant="outline"
               size="sm"
