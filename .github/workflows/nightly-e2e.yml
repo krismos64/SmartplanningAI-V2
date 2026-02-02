@@ -101,14 +101,8 @@ jobs:
         env:
           DATABASE_URL: postgresql://test:test@localhost:5432/smartplanning_test
 
-      - name: Build application
-        run: npm run build
-        env:
-          DATABASE_URL: postgresql://test:test@localhost:5432/smartplanning_test
-          NEXTAUTH_SECRET: test-secret-for-nightly
-          NEXTAUTH_URL: http://localhost:3000
-
       # === SUITE COMPLÈTE NIGHTLY ===
+      # Note: Utilise npm run dev (pas besoin de build préalable)
       - name: Run Full E2E Suite
         run: npx playwright test --config=playwright.nightly.config.ts
         env:

@@ -243,15 +243,8 @@ jobs:
         env:
           DATABASE_URL: postgresql://test:test@localhost:5432/smartplanning_test
 
-      # Build l'application pour utiliser le mode production (plus stable)
-      - name: Build application
-        run: npm run build
-        env:
-          DATABASE_URL: postgresql://test:test@localhost:5432/smartplanning_test
-          NEXTAUTH_SECRET: test-secret-for-ci
-          NEXTAUTH_URL: http://localhost:3000
-
       # Lance les tests E2E critiques avec config optimisée
+      # Note: Utilise npm run dev (pas besoin de build préalable)
       - name: Run E2E tests (Critical subset)
         run: npx playwright test --config=playwright.ci.config.ts
         env:

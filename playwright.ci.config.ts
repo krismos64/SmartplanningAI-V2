@@ -105,9 +105,15 @@ export default defineConfig({
   // === SERVEUR WEB ===
 
   webServer: {
-    command: 'npm run start', // Utiliser build prod (plus stable que dev)
+    // NOTE: On utilise 'npm run dev' car 'npm run start' en CI cause des
+    // problèmes de redirections infinies (ERR_TOO_MANY_REDIRECTS).
+    // Le mode dev est légèrement plus lent mais fonctionne de façon fiable.
+    command: 'npm run dev',
     url: 'http://localhost:3000',
     reuseExistingServer: false,
     timeout: 120_000,
+    // Stdout/stderr pour debug en CI
+    stdout: 'pipe',
+    stderr: 'pipe',
   },
 })
