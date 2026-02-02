@@ -6,11 +6,17 @@
  * @description Actions serveur pour récupérer et gérer le profil utilisateur.
  * Combine les données User (compte) et Employee (profil RH) si disponible.
  *
- * @ticket SP-270
+ * @ticket SP-270, SP-271
  */
+
+import { revalidatePath } from 'next/cache'
 
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import {
+  editProfileSchema,
+  type EditProfileInput,
+} from '@/lib/validations/profile'
 import type { CrudActionResult } from '@/types'
 
 // ============================================================================
@@ -139,6 +145,101 @@ export async function getProfile(): Promise<CrudActionResult<ProfileData>> {
     return {
       success: false,
       error: 'Erreur lors de la récupération du profil',
+    }
+  }
+}
+
+/**
+ * Met à jour le profil de l'utilisateur connecté
+ *
+ * Logique :
+ * 1. Si Employee existe → Met à jour Employee.firstName, lastName, phone
+ * 2. Si pas d'Employee (SYSTEM_ADMIN) → Met à jour uniquement User.name
+ *
+ * @param input - Données du formulaire d'édition
+ * @returns CrudActionResult avec les données mises à jour
+ *
+ * @example
+ * const result = await updateProfile({ firstName: 'Jean', lastName: 'Dupont', phone: '0612345678' })
+ * if (result.success) {
+ *   console.log('Profil mis à jour')
+ * }
+ *
+ * @ticket SP-271
+ */
+export async function updateProfile(
+  input: EditProfileInput
+): Promise<CrudActionResult<ProfileData>> {
+  try {
+    // 1. Vérifier l'authentification
+    const session = await auth()
+    if (!session?.user?.id) {
+      return { success: false, error: 'Non authentifié' }
+    }
+
+    // 2. Valider les données entrantes
+    const validation = editProfileSchema.safeParse(input)
+    if (!validation.success) {
+      const firstError = validation.error.errors[0]
+      return {
+        success: false,
+        error: firstError?.message ?? 'Données invalides',
+        field: (firstError?.path[0] as string) ?? undefined,
+      }
+    }
+
+    const { firstName, lastName, phone } = validation.data
+
+    // 3. Récupérer l'utilisateur avec son Employee
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      include: { employee: true },
+    })
+
+    if (!user) {
+      return { success: false, error: 'Utilisateur non trouvé' }
+    }
+
+    // 4. Mettre à jour selon le cas
+    if (user.employee) {
+      // Cas normal : mettre à jour Employee
+      await prisma.employee.update({
+        where: { id: user.employee.id },
+        data: {
+          firstName,
+          lastName,
+          phone: phone || null,
+        },
+      })
+
+      // Synchroniser User.name pour l'affichage
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { name: `${firstName} ${lastName}` },
+      })
+    } else {
+      // Cas SYSTEM_ADMIN sans Employee : mettre à jour uniquement User.name
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { name: `${firstName} ${lastName}` },
+      })
+    }
+
+    // 5. Revalidate le cache
+    revalidatePath('/app/profile')
+    revalidatePath('/app/profile/edit')
+
+    // 6. Retourner les données mises à jour
+    return await getProfile()
+  } catch (error) {
+    // Log en développement
+    if (process.env.NODE_ENV === 'development') {
+      console.error('[updateProfile] Error:', error)
+    }
+
+    return {
+      success: false,
+      error: 'Erreur lors de la mise à jour du profil',
     }
   }
 }
