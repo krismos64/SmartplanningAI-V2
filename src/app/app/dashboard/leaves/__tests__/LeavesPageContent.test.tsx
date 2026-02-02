@@ -66,6 +66,16 @@ vi.mock('@/lib/actions/leaves', () => ({
       data: {},
     })
   ),
+  exportLeavesCsv: vi.fn(() =>
+    Promise.resolve({
+      success: true,
+      data: {
+        filename: 'conges-export-2026-02-02.csv',
+        data: 'test;data',
+        mimeType: 'text/csv;charset=utf-8',
+      },
+    })
+  ),
 }))
 
 const createMockRequest = (overrides = {}) => ({
