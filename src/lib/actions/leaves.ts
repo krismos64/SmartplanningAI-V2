@@ -18,6 +18,7 @@ import {
   LeaveRequestStatus,
   LeaveType,
   UserRole,
+  Prisma,
   type LeaveRequest,
   type LeaveBalance,
 } from '@prisma/client'
@@ -34,6 +35,8 @@ import {
   updateLeaveRequestSchema,
   updateLeaveBalanceSchema,
   leaveRequestFiltersSchema,
+  LEAVE_TYPE_LABELS,
+  LEAVE_STATUS_LABELS,
   type LeaveRequestFilters,
 } from '@/lib/validations/leave'
 import { calculateWorkingDays, hasEnoughBalance } from '@/lib/leave-utils'
@@ -1149,5 +1152,252 @@ async function notifyManagersOfNewLeaveRequest(
   } catch (error) {
     // Log mais ne pas propager l'erreur
     console.error('[notifyManagersOfNewLeaveRequest] Error:', error)
+  }
+}
+
+// ============================================================================
+// 14. EXPORT CSV - Export des congés au format CSV (SP-333)
+// ============================================================================
+
+import {
+  generateCsv,
+  formatDateFr,
+  formatDateTimeFr,
+  formatBooleanFr,
+  type CsvColumn,
+} from '@/lib/csv'
+import type { CsvExportActionResult, LeaveExportFilters } from '@/types'
+
+/**
+ * Type interne pour l'export CSV des congés
+ */
+interface LeaveForCsvExport {
+  startDate: Date
+  endDate: Date
+  days: number
+  type: string
+  status: string
+  halfDay: boolean
+  halfDayPeriod: string | null
+  reason: string | null
+  reviewedAt: Date | null
+  employee: { firstName: string; lastName: string }
+}
+
+/**
+ * Labels français pour les périodes de demi-journée
+ */
+const HALF_DAY_PERIOD_LABELS: Record<string, string> = {
+  AM: 'Matin',
+  PM: 'Après-midi',
+}
+
+/**
+ * Colonnes pour l'export CSV des congés
+ */
+const LEAVE_CSV_COLUMNS: CsvColumn<LeaveForCsvExport>[] = [
+  {
+    key: (l) => `${l.employee.lastName} ${l.employee.firstName}`,
+    header: 'Employé',
+  },
+  {
+    key: 'type',
+    header: 'Type',
+    format: (v) => LEAVE_TYPE_LABELS[v as LeaveType] ?? String(v),
+  },
+  {
+    key: 'startDate',
+    header: 'Date début',
+    format: (v) => formatDateFr(v as Date),
+  },
+  {
+    key: 'endDate',
+    header: 'Date fin',
+    format: (v) => formatDateFr(v as Date),
+  },
+  { key: 'days', header: 'Jours' },
+  {
+    key: 'halfDay',
+    header: 'Demi-journée',
+    format: (v) => formatBooleanFr(v as boolean),
+  },
+  {
+    key: 'halfDayPeriod',
+    header: 'Période',
+    format: (v) => {
+      if (!v) return ''
+      const strVal = v as string
+      return HALF_DAY_PERIOD_LABELS[strVal] ?? strVal
+    },
+  },
+  {
+    key: 'status',
+    header: 'Statut',
+    format: (v) =>
+      LEAVE_STATUS_LABELS[String(v) as LeaveRequestStatus] ?? String(v),
+  },
+  { key: 'reason', header: 'Motif' },
+  {
+    key: 'reviewedAt',
+    header: 'Validé le',
+    format: (v) => formatDateTimeFr(v as Date | null),
+  },
+]
+
+/**
+ * Exporte les demandes de congés au format CSV
+ *
+ * RBAC :
+ * - SYSTEM_ADMIN : Toutes les demandes
+ * - DIRECTOR : Demandes de son entreprise
+ * - MANAGER : Demandes de ses équipes
+ * - EMPLOYEE : Ses propres demandes uniquement
+ *
+ * @param filters - Filtres optionnels (dates, statut, type, équipe)
+ * @returns Fichier CSV avec les congés
+ *
+ * @ticket SP-333
+ */
+export async function exportLeavesCsv(
+  filters?: LeaveExportFilters
+): Promise<CsvExportActionResult> {
+  try {
+    // 1️⃣ Vérifier l'authentification
+    const session = await auth()
+    if (!session?.user?.id) {
+      return { success: false, error: 'Non authentifié' }
+    }
+
+    const { role, companyId } = session.user
+    const userId = session.user.id
+
+    // 2️⃣ Construire la requête avec RBAC
+    const where: Prisma.LeaveRequestWhereInput = {}
+
+    switch (role) {
+      case 'EMPLOYEE': {
+        // EMPLOYEE : ses propres demandes seulement
+        const employee = await prisma.employee.findUnique({
+          where: { userId },
+          select: { id: true },
+        })
+        if (!employee) {
+          return { success: false, error: 'Profil employé non trouvé' }
+        }
+        where.employeeId = employee.id
+        break
+      }
+
+      case 'DIRECTOR':
+        if (!companyId) {
+          return {
+            success: false,
+            error: 'Utilisateur sans entreprise associée',
+          }
+        }
+        where.companyId = companyId
+        break
+
+      case 'MANAGER': {
+        const employee = await prisma.employee.findUnique({
+          where: { userId },
+          include: { managedTeams: { select: { id: true } } },
+        })
+
+        if (!employee) {
+          return { success: false, error: 'Profil employé non trouvé' }
+        }
+
+        const managedTeamIds = employee.managedTeams.map((t) => t.id)
+        if (managedTeamIds.length === 0) {
+          return { success: false, error: 'Vous ne gérez aucune équipe' }
+        }
+
+        where.employee = { teamId: { in: managedTeamIds } }
+        break
+      }
+
+      case 'SYSTEM_ADMIN':
+        // Pas de filtre RBAC
+        break
+    }
+
+    // 3️⃣ Appliquer les filtres optionnels
+    if (filters?.startDate || filters?.endDate) {
+      where.startDate = {}
+      if (filters.startDate) {
+        where.startDate.gte = new Date(filters.startDate)
+      }
+      if (filters.endDate) {
+        where.startDate.lte = new Date(filters.endDate)
+      }
+    }
+
+    if (filters?.status) {
+      where.status = filters.status as LeaveRequestStatus
+    }
+
+    if (filters?.type) {
+      where.type = filters.type as LeaveType
+    }
+
+    if (filters?.teamId) {
+      // Pour MANAGER, vérifier que l'équipe est dans ses équipes gérées
+      if (role === 'MANAGER') {
+        const employee = await prisma.employee.findUnique({
+          where: { userId },
+          include: { managedTeams: { select: { id: true } } },
+        })
+        const managedTeamIds = employee?.managedTeams.map((t) => t.id) ?? []
+        if (!managedTeamIds.includes(filters.teamId)) {
+          return {
+            success: false,
+            error: "Vous n'avez pas accès à cette équipe",
+          }
+        }
+      }
+      where.employee = {
+        ...(where.employee as Prisma.EmployeeWhereInput),
+        teamId: filters.teamId,
+      }
+    }
+
+    // 4️⃣ Récupérer les données
+    const leaves = await prisma.leaveRequest.findMany({
+      where,
+      select: {
+        startDate: true,
+        endDate: true,
+        days: true,
+        type: true,
+        status: true,
+        halfDay: true,
+        halfDayPeriod: true,
+        reason: true,
+        reviewedAt: true,
+        employee: { select: { firstName: true, lastName: true } },
+      },
+      orderBy: [{ startDate: 'desc' }],
+      take: 10000, // Limite de sécurité
+    })
+
+    // 5️⃣ Générer le CSV
+    const result = generateCsv(
+      leaves as LeaveForCsvExport[],
+      LEAVE_CSV_COLUMNS,
+      {
+        filename: 'conges-export',
+      }
+    )
+
+    // 6️⃣ Log de traçabilité
+    console.warn(
+      `[exportLeavesCsv] User ${userId} (${role}) exported ${leaves.length} leave requests at ${new Date().toISOString()}`
+    )
+
+    return { success: true, data: result }
+  } catch (error) {
+    console.error('[exportLeavesCsv] Error:', error)
+    return { success: false, error: "Erreur lors de l'export" }
   }
 }
