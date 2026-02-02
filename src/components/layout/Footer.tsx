@@ -16,17 +16,17 @@ export function Footer({ variant = 'dashboard' }: FooterProps) {
       <footer className="border-t bg-background">
         <div className="container flex h-14 items-center justify-between px-6">
           <p className="text-sm text-muted-foreground">
-            © {currentYear} SmartPlanning · v{version}
+            {currentYear} SmartPlanning
           </p>
           <div className="flex items-center gap-4">
             <Button variant="link" size="sm" asChild>
-              <Link href="/legal/cgu">CGU</Link>
+              <Link href="/cgu">CGU</Link>
             </Button>
             <Button variant="link" size="sm" asChild>
-              <Link href="/legal/confidentialite">Confidentialité</Link>
+              <Link href="/confidentialite">Confidentialité</Link>
             </Button>
             <Button variant="link" size="sm" asChild>
-              <Link href="/contact">Contact</Link>
+              <Link href="/#contact">Contact</Link>
             </Button>
           </div>
         </div>
@@ -58,7 +58,7 @@ export function Footer({ variant = 'dashboard' }: FooterProps) {
                 asChild
                 className="justify-start"
               >
-                <Link href="/legal/cgu">Conditions générales</Link>
+                <Link href="/cgu">Conditions générales</Link>
               </Button>
               <Button
                 variant="link"
@@ -66,7 +66,7 @@ export function Footer({ variant = 'dashboard' }: FooterProps) {
                 asChild
                 className="justify-start"
               >
-                <Link href="/legal/confidentialite">
+                <Link href="/confidentialite">
                   Politique de confidentialité
                 </Link>
               </Button>
@@ -76,7 +76,7 @@ export function Footer({ variant = 'dashboard' }: FooterProps) {
                 asChild
                 className="justify-start"
               >
-                <Link href="/contact">Nous contacter</Link>
+                <Link href="/#contact">Nous contacter</Link>
               </Button>
               <Button
                 variant="link"

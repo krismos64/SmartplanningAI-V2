@@ -14,7 +14,7 @@ import {
 } from '@/providers/keyboard-shortcuts-provider'
 
 import { Header } from './Header'
-import { Sidebar } from './Sidebar'
+import { Sidebar, type SidebarVariant } from './Sidebar'
 import { Footer } from './Footer'
 import { PageTracker } from './PageTracker'
 
@@ -32,6 +32,8 @@ interface DashboardLayoutProps {
     companyName?: string
   }
   notificationsCount?: number
+  /** Variante de style de la sidebar (défaut: 'cosmic') */
+  sidebarVariant?: SidebarVariant
 }
 
 /**
@@ -43,11 +45,13 @@ function DashboardLayoutContent({
   user,
   notificationsCount,
   pathname,
+  sidebarVariant,
 }: {
   children: React.ReactNode
   user: DashboardLayoutProps['user']
   notificationsCount: number
   pathname: string
+  sidebarVariant: SidebarVariant
 }) {
   const { openShortcutsModal } = useKeyboardShortcutsContext()
 
@@ -62,7 +66,7 @@ function DashboardLayoutContent({
       <SidebarProvider defaultOpen={true}>
         <div className="flex min-h-screen w-full">
           {/* Sidebar */}
-          <Sidebar user={user} />
+          <Sidebar user={user} variant={sidebarVariant} />
 
           {/* Main content area */}
           <div className="flex flex-1 flex-col">
@@ -105,6 +109,7 @@ export function DashboardLayout({
   children,
   user,
   notificationsCount = 0,
+  sidebarVariant = 'aurora',
 }: DashboardLayoutProps) {
   const pathname = usePathname()
 
@@ -114,6 +119,7 @@ export function DashboardLayout({
         user={user}
         notificationsCount={notificationsCount}
         pathname={pathname}
+        sidebarVariant={sidebarVariant}
       >
         {children}
       </DashboardLayoutContent>
