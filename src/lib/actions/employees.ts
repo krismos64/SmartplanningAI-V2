@@ -1151,6 +1151,171 @@ export async function bulkDeleteEmployees(
   }
 }
 
+// ============================================================================
+// EXPORT CSV - Export des employés au format CSV (SP-333)
+// ============================================================================
+
+import {
+  generateCsv,
+  formatDateFr,
+  formatBooleanFr,
+  type CsvColumn,
+} from '@/lib/csv'
+import type { CsvExportActionResult, EmployeeExportFilters } from '@/types'
+
+/**
+ * Type interne pour l'export CSV des employés
+ */
+interface EmployeeForCsvExport {
+  firstName: string
+  lastName: string
+  email: string | null
+  phone: string | null
+  jobTitle: string | null
+  department: string | null
+  hireDate: Date | null
+  weeklyHours: number
+  isActive: boolean
+  createdAt: Date
+  team: { name: string } | null
+}
+
+/**
+ * Colonnes pour l'export CSV des employés
+ */
+const EMPLOYEE_CSV_COLUMNS: CsvColumn<EmployeeForCsvExport>[] = [
+  { key: 'firstName', header: 'Prénom' },
+  { key: 'lastName', header: 'Nom' },
+  { key: 'email', header: 'Email' },
+  { key: 'phone', header: 'Téléphone' },
+  { key: 'jobTitle', header: 'Poste' },
+  { key: 'department', header: 'Département' },
+  { key: (e) => e.team?.name ?? '', header: 'Équipe' },
+  {
+    key: 'hireDate',
+    header: 'Date embauche',
+    format: (v) => formatDateFr(v as Date | null),
+  },
+  { key: 'weeklyHours', header: 'Heures/semaine' },
+  {
+    key: 'isActive',
+    header: 'Actif',
+    format: (v) => formatBooleanFr(v as boolean),
+  },
+  {
+    key: 'createdAt',
+    header: 'Date création',
+    format: (v) => formatDateFr(v as Date),
+  },
+]
+
+/**
+ * Exporte les employés au format CSV
+ *
+ * RBAC :
+ * - SYSTEM_ADMIN : Tous les employés de tous les tenants
+ * - DIRECTOR : Tous les employés de son entreprise
+ * - MANAGER : Employés de ses équipes uniquement
+ * - EMPLOYEE : Non autorisé
+ *
+ * @param filters - Filtres optionnels (teamId, isActive)
+ * @returns Fichier CSV avec les employés
+ *
+ * @ticket SP-333
+ */
+export async function exportEmployeesCsv(
+  filters?: EmployeeExportFilters
+): Promise<CsvExportActionResult> {
+  try {
+    // 1️⃣ Vérifier l'authentification et les permissions
+    const authResult = await getAuthenticatedUser()
+
+    if (!authResult.success) {
+      return { success: false, error: authResult.error }
+    }
+
+    const user = authResult.user
+
+    // 2️⃣ Construire la requête avec RBAC
+    const where: Record<string, unknown> = {}
+
+    switch (user.role) {
+      case 'SYSTEM_ADMIN':
+        // Pas de filtre RBAC
+        break
+
+      case 'DIRECTOR':
+        if (!user.companyId) {
+          return {
+            success: false,
+            error: 'Utilisateur sans entreprise associée',
+          }
+        }
+        where.companyId = user.companyId
+        break
+
+      case 'MANAGER':
+        where.teamId = { in: user.managedTeamIds }
+        break
+    }
+
+    // 3️⃣ Appliquer les filtres optionnels
+    if (filters?.teamId) {
+      // Pour MANAGER, vérifier que l'équipe est dans ses équipes gérées
+      if (
+        user.role === 'MANAGER' &&
+        !user.managedTeamIds.includes(filters.teamId)
+      ) {
+        return { success: false, error: "Vous n'avez pas accès à cette équipe" }
+      }
+      where.teamId = filters.teamId
+    }
+
+    if (filters?.isActive !== undefined) {
+      where.isActive = filters.isActive
+    }
+
+    // 4️⃣ Récupérer les données
+    const employees = await prisma.employee.findMany({
+      where,
+      select: {
+        firstName: true,
+        lastName: true,
+        email: true,
+        phone: true,
+        jobTitle: true,
+        department: true,
+        hireDate: true,
+        weeklyHours: true,
+        isActive: true,
+        createdAt: true,
+        team: { select: { name: true } },
+      },
+      orderBy: [{ lastName: 'asc' }, { firstName: 'asc' }],
+      take: 10000, // Limite de sécurité
+    })
+
+    // 5️⃣ Générer le CSV
+    const result = generateCsv(
+      employees as EmployeeForCsvExport[],
+      EMPLOYEE_CSV_COLUMNS,
+      {
+        filename: 'employes-export',
+      }
+    )
+
+    // 6️⃣ Log de traçabilité RGPD
+    console.warn(
+      `[exportEmployeesCsv] User ${user.id} (${user.role}) exported ${employees.length} employees at ${new Date().toISOString()}`
+    )
+
+    return { success: true, data: result }
+  } catch (error) {
+    console.error('[exportEmployeesCsv] Error:', error)
+    return { success: false, error: "Erreur lors de l'export" }
+  }
+}
+
 export async function getTeamsForSelect(): Promise<
   CrudActionResult<{ id: string; name: string }[]>
 > {
