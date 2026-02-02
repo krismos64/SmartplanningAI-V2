@@ -129,36 +129,27 @@ jobs:
           retention-days: 7
 
   # ============================================
-  # JOB 3 : TESTS E2E (Playwright - Chromium)
+  # JOB 3 : TESTS E2E (Critical - Optimisé)
   # ============================================
+  # OPTIMISATION SP-333 : Tests critiques uniquement (~180 tests)
+  # - Réduit le temps de 40min à ~10-12min
+  # - Suite complète exécutée chaque nuit (nightly-e2e.yml)
+  #
   # Exécuté sur :
   # - Pull Request vers main (validation avant merge)
   # - Push direct sur main (sécurité avant déploiement)
   #
-  # POURQUOI CETTE DOUBLE CONDITION ?
-  # - PR vers main : workflow classique avec review
-  # - Push direct main : filet de sécurité, les E2E doivent passer
-  #   avant que le CD (déploiement) ne se déclenche
-  #
-  # POURQUOI CHROMIUM UNIQUEMENT ?
-  # - WebKit sur Linux CI est une version limitée (pas macOS)
-  # - Firefox a des comportements asynchrones différents
-  # - Chromium représente ~65% des utilisateurs (Chrome + Edge)
-  # - Les tests multi-navigateurs sont exécutés manuellement avant releases
+  # Tests inclus : smoke, auth, RBAC, CRUD, schedules, leaves
+  # Tests exclus : mobile, navigation, analytics, a11y (nightly)
   test-e2e:
-    name: E2E Tests (Chromium)
+    name: E2E Tests (Critical)
     runs-on: ubuntu-latest
     needs: lint
-    # ⚡ E2E sur PR vers main OU push direct sur main
-    # Condition expliquée :
-    # - (pull_request ET base_ref == main) : PR qui cible main
-    # - OU (push ET ref == refs/heads/main) : push direct sur main
     if: |
       (github.event_name == 'pull_request' && github.base_ref == 'main') ||
       (github.event_name == 'push' && github.ref == 'refs/heads/main')
-    # ⚠️ IMPORTANT : pas de continue-on-error !
-    # Les tests E2E DOIVENT passer pour que le CD se déclenche
-    timeout-minutes: 60
+    # Timeout réduit grâce à l'optimisation
+    timeout-minutes: 25
 
     # Service container PostgreSQL pour les tests E2E
     services:
@@ -252,9 +243,17 @@ jobs:
         env:
           DATABASE_URL: postgresql://test:test@localhost:5432/smartplanning_test
 
-      # Lance les tests E2E sur Chromium uniquement
-      - name: Run E2E tests (Chromium)
-        run: npx playwright test --project=chromium
+      # Build l'application pour utiliser le mode production (plus stable)
+      - name: Build application
+        run: npm run build
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/smartplanning_test
+          NEXTAUTH_SECRET: test-secret-for-ci
+          NEXTAUTH_URL: http://localhost:3000
+
+      # Lance les tests E2E critiques avec config optimisée
+      - name: Run E2E tests (Critical subset)
+        run: npx playwright test --config=playwright.ci.config.ts
         env:
           CI: true
           DATABASE_URL: postgresql://test:test@localhost:5432/smartplanning_test
@@ -322,8 +321,12 @@ jobs:
           retention-days: 1
 
 # ==============================================
-# RÉSUMÉ DU PIPELINE CI OPTIMISÉ
+# RÉSUMÉ DU PIPELINE CI OPTIMISÉ (SP-333)
 # ==============================================
+#
+# STRATÉGIE E2E OPTIMISÉE :
+# - CI : Tests critiques uniquement (~180 tests, ~10-12 min)
+# - Nightly : Suite complète (~500 tests, chaque nuit à 2h00 UTC)
 #
 # FLUX D'EXÉCUTION (Push sur feature branch) :
 #
@@ -340,7 +343,7 @@ jobs:
 #                    ┌─────────────────┐
 #                    │      BUILD      │
 #                    └─────────────────┘
-#                    ⏱️ ~5 min | E2E: ❌
+#                    ~5 min | E2E: non
 #
 # FLUX D'EXÉCUTION (PR vers main OU Push direct main) :
 #
@@ -352,37 +355,29 @@ jobs:
 #              ▼                             ▼
 #     ┌────────────────┐          ┌─────────────────────┐
 #     │  TEST (Unit)   │          │  TEST-E2E           │
-#     │   (Vitest)     │          │  (Chromium only)    │
+#     │   (Vitest)     │          │  (Critical only)    │
 #     └────────┬───────┘          └─────────────────────┘
 #              │                           │
 #              ▼                           │
 #     ┌─────────────────┐                  │
 #     │      BUILD      │ ◄────────────────┘
 #     └─────────────────┘   (E2E doit réussir)
-#                    ⏱️ ~10 min | E2E: ✅
+#                    ~10-12 min | E2E: oui
 #
-#                             │
-#                             ▼ (si push sur main)
-#                    ┌─────────────────┐
-#                    │   CD PIPELINE   │
-#                    │  (Déploiement)  │
-#                    └─────────────────┘
+# TESTS CI (playwright.ci.config.ts) :
+# - smoke, auth, middleware-rbac, forbidden
+# - dashboard/rbac-protection
+# - crud/employees, teams, companies
+# - schedules, leaves/navigation, leaves/create-request
+# - profile/profile-display
 #
-# TESTS :
-# - Unit tests : Vitest + RTL (~1374 tests)
-# - E2E tests : Playwright Chromium (~214 tests)
+# TESTS NIGHTLY (playwright.nightly.config.ts) :
+# - Tous les tests E2E (~500 tests)
+# - Exécuté chaque nuit à 2h00 UTC
+# - Workflow : nightly-e2e.yml
 #
 # SÉCURITÉ DU DÉPLOIEMENT :
 # - Le CD ne se déclenche que si le CI complet réussit
-# - Les tests E2E sont obligatoires sur main (pas de continue-on-error)
-# - Même un push direct sur main passe par les E2E avant déploiement
-#
-# BONNES PRATIQUES APPLIQUÉES :
-# - Tests E2E sur PR vers main ET push direct main (double sécurité)
-# - Chromium uniquement en CI (stabilité, représente 65% utilisateurs)
-# - Multi-navigateurs disponibles en local pour tests complets
-# - Jobs séquentiels avec "needs" (fail fast)
-# - Cache npm pour accélérer les runs
-# - Artefacts pour traçabilité (coverage, playwright-report)
-# - Permissions minimales (sécurité)
+# - Les tests E2E critiques sont obligatoires sur main
+# - Suite complète nightly détecte les régressions
 # ==============================================
