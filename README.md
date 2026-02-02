@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 2 février 2026 (Sprint 14 - SP-333 Exports CSV Employés/Plannings/Congés)
+- **Dernière mise à jour** : 2 février 2026 (Sprint 14 - Optimisation CI/CD E2E ~10min)
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -45,7 +45,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 ### DevOps
 
 - **Containerization** : Docker + Docker Compose
-- **CI/CD** : GitHub Actions ✅
+- **CI/CD** : GitHub Actions ✅ (CI optimisé ~10min, nightly complet)
 - **Hosting** : VPS OVH (Ubuntu 24.04 LTS) ✅
 - **SSL** : Let's Encrypt (auto-renew) ✅
 - **Reverse Proxy** : Nginx
