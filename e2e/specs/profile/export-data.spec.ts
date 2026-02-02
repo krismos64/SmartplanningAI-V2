@@ -53,7 +53,10 @@ test.describe('Export Data', () => {
     test('should display RGPD Article 20 reference', async ({ employeePage }) => {
       await employeePage.goto('/app/profile/export')
 
-      await expect(employeePage.getByText(/RGPD.*Article 20/)).toBeVisible()
+      // Utiliser getByRole pour cibler spécifiquement le heading
+      await expect(
+        employeePage.getByRole('heading', { name: /RGPD.*Article 20/ })
+      ).toBeVisible()
     })
 
     test('should display RGPD alert with portability information', async ({
@@ -61,8 +64,9 @@ test.describe('Export Data', () => {
     }) => {
       await employeePage.goto('/app/profile/export')
 
+      // Utiliser getByRole pour cibler spécifiquement le heading de l'alerte
       await expect(
-        employeePage.getByText('Droit à la portabilité')
+        employeePage.getByRole('heading', { name: /portabilité/i })
       ).toBeVisible()
     })
 

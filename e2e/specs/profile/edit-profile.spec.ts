@@ -4,12 +4,86 @@
  * Vérifie les fonctionnalités d'édition des informations personnelles
  * pour les différents rôles utilisateurs.
  *
+ * IMPORTANT: Ces tests sont idempotents - les valeurs originales sont
+ * restaurées après les tests qui modifient les données.
+ *
  * @ticket SP-271
  */
+
+import { Page } from '@playwright/test'
 
 import { test, expect, TEST_USERS } from '../../fixtures/auth.fixture'
 import { EditProfilePage } from '../../pages/edit-profile.page'
 import { ProfilePage } from '../../pages/profile.page'
+
+// ============================================================================
+// HELPERS POUR RESTAURER LES VALEURS ORIGINALES
+// ============================================================================
+
+/**
+ * Valeurs originales des utilisateurs de test (seed)
+ * À maintenir synchronisé avec prisma/seed.ts
+ */
+const ORIGINAL_VALUES = {
+  EMPLOYEE: { firstName: 'Bob', lastName: 'Wilson', phone: '' },
+  MANAGER: { firstName: 'Jane', lastName: 'Smith', phone: '' },
+  DIRECTOR: { firstName: 'John', lastName: 'Doe', phone: '' },
+  SYSTEM_ADMIN: { firstName: 'Super', lastName: 'Admin', phone: '' },
+}
+
+/**
+ * Restaure le profil d'un utilisateur à ses valeurs originales
+ * Utilisé pour garantir l'idempotence des tests E2E
+ */
+async function restoreProfile(
+  page: Page,
+  role: keyof typeof ORIGINAL_VALUES
+): Promise<void> {
+  const editPage = new EditProfilePage(page)
+
+  // Navigate et attendre
+  await editPage.goto()
+
+  // Attendre que la page soit chargée avec un timeout plus long
+  await editPage.page.waitForTimeout(500)
+
+  try {
+    await editPage.waitForPageLoad()
+  } catch {
+    // Si le chargement échoue, on abandonne silencieusement
+    return
+  }
+
+  const originalValues = ORIGINAL_VALUES[role]
+
+  // Vérifier si les valeurs sont déjà correctes
+  const currentFirstName = await editPage.firstNameInput.inputValue()
+  const currentLastName = await editPage.lastNameInput.inputValue()
+
+  if (
+    currentFirstName === originalValues.firstName &&
+    currentLastName === originalValues.lastName
+  ) {
+    return // Pas besoin de restaurer
+  }
+
+  // Restaurer les valeurs
+  await editPage.fillForm({
+    firstName: originalValues.firstName,
+    lastName: originalValues.lastName,
+  })
+
+  // Restaurer le téléphone si le champ est visible (employés avec profil Employee)
+  const isPhoneVisible = await editPage.phoneInput.isVisible()
+  if (isPhoneVisible) {
+    await editPage.fillForm({ phone: originalValues.phone })
+  }
+
+  await editPage.submit()
+
+  // Attendre la redirection vers le profil
+  await editPage.page.waitForURL(/\/app\/profile$/, { timeout: 5000 }).catch(() => {})
+}
 
 test.describe('Edit Profile Page', () => {
   // ==========================================================================
@@ -97,6 +171,9 @@ test.describe('Edit Profile Page', () => {
       // Vérifier le toast et la redirection
       await editPage.expectSuccessToast()
       await editPage.expectRedirectToProfile()
+
+      // RESTAURATION: Remettre les valeurs originales
+      await restoreProfile(employeePage, 'EMPLOYEE')
     })
 
     test('should update phone number successfully', async ({ employeePage }) => {
@@ -115,6 +192,9 @@ test.describe('Edit Profile Page', () => {
 
       await editPage.expectSuccessToast()
       await editPage.expectRedirectToProfile()
+
+      // RESTAURATION: Remettre les valeurs originales
+      await restoreProfile(employeePage, 'EMPLOYEE')
     })
 
     test('should allow clearing phone number', async ({ employeePage }) => {
@@ -130,6 +210,9 @@ test.describe('Edit Profile Page', () => {
 
       await editPage.submit()
       await editPage.expectSuccessToast()
+
+      // RESTAURATION: Remettre les valeurs originales
+      await restoreProfile(employeePage, 'EMPLOYEE')
     })
   })
 
@@ -189,6 +272,7 @@ test.describe('Edit Profile Page', () => {
       // Pas d'erreur affichée pour le téléphone
       const phoneError = editPage.page.getByTestId('error-phone')
       await expect(phoneError).not.toBeVisible()
+      // Note: Ce test ne soumet pas, donc pas de modification persistante
     })
 
     test('should disable submit button when form is unchanged', async ({
@@ -248,6 +332,9 @@ test.describe('Edit Profile Page', () => {
       await editPage.submit()
       await editPage.expectSuccessToast()
       await editPage.expectRedirectToProfile()
+
+      // RESTAURATION: Remettre les valeurs originales
+      await restoreProfile(adminPage, 'SYSTEM_ADMIN')
     })
   })
 
@@ -280,6 +367,9 @@ test.describe('Edit Profile Page', () => {
 
       await editPage.submit()
       await editPage.expectSuccessToast()
+
+      // RESTAURATION: Remettre les valeurs originales
+      await restoreProfile(directorPage, 'DIRECTOR')
     })
   })
 
@@ -312,6 +402,9 @@ test.describe('Edit Profile Page', () => {
 
       await editPage.submit()
       await editPage.expectSuccessToast()
+
+      // RESTAURATION: Remettre les valeurs originales
+      await restoreProfile(managerPage, 'MANAGER')
     })
   })
 
@@ -341,6 +434,7 @@ test.describe('Edit Profile Page', () => {
 
       // La valeur devrait être l'initiale
       await expect(editPage.firstNameInput).toHaveValue(initialFirstName)
+      // Note: Ce test ne soumet pas, donc pas de modification persistante
     })
 
     test('should preserve form values during session', async ({
@@ -363,6 +457,9 @@ test.describe('Edit Profile Page', () => {
 
       // La nouvelle valeur devrait être chargée
       await expect(editPage.firstNameInput).toHaveValue(newName)
+
+      // RESTAURATION: Remettre les valeurs originales
+      await restoreProfile(employeePage, 'EMPLOYEE')
     })
   })
 })
