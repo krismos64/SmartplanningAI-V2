@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 2 février 2026 (Sprint 14 - SP-277 Delete Account RGPD Article 17)
+- **Dernière mise à jour** : 2 février 2026 (Sprint 14 - SP-278 Export Data RGPD Article 20)
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -70,7 +70,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Dashboard Super Admin** (SP-148) : Page dashboard admin SaaS avec Server Components, protection SYSTEM_ADMIN, 7 composants (Welcome, Stats, MrrChart, SignupsChart, PlansChart, RecentCompanies, QuickActions)
 - **Animations Dashboards** (SP-431) : Animations Framer Motion sur 15 composants (4 dashboards), variants fadeSlideUp/stagger, support prefers-reduced-motion
 - **Leave Management UI** (SP-411/SP-412/SP-413/SP-414/SP-415) : 16 composants congés + pages (LeaveTypeBadge, LeaveStatusBadge, LeaveBalanceCard, LeaveBalanceEditDialog, LeaveRequestCard, LeaveRequestForm, LeaveReviewDialog, LeaveConflictWarning, LeaveFilters, LeavesList, LeavesListMobile, LeaveCalendar, LeaveCalendarDay, LeaveStatsBar, LeaveDetailCard, LeaveTimeline) + pages orchestrateur, détail [id], balances + email notification manager + overlay congés Schedule-X
-- **Profile Page** (SP-270, SP-271, SP-273, SP-277) : Page profil utilisateur avec Server Components, 7 composants UI (ProfileHeader, PersonalInfoCard, ProfessionalInfoCard, AccountInfoCard, ProfileActions, ProfilePageContent, InfoRow), Server Action getProfile, design Cyber Glass 3D avec AnimatedContainer, skeleton loading + **Edit Profile Page** avec React Hook Form + Zod validation, Server Action updateProfile, gestion SYSTEM_ADMIN sans Employee + **Change Password Page** avec indicateur de force en temps réel (5 critères, 4 niveaux), 3 toggles visibilité indépendants, Server Action changePassword sécurisée (bcrypt) + **Delete Account Page** (RGPD Article 17) avec double confirmation (email + password), checkbox consentement, transaction Prisma cascade, logs traçabilité, déconnexion automatique après suppression, 229 tests unitaires + 78 tests E2E
+- **Profile Page** (SP-270, SP-271, SP-273, SP-277, SP-278) : Page profil utilisateur avec Server Components, 7 composants UI (ProfileHeader, PersonalInfoCard, ProfessionalInfoCard, AccountInfoCard, ProfileActions, ProfilePageContent, InfoRow), Server Action getProfile, design Cyber Glass 3D avec AnimatedContainer, skeleton loading + **Edit Profile Page** avec React Hook Form + Zod validation, Server Action updateProfile, gestion SYSTEM_ADMIN sans Employee + **Change Password Page** avec indicateur de force en temps réel (5 critères, 4 niveaux), 3 toggles visibilité indépendants, Server Action changePassword sécurisée (bcrypt) + **Delete Account Page** (RGPD Article 17) avec double confirmation (email + password), checkbox consentement, transaction Prisma cascade, logs traçabilité, déconnexion automatique après suppression + **Export Data Page** (RGPD Article 20) avec téléchargement JSON de toutes les données personnelles (compte, profil, plannings, congés, disponibilités, tâches, notifications), exclusion données sensibles (mots de passe, tokens), 273 tests unitaires + 78 tests E2E
 
 ### MVP (Phases 1-4)
 
