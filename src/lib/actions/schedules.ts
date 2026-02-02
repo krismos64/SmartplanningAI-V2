@@ -1518,3 +1518,214 @@ export async function updateRecurringSchedules(
     return { success: false, error: prismaError.error }
   }
 }
+
+// ============================================================================
+// EXPORT CSV - Export des plannings au format CSV (SP-333)
+// ============================================================================
+
+import {
+  generateCsv,
+  formatDateFr,
+  formatDayOfWeek,
+  type CsvColumn,
+} from '@/lib/csv'
+import type { CsvExportActionResult, ScheduleExportFilters } from '@/types'
+import {
+  scheduleTypeLabels,
+  scheduleStatusLabels,
+} from '@/lib/validations/schedule'
+
+/**
+ * Type interne pour l'export CSV des plannings
+ */
+interface ScheduleForCsvExport {
+  startDate: Date
+  startTime: string
+  endTime: string
+  type: string
+  status: string
+  title: string | null
+  location: string | null
+  employee: { firstName: string; lastName: string }
+  team: { name: string } | null
+}
+
+/**
+ * Calcule la durée en heures entre deux horaires
+ */
+function calculateDuration(startTime: string, endTime: string): number {
+  const [startH, startM] = startTime.split(':').map(Number)
+  const [endH, endM] = endTime.split(':').map(Number)
+  const startMinutes = (startH ?? 0) * 60 + (startM ?? 0)
+  const endMinutes = (endH ?? 0) * 60 + (endM ?? 0)
+  return Math.round(((endMinutes - startMinutes) / 60) * 100) / 100
+}
+
+/**
+ * Colonnes pour l'export CSV des plannings
+ */
+const SCHEDULE_CSV_COLUMNS: CsvColumn<ScheduleForCsvExport>[] = [
+  {
+    key: (s) => `${s.employee.lastName} ${s.employee.firstName}`,
+    header: 'Employé',
+  },
+  {
+    key: 'startDate',
+    header: 'Date',
+    format: (v) => formatDateFr(v as Date),
+  },
+  {
+    key: (s) => formatDayOfWeek(s.startDate),
+    header: 'Jour',
+  },
+  { key: 'startTime', header: 'Début' },
+  { key: 'endTime', header: 'Fin' },
+  {
+    key: (s) => calculateDuration(s.startTime, s.endTime).toFixed(1),
+    header: 'Durée (h)',
+  },
+  {
+    key: 'type',
+    header: 'Type',
+    format: (v) =>
+      scheduleTypeLabels[v as keyof typeof scheduleTypeLabels] ?? String(v),
+  },
+  {
+    key: 'status',
+    header: 'Statut',
+    format: (v) =>
+      scheduleStatusLabels[v as keyof typeof scheduleStatusLabels] ?? String(v),
+  },
+  {
+    key: (s) => s.team?.name ?? '',
+    header: 'Équipe',
+  },
+  { key: 'location', header: 'Lieu' },
+  { key: 'title', header: 'Titre' },
+]
+
+/**
+ * Exporte les plannings au format CSV
+ *
+ * RBAC :
+ * - SYSTEM_ADMIN : Tous les plannings (lecture seule)
+ * - DIRECTOR : Plannings de son entreprise
+ * - MANAGER : Plannings de ses équipes
+ * - EMPLOYEE : Non autorisé (lecture seule des siens via autre endpoint)
+ *
+ * @param filters - Filtres optionnels (dates, équipe, employé)
+ * @returns Fichier CSV avec les plannings
+ *
+ * @ticket SP-333
+ */
+export async function exportSchedulesCsv(
+  filters?: ScheduleExportFilters
+): Promise<CsvExportActionResult> {
+  try {
+    // 1️⃣ Vérifier l'authentification
+    const authResult = await getAuthenticatedUser()
+
+    if (!authResult.success) {
+      return { success: false, error: authResult.error }
+    }
+
+    const user = authResult.user
+
+    // EMPLOYEE ne peut pas exporter (juste voir ses plannings)
+    if (user.role === 'EMPLOYEE') {
+      return { success: false, error: 'Accès non autorisé' }
+    }
+
+    // 2️⃣ Construire la requête avec RBAC
+    const where: Prisma.ScheduleWhereInput = {}
+
+    switch (user.role) {
+      case 'SYSTEM_ADMIN':
+        // Pas de filtre RBAC
+        break
+
+      case 'DIRECTOR':
+        if (!user.companyId) {
+          return {
+            success: false,
+            error: 'Utilisateur sans entreprise associée',
+          }
+        }
+        where.companyId = user.companyId
+        break
+
+      case 'MANAGER':
+        if (user.managedTeamIds.length === 0) {
+          return { success: false, error: 'Vous ne gérez aucune équipe' }
+        }
+        where.employee = { teamId: { in: user.managedTeamIds } }
+        break
+    }
+
+    // 3️⃣ Appliquer les filtres de période
+    if (filters?.startDate || filters?.endDate) {
+      where.startDate = {}
+      if (filters.startDate) {
+        where.startDate.gte = new Date(filters.startDate)
+      }
+      if (filters.endDate) {
+        where.startDate.lte = new Date(filters.endDate)
+      }
+    }
+
+    if (filters?.teamId) {
+      // Pour MANAGER, vérifier que l'équipe est dans ses équipes gérées
+      if (
+        user.role === 'MANAGER' &&
+        !user.managedTeamIds.includes(filters.teamId)
+      ) {
+        return { success: false, error: "Vous n'avez pas accès à cette équipe" }
+      }
+      where.employee = {
+        ...(where.employee as Prisma.EmployeeWhereInput),
+        teamId: filters.teamId,
+      }
+    }
+
+    if (filters?.employeeId) {
+      where.employeeId = filters.employeeId
+    }
+
+    // 4️⃣ Récupérer les données
+    const schedules = await prisma.schedule.findMany({
+      where,
+      select: {
+        startDate: true,
+        startTime: true,
+        endTime: true,
+        type: true,
+        status: true,
+        title: true,
+        location: true,
+        employee: { select: { firstName: true, lastName: true } },
+        team: { select: { name: true } },
+      },
+      orderBy: [{ startDate: 'asc' }, { startTime: 'asc' }],
+      take: 10000, // Limite de sécurité
+    })
+
+    // 5️⃣ Générer le CSV
+    const result = generateCsv(
+      schedules as ScheduleForCsvExport[],
+      SCHEDULE_CSV_COLUMNS,
+      {
+        filename: 'plannings-export',
+      }
+    )
+
+    // 6️⃣ Log de traçabilité
+    console.warn(
+      `[exportSchedulesCsv] User ${user.id} (${user.role}) exported ${schedules.length} schedules at ${new Date().toISOString()}`
+    )
+
+    return { success: true, data: result }
+  } catch (error) {
+    console.error('[exportSchedulesCsv] Error:', error)
+    return { success: false, error: "Erreur lors de l'export" }
+  }
+}
