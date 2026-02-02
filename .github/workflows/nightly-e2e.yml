@@ -1,0 +1,134 @@
+# ==============================================
+# SMARTPLANNING - NIGHTLY E2E TESTS
+# ==============================================
+#
+# Suite complète des tests E2E exécutée chaque nuit.
+# Permet de détecter les régressions sans bloquer les PR.
+#
+# Exécution : tous les jours à 2h00 UTC (3h00 Paris)
+# Peut aussi être lancé manuellement depuis GitHub.
+#
+# @ticket SP-333
+
+name: Nightly E2E Tests
+
+on:
+  # Exécution planifiée : tous les jours à 2h00 UTC
+  schedule:
+    - cron: '0 2 * * *'
+
+  # Permet de lancer manuellement depuis GitHub
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to test'
+        required: false
+        default: 'main'
+
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  nightly-e2e:
+    name: Full E2E Suite
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+
+    # Service container PostgreSQL
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: smartplanning_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U test -d smartplanning_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch || 'main' }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma Client
+        run: npx prisma generate
+
+      - name: Install Playwright browsers
+        run: npx playwright install chromium --with-deps
+
+      - name: Setup database environment
+        run: |
+          echo "DATABASE_URL=postgresql://test:test@localhost:5432/smartplanning_test" > .env
+          echo "NEXTAUTH_SECRET=test-secret-for-nightly" >> .env
+          echo "NEXTAUTH_URL=http://localhost:3000" >> .env
+
+      - name: Wait for PostgreSQL
+        run: |
+          echo "Waiting for PostgreSQL..."
+          for i in {1..30}; do
+            if pg_isready -h localhost -p 5432 -U test; then
+              echo "PostgreSQL is ready!"
+              break
+            fi
+            sleep 1
+          done
+
+      - name: Apply database migrations
+        run: npx prisma migrate deploy
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/smartplanning_test
+
+      - name: Seed test database
+        run: npx prisma db seed
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/smartplanning_test
+
+      - name: Build application
+        run: npm run build
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/smartplanning_test
+          NEXTAUTH_SECRET: test-secret-for-nightly
+          NEXTAUTH_URL: http://localhost:3000
+
+      # === SUITE COMPLÈTE NIGHTLY ===
+      - name: Run Full E2E Suite
+        run: npx playwright test --config=playwright.nightly.config.ts
+        env:
+          CI: true
+          DATABASE_URL: postgresql://test:test@localhost:5432/smartplanning_test
+          NEXTAUTH_SECRET: test-secret-for-nightly
+          NEXTAUTH_URL: http://localhost:3000
+
+      - name: Upload test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nightly-e2e-report-${{ github.run_number }}
+          path: playwright-report/
+          retention-days: 30
+
+      - name: Upload test results on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nightly-test-results-${{ github.run_number }}
+          path: test-results/
+          retention-days: 30
