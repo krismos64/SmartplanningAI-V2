@@ -79,9 +79,9 @@ test.describe('Edit Profile Page', () => {
       await editPage.goto()
       await editPage.waitForPageLoad()
 
-      // Modifier les champs
-      const newFirstName = 'TestFirst' + Date.now()
-      const newLastName = 'TestLast' + Date.now()
+      // Modifier les champs (uniquement lettres, pas de chiffres)
+      const newFirstName = 'Pierre'
+      const newLastName = 'Martin'
 
       await editPage.fillForm({
         firstName: newFirstName,
@@ -104,8 +104,9 @@ test.describe('Edit Profile Page', () => {
       await editPage.goto()
       await editPage.waitForPageLoad()
 
-      // Modifier le téléphone
+      // Modifier le prénom aussi pour activer le bouton (le téléphone préexistant peut être invalide)
       await editPage.fillForm({
+        firstName: 'Marcel',
         phone: '0698765432',
       })
 
@@ -123,7 +124,7 @@ test.describe('Edit Profile Page', () => {
 
       // Modifier un autre champ pour pouvoir soumettre puis effacer le téléphone
       await editPage.fillForm({
-        firstName: 'TestClear' + Date.now(),
+        firstName: 'Jacques',
         phone: '',
       })
 
@@ -176,13 +177,18 @@ test.describe('Edit Profile Page', () => {
       await editPage.goto()
       await editPage.waitForPageLoad()
 
+      // D'abord effacer le téléphone existant (qui peut avoir des espaces)
       await editPage.fillForm({
-        firstName: 'Test' + Date.now(),
+        firstName: 'François',
         phone: '+33612345678',
       })
 
-      // Pas d'erreur affichée
-      await expect(editPage.phoneError).not.toContainText('Numéro invalide')
+      // Attendre un peu que la validation se fasse
+      await editPage.page.waitForTimeout(500)
+
+      // Pas d'erreur affichée pour le téléphone
+      const phoneError = editPage.page.getByTestId('error-phone')
+      await expect(phoneError).not.toBeVisible()
     })
 
     test('should disable submit button when form is unchanged', async ({
@@ -224,10 +230,19 @@ test.describe('Edit Profile Page', () => {
       await editPage.goto()
       await editPage.waitForPageLoad()
 
-      const newFirstName = 'SuperAdmin' + Date.now()
+      // Get current values first
+      const currentFirstName = await editPage.firstNameInput.inputValue()
+      const currentLastName = await editPage.lastNameInput.inputValue()
+
+      // Use different values to trigger form dirty state
+      const newFirstName =
+        currentFirstName === 'Administrateur' ? 'Admin' : 'Administrateur'
+      const newLastName =
+        currentLastName === 'Système' ? 'System' : 'Système'
+
       await editPage.fillForm({
         firstName: newFirstName,
-        lastName: 'Updated',
+        lastName: newLastName,
       })
 
       await editPage.submit()
@@ -253,8 +268,14 @@ test.describe('Edit Profile Page', () => {
       await editPage.goto()
       await editPage.waitForPageLoad()
 
+      // Get current values and use different ones to trigger dirty state
+      const currentFirstName = await editPage.firstNameInput.inputValue()
+      const newFirstName =
+        currentFirstName === 'Directeur' ? 'DirecteurTest' : 'Directeur'
+
       await editPage.fillForm({
-        firstName: 'DirectorTest' + Date.now(),
+        firstName: newFirstName,
+        phone: '0611111111',
       })
 
       await editPage.submit()
@@ -279,8 +300,14 @@ test.describe('Edit Profile Page', () => {
       await editPage.goto()
       await editPage.waitForPageLoad()
 
+      // Get current values and use different ones to trigger dirty state
+      const currentFirstName = await editPage.firstNameInput.inputValue()
+      const newFirstName =
+        currentFirstName === 'Responsable' ? 'ResponsableTest' : 'Responsable'
+
       await editPage.fillForm({
-        firstName: 'ManagerTest' + Date.now(),
+        firstName: newFirstName,
+        phone: '0622222222',
       })
 
       await editPage.submit()
@@ -323,8 +350,8 @@ test.describe('Edit Profile Page', () => {
       await editPage.goto()
       await editPage.waitForPageLoad()
 
-      // Sauvegarder une modification
-      const newName = 'Preserved' + Date.now()
+      // Sauvegarder une modification (nom valide sans chiffres)
+      const newName = 'Préservé'
       await editPage.fillForm({ firstName: newName })
       await editPage.submit()
 
