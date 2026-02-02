@@ -6,17 +6,22 @@
  * @description Actions serveur pour récupérer et gérer le profil utilisateur.
  * Combine les données User (compte) et Employee (profil RH) si disponible.
  *
- * @ticket SP-270, SP-271
+ * @ticket SP-270, SP-271, SP-273
  */
 
 import { revalidatePath } from 'next/cache'
 
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { hashPassword, verifyPassword } from '@/lib/password'
 import {
   editProfileSchema,
   type EditProfileInput,
 } from '@/lib/validations/profile'
+import {
+  changePasswordSchema,
+  type ChangePasswordFormData,
+} from '@/lib/validations/user'
 import type { CrudActionResult } from '@/types'
 
 // ============================================================================
@@ -240,6 +245,103 @@ export async function updateProfile(
     return {
       success: false,
       error: 'Erreur lors de la mise à jour du profil',
+    }
+  }
+}
+
+/**
+ * Change le mot de passe de l'utilisateur connecté
+ *
+ * Sécurité :
+ * 1. Vérifie l'authentification
+ * 2. Valide les données entrantes (Zod)
+ * 3. Vérifie l'ancien mot de passe (bcrypt.compare)
+ * 4. Hash le nouveau mot de passe (bcrypt.hash)
+ * 5. Met à jour en base de données
+ *
+ * @param input - Données du formulaire de changement de mot de passe
+ * @returns CrudActionResult avec message de succès
+ *
+ * @security
+ * - Messages d'erreur génériques pour éviter information leak
+ * - Vérification timing-safe avec bcrypt.compare
+ * - Ne pas logger les mots de passe
+ *
+ * @ticket SP-273
+ */
+export async function changePassword(
+  input: ChangePasswordFormData
+): Promise<CrudActionResult<{ message: string }>> {
+  try {
+    // 1. Vérifier l'authentification
+    const session = await auth()
+    if (!session?.user?.id) {
+      return { success: false, error: 'Non authentifié' }
+    }
+
+    // 2. Valider les données entrantes (double validation)
+    const validation = changePasswordSchema.safeParse(input)
+    if (!validation.success) {
+      const firstError = validation.error.errors[0]
+      return {
+        success: false,
+        error: firstError?.message ?? 'Données invalides',
+        field: (firstError?.path[0] as string) ?? undefined,
+      }
+    }
+
+    const { currentPassword, newPassword } = validation.data
+
+    // 3. Récupérer l'utilisateur avec son mot de passe hashé
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { id: true, password: true },
+    })
+
+    if (!user || !user.password) {
+      // Message générique pour ne pas révéler si l'utilisateur existe
+      return { success: false, error: 'Impossible de modifier le mot de passe' }
+    }
+
+    // 4. Vérifier l'ancien mot de passe (timing-safe avec bcrypt.compare)
+    const isCurrentPasswordValid = await verifyPassword(
+      currentPassword,
+      user.password
+    )
+    if (!isCurrentPasswordValid) {
+      return {
+        success: false,
+        error: 'Mot de passe actuel incorrect',
+        field: 'currentPassword',
+      }
+    }
+
+    // 5. Hasher le nouveau mot de passe
+    const hashedNewPassword = await hashPassword(newPassword)
+
+    // 6. Mettre à jour en base de données
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { password: hashedNewPassword },
+    })
+
+    // 7. Revalidate (même si pas de données affichées, pour cohérence)
+    revalidatePath('/app/profile')
+    revalidatePath('/app/profile/password')
+
+    return {
+      success: true,
+      data: { message: 'Mot de passe modifié avec succès' },
+    }
+  } catch (error) {
+    // Log en développement (sans le mot de passe !)
+    if (process.env.NODE_ENV === 'development') {
+      console.error('[changePassword] Error:', error)
+    }
+
+    return {
+      success: false,
+      error: 'Une erreur est survenue lors de la modification du mot de passe',
     }
   }
 }
