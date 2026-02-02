@@ -172,7 +172,7 @@ export function Header({ user, notificationsCount = 0 }: HeaderProps) {
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
-                <Link href="/profile" className="cursor-pointer">
+                <Link href="/app/profile" className="cursor-pointer">
                   <User className="mr-2 h-4 w-4" />
                   Mon profil
                 </Link>
