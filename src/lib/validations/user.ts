@@ -85,3 +85,25 @@ export type ChangePasswordFormData = z.infer<typeof changePasswordSchema>
 // ============================================
 // Note: forgotPasswordSchema et resetPasswordSchema sont définis dans auth.ts (SP-298)
 // pour une meilleure organisation des schémas d'authentification
+
+// ============================================
+// DELETE ACCOUNT FORM (RGPD Article 17)
+// ============================================
+/**
+ * Schéma de validation pour la suppression de compte
+ * Confirmation renforcée : email + mot de passe + checkbox
+ *
+ * @ticket SP-277 - RGPD Article 17 - Droit à l'effacement
+ */
+export const deleteAccountSchema = z.object({
+  confirmEmail: z
+    .string()
+    .min(1, 'Veuillez saisir votre email')
+    .email('Format email invalide'),
+  password: z.string().min(1, 'Veuillez saisir votre mot de passe'),
+  confirmDeletion: z.boolean().refine((val) => val === true, {
+    message: 'Vous devez confirmer la suppression définitive',
+  }),
+})
+
+export type DeleteAccountInput = z.infer<typeof deleteAccountSchema>
