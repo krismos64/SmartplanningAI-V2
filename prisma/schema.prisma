@@ -483,9 +483,15 @@ model Notification {
   message String           @db.Text
   type    NotificationType @default(INFO)
 
+  // Priorité (SP-321)
+  priority NotificationPriority @default(MEDIUM)
+
   // Contexte
-  relatedType String? // "LeaveRequest", "Schedule"
+  relatedType String? // "LeaveRequest", "Schedule", "PersonalTask", "IncidentNote"
   relatedId   String? // ID de l'objet lié
+
+  // URL d'action (SP-321) - Lien vers la page concernée
+  actionUrl String? // Ex: "/app/dashboard/leaves/123", "/app/dashboard/planning"
 
   // Destinataire
   userId String
@@ -505,6 +511,7 @@ model Notification {
   @@index([userId, isRead])
   @@index([companyId])
   @@index([createdAt(sort: Desc)])
+  @@index([priority])
   @@map("notifications")
 }
 
@@ -639,11 +646,25 @@ enum LeaveRequestStatus {
 }
 
 enum NotificationType {
-  INFO
-  SUCCESS
-  WARNING
-  ERROR
-  SYSTEM
+  // Types génériques (existants)
+  INFO       // Information générale
+  SUCCESS    // Succès d'une opération
+  WARNING    // Avertissement
+  ERROR      // Erreur
+  SYSTEM     // Notification système
+
+  // Types métier (SP-321)
+  PLANNING   // Notification liée aux plannings
+  LEAVE      // Notification liée aux congés
+  TASK       // Notification liée aux tâches
+  INCIDENT   // Notification liée aux incidents
+}
+
+enum NotificationPriority {
+  LOW      // Priorité basse (informative)
+  MEDIUM   // Priorité moyenne (action recommandée)
+  HIGH     // Priorité haute (action requise)
+  URGENT   // Urgente (action immédiate requise)
 }
 
 enum AvailabilityType {
