@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 3 février 2026 (Sprint Notifications - SP-323)
+- **Dernière mise à jour** : 3 février 2026 (Sprint Notifications - SP-326)
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -71,7 +71,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Animations Dashboards** (SP-431) : Animations Framer Motion sur 15 composants (4 dashboards), variants fadeSlideUp/stagger, support prefers-reduced-motion
 - **Leave Management UI** (SP-411/SP-412/SP-413/SP-414/SP-415) : 16 composants congés + pages (LeaveTypeBadge, LeaveStatusBadge, LeaveBalanceCard, LeaveBalanceEditDialog, LeaveRequestCard, LeaveRequestForm, LeaveReviewDialog, LeaveConflictWarning, LeaveFilters, LeavesList, LeavesListMobile, LeaveCalendar, LeaveCalendarDay, LeaveStatsBar, LeaveDetailCard, LeaveTimeline) + pages orchestrateur, détail [id], balances + email notification manager + overlay congés Schedule-X
 - **Profile Page** (SP-270, SP-271, SP-273, SP-277, SP-278) : Page profil utilisateur avec Server Components, 7 composants UI (ProfileHeader, PersonalInfoCard, ProfessionalInfoCard, AccountInfoCard, ProfileActions, ProfilePageContent, InfoRow), Server Action getProfile, design Cyber Glass 3D avec AnimatedContainer, skeleton loading + **Edit Profile Page** avec React Hook Form + Zod validation, Server Action updateProfile, gestion SYSTEM_ADMIN sans Employee + **Change Password Page** avec indicateur de force en temps réel (5 critères, 4 niveaux), 3 toggles visibilité indépendants, Server Action changePassword sécurisée (bcrypt) + **Delete Account Page** (RGPD Article 17) avec double confirmation (email + password), checkbox consentement, transaction Prisma cascade, logs traçabilité, déconnexion automatique après suppression + **Export Data Page** (RGPD Article 20) avec téléchargement JSON de toutes les données personnelles (compte, profil, plannings, congés, disponibilités, tâches, notifications), exclusion données sensibles (mots de passe, tokens), 273 tests unitaires + 78 tests E2E
-- **Notifications System** (SP-321, SP-322, SP-323, SP-325) : Système de notifications complet avec modèle enrichi (types métier PLANNING/LEAVE/TASK/INCIDENT, priorités LOW/MEDIUM/HIGH/URGENT), factory functions par domaine, hooks SWR (useNotificationsCount, useNotifications avec optimistic updates), composants UI (NotificationBell avec badge animé Framer Motion, NotificationList avec ScrollArea, NotificationItem avec icônes par type, NotificationEmptyState, NotificationSkeleton), 92 tests unitaires
+- **Notifications System** (SP-321, SP-322, SP-323, SP-325, SP-326) : Système de notifications complet avec modèle enrichi (types métier PLANNING/LEAVE/TASK/INCIDENT, priorités LOW/MEDIUM/HIGH/URGENT), factory functions par domaine, hooks SWR (useNotificationsCount, useNotifications avec optimistic updates pour markAsRead/markAllAsRead/deleteNotification/deleteAllRead), composants UI (NotificationBell avec badge animé Framer Motion, NotificationList avec ScrollArea, NotificationItem avec icônes par type, NotificationEmptyState, NotificationSkeleton), 104 tests unitaires
 
 ### MVP (Phases 1-4)
 
