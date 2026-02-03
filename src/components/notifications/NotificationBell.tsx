@@ -1,8 +1,8 @@
 /**
  * Composant NotificationBell - Cloche avec dropdown
  *
- * @ticket SP-322
- * @description Icône cloche avec badge compteur et dropdown menu
+ * @ticket SP-322, SP-323
+ * @description Icône cloche avec badge compteur et dropdown menu avec liste de notifications
  */
 
 'use client'
@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useNotificationsCount } from '@/hooks/useNotificationsCount'
+import { NotificationList } from './NotificationList'
 import { cn } from '@/lib/utils'
 
 // ============================================================================
@@ -155,25 +156,16 @@ export function NotificationBell() {
 
         <DropdownMenuSeparator />
 
-        {/* Contenu placeholder (SP-323 ajoutera la vraie liste) */}
-        <div className="px-4 py-8 text-center">
-          {isError ? (
+        {/* Liste des notifications (SP-323) */}
+        {isError ? (
+          <div className="px-4 py-8 text-center">
             <p className="text-sm text-destructive">
               Erreur lors du chargement
             </p>
-          ) : count === 0 ? (
-            <div className="space-y-2">
-              <Bell className="mx-auto h-8 w-8 text-muted-foreground/50" />
-              <p className="text-sm text-muted-foreground">
-                Aucune notification
-              </p>
-            </div>
-          ) : (
-            <p className="text-sm text-muted-foreground">
-              {count} notification{count > 1 ? 's' : ''} en attente
-            </p>
-          )}
-        </div>
+          </div>
+        ) : (
+          <NotificationList onClose={() => setIsOpen(false)} />
+        )}
 
         <DropdownMenuSeparator />
 
