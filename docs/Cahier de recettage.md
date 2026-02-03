@@ -34,7 +34,7 @@ Dans le cadre du diplôme **CDA (Concepteur Développeur d'Applications)**, ce c
 | Métrique              | Objectif  | Atteint |
 | --------------------- | --------- | ------- |
 | Couverture globale    | ≥ 70%     | ✅ 85%  |
-| Tests unitaires       | ≥ 500     | ✅ 4403 |
+| Tests unitaires       | ≥ 500     | ✅ 3870 |
 | Tests E2E             | ≥ 50      | ✅ 589  |
 | Score Lighthouse A11y | ≥ 90%     | ✅ 95%  |
 | Anomalies critiques   | 0 en prod | ✅ 0    |
@@ -1702,8 +1702,11 @@ not-found.tsx (Server Component)
 | 28/01/2026 (SP-414)         | 3539            | 446       | 3985  | ~85%       | 📈 +48   |
 | 28/01/2026 (SP-413)         | 3491            | 446       | 3937  | ~85%       | 📈 +18   |
 | 28/01/2026 (SP-415)         | 3569            | 446       | 4015  | ~85%       | 📈 +49   |
+| 03/02/2026 (SP-323)         | 3635            | 446       | 4081  | ~85%       | 📈 +66   |
+| 03/02/2026 (SP-326)         | 3647            | 446       | 4093  | ~85%       | 📈 +12   |
+| 03/02/2026 (SP-324)         | 3870            | 589       | 4459  | ~85%       | 📈 +56   |
 
-**Graphique d'évolution** : De 27 tests (04/12) à 4015 tests (28/01) = **+14770% de croissance** 🚀
+**Graphique d'évolution** : De 27 tests (04/12) à 4459 tests (03/02) = **+16411% de croissance** 🚀
 
 ---
 
