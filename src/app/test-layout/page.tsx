@@ -59,160 +59,160 @@ export default function TestLayoutPage() {
   return (
     <SessionProvider>
       <DashboardLayout user={mockUsers[selectedRole]}>
-      <div className="space-y-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>🧪 Test Layout System - SP-118</CardTitle>
-            <CardDescription>
-              Testez les 4 rôles utilisateur et vérifiez les menus dynamiques
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Tabs
-              value={selectedRole}
-              onValueChange={(value) => setSelectedRole(value as UserRole)}
-            >
-              <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="SYSTEM_ADMIN">Super Admin</TabsTrigger>
-                <TabsTrigger value="DIRECTOR">Directeur</TabsTrigger>
-                <TabsTrigger value="MANAGER">Manager</TabsTrigger>
-                <TabsTrigger value="EMPLOYEE">Employé</TabsTrigger>
-              </TabsList>
-
-              {/* SYSTEM_ADMIN */}
-              <TabsContent value="SYSTEM_ADMIN" className="space-y-4">
-                <RoleDescription
-                  role="SYSTEM_ADMIN"
-                  description="Propriétaire du SaaS (Christophe)"
-                  features={[
-                    'Dashboard SaaS global',
-                    'Gestion des organisations clientes',
-                    'Monitoring système',
-                    "Logs d'accès (RGPD)",
-                    'Mode impersonate (Phase 5)',
-                  ]}
-                  menuItems={[
-                    'Dashboard SaaS',
-                    'Organisations',
-                    'Monitoring',
-                    'Logs système',
-                  ]}
-                />
-              </TabsContent>
-
-              {/* DIRECTOR */}
-              <TabsContent value="DIRECTOR" className="space-y-4">
-                <RoleDescription
-                  role="DIRECTOR"
-                  description="Directeur d'une entreprise cliente"
-                  features={[
-                    "Vue d'ensemble de l'organisation",
-                    'Gestion des collaborateurs',
-                    'Gestion des équipes',
-                    'Validation des plannings',
-                    'Statistiques complètes',
-                    'Paramètres entreprise',
-                  ]}
-                  menuItems={[
-                    'Dashboard',
-                    'Collaborateurs',
-                    'Plannings',
-                    'Congés',
-                    'Tâches',
-                    'Statistiques',
-                    'Incidents',
-                    'IA Planning',
-                    'Paramètres',
-                  ]}
-                />
-              </TabsContent>
-
-              {/* MANAGER */}
-              <TabsContent value="MANAGER" className="space-y-4">
-                <RoleDescription
-                  role="MANAGER"
-                  description="Manager d'une équipe"
-                  features={[
-                    "Vue d'ensemble de l'équipe",
-                    'Gestion des plannings équipe',
-                    'Validation des congés',
-                    'Gestion des incidents',
-                    'IA Planning Assistant',
-                    'Statistiques équipe',
-                  ]}
-                  menuItems={[
-                    'Dashboard',
-                    'Plannings',
-                    'Congés',
-                    'Tâches',
-                    'Statistiques',
-                    'Incidents',
-                    'IA Planning',
-                  ]}
-                />
-              </TabsContent>
-
-              {/* EMPLOYEE */}
-              <TabsContent value="EMPLOYEE" className="space-y-4">
-                <RoleDescription
-                  role="EMPLOYEE"
-                  description="Employé d'une équipe"
-                  features={[
-                    'Vue de ses propres plannings',
-                    'Demandes de congés',
-                    'Gestion de ses tâches',
-                    'Consultation du profil',
-                  ]}
-                  menuItems={['Dashboard', 'Plannings', 'Congés', 'Tâches']}
-                />
-              </TabsContent>
-            </Tabs>
-          </CardContent>
-        </Card>
-
-        {/* Test Content */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Carte 1</CardTitle>
-              <CardDescription>Exemple de contenu</CardDescription>
+              <CardTitle>🧪 Test Layout System - SP-118</CardTitle>
+              <CardDescription>
+                Testez les 4 rôles utilisateur et vérifiez les menus dynamiques
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
-                eiusmod tempor incididunt ut labore et dolore magna aliqua.
-              </p>
+              <Tabs
+                value={selectedRole}
+                onValueChange={(value) => setSelectedRole(value as UserRole)}
+              >
+                <TabsList className="grid w-full grid-cols-4">
+                  <TabsTrigger value="SYSTEM_ADMIN">Super Admin</TabsTrigger>
+                  <TabsTrigger value="DIRECTOR">Directeur</TabsTrigger>
+                  <TabsTrigger value="MANAGER">Manager</TabsTrigger>
+                  <TabsTrigger value="EMPLOYEE">Employé</TabsTrigger>
+                </TabsList>
+
+                {/* SYSTEM_ADMIN */}
+                <TabsContent value="SYSTEM_ADMIN" className="space-y-4">
+                  <RoleDescription
+                    role="SYSTEM_ADMIN"
+                    description="Propriétaire du SaaS (Christophe)"
+                    features={[
+                      'Dashboard SaaS global',
+                      'Gestion des organisations clientes',
+                      'Monitoring système',
+                      "Logs d'accès (RGPD)",
+                      'Mode impersonate (Phase 5)',
+                    ]}
+                    menuItems={[
+                      'Dashboard SaaS',
+                      'Organisations',
+                      'Monitoring',
+                      'Logs système',
+                    ]}
+                  />
+                </TabsContent>
+
+                {/* DIRECTOR */}
+                <TabsContent value="DIRECTOR" className="space-y-4">
+                  <RoleDescription
+                    role="DIRECTOR"
+                    description="Directeur d'une entreprise cliente"
+                    features={[
+                      "Vue d'ensemble de l'organisation",
+                      'Gestion des collaborateurs',
+                      'Gestion des équipes',
+                      'Validation des plannings',
+                      'Statistiques complètes',
+                      'Paramètres entreprise',
+                    ]}
+                    menuItems={[
+                      'Dashboard',
+                      'Collaborateurs',
+                      'Plannings',
+                      'Congés',
+                      'Tâches',
+                      'Statistiques',
+                      'Incidents',
+                      'IA Planning',
+                      'Paramètres',
+                    ]}
+                  />
+                </TabsContent>
+
+                {/* MANAGER */}
+                <TabsContent value="MANAGER" className="space-y-4">
+                  <RoleDescription
+                    role="MANAGER"
+                    description="Manager d'une équipe"
+                    features={[
+                      "Vue d'ensemble de l'équipe",
+                      'Gestion des plannings équipe',
+                      'Validation des congés',
+                      'Gestion des incidents',
+                      'IA Planning Assistant',
+                      'Statistiques équipe',
+                    ]}
+                    menuItems={[
+                      'Dashboard',
+                      'Plannings',
+                      'Congés',
+                      'Tâches',
+                      'Statistiques',
+                      'Incidents',
+                      'IA Planning',
+                    ]}
+                  />
+                </TabsContent>
+
+                {/* EMPLOYEE */}
+                <TabsContent value="EMPLOYEE" className="space-y-4">
+                  <RoleDescription
+                    role="EMPLOYEE"
+                    description="Employé d'une équipe"
+                    features={[
+                      'Vue de ses propres plannings',
+                      'Demandes de congés',
+                      'Gestion de ses tâches',
+                      'Consultation du profil',
+                    ]}
+                    menuItems={['Dashboard', 'Plannings', 'Congés', 'Tâches']}
+                  />
+                </TabsContent>
+              </Tabs>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Carte 2</CardTitle>
-              <CardDescription>Exemple de contenu</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                Ut enim ad minim veniam, quis nostrud exercitation ullamco
-                laboris nisi ut aliquip ex ea commodo consequat.
-              </p>
-            </CardContent>
-          </Card>
+          {/* Test Content */}
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <Card>
+              <CardHeader>
+                <CardTitle>Carte 1</CardTitle>
+                <CardDescription>Exemple de contenu</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">
+                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed
+                  do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                </p>
+              </CardContent>
+            </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Carte 3</CardTitle>
-              <CardDescription>Exemple de contenu</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                Duis aute irure dolor in reprehenderit in voluptate velit esse
-                cillum dolore eu fugiat nulla pariatur.
-              </p>
-            </CardContent>
-          </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle>Carte 2</CardTitle>
+                <CardDescription>Exemple de contenu</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">
+                  Ut enim ad minim veniam, quis nostrud exercitation ullamco
+                  laboris nisi ut aliquip ex ea commodo consequat.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Carte 3</CardTitle>
+                <CardDescription>Exemple de contenu</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">
+                  Duis aute irure dolor in reprehenderit in voluptate velit esse
+                  cillum dolore eu fugiat nulla pariatur.
+                </p>
+              </CardContent>
+            </Card>
+          </div>
         </div>
-      </div>
-    </DashboardLayout>
+      </DashboardLayout>
     </SessionProvider>
   )
 }

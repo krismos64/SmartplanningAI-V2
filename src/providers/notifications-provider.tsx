@@ -15,7 +15,6 @@ import {
   type ReactNode,
 } from 'react'
 import { useRouter } from 'next/navigation'
-import { useSession } from 'next-auth/react'
 
 import { useNotificationsStream } from '@/hooks/useNotificationsStream'
 import { useNotificationsCount } from '@/hooks/useNotificationsCount'
@@ -47,6 +46,8 @@ const NotificationsContext = createContext<NotificationsContextValue | null>(
 
 interface NotificationsProviderProps {
   children: ReactNode
+  /** Activer la connexion SSE (par défaut: true) */
+  enabled?: boolean
 }
 
 /**
@@ -57,6 +58,9 @@ interface NotificationsProviderProps {
  * - Afficher les toasts pour les nouvelles notifications
  * - Rafraîchir le compteur quand une notification arrive
  * - Fournir l'état de connexion aux composants enfants
+ *
+ * Note: Le SSE est activé par défaut. L'authentification est vérifiée
+ * côté serveur (l'API SSE renvoie 401 si non authentifié).
  *
  * @example
  * // Dans le layout
@@ -69,10 +73,9 @@ interface NotificationsProviderProps {
  */
 export function NotificationsProvider({
   children,
+  enabled = true,
 }: NotificationsProviderProps) {
   const router = useRouter()
-  const session = useSession()
-  const isAuthenticated = session?.status === 'authenticated'
 
   // Hook pour le compteur (SWR)
   const {
@@ -97,7 +100,8 @@ export function NotificationsProvider({
     [mutateCount, router]
   )
 
-  // Hook pour le stream SSE (seulement si authentifié)
+  // Hook pour le stream SSE
+  // L'authentification est vérifiée côté serveur (401 si non authentifié)
   const {
     isConnected,
     isConnecting,
@@ -106,7 +110,7 @@ export function NotificationsProvider({
     reconnect,
   } = useNotificationsStream({
     onNotification: handleNotification,
-    enabled: isAuthenticated,
+    enabled,
   })
 
   // Valeur du contexte mémorisée

@@ -13,13 +13,7 @@ import {
   useNotifications,
 } from '@/providers/notifications-provider'
 
-// Mock next-auth
-vi.mock('next-auth/react', () => ({
-  useSession: vi.fn(() => ({
-    status: 'authenticated',
-    data: { user: { id: 'user-1' } },
-  })),
-}))
+// Note: next-auth/react n'est plus utilisé par le provider
 
 // Mock next/navigation
 vi.mock('next/navigation', () => ({
