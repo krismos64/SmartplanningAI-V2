@@ -171,6 +171,30 @@ export type {
 } from './csv-export'
 
 // ============================================================================
+// TYPES PRÉFÉRENCES UTILISATEUR (SP-433)
+// ============================================================================
+export type {
+  ThemePreference,
+  DateFormatPreference,
+  TimeFormatPreference,
+  LanguagePreference,
+  DisplayPreferences,
+  NotificationChannelPreferences,
+  NotificationPreferences,
+  UserPreferences,
+} from './preferences'
+export {
+  DEFAULT_DISPLAY_PREFERENCES,
+  DEFAULT_NOTIFICATION_CHANNEL_PREFERENCES,
+  DEFAULT_NOTIFICATION_PREFERENCES,
+  DEFAULT_USER_PREFERENCES,
+  THEME_OPTIONS,
+  DATE_FORMAT_OPTIONS,
+  TIME_FORMAT_OPTIONS,
+  LANGUAGE_OPTIONS,
+} from './preferences'
+
+// ============================================================================
 // TYPES GÉNÉRIQUES UTILITAIRES
 // ============================================================================
 

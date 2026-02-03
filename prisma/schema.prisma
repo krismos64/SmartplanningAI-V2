@@ -46,6 +46,10 @@ model User {
   isEmailVerified Boolean   @default(false)
   lastLoginAt     DateTime?
 
+  // Préférences utilisateur (SP-433)
+  // Structure: { display: { theme, dateFormat, timeFormat, language }, notifications: { email: {...}, inApp: {...} } }
+  preferences Json?
+
   // Audit
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

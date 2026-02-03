@@ -37,3 +37,6 @@ export * from './personal-task'
 
 // Incident Note schemas (SP-424)
 export * from './incident-note'
+
+// User Preferences schemas (SP-433)
+export * from './preferences'
