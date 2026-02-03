@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 3 février 2026 (Sprint Notifications - SP-327)
+- **Dernière mise à jour** : 3 février 2026 (Sprint Profil & Paramètres - SP-433)
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -72,6 +72,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Leave Management UI** (SP-411/SP-412/SP-413/SP-414/SP-415) : 16 composants congés + pages (LeaveTypeBadge, LeaveStatusBadge, LeaveBalanceCard, LeaveBalanceEditDialog, LeaveRequestCard, LeaveRequestForm, LeaveReviewDialog, LeaveConflictWarning, LeaveFilters, LeavesList, LeavesListMobile, LeaveCalendar, LeaveCalendarDay, LeaveStatsBar, LeaveDetailCard, LeaveTimeline) + pages orchestrateur, détail [id], balances + email notification manager + overlay congés Schedule-X
 - **Profile Page** (SP-270, SP-271, SP-273, SP-277, SP-278) : Page profil utilisateur avec Server Components, 7 composants UI (ProfileHeader, PersonalInfoCard, ProfessionalInfoCard, AccountInfoCard, ProfileActions, ProfilePageContent, InfoRow), Server Action getProfile, design Cyber Glass 3D avec AnimatedContainer, skeleton loading + **Edit Profile Page** avec React Hook Form + Zod validation, Server Action updateProfile, gestion SYSTEM_ADMIN sans Employee + **Change Password Page** avec indicateur de force en temps réel (5 critères, 4 niveaux), 3 toggles visibilité indépendants, Server Action changePassword sécurisée (bcrypt) + **Delete Account Page** (RGPD Article 17) avec double confirmation (email + password), checkbox consentement, transaction Prisma cascade, logs traçabilité, déconnexion automatique après suppression + **Export Data Page** (RGPD Article 20) avec téléchargement JSON de toutes les données personnelles (compte, profil, plannings, congés, disponibilités, tâches, notifications), exclusion données sensibles (mots de passe, tokens), 273 tests unitaires + 78 tests E2E
 - **Notifications System** (SP-321, SP-322, SP-323, SP-324, SP-325, SP-326, SP-327) : Système de notifications complet avec modèle enrichi (types métier PLANNING/LEAVE/TASK/INCIDENT, priorités LOW/MEDIUM/HIGH/URGENT), factory functions par domaine, hooks SWR (useNotificationsCount, useNotifications, useNotificationsPaginated avec optimistic updates), composants UI (NotificationBell avec badge animé Framer Motion, NotificationList dropdown, page historique /app/dashboard/notifications avec filtres type/statut, pagination, actions en masse mark all read/delete all read), **notifications temps réel SSE** (Server-Sent Events avec NotificationSSEManager singleton, API route /api/notifications/stream, useNotificationsStream hook avec reconnexion auto, NotificationToast avec sonner, NotificationsProvider global), 187 tests unitaires
+- **User Preferences** (SP-433) : Système de préférences utilisateur avec champ JSON Prisma (User.preferences), types TypeScript complets (UserPreferences, DisplayPreferences, NotificationPreferences), schémas Zod pour validation (thème light/dark/system, format date DD/MM/YYYY|MM/DD/YYYY|YYYY-MM-DD, format heure 24h/12h, langue fr/en, préférences notifications par canal email/inApp et type planning/leaves/tasks/system), helpers parsing/serialization avec deep merge des valeurs par défaut, 62 tests unitaires
 
 ### MVP (Phases 1-4)
 
@@ -2473,8 +2474,8 @@ Merge main → Build Docker → Push GHCR → Deploy VPS (~8-10 min)
 
 - **CI** (`.github/workflows/ci.yml`) : Lint, Type-check, Tests unitaires, Build, Tests E2E (PR uniquement)
 - **CD** (`.github/workflows/cd.yml`) : Build image Docker, Push sur ghcr.io, Deploy via SSH
-- Tests unitaires sur tous les push (~4073 tests Vitest)
-- Tests E2E sur PR vers main (~543 tests Playwright actifs, 5 devices mobiles)
+- Tests unitaires sur tous les push (~4548 tests Vitest)
+- Tests E2E sur PR vers main (~548 tests Playwright actifs, 5 devices mobiles)
 - Déploiement automatique sur merge main ✅
 - Migrations Prisma automatiques
 - Healthcheck endpoint : `/api/health` ✅

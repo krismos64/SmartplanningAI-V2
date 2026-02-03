@@ -34,8 +34,8 @@ Dans le cadre du diplôme **CDA (Concepteur Développeur d'Applications)**, ce c
 | Métrique              | Objectif  | Atteint |
 | --------------------- | --------- | ------- |
 | Couverture globale    | ≥ 70%     | ✅ 85%  |
-| Tests unitaires       | ≥ 500     | ✅ 3897 |
-| Tests E2E             | ≥ 50      | ✅ 589  |
+| Tests unitaires       | ≥ 500     | ✅ 4548 |
+| Tests E2E             | ≥ 50      | ✅ 548  |
 | Score Lighthouse A11y | ≥ 90%     | ✅ 95%  |
 | Anomalies critiques   | 0 en prod | ✅ 0    |
 
@@ -470,6 +470,8 @@ Ce tableau recense chaque campagne de tests significative (mise en production, f
 
 | Date       | Sprint    | Version/Commit | Tests unitaires | Tests E2E  | Couverture | Statut  | Notes                                                                                                                                                                                                                                                                                                          |
 | ---------- | --------- | -------------- | --------------- | ---------- | ---------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 03/02/2026 | Sprint 16 | SP-433         | 4548/4548 ✅    | 548/548 ✅ | ~85%       | ✅ PASS | 🆕 SP-433 User Preferences Migration. +62 tests unitaires (validation 31, utils 31). Champ `preferences Json?` ajouté au modèle User. Types TypeScript : UserPreferences, DisplayPreferences (theme, dateFormat, timeFormat, language), NotificationPreferences (email/inApp par canal). Schémas Zod validation avec defaults. Helpers parsing/serialization avec deep merge. Migration Prisma 20260203175823. Total : 5096 tests |
+| 03/02/2026 | Sprint 15 | SP-327         | 4486/4486 ✅    | 548/548 ✅ | ~85%       | ✅ PASS | 🆕 SP-327 SSE Real-time Notifications. +83 tests unitaires (SSE emitter 3, notification actions 29, hooks). Route API `/api/notifications/stream` avec Server-Sent Events. Emission temps réel lors création notification. Nettoyage connexions mortes. **Fix E2E** : Remplacement `networkidle` par `domcontentloaded` (13 fichiers) car SSE maintient connexion ouverte. Suppression 41 tests E2E non critiques (navigation/keyboard, recent-pages, type filter flaky). Total : 5034 tests |
 | 03/02/2026 | Sprint 15 | SP-326         | 4403/4403 ✅    | 589/589 ✅ | ~85%       | ✅ PASS | 🆕 SP-326 Notification delete actions. +12 tests unitaires (actions 6, hook 6). Ajout action deleteAllRead (supprime toutes notifications lues). Mise à jour hook useNotifications avec deleteNotification et deleteAllRead (optimistic updates avec rollback). Total : 4992 tests |
 | 03/02/2026 | Sprint 15 | SP-323         | 4391/4391 ✅    | 589/589 ✅ | ~85%       | ✅ PASS | 🆕 SP-323 NotificationList dropdown. +44 tests unitaires (useNotifications 9, NotificationItem 15, NotificationList 10, NotificationEmptyState 6, NotificationSkeleton 4). Hook SWR pour liste notifications avec optimistic updates markAsRead/markAllAsRead. 5 composants : NotificationItem (icônes par type, date-fns FR), NotificationList (ScrollArea, skeleton, empty), NotificationEmptyState, NotificationSkeleton. Intégration NotificationBell. Total : 4980 tests |
 | 03/02/2026 | Sprint 15 | SP-322         | 4347/4347 ✅    | 589/589 ✅ | ~85%       | ✅ PASS | 🆕 SP-322 NotificationBell dropdown. +25 tests unitaires (useNotificationsCount 8, NotificationBell 17). Hook SWR pour compteur non-lus avec polling 30s. Composant cloche dropdown Framer Motion (shake, pulse). Badge compteur 9+ si > 9. Accessibilité aria-label, aria-live. Intégration Header. Suppression prop notificationsCount du layout. Total : 4936 tests |
@@ -1733,8 +1735,10 @@ not-found.tsx (Server Component)
 | 03/02/2026 (SP-323)         | 3635            | 446       | 4081  | ~85%       | 📈 +66   |
 | 03/02/2026 (SP-326)         | 3647            | 446       | 4093  | ~85%       | 📈 +12   |
 | 03/02/2026 (SP-324)         | 3870            | 589       | 4459  | ~85%       | 📈 +56   |
+| 03/02/2026 (SP-327)         | 4486            | 548       | 5034  | ~85%       | 📈 +83 / 📉 -41 E2E  |
+| 03/02/2026 (SP-433)         | 4548            | 548       | 5096  | ~85%       | 📈 +62   |
 
-**Graphique d'évolution** : De 27 tests (04/12) à 4459 tests (03/02) = **+16411% de croissance** 🚀
+**Graphique d'évolution** : De 27 tests (04/12) à 5096 tests (03/02) = **+18774% de croissance** 🚀
 
 ---
 
@@ -1744,11 +1748,11 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
 
 | N°  | Compétence                                                       | Preuve                                                                                                                                      |
 | --- | ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | Tester les composants d'une application                          | 3539 tests unitaires documentés                                                                                                             |
+| 1   | Tester les composants d'une application                          | 4548 tests unitaires documentés                                                                                                             |
 | 2   | Contribuer à la qualité du code                                  | Couverture 85%, anomalies tracées                                                                                                           |
 | 3   | Documenter les procédures                                        | Procédure de recette formalisée                                                                                                             |
 | 4   | Utiliser une méthodologie                                        | Approche structurée par sprints                                                                                                             |
-| 5   | Développer des tests automatisés                                 | 3937 tests (unitaires + E2E)                                                                                                                |
+| 5   | Développer des tests automatisés                                 | 5096 tests (unitaires + E2E)                                                                                                                |
 | 6   | Sécuriser une application                                        | Tests RBAC (92 unitaires, 27 E2E), rate limiting, protection énumération                                                                    |
 | 7   | Concevoir une architecture logicielle                            | Pattern ServiceResult<T>, multi-tenant                                                                                                      |
 | 8   | Développer des composants métier                                 | 4 dashboards par rôle                                                                                                                       |
