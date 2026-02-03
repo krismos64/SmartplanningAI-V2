@@ -1,17 +1,27 @@
 /**
  * Tests unitaires pour NotificationBell
  *
- * @ticket SP-322
+ * @ticket SP-322, SP-323
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
 // Mock du hook useNotificationsCount
 const mockMutate = vi.fn()
 vi.mock('@/hooks/useNotificationsCount', () => ({
   useNotificationsCount: vi.fn(),
+}))
+
+// Mock de NotificationList (ajouté par SP-323)
+vi.mock('@/components/notifications/NotificationList', () => ({
+  NotificationList: ({ onClose }: { onClose?: () => void }) => (
+    <div data-testid="notification-list-mock">
+      <button onClick={onClose}>Notification List Mock</button>
+      <p>Aucune notification</p>
+    </div>
+  ),
 }))
 
 // Mock de framer-motion pour simplifier les tests
@@ -223,7 +233,7 @@ describe('NotificationBell - SP-322', () => {
       })
     })
 
-    it('affiche "Aucune notification" quand count = 0', async () => {
+    it('affiche NotificationList dans le dropdown (SP-323)', async () => {
       const user = userEvent.setup()
       mockUseNotificationsCount.mockReturnValue({
         count: 0,
@@ -239,11 +249,12 @@ describe('NotificationBell - SP-322', () => {
       await user.click(screen.getByTestId('notification-bell-button'))
 
       await waitFor(() => {
-        expect(screen.getByText('Aucune notification')).toBeInTheDocument()
+        // NotificationList mocké affiche "Aucune notification"
+        expect(screen.getByTestId('notification-list-mock')).toBeInTheDocument()
       })
     })
 
-    it('affiche le compteur de notifications dans le dropdown', async () => {
+    it('affiche le compteur de notifications dans le header du dropdown', async () => {
       const user = userEvent.setup()
       mockUseNotificationsCount.mockReturnValue({
         count: 5,
