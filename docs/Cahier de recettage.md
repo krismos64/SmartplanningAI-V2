@@ -34,7 +34,7 @@ Dans le cadre du diplôme **CDA (Concepteur Développeur d'Applications)**, ce c
 | Métrique              | Objectif  | Atteint |
 | --------------------- | --------- | ------- |
 | Couverture globale    | ≥ 70%     | ✅ 85%  |
-| Tests unitaires       | ≥ 500     | ✅ 3870 |
+| Tests unitaires       | ≥ 500     | ✅ 3897 |
 | Tests E2E             | ≥ 50      | ✅ 589  |
 | Score Lighthouse A11y | ≥ 90%     | ✅ 95%  |
 | Anomalies critiques   | 0 en prod | ✅ 0    |
@@ -244,6 +244,34 @@ test('should login', async ({ loginPage }) => {
 - Effets visuels non-bloquants pour la compréhension du contenu
 
 **Conclusion** : L'esthétique Cyber Glass 3D apporte une identité visuelle distinctive tout en respectant les critères d'accessibilité. La page de démo `/app/dev/design-system` documente tous les effets disponibles.
+
+### Pourquoi Server-Sent Events (SSE) plutôt que WebSocket ? (Sprint 16) 🆕
+
+| Critère                    | WebSocket                       | Server-Sent Events (SSE)        | Mon choix |
+| -------------------------- | ------------------------------- | ------------------------------- | --------- |
+| Direction communication    | ✅ Bidirectionnelle             | ⚠️ Serveur → Client uniquement  | SSE       |
+| Complexité serveur         | ⚠️ État persistant, heartbeat   | ✅ Requête HTTP standard        | SSE       |
+| Reconnexion automatique    | ❌ À implémenter                | ✅ Natif (EventSource)          | SSE       |
+| Proxies/Load balancers     | ⚠️ Configuration spéciale       | ✅ HTTP standard                 | SSE       |
+| Support navigateurs        | ✅ Tous                         | ✅ Tous (sauf IE)               | SSE       |
+| Intégration Next.js API    | ⚠️ Nécessite serveur custom     | ✅ API Routes natives           | SSE       |
+| Cas d'usage notifications  | ❌ Overkill                     | ✅ Parfait (push serveur)       | SSE       |
+
+**Justification du choix (SP-327)** :
+
+- **Notifications = push serveur uniquement** : Les notifications sont créées côté serveur et envoyées aux clients. Pas besoin de bidirectionnel.
+- **Reconnexion native** : `EventSource` gère automatiquement la reconnexion en cas de perte de connexion.
+- **Simplicité d'implémentation** : API Routes Next.js avec `ReadableStream`, pas de serveur WebSocket séparé.
+- **Compatibilité infrastructure** : Fonctionne avec Nginx, Cloudflare, et tous les reverse proxies sans configuration spéciale.
+
+**Architecture implémentée** :
+- `NotificationSSEManager` : Singleton gérant les connexions actives par utilisateur
+- `/api/notifications/stream` : API Route SSE avec authentification
+- `useNotificationsStream` : Hook client avec reconnexion automatique (5 tentatives)
+- `NotificationsProvider` : Contexte global avec toast automatique
+- Heartbeat toutes les 30s pour garder les connexions actives
+
+**Conclusion** : SSE est la solution optimale pour les notifications temps réel car il ne nécessite que du push serveur→client. La reconnexion automatique de l'EventSource et la compatibilité HTTP native simplifient considérablement l'architecture par rapport à WebSocket.
 
 ---
 
