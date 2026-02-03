@@ -48,7 +48,7 @@ export default async function AppLayout({
   }
 
   return (
-    <DashboardLayout user={user} notificationsCount={0}>
+    <DashboardLayout user={user}>
       {children}
     </DashboardLayout>
   )

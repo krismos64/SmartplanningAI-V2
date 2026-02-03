@@ -56,7 +56,7 @@ export default function TestLayoutPage() {
   const [selectedRole, setSelectedRole] = useState<UserRole>('DIRECTOR')
 
   return (
-    <DashboardLayout user={mockUsers[selectedRole]} notificationsCount={3}>
+    <DashboardLayout user={mockUsers[selectedRole]}>
       <div className="space-y-6">
         <Card>
           <CardHeader>

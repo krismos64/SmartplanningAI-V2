@@ -31,7 +31,6 @@ interface DashboardLayoutProps {
     organizationId?: string
     companyName?: string
   }
-  notificationsCount?: number
   /** Variante de style de la sidebar (défaut: 'cosmic') */
   sidebarVariant?: SidebarVariant
 }
@@ -43,13 +42,11 @@ interface DashboardLayoutProps {
 function DashboardLayoutContent({
   children,
   user,
-  notificationsCount,
   pathname,
   sidebarVariant,
 }: {
   children: React.ReactNode
   user: DashboardLayoutProps['user']
-  notificationsCount: number
   pathname: string
   sidebarVariant: SidebarVariant
 }) {
@@ -71,7 +68,7 @@ function DashboardLayoutContent({
           {/* Main content area */}
           <div className="flex flex-1 flex-col">
             {/* Header */}
-            <Header user={user} notificationsCount={notificationsCount} />
+            <Header user={user} />
 
             {/* Page content */}
             <main className="bg-mesh flex-1 transition-all duration-300">
@@ -108,7 +105,6 @@ function DashboardLayoutContent({
 export function DashboardLayout({
   children,
   user,
-  notificationsCount = 0,
   sidebarVariant = 'aurora',
 }: DashboardLayoutProps) {
   const pathname = usePathname()
@@ -117,7 +113,6 @@ export function DashboardLayout({
     <KeyboardShortcutsProvider>
       <DashboardLayoutContent
         user={user}
-        notificationsCount={notificationsCount}
         pathname={pathname}
         sidebarVariant={sidebarVariant}
       >
