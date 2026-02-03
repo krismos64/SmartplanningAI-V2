@@ -54,8 +54,10 @@ test.describe('Leaves - Restriction accès soldes', () => {
     await employeePage.goto('/app/dashboard/leaves/balances')
 
     // Doit être redirigé ou voir une erreur 403/404
-    // Le comportement exact dépend de l'implémentation du middleware
-    await employeePage.waitForLoadState('networkidle')
+    // Use domcontentloaded instead of networkidle because SSE keeps connection open
+    await employeePage.waitForLoadState('domcontentloaded')
+    // Wait for navigation/redirect to complete
+    await employeePage.waitForTimeout(1000)
 
     // Vérifier qu'on n'est PAS sur la page des soldes
     // ou qu'on voit un message d'erreur
@@ -73,7 +75,10 @@ test.describe('Leaves - Restriction accès soldes', () => {
     managerPage,
   }) => {
     await managerPage.goto('/app/dashboard/leaves/balances')
-    await managerPage.waitForLoadState('networkidle')
+    // Use domcontentloaded instead of networkidle because SSE keeps connection open
+    await managerPage.waitForLoadState('domcontentloaded')
+    // Wait for navigation/redirect to complete
+    await managerPage.waitForTimeout(1000)
 
     const isOnBalancesPage = managerPage.url().includes('/leaves/balances')
     const hasErrorOrRedirect =

@@ -26,7 +26,7 @@ test.describe('Mobile DataTable Pagination', () => {
   // Navigate to a page with data table
   test.beforeEach(async ({ directorPage }) => {
     await directorPage.goto('/app/dashboard/employees')
-    await directorPage.waitForLoadState('networkidle')
+    await directorPage.waitForLoadState('domcontentloaded')
   })
 
   // Helper to check if pagination exists

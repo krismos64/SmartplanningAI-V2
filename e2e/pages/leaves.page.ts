@@ -121,19 +121,38 @@ export class LeavesPage {
   // ==========================================================================
 
   async filterByStatus(status: string) {
-    await this.filterStatus.click()
-    await this.page.getByRole('option', { name: status }).click()
+    // Use the quick filter buttons (stat bar) instead of dropdown
+    // The buttons have format "En attente: X"
+    const statusButton = this.page.getByRole('button', { name: new RegExp(`${status}:`, 'i') })
+    await statusButton.click()
+    // Wait for button to be pressed
+    await expect(statusButton).toHaveAttribute('aria-pressed', 'true', { timeout: 5000 })
   }
 
   async filterByType(type: string) {
+    // Click on the select trigger to open dropdown
     await this.filterType.click()
-    await this.page.getByRole('option', { name: type }).click()
+    // Wait for dropdown content to appear (Radix portals to body)
+    const listbox = this.page.locator('[role="listbox"]')
+    await listbox.waitFor({ state: 'visible', timeout: 5000 })
+    // Find and click the option
+    const option = listbox.getByRole('option', { name: type })
+    await option.click()
+    // Wait for dropdown to close and value to update
+    await listbox.waitFor({ state: 'hidden', timeout: 5000 })
   }
 
   async resetFilters() {
+    // Click the same status button again to toggle off
+    const pressedButton = this.page.locator('button[aria-pressed="true"]')
+    if (await pressedButton.isVisible()) {
+      await pressedButton.click()
+    }
+    // Also reset type filter if set
     if (await this.filterReset.isVisible()) {
       await this.filterReset.click()
     }
+    await this.page.waitForTimeout(500)
   }
 
   // ==========================================================================

@@ -307,7 +307,7 @@ test.describe('Persistance du consentement', () => {
     await page.reload()
 
     // Attendre que le hook soit chargé puis vérifier pas de bannière
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     const banner = page.getByRole('dialog', { name: /paramètres des cookies/i })
     await expect(banner).not.toBeVisible()
 
@@ -330,7 +330,7 @@ test.describe('Persistance du consentement', () => {
 
     // Navigue vers une autre page
     await page.goto('/cookies')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     // Pas de bannière sur la nouvelle page
     const banner = page.getByRole('dialog', { name: /paramètres des cookies/i })

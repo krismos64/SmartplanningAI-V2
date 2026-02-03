@@ -24,7 +24,7 @@ test.describe('Keyboard Shortcuts', () => {
     }) => {
       // D'abord aller sur une autre page
       await directorPage.goto('/app/dashboard/employees')
-      await directorPage.waitForLoadState('networkidle')
+      await directorPage.waitForLoadState('domcontentloaded')
 
       // Utiliser le raccourci G puis H
       await directorPage.keyboard.press('g')
@@ -40,7 +40,7 @@ test.describe('Keyboard Shortcuts', () => {
       directorPage,
     }) => {
       // Commencer sur le dashboard
-      await directorPage.waitForLoadState('networkidle')
+      await directorPage.waitForLoadState('domcontentloaded')
 
       // Utiliser le raccourci G puis E
       await directorPage.keyboard.press('g')

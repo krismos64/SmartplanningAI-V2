@@ -236,7 +236,7 @@ test.describe('Touch Target Sizes (WCAG 2.5.5)', () => {
     test.beforeEach(async ({ directorPage }) => {
       // Navigate to a page with data table pagination
       await directorPage.goto('/app/dashboard/employees')
-      await directorPage.waitForLoadState('networkidle')
+      await directorPage.waitForLoadState('domcontentloaded')
     })
 
     test('pagination buttons should be >= 44x44px on mobile', async ({

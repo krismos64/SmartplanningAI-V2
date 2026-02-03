@@ -30,7 +30,7 @@ test.describe('Umami Analytics - Intégration RGPD', () => {
     await page.goto('/')
 
     // Attend que la page soit chargée
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     // Vérifie qu'aucune requête analytics n'a été faite
     expect(analyticsRequests).toHaveLength(0)
@@ -58,7 +58,7 @@ test.describe('Umami Analytics - Intégration RGPD', () => {
 
     // Recharge la page pour vérifier la persistance
     await page.reload()
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     // Vérifie que le script analytics n'est pas chargé
     const umamiScript = page.locator('script[data-website-id]')
@@ -114,7 +114,7 @@ test.describe('Umami Analytics - Intégration RGPD', () => {
 
     // Recharge et vérifie
     await page.reload()
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     // Le script analytics ne doit pas être présent
     const umamiScript = page.locator('script[data-website-id]')
@@ -237,7 +237,7 @@ test.describe('Umami Analytics - Cas edge', () => {
       }
     })
 
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     expect(errors).toHaveLength(0)
   })
 

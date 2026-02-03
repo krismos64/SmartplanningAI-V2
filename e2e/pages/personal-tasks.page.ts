@@ -76,27 +76,29 @@ export class PersonalTasksPage {
 
   async goto() {
     await this.page.goto('/app/dashboard/tasks')
-    await this.page.waitForLoadState('networkidle')
+    // Use domcontentloaded instead of networkidle because SSE keeps connection open
+    await this.page.waitForLoadState('domcontentloaded')
+    await this.pageTitle.waitFor({ state: 'visible', timeout: 20000 })
   }
 
   async gotoEmployeeDashboard() {
     await this.page.goto('/app/dashboard')
-    await this.page.waitForLoadState('networkidle')
+    await this.page.waitForLoadState('domcontentloaded')
   }
 
   async gotoManagerDashboard() {
     await this.page.goto('/app/manager/dashboard')
-    await this.page.waitForLoadState('networkidle')
+    await this.page.waitForLoadState('domcontentloaded')
   }
 
   async gotoDirectorDashboard() {
     await this.page.goto('/app/director/dashboard')
-    await this.page.waitForLoadState('networkidle')
+    await this.page.waitForLoadState('domcontentloaded')
   }
 
   async gotoAdminDashboard() {
     await this.page.goto('/app/admin/dashboard')
-    await this.page.waitForLoadState('networkidle')
+    await this.page.waitForLoadState('domcontentloaded')
   }
 
   async navigateViaSidebar() {
@@ -142,7 +144,7 @@ export class PersonalTasksPage {
 
   async submitForm() {
     await this.submitButton.click()
-    await this.page.waitForLoadState('networkidle')
+    await this.page.waitForLoadState('domcontentloaded')
   }
 
   async cancelForm() {

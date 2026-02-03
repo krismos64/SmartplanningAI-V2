@@ -44,7 +44,10 @@ test.describe('Smoke Tests', () => {
     })
 
     await page.goto('/')
-    await page.waitForLoadState('networkidle')
+    // Use domcontentloaded for consistency - homepage has no SSE
+    await page.waitForLoadState('domcontentloaded')
+    // Wait for page content to be visible
+    await page.locator('body').waitFor({ state: 'visible' })
 
     // Filtre les erreurs connues/acceptables
     const criticalErrors = consoleErrors.filter((err) => {

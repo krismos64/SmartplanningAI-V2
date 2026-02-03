@@ -25,7 +25,7 @@ test.describe('Mobile Responsive Breadcrumbs', () => {
   test.beforeEach(async ({ directorPage }) => {
     // Employees page typically has breadcrumbs
     await directorPage.goto('/app/dashboard/employees')
-    await directorPage.waitForLoadState('networkidle')
+    await directorPage.waitForLoadState('domcontentloaded')
   })
 
   // =========================================================================

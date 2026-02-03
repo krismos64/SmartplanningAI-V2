@@ -37,7 +37,7 @@ test.describe.skip('Recent Pages', () => {
     }) => {
       // Naviguer vers une page
       await directorPage.goto('/app/dashboard/employees')
-      await directorPage.waitForLoadState('networkidle')
+      await directorPage.waitForLoadState('domcontentloaded')
 
       // Vérifier que la page est stockée dans localStorage
       const storedPages = await directorPage.evaluate(() => {
@@ -53,13 +53,13 @@ test.describe.skip('Recent Pages', () => {
     test('should store multiple visited pages', async ({ directorPage }) => {
       // Naviguer vers plusieurs pages
       await directorPage.goto('/app/dashboard/employees')
-      await directorPage.waitForLoadState('networkidle')
+      await directorPage.waitForLoadState('domcontentloaded')
 
       await directorPage.goto('/app/director/teams')
-      await directorPage.waitForLoadState('networkidle')
+      await directorPage.waitForLoadState('domcontentloaded')
 
       await directorPage.goto('/schedules')
-      await directorPage.waitForLoadState('networkidle')
+      await directorPage.waitForLoadState('domcontentloaded')
 
       // Vérifier le stockage
       const storedPages = await directorPage.evaluate(() => {
@@ -81,14 +81,14 @@ test.describe.skip('Recent Pages', () => {
     test('should move revisited page to top', async ({ directorPage }) => {
       // Visiter trois pages
       await directorPage.goto('/app/dashboard/employees')
-      await directorPage.waitForLoadState('networkidle')
+      await directorPage.waitForLoadState('domcontentloaded')
 
       await directorPage.goto('/schedules')
-      await directorPage.waitForLoadState('networkidle')
+      await directorPage.waitForLoadState('domcontentloaded')
 
       // Revisiter la première page
       await directorPage.goto('/app/dashboard/employees')
-      await directorPage.waitForLoadState('networkidle')
+      await directorPage.waitForLoadState('domcontentloaded')
 
       // Vérifier l'ordre
       const storedPages = await directorPage.evaluate(() => {
@@ -124,7 +124,7 @@ test.describe.skip('Recent Pages', () => {
 
       for (const route of routes) {
         await directorPage.goto(route)
-        await directorPage.waitForLoadState('networkidle')
+        await directorPage.waitForLoadState('domcontentloaded')
         // Petite pause pour s'assurer que le tracking est fait
         await directorPage.waitForTimeout(100)
       }
@@ -151,10 +151,10 @@ test.describe.skip('Recent Pages', () => {
     }) => {
       // Naviguer vers quelques pages d'abord
       await directorPage.goto('/app/dashboard/employees')
-      await directorPage.waitForLoadState('networkidle')
+      await directorPage.waitForLoadState('domcontentloaded')
 
       await directorPage.goto('/schedules')
-      await directorPage.waitForLoadState('networkidle')
+      await directorPage.waitForLoadState('domcontentloaded')
 
       // Ouvrir la command palette
       await directorPage.keyboard.press('Meta+k')
@@ -175,11 +175,11 @@ test.describe.skip('Recent Pages', () => {
     }) => {
       // D'abord visiter une page
       await directorPage.goto('/app/dashboard/employees')
-      await directorPage.waitForLoadState('networkidle')
+      await directorPage.waitForLoadState('domcontentloaded')
 
       // Aller sur une autre page
       await directorPage.goto('/app/dashboard')
-      await directorPage.waitForLoadState('networkidle')
+      await directorPage.waitForLoadState('domcontentloaded')
 
       // Ouvrir la command palette
       await directorPage.keyboard.press('Meta+k')
@@ -207,7 +207,7 @@ test.describe.skip('Recent Pages', () => {
     }) => {
       // Visiter une page
       await directorPage.goto('/app/dashboard/employees')
-      await directorPage.waitForLoadState('networkidle')
+      await directorPage.waitForLoadState('domcontentloaded')
 
       // Ouvrir la command palette
       await directorPage.keyboard.press('Meta+k')
@@ -232,11 +232,11 @@ test.describe.skip('Recent Pages', () => {
     }) => {
       // Visiter une page
       await directorPage.goto('/app/dashboard/employees')
-      await directorPage.waitForLoadState('networkidle')
+      await directorPage.waitForLoadState('domcontentloaded')
 
       // Recharger la page
       await directorPage.reload()
-      await directorPage.waitForLoadState('networkidle')
+      await directorPage.waitForLoadState('domcontentloaded')
 
       // Vérifier que les pages sont toujours stockées
       const storedPages = await directorPage.evaluate(() => {
