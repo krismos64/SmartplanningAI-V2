@@ -51,19 +51,6 @@ test.describe('Leaves - Navigation et filtres', () => {
     await expect(statusButton).toHaveAttribute('aria-pressed', 'true')
   })
 
-  // Skip: Radix Select dropdown interaction is flaky in CI
-  // This test passes locally but fails in CI due to timing issues
-  // Coverage is maintained via unit tests for filter logic
-  test.skip('filtre par type Congés payés @employee', async ({ employeePage }) => {
-    const leavesPage = new LeavesPage(employeePage)
-    await leavesPage.goto()
-
-    await leavesPage.filterByType('Congés payés')
-
-    // Vérifier que le select affiche le type sélectionné
-    await expect(leavesPage.filterType).toContainText('Congés payés')
-  })
-
   test('reset les filtres @employee', async ({ employeePage }) => {
     const leavesPage = new LeavesPage(employeePage)
     await leavesPage.goto()
