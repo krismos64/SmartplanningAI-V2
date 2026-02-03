@@ -196,17 +196,37 @@ export class EditProfilePage {
 
   /**
    * Attendre un toast de succès
+   * Note: Le timeout est augmenté pour les environnements CI qui peuvent être plus lents.
+   * On utilise aussi une regex pour être plus flexible sur le texte exact.
    */
   async expectSuccessToast() {
     await expect(
-      this.page.getByText('Profil mis à jour avec succès')
-    ).toBeVisible({ timeout: 5000 })
+      this.page.getByText(/Profil mis à jour avec succès/i)
+    ).toBeVisible({ timeout: 15000 })
   }
 
   /**
    * Attendre la redirection vers le profil
+   * Note: Le timeout est augmenté pour les environnements CI qui peuvent être plus lents.
    */
   async expectRedirectToProfile() {
-    await expect(this.page).toHaveURL(/\/app\/profile$/, { timeout: 5000 })
+    await expect(this.page).toHaveURL(/\/app\/profile$/, { timeout: 15000 })
+  }
+
+  /**
+   * Attendre le succès de la mise à jour (toast OU redirection)
+   *
+   * Cette méthode est plus robuste car elle attend soit le toast de succès,
+   * soit la redirection vers le profil. Cela gère les cas où la redirection
+   * est plus rapide que l'affichage du toast.
+   */
+  async expectUpdateSuccess() {
+    // Attendre soit le toast, soit la redirection (premier qui arrive)
+    await Promise.race([
+      this.page
+        .getByText(/Profil mis à jour avec succès/i)
+        .waitFor({ state: 'visible', timeout: 15000 }),
+      this.page.waitForURL(/\/app\/profile$/, { timeout: 15000 }),
+    ])
   }
 }

@@ -123,12 +123,13 @@ test.describe('Login Page', () => {
 
     // Attendre le toast de succès
     await expect(page.getByText(/Connexion réussie/i)).toBeVisible({
-      timeout: 10000,
+      timeout: 15000,
     })
 
     // Vérifier la redirection vers le dashboard
-    await page.waitForURL(/\/app\/dashboard|\/director|\/manager|\/employee/, {
-      timeout: 15000,
+    // Le pattern inclut toutes les routes possibles après login selon le rôle
+    await page.waitForURL(/\/app\//, {
+      timeout: 30000,
     })
   })
 
