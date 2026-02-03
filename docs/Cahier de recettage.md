@@ -14,7 +14,7 @@ Ce document trace l'historique complet des tests réalisés sur SmartPlanning. I
 | Pipeline CI/CD       | GitHub Actions                                         |
 | Responsable          | Christophe Mostefaoui                                  |
 | Date de création     | 4 décembre 2025                                        |
-| Dernière mise à jour | 2 février 2026                                         |
+| Dernière mise à jour | 3 février 2026                                         |
 
 ---
 
@@ -34,7 +34,7 @@ Dans le cadre du diplôme **CDA (Concepteur Développeur d'Applications)**, ce c
 | Métrique              | Objectif  | Atteint |
 | --------------------- | --------- | ------- |
 | Couverture globale    | ≥ 70%     | ✅ 85%  |
-| Tests unitaires       | ≥ 500     | ✅ 4275 |
+| Tests unitaires       | ≥ 500     | ✅ 4299 |
 | Tests E2E             | ≥ 50      | ✅ 589  |
 | Score Lighthouse A11y | ≥ 90%     | ✅ 95%  |
 | Anomalies critiques   | 0 en prod | ✅ 0    |
@@ -442,6 +442,7 @@ Ce tableau recense chaque campagne de tests significative (mise en production, f
 
 | Date       | Sprint    | Version/Commit | Tests unitaires | Tests E2E  | Couverture | Statut  | Notes                                                                                                                                                                                                                                                                                                          |
 | ---------- | --------- | -------------- | --------------- | ---------- | ---------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 03/02/2026 | Sprint 15 | SP-321         | 4299/4299 ✅    | 589/589 ✅ | ~85%       | ✅ PASS | 🆕 SP-321 Enrichissement modèle Notification. +24 tests unitaires (notification types). Enum NotificationType enrichi avec types métier (PLANNING, LEAVE, TASK, INCIDENT). Nouvel enum NotificationPriority (LOW, MEDIUM, HIGH, URGENT). Champs priority et actionUrl ajoutés au modèle Notification. Types TypeScript complets avec labels FR, couleurs Tailwind, icônes Lucide. Migration Prisma 20260203102536. Total : 4888 tests |
 | 02/02/2026 | Sprint 14 | CI-Optim       | 4275/4275 ✅    | 185/589 CI | ~85%       | ✅ PASS | 🆕 Optimisation CI/CD E2E. Réduction temps CI de 40min à ~10min. Nouvelle stratégie : playwright.ci.config.ts (185 tests critiques : smoke, auth, RBAC, CRUD, schedules, leaves), playwright.nightly.config.ts (suite complète 589 tests). Workflow nightly-e2e.yml (2h00 UTC chaque nuit). Scripts npm test:e2e:ci et test:e2e:nightly. Corrections tests E2E : profile-display (noms dynamiques), export-data (sélecteurs getByRole), edit-profile (idempotence avec restoreProfile). Fix mock exportLeavesCsv dans LeavesPageContent.test.tsx. Total : 4864 tests |
 | 02/02/2026 | Sprint 14 | SP-333         | 4275/4275 ✅    | 589/589 ✅ | ~85%       | ✅ PASS | 🆕 SP-333 Exports CSV Employés/Plannings/Congés. +116 tests unitaires (5 fichiers : generateCsv 34, export-employees-csv 21, export-schedules-csv 19, export-leaves-csv 22, ExportCsvButton 20). Utilitaire CSV générique (séparateur `;`, UTF-8 BOM Excel FR, échappement guillemets). 3 Server Actions RBAC : exportEmployeesCsv (DIRECTOR/MANAGER), exportSchedulesCsv (période/équipe), exportLeavesCsv (status/type/team). Composant ExportCsvButton<TFilters> avec Blob download. Intégration UI : bouton page Employés, item CSV dans ExportDropdown Plannings, bouton page Congés. Total : 4864 tests |
 | 02/02/2026 | Sprint 14 | SP-278         | 4159/4159 ✅    | 589/589 ✅ | ~85%       | ✅ PASS | 🆕 SP-278 Export Data RGPD Article 20 Portabilité. +44 tests unitaires (2 fichiers : action 32, ExportDataButton 12), +24 tests E2E (1 fichier). Server Action exportUserData avec Promise.all parallel data fetching (account, profile, schedules, leaveRequests, leaveBalances, availabilities, personalTasks, notifications, incidentNotesAuthored). ExportDataButton avec useCrudMutation, download via Blob/URL.createObjectURL. Page /app/profile/export avec alert RGPD, liste données incluses/exclues. Types export complets (10 interfaces). Tests JSON valid, structure data, sécurité (password exclus). Total : 4748 tests |
