@@ -53,8 +53,8 @@ export class LeavesPage {
   constructor(page: Page) {
     this.page = page
 
-    // Page principale
-    this.createButton = page.getByTestId('create-leave-button')
+    // Page principale (use first() because there might be duplicate buttons for mobile/desktop)
+    this.createButton = page.getByTestId('create-leave-button').first()
     this.listTab = page.getByRole('tab', { name: /liste/i })
     this.calendarTab = page.getByRole('tab', { name: /calendrier/i })
     this.filterStatus = page.getByTestId('filter-status')
@@ -86,17 +86,20 @@ export class LeavesPage {
 
   async goto() {
     await this.page.goto('/app/dashboard/leaves')
-    await this.page.waitForLoadState('networkidle')
+    // Use domcontentloaded instead of networkidle because SSE keeps connection open
+    await this.page.waitForLoadState('domcontentloaded')
+    // Wait for page content to be ready (heading is always unique)
+    await this.page.getByRole('heading', { name: /congés/i }).waitFor({ state: 'visible', timeout: 20000 })
   }
 
   async gotoBalances() {
     await this.page.goto('/app/dashboard/leaves/balances')
-    await this.page.waitForLoadState('networkidle')
+    await this.page.waitForLoadState('domcontentloaded')
   }
 
   async gotoDetail(id: string) {
     await this.page.goto(`/app/dashboard/leaves/${id}`)
-    await this.page.waitForLoadState('networkidle')
+    await this.page.waitForLoadState('domcontentloaded')
   }
 
   // ==========================================================================
@@ -191,7 +194,7 @@ export class LeavesPage {
 
   async submitCreateForm() {
     await this.submitButton.click()
-    await this.page.waitForLoadState('networkidle')
+    await this.page.waitForLoadState('domcontentloaded')
   }
 
   async createRequest(data: CreateLeaveData) {
@@ -210,13 +213,13 @@ export class LeavesPage {
 
   async approveRequest() {
     await this.approveButton.click()
-    await this.page.waitForLoadState('networkidle')
+    await this.page.waitForLoadState('domcontentloaded')
   }
 
   async rejectRequest(comment: string) {
     await this.reviewComment.fill(comment)
     await this.rejectButton.click()
-    await this.page.waitForLoadState('networkidle')
+    await this.page.waitForLoadState('domcontentloaded')
   }
 
   // ==========================================================================
@@ -231,7 +234,7 @@ export class LeavesPage {
     await this.page.getByTestId('rtt-total-input').fill(rttTotal.toString())
 
     await this.page.getByRole('button', { name: /enregistrer/i }).click()
-    await this.page.waitForLoadState('networkidle')
+    await this.page.waitForLoadState('domcontentloaded')
   }
 
   // ==========================================================================
