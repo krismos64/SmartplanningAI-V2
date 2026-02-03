@@ -47,9 +47,5 @@ export default async function AppLayout({
     companyName,
   }
 
-  return (
-    <DashboardLayout user={user}>
-      {children}
-    </DashboardLayout>
-  )
+  return <DashboardLayout user={user}>{children}</DashboardLayout>
 }

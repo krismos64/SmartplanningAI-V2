@@ -24,14 +24,20 @@ import {
 } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
-import type { NotificationListItem, NotificationType } from '@/types/notification'
+import type {
+  NotificationListItem,
+  NotificationType,
+} from '@/types/notification'
 import { NOTIFICATION_TYPE_COLORS } from '@/types/notification'
 
 // ============================================================================
 // Icon mapping
 // ============================================================================
 
-const ICON_MAP: Record<NotificationType, React.ComponentType<{ className?: string }>> = {
+const ICON_MAP: Record<
+  NotificationType,
+  React.ComponentType<{ className?: string }>
+> = {
   INFO: Info,
   SUCCESS: CheckCircle,
   WARNING: AlertTriangle,
@@ -75,10 +81,13 @@ export const NotificationItem = memo(function NotificationItem({
   onClick,
   onClose,
 }: NotificationItemProps) {
-  const { id, title, message, type, isRead, actionUrl, createdAt } = notification
+  const { id, title, message, type, isRead, actionUrl, createdAt } =
+    notification
 
   const Icon = ICON_MAP[type as NotificationType] ?? Info
-  const colors = NOTIFICATION_TYPE_COLORS[type as NotificationType] ?? NOTIFICATION_TYPE_COLORS.INFO
+  const colors =
+    NOTIFICATION_TYPE_COLORS[type as NotificationType] ??
+    NOTIFICATION_TYPE_COLORS.INFO
 
   // Formater la date relative (ex: "il y a 5 minutes")
   const relativeTime = formatDistanceToNow(new Date(createdAt), {
@@ -99,7 +108,7 @@ export const NotificationItem = memo(function NotificationItem({
     <div
       className={cn(
         'flex gap-3 px-4 py-3 transition-colors',
-        'hover:bg-muted/50 cursor-pointer',
+        'cursor-pointer hover:bg-muted/50',
         !isRead && 'bg-muted/30'
       )}
       onClick={handleClick}
@@ -144,7 +153,9 @@ export const NotificationItem = memo(function NotificationItem({
             />
           )}
         </div>
-        <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">{message}</p>
+        <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">
+          {message}
+        </p>
         <p className="mt-1 text-xs text-muted-foreground/70">{relativeTime}</p>
       </div>
     </div>

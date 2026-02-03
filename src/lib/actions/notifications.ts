@@ -39,7 +39,11 @@ import {
   type PlanningNotificationAction,
   type LeaveNotificationAction,
 } from '@/lib/validations/notification'
-import type { CrudActionResult, ListQueryParams, PaginatedResult } from '@/types'
+import type {
+  CrudActionResult,
+  ListQueryParams,
+  PaginatedResult,
+} from '@/types'
 import type {
   NotificationListItem,
   NotificationFilters,
@@ -186,7 +190,10 @@ export async function createPlanningNotification(
     }
 
     // Construire le message selon l'action
-    const actionMessages: Record<PlanningNotificationAction, { title: string; message: string }> = {
+    const actionMessages: Record<
+      PlanningNotificationAction,
+      { title: string; message: string }
+    > = {
       created: {
         title: 'Nouveau planning assigné',
         message: `Un nouveau planning a été créé pour le ${formatDate(schedule.startTime)}.`,
@@ -225,7 +232,10 @@ export async function createPlanningNotification(
     return { success: true, notification }
   } catch (error) {
     console.error('[createPlanningNotification] Error:', error)
-    return { success: false, error: 'Erreur lors de la création de la notification' }
+    return {
+      success: false,
+      error: 'Erreur lors de la création de la notification',
+    }
   }
 }
 
@@ -294,7 +304,10 @@ export async function createLeaveNotification(
     const employeeName = `${leaveRequest.employee.firstName} ${leaveRequest.employee.lastName}`
     const dateRange = `du ${formatDate(leaveRequest.startDate)} au ${formatDate(leaveRequest.endDate)}`
 
-    const actionMessages: Record<LeaveNotificationAction, { title: string; message: string; priority: NotificationPriority }> = {
+    const actionMessages: Record<
+      LeaveNotificationAction,
+      { title: string; message: string; priority: NotificationPriority }
+    > = {
       requested: {
         title: 'Nouvelle demande de congé',
         message: `${employeeName} a déposé une demande de congé ${dateRange}.`,
@@ -332,7 +345,10 @@ export async function createLeaveNotification(
     return { success: true, notification }
   } catch (error) {
     console.error('[createLeaveNotification] Error:', error)
-    return { success: false, error: 'Erreur lors de la création de la notification' }
+    return {
+      success: false,
+      error: 'Erreur lors de la création de la notification',
+    }
   }
 }
 
@@ -385,7 +401,10 @@ export async function createTaskNotification(
     }
 
     // Construire le message selon l'action
-    const actionMessages: Record<'reminder' | 'overdue', { title: string; message: string; priority: NotificationPriority }> = {
+    const actionMessages: Record<
+      'reminder' | 'overdue',
+      { title: string; message: string; priority: NotificationPriority }
+    > = {
       reminder: {
         title: 'Rappel de tâche',
         message: `La tâche "${task.title}" arrive à échéance${task.dueDate ? ` le ${formatDate(task.dueDate)}` : ''}.`,
@@ -418,7 +437,10 @@ export async function createTaskNotification(
     return { success: true, notification }
   } catch (error) {
     console.error('[createTaskNotification] Error:', error)
-    return { success: false, error: 'Erreur lors de la création de la notification' }
+    return {
+      success: false,
+      error: 'Erreur lors de la création de la notification',
+    }
   }
 }
 
@@ -464,7 +486,7 @@ export async function createIncidentNotification(
     })
 
     if (!incidentNote) {
-      return { success: false, error: 'Note d\'incident non trouvée' }
+      return { success: false, error: "Note d'incident non trouvée" }
     }
 
     // Récupérer l'utilisateur destinataire
@@ -478,13 +500,16 @@ export async function createIncidentNotification(
     }
 
     // Construire le message
-    const actionMessages: Record<'created' | 'updated', { title: string; message: string }> = {
+    const actionMessages: Record<
+      'created' | 'updated',
+      { title: string; message: string }
+    > = {
       created: {
-        title: 'Nouvelle note d\'incident',
+        title: "Nouvelle note d'incident",
         message: `Une note d'incident "${incidentNote.title}" a été créée vous concernant.`,
       },
       updated: {
-        title: 'Note d\'incident modifiée',
+        title: "Note d'incident modifiée",
         message: `La note d'incident "${incidentNote.title}" a été mise à jour.`,
       },
     }
@@ -509,7 +534,10 @@ export async function createIncidentNotification(
     return { success: true, notification }
   } catch (error) {
     console.error('[createIncidentNotification] Error:', error)
-    return { success: false, error: 'Erreur lors de la création de la notification' }
+    return {
+      success: false,
+      error: 'Erreur lors de la création de la notification',
+    }
   }
 }
 
@@ -554,7 +582,10 @@ export async function createSystemNotification(
 
     // Vérifier l'accès à l'entreprise
     if (!canAccessCompanyEntity(user.companyId, companyId)) {
-      return { success: false, error: "Vous n'avez pas accès à cette entreprise" }
+      return {
+        success: false,
+        error: "Vous n'avez pas accès à cette entreprise",
+      }
     }
 
     // Validation des données
@@ -649,10 +680,10 @@ export async function getNotifications(
     if (filters?.startDate || filters?.endDate) {
       where.createdAt = {}
       if (filters.startDate) {
-        (where.createdAt as Record<string, Date>).gte = filters.startDate
+        ;(where.createdAt as Record<string, Date>).gte = filters.startDate
       }
       if (filters.endDate) {
-        (where.createdAt as Record<string, Date>).lte = filters.endDate
+        ;(where.createdAt as Record<string, Date>).lte = filters.endDate
       }
     }
 
@@ -716,7 +747,10 @@ export async function getUnreadCount(): Promise<CrudActionResult<number>> {
     return { success: true, data: count }
   } catch (error) {
     console.error('[getUnreadCount] Error:', error)
-    return { success: false, error: 'Erreur lors du comptage des notifications' }
+    return {
+      success: false,
+      error: 'Erreur lors du comptage des notifications',
+    }
   }
 }
 
@@ -773,7 +807,9 @@ export async function markAsRead(
  *
  * @returns Nombre de notifications mises à jour
  */
-export async function markAllAsRead(): Promise<CrudActionResult<{ count: number }>> {
+export async function markAllAsRead(): Promise<
+  CrudActionResult<{ count: number }>
+> {
   try {
     const authResult = await getAuthenticatedUser()
     if (!authResult.success) {

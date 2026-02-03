@@ -43,17 +43,16 @@ async function fetchUnreadCount(): Promise<number> {
  * mutate() // Refresh le compteur
  */
 export function useNotificationsCount() {
-  const { data, error, isLoading, isValidating, mutate } = useSWR<number, Error>(
-    'notifications-unread-count',
-    fetchUnreadCount,
-    {
-      refreshInterval: REFRESH_INTERVAL,
-      revalidateOnFocus: true,
-      revalidateOnReconnect: true,
-      dedupingInterval: 5000, // Évite les requêtes dupliquées pendant 5s
-      fallbackData: 0, // Valeur initiale pendant le premier chargement
-    }
-  )
+  const { data, error, isLoading, isValidating, mutate } = useSWR<
+    number,
+    Error
+  >('notifications-unread-count', fetchUnreadCount, {
+    refreshInterval: REFRESH_INTERVAL,
+    revalidateOnFocus: true,
+    revalidateOnReconnect: true,
+    dedupingInterval: 5000, // Évite les requêtes dupliquées pendant 5s
+    fallbackData: 0, // Valeur initiale pendant le premier chargement
+  })
 
   return {
     /** Nombre de notifications non lues */
