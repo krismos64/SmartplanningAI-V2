@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 2 février 2026 (Sprint 14 - Optimisation CI/CD E2E ~10min)
+- **Dernière mise à jour** : 3 février 2026 (Sprint Notifications - SP-321)
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -1534,22 +1534,23 @@ npm run test:coverage    # Couverture de code
 7. **ShiftAssignment** : Affectations shifts → employés
 8. **LeaveRequest** : Demandes de congés (avec halfDay/halfDayPeriod)
 9. **LeaveBalance** : Soldes de congés par employé et par année (@@unique employeeId+year)
-10. **Notification** : Système de notifications
+10. **Notification** : Système de notifications avec priority et actionUrl (SP-321)
 11. **ActivityLog** : Logs d'activité (audit)
 12. **CompanySettings** : Paramètres par entreprise
 
-### Enums (10 enums)
+### Enums (11 enums)
 
 1. **Role** : SYSTEM_ADMIN, DIRECTOR, MANAGER, EMPLOYEE
-2. **NotificationType** : INFO, WARNING, ERROR, SUCCESS, SHIFT_ASSIGNED, etc.
-3. **LeaveStatus** : PENDING, APPROVED, REJECTED, CANCELLED
-4. **LeaveType** : PAID_LEAVE, RTT, SICK_LEAVE, UNPAID_LEAVE, PARENTAL_LEAVE, FAMILY_EVENT, OTHER
-5. **ShiftStatus** : DRAFT, PUBLISHED, ARCHIVED
-6. **DayOfWeek** : MONDAY, TUESDAY, ..., SUNDAY
-7. **EmploymentType** : FULL_TIME, PART_TIME, TEMPORARY, INTERN
-8. **ContractType** : CDI, CDD, INTERIM, FREELANCE, APPRENTICE, INTERN
-9. **ScheduleType** : WORK, MEETING, BREAK, TRAINING, REMOTE, ON_CALL, OVERTIME, REST
-10. **ScheduleStatus** : DRAFT, CONFIRMED
+2. **NotificationType** : INFO, SUCCESS, WARNING, ERROR, SYSTEM + PLANNING, LEAVE, TASK, INCIDENT (SP-321)
+3. **NotificationPriority** : LOW, MEDIUM, HIGH, URGENT (SP-321)
+4. **LeaveStatus** : PENDING, APPROVED, REJECTED, CANCELLED
+5. **LeaveType** : PAID_LEAVE, RTT, SICK_LEAVE, UNPAID_LEAVE, PARENTAL_LEAVE, FAMILY_EVENT, OTHER
+6. **ShiftStatus** : DRAFT, PUBLISHED, ARCHIVED
+7. **DayOfWeek** : MONDAY, TUESDAY, ..., SUNDAY
+8. **EmploymentType** : FULL_TIME, PART_TIME, TEMPORARY, INTERN
+9. **ContractType** : CDI, CDD, INTERIM, FREELANCE, APPRENTICE, INTERN
+10. **ScheduleType** : WORK, MEETING, BREAK, TRAINING, REMOTE, ON_CALL, OVERTIME, REST
+11. **ScheduleStatus** : DRAFT, CONFIRMED
 
 Voir `/docs/database-schema.md` pour le détail complet.
 
