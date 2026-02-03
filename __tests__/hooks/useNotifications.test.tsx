@@ -1,7 +1,7 @@
 /**
  * Tests pour le hook useNotifications
  *
- * @ticket SP-323
+ * @ticket SP-323, SP-326
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
@@ -16,12 +16,16 @@ vi.mock('@/lib/actions/notifications', () => ({
   getNotifications: vi.fn(),
   markAsRead: vi.fn(),
   markAllAsRead: vi.fn(),
+  deleteNotification: vi.fn(),
+  deleteAllRead: vi.fn(),
 }))
 
 import {
   getNotifications,
   markAsRead,
   markAllAsRead,
+  deleteNotification,
+  deleteAllRead,
 } from '@/lib/actions/notifications'
 
 // Types
@@ -315,6 +319,184 @@ describe('useNotifications', () => {
 
       expect(result.current.notifications).toEqual([])
       expect(result.current.isError).toBe(false)
+    })
+  })
+
+  // ========================================================================
+  // deleteNotification - SP-326
+  // ========================================================================
+
+  describe('deleteNotification', () => {
+    it('devrait supprimer une notification avec optimistic update', async () => {
+      vi.mocked(getNotifications).mockResolvedValue({
+        success: true,
+        data: {
+          data: mockNotifications,
+          total: 2,
+          page: 1,
+          pageSize: 10,
+          totalPages: 1,
+        },
+      })
+      vi.mocked(deleteNotification).mockResolvedValue({
+        success: true,
+        data: { deleted: true },
+      })
+
+      const { result } = renderHook(() => useNotifications(), { wrapper })
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false)
+      })
+
+      expect(result.current.notifications).toHaveLength(2)
+
+      let success: boolean = false
+      await act(async () => {
+        success = await result.current.deleteNotification('notif-1')
+      })
+
+      expect(success).toBe(true)
+      expect(deleteNotification).toHaveBeenCalledWith('notif-1')
+    })
+
+    it('devrait retourner false en cas d\'erreur', async () => {
+      vi.mocked(getNotifications).mockResolvedValue({
+        success: true,
+        data: {
+          data: mockNotifications,
+          total: 2,
+          page: 1,
+          pageSize: 10,
+          totalPages: 1,
+        },
+      })
+      vi.mocked(deleteNotification).mockResolvedValue({
+        success: false,
+        error: 'Erreur de suppression',
+      })
+
+      const { result } = renderHook(() => useNotifications(), { wrapper })
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false)
+      })
+
+      let success: boolean = true
+      await act(async () => {
+        success = await result.current.deleteNotification('notif-1')
+      })
+
+      expect(success).toBe(false)
+    })
+
+    it('devrait exposer la fonction deleteNotification', async () => {
+      vi.mocked(getNotifications).mockResolvedValue({
+        success: true,
+        data: {
+          data: [],
+          total: 0,
+          page: 1,
+          pageSize: 10,
+          totalPages: 0,
+        },
+      })
+
+      const { result } = renderHook(() => useNotifications(), { wrapper })
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false)
+      })
+
+      expect(typeof result.current.deleteNotification).toBe('function')
+    })
+  })
+
+  // ========================================================================
+  // deleteAllRead - SP-326
+  // ========================================================================
+
+  describe('deleteAllRead', () => {
+    it('devrait supprimer toutes les notifications lues', async () => {
+      vi.mocked(getNotifications).mockResolvedValue({
+        success: true,
+        data: {
+          data: mockNotifications,
+          total: 2,
+          page: 1,
+          pageSize: 10,
+          totalPages: 1,
+        },
+      })
+      vi.mocked(deleteAllRead).mockResolvedValue({
+        success: true,
+        data: { count: 1 },
+      })
+
+      const { result } = renderHook(() => useNotifications(), { wrapper })
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false)
+      })
+
+      let success: boolean = false
+      await act(async () => {
+        success = await result.current.deleteAllRead()
+      })
+
+      expect(success).toBe(true)
+      expect(deleteAllRead).toHaveBeenCalled()
+    })
+
+    it('devrait retourner false en cas d\'erreur', async () => {
+      vi.mocked(getNotifications).mockResolvedValue({
+        success: true,
+        data: {
+          data: mockNotifications,
+          total: 2,
+          page: 1,
+          pageSize: 10,
+          totalPages: 1,
+        },
+      })
+      vi.mocked(deleteAllRead).mockResolvedValue({
+        success: false,
+        error: 'Erreur',
+      })
+
+      const { result } = renderHook(() => useNotifications(), { wrapper })
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false)
+      })
+
+      let success: boolean = true
+      await act(async () => {
+        success = await result.current.deleteAllRead()
+      })
+
+      expect(success).toBe(false)
+    })
+
+    it('devrait exposer la fonction deleteAllRead', async () => {
+      vi.mocked(getNotifications).mockResolvedValue({
+        success: true,
+        data: {
+          data: [],
+          total: 0,
+          page: 1,
+          pageSize: 10,
+          totalPages: 0,
+        },
+      })
+
+      const { result } = renderHook(() => useNotifications(), { wrapper })
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false)
+      })
+
+      expect(typeof result.current.deleteAllRead).toBe('function')
     })
   })
 })
