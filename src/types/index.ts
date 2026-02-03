@@ -40,7 +40,7 @@ export type {
   ScheduleWithRelations,
   LeaveRequestWithRelations,
   TeamWithMembers,
-  NotificationWithUser,
+  // NotificationWithUser exporté depuis './notification' (SP-321)
   SubscriptionWithCompany,
   CreateUserInput,
   UpdateUserInput,
@@ -112,6 +112,35 @@ export {
   INCIDENT_NOTE_VISIBILITY_ICONS,
   INCIDENT_NOTE_VISIBILITY_COLORS,
 } from './incident-note'
+
+// ============================================================================
+// TYPES NOTIFICATIONS (SP-321)
+// ============================================================================
+export type {
+  NotificationType,
+  NotificationPriority,
+  NotificationWithUser,
+  NotificationWithRelations,
+  NotificationListItem,
+  CreateNotificationInput,
+  UpdateNotificationInput,
+  NotificationFilters,
+  PlanningNotificationData,
+  LeaveNotificationData,
+  TaskNotificationData,
+  IncidentNotificationData,
+} from './notification'
+export {
+  NOTIFICATION_TYPE_LABELS,
+  NOTIFICATION_PRIORITY_LABELS,
+  NOTIFICATION_TYPE_COLORS,
+  NOTIFICATION_PRIORITY_COLORS,
+  NOTIFICATION_TYPE_ICONS,
+  NOTIFICATION_PRIORITY_ICONS,
+  NOTIFICATION_TYPE_TO_RELATED_TYPE,
+  notificationTypeOptions,
+  notificationPriorityOptions,
+} from './notification'
 
 // ============================================================================
 // TYPES EXPORT RGPD (SP-278)
