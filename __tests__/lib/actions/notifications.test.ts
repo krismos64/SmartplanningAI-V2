@@ -54,6 +54,11 @@ vi.mock('next/cache', () => ({
   revalidatePath: vi.fn(),
 }))
 
+// Mock SSE emitter (SP-327)
+vi.mock('@/lib/notifications', () => ({
+  emitNotification: vi.fn(),
+}))
+
 // Import après les mocks
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/lib/auth'
@@ -380,6 +385,12 @@ describe('Notification Server Actions - SP-325', () => {
         { id: 'user-3' },
       ] as never)
       mockPrisma.notification.createMany.mockResolvedValue({ count: 3 })
+      // Mock pour récupérer les notifications créées (SSE SP-327)
+      mockPrisma.notification.findMany.mockResolvedValue([
+        { id: 'notif-1', userId: 'user-1' },
+        { id: 'notif-2', userId: 'user-2' },
+        { id: 'notif-3', userId: 'user-3' },
+      ] as never)
 
       const result = await createSystemNotification(
         'company-123',
