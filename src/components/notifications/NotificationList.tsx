@@ -23,23 +23,18 @@ interface NotificationListProps {
 }
 
 export function NotificationList({ onClose }: NotificationListProps) {
-  const {
-    notifications,
-    isLoading,
-    isError,
-    markAsRead,
-    markAllAsRead,
-  } = useNotifications()
+  const { notifications, isLoading, isError, markAsRead, markAllAsRead } =
+    useNotifications()
 
   // Compter les non lues
   const unreadCount = notifications.filter((n) => !n.isRead).length
 
-  const handleMarkAsRead = async (id: string) => {
-    await markAsRead(id)
+  const handleMarkAsRead = (id: string) => {
+    void markAsRead(id)
   }
 
-  const handleMarkAllAsRead = async () => {
-    await markAllAsRead()
+  const handleMarkAllAsRead = () => {
+    void markAllAsRead()
   }
 
   // État de chargement
@@ -92,7 +87,10 @@ export function NotificationList({ onClose }: NotificationListProps) {
       )}
 
       {/* Liste scrollable */}
-      <ScrollArea className="max-h-[300px]" data-testid="notification-scroll-area">
+      <ScrollArea
+        className="max-h-[300px]"
+        data-testid="notification-scroll-area"
+      >
         <div className="divide-y">
           {notifications.map((notification) => (
             <NotificationItem

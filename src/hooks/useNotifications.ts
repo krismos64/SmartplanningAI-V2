@@ -59,17 +59,16 @@ async function fetchNotifications(): Promise<NotificationListItem[]> {
  * await markAsRead(notificationId)
  */
 export function useNotifications() {
-  const { data, error, isLoading, isValidating, mutate } = useSWR<NotificationListItem[], Error>(
-    NOTIFICATIONS_KEY,
-    fetchNotifications,
-    {
-      refreshInterval: REFRESH_INTERVAL,
-      revalidateOnFocus: true,
-      revalidateOnReconnect: true,
-      dedupingInterval: 5000, // Évite les requêtes dupliquées pendant 5s
-      fallbackData: [], // Valeur initiale pendant le premier chargement
-    }
-  )
+  const { data, error, isLoading, isValidating, mutate } = useSWR<
+    NotificationListItem[],
+    Error
+  >(NOTIFICATIONS_KEY, fetchNotifications, {
+    refreshInterval: REFRESH_INTERVAL,
+    revalidateOnFocus: true,
+    revalidateOnReconnect: true,
+    dedupingInterval: 5000, // Évite les requêtes dupliquées pendant 5s
+    fallbackData: [], // Valeur initiale pendant le premier chargement
+  })
 
   /**
    * Marque une notification comme lue avec optimistic update
@@ -95,7 +94,8 @@ export function useNotifications() {
       if (wasUnread) {
         await globalMutate(
           NOTIFICATIONS_COUNT_KEY,
-          (currentCount: number | undefined) => Math.max(0, (currentCount ?? 1) - 1),
+          (currentCount: number | undefined) =>
+            Math.max(0, (currentCount ?? 1) - 1),
           { revalidate: false }
         )
       }
@@ -126,7 +126,11 @@ export function useNotifications() {
    */
   const markAllAsRead = async (): Promise<boolean> => {
     // Optimistic update local
-    const optimisticData = data?.map((n) => ({ ...n, isRead: true, readAt: new Date() }))
+    const optimisticData = data?.map((n) => ({
+      ...n,
+      isRead: true,
+      readAt: new Date(),
+    }))
 
     try {
       // Mettre à jour le cache local immédiatement
