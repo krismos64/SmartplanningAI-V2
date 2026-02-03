@@ -1,0 +1,896 @@
+/**
+ * Server Actions pour le système de notifications
+ *
+ * @description Factory functions pour créer des notifications typées
+ * par domaine métier (planning, congés, tâches, incidents, système).
+ *
+ * Points d'intégration :
+ * - Planning : createSchedule, updateSchedule, deleteSchedule
+ * - Congés : createLeaveRequest, reviewLeaveRequest
+ * - Tâches : (optionnel, notes perso privées)
+ * - Incidents : createIncidentNote (selon visibility)
+ * - Système : notifications bulk admin
+ *
+ * @ticket SP-325
+ */
+
+'use server'
+
+import { revalidatePath } from 'next/cache'
+import { prisma } from '@/lib/prisma'
+import {
+  UserRole,
+  NotificationType,
+  NotificationPriority,
+  type Notification,
+} from '@prisma/client'
+import { auth } from '@/lib/auth'
+import {
+  validateData,
+  getPaginationParams,
+  formatPaginatedResult,
+  handlePrismaError,
+  canAccessCompanyEntity,
+} from './crud-helpers'
+import {
+  notificationFiltersSchema,
+  planningNotificationActionSchema,
+  leaveNotificationActionSchema,
+  type PlanningNotificationAction,
+  type LeaveNotificationAction,
+} from '@/lib/validations/notification'
+import type { CrudActionResult, ListQueryParams, PaginatedResult } from '@/types'
+import type {
+  NotificationListItem,
+  NotificationFilters,
+} from '@/types/notification'
+
+// ============================================================================
+// Types
+// ============================================================================
+
+interface AuthenticatedUser {
+  id: string
+  role: UserRole
+  companyId: string | null
+  employeeId: string | null
+}
+
+type AccessCheckResult =
+  | { success: true; user: AuthenticatedUser }
+  | { success: false; error: string }
+
+/** Résultat de création de notification (non-bloquant) */
+type NotificationResult =
+  | { success: true; notification: Notification }
+  | { success: false; error: string }
+
+// ============================================================================
+// Auth + RBAC
+// ============================================================================
+
+const ALL_ROLES: UserRole[] = [
+  'SYSTEM_ADMIN',
+  'DIRECTOR',
+  'MANAGER',
+  'EMPLOYEE',
+]
+
+/**
+ * Récupère l'utilisateur authentifié avec vérification des rôles
+ */
+async function getAuthenticatedUser(
+  allowedRoles: UserRole[] = ALL_ROLES
+): Promise<AccessCheckResult> {
+  try {
+    const session = await auth()
+
+    if (!session?.user?.id) {
+      return {
+        success: false,
+        error: 'Vous devez être connecté pour effectuer cette action',
+      }
+    }
+
+    const role = session.user.role
+    if (!allowedRoles.includes(role)) {
+      return {
+        success: false,
+        error: "Vous n'avez pas les permissions nécessaires",
+      }
+    }
+
+    const userId = session.user.id
+    const companyId = session.user.companyId ?? null
+
+    let employeeId: string | null = null
+
+    // Récupérer le contexte employé si existant
+    const employee = await prisma.employee.findUnique({
+      where: { userId },
+      select: { id: true },
+    })
+
+    if (employee) {
+      employeeId = employee.id
+    }
+
+    return {
+      success: true,
+      user: { id: userId, role, companyId, employeeId },
+    }
+  } catch (error) {
+    console.error('[getAuthenticatedUser] Error:', error)
+    return { success: false, error: 'Erreur de vérification des permissions' }
+  }
+}
+
+// ============================================================================
+// Factory Functions - Planning (SP-325)
+// ============================================================================
+
+/**
+ * Crée une notification pour un événement de planning
+ *
+ * @param scheduleId - ID du planning concerné
+ * @param employeeUserId - ID de l'utilisateur employé destinataire
+ * @param action - Type d'action (created, updated, deleted)
+ * @returns Résultat de création (non-bloquant)
+ *
+ * @example
+ * // Dans createSchedule
+ * createPlanningNotification(schedule.id, employee.userId, 'created')
+ *   .catch(console.error) // Non-bloquant
+ */
+export async function createPlanningNotification(
+  scheduleId: string,
+  employeeUserId: string,
+  action: PlanningNotificationAction
+): Promise<NotificationResult> {
+  try {
+    // Validation de l'action
+    const actionValidation = planningNotificationActionSchema.safeParse(action)
+    if (!actionValidation.success) {
+      return { success: false, error: 'Action de planning invalide' }
+    }
+
+    // Récupérer les infos du planning
+    const schedule = await prisma.schedule.findUnique({
+      where: { id: scheduleId },
+      select: {
+        id: true,
+        startTime: true,
+        endTime: true,
+        companyId: true,
+        employee: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
+    })
+
+    if (!schedule) {
+      return { success: false, error: 'Planning non trouvé' }
+    }
+
+    // Récupérer l'utilisateur destinataire
+    const user = await prisma.user.findUnique({
+      where: { id: employeeUserId },
+      select: { id: true, companyId: true },
+    })
+
+    if (!user || !user.companyId) {
+      return { success: false, error: 'Utilisateur non trouvé' }
+    }
+
+    // Construire le message selon l'action
+    const actionMessages: Record<PlanningNotificationAction, { title: string; message: string }> = {
+      created: {
+        title: 'Nouveau planning assigné',
+        message: `Un nouveau planning a été créé pour le ${formatDate(schedule.startTime)}.`,
+      },
+      updated: {
+        title: 'Planning modifié',
+        message: `Votre planning du ${formatDate(schedule.startTime)} a été modifié.`,
+      },
+      deleted: {
+        title: 'Planning supprimé',
+        message: `Votre planning du ${formatDate(schedule.startTime)} a été supprimé.`,
+      },
+    }
+
+    const { title, message } = actionMessages[action]
+
+    // Déterminer la priorité selon l'action
+    const priority: NotificationPriority =
+      action === 'deleted' ? 'HIGH' : action === 'updated' ? 'MEDIUM' : 'LOW'
+
+    // Créer la notification
+    const notification = await prisma.notification.create({
+      data: {
+        title,
+        message,
+        type: NotificationType.PLANNING,
+        priority,
+        relatedType: 'Schedule',
+        relatedId: scheduleId,
+        actionUrl: '/app/dashboard/schedule',
+        userId: employeeUserId,
+        companyId: user.companyId,
+      },
+    })
+
+    return { success: true, notification }
+  } catch (error) {
+    console.error('[createPlanningNotification] Error:', error)
+    return { success: false, error: 'Erreur lors de la création de la notification' }
+  }
+}
+
+// ============================================================================
+// Factory Functions - Leave (SP-325)
+// ============================================================================
+
+/**
+ * Crée une notification pour un événement de congé
+ *
+ * @param leaveRequestId - ID de la demande de congé
+ * @param targetUserId - ID de l'utilisateur destinataire
+ * @param action - Type d'action (requested, approved, rejected)
+ * @returns Résultat de création (non-bloquant)
+ *
+ * @example
+ * // Dans reviewLeaveRequest (approbation)
+ * createLeaveNotification(leaveRequest.id, employee.userId, 'approved')
+ *   .catch(console.error)
+ */
+export async function createLeaveNotification(
+  leaveRequestId: string,
+  targetUserId: string,
+  action: LeaveNotificationAction
+): Promise<NotificationResult> {
+  try {
+    // Validation de l'action
+    const actionValidation = leaveNotificationActionSchema.safeParse(action)
+    if (!actionValidation.success) {
+      return { success: false, error: 'Action de congé invalide' }
+    }
+
+    // Récupérer les infos de la demande
+    const leaveRequest = await prisma.leaveRequest.findUnique({
+      where: { id: leaveRequestId },
+      select: {
+        id: true,
+        type: true,
+        startDate: true,
+        endDate: true,
+        companyId: true,
+        employee: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
+    })
+
+    if (!leaveRequest) {
+      return { success: false, error: 'Demande de congé non trouvée' }
+    }
+
+    // Récupérer l'utilisateur destinataire
+    const user = await prisma.user.findUnique({
+      where: { id: targetUserId },
+      select: { id: true, companyId: true },
+    })
+
+    if (!user || !user.companyId) {
+      return { success: false, error: 'Utilisateur non trouvé' }
+    }
+
+    // Construire le message selon l'action
+    const employeeName = `${leaveRequest.employee.firstName} ${leaveRequest.employee.lastName}`
+    const dateRange = `du ${formatDate(leaveRequest.startDate)} au ${formatDate(leaveRequest.endDate)}`
+
+    const actionMessages: Record<LeaveNotificationAction, { title: string; message: string; priority: NotificationPriority }> = {
+      requested: {
+        title: 'Nouvelle demande de congé',
+        message: `${employeeName} a déposé une demande de congé ${dateRange}.`,
+        priority: 'MEDIUM',
+      },
+      approved: {
+        title: 'Congé approuvé',
+        message: `Votre demande de congé ${dateRange} a été approuvée.`,
+        priority: 'LOW',
+      },
+      rejected: {
+        title: 'Congé refusé',
+        message: `Votre demande de congé ${dateRange} a été refusée.`,
+        priority: 'HIGH',
+      },
+    }
+
+    const { title, message, priority } = actionMessages[action]
+
+    // Créer la notification
+    const notification = await prisma.notification.create({
+      data: {
+        title,
+        message,
+        type: NotificationType.LEAVE,
+        priority,
+        relatedType: 'LeaveRequest',
+        relatedId: leaveRequestId,
+        actionUrl: '/app/dashboard/leaves',
+        userId: targetUserId,
+        companyId: user.companyId,
+      },
+    })
+
+    return { success: true, notification }
+  } catch (error) {
+    console.error('[createLeaveNotification] Error:', error)
+    return { success: false, error: 'Erreur lors de la création de la notification' }
+  }
+}
+
+// ============================================================================
+// Factory Functions - Task (SP-325)
+// ============================================================================
+
+/**
+ * Crée une notification pour une tâche personnelle
+ *
+ * Note: Les tâches personnelles sont privées, cette fonction est optionnelle
+ * et pourrait être utilisée pour des rappels de deadline.
+ *
+ * @param taskId - ID de la tâche
+ * @param userId - ID de l'utilisateur propriétaire
+ * @param action - Type d'action (reminder)
+ * @returns Résultat de création (non-bloquant)
+ */
+export async function createTaskNotification(
+  taskId: string,
+  userId: string,
+  action: 'reminder' | 'overdue'
+): Promise<NotificationResult> {
+  try {
+    // Récupérer les infos de la tâche
+    const task = await prisma.personalTask.findUnique({
+      where: { id: taskId },
+      select: {
+        id: true,
+        title: true,
+        dueDate: true,
+        userId: true,
+        user: {
+          select: { companyId: true },
+        },
+      },
+    })
+
+    if (!task) {
+      return { success: false, error: 'Tâche non trouvée' }
+    }
+
+    // Vérifier que c'est bien la tâche de l'utilisateur (privé)
+    if (task.userId !== userId) {
+      return { success: false, error: 'Accès non autorisé' }
+    }
+
+    if (!task.user.companyId) {
+      return { success: false, error: 'Utilisateur sans entreprise' }
+    }
+
+    // Construire le message selon l'action
+    const actionMessages: Record<'reminder' | 'overdue', { title: string; message: string; priority: NotificationPriority }> = {
+      reminder: {
+        title: 'Rappel de tâche',
+        message: `La tâche "${task.title}" arrive à échéance${task.dueDate ? ` le ${formatDate(task.dueDate)}` : ''}.`,
+        priority: 'MEDIUM',
+      },
+      overdue: {
+        title: 'Tâche en retard',
+        message: `La tâche "${task.title}" est en retard.`,
+        priority: 'HIGH',
+      },
+    }
+
+    const { title, message, priority } = actionMessages[action]
+
+    // Créer la notification
+    const notification = await prisma.notification.create({
+      data: {
+        title,
+        message,
+        type: NotificationType.TASK,
+        priority,
+        relatedType: 'PersonalTask',
+        relatedId: taskId,
+        actionUrl: '/app/dashboard/tasks',
+        userId,
+        companyId: task.user.companyId,
+      },
+    })
+
+    return { success: true, notification }
+  } catch (error) {
+    console.error('[createTaskNotification] Error:', error)
+    return { success: false, error: 'Erreur lors de la création de la notification' }
+  }
+}
+
+// ============================================================================
+// Factory Functions - Incident (SP-325)
+// ============================================================================
+
+/**
+ * Crée une notification pour une note d'incident
+ *
+ * @param incidentNoteId - ID de la note d'incident
+ * @param targetUserId - ID de l'utilisateur destinataire
+ * @param action - Type d'action (created)
+ * @returns Résultat de création (non-bloquant)
+ *
+ * @example
+ * // Dans createIncidentNote (si visibility = ALL)
+ * createIncidentNotification(note.id, subject.userId, 'created')
+ *   .catch(console.error)
+ */
+export async function createIncidentNotification(
+  incidentNoteId: string,
+  targetUserId: string,
+  action: 'created' | 'updated'
+): Promise<NotificationResult> {
+  try {
+    // Récupérer les infos de la note
+    const incidentNote = await prisma.incidentNote.findUnique({
+      where: { id: incidentNoteId },
+      select: {
+        id: true,
+        title: true,
+        date: true,
+        visibility: true,
+        companyId: true,
+        subject: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
+    })
+
+    if (!incidentNote) {
+      return { success: false, error: 'Note d\'incident non trouvée' }
+    }
+
+    // Récupérer l'utilisateur destinataire
+    const user = await prisma.user.findUnique({
+      where: { id: targetUserId },
+      select: { id: true, companyId: true },
+    })
+
+    if (!user || !user.companyId) {
+      return { success: false, error: 'Utilisateur non trouvé' }
+    }
+
+    // Construire le message
+    const actionMessages: Record<'created' | 'updated', { title: string; message: string }> = {
+      created: {
+        title: 'Nouvelle note d\'incident',
+        message: `Une note d'incident "${incidentNote.title}" a été créée vous concernant.`,
+      },
+      updated: {
+        title: 'Note d\'incident modifiée',
+        message: `La note d'incident "${incidentNote.title}" a été mise à jour.`,
+      },
+    }
+
+    const { title, message } = actionMessages[action]
+
+    // Créer la notification
+    const notification = await prisma.notification.create({
+      data: {
+        title,
+        message,
+        type: NotificationType.INCIDENT,
+        priority: 'HIGH',
+        relatedType: 'IncidentNote',
+        relatedId: incidentNoteId,
+        actionUrl: '/app/dashboard/incidents',
+        userId: targetUserId,
+        companyId: user.companyId,
+      },
+    })
+
+    return { success: true, notification }
+  } catch (error) {
+    console.error('[createIncidentNotification] Error:', error)
+    return { success: false, error: 'Erreur lors de la création de la notification' }
+  }
+}
+
+// ============================================================================
+// Factory Functions - System (SP-325)
+// ============================================================================
+
+/**
+ * Crée une notification système pour tous les utilisateurs d'une entreprise
+ *
+ * @param companyId - ID de l'entreprise
+ * @param title - Titre de la notification
+ * @param message - Message de la notification
+ * @param priority - Priorité (défaut: MEDIUM)
+ * @param actionUrl - URL d'action optionnelle
+ * @returns Résultat avec nombre de notifications créées
+ *
+ * @example
+ * // Annonce admin
+ * await createSystemNotification(
+ *   companyId,
+ *   'Maintenance planifiée',
+ *   'Une maintenance est prévue le 15 février de 2h à 4h.',
+ *   'HIGH'
+ * )
+ */
+export async function createSystemNotification(
+  companyId: string,
+  title: string,
+  message: string,
+  priority: NotificationPriority = 'MEDIUM',
+  actionUrl?: string
+): Promise<CrudActionResult<{ count: number }>> {
+  try {
+    // Vérifier les permissions (DIRECTOR+ ou SYSTEM_ADMIN)
+    const authResult = await getAuthenticatedUser(['SYSTEM_ADMIN', 'DIRECTOR'])
+    if (!authResult.success) {
+      return { success: false, error: authResult.error }
+    }
+
+    const { user } = authResult
+
+    // Vérifier l'accès à l'entreprise
+    if (!canAccessCompanyEntity(user.companyId, companyId)) {
+      return { success: false, error: "Vous n'avez pas accès à cette entreprise" }
+    }
+
+    // Validation des données
+    if (!title || title.length > 200) {
+      return { success: false, error: 'Titre invalide (max 200 caractères)' }
+    }
+    if (!message || message.length > 2000) {
+      return { success: false, error: 'Message invalide (max 2000 caractères)' }
+    }
+
+    // Récupérer tous les utilisateurs de l'entreprise
+    const users = await prisma.user.findMany({
+      where: { companyId },
+      select: { id: true },
+    })
+
+    if (users.length === 0) {
+      return { success: true, data: { count: 0 } }
+    }
+
+    // Créer les notifications en bulk
+    const notifications = await prisma.notification.createMany({
+      data: users.map((u) => ({
+        title,
+        message,
+        type: NotificationType.SYSTEM,
+        priority,
+        actionUrl: actionUrl ?? null,
+        userId: u.id,
+        companyId,
+      })),
+    })
+
+    revalidatePath('/app/dashboard')
+
+    return { success: true, data: { count: notifications.count } }
+  } catch (error) {
+    console.error('[createSystemNotification] Error:', error)
+    const { error: errorMessage } = handlePrismaError(error)
+    return { success: false, error: errorMessage }
+  }
+}
+
+// ============================================================================
+// CRUD Operations
+// ============================================================================
+
+/**
+ * Récupère les notifications de l'utilisateur connecté
+ *
+ * @param filters - Filtres optionnels (type, priority, isRead, dates)
+ * @param params - Paramètres de pagination
+ * @returns Liste paginée des notifications
+ */
+export async function getNotifications(
+  filters?: NotificationFilters,
+  params?: ListQueryParams
+): Promise<CrudActionResult<PaginatedResult<NotificationListItem>>> {
+  try {
+    const authResult = await getAuthenticatedUser()
+    if (!authResult.success) {
+      return { success: false, error: authResult.error }
+    }
+
+    const { user } = authResult
+
+    // Validation des filtres
+    if (filters) {
+      const validation = validateData(notificationFiltersSchema, filters)
+      if (!validation.success) {
+        return { success: false, error: validation.error }
+      }
+    }
+
+    // Construction du WHERE
+    const where: Record<string, unknown> = {
+      userId: user.id,
+    }
+
+    if (filters?.type) {
+      where.type = filters.type
+    }
+    if (filters?.priority) {
+      where.priority = filters.priority
+    }
+    if (typeof filters?.isRead === 'boolean') {
+      where.isRead = filters.isRead
+    }
+    if (filters?.relatedType) {
+      where.relatedType = filters.relatedType
+    }
+    if (filters?.startDate || filters?.endDate) {
+      where.createdAt = {}
+      if (filters.startDate) {
+        (where.createdAt as Record<string, Date>).gte = filters.startDate
+      }
+      if (filters.endDate) {
+        (where.createdAt as Record<string, Date>).lte = filters.endDate
+      }
+    }
+
+    // Pagination
+    const queryParams = params ?? { page: 1, pageSize: 20 }
+    const paginationParams = getPaginationParams(queryParams)
+
+    // Requêtes parallèles
+    const [notifications, total] = await Promise.all([
+      prisma.notification.findMany({
+        where,
+        select: {
+          id: true,
+          title: true,
+          message: true,
+          type: true,
+          priority: true,
+          actionUrl: true,
+          relatedType: true,
+          relatedId: true,
+          isRead: true,
+          readAt: true,
+          createdAt: true,
+        },
+        orderBy: { createdAt: 'desc' },
+        ...paginationParams,
+      }),
+      prisma.notification.count({ where }),
+    ])
+
+    return {
+      success: true,
+      data: formatPaginatedResult(notifications, total, queryParams),
+    }
+  } catch (error) {
+    console.error('[getNotifications] Error:', error)
+    const { error: errorMessage } = handlePrismaError(error)
+    return { success: false, error: errorMessage }
+  }
+}
+
+/**
+ * Récupère le nombre de notifications non lues
+ *
+ * @returns Nombre de notifications non lues
+ */
+export async function getUnreadCount(): Promise<CrudActionResult<number>> {
+  try {
+    const authResult = await getAuthenticatedUser()
+    if (!authResult.success) {
+      return { success: false, error: authResult.error }
+    }
+
+    const count = await prisma.notification.count({
+      where: {
+        userId: authResult.user.id,
+        isRead: false,
+      },
+    })
+
+    return { success: true, data: count }
+  } catch (error) {
+    console.error('[getUnreadCount] Error:', error)
+    return { success: false, error: 'Erreur lors du comptage des notifications' }
+  }
+}
+
+/**
+ * Marque une notification comme lue
+ *
+ * @param notificationId - ID de la notification
+ * @returns Notification mise à jour
+ */
+export async function markAsRead(
+  notificationId: string
+): Promise<CrudActionResult<Notification>> {
+  try {
+    const authResult = await getAuthenticatedUser()
+    if (!authResult.success) {
+      return { success: false, error: authResult.error }
+    }
+
+    // Vérifier que la notification appartient à l'utilisateur
+    const notification = await prisma.notification.findUnique({
+      where: { id: notificationId },
+      select: { userId: true },
+    })
+
+    if (!notification) {
+      return { success: false, error: 'Notification non trouvée' }
+    }
+
+    if (notification.userId !== authResult.user.id) {
+      return { success: false, error: 'Accès non autorisé' }
+    }
+
+    // Mettre à jour
+    const updated = await prisma.notification.update({
+      where: { id: notificationId },
+      data: {
+        isRead: true,
+        readAt: new Date(),
+      },
+    })
+
+    revalidatePath('/app/dashboard')
+
+    return { success: true, data: updated }
+  } catch (error) {
+    console.error('[markAsRead] Error:', error)
+    const { error: errorMessage } = handlePrismaError(error)
+    return { success: false, error: errorMessage }
+  }
+}
+
+/**
+ * Marque toutes les notifications comme lues
+ *
+ * @returns Nombre de notifications mises à jour
+ */
+export async function markAllAsRead(): Promise<CrudActionResult<{ count: number }>> {
+  try {
+    const authResult = await getAuthenticatedUser()
+    if (!authResult.success) {
+      return { success: false, error: authResult.error }
+    }
+
+    const result = await prisma.notification.updateMany({
+      where: {
+        userId: authResult.user.id,
+        isRead: false,
+      },
+      data: {
+        isRead: true,
+        readAt: new Date(),
+      },
+    })
+
+    revalidatePath('/app/dashboard')
+
+    return { success: true, data: { count: result.count } }
+  } catch (error) {
+    console.error('[markAllAsRead] Error:', error)
+    const { error: errorMessage } = handlePrismaError(error)
+    return { success: false, error: errorMessage }
+  }
+}
+
+/**
+ * Supprime une notification
+ *
+ * @param notificationId - ID de la notification
+ * @returns Succès ou erreur
+ */
+export async function deleteNotification(
+  notificationId: string
+): Promise<CrudActionResult<{ deleted: true }>> {
+  try {
+    const authResult = await getAuthenticatedUser()
+    if (!authResult.success) {
+      return { success: false, error: authResult.error }
+    }
+
+    // Vérifier que la notification appartient à l'utilisateur
+    const notification = await prisma.notification.findUnique({
+      where: { id: notificationId },
+      select: { userId: true },
+    })
+
+    if (!notification) {
+      return { success: false, error: 'Notification non trouvée' }
+    }
+
+    if (notification.userId !== authResult.user.id) {
+      return { success: false, error: 'Accès non autorisé' }
+    }
+
+    // Supprimer
+    await prisma.notification.delete({
+      where: { id: notificationId },
+    })
+
+    revalidatePath('/app/dashboard')
+
+    return { success: true, data: { deleted: true } }
+  } catch (error) {
+    console.error('[deleteNotification] Error:', error)
+    const { error: errorMessage } = handlePrismaError(error)
+    return { success: false, error: errorMessage }
+  }
+}
+
+/**
+ * Supprime les notifications lues plus anciennes que X jours
+ *
+ * @param daysOld - Âge minimum en jours (défaut: 30)
+ * @returns Nombre de notifications supprimées
+ */
+export async function cleanupOldNotifications(
+  daysOld: number = 30
+): Promise<CrudActionResult<{ count: number }>> {
+  try {
+    // Réservé aux admins
+    const authResult = await getAuthenticatedUser(['SYSTEM_ADMIN'])
+    if (!authResult.success) {
+      return { success: false, error: authResult.error }
+    }
+
+    const cutoffDate = new Date()
+    cutoffDate.setDate(cutoffDate.getDate() - daysOld)
+
+    const result = await prisma.notification.deleteMany({
+      where: {
+        isRead: true,
+        createdAt: { lt: cutoffDate },
+      },
+    })
+
+    return { success: true, data: { count: result.count } }
+  } catch (error) {
+    console.error('[cleanupOldNotifications] Error:', error)
+    const { error: errorMessage } = handlePrismaError(error)
+    return { success: false, error: errorMessage }
+  }
+}
+
+// ============================================================================
+// Helpers
+// ============================================================================
+
+/**
+ * Formate une date en français (DD/MM/YYYY)
+ */
+function formatDate(date: Date | string): string {
+  const dateObj = typeof date === 'string' ? new Date(date) : date
+  return new Intl.DateTimeFormat('fr-FR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  }).format(dateObj)
+}
