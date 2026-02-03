@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
 import { signOut } from 'next-auth/react'
-import { Menu, Bell, LogOut, User, Settings, Search } from 'lucide-react'
+import { Menu, LogOut, User, Settings, Search } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
@@ -17,9 +17,9 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { Badge } from '@/components/ui/badge'
 import { useSidebar } from '@/components/ui/sidebar'
 import { useCommandPalette } from '@/components/providers/command-palette-provider'
+import { NotificationBell } from '@/components/notifications'
 
 // Dynamic import du composant Lottie pour éviter les erreurs SSR
 const Lottie = dynamic(() => import('lottie-react'), { ssr: false })
@@ -34,10 +34,9 @@ interface HeaderProps {
     role: UserRole
     companyName?: string
   }
-  notificationsCount?: number
 }
 
-export function Header({ user, notificationsCount = 0 }: HeaderProps) {
+export function Header({ user }: HeaderProps) {
   const { toggleSidebar } = useSidebar()
   const { setOpen: openCommandPalette } = useCommandPalette()
   // Type object pour les données d'animation Lottie
@@ -127,20 +126,8 @@ export function Header({ user, notificationsCount = 0 }: HeaderProps) {
           {/* Theme Toggle (SP-265) */}
           <ThemeToggle />
 
-          {/* Notifications */}
-          <Button variant="ghost" size="icon" className="relative" asChild>
-            <Link href="/notifications">
-              <Bell className="h-5 w-5" />
-              {notificationsCount > 0 && (
-                <Badge
-                  variant="destructive"
-                  className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center p-0 text-xs"
-                >
-                  {notificationsCount > 9 ? '9+' : notificationsCount}
-                </Badge>
-              )}
-            </Link>
-          </Button>
+          {/* Notifications - SP-322 */}
+          <NotificationBell />
 
           {/* User dropdown menu */}
           <DropdownMenu>
