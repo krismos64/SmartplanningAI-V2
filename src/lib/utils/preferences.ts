@@ -165,13 +165,24 @@ function parseNotificationChannelPreferences(
 // ============================================================================
 
 /**
+ * Type pour les préférences partielles imbriquées
+ */
+type DeepPartialUserPreferences = {
+  display?: Partial<DisplayPreferences>
+  notifications?: {
+    email?: Partial<NotificationChannelPreferences>
+    inApp?: Partial<NotificationChannelPreferences>
+  }
+}
+
+/**
  * Fusionne des préférences partielles avec les valeurs par défaut
  *
  * @param partial - Préférences partielles (peuvent manquer des champs)
  * @returns Préférences complètes avec tous les champs
  */
 export function mergePreferencesWithDefaults(
-  partial: Partial<UserPreferences>
+  partial: DeepPartialUserPreferences
 ): UserPreferences {
   return {
     display: {
