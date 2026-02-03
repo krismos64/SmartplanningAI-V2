@@ -882,6 +882,38 @@ export async function deleteNotification(
 }
 
 /**
+ * Supprime toutes les notifications lues de l'utilisateur
+ *
+ * @ticket SP-326
+ * @returns Nombre de notifications supprimées
+ */
+export async function deleteAllRead(): Promise<
+  CrudActionResult<{ count: number }>
+> {
+  try {
+    const authResult = await getAuthenticatedUser()
+    if (!authResult.success) {
+      return { success: false, error: authResult.error }
+    }
+
+    const result = await prisma.notification.deleteMany({
+      where: {
+        userId: authResult.user.id,
+        isRead: true,
+      },
+    })
+
+    revalidatePath('/app/dashboard')
+
+    return { success: true, data: { count: result.count } }
+  } catch (error) {
+    console.error('[deleteAllRead] Error:', error)
+    const { error: errorMessage } = handlePrismaError(error)
+    return { success: false, error: errorMessage }
+  }
+}
+
+/**
  * Supprime les notifications lues plus anciennes que X jours
  *
  * @param daysOld - Âge minimum en jours (défaut: 30)

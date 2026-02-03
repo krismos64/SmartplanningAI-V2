@@ -12,6 +12,8 @@ import {
   getNotifications,
   markAsRead as markAsReadAction,
   markAllAsRead as markAllAsReadAction,
+  deleteNotification as deleteNotificationAction,
+  deleteAllRead as deleteAllReadAction,
 } from '@/lib/actions/notifications'
 import type { NotificationListItem } from '@/types/notification'
 
@@ -158,6 +160,97 @@ export function useNotifications() {
     }
   }
 
+  /**
+   * Supprime une notification avec optimistic update
+   *
+   * @ticket SP-326
+   * @param notificationId - ID de la notification à supprimer
+   * @returns Promise<boolean> - true si succès
+   */
+  const deleteNotification = async (
+    notificationId: string
+  ): Promise<boolean> => {
+    // Sauvegarder l'état actuel pour rollback
+    const previousData = data
+
+    // Trouver la notification pour savoir si elle était non lue
+    const notification = data?.find((n) => n.id === notificationId)
+    const wasUnread = notification && !notification.isRead
+
+    try {
+      // Optimistic update : retirer de la liste
+      await mutate(
+        data?.filter((n) => n.id !== notificationId),
+        { revalidate: false }
+      )
+
+      // Décrémenter le compteur si c'était une non-lue
+      if (wasUnread) {
+        await globalMutate(
+          NOTIFICATIONS_COUNT_KEY,
+          (currentCount: number | undefined) =>
+            Math.max(0, (currentCount ?? 1) - 1),
+          { revalidate: false }
+        )
+      }
+
+      // Appeler le serveur
+      const result = await deleteNotificationAction(notificationId)
+
+      if (!result.success) {
+        // Rollback en cas d'erreur
+        await mutate(previousData, { revalidate: false })
+        if (wasUnread) {
+          await globalMutate(NOTIFICATIONS_COUNT_KEY)
+        }
+        return false
+      }
+
+      return true
+    } catch {
+      // Rollback en cas d'erreur
+      await mutate(previousData, { revalidate: false })
+      if (wasUnread) {
+        await globalMutate(NOTIFICATIONS_COUNT_KEY)
+      }
+      return false
+    }
+  }
+
+  /**
+   * Supprime toutes les notifications lues avec optimistic update
+   *
+   * @ticket SP-326
+   * @returns Promise<boolean> - true si succès
+   */
+  const deleteAllRead = async (): Promise<boolean> => {
+    // Sauvegarder l'état actuel pour rollback
+    const previousData = data
+
+    try {
+      // Optimistic update : garder seulement les non-lues
+      await mutate(
+        data?.filter((n) => !n.isRead),
+        { revalidate: false }
+      )
+
+      // Appeler le serveur
+      const result = await deleteAllReadAction()
+
+      if (!result.success) {
+        // Rollback en cas d'erreur
+        await mutate(previousData, { revalidate: false })
+        return false
+      }
+
+      return true
+    } catch {
+      // Rollback en cas d'erreur
+      await mutate(previousData, { revalidate: false })
+      return false
+    }
+  }
+
   return {
     /** Liste des notifications */
     notifications: data ?? [],
@@ -173,6 +266,10 @@ export function useNotifications() {
     markAsRead,
     /** Fonction pour marquer toutes les notifications comme lues */
     markAllAsRead,
+    /** Fonction pour supprimer une notification (SP-326) */
+    deleteNotification,
+    /** Fonction pour supprimer toutes les notifications lues (SP-326) */
+    deleteAllRead,
     /** Fonction pour forcer un refresh de la liste */
     mutate,
   }

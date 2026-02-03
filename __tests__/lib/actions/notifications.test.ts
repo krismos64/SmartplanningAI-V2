@@ -68,6 +68,7 @@ import {
   markAsRead,
   markAllAsRead,
   deleteNotification,
+  deleteAllRead,
   cleanupOldNotifications,
 } from '@/lib/actions/notifications'
 
@@ -604,6 +605,94 @@ describe('Notification Server Actions - SP-325', () => {
       expect(result.success).toBe(false)
       if (!result.success) {
         expect(result.error).toContain('non trouvée')
+      }
+    })
+
+    it('should return error when notification belongs to other user', async () => {
+      setupAuthMock('EMPLOYEE', 'user-123')
+
+      mockPrisma.notification.findUnique.mockResolvedValue({
+        id: 'notif-123',
+        userId: 'other-user',
+      } as never)
+
+      const result = await deleteNotification('notif-123')
+
+      expect(result.success).toBe(false)
+      if (!result.success) {
+        expect(result.error).toContain('Accès non autorisé')
+      }
+      expect(mockPrisma.notification.delete).not.toHaveBeenCalled()
+    })
+
+    it('should return error when not authenticated', async () => {
+      mockAuth.mockResolvedValue(null)
+
+      const result = await deleteNotification('notif-123')
+
+      expect(result.success).toBe(false)
+      expect(mockPrisma.notification.delete).not.toHaveBeenCalled()
+    })
+  })
+
+  // ========================================================================
+  // deleteAllRead - SP-326
+  // ========================================================================
+
+  describe('deleteAllRead', () => {
+    it('should delete all read notifications for current user', async () => {
+      setupAuthMock('EMPLOYEE', 'user-123')
+
+      mockPrisma.notification.deleteMany.mockResolvedValue({ count: 5 })
+
+      const result = await deleteAllRead()
+
+      expect(result.success).toBe(true)
+      if (result.success) {
+        expect(result.data.count).toBe(5)
+      }
+
+      expect(mockPrisma.notification.deleteMany).toHaveBeenCalledWith({
+        where: {
+          userId: 'user-123',
+          isRead: true,
+        },
+      })
+    })
+
+    it('should return count 0 when no read notifications', async () => {
+      setupAuthMock('EMPLOYEE', 'user-123')
+
+      mockPrisma.notification.deleteMany.mockResolvedValue({ count: 0 })
+
+      const result = await deleteAllRead()
+
+      expect(result.success).toBe(true)
+      if (result.success) {
+        expect(result.data.count).toBe(0)
+      }
+    })
+
+    it('should return error when not authenticated', async () => {
+      mockAuth.mockResolvedValue(null)
+
+      const result = await deleteAllRead()
+
+      expect(result.success).toBe(false)
+      expect(mockPrisma.notification.deleteMany).not.toHaveBeenCalled()
+    })
+
+    it('should work for all user roles', async () => {
+      const roles: UserRole[] = ['EMPLOYEE', 'MANAGER', 'DIRECTOR', 'SYSTEM_ADMIN']
+
+      for (const role of roles) {
+        vi.clearAllMocks()
+        setupAuthMock(role, 'user-123')
+        mockPrisma.notification.deleteMany.mockResolvedValue({ count: 1 })
+
+        const result = await deleteAllRead()
+
+        expect(result.success).toBe(true)
       }
     })
   })
