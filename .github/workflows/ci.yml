@@ -41,6 +41,7 @@ on:
   pull_request:
     branches:
       - main # PR vers main uniquement (déclenche les tests E2E)
+  workflow_dispatch: # Permet le déclenchement manuel depuis GitHub UI
 
 # ----------------------------------------------
 # PERMISSIONS
