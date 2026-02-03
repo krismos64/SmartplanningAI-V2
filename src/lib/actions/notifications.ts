@@ -11,13 +11,14 @@
  * - Incidents : createIncidentNote (selon visibility)
  * - Système : notifications bulk admin
  *
- * @ticket SP-325
+ * @ticket SP-325, SP-327
  */
 
 'use server'
 
 import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/prisma'
+import { emitNotification } from '@/lib/notifications'
 import {
   UserRole,
   NotificationType,
@@ -229,6 +230,9 @@ export async function createPlanningNotification(
       },
     })
 
+    // Émettre via SSE (non-bloquant)
+    emitNotification(employeeUserId, notification)
+
     return { success: true, notification }
   } catch (error) {
     console.error('[createPlanningNotification] Error:', error)
@@ -342,6 +346,9 @@ export async function createLeaveNotification(
       },
     })
 
+    // Émettre via SSE (non-bloquant)
+    emitNotification(targetUserId, notification)
+
     return { success: true, notification }
   } catch (error) {
     console.error('[createLeaveNotification] Error:', error)
@@ -433,6 +440,9 @@ export async function createTaskNotification(
         companyId: task.user.companyId,
       },
     })
+
+    // Émettre via SSE (non-bloquant)
+    emitNotification(userId, notification)
 
     return { success: true, notification }
   } catch (error) {
@@ -531,6 +541,9 @@ export async function createIncidentNotification(
       },
     })
 
+    // Émettre via SSE (non-bloquant)
+    emitNotification(targetUserId, notification)
+
     return { success: true, notification }
   } catch (error) {
     console.error('[createIncidentNotification] Error:', error)
@@ -618,6 +631,22 @@ export async function createSystemNotification(
         companyId,
       })),
     })
+
+    // Récupérer les notifications créées pour émettre via SSE
+    const createdNotifications = await prisma.notification.findMany({
+      where: {
+        companyId,
+        type: NotificationType.SYSTEM,
+        title,
+        message,
+        createdAt: { gte: new Date(Date.now() - 5000) }, // Dernières 5 secondes
+      },
+    })
+
+    // Émettre via SSE à tous les utilisateurs (non-bloquant)
+    for (const notif of createdNotifications) {
+      emitNotification(notif.userId, notif)
+    }
 
     revalidatePath('/app/dashboard')
 

@@ -12,6 +12,7 @@ import {
   KeyboardShortcutsProvider,
   useKeyboardShortcutsContext,
 } from '@/providers/keyboard-shortcuts-provider'
+import { NotificationsProvider } from '@/providers/notifications-provider'
 
 import { Header } from './Header'
 import { Sidebar, type SidebarVariant } from './Sidebar'
@@ -111,13 +112,15 @@ export function DashboardLayout({
 
   return (
     <KeyboardShortcutsProvider>
-      <DashboardLayoutContent
-        user={user}
-        pathname={pathname}
-        sidebarVariant={sidebarVariant}
-      >
-        {children}
-      </DashboardLayoutContent>
+      <NotificationsProvider>
+        <DashboardLayoutContent
+          user={user}
+          pathname={pathname}
+          sidebarVariant={sidebarVariant}
+        >
+          {children}
+        </DashboardLayoutContent>
+      </NotificationsProvider>
     </KeyboardShortcutsProvider>
   )
 }

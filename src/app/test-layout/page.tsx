@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { SessionProvider } from 'next-auth/react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   Card,
@@ -56,7 +57,8 @@ export default function TestLayoutPage() {
   const [selectedRole, setSelectedRole] = useState<UserRole>('DIRECTOR')
 
   return (
-    <DashboardLayout user={mockUsers[selectedRole]}>
+    <SessionProvider>
+      <DashboardLayout user={mockUsers[selectedRole]}>
       <div className="space-y-6">
         <Card>
           <CardHeader>
@@ -211,6 +213,7 @@ export default function TestLayoutPage() {
         </div>
       </div>
     </DashboardLayout>
+    </SessionProvider>
   )
 }
 
