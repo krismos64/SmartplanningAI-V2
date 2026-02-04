@@ -14,7 +14,7 @@ Ce document trace l'historique complet des tests réalisés sur SmartPlanning. I
 | Pipeline CI/CD       | GitHub Actions                                         |
 | Responsable          | Christophe Mostefaoui                                  |
 | Date de création     | 4 décembre 2025                                        |
-| Dernière mise à jour | 3 février 2026                                         |
+| Dernière mise à jour | 4 février 2026                                         |
 
 ---
 
@@ -34,8 +34,8 @@ Dans le cadre du diplôme **CDA (Concepteur Développeur d'Applications)**, ce c
 | Métrique              | Objectif  | Atteint |
 | --------------------- | --------- | ------- |
 | Couverture globale    | ≥ 70%     | ✅ 85%  |
-| Tests unitaires       | ≥ 500     | ✅ 4548 |
-| Tests E2E             | ≥ 50      | ✅ 548  |
+| Tests unitaires       | ≥ 500     | ✅ 4573 |
+| Tests E2E             | ≥ 50      | ✅ 604  |
 | Score Lighthouse A11y | ≥ 90%     | ✅ 95%  |
 | Anomalies critiques   | 0 en prod | ✅ 0    |
 
@@ -472,6 +472,7 @@ Ce tableau recense chaque campagne de tests significative (mise en production, f
 | ---------- | --------- | -------------- | --------------- | ---------- | ---------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 03/02/2026 | Sprint 16 | SP-433         | 4548/4548 ✅    | 548/548 ✅ | ~85%       | ✅ PASS | 🆕 SP-433 User Preferences Migration. +62 tests unitaires (validation 31, utils 31). Champ `preferences Json?` ajouté au modèle User. Types TypeScript : UserPreferences, DisplayPreferences (theme, dateFormat, timeFormat, language), NotificationPreferences (email/inApp par canal). Schémas Zod validation avec defaults. Helpers parsing/serialization avec deep merge. Migration Prisma 20260203175823. Total : 5096 tests |
 | 03/02/2026 | Sprint 15 | SP-327         | 4486/4486 ✅    | 548/548 ✅ | ~85%       | ✅ PASS | 🆕 SP-327 SSE Real-time Notifications. +83 tests unitaires (SSE emitter 3, notification actions 29, hooks). Route API `/api/notifications/stream` avec Server-Sent Events. Emission temps réel lors création notification. Nettoyage connexions mortes. **Fix E2E** : Remplacement `networkidle` par `domcontentloaded` (13 fichiers) car SSE maintient connexion ouverte. Suppression 41 tests E2E non critiques (navigation/keyboard, recent-pages, type filter flaky). Total : 5034 tests |
+| 04/02/2026 | Sprint 15 | SP-274         | 4573/4573 ✅    | 604/604 ✅ | ~85%       | ✅ PASS | 🆕 SP-274 Settings Hub Page. +25 tests unitaires (3 fichiers : SettingsHeader 5, SettingsSection 10, SettingsPageContent 10), +15 tests E2E (1 fichier). Page centrale paramètres `/app/settings` avec Server Component, RBAC, AnimatedContainer stagger. 5 sections (Profil, Apparence, Notifications, Sécurité, Entreprise). Section Entreprise visible uniquement DIRECTOR/SYSTEM_ADMIN. Badges "Bientôt" pour sections futures (désactivent le lien). Cards navigables design Cyber Glass 3D avec hover-lift. Page Object SettingsPage. Sidebar href corrigé (`/app/settings`), roles changé de `['DIRECTOR']` à `'ALL'`. Total : 5177 tests |
 | 03/02/2026 | Sprint 15 | SP-326         | 4403/4403 ✅    | 589/589 ✅ | ~85%       | ✅ PASS | 🆕 SP-326 Notification delete actions. +12 tests unitaires (actions 6, hook 6). Ajout action deleteAllRead (supprime toutes notifications lues). Mise à jour hook useNotifications avec deleteNotification et deleteAllRead (optimistic updates avec rollback). Total : 4992 tests |
 | 03/02/2026 | Sprint 15 | SP-323         | 4391/4391 ✅    | 589/589 ✅ | ~85%       | ✅ PASS | 🆕 SP-323 NotificationList dropdown. +44 tests unitaires (useNotifications 9, NotificationItem 15, NotificationList 10, NotificationEmptyState 6, NotificationSkeleton 4). Hook SWR pour liste notifications avec optimistic updates markAsRead/markAllAsRead. 5 composants : NotificationItem (icônes par type, date-fns FR), NotificationList (ScrollArea, skeleton, empty), NotificationEmptyState, NotificationSkeleton. Intégration NotificationBell. Total : 4980 tests |
 | 03/02/2026 | Sprint 15 | SP-322         | 4347/4347 ✅    | 589/589 ✅ | ~85%       | ✅ PASS | 🆕 SP-322 NotificationBell dropdown. +25 tests unitaires (useNotificationsCount 8, NotificationBell 17). Hook SWR pour compteur non-lus avec polling 30s. Composant cloche dropdown Framer Motion (shake, pulse). Badge compteur 9+ si > 9. Accessibilité aria-label, aria-live. Intégration Header. Suppression prop notificationsCount du layout. Total : 4936 tests |

@@ -152,8 +152,8 @@ const menuItems: MenuItem[] = [
     id: 'settings',
     label: 'Paramètres',
     icon: Settings,
-    href: '/settings',
-    roles: ['DIRECTOR'],
+    href: '/app/settings',
+    roles: 'ALL',
   },
 ]
 
