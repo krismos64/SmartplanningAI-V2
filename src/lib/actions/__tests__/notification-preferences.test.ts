@@ -199,7 +199,9 @@ describe('notification-preferences actions', () => {
 
       expect(mockUpdate).toHaveBeenCalled()
       // Verify the structure of the update call
-      const updateCall = mockUpdate.mock.calls[0][0] as {
+      const calls = mockUpdate.mock.calls
+      expect(calls.length).toBeGreaterThan(0)
+      const updateCall = calls[0]![0] as {
         where: { id: string }
         data: {
           preferences: {
@@ -229,7 +231,9 @@ describe('notification-preferences actions', () => {
 
       expect(mockUpdate).toHaveBeenCalled()
       // Verify display preferences are preserved
-      const updateCall = mockUpdate.mock.calls[0][0] as {
+      const calls = mockUpdate.mock.calls
+      expect(calls.length).toBeGreaterThan(0)
+      const updateCall = calls[0]![0] as {
         data: {
           preferences: { display: { theme: string; dateFormat: string } }
         }
@@ -320,7 +324,9 @@ describe('notification-preferences actions', () => {
 
       expect(mockUpdate).toHaveBeenCalled()
       // Verify display preferences are preserved and notifications are reset
-      const updateCall = mockUpdate.mock.calls[0][0] as {
+      const calls = mockUpdate.mock.calls
+      expect(calls.length).toBeGreaterThan(0)
+      const updateCall = calls[0]![0] as {
         data: {
           preferences: {
             display: { theme: string }
