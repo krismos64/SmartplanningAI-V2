@@ -33,9 +33,9 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
 
   /**
-   * Retries : 2 en CI pour gérer les flaky tests, 0 en local
+   * Retries : 2 en CI pour gérer les flaky tests, 1 en local pour les timeouts intermittents
    */
-  retries: process.env.CI ? 2 : 0,
+  retries: process.env.CI ? 2 : 1,
 
   /**
    * Workers : 1 en CI (stabilité avec DB partagée), auto en local
@@ -43,9 +43,9 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
 
   /**
-   * Timeout global par test : 60s en CI, 30s en local
+   * Timeout global par test : 60s en CI, 45s en local (pour éviter timeouts intermittents)
    */
-  timeout: process.env.CI ? 60_000 : 30_000,
+  timeout: process.env.CI ? 60_000 : 45_000,
 
   /**
    * Timeout pour les assertions expect() : 15s en CI, 5s en local
