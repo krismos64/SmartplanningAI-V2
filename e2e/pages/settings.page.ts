@@ -28,7 +28,7 @@ export class SettingsPage {
   readonly companyTitle: Locator
 
   // Badges
-  readonly appearanceBadge: Locator
+  // Note: appearanceBadge removed - SP-276 implemented
   readonly notificationsBadge: Locator
   readonly companyBadge: Locator
 
@@ -54,7 +54,7 @@ export class SettingsPage {
     this.companyTitle = this.companySection.locator('h3')
 
     // Badges "Bientôt"
-    this.appearanceBadge = this.appearanceSection.locator('text=Bientôt')
+    // Note: appearanceBadge removed - SP-276 implemented
     this.notificationsBadge = this.notificationsSection.locator('text=Bientôt')
     this.companyBadge = this.companySection.locator('text=Bientôt')
   }
@@ -96,7 +96,8 @@ export class SettingsPage {
   }
 
   async expectBadgesDisplayed() {
-    await expect(this.appearanceBadge).toBeVisible()
+    // Note: Appearance badge has been removed (SP-276)
+    // Only Notifications badge remains
     await expect(this.notificationsBadge).toBeVisible()
   }
 
@@ -112,11 +113,14 @@ export class SettingsPage {
     await expect(link).toBeVisible()
   }
 
-  async expectAppearanceSectionDisabled() {
-    await expect(this.appearanceSection).toHaveClass(/opacity-60/)
-    // Should not have a link
-    const link = this.appearanceSection.locator('a')
-    await expect(link).toHaveCount(0)
+  async expectAppearanceSectionClickable() {
+    // SP-276: Appearance section is now active (no longer disabled)
+    const link = this.page.locator('a[href="/app/settings/appearance"]')
+    await expect(link).toBeVisible()
+  }
+
+  async clickAppearanceSection() {
+    await this.page.locator('a[href="/app/settings/appearance"]').click()
   }
 
   async expectNotificationsSectionDisabled() {
