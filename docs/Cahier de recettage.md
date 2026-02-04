@@ -708,7 +708,7 @@ npm run a11y:audit    # Audit Lighthouse (nécessite serveur actif)
 | mobile/command-palette.spec.ts | 15           | 0          | 15     |
 | mobile/breadcrumbs.spec.ts     | 20           | 0          | 20     |
 | mobile/data-table.spec.ts      | 15           | 11         | 26     |
-| mobile/touch-targets.spec.ts   | 16           | 0          | 16     |
+| mobile/touch-targets.mobile.spec.ts | 16      | 0          | 16     |
 | **Total**                      | **75**       | **15**     | **90** |
 
 **Devices configurés (playwright.config.ts)** :
@@ -733,7 +733,7 @@ npm run a11y:audit    # Audit Lighthouse (nécessite serveur actif)
 | `e2e/specs/mobile/command-palette.spec.ts` | Tests Command Palette mobile (touch, clavier virtuel)               |
 | `e2e/specs/mobile/breadcrumbs.spec.ts`     | Tests breadcrumbs responsive (scroll, truncation)                   |
 | `e2e/specs/mobile/data-table.spec.ts`      | Tests DataTable mobile (cards, pagination touch)                    |
-| `e2e/specs/mobile/touch-targets.spec.ts`   | Tests WCAG 2.5.5 touch targets 44px                                 |
+| `e2e/specs/mobile/touch-targets.mobile.spec.ts` | Tests WCAG 2.5.5 touch targets 44px                            |
 | `docs/e2e-mobile-tests.md`                 | Documentation complète                                              |
 
 **Tests par catégorie** :
@@ -2013,6 +2013,26 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
 - Server Actions : forgotPasswordAction, resetPasswordAction
 - Sécurité : Tokens sécurisés, anti-énumération OWASP, validation Zod
 
+### Sprint 12 - Stabilisation E2E (SP-434) 🆕
+
+- SP-434 : Correction Tests E2E - Stabilité >90% ✅ TERMINÉ
+- **Touch Targets WCAG 2.5.5** : 10 composants corrigés avec min-h-[44px] min-w-[44px]
+- **Command Palette Tests** : Utilisation button click au lieu de keyboard shortcut (Ctrl+K flaky)
+- **Mobile Navigation Tests** : Fallback close button pour swipe gestures, overlay click robuste
+- **Configuration Playwright** : Retry 1 en local, timeout 45s pour stabilité
+- Taux de réussite : **~94%** (objectif >90% atteint)
+
+**Fichiers modifiés** :
+| Fichier | Modification |
+| --- | --- |
+| `src/components/layout/Header.tsx` | Touch targets burger menu, search, user menu |
+| `src/components/ui/command-palette.tsx` | useIsMobile SSR fix, close button 48px |
+| `src/components/ui/sidebar.tsx` | SidebarTrigger, SidebarMenuButton 44px |
+| `e2e/fixtures/mobile.fixture.ts` | openCommandPaletteMobile robuste |
+| `e2e/specs/navigation/command-palette.spec.ts` | Button click helper |
+| `e2e/specs/mobile/navigation.spec.ts` | Fallback close button, navigation robuste |
+| `playwright.config.ts` | Retry 1, timeout 45s en local |
+
 ### Sprint 11 - Accessibilité WCAG 2.1 (SP-269) 🆕
 
 - SP-269 : Accessibilité WCAG 2.1 - Skip Link + Tests axe-core ✅ TERMINÉ
@@ -2020,7 +2040,7 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
 - Tests E2E : `e2e/specs/a11y/accessibility.spec.ts`
 - Script audit : `npm run a11y:audit` / `scripts/lighthouse-audit.js`
 
-### Sprint 11 - E2E Mobile Tests (SP-389) 🆕
+### Sprint 11 - E2E Mobile Tests (SP-389)
 
 - SP-389 : Tests E2E Mobile Multi-Devices Playwright ✅ TERMINÉ
 - Documentation : `docs/e2e-mobile-tests.md`

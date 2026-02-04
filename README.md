@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 3 février 2026 (Sprint Profil & Paramètres - SP-433)
+- **Dernière mise à jour** : 4 février 2026 (Sprint E2E Stabilité - SP-434)
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -2476,6 +2476,7 @@ Merge main → Build Docker → Push GHCR → Deploy VPS (~8-10 min)
 - **CD** (`.github/workflows/cd.yml`) : Build image Docker, Push sur ghcr.io, Deploy via SSH
 - Tests unitaires sur tous les push (~4548 tests Vitest)
 - Tests E2E sur PR vers main (~548 tests Playwright actifs, 5 devices mobiles)
+- Stabilisation E2E (SP-434) : Touch targets WCAG 2.5.5 (44px), command palette, mobile navigation
 - Déploiement automatique sur merge main ✅
 - Migrations Prisma automatiques
 - Healthcheck endpoint : `/api/health` ✅
