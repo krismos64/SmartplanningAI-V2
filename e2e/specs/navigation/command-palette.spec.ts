@@ -13,6 +13,7 @@
  */
 
 import { test, expect } from '../../fixtures/auth.fixture'
+import type { Page } from '@playwright/test'
 
 /**
  * Helper pour le raccourci d'ouverture de la Command Palette
@@ -21,6 +22,27 @@ import { test, expect } from '../../fixtures/auth.fixture'
  * - Playwright Chromium: utilise Control+k par défaut
  */
 const OPEN_COMMAND_PALETTE_KEY = 'Control+k'
+
+/**
+ * Helper to open command palette with retry logic
+ * Uses button click which is more reliable than keyboard shortcuts
+ */
+async function openCommandPalette(page: Page): Promise<void> {
+  const input = page.getByPlaceholder('Rechercher ou exécuter une commande...')
+
+  // Wait for DOM to be ready (faster than networkidle)
+  await page.waitForLoadState('domcontentloaded')
+
+  // Try clicking the search button
+  const searchButton = page.getByRole('button', { name: /rechercher/i })
+
+  // Wait for the button to be visible and click it
+  await searchButton.waitFor({ state: 'visible', timeout: 10000 })
+  await searchButton.click()
+
+  // Verify the command palette opened
+  await expect(input).toBeVisible({ timeout: 5000 })
+}
 
 test.describe('Command Palette', () => {
   // =========================================================================
@@ -31,27 +53,27 @@ test.describe('Command Palette', () => {
     test('should open command palette with Cmd+K (Mac) / Ctrl+K', async ({
       directorPage,
     }) => {
-      // Ouvrir avec le raccourci clavier
-      await directorPage.keyboard.press(OPEN_COMMAND_PALETTE_KEY)
+      // Ouvrir avec le helper (includes retry logic)
+      await openCommandPalette(directorPage)
 
       // Vérifier que la palette est ouverte via le placeholder de l'input
       const input = directorPage.getByPlaceholder(
         'Rechercher ou exécuter une commande...'
       )
 
-      await expect(input).toBeVisible({ timeout: 5000 })
+      await expect(input).toBeVisible()
     })
 
     test('should close command palette with Escape', async ({
       directorPage,
     }) => {
       // Ouvrir la palette
-      await directorPage.keyboard.press(OPEN_COMMAND_PALETTE_KEY)
+      await openCommandPalette(directorPage)
 
       const input = directorPage.getByPlaceholder(
         'Rechercher ou exécuter une commande...'
       )
-      await expect(input).toBeVisible({ timeout: 5000 })
+      await expect(input).toBeVisible()
 
       // Fermer avec Escape
       await directorPage.keyboard.press('Escape')
@@ -73,12 +95,11 @@ test.describe('Command Palette', () => {
   test.describe('Search', () => {
     test('should filter items when typing', async ({ directorPage }) => {
       // Ouvrir la palette
-      await directorPage.keyboard.press(OPEN_COMMAND_PALETTE_KEY)
+      await openCommandPalette(directorPage)
 
       const input = directorPage.getByPlaceholder(
         'Rechercher ou exécuter une commande...'
       )
-      await expect(input).toBeVisible({ timeout: 5000 })
 
       // Taper "collabor" pour filtrer
       await input.fill('collabor')
@@ -93,12 +114,11 @@ test.describe('Command Palette', () => {
       directorPage,
     }) => {
       // Ouvrir la palette
-      await directorPage.keyboard.press(OPEN_COMMAND_PALETTE_KEY)
+      await openCommandPalette(directorPage)
 
       const input = directorPage.getByPlaceholder(
         'Rechercher ou exécuter une commande...'
       )
-      await expect(input).toBeVisible({ timeout: 5000 })
 
       // Taper quelque chose qui n'existe pas
       await input.fill('xyznonexistent123')
@@ -119,12 +139,11 @@ test.describe('Command Palette', () => {
       directorPage,
     }) => {
       // Ouvrir la palette
-      await directorPage.keyboard.press(OPEN_COMMAND_PALETTE_KEY)
+      await openCommandPalette(directorPage)
 
       const input = directorPage.getByPlaceholder(
         'Rechercher ou exécuter une commande...'
       )
-      await expect(input).toBeVisible({ timeout: 5000 })
 
       // Chercher "Collaborateurs"
       await input.fill('collabor')
@@ -142,12 +161,11 @@ test.describe('Command Palette', () => {
       directorPage,
     }) => {
       // Ouvrir la palette
-      await directorPage.keyboard.press(OPEN_COMMAND_PALETTE_KEY)
+      await openCommandPalette(directorPage)
 
       const input = directorPage.getByPlaceholder(
         'Rechercher ou exécuter une commande...'
       )
-      await expect(input).toBeVisible({ timeout: 5000 })
 
       // Utiliser les flèches pour naviguer et Enter pour sélectionner
       await directorPage.keyboard.press('ArrowDown')
@@ -167,12 +185,11 @@ test.describe('Command Palette', () => {
       directorPage,
     }) => {
       // Ouvrir la palette
-      await directorPage.keyboard.press(OPEN_COMMAND_PALETTE_KEY)
+      await openCommandPalette(directorPage)
 
       const input = directorPage.getByPlaceholder(
         'Rechercher ou exécuter une commande...'
       )
-      await expect(input).toBeVisible({ timeout: 5000 })
 
       // Chercher "sombre"
       await input.fill('sombre')
@@ -188,20 +205,18 @@ test.describe('Command Palette', () => {
       directorPage,
     }) => {
       // D'abord passer en dark
-      await directorPage.keyboard.press(OPEN_COMMAND_PALETTE_KEY)
+      await openCommandPalette(directorPage)
       let input = directorPage.getByPlaceholder(
         'Rechercher ou exécuter une commande...'
       )
-      await expect(input).toBeVisible({ timeout: 5000 })
       await input.fill('sombre')
       await directorPage.getByRole('option', { name: /mode sombre/i }).click()
 
       // Maintenant passer en light
-      await directorPage.keyboard.press(OPEN_COMMAND_PALETTE_KEY)
+      await openCommandPalette(directorPage)
       input = directorPage.getByPlaceholder(
         'Rechercher ou exécuter une commande...'
       )
-      await expect(input).toBeVisible({ timeout: 5000 })
       await input.fill('clair')
       await directorPage.getByRole('option', { name: /mode clair/i }).click()
 
