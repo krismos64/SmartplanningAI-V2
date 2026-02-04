@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 4 février 2026 (Notification Preferences - SP-275)
+- **Dernière mise à jour** : 4 février 2026 (Company Settings - SP-435)
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -76,6 +76,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Settings Hub Page** (SP-274) : Page centrale des paramètres `/app/settings` avec Server Component, 5 sections (Profil, Apparence, Notifications, Sécurité, Entreprise), filtrage RBAC (section Entreprise visible uniquement DIRECTOR/SYSTEM_ADMIN), cards navigables avec badges "Bientôt" pour sections futures, design Cyber Glass 3D avec AnimatedContainer stagger, skeleton loading, 25 tests unitaires + 15 tests E2E
 - **Display Preferences** (SP-276) : Page préférences d'affichage `/app/settings/appearance` avec sélection thème (Système/Clair/Sombre via next-themes), format de date (DD/MM/YYYY, MM/DD/YYYY, YYYY-MM-DD), format d'heure (24h, 12h), prévisualisation en temps réel. Architecture Cookie + DB pour persistence SSR sans flash. Server Actions (getDisplayPreferences, updateDisplayPreferences, syncPreferencesFromCookie, resetDisplayPreferences). Helpers date-fns (9 fonctions : formatDate, formatTime, formatDateTime, formatRelativeDate, formatShortDate, formatLongDate, formatWeekday, formatMonthYear, createFormatter). 43 tests unitaires + 18 tests E2E
 - **Notification Preferences** (SP-275) : Page préférences de notifications `/app/settings/notifications` avec gestion par catégorie (Planning, Congés, Tâches, Système) et par canal (Email, In-App). Switches toggle pour chaque combinaison catégorie/canal. Architecture optimistic UI avec useTransition. Server Actions (getNotificationPreferences, updateNotificationPreferences, resetNotificationPreferences). Helper notification-categories.ts pour mapping NotificationType → catégorie. Intégration factory functions notifications (vérification préférences avant création). 27 tests unitaires + 14 tests E2E. Badge "Bientôt" retiré de section Notifications
+- **Company Settings** (SP-435) : Page paramètres entreprise `/app/settings/company` pour DIRECTOR et SYSTEM_ADMIN. Configuration du nom et adresse de l'entreprise, jours travaillés (7 checkboxes + 3 presets Lun-Ven, Lun-Sam, Tous), horaires de travail (ouverture/fermeture), pause déjeuner (toggle + horaires). Types TypeScript (DayOfWeek, CompanySettings, LunchBreakSettings), validations Zod avec cross-field validation, Server Actions (getCompanySettings, updateCompanySettings, resetCompanySettings) avec RBAC strict. Architecture optimistic UI avec rollback. Stockage Prisma (Company.workingDays, Company.workingHoursStart/End, Company.defaultOpeningHours JSON pour lunch break). 19 tests unitaires + 21 tests E2E. Badge "Bientôt" retiré de section Entreprise
 
 ### MVP (Phases 1-4)
 
@@ -2022,11 +2023,11 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 - **E2E** : Playwright (configuré)
 - **Coverage** : v8 provider
 
-### Couverture actuelle (28 janvier 2026)
+### Couverture actuelle (4 février 2026)
 
 | Catégorie                              | Coverage | Tests    |
 | -------------------------------------- | -------- | -------- |
-| **Global**                             | **~85%** | **3666** |
+| **Global**                             | **~85%** | **4701** |
 | loading                                | 100%     | 152      |
 | modals                                 | 100%     | 52       |
 | cards                                  | 77.09%   | 88       |
@@ -2096,6 +2097,7 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 | LeaveTimeline (SP-414)                 | 100%     | 9        |
 | LeaveDetailContent (SP-414)            | 100%     | 13       |
 | BalancesPageContent (SP-414)           | 100%     | 15       |
+| company-settings actions (SP-435)      | 100%     | 19       |
 
 ### Tests E2E
 
@@ -2131,9 +2133,11 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 | **Profile (SP-270)**                | 15      | ✅                                |
 | **Edit Profile (SP-271)**           | 22      | ✅                                |
 | **Change Password (SP-273)**        | 19      | ✅                                |
-| **Total E2E actifs**                | **433** | ✅                                |
+| **Settings Hub (SP-274)**           | 20      | ✅                                |
+| **Company Settings (SP-435)**       | 21      | ✅                                |
+| **Total E2E actifs**                | **495** | ✅                                |
 | **Total E2E skipped**               | **69**  | ⏸️                                |
-| **Total E2E**                       | **502** |                                   |
+| **Total E2E**                       | **564** |                                   |
 
 **Note** : Tests desktop exécutés sur Chromium uniquement. Tests mobiles exécutés sur 5 devices (iPhone SE, iPhone 14 Pro, Pixel 7, iPad Mini, iPad Pro 11") via Chromium avec émulation mobile (WebKit supprimé car bug HTTPS upgrade sur localhost).
 
