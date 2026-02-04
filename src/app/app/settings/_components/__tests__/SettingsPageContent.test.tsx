@@ -75,7 +75,8 @@ describe('SettingsPageContent', () => {
     it('should display "Bientôt" badges on future sections', () => {
       render(<SettingsPageContent userRole="EMPLOYEE" />)
       const badges = screen.getAllByText('Bientôt')
-      expect(badges.length).toBeGreaterThanOrEqual(2) // appearance + notifications
+      // SP-276: Appearance badge removed, only notifications remains for EMPLOYEE
+      expect(badges.length).toBeGreaterThanOrEqual(1)
     })
 
     it('should have correct number of sections for DIRECTOR', () => {

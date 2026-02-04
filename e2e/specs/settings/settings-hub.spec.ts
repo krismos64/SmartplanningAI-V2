@@ -153,15 +153,26 @@ test.describe('Settings Hub Page', () => {
     })
   })
 
-  test.describe('Disabled Sections', () => {
-    test('should show Appearance section as disabled with badge', async ({
+  test.describe('Disabled and Active Sections', () => {
+    test('should show Appearance section as clickable (SP-276)', async ({
       employeePage,
     }) => {
       const settingsPage = new SettingsPage(employeePage)
       await settingsPage.goto()
       await settingsPage.waitForPageLoad()
 
-      await settingsPage.expectAppearanceSectionDisabled()
+      await settingsPage.expectAppearanceSectionClickable()
+    })
+
+    test('should navigate to Appearance page when clicking', async ({
+      employeePage,
+    }) => {
+      const settingsPage = new SettingsPage(employeePage)
+      await settingsPage.goto()
+      await settingsPage.waitForPageLoad()
+
+      await settingsPage.clickAppearanceSection()
+      await expect(employeePage).toHaveURL(/\/app\/settings\/appearance/)
     })
 
     test('should show Notifications section as disabled with badge', async ({

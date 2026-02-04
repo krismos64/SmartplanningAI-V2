@@ -47,7 +47,6 @@ const SETTINGS_SECTIONS: SettingsSectionConfig[] = [
     description: "Personnalisez le thème et les formats d'affichage",
     href: '/app/settings/appearance',
     roles: 'ALL',
-    badge: 'Bientôt', // SP-276
   },
   {
     id: 'notifications',

@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 4 février 2026 (Settings Hub Page - SP-274)
+- **Dernière mise à jour** : 4 février 2026 (Display Preferences - SP-276)
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -74,6 +74,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Notifications System** (SP-321, SP-322, SP-323, SP-324, SP-325, SP-326, SP-327) : Système de notifications complet avec modèle enrichi (types métier PLANNING/LEAVE/TASK/INCIDENT, priorités LOW/MEDIUM/HIGH/URGENT), factory functions par domaine, hooks SWR (useNotificationsCount, useNotifications, useNotificationsPaginated avec optimistic updates), composants UI (NotificationBell avec badge animé Framer Motion, NotificationList dropdown, page historique /app/dashboard/notifications avec filtres type/statut, pagination, actions en masse mark all read/delete all read), **notifications temps réel SSE** (Server-Sent Events avec NotificationSSEManager singleton, API route /api/notifications/stream, useNotificationsStream hook avec reconnexion auto, NotificationToast avec sonner, NotificationsProvider global), 187 tests unitaires
 - **User Preferences** (SP-433) : Système de préférences utilisateur avec champ JSON Prisma (User.preferences), types TypeScript complets (UserPreferences, DisplayPreferences, NotificationPreferences), schémas Zod pour validation (thème light/dark/system, format date DD/MM/YYYY|MM/DD/YYYY|YYYY-MM-DD, format heure 24h/12h, langue fr/en, préférences notifications par canal email/inApp et type planning/leaves/tasks/system), helpers parsing/serialization avec deep merge des valeurs par défaut, 62 tests unitaires
 - **Settings Hub Page** (SP-274) : Page centrale des paramètres `/app/settings` avec Server Component, 5 sections (Profil, Apparence, Notifications, Sécurité, Entreprise), filtrage RBAC (section Entreprise visible uniquement DIRECTOR/SYSTEM_ADMIN), cards navigables avec badges "Bientôt" pour sections futures, design Cyber Glass 3D avec AnimatedContainer stagger, skeleton loading, 25 tests unitaires + 15 tests E2E
+- **Display Preferences** (SP-276) : Page préférences d'affichage `/app/settings/appearance` avec sélection thème (Système/Clair/Sombre via next-themes), format de date (DD/MM/YYYY, MM/DD/YYYY, YYYY-MM-DD), format d'heure (24h, 12h), prévisualisation en temps réel. Architecture Cookie + DB pour persistence SSR sans flash. Server Actions (getDisplayPreferences, updateDisplayPreferences, syncPreferencesFromCookie, resetDisplayPreferences). Helpers date-fns (9 fonctions : formatDate, formatTime, formatDateTime, formatRelativeDate, formatShortDate, formatLongDate, formatWeekday, formatMonthYear, createFormatter). 43 tests unitaires + 18 tests E2E
 
 ### MVP (Phases 1-4)
 
