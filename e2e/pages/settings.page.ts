@@ -27,10 +27,10 @@ export class SettingsPage {
   readonly securityTitle: Locator
   readonly companyTitle: Locator
 
-  // Badges
-  // Note: appearanceBadge removed - SP-276 implemented
-  // Note: notificationsBadge removed - SP-275 implemented
-  readonly companyBadge: Locator
+  // Note: All "Bientôt" badges removed
+  // SP-276: Appearance implemented
+  // SP-275: Notifications implemented
+  // SP-435: Company implemented
 
   constructor(page: Page) {
     this.page = page
@@ -53,10 +53,6 @@ export class SettingsPage {
     this.securityTitle = this.securitySection.locator('h3')
     this.companyTitle = this.companySection.locator('h3')
 
-    // Badges "Bientôt"
-    // Note: appearanceBadge removed - SP-276 implemented
-    // Note: notificationsBadge removed - SP-275 implemented
-    this.companyBadge = this.companySection.locator('text=Bientôt')
   }
 
   async goto() {
@@ -95,17 +91,22 @@ export class SettingsPage {
     await expect(sections).toHaveCount(count)
   }
 
-  async expectBadgesDisplayed() {
-    // SP-276: Appearance badge removed
-    // SP-275: Notifications badge removed
-    // Only Company badge remains (for DIRECTOR/SYSTEM_ADMIN)
-    await expect(this.companyBadge).toBeVisible()
+  async expectNoBadges() {
+    // SP-435: All badges removed, all sections are now implemented
+    const badges = this.page.locator(
+      '[data-testid^="settings-section-"] >> text=Bientôt'
+    )
+    await expect(badges).toHaveCount(0)
   }
 
-  async expectNoBadgesForEmployee() {
-    // For EMPLOYEE, no badges should be visible (Company section is hidden)
-    const badges = this.page.locator('[data-testid^="settings-section-"] >> text=Bientôt')
-    await expect(badges).toHaveCount(0)
+  async expectCompanySectionClickable() {
+    // SP-435: Company section is now active
+    const link = this.page.locator('a[href="/app/settings/company"]')
+    await expect(link).toBeVisible()
+  }
+
+  async clickCompanySection() {
+    await this.page.locator('a[href="/app/settings/company"]').click()
   }
 
   async expectProfileSectionClickable() {

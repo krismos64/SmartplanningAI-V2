@@ -195,6 +195,24 @@ export {
 } from './preferences'
 
 // ============================================================================
+// TYPES PARAMÈTRES ENTREPRISE (SP-435)
+// ============================================================================
+export type {
+  DayOfWeek,
+  WorkingDaysPreset,
+  LunchBreakSettings,
+  CompanySettings,
+} from './company'
+export {
+  DAYS_OF_WEEK,
+  DAY_LABELS,
+  DAY_SHORT_LABELS,
+  WORKING_DAYS_PRESETS,
+  DEFAULT_COMPANY_SETTINGS,
+  DEFAULT_LUNCH_BREAK,
+} from './company'
+
+// ============================================================================
 // TYPES GÉNÉRIQUES UTILITAIRES
 // ============================================================================
 

@@ -71,7 +71,6 @@ const SETTINGS_SECTIONS: SettingsSectionConfig[] = [
     description: 'Paramètres et configuration de votre organisation',
     href: '/app/settings/company',
     roles: ['DIRECTOR', 'SYSTEM_ADMIN'],
-    badge: 'Bientôt',
   },
 ]
 

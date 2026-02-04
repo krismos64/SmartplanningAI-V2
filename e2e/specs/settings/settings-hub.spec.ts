@@ -44,28 +44,29 @@ test.describe('Settings Hub Page', () => {
       await settingsPage.expectSectionDescriptions()
     })
 
-    test('should not display "Bientôt" badges for Employee (SP-275 + SP-276)', async ({
+    test('should not display "Bientôt" badges (all sections implemented)', async ({
       employeePage,
     }) => {
       const settingsPage = new SettingsPage(employeePage)
       await settingsPage.goto()
       await settingsPage.waitForPageLoad()
 
-      // SP-276: Appearance badge removed
-      // SP-275: Notifications badge removed
-      // Employee doesn't see Company section, so no badges
-      await settingsPage.expectNoBadgesForEmployee()
+      // SP-276: Appearance implemented
+      // SP-275: Notifications implemented
+      // SP-435: Company implemented
+      // No badges should be visible for any section
+      await settingsPage.expectNoBadges()
     })
 
-    test('should display "Bientôt" badge for Director (Company section)', async ({
+    test('should not display "Bientôt" badges for Director (SP-435)', async ({
       directorPage,
     }) => {
       const settingsPage = new SettingsPage(directorPage)
       await settingsPage.goto()
       await settingsPage.waitForPageLoad()
 
-      // Only Company section has "Bientôt" badge
-      await settingsPage.expectBadgesDisplayed()
+      // SP-435: Company section implemented, no more badges
+      await settingsPage.expectNoBadges()
     })
   })
 
@@ -208,6 +209,27 @@ test.describe('Settings Hub Page', () => {
 
       await settingsPage.clickNotificationsSection()
       await expect(employeePage).toHaveURL(/\/app\/settings\/notifications/)
+    })
+
+    test('should show Company section as clickable for Director (SP-435)', async ({
+      directorPage,
+    }) => {
+      const settingsPage = new SettingsPage(directorPage)
+      await settingsPage.goto()
+      await settingsPage.waitForPageLoad()
+
+      await settingsPage.expectCompanySectionClickable()
+    })
+
+    test('should navigate to Company settings page when clicking (SP-435)', async ({
+      directorPage,
+    }) => {
+      const settingsPage = new SettingsPage(directorPage)
+      await settingsPage.goto()
+      await settingsPage.waitForPageLoad()
+
+      await settingsPage.clickCompanySection()
+      await expect(directorPage).toHaveURL(/\/app\/settings\/company/)
     })
   })
 })
