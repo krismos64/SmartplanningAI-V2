@@ -54,12 +54,20 @@ import { formatRelativeTime } from '@/lib/utils/format-relative-time'
 
 /**
  * Hook pour détecter les écrans mobiles (< 768px)
+ * Initialize with current value if window is available to avoid hydration flash
  */
 function useIsMobile(): boolean {
-  const [isMobile, setIsMobile] = React.useState(false)
+  const [isMobile, setIsMobile] = React.useState(() => {
+    // Initialize with current value if we're on the client
+    if (typeof window !== 'undefined') {
+      return window.matchMedia('(max-width: 767px)').matches
+    }
+    return false
+  })
 
   React.useEffect(() => {
     const mediaQuery = window.matchMedia('(max-width: 767px)')
+    // Update in case SSR value was different
     setIsMobile(mediaQuery.matches)
 
     const handler = (event: MediaQueryListEvent) => {
@@ -309,8 +317,8 @@ export function CommandPalette({
                 <div
                   className={cn(
                     'flex items-center border-b border-border',
-                    // SP-386: Larger touch targets on mobile
-                    isMobile ? 'px-3 py-1' : 'px-4'
+                    // SP-386: Larger touch targets on mobile - py-2 to give enough vertical space for 44px button
+                    isMobile ? 'px-2 py-2' : 'px-4'
                   )}
                 >
                   <SearchIcon
@@ -338,14 +346,15 @@ export function CommandPalette({
                     data-testid="command-palette-input"
                   />
                   {/* SP-386: Close button on mobile, ESC badge on desktop */}
+                  {/* WCAG 2.5.5: 44px minimum touch target - using 48px to ensure 44px after rendering */}
                   {isMobile ? (
                     <button
                       type="button"
                       onClick={() => onOpenChange(false)}
                       className={cn(
-                        'flex h-10 w-10 items-center justify-center rounded-full',
+                        'flex h-12 w-12 items-center justify-center rounded-full',
                         'text-muted-foreground hover:bg-accent hover:text-accent-foreground',
-                        'min-h-[44px] min-w-[44px]'
+                        'min-h-[44px] min-w-[44px] touch-manipulation shrink-0'
                       )}
                       aria-label="Fermer"
                       data-testid="command-palette-close"

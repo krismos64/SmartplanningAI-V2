@@ -88,10 +88,11 @@ export function NotificationBell() {
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenuTrigger asChild>
+        {/* WCAG 2.5.5: 44px minimum touch target */}
         <Button
           variant="ghost"
           size="icon"
-          className="relative"
+          className="relative h-11 w-11 min-h-[44px] min-w-[44px] touch-manipulation"
           aria-label="Notifications"
           data-testid="notification-bell-button"
         >

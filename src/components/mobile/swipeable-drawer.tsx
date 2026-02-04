@@ -325,14 +325,14 @@ export function SwipeableDrawer({
             data-testid="swipeable-drawer-panel"
             data-side={side}
           >
-            {/* Close button */}
+            {/* Close button - WCAG 2.5.5: 44px minimum touch target */}
             {showCloseButton && (
               <button
                 type="button"
                 onClick={onClose}
                 className={cn(
-                  'absolute top-4 z-10 rounded-full p-2',
-                  'bg-muted/80 transition-colors hover:bg-muted',
+                  'absolute top-4 z-10 flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full',
+                  'bg-muted/80 transition-colors hover:bg-muted touch-manipulation',
                   'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
                   side === 'left' ? 'right-4' : 'left-4'
                 )}

@@ -90,11 +90,14 @@ export function LeaveCalendar({
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
+          {/* WCAG 2.5.5: 44px minimum touch target */}
           <Button
             variant="outline"
             size="icon"
             onClick={handlePrevMonth}
             aria-label="Mois précédent"
+            className="h-11 w-11 min-h-[44px] min-w-[44px] touch-manipulation"
+            data-testid="calendar-prev-month"
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
@@ -104,11 +107,14 @@ export function LeaveCalendar({
           >
             {format(month, 'MMMM yyyy', { locale: fr })}
           </h2>
+          {/* WCAG 2.5.5: 44px minimum touch target */}
           <Button
             variant="outline"
             size="icon"
             onClick={handleNextMonth}
             aria-label="Mois suivant"
+            className="h-11 w-11 min-h-[44px] min-w-[44px] touch-manipulation"
+            data-testid="calendar-next-month"
           >
             <ChevronRight className="h-4 w-4" />
           </Button>

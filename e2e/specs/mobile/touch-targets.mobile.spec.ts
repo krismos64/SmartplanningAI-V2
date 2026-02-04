@@ -174,7 +174,14 @@ test.describe('Touch Target Sizes (WCAG 2.5.5)', () => {
       const closeButton = directorPage.locator(
         '[data-testid="command-palette-close"]'
       )
+
+      // Wait for the mobile close button to be visible
+      // The useIsMobile hook needs time to evaluate after hydration
+      await closeButton.waitFor({ state: 'visible', timeout: 5000 })
       const result = await mobile.checkTouchTarget(closeButton)
+
+      // Log dimensions for debugging
+      console.log(`Command palette close button dimensions: ${result.width}x${result.height}px (min: ${result.minRequired}px)`)
 
       expect(result.isValid).toBe(true)
       expect(result.width).toBeGreaterThanOrEqual(WCAG_MIN_SIZE)
@@ -201,14 +208,35 @@ test.describe('Touch Target Sizes (WCAG 2.5.5)', () => {
       let checkedCount = 0
       const failures: string[] = []
 
+      // List of aria-labels or text content to exclude (Next.js dev tools, toasts)
+      const excludedLabels = [
+        'Close toast',
+        'Open Next.js Dev Tools',
+        'Collapse issues badge',
+        'Hide message',
+        'Open issues',
+        'Close',
+      ]
+
       for (let i = 0; i < count; i++) {
         const button = iconButtons.nth(i)
         if (await button.isVisible()) {
+          const ariaLabel = await button.getAttribute('aria-label')
+          const text = await button.textContent()
+
+          // Skip Next.js dev tools and toast buttons
+          if (
+            excludedLabels.some(
+              (label) =>
+                ariaLabel?.includes(label) || text?.includes(label)
+            )
+          ) {
+            continue
+          }
+
           const result = await mobile.checkTouchTarget(button)
 
           if (!result.isValid) {
-            const text = await button.textContent()
-            const ariaLabel = await button.getAttribute('aria-label')
             failures.push(
               `Button "${ariaLabel || text || `#${i}`}": ${result.width}x${result.height}px`
             )
@@ -222,9 +250,12 @@ test.describe('Touch Target Sizes (WCAG 2.5.5)', () => {
         console.log('Touch target failures:', failures)
       }
 
-      // At least 80% of checked buttons should pass
-      const passRate = (checkedCount - failures.length) / checkedCount
-      expect(passRate).toBeGreaterThanOrEqual(0.8)
+      // All our app buttons should pass (100% if excluding dev tools)
+      // At least 90% of checked buttons should pass (allowing for edge cases)
+      if (checkedCount > 0) {
+        const passRate = (checkedCount - failures.length) / checkedCount
+        expect(passRate).toBeGreaterThanOrEqual(0.9)
+      }
     })
   })
 

@@ -209,11 +209,13 @@ export function Sidebar({ user, variant = 'neon' }: SidebarProps) {
               </span>
             </motion.div>
           )}
+          {/* WCAG 2.5.5: 44px minimum touch target */}
           <Button
             variant="ghost"
             size="icon"
             onClick={toggleSidebar}
-            className={`text-slate-400 hover:bg-white/[0.06] hover:text-white ${isCollapsed ? 'mx-auto' : ''}`}
+            className={`h-11 w-11 min-h-[44px] min-w-[44px] touch-manipulation text-slate-400 hover:bg-white/[0.06] hover:text-white ${isCollapsed ? 'mx-auto' : ''}`}
+            data-testid="sidebar-toggle-button"
           >
             {isCollapsed ? (
               <ChevronRight className="h-4 w-4" />

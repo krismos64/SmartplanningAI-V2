@@ -115,13 +115,14 @@ export function LandingHeader({
               </Button>
             </div>
 
-            {/* Mobile Menu Button */}
+            {/* Mobile Menu Button - WCAG 2.5.5: 44px minimum touch target */}
             <button
-              className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-accent dark:text-white/80 dark:hover:bg-white/10 lg:hidden"
+              className="flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-accent touch-manipulation dark:text-white/80 dark:hover:bg-white/10 lg:hidden"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               aria-label={
                 isMobileMenuOpen ? 'Fermer le menu' : 'Ouvrir le menu'
               }
+              data-testid="landing-mobile-menu-button"
             >
               {isMobileMenuOpen ? (
                 <X className="h-6 w-6" />
@@ -145,14 +146,15 @@ export function LandingHeader({
                 transition={{ duration: 0.3 }}
                 className="fixed inset-0 z-[200] flex flex-col overflow-hidden bg-background dark:bg-[#030712] lg:hidden"
               >
-                {/* Close button - Fixed top right */}
+                {/* Close button - Fixed top right - WCAG 2.5.5: 44px minimum touch target */}
                 <motion.button
                   initial={{ opacity: 0, rotate: -90 }}
                   animate={{ opacity: 1, rotate: 0 }}
                   transition={{ duration: 0.3, delay: 0.1 }}
-                  className="absolute right-4 top-4 z-10 flex h-12 w-12 items-center justify-center rounded-full border border-border bg-background text-foreground transition-all hover:border-cyan-400/50 hover:bg-cyan-400/20 hover:text-cyan-400 dark:border-white/20 dark:bg-[#030712] dark:text-white"
+                  className="absolute right-4 top-4 z-10 flex h-12 w-12 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-border bg-background text-foreground transition-all hover:border-cyan-400/50 hover:bg-cyan-400/20 hover:text-cyan-400 touch-manipulation dark:border-white/20 dark:bg-[#030712] dark:text-white"
                   onClick={() => setIsMobileMenuOpen(false)}
                   aria-label="Fermer le menu"
+                  data-testid="landing-mobile-menu-close"
                 >
                   <X className="h-6 w-6" />
                 </motion.button>

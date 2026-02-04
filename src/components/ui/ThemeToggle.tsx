@@ -45,12 +45,12 @@ export function ThemeToggle({
     setMounted(true)
   }, [])
 
-  // Placeholder de même taille pendant l'hydratation
+  // Placeholder de même taille pendant l'hydratation - WCAG 2.5.5: 44px touch target
   if (!mounted) {
     return (
       <div
         className={cn(
-          'flex items-center gap-2 rounded-lg p-2',
+          'flex h-11 min-h-[44px] min-w-[44px] items-center justify-center gap-2 rounded-lg p-2',
           showLabel && 'min-w-[100px]',
           className
         )}
@@ -93,15 +93,17 @@ export function ThemeToggle({
     <motion.button
       onClick={cycleTheme}
       className={cn(
-        'flex items-center gap-2 rounded-lg p-2',
+        // WCAG 2.5.5: 44px minimum touch target
+        'flex h-11 min-h-[44px] min-w-[44px] items-center justify-center gap-2 rounded-lg p-2',
         'text-foreground-muted hover:text-foreground',
         'hover:bg-muted/80 dark:hover:bg-muted/50',
-        'transition-colors duration-200',
+        'transition-colors duration-200 touch-manipulation',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
         className
       )}
       aria-label={`Thème actuel : ${currentLabel}. Cliquer pour passer en mode ${nextLabel}.`}
       title={`Mode ${currentLabel} - Cliquer pour ${nextLabel}`}
+      data-testid="theme-toggle-button"
       {...buttonIcon}
     >
       <motion.div

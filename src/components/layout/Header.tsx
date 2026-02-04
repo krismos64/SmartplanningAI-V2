@@ -70,12 +70,13 @@ export function Header({ user }: HeaderProps) {
       <div className="flex h-16 items-center justify-between px-4 md:px-6">
         {/* Left: Burger + Logo */}
         <div className="flex items-center gap-4">
-          {/* Burger menu pour mobile */}
+          {/* Burger menu pour mobile - WCAG 2.5.5: 44px touch target */}
           <Button
             variant="ghost"
             size="icon"
-            className="lg:hidden"
+            className="h-11 w-11 min-h-[44px] min-w-[44px] touch-manipulation lg:hidden"
             onClick={toggleSidebar}
+            data-testid="burger-menu-button"
           >
             <Menu className="h-5 w-5" />
           </Button>
@@ -98,7 +99,7 @@ export function Header({ user }: HeaderProps) {
         </div>
 
         {/* Right: Search + Theme toggle + Notifications + User menu */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 md:gap-3">
           {/* Search Button - Command Palette trigger (SP-264) */}
           <Button
             variant="outline"
@@ -112,13 +113,14 @@ export function Header({ user }: HeaderProps) {
             </kbd>
           </Button>
 
-          {/* Search Icon Button for mobile */}
+          {/* Search Icon Button for mobile - WCAG 2.5.5: 44px touch target */}
           <Button
             variant="ghost"
             size="icon"
             onClick={() => openCommandPalette(true)}
-            className="sm:hidden"
+            className="h-11 w-11 min-h-[44px] min-w-[44px] touch-manipulation sm:hidden"
             aria-label="Ouvrir la recherche"
+            data-testid="mobile-search-button"
           >
             <Search className="h-5 w-5" />
           </Button>
@@ -129,10 +131,14 @@ export function Header({ user }: HeaderProps) {
           {/* Notifications - SP-322 */}
           <NotificationBell />
 
-          {/* User dropdown menu */}
+          {/* User dropdown menu - WCAG 2.5.5: 44px touch target */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="flex items-center gap-2 px-2">
+              <Button
+                variant="ghost"
+                className="flex h-11 min-h-[44px] items-center gap-2 px-2 touch-manipulation"
+                data-testid="user-menu-trigger"
+              >
                 <Avatar className="h-8 w-8">
                   <AvatarFallback className="bg-primary text-xs text-primary-foreground">
                     {userInitials}
