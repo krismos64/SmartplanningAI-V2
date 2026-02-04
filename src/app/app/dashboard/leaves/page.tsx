@@ -45,7 +45,12 @@ export default async function LeavesPage() {
 
   // Récupérer les équipes et employés pour les filtres (selon rôle)
   let teams: { id: string; name: string }[] = []
-  let employees: { id: string; firstName: string; lastName: string }[] = []
+  let employees: {
+    id: string
+    firstName: string
+    lastName: string
+    image?: string | null
+  }[] = []
 
   if (userRole === 'DIRECTOR' || userRole === 'SYSTEM_ADMIN') {
     // Director voit toutes les équipes et employés de son entreprise
@@ -57,19 +62,40 @@ export default async function LeavesPage() {
       }),
       prisma.employee.findMany({
         where: companyId ? { companyId, isActive: true } : { isActive: true },
-        select: { id: true, firstName: true, lastName: true },
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          user: { select: { image: true } },
+        },
         orderBy: [{ lastName: 'asc' }, { firstName: 'asc' }],
       }),
     ])
     teams = teamsData
-    employees = employeesData
+    employees = employeesData.map((e) => ({
+      id: e.id,
+      firstName: e.firstName,
+      lastName: e.lastName,
+      image: e.user?.image ?? null,
+    }))
   } else if (userRole === 'MANAGER' && managedTeamIds.length > 0) {
     // Manager voit les employés de ses équipes
-    employees = await prisma.employee.findMany({
+    const employeesData = await prisma.employee.findMany({
       where: { teamId: { in: managedTeamIds }, isActive: true },
-      select: { id: true, firstName: true, lastName: true },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        user: { select: { image: true } },
+      },
       orderBy: [{ lastName: 'asc' }, { firstName: 'asc' }],
     })
+    employees = employeesData.map((e) => ({
+      id: e.id,
+      firstName: e.firstName,
+      lastName: e.lastName,
+      image: e.user?.image ?? null,
+    }))
   }
 
   // Préparer les données initiales

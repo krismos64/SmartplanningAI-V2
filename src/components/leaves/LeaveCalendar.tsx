@@ -16,6 +16,7 @@ import {
 } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { cn } from '@/lib/utils'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { LeaveCalendarDay } from './LeaveCalendarDay'
 import { LEAVE_TYPE_LABELS, LEAVE_TYPE_COLORS } from '@/lib/validations/leave'
 import { LeaveType } from '@prisma/client'
@@ -25,6 +26,9 @@ type LeaveRequestWithEmployee = LeaveRequest & {
     id: string
     firstName: string
     lastName: string
+    user?: {
+      image: string | null
+    } | null
   }
 }
 
@@ -32,6 +36,7 @@ interface Employee {
   id: string
   firstName: string
   lastName: string
+  image?: string | null
 }
 
 interface LeaveCalendarProps {
@@ -153,9 +158,20 @@ export function LeaveCalendar({
           ))}
 
           {/* Employee rows */}
-          {employees.map((employee) => (
+          {employees.map((employee) => {
+            const initials = `${employee.firstName?.[0] ?? ''}${employee.lastName?.[0] ?? ''}`.toUpperCase()
+            return (
             <div key={employee.id} className="contents">
-              <div className="sticky left-0 z-10 flex items-center border-b border-r bg-background px-2 text-sm font-medium">
+              <div className="sticky left-0 z-10 flex items-center gap-2 border-b border-r bg-background px-2 text-sm font-medium">
+                <Avatar className="h-6 w-6 flex-shrink-0">
+                  {employee.image && (
+                    <AvatarImage
+                      src={employee.image}
+                      alt={`${employee.firstName} ${employee.lastName}`}
+                    />
+                  )}
+                  <AvatarFallback className="text-[10px]">{initials}</AvatarFallback>
+                </Avatar>
                 <span className="truncate">
                   {employee.firstName} {employee.lastName}
                 </span>
@@ -176,7 +192,8 @@ export function LeaveCalendar({
                 )
               })}
             </div>
-          ))}
+            )
+          })}
         </div>
       </div>
 

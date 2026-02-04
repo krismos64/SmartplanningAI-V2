@@ -129,7 +129,13 @@ export function SchedulesPageContent({
 
   // État pour les employés (filtre + heures)
   const [employees, setEmployees] = useState<
-    { id: string; firstName: string; lastName: string; weeklyHours: number }[]
+    {
+      id: string
+      firstName: string
+      lastName: string
+      weeklyHours: number
+      image?: string | null
+    }[]
   >([])
 
   // État pour le panneau heures semaine (SP-406)

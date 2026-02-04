@@ -9,6 +9,7 @@
 import { useMemo } from 'react'
 import { Clock } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import type { ScheduleWithRelations } from '@/lib/actions/schedules'
 
 // ============================================================================
@@ -20,6 +21,7 @@ export interface EmployeeWithHours {
   firstName: string
   lastName: string
   weeklyHours: number
+  image?: string | null
 }
 
 export interface WeeklyHoursPanelProps {
@@ -143,9 +145,17 @@ export function WeeklyHoursPanel({
                 <div key={emp.id} className="sp-hours-row space-y-1.5">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <div className="sp-avatar-neon flex h-7 w-7 items-center justify-center rounded-full text-xs font-medium text-primary">
-                        {getInitials(emp.firstName, emp.lastName)}
-                      </div>
+                      <Avatar className="h-7 w-7">
+                        {emp.image && (
+                          <AvatarImage
+                            src={emp.image}
+                            alt={`${emp.firstName} ${emp.lastName}`}
+                          />
+                        )}
+                        <AvatarFallback className="sp-avatar-neon text-xs font-medium text-primary">
+                          {getInitials(emp.firstName, emp.lastName)}
+                        </AvatarFallback>
+                      </Avatar>
                       <span className="max-w-[120px] truncate text-sm font-medium">
                         {emp.firstName} {emp.lastName}
                       </span>

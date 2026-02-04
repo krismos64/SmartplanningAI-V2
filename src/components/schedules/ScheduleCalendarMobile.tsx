@@ -22,7 +22,7 @@ import {
 import { fr } from 'date-fns/locale'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Clock, Users, CalendarX } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { ScheduleCalendarProps } from './ScheduleCalendar'
@@ -326,6 +326,7 @@ function ScheduleCard({ schedule, onClick }: ScheduleCardProps) {
     statusConfig.DRAFT
 
   const initials = `${schedule.employee?.firstName?.[0] ?? '?'}${schedule.employee?.lastName?.[0] ?? '?'}`
+  const employeeImage = schedule.employee?.user?.image
 
   return (
     <Card
@@ -343,6 +344,12 @@ function ScheduleCard({ schedule, onClick }: ScheduleCardProps) {
         <div className="flex items-start gap-3">
           {/* Avatar employé */}
           <Avatar className="h-10 w-10 flex-shrink-0">
+            {employeeImage && (
+              <AvatarImage
+                src={employeeImage}
+                alt={`${schedule.employee?.firstName ?? ''} ${schedule.employee?.lastName ?? ''}`}
+              />
+            )}
             <AvatarFallback className="text-sm font-medium">
               {initials}
             </AvatarFallback>

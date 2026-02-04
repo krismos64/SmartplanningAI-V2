@@ -6,7 +6,7 @@
  * Client Component orchestrateur qui affiche toutes les sections du profil.
  * Utilise AnimatedContainer pour les animations Framer Motion.
  *
- * @ticket SP-270
+ * @ticket SP-270, SP-272
  */
 
 import {
@@ -30,6 +30,9 @@ export function ProfilePageContent({ profile }: ProfilePageContentProps) {
     ? `${profile.employee.firstName} ${profile.employee.lastName}`
     : profile.user.name || 'Utilisateur'
 
+  // L'image vient des données du profil (sera mise à jour après upload via revalidation)
+  const avatarUrl = profile.user.image || null
+
   return (
     <div className="space-y-6">
       {/* En-tête avec avatar et nom */}
@@ -38,7 +41,7 @@ export function ProfilePageContent({ profile }: ProfilePageContentProps) {
           name={displayName}
           email={profile.user.email}
           role={profile.user.role}
-          avatarUrl={null}
+          avatarUrl={avatarUrl}
         />
       </AnimatedContainer>
 

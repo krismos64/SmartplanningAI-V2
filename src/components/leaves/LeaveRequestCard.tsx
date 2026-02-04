@@ -3,6 +3,7 @@
 import type { LeaveRequest, LeaveRequestStatus, UserRole } from '@prisma/client'
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { LeaveTypeBadge } from './LeaveTypeBadge'
 import { LeaveStatusBadge } from './LeaveStatusBadge'
 import { Pencil, X, CheckCircle } from 'lucide-react'
@@ -15,6 +16,9 @@ type LeaveRequestWithEmployee = LeaveRequest & {
     lastName: string
     email: string | null
     teamId: string | null
+    user?: {
+      image: string | null
+    } | null
   }
 }
 
@@ -64,12 +68,23 @@ export function LeaveRequestCard({
         <LeaveTypeBadge type={request.type} size="sm" />
         <LeaveStatusBadge status={request.status} size="sm" />
       </CardHeader>
-      <CardContent className="space-y-1 text-sm">
-        <p>
+      <CardContent className="space-y-2 text-sm">
+        <div className="flex items-center gap-2">
+          <Avatar className="h-8 w-8">
+            {request.employee.user?.image && (
+              <AvatarImage
+                src={request.employee.user.image}
+                alt={`${request.employee.firstName} ${request.employee.lastName}`}
+              />
+            )}
+            <AvatarFallback className="text-xs">
+              {`${request.employee.firstName?.[0] ?? ''}${request.employee.lastName?.[0] ?? ''}`.toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
           <span className="font-medium">
             {request.employee.firstName} {request.employee.lastName}
           </span>
-        </p>
+        </div>
         <p className="text-muted-foreground">
           {dateFormatter.format(new Date(request.startDate))} –{' '}
           {dateFormatter.format(new Date(request.endDate))}

@@ -26,6 +26,7 @@ import {
 import { MoreHorizontal, Pencil, X, CheckCircle, Eye } from 'lucide-react'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { LeaveTypeBadge } from './LeaveTypeBadge'
 import { LeaveStatusBadge } from './LeaveStatusBadge'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -37,6 +38,9 @@ type LeaveRequestWithEmployee = LeaveRequest & {
     lastName: string
     email: string | null
     teamId: string | null
+    user?: {
+      image: string | null
+    } | null
   }
 }
 
@@ -78,10 +82,22 @@ function createColumns(
       header: 'Employé',
       cell: ({ row }) => {
         const emp = row.original.employee
+        const initials = `${emp.firstName?.[0] ?? ''}${emp.lastName?.[0] ?? ''}`.toUpperCase()
         return (
-          <span className="font-medium">
-            {emp.firstName} {emp.lastName}
-          </span>
+          <div className="flex items-center gap-2">
+            <Avatar className="h-8 w-8">
+              {emp.user?.image && (
+                <AvatarImage
+                  src={emp.user.image}
+                  alt={`${emp.firstName} ${emp.lastName}`}
+                />
+              )}
+              <AvatarFallback className="text-xs">{initials}</AvatarFallback>
+            </Avatar>
+            <span className="font-medium">
+              {emp.firstName} {emp.lastName}
+            </span>
+          </div>
         )
       },
     },

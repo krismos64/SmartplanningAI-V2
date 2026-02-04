@@ -21,23 +21,25 @@ export default async function AppLayout({
     redirect('/login')
   }
 
-  // Récupérer le nom de l'entreprise
-  let companyName = 'SmartPlanning'
-  if (session.user.companyId) {
-    const company = await prisma.company.findUnique({
-      where: { id: session.user.companyId },
-      select: { name: true },
-    })
-    if (company?.name) {
-      companyName = company.name
-    }
-  }
+  // Récupérer les données utilisateur fraîches depuis la DB (dont l'avatar)
+  const dbUser = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: {
+      image: true,
+      company: {
+        select: { name: true },
+      },
+    },
+  })
+
+  const companyName = dbUser?.company?.name || 'SmartPlanning'
 
   const user = {
     id: session.user.id,
     name:
       session.user.name || session.user.email?.split('@')[0] || 'Utilisateur',
     email: session.user.email || '',
+    image: dbUser?.image || null,
     role: session.user.role as
       | 'SYSTEM_ADMIN'
       | 'DIRECTOR'

@@ -62,6 +62,9 @@ type LeaveRequestWithEmployee = LeaveRequest & {
     lastName: string
     email: string | null
     teamId: string | null
+    user?: {
+      image: string | null
+    } | null
   }
 }
 
@@ -69,6 +72,7 @@ interface Employee {
   id: string
   firstName: string
   lastName: string
+  image?: string | null
 }
 
 interface Team {

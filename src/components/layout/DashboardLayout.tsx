@@ -28,6 +28,7 @@ interface DashboardLayoutProps {
     name: string
     email: string
     avatar?: string
+    image?: string | null
     role: UserRole
     organizationId?: string
     companyName?: string

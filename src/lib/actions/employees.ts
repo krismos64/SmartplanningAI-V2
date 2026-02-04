@@ -964,7 +964,13 @@ export async function getEmployeesByTeam(
  */
 export async function getEmployeesForSelect(): Promise<
   CrudActionResult<
-    { id: string; firstName: string; lastName: string; weeklyHours: number }[]
+    {
+      id: string
+      firstName: string
+      lastName: string
+      weeklyHours: number
+      image?: string | null
+    }[]
   >
 > {
   const authResult = await getAuthenticatedUser()
@@ -1005,13 +1011,27 @@ export async function getEmployeesForSelect(): Promise<
         firstName: true,
         lastName: true,
         weeklyHours: true,
+        user: {
+          select: {
+            image: true,
+          },
+        },
       },
       orderBy: [{ lastName: 'asc' }, { firstName: 'asc' }],
     })
 
+    // Aplatir l'image du user vers l'employé
+    const data = employees.map((emp) => ({
+      id: emp.id,
+      firstName: emp.firstName,
+      lastName: emp.lastName,
+      weeklyHours: emp.weeklyHours,
+      image: emp.user?.image ?? null,
+    }))
+
     return {
       success: true,
-      data: employees,
+      data,
     }
   } catch (error) {
     console.error('[getEmployeesForSelect] Error:', error)

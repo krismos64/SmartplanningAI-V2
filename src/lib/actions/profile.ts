@@ -53,6 +53,7 @@ export interface ProfileData {
     name: string | null
     email: string
     role: string
+    image: string | null
     emailVerified: Date | null
     isActive: boolean
     lastLoginAt: Date | null
@@ -107,6 +108,7 @@ export async function getProfile(): Promise<CrudActionResult<ProfileData>> {
         name: true,
         email: true,
         role: true,
+        image: true,
         emailVerified: true,
         isActive: true,
         lastLoginAt: true,
@@ -147,6 +149,7 @@ export async function getProfile(): Promise<CrudActionResult<ProfileData>> {
           name: user.name,
           email: user.email,
           role: user.role,
+          image: user.image,
           emailVerified: user.emailVerified,
           isActive: user.isActive,
           lastLoginAt: user.lastLoginAt,

@@ -48,7 +48,7 @@ export function SettingsSection({
         'glass h-full transition-all duration-200',
         isDisabled
           ? 'cursor-not-allowed opacity-60'
-          : 'cursor-pointer hover-lift hover:border-primary/50'
+          : 'hover-lift cursor-pointer hover:border-primary/50'
       )}
       data-testid={testId}
     >
@@ -68,7 +68,9 @@ export function SettingsSection({
               </Badge>
             )}
           </div>
-          <p className="truncate text-sm text-muted-foreground">{description}</p>
+          <p className="truncate text-sm text-muted-foreground">
+            {description}
+          </p>
         </div>
 
         {/* Chevron */}

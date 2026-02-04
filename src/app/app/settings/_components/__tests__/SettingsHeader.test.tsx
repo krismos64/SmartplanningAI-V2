@@ -33,8 +33,8 @@ describe('SettingsHeader', () => {
 
   it('should have proper heading hierarchy with h1', () => {
     render(<SettingsHeader />)
-    expect(
-      screen.getByRole('heading', { level: 1 })
-    ).toHaveTextContent('Paramètres')
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
+      'Paramètres'
+    )
   })
 })

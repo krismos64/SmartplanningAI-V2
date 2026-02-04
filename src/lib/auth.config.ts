@@ -81,13 +81,18 @@ export const authConfig: NextAuthConfig = {
      * IMPORTANT: Ce callback doit être dans authConfig pour que le
      * middleware puisse lire le rôle utilisateur.
      */
-    jwt({ token, user }) {
+    jwt({ token, user, trigger, session }) {
       // Au premier login, user est défini
       if (user) {
         token.id = user.id
         token.role = user.role
         token.companyId = user.companyId
         token.emailVerified = user.emailVerified
+        token.image = user.image
+      }
+      // Mise à jour de la session (ex: après upload d'avatar)
+      if (trigger === 'update' && session?.image !== undefined) {
+        token.image = session.image
       }
       return token
     },
@@ -107,6 +112,7 @@ export const authConfig: NextAuthConfig = {
         session.user.role = token.role as import('@prisma/client').UserRole
         session.user.companyId = token.companyId as string | null
         session.user.emailVerified = token.emailVerified as Date | null
+        session.user.image = token.image as string | null
       }
       return session
     },

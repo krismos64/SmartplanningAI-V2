@@ -84,6 +84,11 @@ const LEAVE_REQUEST_INCLUDE = {
       lastName: true,
       email: true,
       teamId: true,
+      user: {
+        select: {
+          image: true,
+        },
+      },
     },
   },
 } as const
@@ -95,6 +100,9 @@ export type LeaveRequestWithEmployee = LeaveRequest & {
     lastName: string
     email: string | null
     teamId: string | null
+    user?: {
+      image: string | null
+    } | null
   }
 }
 

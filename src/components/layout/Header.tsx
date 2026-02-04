@@ -16,7 +16,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { useSidebar } from '@/components/ui/sidebar'
 import { useCommandPalette } from '@/components/providers/command-palette-provider'
 import { NotificationBell } from '@/components/notifications'
@@ -31,6 +31,7 @@ interface HeaderProps {
     name: string
     email: string
     avatar?: string
+    image?: string | null
     role: UserRole
     companyName?: string
   }
@@ -140,6 +141,9 @@ export function Header({ user }: HeaderProps) {
                 data-testid="user-menu-trigger"
               >
                 <Avatar className="h-8 w-8">
+                  {user.image && (
+                    <AvatarImage src={user.image} alt={user.name} />
+                  )}
                   <AvatarFallback className="bg-primary text-xs text-primary-foreground">
                     {userInitials}
                   </AvatarFallback>

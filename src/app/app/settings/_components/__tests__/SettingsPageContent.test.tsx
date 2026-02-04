@@ -70,16 +70,16 @@ describe('SettingsPageContent', () => {
       render(<SettingsPageContent userRole="EMPLOYEE" />)
       // SP-276: Appearance badge removed
       // SP-275: Notifications badge removed
-      // For EMPLOYEE, no badges should be visible
+      // All sections are now implemented - no "Bientôt" badges
       const badges = screen.queryAllByText('Bientôt')
       expect(badges.length).toBe(0)
     })
 
-    it('should display "Bientôt" badge only for Company section (DIRECTOR)', () => {
+    it('should not display "Bientôt" badges for DIRECTOR (all sections implemented)', () => {
       render(<SettingsPageContent userRole="DIRECTOR" />)
-      // Only Company section has "Bientôt" badge for DIRECTOR
-      const badges = screen.getAllByText('Bientôt')
-      expect(badges.length).toBe(1)
+      // All sections including Company are now implemented
+      const badges = screen.queryAllByText('Bientôt')
+      expect(badges.length).toBe(0)
     })
 
     it('should have correct number of sections for DIRECTOR', () => {

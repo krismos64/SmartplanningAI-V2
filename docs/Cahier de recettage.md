@@ -34,8 +34,8 @@ Dans le cadre du diplôme **CDA (Concepteur Développeur d'Applications)**, ce c
 | Métrique              | Objectif  | Atteint |
 | --------------------- | --------- | ------- |
 | Couverture globale    | ≥ 70%     | ✅ 85%  |
-| Tests unitaires       | ≥ 500     | ✅ 4643 |
-| Tests E2E             | ≥ 50      | ✅ 636  |
+| Tests unitaires       | ≥ 500     | ✅ 4701 |
+| Tests E2E             | ≥ 50      | ✅ 657  |
 | Score Lighthouse A11y | ≥ 90%     | ✅ 95%  |
 | Anomalies critiques   | 0 en prod | ✅ 0    |
 
@@ -470,6 +470,8 @@ Ce tableau recense chaque campagne de tests significative (mise en production, f
 
 | Date       | Sprint    | Version/Commit | Tests unitaires | Tests E2E  | Couverture | Statut  | Notes                                                                                                                                                                                                                                                                                                          |
 | ---------- | --------- | -------------- | --------------- | ---------- | ---------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 04/02/2026 | Sprint 16 | SP-272         | 4701/4701 ✅    | 657/657 ✅ | ~85%       | ✅ PASS | 🆕 SP-272 Avatar Upload Cloudinary. API Route `/api/avatar` (POST upload, DELETE suppression). Intégration Cloudinary CDN (transformation crop/resize 400x400, optimisation auto). Affichage avatar dans Header (navbar), ScheduleCalendarMobile, WeeklyHoursPanel, LeavesList, LeaveCalendar, LeaveRequestCard. Propagation user.image via relations Prisma. Fetch DB direct dans layout pour image fraîche (vs JWT). Composant Avatar Shadcn/ui avec AvatarFallback initiales. Total : 5358 tests |
+| 04/02/2026 | Sprint 16 | SP-435         | 4701/4701 ✅    | 657/657 ✅ | ~85%       | ✅ PASS | 🆕 SP-435 Company Settings Page. +19 tests unitaires (company-settings actions), +21 tests E2E (company-settings.spec.ts). Page `/app/settings/company` avec RBAC DIRECTOR/SYSTEM_ADMIN. Sections : Company Info (name, address), Working Days (7 checkboxes + 3 presets Mon-Fri/Mon-Sat/All Week), Working Hours (start/end), Lunch Break (toggle + hours). Server Actions : getCompanySettings, updateCompanySettings, resetCompanySettings. Optimistic UI avec rollback. Types DayOfWeek, CompanySettings, LunchBreakSettings. Page Object CompanySettingsPage. Badge "Bientôt" retiré section Entreprise. Total : 5358 tests |
 | 03/02/2026 | Sprint 16 | SP-433         | 4548/4548 ✅    | 548/548 ✅ | ~85%       | ✅ PASS | 🆕 SP-433 User Preferences Migration. +62 tests unitaires (validation 31, utils 31). Champ `preferences Json?` ajouté au modèle User. Types TypeScript : UserPreferences, DisplayPreferences (theme, dateFormat, timeFormat, language), NotificationPreferences (email/inApp par canal). Schémas Zod validation avec defaults. Helpers parsing/serialization avec deep merge. Migration Prisma 20260203175823. Total : 5096 tests |
 | 03/02/2026 | Sprint 15 | SP-327         | 4486/4486 ✅    | 548/548 ✅ | ~85%       | ✅ PASS | 🆕 SP-327 SSE Real-time Notifications. +83 tests unitaires (SSE emitter 3, notification actions 29, hooks). Route API `/api/notifications/stream` avec Server-Sent Events. Emission temps réel lors création notification. Nettoyage connexions mortes. **Fix E2E** : Remplacement `networkidle` par `domcontentloaded` (13 fichiers) car SSE maintient connexion ouverte. Suppression 41 tests E2E non critiques (navigation/keyboard, recent-pages, type filter flaky). Total : 5034 tests |
 | 04/02/2026 | Sprint 15 | SP-275         | 4643/4643 ✅    | 636/636 ✅ | ~85%       | ✅ PASS | 🆕 SP-275 Notification Preferences. +27 tests unitaires (3 fichiers : notification-preferences actions 15, notification-categories helper 5, NotificationCategoryCard 16, NotificationsPageContent 12), +14 tests E2E (1 fichier). Page `/app/settings/notifications` avec gestion préférences par catégorie (Planning, Congés, Tâches, Système) et par canal (Email, In-App). Switches toggle optimistic UI avec useTransition. Server Actions : getNotificationPreferences, updateNotificationPreferences, resetNotificationPreferences. Helper notification-categories.ts pour mapping NotificationType → catégorie préférence. Intégration factory functions notifications (vérification préférences utilisateur avant création in-app). 4 composants : NotificationsPageContent, NotificationCategoryCard, loading skeleton, index barrel. Page Object NotificationsPreferencesPage. Badge "Bientôt" retiré de section Notifications. Total : 5279 tests |
@@ -1740,8 +1742,9 @@ not-found.tsx (Server Component)
 | 03/02/2026 (SP-324)         | 3870            | 589       | 4459  | ~85%       | 📈 +56   |
 | 03/02/2026 (SP-327)         | 4486            | 548       | 5034  | ~85%       | 📈 +83 / 📉 -41 E2E  |
 | 03/02/2026 (SP-433)         | 4548            | 548       | 5096  | ~85%       | 📈 +62   |
+| 04/02/2026 (SP-435)         | 4701            | 657       | 5358  | ~85%       | 📈 +262  |
 
-**Graphique d'évolution** : De 27 tests (04/12) à 5096 tests (03/02) = **+18774% de croissance** 🚀
+**Graphique d'évolution** : De 27 tests (04/12) à 5358 tests (04/02) = **+19744% de croissance** 🚀
 
 ---
 
@@ -1751,11 +1754,11 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
 
 | N°  | Compétence                                                       | Preuve                                                                                                                                      |
 | --- | ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | Tester les composants d'une application                          | 4548 tests unitaires documentés                                                                                                             |
+| 1   | Tester les composants d'une application                          | 4701 tests unitaires documentés                                                                                                             |
 | 2   | Contribuer à la qualité du code                                  | Couverture 85%, anomalies tracées                                                                                                           |
 | 3   | Documenter les procédures                                        | Procédure de recette formalisée                                                                                                             |
 | 4   | Utiliser une méthodologie                                        | Approche structurée par sprints                                                                                                             |
-| 5   | Développer des tests automatisés                                 | 5096 tests (unitaires + E2E)                                                                                                                |
+| 5   | Développer des tests automatisés                                 | 5358 tests (unitaires + E2E)                                                                                                                |
 | 6   | Sécuriser une application                                        | Tests RBAC (92 unitaires, 27 E2E), rate limiting, protection énumération                                                                    |
 | 7   | Concevoir une architecture logicielle                            | Pattern ServiceResult<T>, multi-tenant                                                                                                      |
 | 8   | Développer des composants métier                                 | 4 dashboards par rôle                                                                                                                       |
@@ -1811,6 +1814,7 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
 | 58  | Concevoir une page Next.js App Router avec Server/Client Components | Route `/app/dashboard/leaves` : Server Component fetch initial (requests, stats, employees, teams), Client Component orchestrateur LeavesPageContent avec tabs, filtres URL sync via searchParams, Dialog/Sheet responsive, metadata SEO (SP-413) 🆕 |
 | 59  | Implémenter des pages dynamiques avec timeline et gestion d'état | Routes `/leaves/[id]` (page détail avec LeaveTimeline événements RBAC) et `/leaves/balances` (gestion soldes CP/RTT DIRECTOR only). Next.js 15 Promise params, LeaveDetailCard, BalancesPageContent avec pagination et édition inline (SP-414) 🆕 |
 | 60  | Intégrer des notifications email et overlays multi-données       | Email LeaveRequestedEmail notifiant manager lors création demande (React Email + Nodemailer, template réutilisable, envoi background non-bloquant). Overlay congés approuvés sur Schedule-X (7 types couleurs, PlainDate journée entière, callbacks click). Dashboard stats confirmées (SP-415) 🆕 |
+| 61  | Implémenter une page de paramètres entreprise avec RBAC          | Page `/app/settings/company` RBAC DIRECTOR/SYSTEM_ADMIN. 4 sections (Company Info, Working Days, Working Hours, Lunch Break). Server Actions avec optimistic UI et rollback erreur. Presets jours travaillés (Mon-Fri/Mon-Sat/All Week). Types TypeScript DayOfWeek, CompanySettings, LunchBreakSettings. 19 tests unitaires + 21 tests E2E (SP-435) 🆕 |
 
 ---
 
@@ -1857,6 +1861,8 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
 
 | Date       | Modification                                                                                                                                                                                                                                                                                                                                     |
 | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 04/02/2026 | 🆕 SP-272 Avatar Upload Cloudinary : API Route `/api/avatar` (POST upload avec validation 5MB/image, DELETE suppression). Intégration Cloudinary SDK v2 (transformation crop/resize 400x400 gravity face, format auto/quality auto, folder smartplanning/avatars). Affichage avatar dans : Header (navbar utilisateur), ScheduleCalendarMobile, WeeklyHoursPanel, LeavesList (DataTable), LeaveCalendar (grille employés), LeaveRequestCard (cartes mobile). Propagation User.image via relations Prisma (Employee.user.image). Fetch DB direct dans layout au lieu du JWT pour image fraîche. Revalidation paths /app/profile, /app, /app/schedules. Composant Avatar Shadcn/ui avec AvatarImage conditionnel et AvatarFallback initiales. Types mis à jour : LeaveRequestWithEmployee, ScheduleWithRelations, Employee. Total : 5358 tests |
+| 04/02/2026 | 🆕 SP-435 Company Settings Page : +19 tests unitaires (company-settings actions), +21 tests E2E (company-settings.spec.ts avec Page Object CompanySettingsPage). Page `/app/settings/company` avec RBAC DIRECTOR/SYSTEM_ADMIN. 4 sections : Company Info (name, address), Working Days (7 checkboxes + 3 presets Mon-Fri/Mon-Sat/All Week), Working Hours (start/end), Lunch Break (toggle + hours). Server Actions : getCompanySettings, updateCompanySettings, resetCompanySettings avec optimistic UI et rollback erreur. Types TypeScript : DayOfWeek, CompanySettings, LunchBreakSettings, WorkingDaysPreset. Constants : DAYS_OF_WEEK, DAY_LABELS, DAY_SHORT_LABELS, WORKING_DAYS_PRESETS, DEFAULT_COMPANY_SETTINGS. Badge "Bientôt" retiré de section Entreprise dans Settings Hub. Tests E2E settings-hub mis à jour (20 tests passent). Compétence CDA #61 ajoutée. Total : 5358 tests |
 | 27/01/2026 | 🆕 SP-406 Améliorations Plannings : +16 tests E2E Playwright (schedules.spec.ts avec Page Object SchedulesPage). WeeklyHoursPanel (compteur heures hebdo vs contrat). Type REST (repos journée entière, isAllDay). Simplification statuts DRAFT/PUBLISHED. BulkDeleteDialog (suppression en masse employés). Nom entreprise dans Sidebar layout. Corrections boucles infinies React 19 (ANO-021). Refonte CSS calendrier Schedule-X. Exports PDF/Excel avec filtres et colonne heures. Downgrade @schedule-x 2.11.0 + patch-package (ANO-022). Email employé (migration Prisma). Compétences CDA #48-53 ajoutées. Total : 3921 tests |
 | 27/01/2026 | 🆕 SP-404 Export Excel Planning : +7 tests unitaires (generateScheduleExcel: 7). API Route GET `/api/schedules/export/excel` avec auth NextAuth v5 et RBAC (MANAGER/DIRECTOR). Générateur `generateScheduleExcel` via SheetJS (`xlsx`) : 3 feuilles (Planning détaillé 11 colonnes, Résumé par employé avec heures par type, Statistiques globales). `ExportDropdown` mis à jour : export Excel fonctionnel remplaçant le placeholder. Total : 3721 tests |
 | 27/01/2026 | 🆕 SP-403 Export PDF Planning : +6 tests unitaires (SchedulePdfDocument: 6). API Route GET `/api/schedules/export/pdf` avec auth NextAuth v5 et RBAC (MANAGER/DIRECTOR). Composant React PDF `SchedulePdfDocument` via `@react-pdf/renderer` (A4 paysage, tableau employés × jours, légende 7 types de shift). `ExportDropdown` dans toolbar schedules (export PDF fonctionnel + placeholder Excel). Total : 3714 tests |
@@ -1919,6 +1925,32 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
 ---
 
 ## Documents liés
+
+### Sprint 16 - Company Settings (SP-435) 🆕
+
+- SP-435 : Page Paramètres Entreprise ✅ TERMINÉ
+  - Route : `/app/settings/company`
+  - RBAC : DIRECTOR et SYSTEM_ADMIN uniquement (autres rôles redirigés vers /app/settings)
+  - **Sections UI** :
+    - Company Info : Nom et adresse entreprise (inputs avec debounce auto-save)
+    - Working Days : 7 checkboxes (Lun-Dim) + 3 presets (Mon-Fri, Mon-Sat, All Week)
+    - Working Hours : Heures début/fin journée de travail (format HH:mm)
+    - Lunch Break : Toggle pause déjeuner + heures début/fin si activé
+  - **Server Actions** :
+    - `getCompanySettings` : Récupère paramètres depuis Company.defaultWorkingDays, defaultWorkingHours, defaultOpeningHours
+    - `updateCompanySettings` : Mise à jour avec validation Zod et RBAC
+    - `resetCompanySettings` : Reset aux valeurs par défaut (Mon-Fri, 09:00-18:00)
+  - **Types TypeScript** :
+    - `DayOfWeek` : 'MONDAY' | 'TUESDAY' | ... | 'SUNDAY'
+    - `CompanySettings` : { companyName, address, workingDays, workingHoursStart, workingHoursEnd, lunchBreak }
+    - `LunchBreakSettings` : { enabled, start, end }
+    - `WorkingDaysPreset` : { id, label, days }
+  - **Optimistic UI** : useState + useTransition avec rollback sur erreur toast
+  - **Tests** :
+    - 19 tests unitaires (company-settings.test.ts) : CRUD, RBAC 4 rôles, validation
+    - 21 tests E2E (company-settings.spec.ts) : Page structure, RBAC, working days, presets, hours, reset
+    - Page Object `CompanySettingsPage` avec helpers complets
+  - **Settings Hub** : Badge "Bientôt" retiré de section Entreprise, lien actif vers /app/settings/company
 
 ### Sprint 12 - Gestion des Plannings (SP-392+) 🆕
 

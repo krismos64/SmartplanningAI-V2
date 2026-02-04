@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 4 février 2026 (Company Settings - SP-435)
+- **Dernière mise à jour** : 4 février 2026 (Avatar Upload Cloudinary - SP-272)
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -35,6 +35,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Authentication** : NextAuth v5 (Auth.js)
 - **ORM** : Prisma 6.0.1
 - **Validation** : Zod
+- **Media Storage** : Cloudinary (avatars)
 
 ### Base de données
 
@@ -70,7 +71,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Dashboard Super Admin** (SP-148) : Page dashboard admin SaaS avec Server Components, protection SYSTEM_ADMIN, 7 composants (Welcome, Stats, MrrChart, SignupsChart, PlansChart, RecentCompanies, QuickActions)
 - **Animations Dashboards** (SP-431) : Animations Framer Motion sur 15 composants (4 dashboards), variants fadeSlideUp/stagger, support prefers-reduced-motion
 - **Leave Management UI** (SP-411/SP-412/SP-413/SP-414/SP-415) : 16 composants congés + pages (LeaveTypeBadge, LeaveStatusBadge, LeaveBalanceCard, LeaveBalanceEditDialog, LeaveRequestCard, LeaveRequestForm, LeaveReviewDialog, LeaveConflictWarning, LeaveFilters, LeavesList, LeavesListMobile, LeaveCalendar, LeaveCalendarDay, LeaveStatsBar, LeaveDetailCard, LeaveTimeline) + pages orchestrateur, détail [id], balances + email notification manager + overlay congés Schedule-X
-- **Profile Page** (SP-270, SP-271, SP-273, SP-277, SP-278) : Page profil utilisateur avec Server Components, 7 composants UI (ProfileHeader, PersonalInfoCard, ProfessionalInfoCard, AccountInfoCard, ProfileActions, ProfilePageContent, InfoRow), Server Action getProfile, design Cyber Glass 3D avec AnimatedContainer, skeleton loading + **Edit Profile Page** avec React Hook Form + Zod validation, Server Action updateProfile, gestion SYSTEM_ADMIN sans Employee + **Change Password Page** avec indicateur de force en temps réel (5 critères, 4 niveaux), 3 toggles visibilité indépendants, Server Action changePassword sécurisée (bcrypt) + **Delete Account Page** (RGPD Article 17) avec double confirmation (email + password), checkbox consentement, transaction Prisma cascade, logs traçabilité, déconnexion automatique après suppression + **Export Data Page** (RGPD Article 20) avec téléchargement JSON de toutes les données personnelles (compte, profil, plannings, congés, disponibilités, tâches, notifications), exclusion données sensibles (mots de passe, tokens), 273 tests unitaires + 78 tests E2E
+- **Profile Page** (SP-270, SP-271, SP-272, SP-273, SP-277, SP-278) : Page profil utilisateur avec Server Components, 7 composants UI (ProfileHeader, PersonalInfoCard, ProfessionalInfoCard, AccountInfoCard, ProfileActions, ProfilePageContent, InfoRow), Server Action getProfile, design Cyber Glass 3D avec AnimatedContainer, skeleton loading + **Edit Profile Page** avec React Hook Form + Zod validation, Server Action updateProfile, gestion SYSTEM_ADMIN sans Employee + **Avatar Upload Cloudinary** (SP-272) avec drag & drop, preview en temps réel, crop/resize automatique, API route `/api/avatar` (POST upload, DELETE suppression), stockage Cloudinary CDN, affichage dans navbar, plannings mobiles, liste et calendrier des congés + **Change Password Page** avec indicateur de force en temps réel (5 critères, 4 niveaux), 3 toggles visibilité indépendants, Server Action changePassword sécurisée (bcrypt) + **Delete Account Page** (RGPD Article 17) avec double confirmation (email + password), checkbox consentement, transaction Prisma cascade, logs traçabilité, déconnexion automatique après suppression + **Export Data Page** (RGPD Article 20) avec téléchargement JSON de toutes les données personnelles (compte, profil, plannings, congés, disponibilités, tâches, notifications), exclusion données sensibles (mots de passe, tokens), 273 tests unitaires + 78 tests E2E
 - **Notifications System** (SP-321, SP-322, SP-323, SP-324, SP-325, SP-326, SP-327) : Système de notifications complet avec modèle enrichi (types métier PLANNING/LEAVE/TASK/INCIDENT, priorités LOW/MEDIUM/HIGH/URGENT), factory functions par domaine, hooks SWR (useNotificationsCount, useNotifications, useNotificationsPaginated avec optimistic updates), composants UI (NotificationBell avec badge animé Framer Motion, NotificationList dropdown, page historique /app/dashboard/notifications avec filtres type/statut, pagination, actions en masse mark all read/delete all read), **notifications temps réel SSE** (Server-Sent Events avec NotificationSSEManager singleton, API route /api/notifications/stream, useNotificationsStream hook avec reconnexion auto, NotificationToast avec sonner, NotificationsProvider global), 187 tests unitaires
 - **User Preferences** (SP-433) : Système de préférences utilisateur avec champ JSON Prisma (User.preferences), types TypeScript complets (UserPreferences, DisplayPreferences, NotificationPreferences), schémas Zod pour validation (thème light/dark/system, format date DD/MM/YYYY|MM/DD/YYYY|YYYY-MM-DD, format heure 24h/12h, langue fr/en, préférences notifications par canal email/inApp et type planning/leaves/tasks/system), helpers parsing/serialization avec deep merge des valeurs par défaut, 62 tests unitaires
 - **Settings Hub Page** (SP-274) : Page centrale des paramètres `/app/settings` avec Server Component, 5 sections (Profil, Apparence, Notifications, Sécurité, Entreprise), filtrage RBAC (section Entreprise visible uniquement DIRECTOR/SYSTEM_ADMIN), cards navigables avec badges "Bientôt" pour sections futures, design Cyber Glass 3D avec AnimatedContainer stagger, skeleton loading, 25 tests unitaires + 15 tests E2E
@@ -711,6 +712,41 @@ Fondations Prisma pour le module de gestion des plannings :
   - Index ajoutés pour recurrenceGroupId et scheduleGroupId
 
 - **Migration** : `20260126113942_add_availability_model_and_schedule_recurrence`
+
+### Upload Photo de Profil - Cloudinary (SP-272 - 4 février 2026)
+
+Système complet d'upload et gestion de photo de profil avec Cloudinary :
+
+- **API Route `/api/avatar`** :
+  - `POST` : Upload avec validation (5MB max, types image/*), transformation Cloudinary (crop, resize 400x400), stockage CDN
+  - `DELETE` : Suppression de l'avatar Cloudinary et mise à null en base
+  - Authentification requise via `auth()`
+  - Revalidation automatique des paths (`/app/profile`, `/app`, `/app/schedules`)
+
+- **Intégration Cloudinary** :
+  - SDK `cloudinary` v2 avec configuration via variables d'environnement
+  - Transformation automatique : `width: 400, height: 400, crop: 'fill', gravity: 'face'`
+  - Format optimisé : `quality: 'auto', fetch_format: 'auto'`
+  - Folder organisé : `smartplanning/avatars/`
+  - Public ID unique : `user-{userId}`
+
+- **Affichage Avatar dans l'application** :
+  - **Navbar (Header)** : Avatar utilisateur avec fallback initiales
+  - **Planning Mobile** : Avatars employés dans `ScheduleCalendarMobile` et `WeeklyHoursPanel`
+  - **Liste Congés** : Avatars employés dans `LeavesList` (DataTable TanStack)
+  - **Calendrier Congés** : Avatars employés dans `LeaveCalendar` (grille mensuelle)
+  - **Cartes Congés Mobile** : Avatars dans `LeaveRequestCard`
+
+- **Architecture données** :
+  - Champ `User.image` stocke l'URL Cloudinary
+  - Propagation via relations Prisma : `Employee.user.image`
+  - Types TypeScript mis à jour : `LeaveRequestWithEmployee`, `ScheduleWithRelations`, `Employee`
+  - Fetch DB direct dans layout pour image fraîche (vs JWT token)
+
+- **Composant Avatar** (Shadcn/ui) :
+  - `AvatarImage` : Affichage conditionnel si URL présente
+  - `AvatarFallback` : Initiales en fallback (prénom + nom)
+  - Tailles : 6x6 (calendrier), 8x8 (listes), configurable
 
 ### Réinitialisation du mot de passe (SP-263 - 25 janvier 2026)
 
@@ -1354,6 +1390,7 @@ SmartplanningAI/
 │   │   │   ├── director/dashboard/ # Dashboard DIRECTOR+
 │   │   │   └── admin/dashboard/    # Dashboard SYSTEM_ADMIN
 │   │   ├── api/          # API Routes
+│   │   │   ├── avatar/           # Upload/Delete avatar Cloudinary (SP-272)
 │   │   └── layout.tsx
 │   ├── components/       # Composants React réutilisables
 │   │   ├── ui/           # Shadcn components (button, form, label...)
