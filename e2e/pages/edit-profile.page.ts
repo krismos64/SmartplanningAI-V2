@@ -222,11 +222,15 @@ export class EditProfilePage {
    */
   async expectUpdateSuccess() {
     // Attendre soit le toast, soit la redirection (premier qui arrive)
+    // Note: On utilise domcontentloaded car SSE maintient la connexion ouverte
     await Promise.race([
       this.page
         .getByText(/Profil mis à jour avec succès/i)
         .waitFor({ state: 'visible', timeout: 15000 }),
-      this.page.waitForURL(/\/app\/profile$/, { timeout: 15000 }),
+      this.page.waitForURL(/\/app\/profile$/, {
+        timeout: 15000,
+        waitUntil: 'domcontentloaded',
+      }),
     ])
   }
 }

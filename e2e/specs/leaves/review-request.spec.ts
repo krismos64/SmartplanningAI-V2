@@ -15,11 +15,12 @@ test.describe('Leaves - Validation demande (MANAGER)', () => {
     const leavesPage = new LeavesPage(managerPage)
     await leavesPage.goto()
 
-    // Filtrer par PENDING
+    // Filtrer par PENDING via le bouton quick filter
     await leavesPage.filterByStatus('En attente')
 
-    // La page doit s'afficher sans erreur
-    await expect(managerPage).toHaveURL(/status=PENDING/)
+    // Vérifier que le bouton est pressé (les filtres utilisent aria-pressed, pas l'URL)
+    const statusButton = managerPage.getByRole('button', { name: /En attente:/i })
+    await expect(statusButton).toHaveAttribute('aria-pressed', 'true')
   })
 
   test('peut accéder aux filtres par employé @manager', async ({
