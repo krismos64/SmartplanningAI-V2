@@ -1,59 +1,65 @@
 # 🗄️ Architecture Base de Données - SmartPlanning V2
 
+**Dernière mise à jour** : 4 février 2026
+**ORM** : Prisma 6.18.0
+**Base** : PostgreSQL 16
+**Migrations** : 11 migrations appliquées
+
+---
+
 ## 📋 Vue d'Ensemble
 
 **Type :** Architecture **multi-tenant** avec isolation par entreprise
-**ORM :** Prisma 6.1.0
-**Base :** PostgreSQL 16
-**Pattern :** SaaS avec abonnements
+**Pattern :** SaaS avec abonnements Stripe
+**Modèles :** 16 tables principales + 4 tables NextAuth
 
 ---
 
 ## 🏗️ Diagramme des Relations
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                        MULTI-TENANT                              │
-│                                                                  │
-│  ┌──────────────┐                                                │
-│  │   Company    │ ◄──── Organisation centrale (isolation)        │
-│  │  (Tenant)    │                                                │
-│  └──────┬───────┘                                                │
-│         │                                                        │
-│         │ 1:N (Une entreprise, plusieurs...)                    │
-│         │                                                        │
-│    ┌────┴─────────────────────────────────┐                     │
-│    │                                      │                     │
-│    ▼                                      ▼                     │
-│  ┌─────────┐                          ┌──────┐                  │
-│  │  User   │◄──────────────────┐      │ Team │                  │
-│  │ (Auth)  │                   │      └──┬───┘                  │
-│  └────┬────┘                   │         │                     │
-│       │                        │         │ N:1                  │
-│       │ 1:1                    │         │                     │
-│       ▼                        │         ▼                     │
-│  ┌──────────┐      1:N      ┌──┴─────────┐                     │
-│  │ Employee │◄──────────────┤  Manager   │                     │
-│  │ (Métier) │               │ (Employee) │                     │
-│  └────┬─────┘               └────────────┘                     │
-│       │                                                         │
-│       │ 1:N (Un employé, plusieurs...)                         │
-│       │                                                         │
-│    ┌──┴──────────────────┐                                     │
-│    │                     │                                     │
-│    ▼                     ▼                                     │
-│  ┌──────────┐      ┌─────────────┐                             │
-│  │ Schedule │      │LeaveRequest │                             │
-│  └────┬─────┘      └──────┬──────┘                             │
-│       │                   │                                    │
-│       └───────┬───────────┘                                    │
-│               │ 1:N                                            │
-│               ▼                                                │
-│         ┌──────────────┐                                       │
-│         │ Notification │                                       │
-│         └──────────────┘                                       │
-│                                                                │
-└────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                           MULTI-TENANT SaaS                                  │
+│                                                                              │
+│  ┌──────────────┐                                                            │
+│  │   Company    │ ◄──── Organisation centrale (isolation tenant)             │
+│  │  (Tenant)    │                                                            │
+│  └──────┬───────┘                                                            │
+│         │                                                                    │
+│         │ 1:N (Une entreprise, plusieurs...)                                │
+│         │                                                                    │
+│    ┌────┴────────────────────────────────────────────────┐                  │
+│    │                    │                    │           │                  │
+│    ▼                    ▼                    ▼           ▼                  │
+│  ┌─────────┐        ┌──────┐          ┌──────────┐  ┌────────────┐         │
+│  │  User   │        │ Team │          │Subscription│ │IncidentNote│         │
+│  │ (Auth)  │        └──┬───┘          │  (Stripe) │ └────────────┘         │
+│  └────┬────┘           │              └──────────┘                          │
+│       │                │ N:1                                                 │
+│       │ 1:1            │                                                     │
+│       ▼                ▼                                                     │
+│  ┌──────────┐      ┌─────────────┐                                          │
+│  │ Employee │◄─────┤   Manager   │                                          │
+│  │ (Métier) │      │ (Employee)  │                                          │
+│  └────┬─────┘      └─────────────┘                                          │
+│       │                                                                      │
+│       │ 1:N (Un employé, plusieurs...)                                      │
+│       │                                                                      │
+│    ┌──┴──────────────────────────────────┐                                  │
+│    │              │              │        │                                  │
+│    ▼              ▼              ▼        ▼                                  │
+│  ┌──────────┐ ┌─────────────┐ ┌────────────┐ ┌──────────────┐              │
+│  │ Schedule │ │LeaveRequest │ │LeaveBalance│ │ Availability │              │
+│  └──────────┘ └─────────────┘ └────────────┘ └──────────────┘              │
+│                                                                              │
+│                     ┌──────────────┐                                         │
+│  User ─────────────►│ Notification │                                         │
+│       │             └──────────────┘                                         │
+│       │             ┌──────────────┐                                         │
+│       └────────────►│ PersonalTask │ (100% privé)                           │
+│                     └──────────────┘                                         │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
 
 Relations NextAuth v5 (authentification)
 ┌──────┐
@@ -61,7 +67,7 @@ Relations NextAuth v5 (authentification)
 └──────┘  │ 1:N
           ├──► Account (OAuth providers)
           ├──► Session (sessions actives)
-          └──► VerificationToken (reset password, etc.)
+          └──► VerificationToken (reset password)
 ```
 
 ---
@@ -86,10 +92,11 @@ Relations NextAuth v5 (authentification)
 - workingHoursEnd: String         // "18:00"
 - workingDays: String[]           // ["MONDAY", "TUESDAY", ...]
 - timezone: String                // "Europe/Paris"
+- defaultOpeningHours: Json?      // Configuration avancée par jour
 
 // Abonnement SaaS
 - subscriptionPlan: Enum          // FREE, STARTER, BUSINESS, ENTERPRISE
-- subscriptionStatus: Enum        // TRIAL, ACTIVE, PAST_DUE, CANCELED
+- subscriptionStatus: Enum        // TRIAL, ACTIVE, PAST_DUE, CANCELED, EXPIRED
 - trialEndsAt: DateTime?
 - subscriptionEndsAt: DateTime?
 
@@ -105,6 +112,12 @@ Relations NextAuth v5 (authentification)
 - **1:N Employee** → Une entreprise a plusieurs employés
 - **1:N Schedule** → Une entreprise gère plusieurs plannings
 - **1:N LeaveRequest** → Une entreprise reçoit plusieurs demandes de congés
+- **1:N LeaveBalance** → Soldes de congés par employé/année
+- **1:N Notification** → Notifications de l'entreprise
+- **1:1 Subscription** → Abonnement Stripe
+- **1:N Payment** → Historique des paiements
+- **1:N Availability** → Disponibilités des employés
+- **1:N IncidentNote** → Notes d'incident
 
 **🔐 Sécurité :** Toutes les requêtes doivent filtrer par `companyId` pour l'isolation.
 
@@ -122,12 +135,15 @@ Relations NextAuth v5 (authentification)
 - emailVerified: DateTime?        // Email confirmé ?
 - name: String?                   // Nom affiché
 - password: String                // Hash bcrypt
-- image: String?                  // Avatar
+- image: String?                  // Avatar (URL Cloudinary)
 - role: UserRole                  // SYSTEM_ADMIN, DIRECTOR, MANAGER, EMPLOYEE
 
 // Relations entreprise
 - companyId: String?              // NULL pour SYSTEM_ADMIN
 - company: Company?
+
+// Préférences utilisateur (SP-433)
+- preferences: Json?              // { display: {...}, notifications: {...} }
 
 // Sécurité
 - isActive: Boolean               // Compte désactivé ?
@@ -144,12 +160,16 @@ Relations NextAuth v5 (authentification)
 - **1:1 Employee** → Un user peut avoir UN profil employé
 - **1:N Account** → OAuth providers (Google, GitHub, etc.)
 - **1:N Session** → Sessions actives
+- **1:N Notification** → Notifications de l'utilisateur
+- **1:N PersonalTask** → Tâches personnelles privées
+- **1:N IncidentNote** → Notes d'incident rédigées (auteur)
+- **1:N LeaveBalance** → Mises à jour des soldes (updatedBy)
 
 **🎯 Les 4 Rôles (Enum UserRole) :**
 
 | Rôle             | Description            | Accès                          |
 | ---------------- | ---------------------- | ------------------------------ |
-| **SYSTEM_ADMIN** | Super admin SaaS (toi) | Toutes les entreprises         |
+| **SYSTEM_ADMIN** | Super admin SaaS       | Toutes les entreprises         |
 | **DIRECTOR**     | Directeur entreprise   | Toute son entreprise           |
 | **MANAGER**      | Manager d'équipe       | Son équipe uniquement          |
 | **EMPLOYEE**     | Employé simple         | Son planning + demandes congés |
@@ -164,8 +184,8 @@ Relations NextAuth v5 (authentification)
 
 ```prisma
 - id: String (cuid)
-- userId: String (unique)         // Lien 1:1 avec User
-- user: User
+- userId: String? (unique)        // Lien 1:1 avec User (optionnel)
+- user: User?
 
 // Informations RH
 - firstName: String
@@ -173,10 +193,15 @@ Relations NextAuth v5 (authentification)
 - jobTitle: String?               // "Développeur", "Manager"
 - department: String?             // "IT", "RH"
 - phone: String?
+- email: String?
 - hireDate: DateTime?             // Date d'embauche
 
 // Planning
 - weeklyHours: Float              // 35.0 heures/semaine
+
+// Compétences & Préférences (IA future)
+- skills: String[]                // ["React", "TypeScript", "Node.js"]
+- preferences: Json?              // Préférences horaires
 
 // Relations
 - companyId: String
@@ -191,17 +216,21 @@ Relations NextAuth v5 (authentification)
 
 **Relations :**
 
-- **1:1 User** → Un employé = un compte user
+- **1:1 User** → Un employé = un compte user (optionnel)
 - **N:1 Company** → Un employé appartient à UNE entreprise
 - **N:1 Team** → Un employé est dans UNE équipe (optionnel)
+- **1:N Team (managedTeams)** → Un employé peut manager plusieurs équipes
 - **1:N Schedule** → Un employé a plusieurs créneaux de planning
 - **1:N LeaveRequest** → Un employé fait plusieurs demandes de congés
+- **1:N LeaveBalance** → Soldes de congés par année
+- **1:N Availability** → Disponibilités déclarées
+- **1:N IncidentNote** → Notes d'incident le concernant (sujet)
 
 **Distinction User ↔ Employee :**
 
 ```
-User = Authentification (login, password, rôle)
-Employee = Métier RH (job, équipe, contrat)
+User = Authentification (login, password, rôle, avatar)
+Employee = Métier RH (job, équipe, contrat, compétences)
 ```
 
 **Pourquoi séparer ?** Un SYSTEM_ADMIN peut n'avoir QUE un User (pas d'Employee).
@@ -259,14 +288,22 @@ Employee = Métier RH (job, équipe, contrat)
 - endTime: String                 // "17:00"
 
 // Type & statut
-- type: ScheduleType              // WORK, MEETING, REMOTE, OVERTIME...
-- status: ScheduleStatus          // DRAFT, CONFIRMED, CANCELLED
+- type: ScheduleType              // WORK, MEETING, REMOTE, OVERTIME, REST...
+- status: ScheduleStatus          // DRAFT, CONFIRMED
 
 // Description
 - title: String?                  // "Réunion client"
 - description: String?
 - location: String?               // "Salle A", "Visio"
 - color: String?                  // "#10B981"
+
+// Récurrence (SP-399)
+- isRecurring: Boolean
+- recurrenceRule: Json?           // { frequency, interval, daysOfWeek, endDate }
+- recurrenceGroupId: String?      // ID partagé par tous les créneaux récurrents
+
+// Multi-employés (SP-397)
+- scheduleGroupId: String?        // ID partagé pour créneaux multi-employés
 
 // Relations
 - employeeId: String
@@ -275,10 +312,6 @@ Employee = Métier RH (job, équipe, contrat)
 - team: Team?
 - companyId: String
 - company: Company
-
-// Récurrence (V2)
-- isRecurring: Boolean
-- recurrenceRule: String?         // Format iCal RRULE
 
 // Audit
 - createdById: String?            // Qui a créé ce créneau
@@ -300,6 +333,7 @@ Employee = Métier RH (job, équipe, contrat)
 - `REMOTE` : Télétravail
 - `ON_CALL` : Astreinte
 - `OVERTIME` : Heures supplémentaires
+- `REST` : Repos (journée entière)
 
 ---
 
@@ -319,7 +353,11 @@ Employee = Métier RH (job, équipe, contrat)
 
 // Type & statut
 - type: LeaveType                 // PAID_LEAVE, SICK_LEAVE, RTT...
-- status: LeaveRequestStatus      // PENDING, APPROVED, REJECTED
+- status: LeaveRequestStatus      // PENDING, APPROVED, REJECTED, CANCELLED
+
+// Demi-journée
+- halfDay: Boolean                // Demi-journée ?
+- halfDayPeriod: String?          // "AM" | "PM"
 
 // Justification
 - reason: String?                 // Raison de la demande
@@ -354,6 +392,7 @@ Employee = Métier RH (job, équipe, contrat)
 - `UNPAID_LEAVE` : Congé sans solde
 - `RTT` : Réduction du temps de travail
 - `PARENTAL_LEAVE` : Congé parental
+- `FAMILY_EVENT` : Événement familial
 - `OTHER` : Autre
 
 **Workflow de validation :**
@@ -361,14 +400,94 @@ Employee = Métier RH (job, équipe, contrat)
 ```
 1. Employee crée la demande → PENDING
 2. Manager (MANAGER/DIRECTOR) valide → APPROVED ou REJECTED
-3. Si APPROVED → l'employé est marqué absent sur le planning
+3. Si APPROVED → le solde de congés est débité automatiquement
+4. Si CANCELLED → le solde est re-crédité
 ```
 
 ---
 
-### 7️⃣ **Notification** (Nouveau modèle)
+### 7️⃣ **LeaveBalance** (Soldes de Congés - SP-408)
 
-**Rôle :** Notifications temps réel pour les utilisateurs.
+**Rôle :** Suivi des soldes de congés payés et RTT par employé et par année.
+
+**Champs principaux :**
+
+```prisma
+- id: String (cuid)
+- employeeId: String
+- companyId: String
+- year: Int                       // 2026
+
+// Congés payés
+- paidLeaveTotal: Float           // 25 jours par défaut
+- paidLeaveUsed: Float            // Jours utilisés
+
+// RTT
+- rttTotal: Float                 // 0 par défaut
+- rttUsed: Float                  // Jours utilisés
+
+// Audit
+- updatedById: String?            // Qui a modifié
+- createdAt, updatedAt
+```
+
+**Relations :**
+
+- **N:1 Employee** → Solde d'UN employé
+- **N:1 Company** → Isolation multi-tenant
+- **N:1 User (updatedBy)** → Dernière modification par
+
+**Contrainte unique :** `@@unique([employeeId, year])` - Un seul solde par employé par année.
+
+---
+
+### 8️⃣ **Availability** (Disponibilités - SP-392)
+
+**Rôle :** Déclaration des disponibilités/indisponibilités des employés.
+
+**Champs principaux :**
+
+```prisma
+- id: String (cuid)
+
+// Période
+- startDate: DateTime
+- endDate: DateTime
+- startTime: String?              // Format HH:mm (optionnel)
+- endTime: String?                // Format HH:mm (optionnel)
+
+// Type
+- type: AvailabilityType          // UNAVAILABLE, PREFERRED, VACATION...
+- reason: String?
+
+// Récurrence
+- isRecurring: Boolean
+- recurrenceRule: Json?           // { frequency, daysOfWeek }
+
+// Relations
+- employeeId: String
+- employee: Employee
+- companyId: String
+- company: Company
+
+// Audit
+- createdAt, updatedAt
+```
+
+**🎯 Types de Disponibilité (Enum AvailabilityType) :**
+
+- `UNAVAILABLE` : Indisponible
+- `PREFERRED` : Préférence horaire
+- `VACATION` : Congés/Vacances
+- `SICK` : Maladie
+- `TRAINING` : Formation
+- `OTHER` : Autre
+
+---
+
+### 9️⃣ **Notification**
+
+**Rôle :** Notifications temps réel et persistantes pour les utilisateurs.
 
 **Champs principaux :**
 
@@ -378,11 +497,13 @@ Employee = Métier RH (job, équipe, contrat)
 // Contenu
 - title: String                   // "Nouvelle demande de congés"
 - message: String                 // Détails
-- type: NotificationType          // INFO, SUCCESS, WARNING, ERROR
+- type: NotificationType          // INFO, SUCCESS, WARNING, ERROR, PLANNING, LEAVE...
+- priority: NotificationPriority  // LOW, MEDIUM, HIGH, URGENT
 
 // Contexte
-- relatedType: String?            // "LeaveRequest", "Schedule"
+- relatedType: String?            // "LeaveRequest", "Schedule", "PersonalTask", "IncidentNote"
 - relatedId: String?              // ID de l'objet lié
+- actionUrl: String?              // URL d'action (ex: "/app/dashboard/leaves/123")
 
 // Destinataire
 - userId: String
@@ -398,16 +519,154 @@ Employee = Métier RH (job, équipe, contrat)
 - createdAt, updatedAt
 ```
 
+**🎯 Types de Notification (Enum NotificationType) :**
+
+- Génériques : `INFO`, `SUCCESS`, `WARNING`, `ERROR`, `SYSTEM`
+- Métier : `PLANNING`, `LEAVE`, `TASK`, `INCIDENT`
+
+**🎯 Priorités (Enum NotificationPriority) :**
+
+- `LOW` : Informative
+- `MEDIUM` : Action recommandée
+- `HIGH` : Action requise
+- `URGENT` : Action immédiate requise
+
+---
+
+### 🔟 **PersonalTask** (Tâches Personnelles - SP-417)
+
+**Rôle :** Todolist privée 100% personnelle. Aucune visibilité par les managers.
+
+**Champs principaux :**
+
+```prisma
+- id: String (cuid)
+- title: String (max 200)         // Titre de la tâche
+- description: String?            // Description détaillée
+- dueDate: DateTime?              // Échéance
+- completed: Boolean              // Terminée ?
+- order: Int                      // Ordre d'affichage (drag & drop)
+
+// Propriétaire unique - 100% privé
+- userId: String
+- user: User
+
+// Audit
+- createdAt, updatedAt
+```
+
 **Relations :**
 
-- **N:1 User** → Une notification pour UN user
-- **N:1 Company** → Isolation multi-tenant
+- **N:1 User** → Tâches d'UN user (pas de companyId = vraiment privé)
 
-**🎯 Cas d'usage :**
+**🔐 Sécurité :** Aucun accès RBAC. Seul le propriétaire peut voir/modifier ses tâches.
 
-- "Votre demande de congés a été approuvée"
-- "Nouveau planning disponible pour la semaine prochaine"
-- "Réunion annulée : Réunion client"
+---
+
+### 1️⃣1️⃣ **IncidentNote** (Notes d'Incident - SP-424)
+
+**Rôle :** Suivi comportemental des employés avec visibilité RBAC.
+
+**Champs principaux :**
+
+```prisma
+- id: String (cuid)
+
+// Sujet (employé concerné)
+- subjectId: String
+- subject: Employee
+
+// Auteur (manager/directeur qui rédige)
+- authorId: String
+- author: User
+
+// Contenu
+- title: String (max 200)
+- content: String                 // Détail de l'incident
+- date: DateTime                  // Date de l'incident
+
+// Visibilité RBAC
+- visibility: IncidentNoteVisibility  // DIRECTOR_ONLY, MANAGER_DIRECTOR, ALL
+
+// Multi-tenant
+- companyId: String
+- company: Company
+
+// Audit
+- createdAt, updatedAt
+```
+
+**🎯 Visibilité (Enum IncidentNoteVisibility) :**
+
+| Visibilité         | Qui peut voir                |
+| ------------------ | ---------------------------- |
+| `DIRECTOR_ONLY`    | Directeurs uniquement        |
+| `MANAGER_DIRECTOR` | Managers + Directeurs        |
+| `ALL`              | Tous (info générale)         |
+
+---
+
+### 1️⃣2️⃣ **Subscription** (Abonnement Stripe)
+
+**Rôle :** Gestion des abonnements SaaS via Stripe.
+
+**Champs principaux :**
+
+```prisma
+- id: String (cuid)
+- companyId: String (unique)
+
+// Stripe
+- stripeCustomerId: String (unique)
+- stripeSubscriptionId: String? (unique)
+- stripePriceId: String?
+
+// Plan
+- plan: SubscriptionPlan          // FREE, STARTER, BUSINESS, ENTERPRISE
+- planPrice: Float?
+- currency: String                // "EUR"
+- billingInterval: String?        // "month" ou "year"
+
+// Statut
+- status: SubscriptionStatus
+- currentPeriodStart: DateTime?
+- currentPeriodEnd: DateTime?
+- cancelAtPeriodEnd: Boolean
+- canceledAt: DateTime?
+
+// Audit
+- createdAt, updatedAt
+```
+
+---
+
+### 1️⃣3️⃣ **Payment** (Paiements Stripe)
+
+**Rôle :** Historique des paiements.
+
+**Champs principaux :**
+
+```prisma
+- id: String (cuid)
+- companyId: String
+- subscriptionId: String?
+
+// Stripe
+- stripePaymentId: String (unique)
+- stripeInvoiceId: String?
+
+// Montant
+- amount: Float
+- currency: String                // "EUR"
+
+// Statut
+- status: String                  // "succeeded", "pending", "failed", "refunded"
+- paymentMethod: String?          // "card", "sepa_debit"
+
+// Dates
+- paidAt: DateTime?
+- createdAt: DateTime
+```
 
 ---
 
@@ -433,7 +692,7 @@ const employees = await prisma.employee.findMany({
 const employees = await prisma.employee.findMany() // ❌ Pas de filtre
 ```
 
-**Solution :** Créer un middleware Prisma qui ajoute automatiquement `companyId` à chaque requête.
+**Exception :** `PersonalTask` n'a pas de `companyId` car 100% privé (filtré par `userId`).
 
 ---
 
@@ -448,8 +707,6 @@ const employees = await prisma.employee.findMany() // ❌ Pas de filtre
 - access_token, refresh_token...
 ```
 
-**Usage :** Login avec Google/GitHub en plus du mot de passe.
-
 ### **Session** (Sessions Actives)
 
 ```prisma
@@ -458,8 +715,6 @@ const employees = await prisma.employee.findMany() // ❌ Pas de filtre
 - expires: DateTime
 ```
 
-**Usage :** Stockage des sessions actives (on utilisera Redis pour les perfs).
-
 ### **VerificationToken** (Tokens)
 
 ```prisma
@@ -467,8 +722,6 @@ const employees = await prisma.employee.findMany() // ❌ Pas de filtre
 - token: String (unique)
 - expires: DateTime
 ```
-
-**Usage :** Reset password, confirmation email.
 
 ---
 
@@ -512,13 +765,14 @@ enum SubscriptionStatus {
 
 ```prisma
 enum ScheduleType {
-  WORK
-  MEETING
-  BREAK
-  TRAINING
-  REMOTE
-  ON_CALL
-  OVERTIME
+  WORK        // Travail normal
+  MEETING     // Réunion
+  BREAK       // Pause
+  TRAINING    // Formation
+  REMOTE      // Télétravail
+  ON_CALL     // Astreinte
+  OVERTIME    // Heures supplémentaires
+  REST        // Repos (journée entière)
 }
 ```
 
@@ -526,10 +780,8 @@ enum ScheduleType {
 
 ```prisma
 enum ScheduleStatus {
-  DRAFT
-  CONFIRMED
-  CANCELLED
-  COMPLETED
+  DRAFT       // Brouillon
+  CONFIRMED   // Confirmé
 }
 ```
 
@@ -537,12 +789,13 @@ enum ScheduleStatus {
 
 ```prisma
 enum LeaveType {
-  PAID_LEAVE
-  SICK_LEAVE
-  UNPAID_LEAVE
-  RTT
-  PARENTAL_LEAVE
-  OTHER
+  PAID_LEAVE     // Congés payés
+  SICK_LEAVE     // Arrêt maladie
+  UNPAID_LEAVE   // Congé sans solde
+  RTT            // RTT
+  PARENTAL_LEAVE // Congé parental
+  FAMILY_EVENT   // Événement familial
+  OTHER          // Autre
 }
 ```
 
@@ -550,10 +803,10 @@ enum LeaveType {
 
 ```prisma
 enum LeaveRequestStatus {
-  PENDING
-  APPROVED
-  REJECTED
-  CANCELLED
+  PENDING     // En attente
+  APPROVED    // Approuvée
+  REJECTED    // Refusée
+  CANCELLED   // Annulée par l'employé
 }
 ```
 
@@ -561,11 +814,44 @@ enum LeaveRequestStatus {
 
 ```prisma
 enum NotificationType {
-  INFO
-  SUCCESS
-  WARNING
-  ERROR
-  SYSTEM
+  // Génériques
+  INFO, SUCCESS, WARNING, ERROR, SYSTEM
+  // Métier
+  PLANNING, LEAVE, TASK, INCIDENT
+}
+```
+
+### NotificationPriority
+
+```prisma
+enum NotificationPriority {
+  LOW       // Informative
+  MEDIUM    // Action recommandée
+  HIGH      // Action requise
+  URGENT    // Action immédiate
+}
+```
+
+### AvailabilityType
+
+```prisma
+enum AvailabilityType {
+  UNAVAILABLE  // Indisponible
+  PREFERRED    // Préférence horaire
+  VACATION     // Congés/Vacances
+  SICK         // Maladie
+  TRAINING     // Formation
+  OTHER        // Autre
+}
+```
+
+### IncidentNoteVisibility
+
+```prisma
+enum IncidentNoteVisibility {
+  DIRECTOR_ONLY     // Directeurs uniquement
+  MANAGER_DIRECTOR  // Managers + Directeurs
+  ALL               // Tous (info générale)
 }
 ```
 
@@ -577,11 +863,11 @@ enum NotificationType {
 
 - Isolation par `companyId` dans TOUTES les requêtes
 - Prévention des fuites de données entre entreprises
-- Middleware Prisma pour automatiser la sécurité
+- Exception : `PersonalTask` isolé par `userId` (vraiment privé)
 
 ### 2. Séparation Auth ↔ Métier
 
-- **User** = Authentification (NextAuth)
+- **User** = Authentification (NextAuth, avatar Cloudinary)
 - **Employee** = Logique métier RH
 - Flexibilité : un SYSTEM_ADMIN n'a pas besoin d'être un Employee
 
@@ -590,40 +876,54 @@ enum NotificationType {
 - **1:1** (User ↔ Employee)
 - **1:N** (Company → Users, Employees, Teams...)
 - **N:1** (Plusieurs Employees → Une Team)
+- **Contraintes uniques** (LeaveBalance: employeeId + year)
 
 ### 4. Gestion des Rôles & Permissions
 
 - 4 rôles hiérarchiques (SYSTEM_ADMIN > DIRECTOR > MANAGER > EMPLOYEE)
+- RBAC dynamique pour IncidentNote via `visibility`
 - Permissions cascadées (un DIRECTOR peut tout faire dans son entreprise)
 
 ### 5. Bonnes Pratiques Prisma
 
 - Index sur les clés étrangères (`companyId`, `userId`, `employeeId`)
 - Index sur les champs de recherche (`email`, `slug`, `startDate`)
+- Index composites pour les requêtes fréquentes
 - Relations bidirectionnelles pour faciliter les requêtes
 
 ### 6. Audit & Traçabilité
 
 - `createdAt`, `updatedAt` sur tous les modèles
 - `createdById` pour savoir qui a créé un planning
-- `reviewedById`, `reviewedAt` pour les validations
+- `reviewedById`, `reviewedAt` pour les validations de congés
+- `updatedById` pour les modifications de soldes
+
+### 7. Intégrations Externes
+
+- **Stripe** : Subscriptions + Payments pour le SaaS
+- **Cloudinary** : Stockage des avatars (User.image)
+- **NextAuth v5** : Authentification avec sessions
 
 ---
 
-## ✅ Validation Avant Implémentation
+## ✅ Statistiques Actuelles
 
-**Questions à se poser :**
-
-✅ Un employé peut-il appartenir à plusieurs équipes ?
-→ **Non** (relation N:1), mais ça pourrait évoluer en N:N en V2
-
-✅ Un manager peut-il gérer plusieurs équipes ?
-→ **Oui** (relation 1:N avec `managedTeams`)
-
-✅ Un planning peut-il concerner plusieurs employés ?
-→ **Non** dans cette version (1 créneau = 1 employé), mais on peut ajouter des plannings d'équipe via `teamId`
-
-✅ Les notifications sont-elles persistantes ou temps réel ?
-→ **Persistantes** (BDD) + possibilité WebSocket en V2
+| Métrique | Valeur |
+|----------|--------|
+| Tables principales | 16 |
+| Tables NextAuth | 4 |
+| Enums | 12 |
+| Migrations appliquées | 11 |
+| Index | 45+ |
 
 ---
+
+## 📅 Historique des Mises à Jour
+
+| Date | Description |
+|------|-------------|
+| 04/02/2026 | Ajout User.image (Cloudinary SP-272), mise à jour complète documentation |
+| 01/2026 | Ajout IncidentNote (SP-424), PersonalTask (SP-417) |
+| 01/2026 | Ajout LeaveBalance (SP-408), Availability (SP-392) |
+| 12/2025 | Ajout Subscription, Payment (Stripe) |
+| 11/2025 | Création initiale du schéma |

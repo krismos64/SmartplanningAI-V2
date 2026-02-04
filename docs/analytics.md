@@ -2,7 +2,7 @@
 
 > **Ticket** : SP-345 - Intégration Umami Analytics
 > **Statut** : ✅ Implémenté
-> **Version** : 2.0.0
+> **Dernière mise à jour** : 4 février 2026
 
 ## Vue d'ensemble
 
@@ -51,18 +51,20 @@ UMAMI_APP_SECRET="générer avec: openssl rand -base64 32"
 
 ### Infrastructure VPS
 
-Le fichier `docker/docker-compose.umami.yml` déploie Umami :
+Umami est déployé sur le VPS dans `~/umami/docker-compose.yml` :
 
 ```bash
-# Déployer sur le VPS
-docker-compose -f docker/docker-compose.umami.yml up -d
+# Sur le VPS (ssh deploy@51.77.146.72)
+cd ~/umami
+
+# Démarrer/redémarrer Umami
+docker-compose up -d
 
 # Vérifier les logs
-docker logs smartplanning-umami --tail 100
+docker logs smartplanning-umami --tail 100 -f
 
 # Accéder au dashboard
-# https://smartplanning.fr/analytics
-# Login: admin / umami (changer au premier accès !)
+# https://analytics.smartplanning.fr
 ```
 
 ## Utilisation dans le code
@@ -214,12 +216,12 @@ src/
 └── app/
     └── layout.tsx            # <UmamiAnalytics /> intégré
 
-docker/
-├── docker-compose.umami.yml  # Config Umami
-├── nginx/
-│   └── umami.conf            # Reverse proxy
-└── scripts/
-    └── init-umami-db.sql     # Init base PostgreSQL
+# Sur le VPS (51.77.146.72)
+~/umami/
+└── docker-compose.yml        # Config Umami container
+
+/etc/nginx/sites-available/
+└── umami.conf                # Reverse proxy analytics.smartplanning.fr
 
 __tests__/
 ├── components/analytics/
