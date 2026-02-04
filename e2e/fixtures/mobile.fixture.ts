@@ -146,17 +146,35 @@ export async function waitForDrawerClosed(page: Page): Promise<void> {
  * Open command palette on mobile (via search icon)
  */
 export async function openCommandPaletteMobile(page: Page): Promise<void> {
-  // Mobile search icon button
-  const searchButton = page.locator('button[aria-label="Ouvrir la recherche"]')
-  if (await searchButton.isVisible()) {
-    await searchButton.click()
+  // Wait for page to be ready
+  await page.waitForLoadState('domcontentloaded')
+
+  // Use data-testid for reliable selection
+  const mobileSearchButton = page.locator('[data-testid="mobile-search-button"]')
+  const ariaSearchButton = page.locator('button[aria-label="Ouvrir la recherche"]')
+
+  // Wait for a search button to be visible
+  await Promise.race([
+    mobileSearchButton.waitFor({ state: 'visible', timeout: 10000 }),
+    ariaSearchButton.waitFor({ state: 'visible', timeout: 10000 }),
+  ]).catch(() => {
+    // If neither visible, try keyboard shortcut
+  })
+
+  // Click the visible button
+  if (await mobileSearchButton.isVisible()) {
+    await mobileSearchButton.click()
+  } else if (await ariaSearchButton.isVisible()) {
+    await ariaSearchButton.click()
   } else {
     // Fallback to keyboard shortcut
     await page.keyboard.press('Control+k')
   }
+
+  // Wait for dialog to be visible
   await page
     .locator('[data-testid="command-palette-dialog"]')
-    .waitFor({ state: 'visible' })
+    .waitFor({ state: 'visible', timeout: 5000 })
 }
 
 /**
