@@ -44,13 +44,27 @@ test.describe('Settings Hub Page', () => {
       await settingsPage.expectSectionDescriptions()
     })
 
-    test('should display "Bientôt" badges on future sections', async ({
+    test('should not display "Bientôt" badges for Employee (SP-275 + SP-276)', async ({
       employeePage,
     }) => {
       const settingsPage = new SettingsPage(employeePage)
       await settingsPage.goto()
       await settingsPage.waitForPageLoad()
 
+      // SP-276: Appearance badge removed
+      // SP-275: Notifications badge removed
+      // Employee doesn't see Company section, so no badges
+      await settingsPage.expectNoBadgesForEmployee()
+    })
+
+    test('should display "Bientôt" badge for Director (Company section)', async ({
+      directorPage,
+    }) => {
+      const settingsPage = new SettingsPage(directorPage)
+      await settingsPage.goto()
+      await settingsPage.waitForPageLoad()
+
+      // Only Company section has "Bientôt" badge
       await settingsPage.expectBadgesDisplayed()
     })
   })
@@ -175,14 +189,25 @@ test.describe('Settings Hub Page', () => {
       await expect(employeePage).toHaveURL(/\/app\/settings\/appearance/)
     })
 
-    test('should show Notifications section as disabled with badge', async ({
+    test('should show Notifications section as clickable (SP-275)', async ({
       employeePage,
     }) => {
       const settingsPage = new SettingsPage(employeePage)
       await settingsPage.goto()
       await settingsPage.waitForPageLoad()
 
-      await settingsPage.expectNotificationsSectionDisabled()
+      await settingsPage.expectNotificationsSectionClickable()
+    })
+
+    test('should navigate to Notifications page when clicking', async ({
+      employeePage,
+    }) => {
+      const settingsPage = new SettingsPage(employeePage)
+      await settingsPage.goto()
+      await settingsPage.waitForPageLoad()
+
+      await settingsPage.clickNotificationsSection()
+      await expect(employeePage).toHaveURL(/\/app\/settings\/notifications/)
     })
   })
 })

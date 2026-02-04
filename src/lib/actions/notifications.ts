@@ -34,6 +34,11 @@ import {
   canAccessCompanyEntity,
 } from './crud-helpers'
 import {
+  parseUserPreferences,
+  isInAppNotificationEnabled,
+} from '@/lib/utils/preferences'
+import { getNotificationCategory } from '@/lib/helpers/notification-categories'
+import {
   notificationFiltersSchema,
   planningNotificationActionSchema,
   leaveNotificationActionSchema,
@@ -67,7 +72,7 @@ type AccessCheckResult =
 
 /** Résultat de création de notification (non-bloquant) */
 type NotificationResult =
-  | { success: true; notification: Notification }
+  | { success: true; notification: Notification | null; skipped?: string }
   | { success: false; error: string }
 
 // ============================================================================
@@ -180,14 +185,27 @@ export async function createPlanningNotification(
       return { success: false, error: 'Planning non trouvé' }
     }
 
-    // Récupérer l'utilisateur destinataire
+    // Récupérer l'utilisateur destinataire avec ses préférences
     const user = await prisma.user.findUnique({
       where: { id: employeeUserId },
-      select: { id: true, companyId: true },
+      select: { id: true, companyId: true, preferences: true },
     })
 
     if (!user || !user.companyId) {
       return { success: false, error: 'Utilisateur non trouvé' }
+    }
+
+    // SP-275: Vérifier les préférences de notifications
+    const userPrefs = parseUserPreferences(user.preferences)
+    const category = getNotificationCategory(NotificationType.PLANNING)
+
+    if (!isInAppNotificationEnabled(userPrefs, category)) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log(
+          `[Notification] In-app désactivé pour ${category} (user: ${employeeUserId})`
+        )
+      }
+      return { success: true, notification: null, skipped: 'inApp disabled' }
     }
 
     // Construire le message selon l'action
@@ -294,14 +312,27 @@ export async function createLeaveNotification(
       return { success: false, error: 'Demande de congé non trouvée' }
     }
 
-    // Récupérer l'utilisateur destinataire
+    // Récupérer l'utilisateur destinataire avec ses préférences
     const user = await prisma.user.findUnique({
       where: { id: targetUserId },
-      select: { id: true, companyId: true },
+      select: { id: true, companyId: true, preferences: true },
     })
 
     if (!user || !user.companyId) {
       return { success: false, error: 'Utilisateur non trouvé' }
+    }
+
+    // SP-275: Vérifier les préférences de notifications
+    const userPrefs = parseUserPreferences(user.preferences)
+    const category = getNotificationCategory(NotificationType.LEAVE)
+
+    if (!isInAppNotificationEnabled(userPrefs, category)) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log(
+          `[Notification] In-app désactivé pour ${category} (user: ${targetUserId})`
+        )
+      }
+      return { success: true, notification: null, skipped: 'inApp disabled' }
     }
 
     // Construire le message selon l'action
@@ -380,7 +411,7 @@ export async function createTaskNotification(
   action: 'reminder' | 'overdue'
 ): Promise<NotificationResult> {
   try {
-    // Récupérer les infos de la tâche
+    // Récupérer les infos de la tâche avec préférences utilisateur
     const task = await prisma.personalTask.findUnique({
       where: { id: taskId },
       select: {
@@ -389,7 +420,7 @@ export async function createTaskNotification(
         dueDate: true,
         userId: true,
         user: {
-          select: { companyId: true },
+          select: { companyId: true, preferences: true },
         },
       },
     })
@@ -405,6 +436,19 @@ export async function createTaskNotification(
 
     if (!task.user.companyId) {
       return { success: false, error: 'Utilisateur sans entreprise' }
+    }
+
+    // SP-275: Vérifier les préférences de notifications
+    const userPrefs = parseUserPreferences(task.user.preferences)
+    const category = getNotificationCategory(NotificationType.TASK)
+
+    if (!isInAppNotificationEnabled(userPrefs, category)) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log(
+          `[Notification] In-app désactivé pour ${category} (user: ${userId})`
+        )
+      }
+      return { success: true, notification: null, skipped: 'inApp disabled' }
     }
 
     // Construire le message selon l'action
@@ -499,14 +543,27 @@ export async function createIncidentNotification(
       return { success: false, error: "Note d'incident non trouvée" }
     }
 
-    // Récupérer l'utilisateur destinataire
+    // Récupérer l'utilisateur destinataire avec ses préférences
     const user = await prisma.user.findUnique({
       where: { id: targetUserId },
-      select: { id: true, companyId: true },
+      select: { id: true, companyId: true, preferences: true },
     })
 
     if (!user || !user.companyId) {
       return { success: false, error: 'Utilisateur non trouvé' }
+    }
+
+    // SP-275: Vérifier les préférences de notifications (INCIDENT → system)
+    const userPrefs = parseUserPreferences(user.preferences)
+    const category = getNotificationCategory(NotificationType.INCIDENT)
+
+    if (!isInAppNotificationEnabled(userPrefs, category)) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log(
+          `[Notification] In-app désactivé pour ${category} (user: ${targetUserId})`
+        )
+      }
+      return { success: true, notification: null, skipped: 'inApp disabled' }
     }
 
     // Construire le message
@@ -609,19 +666,35 @@ export async function createSystemNotification(
       return { success: false, error: 'Message invalide (max 2000 caractères)' }
     }
 
-    // Récupérer tous les utilisateurs de l'entreprise
+    // Récupérer tous les utilisateurs de l'entreprise avec leurs préférences
     const users = await prisma.user.findMany({
       where: { companyId },
-      select: { id: true },
+      select: { id: true, preferences: true },
     })
 
     if (users.length === 0) {
       return { success: true, data: { count: 0 } }
     }
 
-    // Créer les notifications en bulk
+    // SP-275: Filtrer les utilisateurs qui ont activé les notifications système
+    const category = getNotificationCategory(NotificationType.SYSTEM)
+    const eligibleUsers = users.filter((u) => {
+      const userPrefs = parseUserPreferences(u.preferences)
+      return isInAppNotificationEnabled(userPrefs, category)
+    })
+
+    if (eligibleUsers.length === 0) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log(
+          `[Notification] Aucun utilisateur avec notifications système activées (company: ${companyId})`
+        )
+      }
+      return { success: true, data: { count: 0 } }
+    }
+
+    // Créer les notifications en bulk pour les utilisateurs éligibles
     const notifications = await prisma.notification.createMany({
-      data: users.map((u) => ({
+      data: eligibleUsers.map((u) => ({
         title,
         message,
         type: NotificationType.SYSTEM,

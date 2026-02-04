@@ -29,7 +29,7 @@ export class SettingsPage {
 
   // Badges
   // Note: appearanceBadge removed - SP-276 implemented
-  readonly notificationsBadge: Locator
+  // Note: notificationsBadge removed - SP-275 implemented
   readonly companyBadge: Locator
 
   constructor(page: Page) {
@@ -55,7 +55,7 @@ export class SettingsPage {
 
     // Badges "Bientôt"
     // Note: appearanceBadge removed - SP-276 implemented
-    this.notificationsBadge = this.notificationsSection.locator('text=Bientôt')
+    // Note: notificationsBadge removed - SP-275 implemented
     this.companyBadge = this.companySection.locator('text=Bientôt')
   }
 
@@ -96,9 +96,16 @@ export class SettingsPage {
   }
 
   async expectBadgesDisplayed() {
-    // Note: Appearance badge has been removed (SP-276)
-    // Only Notifications badge remains
-    await expect(this.notificationsBadge).toBeVisible()
+    // SP-276: Appearance badge removed
+    // SP-275: Notifications badge removed
+    // Only Company badge remains (for DIRECTOR/SYSTEM_ADMIN)
+    await expect(this.companyBadge).toBeVisible()
+  }
+
+  async expectNoBadgesForEmployee() {
+    // For EMPLOYEE, no badges should be visible (Company section is hidden)
+    const badges = this.page.locator('[data-testid^="settings-section-"] >> text=Bientôt')
+    await expect(badges).toHaveCount(0)
   }
 
   async expectProfileSectionClickable() {
@@ -123,11 +130,14 @@ export class SettingsPage {
     await this.page.locator('a[href="/app/settings/appearance"]').click()
   }
 
-  async expectNotificationsSectionDisabled() {
-    await expect(this.notificationsSection).toHaveClass(/opacity-60/)
-    // Should not have a link
-    const link = this.notificationsSection.locator('a')
-    await expect(link).toHaveCount(0)
+  async expectNotificationsSectionClickable() {
+    // SP-275: Notifications section is now active (no longer disabled)
+    const link = this.page.locator('a[href="/app/settings/notifications"]')
+    await expect(link).toBeVisible()
+  }
+
+  async clickNotificationsSection() {
+    await this.page.locator('a[href="/app/settings/notifications"]').click()
   }
 
   async clickProfileSection() {

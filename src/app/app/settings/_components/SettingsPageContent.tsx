@@ -55,7 +55,6 @@ const SETTINGS_SECTIONS: SettingsSectionConfig[] = [
     description: 'Configurez vos préférences de notifications email et in-app',
     href: '/app/settings/notifications',
     roles: 'ALL',
-    badge: 'Bientôt', // SP-275
   },
   {
     id: 'security',

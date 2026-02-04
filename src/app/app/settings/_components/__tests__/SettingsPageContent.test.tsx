@@ -12,9 +12,7 @@ describe('SettingsPageContent', () => {
     it('should show all common sections for EMPLOYEE', () => {
       render(<SettingsPageContent userRole="EMPLOYEE" />)
 
-      expect(
-        screen.getByTestId('settings-section-profile')
-      ).toBeInTheDocument()
+      expect(screen.getByTestId('settings-section-profile')).toBeInTheDocument()
       expect(
         screen.getByTestId('settings-section-appearance')
       ).toBeInTheDocument()
@@ -42,16 +40,12 @@ describe('SettingsPageContent', () => {
 
     it('should show company section for DIRECTOR', () => {
       render(<SettingsPageContent userRole="DIRECTOR" />)
-      expect(
-        screen.getByTestId('settings-section-company')
-      ).toBeInTheDocument()
+      expect(screen.getByTestId('settings-section-company')).toBeInTheDocument()
     })
 
     it('should show company section for SYSTEM_ADMIN', () => {
       render(<SettingsPageContent userRole="SYSTEM_ADMIN" />)
-      expect(
-        screen.getByTestId('settings-section-company')
-      ).toBeInTheDocument()
+      expect(screen.getByTestId('settings-section-company')).toBeInTheDocument()
     })
   })
 
@@ -72,11 +66,20 @@ describe('SettingsPageContent', () => {
       expect(grid).toBeInTheDocument()
     })
 
-    it('should display "Bientôt" badges on future sections', () => {
+    it('should not display "Bientôt" badges for EMPLOYEE (SP-276 + SP-275)', () => {
       render(<SettingsPageContent userRole="EMPLOYEE" />)
+      // SP-276: Appearance badge removed
+      // SP-275: Notifications badge removed
+      // For EMPLOYEE, no badges should be visible
+      const badges = screen.queryAllByText('Bientôt')
+      expect(badges.length).toBe(0)
+    })
+
+    it('should display "Bientôt" badge only for Company section (DIRECTOR)', () => {
+      render(<SettingsPageContent userRole="DIRECTOR" />)
+      // Only Company section has "Bientôt" badge for DIRECTOR
       const badges = screen.getAllByText('Bientôt')
-      // SP-276: Appearance badge removed, only notifications remains for EMPLOYEE
-      expect(badges.length).toBeGreaterThanOrEqual(1)
+      expect(badges.length).toBe(1)
     })
 
     it('should have correct number of sections for DIRECTOR', () => {
