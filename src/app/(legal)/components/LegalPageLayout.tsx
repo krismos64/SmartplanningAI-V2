@@ -5,19 +5,21 @@
  * Layout réutilisable pour toutes les pages légales (CGU, CGV, Privacy, etc.)
  *
  * @description Fournit une structure cohérente avec la landing page :
- * - Header fixe avec navigation simplifiée
+ * - Header fixe avec navigation (LandingHeader)
+ * - TopBanner animé
  * - Background animé
  * - Table des matières interactive
  * - Footer standard
+ * - Support light/dark mode via CSS variables
  *
  * @see SP-279 à SP-285 - Pages Légales & RGPD
  */
 
 import { useState, useEffect } from 'react'
-import Link from 'next/link'
-import { Calendar, ChevronUp, FileText, ArrowLeft } from 'lucide-react'
+import { ChevronUp, FileText } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { AnimatedBackground } from '@/app/(landing)/components'
+import { AnimatedBackground, TopBanner } from '@/app/(landing)/components'
+import { LandingHeader } from '@/components/layout/LandingHeader'
 import { LandingFooter } from '@/components/layout/LandingFooter'
 import { motion, fadeInUp, staggerContainer } from '@/lib/animations'
 
@@ -100,48 +102,17 @@ export function LegalPageLayout({
   }
 
   return (
-    <div className="min-h-screen overflow-x-hidden bg-[#030712] text-white">
-      {/* Background animé */}
-      <AnimatedBackground />
+    <div className="relative min-h-screen overflow-x-hidden bg-background text-foreground">
+      {/* Top Banner - Animated marquee */}
+      <TopBanner />
 
-      {/* Header simplifié */}
-      <motion.header
-        initial={{ y: -100 }}
-        animate={{ y: 0 }}
-        transition={{ duration: 0.6, ease: 'easeOut' }}
-        className={cn(
-          'fixed left-0 right-0 top-0 z-50 transition-all duration-500',
-          isScrolled
-            ? 'border-b border-white/5 bg-[#030712]/90 py-4 backdrop-blur-xl'
-            : 'bg-transparent py-6'
-        )}
-      >
-        <div className="container-custom">
-          <nav className="flex items-center justify-between">
-            {/* Logo */}
-            <Link href="/" className="group flex items-center gap-3">
-              <div className="relative">
-                <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-500 to-cyan-400 opacity-50 blur-lg transition-opacity group-hover:opacity-75" />
-                <div className="relative flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-cyan-400">
-                  <Calendar className="h-6 w-6 text-white" />
-                </div>
-              </div>
-              <span className="text-xl font-bold tracking-tight text-white">
-                Smart<span className="text-cyan-400">Planning</span>
-              </span>
-            </Link>
+      {/* Background animé - Decorative, hidden from screen readers */}
+      <div aria-hidden="true">
+        <AnimatedBackground />
+      </div>
 
-            {/* Retour à l'accueil */}
-            <Link
-              href="/"
-              className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/70 transition-all hover:border-white/20 hover:bg-white/10 hover:text-white"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Retour à l&apos;accueil
-            </Link>
-          </nav>
-        </div>
-      </motion.header>
+      {/* Header with scroll-aware background */}
+      <LandingHeader isScrolled={isScrolled} />
 
       {/* Contenu principal */}
       <main className="relative pb-20 pt-32">
@@ -155,9 +126,9 @@ export function LegalPageLayout({
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.5, delay: 0.2 }}
-                    className="rounded-xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm"
+                    className="rounded-xl border border-border bg-card p-6 backdrop-blur-sm"
                   >
-                    <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-white/50">
+                    <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
                       Sommaire
                     </h3>
                     <nav className="space-y-2">
@@ -170,8 +141,8 @@ export function LegalPageLayout({
                             item.level === 2 && 'pl-4',
                             item.level === 3 && 'pl-8',
                             activeSection === item.id
-                              ? 'text-cyan-400'
-                              : 'text-white/60 hover:text-white'
+                              ? 'text-cyan-500 dark:text-cyan-400'
+                              : 'text-muted-foreground hover:text-foreground'
                           )}
                         >
                           {item.title}
@@ -193,7 +164,7 @@ export function LegalPageLayout({
               {/* En-tête du document */}
               <motion.div variants={fadeInUp} className="mb-12">
                 {/* Badge avec icône */}
-                <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-blue-500/20 bg-blue-500/10 px-4 py-2 text-sm text-blue-400">
+                <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/10 px-4 py-2 text-sm text-blue-600 dark:border-blue-500/20 dark:text-blue-400">
                   {icon}
                   Document légal
                 </div>
@@ -204,18 +175,18 @@ export function LegalPageLayout({
                 </h1>
 
                 {/* Sous-titre */}
-                <p className="mb-6 max-w-2xl text-lg text-white/60">
+                <p className="mb-6 max-w-2xl text-lg text-muted-foreground">
                   {subtitle}
                 </p>
 
                 {/* Métadonnées */}
-                <div className="flex flex-wrap items-center gap-4 text-sm text-white/40">
+                <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground/70">
                   <span className="flex items-center gap-2">
-                    <span className="h-1.5 w-1.5 rounded-full bg-cyan-400" />
+                    <span className="h-1.5 w-1.5 rounded-full bg-cyan-500 dark:bg-cyan-400" />
                     Version {version}
                   </span>
                   <span className="flex items-center gap-2">
-                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400" />
                     Mis à jour le {lastUpdated}
                   </span>
                 </div>
@@ -225,9 +196,9 @@ export function LegalPageLayout({
               {tableOfContents.length > 0 && (
                 <motion.div
                   variants={fadeInUp}
-                  className="mb-8 rounded-xl border border-white/10 bg-white/5 p-6 lg:hidden"
+                  className="mb-8 rounded-xl border border-border bg-card p-6 lg:hidden"
                 >
-                  <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-white/50">
+                  <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
                     Sommaire
                   </h3>
                   <nav className="grid grid-cols-1 gap-2 sm:grid-cols-2">
@@ -237,7 +208,7 @@ export function LegalPageLayout({
                         <button
                           key={item.id}
                           onClick={() => scrollToSection(item.id)}
-                          className="text-left text-sm text-white/60 hover:text-cyan-400"
+                          className="text-left text-sm text-muted-foreground hover:text-cyan-500 dark:hover:text-cyan-400"
                         >
                           {item.title}
                         </button>
@@ -249,7 +220,7 @@ export function LegalPageLayout({
               {/* Contenu du document */}
               <motion.div
                 variants={fadeInUp}
-                className="legal-content prose prose-invert max-w-none"
+                className="legal-content prose prose-neutral dark:prose-invert max-w-none"
               >
                 {children}
               </motion.div>
@@ -267,7 +238,7 @@ export function LegalPageLayout({
         animate={{ opacity: showScrollTop ? 1 : 0 }}
         onClick={scrollToTop}
         className={cn(
-          'fixed bottom-8 right-8 z-40 flex h-12 w-12 items-center justify-center rounded-full border border-white/10 bg-[#030712]/90 text-white/70 shadow-lg backdrop-blur-sm transition-all hover:border-cyan-500/50 hover:bg-cyan-500/20 hover:text-cyan-400',
+          'fixed bottom-8 right-8 z-40 flex h-12 w-12 items-center justify-center rounded-full border border-border bg-background/90 text-muted-foreground shadow-lg backdrop-blur-sm transition-all hover:border-cyan-500/50 hover:bg-cyan-500/20 hover:text-cyan-500 dark:hover:text-cyan-400',
           !showScrollTop && 'pointer-events-none'
         )}
         aria-label="Retour en haut"

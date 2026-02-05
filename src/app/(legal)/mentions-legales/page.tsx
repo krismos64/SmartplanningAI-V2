@@ -13,6 +13,7 @@ import {
   LegalContact,
   LegalDivider,
   LegalHighlight,
+  LegalLink,
   LegalList,
   LegalPageLayout,
   LegalParagraph,
@@ -64,32 +65,25 @@ export default function MentionsLegalesPage() {
         <LegalHighlight type="info">
           <div className="space-y-2">
             <p>
-              <strong className="text-white">Raison sociale :</strong>{' '}
-              SmartPlanning
+              <strong>Raison sociale :</strong> SmartPlanning
             </p>
             <p>
-              <strong className="text-white">Forme juridique :</strong>{' '}
-              Auto-entrepreneur
+              <strong>Forme juridique :</strong> Auto-entrepreneur
             </p>
             <p>
-              <strong className="text-white">Nom du responsable :</strong>{' '}
-              Christophe Mostefaoui
+              <strong>Nom du responsable :</strong> Christophe Mostefaoui
             </p>
             <p>
-              <strong className="text-white">Adresse du siège social :</strong>{' '}
-              64170 Artix, France
+              <strong>Adresse du siège social :</strong> 64170 Artix, France
             </p>
             <p>
-              <strong className="text-white">SIRET :</strong> 937 719 177 00019
+              <strong>SIRET :</strong> 937 719 177 00019
             </p>
             <p>
-              <strong className="text-white">Email :</strong>{' '}
-              <a
-                href="mailto:contact@smartplanning.fr"
-                className="text-cyan-400 transition-colors hover:text-cyan-300"
-              >
+              <strong>Email :</strong>{' '}
+              <LegalLink href="mailto:contact@smartplanning.fr">
                 contact@smartplanning.fr
-              </a>
+              </LegalLink>
             </p>
           </div>
         </LegalHighlight>
@@ -104,26 +98,19 @@ export default function MentionsLegalesPage() {
         <LegalHighlight type="info">
           <div className="space-y-2">
             <p>
-              <strong className="text-white">Raison sociale :</strong> OVH SAS
+              <strong>Raison sociale :</strong> OVH SAS
             </p>
             <p>
-              <strong className="text-white">Adresse :</strong> 2 rue
-              Kellermann, 59100 Roubaix, France
+              <strong>Adresse :</strong> 2 rue Kellermann, 59100 Roubaix, France
             </p>
             <p>
-              <strong className="text-white">Téléphone :</strong> 1007 (depuis
-              la France)
+              <strong>Téléphone :</strong> 1007 (depuis la France)
             </p>
             <p>
-              <strong className="text-white">Site web :</strong>{' '}
-              <a
-                href="https://www.ovhcloud.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-cyan-400 transition-colors hover:text-cyan-300"
-              >
+              <strong>Site web :</strong>{' '}
+              <LegalLink href="https://www.ovhcloud.com" external>
                 www.ovhcloud.com
-              </a>
+              </LegalLink>
             </p>
           </div>
         </LegalHighlight>
@@ -144,21 +131,16 @@ export default function MentionsLegalesPage() {
         <LegalHighlight type="info">
           <div className="space-y-2">
             <p>
-              <strong className="text-white">Nom :</strong> Christophe
-              Mostefaoui
+              <strong>Nom :</strong> Christophe Mostefaoui
             </p>
             <p>
-              <strong className="text-white">Qualité :</strong> Fondateur et
-              dirigeant de SmartPlanning
+              <strong>Qualité :</strong> Fondateur et dirigeant de SmartPlanning
             </p>
             <p>
-              <strong className="text-white">Email :</strong>{' '}
-              <a
-                href="mailto:contact@smartplanning.fr"
-                className="text-cyan-400 transition-colors hover:text-cyan-300"
-              >
+              <strong>Email :</strong>{' '}
+              <LegalLink href="mailto:contact@smartplanning.fr">
                 contact@smartplanning.fr
-              </a>
+              </LegalLink>
             </p>
           </div>
         </LegalHighlight>
@@ -225,31 +207,24 @@ export default function MentionsLegalesPage() {
         <LegalParagraph>
           Pour plus d&apos;informations sur la collecte et le traitement de vos
           données personnelles, veuillez consulter notre{' '}
-          <a
-            href="/confidentialite"
-            className="text-cyan-400 underline transition-colors hover:text-cyan-300"
-          >
+          <LegalLink href="/confidentialite">
             Politique de Confidentialité
-          </a>
+          </LegalLink>
           .
         </LegalParagraph>
 
         <LegalHighlight type="info">
           <div className="space-y-2">
             <p>
-              <strong className="text-white">Contact DPO :</strong>{' '}
-              <a
-                href="mailto:contact@smartplanning.fr"
-                className="text-cyan-400 transition-colors hover:text-cyan-300"
-              >
+              <strong>Contact DPO :</strong>{' '}
+              <LegalLink href="mailto:contact@smartplanning.fr">
                 contact@smartplanning.fr
-              </a>
+              </LegalLink>
             </p>
             <p>
-              <strong className="text-white">Déclaration CNIL :</strong>{' '}
-              Conformément au RGPD, la déclaration préalable à la CNIL
-              n&apos;est plus obligatoire. SmartPlanning tient un registre des
-              activités de traitement.
+              <strong>Déclaration CNIL :</strong> Conformément au RGPD, la
+              déclaration préalable à la CNIL n&apos;est plus obligatoire.
+              SmartPlanning tient un registre des activités de traitement.
             </p>
           </div>
         </LegalHighlight>
@@ -259,12 +234,9 @@ export default function MentionsLegalesPage() {
           d&apos;effacement, de limitation, de portabilité et d&apos;opposition
           sur vos données personnelles. Pour exercer ces droits, contactez-nous
           à l&apos;adresse{' '}
-          <a
-            href="mailto:contact@smartplanning.fr"
-            className="text-cyan-400 transition-colors hover:text-cyan-300"
-          >
+          <LegalLink href="mailto:contact@smartplanning.fr">
             contact@smartplanning.fr
-          </a>
+          </LegalLink>
           .
         </LegalParagraph>
       </LegalSection>
@@ -282,13 +254,7 @@ export default function MentionsLegalesPage() {
         <LegalParagraph>
           Pour plus d&apos;informations sur l&apos;utilisation des cookies et
           vos options de paramétrage, veuillez consulter notre{' '}
-          <a
-            href="/cookies"
-            className="text-cyan-400 underline transition-colors hover:text-cyan-300"
-          >
-            Politique Cookies
-          </a>
-          .
+          <LegalLink href="/cookies">Politique Cookies</LegalLink>.
         </LegalParagraph>
 
         <LegalParagraph>Types de cookies utilisés :</LegalParagraph>

@@ -11,13 +11,16 @@
 import { Cookie } from 'lucide-react'
 import { Metadata } from 'next'
 import {
+  LegalAcceptanceBox,
   LegalContact,
   LegalDivider,
   LegalHighlight,
+  LegalLink,
   LegalList,
   LegalPageLayout,
   LegalParagraph,
   LegalSection,
+  LegalTable,
   type TableOfContentsItem,
 } from '../components'
 
@@ -142,61 +145,35 @@ export default function CookiesPage() {
           Les cookies essentiels utilisés par SmartPlanning :
         </LegalParagraph>
 
-        <div className="my-6 overflow-x-auto">
-          <table className="w-full border-collapse text-sm">
-            <thead>
-              <tr className="border-b border-white/10">
-                <th className="px-4 py-3 text-left font-semibold text-white">
-                  Nom
-                </th>
-                <th className="px-4 py-3 text-left font-semibold text-white">
-                  Finalité
-                </th>
-                <th className="px-4 py-3 text-left font-semibold text-white">
-                  Durée
-                </th>
-              </tr>
-            </thead>
-            <tbody className="text-white/70">
-              <tr className="border-b border-white/5">
-                <td className="px-4 py-3 font-mono text-cyan-400">
-                  next-auth.session-token
-                </td>
-                <td className="px-4 py-3">
-                  Authentification et session utilisateur
-                </td>
-                <td className="px-4 py-3">Session</td>
-              </tr>
-              <tr className="border-b border-white/5">
-                <td className="px-4 py-3 font-mono text-cyan-400">
-                  next-auth.csrf-token
-                </td>
-                <td className="px-4 py-3">
-                  Protection contre les attaques CSRF
-                </td>
-                <td className="px-4 py-3">Session</td>
-              </tr>
-              <tr className="border-b border-white/5">
-                <td className="px-4 py-3 font-mono text-cyan-400">
-                  next-auth.callback-url
-                </td>
-                <td className="px-4 py-3">
-                  Redirection après authentification
-                </td>
-                <td className="px-4 py-3">Session</td>
-              </tr>
-              <tr className="border-b border-white/5">
-                <td className="px-4 py-3 font-mono text-cyan-400">
-                  cookie-consent
-                </td>
-                <td className="px-4 py-3">
-                  Mémorisation de vos choix de cookies
-                </td>
-                <td className="px-4 py-3">12 mois</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        <LegalTable
+          columns={[
+            { header: 'Nom', key: 'name', mono: true },
+            { header: 'Finalité', key: 'purpose' },
+            { header: 'Durée', key: 'duration' },
+          ]}
+          rows={[
+            {
+              name: 'next-auth.session-token',
+              purpose: 'Authentification et session utilisateur',
+              duration: 'Session',
+            },
+            {
+              name: 'next-auth.csrf-token',
+              purpose: 'Protection contre les attaques CSRF',
+              duration: 'Session',
+            },
+            {
+              name: 'next-auth.callback-url',
+              purpose: 'Redirection après authentification',
+              duration: 'Session',
+            },
+            {
+              name: 'cookie-consent',
+              purpose: 'Mémorisation de vos choix de cookies',
+              duration: '12 mois',
+            },
+          ]}
+        />
       </LegalSection>
 
       <LegalDivider />
@@ -220,56 +197,40 @@ export default function CookiesPage() {
           gestion des cookies.
         </LegalHighlight>
 
-        <div className="my-6 overflow-x-auto">
-          <table className="w-full border-collapse text-sm">
-            <thead>
-              <tr className="border-b border-white/10">
-                <th className="px-4 py-3 text-left font-semibold text-white">
-                  Nom
-                </th>
-                <th className="px-4 py-3 text-left font-semibold text-white">
-                  Fournisseur
-                </th>
-                <th className="px-4 py-3 text-left font-semibold text-white">
-                  Finalité
-                </th>
-                <th className="px-4 py-3 text-left font-semibold text-white">
-                  Durée
-                </th>
-              </tr>
-            </thead>
-            <tbody className="text-white/70">
-              <tr className="border-b border-white/5">
-                <td className="px-4 py-3 font-mono text-cyan-400">_ga</td>
-                <td className="px-4 py-3">Google Analytics</td>
-                <td className="px-4 py-3">
-                  Distinction des utilisateurs uniques
-                </td>
-                <td className="px-4 py-3">2 ans</td>
-              </tr>
-              <tr className="border-b border-white/5">
-                <td className="px-4 py-3 font-mono text-cyan-400">_ga_*</td>
-                <td className="px-4 py-3">Google Analytics</td>
-                <td className="px-4 py-3">
-                  Conservation de l&apos;état de session
-                </td>
-                <td className="px-4 py-3">2 ans</td>
-              </tr>
-              <tr className="border-b border-white/5">
-                <td className="px-4 py-3 font-mono text-cyan-400">_gid</td>
-                <td className="px-4 py-3">Google Analytics</td>
-                <td className="px-4 py-3">Distinction des utilisateurs</td>
-                <td className="px-4 py-3">24 heures</td>
-              </tr>
-              <tr className="border-b border-white/5">
-                <td className="px-4 py-3 font-mono text-cyan-400">_gat</td>
-                <td className="px-4 py-3">Google Analytics</td>
-                <td className="px-4 py-3">Limitation du taux de requêtes</td>
-                <td className="px-4 py-3">1 minute</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        <LegalTable
+          columns={[
+            { header: 'Nom', key: 'name', mono: true },
+            { header: 'Fournisseur', key: 'provider' },
+            { header: 'Finalité', key: 'purpose' },
+            { header: 'Durée', key: 'duration' },
+          ]}
+          rows={[
+            {
+              name: '_ga',
+              provider: 'Google Analytics',
+              purpose: 'Distinction des utilisateurs uniques',
+              duration: '2 ans',
+            },
+            {
+              name: '_ga_*',
+              provider: 'Google Analytics',
+              purpose: "Conservation de l'état de session",
+              duration: '2 ans',
+            },
+            {
+              name: '_gid',
+              provider: 'Google Analytics',
+              purpose: 'Distinction des utilisateurs',
+              duration: '24 heures',
+            },
+            {
+              name: '_gat',
+              provider: 'Google Analytics',
+              purpose: 'Limitation du taux de requêtes',
+              duration: '1 minute',
+            },
+          ]}
+        />
 
         <LegalParagraph>
           <strong>Note :</strong> Nous avons configuré Google Analytics en mode
@@ -292,53 +253,35 @@ export default function CookiesPage() {
           personnaliser votre expérience sur SmartPlanning.
         </LegalParagraph>
 
-        <div className="my-6 overflow-x-auto">
-          <table className="w-full border-collapse text-sm">
-            <thead>
-              <tr className="border-b border-white/10">
-                <th className="px-4 py-3 text-left font-semibold text-white">
-                  Nom
-                </th>
-                <th className="px-4 py-3 text-left font-semibold text-white">
-                  Finalité
-                </th>
-                <th className="px-4 py-3 text-left font-semibold text-white">
-                  Durée
-                </th>
-              </tr>
-            </thead>
-            <tbody className="text-white/70">
-              <tr className="border-b border-white/5">
-                <td className="px-4 py-3 font-mono text-cyan-400">theme</td>
-                <td className="px-4 py-3">
-                  Préférence de thème (clair/sombre)
-                </td>
-                <td className="px-4 py-3">12 mois</td>
-              </tr>
-              <tr className="border-b border-white/5">
-                <td className="px-4 py-3 font-mono text-cyan-400">locale</td>
-                <td className="px-4 py-3">Préférence de langue</td>
-                <td className="px-4 py-3">12 mois</td>
-              </tr>
-              <tr className="border-b border-white/5">
-                <td className="px-4 py-3 font-mono text-cyan-400">
-                  sidebar-state
-                </td>
-                <td className="px-4 py-3">État de la barre latérale</td>
-                <td className="px-4 py-3">Session</td>
-              </tr>
-              <tr className="border-b border-white/5">
-                <td className="px-4 py-3 font-mono text-cyan-400">
-                  calendar-view
-                </td>
-                <td className="px-4 py-3">
-                  Préférence d&apos;affichage du calendrier
-                </td>
-                <td className="px-4 py-3">12 mois</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        <LegalTable
+          columns={[
+            { header: 'Nom', key: 'name', mono: true },
+            { header: 'Finalité', key: 'purpose' },
+            { header: 'Durée', key: 'duration' },
+          ]}
+          rows={[
+            {
+              name: 'theme',
+              purpose: 'Préférence de thème (clair/sombre)',
+              duration: '12 mois',
+            },
+            {
+              name: 'locale',
+              purpose: 'Préférence de langue',
+              duration: '12 mois',
+            },
+            {
+              name: 'sidebar-state',
+              purpose: 'État de la barre latérale',
+              duration: 'Session',
+            },
+            {
+              name: 'calendar-view',
+              purpose: "Préférence d'affichage du calendrier",
+              duration: '12 mois',
+            },
+          ]}
+        />
 
         <LegalParagraph>
           Si vous refusez ces cookies, certaines fonctionnalités de
@@ -382,55 +325,33 @@ export default function CookiesPage() {
           leurs propres cookies :
         </LegalParagraph>
 
-        <div className="my-6 overflow-x-auto">
-          <table className="w-full border-collapse text-sm">
-            <thead>
-              <tr className="border-b border-white/10">
-                <th className="px-4 py-3 text-left font-semibold text-white">
-                  Service
-                </th>
-                <th className="px-4 py-3 text-left font-semibold text-white">
-                  Finalité
-                </th>
-                <th className="px-4 py-3 text-left font-semibold text-white">
-                  Politique de confidentialité
-                </th>
-              </tr>
-            </thead>
-            <tbody className="text-white/70">
-              <tr className="border-b border-white/5">
-                <td className="px-4 py-3 font-semibold text-white">Stripe</td>
-                <td className="px-4 py-3">Traitement sécurisé des paiements</td>
-                <td className="px-4 py-3">
-                  <a
-                    href="https://stripe.com/fr/privacy"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-cyan-400 hover:underline"
-                  >
-                    stripe.com/privacy
-                  </a>
-                </td>
-              </tr>
-              <tr className="border-b border-white/5">
-                <td className="px-4 py-3 font-semibold text-white">Google</td>
-                <td className="px-4 py-3">
-                  Analytics et mesure d&apos;audience
-                </td>
-                <td className="px-4 py-3">
-                  <a
-                    href="https://policies.google.com/privacy"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-cyan-400 hover:underline"
-                  >
-                    policies.google.com/privacy
-                  </a>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        <LegalTable
+          columns={[
+            { header: 'Service', key: 'service' },
+            { header: 'Finalité', key: 'purpose' },
+            { header: 'Politique de confidentialité', key: 'policy' },
+          ]}
+          rows={[
+            {
+              service: <strong>Stripe</strong>,
+              purpose: 'Traitement sécurisé des paiements',
+              policy: (
+                <LegalLink href="https://stripe.com/fr/privacy" external>
+                  stripe.com/privacy
+                </LegalLink>
+              ),
+            },
+            {
+              service: <strong>Google</strong>,
+              purpose: "Analytics et mesure d'audience",
+              policy: (
+                <LegalLink href="https://policies.google.com/privacy" external>
+                  policies.google.com/privacy
+                </LegalLink>
+              ),
+            },
+          ]}
+        />
 
         <LegalParagraph>
           Nous vous invitons à consulter les politiques de confidentialité de
@@ -547,47 +468,39 @@ export default function CookiesPage() {
           items={[
             <span key="chrome">
               <strong>Google Chrome :</strong>{' '}
-              <a
+              <LegalLink
                 href="https://support.google.com/chrome/answer/95647"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-cyan-400 hover:underline"
+                external
               >
                 support.google.com/chrome/answer/95647
-              </a>
+              </LegalLink>
             </span>,
             <span key="firefox">
               <strong>Mozilla Firefox :</strong>{' '}
-              <a
+              <LegalLink
                 href="https://support.mozilla.org/fr/kb/activer-desactiver-cookies"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-cyan-400 hover:underline"
+                external
               >
                 support.mozilla.org/fr/kb/activer-desactiver-cookies
-              </a>
+              </LegalLink>
             </span>,
             <span key="safari">
               <strong>Safari :</strong>{' '}
-              <a
+              <LegalLink
                 href="https://support.apple.com/fr-fr/guide/safari/sfri11471/mac"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-cyan-400 hover:underline"
+                external
               >
                 support.apple.com/fr-fr/guide/safari
-              </a>
+              </LegalLink>
             </span>,
             <span key="edge">
               <strong>Microsoft Edge :</strong>{' '}
-              <a
+              <LegalLink
                 href="https://support.microsoft.com/fr-fr/microsoft-edge/supprimer-les-cookies-dans-microsoft-edge-63947406-40ac-c3b8-57b9-2a946a29ae09"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-cyan-400 hover:underline"
+                external
               >
                 support.microsoft.com/fr-fr/microsoft-edge
-              </a>
+              </LegalLink>
             </span>,
           ]}
         />
@@ -638,9 +551,9 @@ export default function CookiesPage() {
         <LegalParagraph className="mt-6">
           Pour plus d&apos;informations sur la protection de vos données
           personnelles, consultez notre{' '}
-          <a href="/confidentialite" className="text-cyan-400 hover:underline">
+          <LegalLink href="/confidentialite">
             Politique de Confidentialité
-          </a>
+          </LegalLink>
           .
         </LegalParagraph>
       </LegalSection>
@@ -648,16 +561,11 @@ export default function CookiesPage() {
       <LegalDivider />
 
       {/* Acceptation */}
-      <div className="mt-12 rounded-lg border border-white/10 bg-white/5 p-6">
-        <p className="text-center text-sm text-white/60">
-          En continuant à naviguer sur SmartPlanning après avoir été informé de
-          l&apos;utilisation des cookies, vous acceptez leur utilisation
-          conformément à cette politique.
-        </p>
-        <p className="mt-4 text-center text-xs text-white/40">
-          Dernière mise à jour : 15 janvier 2026 | Version 1.0
-        </p>
-      </div>
+      <LegalAcceptanceBox
+        message="En continuant à naviguer sur SmartPlanning après avoir été informé de l'utilisation des cookies, vous acceptez leur utilisation conformément à cette politique."
+        lastUpdated="15 janvier 2026"
+        version="1.0"
+      />
     </LegalPageLayout>
   )
 }

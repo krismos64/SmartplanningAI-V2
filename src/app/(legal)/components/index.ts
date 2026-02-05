@@ -13,4 +13,9 @@ export {
   LegalHighlight,
   LegalDivider,
   LegalContact,
+  LegalTable,
+  LegalAcceptanceBox,
+  LegalLink,
+  type LegalTableColumn,
+  type LegalTableRow,
 } from './LegalSection'

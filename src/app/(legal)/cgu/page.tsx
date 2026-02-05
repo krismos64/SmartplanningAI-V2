@@ -11,9 +11,11 @@
 import { FileText } from 'lucide-react'
 import { Metadata } from 'next'
 import {
+  LegalAcceptanceBox,
   LegalContact,
   LegalDivider,
   LegalHighlight,
+  LegalLink,
   LegalList,
   LegalPageLayout,
   LegalParagraph,
@@ -404,9 +406,9 @@ export default function CGUPage() {
         <LegalHighlight type="info">
           Pour une information complète sur le traitement de vos données
           personnelles, veuillez consulter notre{' '}
-          <a href="/confidentialite" className="text-cyan-400 hover:underline">
+          <LegalLink href="/confidentialite">
             Politique de Confidentialité
-          </a>
+          </LegalLink>
           .
         </LegalHighlight>
 
@@ -683,16 +685,11 @@ export default function CGUPage() {
       <LegalDivider />
 
       {/* Acceptation */}
-      <div className="mt-12 rounded-lg border border-white/10 bg-white/5 p-6">
-        <p className="text-center text-sm text-white/60">
-          En utilisant SmartPlanning, vous reconnaissez avoir lu, compris et
-          accepté les présentes Conditions Générales d&apos;Utilisation dans
-          leur intégralité.
-        </p>
-        <p className="mt-4 text-center text-xs text-white/40">
-          Dernière mise à jour : 15 janvier 2026 | Version 1.0
-        </p>
-      </div>
+      <LegalAcceptanceBox
+        message="En utilisant SmartPlanning, vous reconnaissez avoir lu, compris et accepté les présentes Conditions Générales d'Utilisation dans leur intégralité."
+        lastUpdated="15 janvier 2026"
+        version="1.0"
+      />
     </LegalPageLayout>
   )
 }

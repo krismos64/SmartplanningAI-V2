@@ -11,6 +11,7 @@
 import { ShoppingCart } from 'lucide-react'
 import { Metadata } from 'next'
 import {
+  LegalAcceptanceBox,
   LegalContact,
   LegalDivider,
   LegalHighlight,
@@ -687,16 +688,11 @@ export default function CGVPage() {
       <LegalDivider />
 
       {/* Acceptation */}
-      <div className="mt-12 rounded-lg border border-white/10 bg-white/5 p-6">
-        <p className="text-center text-sm text-white/60">
-          En souscrivant à un abonnement SmartPlanning, vous reconnaissez avoir
-          lu, compris et accepté les présentes Conditions Générales de Vente
-          dans leur intégralité.
-        </p>
-        <p className="mt-4 text-center text-xs text-white/40">
-          Dernière mise à jour : 15 janvier 2026 | Version 1.0
-        </p>
-      </div>
+      <LegalAcceptanceBox
+        message="En souscrivant à un abonnement SmartPlanning, vous reconnaissez avoir lu, compris et accepté les présentes Conditions Générales de Vente dans leur intégralité."
+        lastUpdated="15 janvier 2026"
+        version="1.0"
+      />
     </LegalPageLayout>
   )
 }

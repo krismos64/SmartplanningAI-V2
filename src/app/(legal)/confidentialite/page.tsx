@@ -11,9 +11,11 @@
 import { Shield } from 'lucide-react'
 import { Metadata } from 'next'
 import {
+  LegalAcceptanceBox,
   LegalContact,
   LegalDivider,
   LegalHighlight,
+  LegalLink,
   LegalList,
   LegalPageLayout,
   LegalParagraph,
@@ -167,9 +169,7 @@ export default function ConfidentialitePage() {
             </span>,
             <span key="cookies">
               <strong>Cookies et traceurs :</strong> voir notre{' '}
-              <a href="/cookies" className="text-cyan-400 hover:underline">
-                Politique Cookies
-              </a>
+              <LegalLink href="/cookies">Politique Cookies</LegalLink>
             </span>,
           ]}
         />
@@ -586,10 +586,7 @@ export default function ConfidentialitePage() {
         <LegalParagraph>
           Pour en savoir plus sur les cookies que nous utilisons, comment les
           gérer et vos choix en la matière, consultez notre{' '}
-          <a href="/cookies" className="text-cyan-400 hover:underline">
-            Politique relative aux Cookies
-          </a>
-          .
+          <LegalLink href="/cookies">Politique relative aux Cookies</LegalLink>.
         </LegalParagraph>
         <LegalHighlight type="info">
           Vous pouvez à tout moment modifier vos préférences en matière de
@@ -656,16 +653,11 @@ export default function ConfidentialitePage() {
       <LegalDivider />
 
       {/* Acceptation */}
-      <div className="mt-12 rounded-lg border border-white/10 bg-white/5 p-6">
-        <p className="text-center text-sm text-white/60">
-          En utilisant SmartPlanning, vous reconnaissez avoir pris connaissance
-          de cette Politique de Confidentialité et acceptez le traitement de vos
-          données personnelles conformément aux conditions décrites ci-dessus.
-        </p>
-        <p className="mt-4 text-center text-xs text-white/40">
-          Dernière mise à jour : 15 janvier 2026 | Version 1.0
-        </p>
-      </div>
+      <LegalAcceptanceBox
+        message="En utilisant SmartPlanning, vous reconnaissez avoir pris connaissance de cette Politique de Confidentialité et acceptez le traitement de vos données personnelles conformément aux conditions décrites ci-dessus."
+        lastUpdated="15 janvier 2026"
+        version="1.0"
+      />
     </LegalPageLayout>
   )
 }
