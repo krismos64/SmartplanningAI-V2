@@ -24,7 +24,6 @@ export class ProfilePage {
   // Professional Info Card
   readonly proInfoCard: Locator
   readonly proJobTitle: Locator
-  readonly proDepartment: Locator
   readonly proTeam: Locator
   readonly proHireDate: Locator
   readonly proHours: Locator
@@ -62,7 +61,6 @@ export class ProfilePage {
     // Professional Info Card
     this.proInfoCard = page.locator('text=Informations professionnelles').locator('..')
     this.proJobTitle = page.getByTestId('pro-jobtitle')
-    this.proDepartment = page.getByTestId('pro-department')
     this.proTeam = page.getByTestId('pro-team')
     this.proHireDate = page.getByTestId('pro-hiredate')
     this.proHours = page.getByTestId('pro-hours')
@@ -114,7 +112,6 @@ export class ProfilePage {
 
   async expectProfessionalInfoDisplayed(data: {
     jobTitle?: string | null
-    department?: string | null
     team?: string | null
     hireDate?: string | null
     hours?: string
@@ -123,12 +120,6 @@ export class ProfilePage {
       await expect(this.proJobTitle).toHaveText(data.jobTitle)
     } else if (data.jobTitle === null) {
       await expect(this.proJobTitle).toHaveText('Non renseigné')
-    }
-
-    if (data.department) {
-      await expect(this.proDepartment).toHaveText(data.department)
-    } else if (data.department === null) {
-      await expect(this.proDepartment).toHaveText('Non renseigné')
     }
 
     if (data.team) {

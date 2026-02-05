@@ -63,7 +63,6 @@ export function ProfilePageContent({ profile }: ProfilePageContentProps) {
             <AnimatedItem>
               <ProfessionalInfoCard
                 jobTitle={profile.employee.jobTitle}
-                department={profile.employee.department}
                 team={profile.employee.team}
                 hireDate={profile.employee.hireDate}
                 weeklyHours={profile.employee.weeklyHours}

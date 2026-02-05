@@ -1,21 +1,20 @@
 /**
  * ProfessionalInfoCard - Carte des informations professionnelles
  *
- * Affiche poste, département, équipe, date d'embauche et heures contractuelles.
+ * Affiche poste, équipe, date d'embauche et heures contractuelles.
  * Design Cyber Glass avec effet hover-lift.
  *
  * @ticket SP-270
  */
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Briefcase, Building2, Users, Calendar, Clock } from 'lucide-react'
+import { Briefcase, Users, Calendar, Clock } from 'lucide-react'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { InfoRow } from './InfoRow'
 
 interface ProfessionalInfoCardProps {
   jobTitle: string | null
-  department: string | null
   team: { id: string; name: string } | null
   hireDate: Date | null
   weeklyHours: number
@@ -23,7 +22,6 @@ interface ProfessionalInfoCardProps {
 
 export function ProfessionalInfoCard({
   jobTitle,
-  department,
   team,
   hireDate,
   weeklyHours,
@@ -42,12 +40,6 @@ export function ProfessionalInfoCard({
           label="Poste"
           value={jobTitle || 'Non renseigné'}
           testId="pro-jobtitle"
-        />
-        <InfoRow
-          icon={<Building2 className="h-4 w-4" />}
-          label="Département"
-          value={department || 'Non renseigné'}
-          testId="pro-department"
         />
         <InfoRow
           icon={<Users className="h-4 w-4" />}

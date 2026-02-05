@@ -11,7 +11,6 @@ import { ProfessionalInfoCard } from '@/app/app/profile/_components/Professional
 describe('ProfessionalInfoCard', () => {
   const defaultProps = {
     jobTitle: 'Développeur Full-Stack',
-    department: 'Informatique',
     team: { id: 'team-1', name: 'Équipe Dev' },
     hireDate: new Date('2020-03-15T00:00:00Z'),
     weeklyHours: 35,
@@ -21,13 +20,6 @@ describe('ProfessionalInfoCard', () => {
     render(<ProfessionalInfoCard {...defaultProps} />)
     expect(screen.getByTestId('pro-jobtitle')).toHaveTextContent(
       'Développeur Full-Stack'
-    )
-  })
-
-  it('should render department', () => {
-    render(<ProfessionalInfoCard {...defaultProps} />)
-    expect(screen.getByTestId('pro-department')).toHaveTextContent(
-      'Informatique'
     )
   })
 
@@ -49,13 +41,6 @@ describe('ProfessionalInfoCard', () => {
   it('should display "Non renseigné" for null job title', () => {
     render(<ProfessionalInfoCard {...defaultProps} jobTitle={null} />)
     expect(screen.getByTestId('pro-jobtitle')).toHaveTextContent('Non renseigné')
-  })
-
-  it('should display "Non renseigné" for null department', () => {
-    render(<ProfessionalInfoCard {...defaultProps} department={null} />)
-    expect(screen.getByTestId('pro-department')).toHaveTextContent(
-      'Non renseigné'
-    )
   })
 
   it('should display "Aucune équipe" for null team', () => {
