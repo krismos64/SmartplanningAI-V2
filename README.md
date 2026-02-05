@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 5 février 2026 (Edit Profile Form - jobTitle, hireDate)
+- **Dernière mise à jour** : 5 février 2026 (Vue mobile responsive cards pour liste entreprises - SP-462)
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -101,7 +101,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 
 ### CRUD Opérationnels
 
-- **Entreprises** (SYSTEM_ADMIN) : Liste, création, édition, suppression avec filtres
+- **Entreprises** (SYSTEM_ADMIN) : Liste avec vue responsive (Table desktop / Cards mobile SP-462), création, édition, suppression avec filtres
 - **Collaborateurs** (DIRECTOR, MANAGER) : Gestion complète avec permissions RBAC
 - **Équipes** (DIRECTOR) : CRUD + gestion des membres
 

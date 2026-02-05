@@ -3,8 +3,9 @@
  *
  * @description Client Component pour afficher la liste des entreprises
  * avec TanStack Table, pagination serveur, filtres et actions CRUD.
+ * Vue responsive : Table desktop (md+) / Cards mobile (<md).
  *
- * @ticket SP-151
+ * @ticket SP-151, SP-462
  */
 
 'use client'
@@ -33,6 +34,7 @@ import { TooltipProvider } from '@/components/ui/tooltip'
 import {
   createCompanyColumns,
   CompanyFilters,
+  CompanyCard,
   DeleteCompanyDialog,
 } from '@/components/admin/companies'
 import {
@@ -197,8 +199,8 @@ export function CompaniesDataTable() {
           disabled={isLoading}
         />
 
-        {/* Table */}
-        <div className="rounded-md border">
+        {/* Table desktop */}
+        <div className="hidden rounded-md border md:block">
           <Table>
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (
@@ -257,6 +259,31 @@ export function CompaniesDataTable() {
               )}
             </TableBody>
           </Table>
+        </div>
+
+        {/* Cards mobile */}
+        <div className="space-y-3 md:hidden">
+          {isLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+              Chargement...
+            </div>
+          ) : data.length > 0 ? (
+            data.map((company) => (
+              <CompanyCard
+                key={company.id}
+                company={company}
+                onView={() => handleView(company)}
+                onEdit={() => handleEdit(company)}
+                onDelete={() => handleDelete(company)}
+                onToggleStatus={() => handleToggleStatus(company)}
+              />
+            ))
+          ) : (
+            <p className="py-12 text-center text-muted-foreground">
+              Aucune entreprise trouvée.
+            </p>
+          )}
         </div>
 
         {/* Pagination */}
