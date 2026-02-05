@@ -75,13 +75,6 @@ describe('ForgotPasswordForm', () => {
         screen.getByText(/entrez votre adresse email/i)
       ).toBeInTheDocument()
     })
-
-    it('applies dark variant styling', () => {
-      render(<ForgotPasswordForm variant="dark" />)
-
-      const emailInput = screen.getByPlaceholderText(/vous@entreprise.com/i)
-      expect(emailInput).toHaveClass('border-white/20')
-    })
   })
 
   // ==========================================================================

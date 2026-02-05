@@ -90,13 +90,6 @@ describe('ResetPasswordForm', () => {
 
       expect(screen.getByText(/minimum 8 caractères/i)).toBeInTheDocument()
     })
-
-    it('applies dark variant styling', () => {
-      render(<ResetPasswordForm token={VALID_TOKEN} variant="dark" />)
-
-      const { passwordInput } = getPasswordInputs()
-      expect(passwordInput).toHaveClass('border-white/20')
-    })
   })
 
   // ==========================================================================

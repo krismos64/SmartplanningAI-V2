@@ -6,7 +6,7 @@
  * - resetPasswordAction Server Action
  * - Gestion des erreurs (token invalide/expiré)
  * - Redirection automatique après succès
- * - Support variant dark pour design landing page
+ * - Support light/dark mode via CSS variables
  *
  * @ticket SP-263
  * @see Context7 - React Hook Form patterns, Next.js 15 Server Actions
@@ -32,18 +32,18 @@ import { Input } from '@/components/ui/input'
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
 import { cn } from '@/lib/utils'
+import { GRADIENT_BUTTON_CLASSES } from '@/app/(landing)/components'
 
 interface ResetPasswordFormProps {
   /** Token de réinitialisation reçu par email */
   token: string
-  /** Design variant - 'light' for dashboard, 'dark' for landing/auth */
-  variant?: 'light' | 'dark'
 }
 
 /**
@@ -52,11 +52,7 @@ interface ResetPasswordFormProps {
  * Formulaire de réinitialisation du mot de passe.
  * Gère les erreurs de token invalide/expiré et redirige après succès.
  */
-export function ResetPasswordForm({
-  token,
-  variant = 'light',
-}: ResetPasswordFormProps) {
-  const isDark = variant === 'dark'
+export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
@@ -139,72 +135,34 @@ export function ResetPasswordForm({
     void form.handleSubmit(onSubmit)(e)
   }
 
-  // Classes conditionnelles pour le mode dark
-  const labelClass = cn(isDark && 'text-white/80')
-  const inputClass = cn(
-    isDark &&
-      'border-white/20 bg-white/5 text-white placeholder:text-white/40 focus:border-cyan-500/50 focus:ring-cyan-500/20'
-  )
-  const textMutedClass = cn(isDark ? 'text-white/60' : 'text-muted-foreground')
-  const iconClass = cn(isDark ? 'text-white/50' : 'text-muted-foreground')
-  const linkClass = cn(
-    'inline-flex items-center gap-1 text-sm font-medium transition-colors',
-    isDark
-      ? 'text-cyan-400 hover:text-cyan-300'
-      : 'text-primary hover:underline'
-  )
-
   // Affichage après succès
   if (isSuccess) {
     return (
       <div className="space-y-6 text-center">
-        <div
-          className={cn(
-            'mx-auto flex h-16 w-16 items-center justify-center rounded-full',
-            isDark ? 'bg-cyan-500/20' : 'bg-primary/10'
-          )}
-        >
-          <CheckCircle2
-            className={cn('h-8 w-8', isDark ? 'text-cyan-400' : 'text-primary')}
-          />
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-cyan-500/20">
+          <CheckCircle2 className="h-8 w-8 text-cyan-600 dark:text-cyan-400" />
         </div>
 
         <div className="space-y-2">
-          <h2
-            className={cn(
-              'text-xl font-semibold',
-              isDark ? 'text-white' : 'text-foreground'
-            )}
-          >
+          <h2 className="text-xl font-semibold text-foreground">
             Mot de passe réinitialisé
           </h2>
-          <p className={cn('text-sm', textMutedClass)}>
+          <p className="text-sm text-muted-foreground">
             Votre mot de passe a été modifié avec succès. Vous allez être
             redirigé vers la page de connexion.
           </p>
         </div>
 
         <div className="space-y-3">
-          <p className={cn('text-sm', textMutedClass)}>
+          <p className="text-sm text-muted-foreground">
             Redirection dans{' '}
-            <span
-              className={cn(
-                'font-semibold',
-                isDark ? 'text-cyan-400' : 'text-primary'
-              )}
-            >
+            <span className="font-semibold text-cyan-600 dark:text-cyan-400">
               {countdown}
             </span>{' '}
             secondes...
           </p>
           <Link href="/login">
-            <Button
-              className={cn(
-                'w-full',
-                isDark &&
-                  'bg-gradient-to-r from-blue-500 to-cyan-400 text-white shadow-lg shadow-blue-500/25 hover:from-blue-600 hover:to-cyan-500'
-              )}
-            >
+            <Button className={cn('w-full', GRADIENT_BUTTON_CLASSES)}>
               Se connecter maintenant
             </Button>
           </Link>
@@ -225,7 +183,7 @@ export function ResetPasswordForm({
           name="password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className={labelClass}>Nouveau mot de passe</FormLabel>
+              <FormLabel>Nouveau mot de passe</FormLabel>
               <FormControl>
                 <div className="relative">
                   <Input
@@ -233,17 +191,13 @@ export function ResetPasswordForm({
                     placeholder="••••••••"
                     autoComplete="new-password"
                     disabled={isLoading}
-                    className={inputClass}
                     {...field}
                   />
                   <Button
                     type="button"
                     variant="ghost"
                     size="icon"
-                    className={cn(
-                      'absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent',
-                      isDark && 'hover:text-white'
-                    )}
+                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
                     onClick={() => setShowPassword(!showPassword)}
                     tabIndex={-1}
                     aria-label={
@@ -253,18 +207,18 @@ export function ResetPasswordForm({
                     }
                   >
                     {showPassword ? (
-                      <EyeOff className={cn('h-4 w-4', iconClass)} />
+                      <EyeOff className="h-4 w-4 text-muted-foreground" />
                     ) : (
-                      <Eye className={cn('h-4 w-4', iconClass)} />
+                      <Eye className="h-4 w-4 text-muted-foreground" />
                     )}
                   </Button>
                 </div>
               </FormControl>
+              <FormDescription>
+                Minimum 8 caractères, 1 majuscule, 1 minuscule, 1 chiffre, 1
+                caractère spécial
+              </FormDescription>
               <FormMessage />
-              <p className={cn('text-xs', textMutedClass)}>
-                Minimum 8 caractères avec majuscule, minuscule, chiffre et
-                caractère spécial.
-              </p>
             </FormItem>
           )}
         />
@@ -275,9 +229,7 @@ export function ResetPasswordForm({
           name="confirmPassword"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className={labelClass}>
-                Confirmer le mot de passe
-              </FormLabel>
+              <FormLabel>Confirmer le mot de passe</FormLabel>
               <FormControl>
                 <div className="relative">
                   <Input
@@ -285,17 +237,13 @@ export function ResetPasswordForm({
                     placeholder="••••••••"
                     autoComplete="new-password"
                     disabled={isLoading}
-                    className={inputClass}
                     {...field}
                   />
                   <Button
                     type="button"
                     variant="ghost"
                     size="icon"
-                    className={cn(
-                      'absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent',
-                      isDark && 'hover:text-white'
-                    )}
+                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                     tabIndex={-1}
                     aria-label={
@@ -305,9 +253,9 @@ export function ResetPasswordForm({
                     }
                   >
                     {showConfirmPassword ? (
-                      <EyeOff className={cn('h-4 w-4', iconClass)} />
+                      <EyeOff className="h-4 w-4 text-muted-foreground" />
                     ) : (
-                      <Eye className={cn('h-4 w-4', iconClass)} />
+                      <Eye className="h-4 w-4 text-muted-foreground" />
                     )}
                   </Button>
                 </div>
@@ -320,11 +268,7 @@ export function ResetPasswordForm({
         {/* Submit Button */}
         <Button
           type="submit"
-          className={cn(
-            'w-full',
-            isDark &&
-              'bg-gradient-to-r from-blue-500 to-cyan-400 text-white shadow-lg shadow-blue-500/25 hover:from-blue-600 hover:to-cyan-500'
-          )}
+          className={cn('w-full', GRADIENT_BUTTON_CLASSES)}
           disabled={isLoading}
         >
           {isLoading ? (
@@ -339,7 +283,10 @@ export function ResetPasswordForm({
 
         {/* Link back to login */}
         <div className="text-center">
-          <Link href="/login" className={linkClass}>
+          <Link
+            href="/login"
+            className="inline-flex items-center gap-1 text-sm font-medium text-cyan-600 transition-colors hover:text-cyan-500 dark:text-cyan-400 dark:hover:text-cyan-300"
+          >
             <ArrowLeft className="h-4 w-4" />
             Retour à la connexion
           </Link>

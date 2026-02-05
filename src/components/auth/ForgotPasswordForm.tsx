@@ -6,7 +6,7 @@
  * - forgotPasswordAction Server Action
  * - Message de succès générique (anti-énumération)
  * - Toast notification (Sonner)
- * - Support variant dark pour design landing page
+ * - Support light/dark mode via CSS variables
  *
  * @ticket SP-263
  * @see Context7 - React Hook Form patterns, Next.js 15 Server Actions
@@ -37,11 +37,7 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { cn } from '@/lib/utils'
-
-interface ForgotPasswordFormProps {
-  /** Design variant - 'light' for dashboard, 'dark' for landing/auth */
-  variant?: 'light' | 'dark'
-}
+import { GRADIENT_BUTTON_CLASSES } from '@/app/(landing)/components'
 
 /**
  * ForgotPasswordForm Component
@@ -49,10 +45,7 @@ interface ForgotPasswordFormProps {
  * Formulaire de demande de réinitialisation de mot de passe.
  * Affiche un message de succès générique pour ne pas révéler si l'email existe.
  */
-export function ForgotPasswordForm({
-  variant = 'light',
-}: ForgotPasswordFormProps) {
-  const isDark = variant === 'dark'
+export function ForgotPasswordForm() {
   const [isLoading, setIsLoading] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
 
@@ -106,71 +99,44 @@ export function ForgotPasswordForm({
     void form.handleSubmit(onSubmit)(e)
   }
 
-  // Classes conditionnelles pour le mode dark
-  const labelClass = cn(isDark && 'text-white/80')
-  const inputClass = cn(
-    isDark &&
-      'border-white/20 bg-white/5 text-white placeholder:text-white/40 focus:border-cyan-500/50 focus:ring-cyan-500/20'
-  )
-  const textMutedClass = cn(isDark ? 'text-white/60' : 'text-muted-foreground')
-  const linkClass = cn(
-    'inline-flex items-center gap-1 text-sm font-medium transition-colors',
-    isDark
-      ? 'text-cyan-400 hover:text-cyan-300'
-      : 'text-primary hover:underline'
-  )
-
   // Affichage après succès
   if (isSuccess) {
     return (
       <div className="space-y-6 text-center">
-        <div
-          className={cn(
-            'mx-auto flex h-16 w-16 items-center justify-center rounded-full',
-            isDark ? 'bg-cyan-500/20' : 'bg-primary/10'
-          )}
-        >
-          <CheckCircle2
-            className={cn('h-8 w-8', isDark ? 'text-cyan-400' : 'text-primary')}
-          />
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-cyan-500/20">
+          <CheckCircle2 className="h-8 w-8 text-cyan-600 dark:text-cyan-400" />
         </div>
 
         <div className="space-y-2">
-          <h2
-            className={cn(
-              'text-xl font-semibold',
-              isDark ? 'text-white' : 'text-foreground'
-            )}
-          >
+          <h2 className="text-xl font-semibold text-foreground">
             Vérifiez votre boîte mail
           </h2>
-          <p className={cn('text-sm', textMutedClass)}>
+          <p className="text-sm text-muted-foreground">
             Si un compte existe avec cet email, vous recevrez un lien de
             réinitialisation dans quelques minutes.
           </p>
         </div>
 
         <div className="space-y-3">
-          <p className={cn('text-xs', textMutedClass)}>
+          <p className="text-xs text-muted-foreground">
             Vous n&apos;avez pas reçu l&apos;email ? Vérifiez vos spams ou
           </p>
           <Button
             type="button"
-            variant={isDark ? 'outline' : 'secondary'}
+            variant="outline"
             onClick={() => {
               setIsSuccess(false)
               form.reset()
             }}
-            className={cn(
-              isDark &&
-                'border-white/20 bg-white/5 text-white hover:bg-white/10'
-            )}
           >
             Réessayer avec un autre email
           </Button>
         </div>
 
-        <Link href="/login" className={linkClass}>
+        <Link
+          href="/login"
+          className="inline-flex items-center gap-1 text-sm font-medium text-cyan-600 transition-colors hover:text-cyan-500 dark:text-cyan-400 dark:hover:text-cyan-300"
+        >
           <ArrowLeft className="h-4 w-4" />
           Retour à la connexion
         </Link>
@@ -182,7 +148,7 @@ export function ForgotPasswordForm({
     <Form {...form}>
       <form onSubmit={handleFormSubmit} className="space-y-4" noValidate>
         {/* Description */}
-        <p className={cn('text-sm', textMutedClass)}>
+        <p className="text-sm text-muted-foreground">
           Entrez votre adresse email et nous vous enverrons un lien pour
           réinitialiser votre mot de passe.
         </p>
@@ -193,21 +159,16 @@ export function ForgotPasswordForm({
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className={labelClass}>Email</FormLabel>
+              <FormLabel>Email</FormLabel>
               <FormControl>
                 <div className="relative">
-                  <Mail
-                    className={cn(
-                      'absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2',
-                      isDark ? 'text-white/40' : 'text-muted-foreground'
-                    )}
-                  />
+                  <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                   <Input
                     type="email"
                     placeholder="vous@entreprise.com"
                     autoComplete="email"
                     disabled={isLoading}
-                    className={cn('pl-10', inputClass)}
+                    className="pl-10"
                     {...field}
                   />
                 </div>
@@ -220,11 +181,7 @@ export function ForgotPasswordForm({
         {/* Submit Button */}
         <Button
           type="submit"
-          className={cn(
-            'w-full',
-            isDark &&
-              'bg-gradient-to-r from-blue-500 to-cyan-400 text-white shadow-lg shadow-blue-500/25 hover:from-blue-600 hover:to-cyan-500'
-          )}
+          className={cn('w-full', GRADIENT_BUTTON_CLASSES)}
           disabled={isLoading}
         >
           {isLoading ? (
@@ -239,7 +196,10 @@ export function ForgotPasswordForm({
 
         {/* Link back to login */}
         <div className="text-center">
-          <Link href="/login" className={linkClass}>
+          <Link
+            href="/login"
+            className="inline-flex items-center gap-1 text-sm font-medium text-cyan-600 transition-colors hover:text-cyan-500 dark:text-cyan-400 dark:hover:text-cyan-300"
+          >
             <ArrowLeft className="h-4 w-4" />
             Retour à la connexion
           </Link>

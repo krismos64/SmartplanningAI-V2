@@ -24,23 +24,23 @@ export default function RegisterPage() {
     <div className="space-y-6">
       {/* Header */}
       <div className="text-center">
-        <h1 className="text-2xl font-bold tracking-tight text-white">
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">
           Créer votre compte
         </h1>
-        <p className="mt-2 text-sm text-white/60">
+        <p className="mt-2 text-sm text-muted-foreground">
           Commencez gratuitement, sans carte bancaire
         </p>
       </div>
 
       {/* Register Form Component */}
-      <RegisterForm variant="dark" />
+      <RegisterForm />
 
       {/* Link to login */}
-      <p className="text-center text-sm text-white/60">
+      <p className="text-center text-sm text-muted-foreground">
         Vous avez déjà un compte ?{' '}
         <Link
           href="/login"
-          className="font-medium text-cyan-400 transition-colors hover:text-cyan-300 hover:underline"
+          className="font-medium text-cyan-600 transition-colors hover:text-cyan-500 hover:underline dark:text-cyan-400 dark:hover:text-cyan-300"
         >
           Se connecter
         </Link>
@@ -48,10 +48,10 @@ export default function RegisterPage() {
 
       {/* Info plan FREE */}
       <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-4">
-        <p className="mb-1 text-xs font-medium text-emerald-400">
+        <p className="mb-1 text-xs font-medium text-emerald-600 dark:text-emerald-400">
           ✨ Plan FREE inclus
         </p>
-        <p className="text-xs text-white/60">
+        <p className="text-xs text-muted-foreground">
           Jusqu&apos;à 5 employés, fonctionnalités complètes, sans limite de
           temps. Pas de carte bancaire requise.
         </p>

@@ -39,12 +39,12 @@ export default async function ResetPasswordPage({
         {/* Header */}
         <div className="text-center">
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-500/20">
-            <AlertCircle className="h-8 w-8 text-red-400" />
+            <AlertCircle className="h-8 w-8 text-red-500 dark:text-red-400" />
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-white">
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">
             Lien invalide
           </h1>
-          <p className="mt-2 text-sm text-white/60">
+          <p className="mt-2 text-sm text-muted-foreground">
             Ce lien de réinitialisation est invalide ou a expiré.
           </p>
         </div>
@@ -60,7 +60,7 @@ export default async function ResetPasswordPage({
           <div className="text-center">
             <Link
               href="/login"
-              className="inline-flex items-center gap-1 text-sm font-medium text-cyan-400 transition-colors hover:text-cyan-300"
+              className="inline-flex items-center gap-1 text-sm font-medium text-cyan-600 transition-colors hover:text-cyan-500 dark:text-cyan-400 dark:hover:text-cyan-300"
             >
               <ArrowLeft className="h-4 w-4" />
               Retour à la connexion
@@ -75,16 +75,16 @@ export default async function ResetPasswordPage({
     <div className="space-y-6">
       {/* Header */}
       <div className="text-center">
-        <h1 className="text-2xl font-bold tracking-tight text-white">
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">
           Nouveau mot de passe
         </h1>
-        <p className="mt-2 text-sm text-white/60">
+        <p className="mt-2 text-sm text-muted-foreground">
           Choisissez un mot de passe sécurisé pour votre compte
         </p>
       </div>
 
       {/* Reset Password Form Component */}
-      <ResetPasswordForm token={token} variant="dark" />
+      <ResetPasswordForm token={token} />
     </div>
   )
 }

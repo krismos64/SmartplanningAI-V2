@@ -3,15 +3,19 @@
 /**
  * AuthLayoutClient - Client component for auth layout
  *
- * @description Layout avec design dark, Header/Footer de la landing,
- * animations Framer Motion et background animé.
+ * @description Layout réutilisant les composants landing avec :
+ * - TopBanner animé
+ * - Header/Footer de la landing
+ * - Animations Framer Motion
+ * - Background animé
+ * - Support light/dark mode via CSS variables
  */
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { LandingHeader } from '@/components/layout/LandingHeader'
 import { LandingFooter } from '@/components/layout/LandingFooter'
-import { AnimatedBackground } from '../(landing)/components'
+import { AnimatedBackground, TopBanner } from '../(landing)/components'
 import { motion, fadeInUp } from '@/lib/animations'
 
 interface AuthLayoutClientProps {
@@ -30,9 +34,14 @@ export function AuthLayoutClient({ children }: AuthLayoutClientProps) {
   }, [])
 
   return (
-    <div className="flex min-h-screen flex-col overflow-x-hidden bg-[#030712] text-white">
-      {/* Background animé */}
-      <AnimatedBackground />
+    <div className="relative flex min-h-screen flex-col overflow-x-hidden bg-background text-foreground">
+      {/* Top Banner - Animated marquee */}
+      <TopBanner />
+
+      {/* Background animé - Decorative */}
+      <div aria-hidden="true">
+        <AnimatedBackground />
+      </div>
 
       {/* Header - sans navigation links pour les pages auth */}
       <LandingHeader isScrolled={isScrolled} showNavLinks={false} />
@@ -46,23 +55,23 @@ export function AuthLayoutClient({ children }: AuthLayoutClientProps) {
           className="w-full max-w-md"
         >
           {/* Card glassmorphism */}
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-8 shadow-2xl backdrop-blur-xl">
+          <div className="rounded-2xl border border-border bg-card/80 p-8 shadow-2xl backdrop-blur-xl">
             {children}
           </div>
 
           {/* Liens légaux */}
-          <p className="mt-6 text-center text-sm text-white/50">
+          <p className="mt-6 text-center text-sm text-muted-foreground">
             En continuant, vous acceptez nos{' '}
             <Link
-              href="/terms"
-              className="text-cyan-400 underline-offset-4 transition-colors hover:text-cyan-300 hover:underline"
+              href="/cgu"
+              className="text-cyan-600 underline-offset-4 transition-colors hover:text-cyan-500 hover:underline dark:text-cyan-400 dark:hover:text-cyan-300"
             >
               conditions d&apos;utilisation
             </Link>{' '}
             et notre{' '}
             <Link
-              href="/privacy"
-              className="text-cyan-400 underline-offset-4 transition-colors hover:text-cyan-300 hover:underline"
+              href="/confidentialite"
+              className="text-cyan-600 underline-offset-4 transition-colors hover:text-cyan-500 hover:underline dark:text-cyan-400 dark:hover:text-cyan-300"
             >
               politique de confidentialité
             </Link>

@@ -7,7 +7,7 @@
  * - Gestion des erreurs avec toast (Sonner)
  * - Auto-login après inscription réussie
  * - Redirect vers /app/dashboard après succès
- * - Support variant dark pour design landing page
+ * - Support light/dark mode via CSS variables
  *
  * @ticket SP-139
  * @see Context7 - Next.js 15 Server Actions, React Hook Form
@@ -39,11 +39,7 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { cn } from '@/lib/utils'
-
-interface RegisterFormProps {
-  /** Design variant - 'light' for dashboard, 'dark' for landing/auth */
-  variant?: 'light' | 'dark'
-}
+import { GRADIENT_BUTTON_CLASSES } from '@/app/(landing)/components'
 
 /**
  * RegisterForm Component
@@ -52,8 +48,7 @@ interface RegisterFormProps {
  * Crée une Company et un User DIRECTOR via Server Action.
  * Auto-login après inscription réussie.
  */
-export function RegisterForm({ variant = 'light' }: RegisterFormProps) {
-  const isDark = variant === 'dark'
+export function RegisterForm() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
@@ -146,22 +141,6 @@ export function RegisterForm({ variant = 'light' }: RegisterFormProps) {
     void form.handleSubmit(onSubmit)(e)
   }
 
-  // Classes conditionnelles pour le mode dark
-  const labelClass = cn(isDark && 'text-white/80')
-  const inputClass = cn(
-    isDark &&
-      'border-white/20 bg-white/5 text-white placeholder:text-white/40 focus:border-cyan-500/50 focus:ring-cyan-500/20'
-  )
-  const linkClass = cn(
-    isDark
-      ? 'text-cyan-400 hover:text-cyan-300'
-      : 'text-primary hover:underline'
-  )
-  const iconClass = cn(isDark ? 'text-white/50' : 'text-muted-foreground')
-  const descriptionClass = cn(
-    isDark ? 'text-white/50' : 'text-muted-foreground'
-  )
-
   return (
     <Form {...form}>
       <form onSubmit={handleFormSubmit} className="space-y-4" noValidate>
@@ -171,14 +150,13 @@ export function RegisterForm({ variant = 'light' }: RegisterFormProps) {
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className={labelClass}>Nom complet</FormLabel>
+              <FormLabel>Nom complet</FormLabel>
               <FormControl>
                 <Input
                   type="text"
                   placeholder="Jean Dupont"
                   autoComplete="name"
                   disabled={isLoading}
-                  className={inputClass}
                   {...field}
                 />
               </FormControl>
@@ -193,14 +171,13 @@ export function RegisterForm({ variant = 'light' }: RegisterFormProps) {
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className={labelClass}>Email professionnel</FormLabel>
+              <FormLabel>Email professionnel</FormLabel>
               <FormControl>
                 <Input
                   type="email"
                   placeholder="jean@entreprise.com"
                   autoComplete="email"
                   disabled={isLoading}
-                  className={inputClass}
                   {...field}
                 />
               </FormControl>
@@ -215,23 +192,16 @@ export function RegisterForm({ variant = 'light' }: RegisterFormProps) {
           name="companyName"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className={labelClass}>
-                Nom de votre organisation
-              </FormLabel>
+              <FormLabel>Nom de votre organisation</FormLabel>
               <FormControl>
                 <div className="relative">
-                  <Building2
-                    className={cn(
-                      'absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2',
-                      iconClass
-                    )}
-                  />
+                  <Building2 className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                   <Input
                     type="text"
                     placeholder="Mon Entreprise SAS"
                     autoComplete="organization"
                     disabled={isLoading}
-                    className={cn('pl-10', inputClass)}
+                    className="pl-10"
                     {...field}
                   />
                 </div>
@@ -247,7 +217,7 @@ export function RegisterForm({ variant = 'light' }: RegisterFormProps) {
           name="password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className={labelClass}>Mot de passe</FormLabel>
+              <FormLabel>Mot de passe</FormLabel>
               <FormControl>
                 <div className="relative">
                   <Input
@@ -255,17 +225,13 @@ export function RegisterForm({ variant = 'light' }: RegisterFormProps) {
                     placeholder="••••••••"
                     autoComplete="new-password"
                     disabled={isLoading}
-                    className={inputClass}
                     {...field}
                   />
                   <Button
                     type="button"
                     variant="ghost"
                     size="icon"
-                    className={cn(
-                      'absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent',
-                      isDark && 'hover:text-white'
-                    )}
+                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
                     onClick={() => setShowPassword(!showPassword)}
                     tabIndex={-1}
                     aria-label={
@@ -275,14 +241,14 @@ export function RegisterForm({ variant = 'light' }: RegisterFormProps) {
                     }
                   >
                     {showPassword ? (
-                      <EyeOff className={cn('h-4 w-4', iconClass)} />
+                      <EyeOff className="h-4 w-4 text-muted-foreground" />
                     ) : (
-                      <Eye className={cn('h-4 w-4', iconClass)} />
+                      <Eye className="h-4 w-4 text-muted-foreground" />
                     )}
                   </Button>
                 </div>
               </FormControl>
-              <FormDescription className={descriptionClass}>
+              <FormDescription>
                 Minimum 8 caractères, 1 majuscule, 1 minuscule, 1 chiffre, 1
                 caractère spécial
               </FormDescription>
@@ -297,9 +263,7 @@ export function RegisterForm({ variant = 'light' }: RegisterFormProps) {
           name="confirmPassword"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className={labelClass}>
-                Confirmer le mot de passe
-              </FormLabel>
+              <FormLabel>Confirmer le mot de passe</FormLabel>
               <FormControl>
                 <div className="relative">
                   <Input
@@ -307,17 +271,13 @@ export function RegisterForm({ variant = 'light' }: RegisterFormProps) {
                     placeholder="••••••••"
                     autoComplete="new-password"
                     disabled={isLoading}
-                    className={inputClass}
                     {...field}
                   />
                   <Button
                     type="button"
                     variant="ghost"
                     size="icon"
-                    className={cn(
-                      'absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent',
-                      isDark && 'hover:text-white'
-                    )}
+                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                     tabIndex={-1}
                     aria-label={
@@ -327,9 +287,9 @@ export function RegisterForm({ variant = 'light' }: RegisterFormProps) {
                     }
                   >
                     {showConfirmPassword ? (
-                      <EyeOff className={cn('h-4 w-4', iconClass)} />
+                      <EyeOff className="h-4 w-4 text-muted-foreground" />
                     ) : (
-                      <Eye className={cn('h-4 w-4', iconClass)} />
+                      <Eye className="h-4 w-4 text-muted-foreground" />
                     )}
                   </Button>
                 </div>
@@ -350,24 +310,24 @@ export function RegisterForm({ variant = 'light' }: RegisterFormProps) {
                   checked={field.value}
                   onCheckedChange={field.onChange}
                   disabled={isLoading}
-                  className={cn(
-                    isDark && 'border-white/30 data-[state=checked]:bg-cyan-500'
-                  )}
                 />
               </FormControl>
               <div className="space-y-1 leading-none">
-                <FormLabel
-                  className={cn(
-                    'cursor-pointer text-sm font-normal',
-                    labelClass
-                  )}
-                >
+                <FormLabel className="cursor-pointer text-sm font-normal">
                   J&apos;accepte les{' '}
-                  <Link href="/terms" className={linkClass} target="_blank">
+                  <Link
+                    href="/cgu"
+                    className="text-cyan-600 hover:text-cyan-500 dark:text-cyan-400 dark:hover:text-cyan-300"
+                    target="_blank"
+                  >
                     conditions d&apos;utilisation
                   </Link>{' '}
                   et la{' '}
-                  <Link href="/privacy" className={linkClass} target="_blank">
+                  <Link
+                    href="/confidentialite"
+                    className="text-cyan-600 hover:text-cyan-500 dark:text-cyan-400 dark:hover:text-cyan-300"
+                    target="_blank"
+                  >
                     politique de confidentialité
                   </Link>
                 </FormLabel>
@@ -380,11 +340,7 @@ export function RegisterForm({ variant = 'light' }: RegisterFormProps) {
         {/* Submit Button */}
         <Button
           type="submit"
-          className={cn(
-            'w-full',
-            isDark &&
-              'bg-gradient-to-r from-blue-500 to-cyan-400 text-white shadow-lg shadow-blue-500/25 hover:from-blue-600 hover:to-cyan-500'
-          )}
+          className={cn('w-full', GRADIENT_BUTTON_CLASSES)}
           disabled={isLoading}
         >
           {isLoading ? (

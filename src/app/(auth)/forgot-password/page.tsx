@@ -24,16 +24,16 @@ export default function ForgotPasswordPage() {
     <div className="space-y-6">
       {/* Header */}
       <div className="text-center">
-        <h1 className="text-2xl font-bold tracking-tight text-white">
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">
           Mot de passe oublié ?
         </h1>
-        <p className="mt-2 text-sm text-white/60">
+        <p className="mt-2 text-sm text-muted-foreground">
           Pas de panique, nous allons vous aider
         </p>
       </div>
 
       {/* Forgot Password Form Component */}
-      <ForgotPasswordForm variant="dark" />
+      <ForgotPasswordForm />
     </div>
   )
 }
