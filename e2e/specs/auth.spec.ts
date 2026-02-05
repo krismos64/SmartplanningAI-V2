@@ -295,18 +295,8 @@ test.describe('Register Page', () => {
     // Soumettre
     await page.getByRole('button', { name: 'Créer mon compte' }).click()
 
-    // Attendre soit le toast de succès, soit la redirection
-    await Promise.race([
-      expect(page.getByText(/Compte créé|succès|Bienvenue/i)).toBeVisible({
-        timeout: 30000,
-      }),
-      page.waitForURL(/\/app\/|\/login/, { timeout: 30000 }),
-    ])
-
-    // Si on est toujours sur /register, attendre la redirection
-    if (page.url().includes('/register')) {
-      await page.waitForURL(/\/app\/|\/login/, { timeout: 30000 })
-    }
+    // Attendre la redirection vers le dashboard ou login
+    await page.waitForURL(/\/app\/|\/login/, { timeout: 30000 })
   })
 
   test('should toggle password visibility for both password fields', async ({

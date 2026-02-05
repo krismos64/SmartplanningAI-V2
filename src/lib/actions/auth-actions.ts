@@ -115,7 +115,7 @@ export async function registerAction(
       }
     }
 
-    const { name, email, companyName, password } = validationResult.data
+    const { name, email, companyName, password, phone } = validationResult.data
 
     // 2. Vérifier que l'email n'existe pas déjà
     const existingUser = await prisma.user.findUnique({
@@ -165,7 +165,39 @@ export async function registerAction(
         },
       })
 
-      return { user, company }
+      // Séparer le nom complet en prénom/nom
+      const nameParts = name.trim().split(' ')
+      const firstName = nameParts[0] || name.trim()
+      const lastName = nameParts.slice(1).join(' ') || firstName
+
+      // Créer l'Employee associé au DIRECTOR
+      const employee = await tx.employee.create({
+        data: {
+          firstName,
+          lastName,
+          email: email.toLowerCase(),
+          phone: phone || null,
+          userId: user.id,
+          companyId: company.id,
+          weeklyHours: 35, // Défaut légal France
+          isActive: true,
+        },
+      })
+
+      // Créer le solde de congés pour l'année en cours
+      await tx.leaveBalance.create({
+        data: {
+          employeeId: employee.id,
+          companyId: company.id,
+          year: new Date().getFullYear(),
+          paidLeaveTotal: 25, // Défaut légal France (2.5 jours/mois)
+          paidLeaveUsed: 0,
+          rttTotal: 10, // Défaut courant
+          rttUsed: 0,
+        },
+      })
+
+      return { user, company, employee }
     })
 
     // 6. Envoyer l'email de bienvenue (non bloquant)

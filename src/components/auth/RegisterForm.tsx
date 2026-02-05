@@ -21,7 +21,7 @@ import Link from 'next/link'
 import { signIn } from 'next-auth/react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Loader2, Eye, EyeOff, Building2 } from 'lucide-react'
+import { Loader2, Eye, EyeOff, Building2, Phone } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { signupSchema, type SignupFormData } from '@/lib/validations'
@@ -60,6 +60,7 @@ export function RegisterForm() {
       name: '',
       email: '',
       companyName: '',
+      phone: '',
       password: '',
       confirmPassword: '',
       acceptTerms: false,
@@ -200,6 +201,36 @@ export function RegisterForm() {
                     type="text"
                     placeholder="Mon Entreprise SAS"
                     autoComplete="organization"
+                    disabled={isLoading}
+                    className="pl-10"
+                    {...field}
+                  />
+                </div>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Phone Field (optional) */}
+        <FormField
+          control={form.control}
+          name="phone"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>
+                Téléphone{' '}
+                <span className="text-muted-foreground font-normal">
+                  (optionnel)
+                </span>
+              </FormLabel>
+              <FormControl>
+                <div className="relative">
+                  <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    type="tel"
+                    placeholder="0612345678"
+                    autoComplete="tel"
                     disabled={isLoading}
                     className="pl-10"
                     {...field}

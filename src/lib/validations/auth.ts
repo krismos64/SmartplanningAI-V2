@@ -12,7 +12,7 @@
  */
 
 import { z } from 'zod'
-import { emailSchema, passwordSchema } from './common'
+import { emailSchema, passwordSchema, phoneSchema } from './common'
 
 // Réexport du loginSchema pour centralisation des imports auth
 export { loginSchema, type LoginFormData } from './user'
@@ -58,6 +58,12 @@ export const signupSchema = z
       .min(2, "Le nom de l'organisation doit contenir au moins 2 caractères")
       .max(100, "Le nom de l'organisation ne peut pas dépasser 100 caractères")
       .trim(),
+
+    /**
+     * Numéro de téléphone (optionnel)
+     * Format français : 0612345678 ou +33612345678
+     */
+    phone: phoneSchema.optional().or(z.literal('')),
 
     /**
      * Mot de passe sécurisé
