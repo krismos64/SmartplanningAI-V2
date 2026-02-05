@@ -202,4 +202,3 @@ test.describe('Company Settings Mobile - Responsive', () => {
     })
   })
 })
-
