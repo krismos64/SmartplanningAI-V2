@@ -52,23 +52,28 @@ export function SettingsSection({
       )}
       data-testid={testId}
     >
-      <CardContent className="flex items-center gap-4 p-6">
+      <CardContent className="flex items-center gap-3 p-4 sm:gap-4 sm:p-6">
         {/* Icône */}
-        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-          <Icon className="h-6 w-6 text-primary" aria-hidden="true" />
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 sm:h-12 sm:w-12">
+          <Icon
+            className="h-5 w-5 text-primary sm:h-6 sm:w-6"
+            aria-hidden="true"
+          />
         </div>
 
         {/* Contenu */}
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <h3 className="font-semibold">{title}</h3>
+            <h3 className="truncate text-sm font-semibold sm:text-base">
+              {title}
+            </h3>
             {badge && (
-              <Badge variant="secondary" className="text-xs">
+              <Badge variant="secondary" className="shrink-0 text-xs">
                 {badge}
               </Badge>
             )}
           </div>
-          <p className="truncate text-sm text-muted-foreground">
+          <p className="truncate text-xs text-muted-foreground sm:text-sm">
             {description}
           </p>
         </div>
@@ -76,7 +81,7 @@ export function SettingsSection({
         {/* Chevron */}
         <ChevronRight
           className={cn(
-            'h-5 w-5 shrink-0 transition-transform',
+            'h-4 w-4 shrink-0 transition-transform sm:h-5 sm:w-5',
             isDisabled ? 'text-muted-foreground/50' : 'text-muted-foreground'
           )}
           aria-hidden="true"

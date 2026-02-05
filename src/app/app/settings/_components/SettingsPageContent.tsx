@@ -99,7 +99,7 @@ export function SettingsPageContent({ userRole }: SettingsPageContentProps) {
 
       {/* Grille des sections avec stagger */}
       <AnimatedContainer stagger staggerSpeed="normal">
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {visibleSections.map((section) => (
             <AnimatedItem key={section.id}>
               <SettingsSection
