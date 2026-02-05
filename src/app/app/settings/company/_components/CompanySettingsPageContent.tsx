@@ -109,7 +109,21 @@ export function CompanySettingsPageContent({
    */
   const handleSave = () => {
     startTransition(async () => {
-      const result = await updateCompanySettings(settings)
+      // Extraction explicite pour éviter les problèmes de sérialisation
+      const payload = {
+        name: settings.name,
+        address: settings.address,
+        workingDays: [...settings.workingDays],
+        workingHoursStart: settings.workingHoursStart,
+        workingHoursEnd: settings.workingHoursEnd,
+        lunchBreak: {
+          enabled: settings.lunchBreak.enabled,
+          start: settings.lunchBreak.start,
+          end: settings.lunchBreak.end,
+        },
+      }
+
+      const result = await updateCompanySettings(payload)
 
       if (!result.success) {
         toastError(result.error || 'Erreur lors de la sauvegarde')
