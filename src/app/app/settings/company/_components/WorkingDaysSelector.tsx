@@ -74,12 +74,12 @@ export function WorkingDaysSelector({
 
   return (
     <Card data-testid="working-days-section">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <CalendarDays className="h-5 w-5" />
+      <CardHeader className="space-y-1">
+        <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+          <CalendarDays className="h-4 w-4 sm:h-5 sm:w-5" />
           Jours travaillés
         </CardTitle>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-xs text-muted-foreground sm:text-sm">
           {COMPANY_SETTINGS_DESCRIPTIONS.workingDays}
         </p>
       </CardHeader>
@@ -106,7 +106,7 @@ export function WorkingDaysSelector({
 
         {/* Checkboxes des jours */}
         <div
-          className="flex flex-wrap gap-3"
+          className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:gap-3"
           data-testid="working-days-checkboxes"
         >
           {DAYS_OF_WEEK.map((day) => {
@@ -141,7 +141,9 @@ export function WorkingDaysSelector({
                   )}
                 >
                   <span className="hidden sm:inline">{DAY_LABELS[day]}</span>
-                  <span className="sm:hidden">{DAY_SHORT_LABELS[day]}</span>
+                  <span className="inline sm:hidden">
+                    {DAY_SHORT_LABELS[day]}
+                  </span>
                 </Label>
               </div>
             )

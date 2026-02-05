@@ -168,17 +168,17 @@ export function CompanySettingsPageContent({
     <div className="space-y-6" data-testid="company-settings-page">
       {/* Header avec bouton retour */}
       <AnimatedContainer animation="fadeInDown">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" asChild>
+        <div className="flex items-start gap-3 sm:items-center sm:gap-4">
+          <Button variant="ghost" size="icon" asChild className="mt-1 sm:mt-0">
             <Link href="/app/settings" aria-label="Retour aux paramètres">
               <ArrowLeft className="h-5 w-5" />
             </Link>
           </Button>
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">
+          <div className="min-w-0 flex-1">
+            <h1 className="text-xl font-bold tracking-tight sm:text-2xl">
               Paramètres Entreprise
             </h1>
-            <p className="text-muted-foreground">
+            <p className="text-sm text-muted-foreground sm:text-base">
               Configurez les informations et horaires de votre entreprise
             </p>
           </div>
@@ -223,26 +223,28 @@ export function CompanySettingsPageContent({
 
       {/* Barre d'actions */}
       <AnimatedContainer animation="fadeInUp">
-        <div className="flex flex-col gap-4 border-t pt-4 sm:flex-row sm:items-center sm:justify-between">
-          {/* Bouton de réinitialisation à gauche */}
+        <div className="flex flex-col gap-3 border-t pt-4 sm:flex-row sm:items-center sm:justify-between">
+          {/* Bouton de réinitialisation */}
           <Button
             variant="outline"
             onClick={handleReset}
             disabled={isPending}
             data-testid="reset-button"
+            className="w-full sm:w-auto"
           >
             <RotateCcw className="mr-2 h-4 w-4" />
             Réinitialiser par défaut
           </Button>
 
-          {/* Boutons Annuler / Enregistrer à droite */}
-          <div className="flex gap-2">
+          {/* Boutons Annuler / Enregistrer */}
+          <div className="flex w-full gap-2 sm:w-auto">
             {isDirty && (
               <Button
                 variant="ghost"
                 onClick={handleCancel}
                 disabled={isPending}
                 data-testid="cancel-button"
+                className="flex-1 sm:flex-initial"
               >
                 Annuler
               </Button>
@@ -251,6 +253,7 @@ export function CompanySettingsPageContent({
               onClick={handleSave}
               disabled={!isDirty || isPending}
               data-testid="save-button"
+              className="flex-1 sm:flex-initial"
             >
               {isPending ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />

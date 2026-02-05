@@ -39,12 +39,12 @@ export function CompanyInfoSection({
 }: CompanyInfoSectionProps) {
   return (
     <Card data-testid="company-info-section">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Building className="h-5 w-5" />
+      <CardHeader className="space-y-1">
+        <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+          <Building className="h-4 w-4 sm:h-5 sm:w-5" />
           Informations générales
         </CardTitle>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-xs text-muted-foreground sm:text-sm">
           Les informations de base de votre entreprise
         </p>
       </CardHeader>

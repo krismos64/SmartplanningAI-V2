@@ -76,12 +76,12 @@ export function WorkingHoursSection({
 
   return (
     <Card data-testid="working-hours-section">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Clock className="h-5 w-5" />
+      <CardHeader className="space-y-1">
+        <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+          <Clock className="h-4 w-4 sm:h-5 sm:w-5" />
           Horaires de travail
         </CardTitle>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-xs text-muted-foreground sm:text-sm">
           {COMPANY_SETTINGS_DESCRIPTIONS.workingHours}
         </p>
       </CardHeader>
