@@ -4,6 +4,7 @@
  * ValueCard Component
  * Displays a company value with icon, title and description
  * Reusable card component following the landing page design system
+ * Supports light/dark mode via CSS variables
  */
 
 import { LucideIcon } from 'lucide-react'
@@ -29,7 +30,7 @@ export function ValueCard({
     <motion.div
       variants={fadeInUp}
       custom={delay}
-      className="group relative overflow-hidden rounded-2xl border border-white/5 bg-white/[0.02] p-8 transition-all duration-300 hover:border-white/10 hover:bg-white/[0.04]"
+      className="group relative overflow-hidden rounded-2xl border border-border bg-card p-8 transition-all duration-300 hover:border-border/80 hover:bg-accent/50"
     >
       {/* Gradient glow on hover */}
       <div
@@ -50,8 +51,8 @@ export function ValueCard({
       </div>
 
       {/* Content */}
-      <h3 className="mb-3 text-xl font-semibold">{title}</h3>
-      <p className="leading-relaxed text-white/60">{description}</p>
+      <h3 className="mb-3 text-xl font-semibold text-foreground">{title}</h3>
+      <p className="leading-relaxed text-muted-foreground">{description}</p>
     </motion.div>
   )
 }

@@ -60,6 +60,8 @@ interface SectionHeaderProps {
   description?: string
   className?: string
   marginBottom?: string
+  /** ID for accessibility (aria-labelledby) */
+  titleId?: string
 }
 
 export function SectionHeader({
@@ -71,6 +73,7 @@ export function SectionHeader({
   description,
   className,
   marginBottom = 'mb-16',
+  titleId,
 }: SectionHeaderProps) {
   const colors = SECTION_COLORS[color]
 
@@ -98,6 +101,7 @@ export function SectionHeader({
 
       {/* Title */}
       <motion.h2
+        id={titleId}
         variants={fadeInUp}
         className="mb-4 text-3xl font-bold sm:text-4xl lg:text-5xl"
       >

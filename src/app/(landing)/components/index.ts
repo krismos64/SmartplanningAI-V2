@@ -14,3 +14,10 @@ export { AnimatedBackground } from './AnimatedBackground'
 export { TopBanner } from './TopBanner'
 export { ScrollIndicator } from './ScrollIndicator'
 export { FloatingCheck, FloatingBell } from './FloatingElements'
+
+// Shared styles constants
+export {
+  GRADIENT_BUTTON_CLASSES,
+  GRADIENT_TEXT_CLASSES,
+  BADGE_BASE_CLASSES,
+} from './styles'

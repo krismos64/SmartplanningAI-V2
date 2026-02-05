@@ -4,6 +4,7 @@
  * TargetCard Component
  * Displays a target audience segment with icon and description
  * Reusable card component following the landing page design system
+ * Supports light/dark mode via CSS variables
  */
 
 import { LucideIcon } from 'lucide-react'
@@ -26,7 +27,7 @@ export function TargetCard({
   return (
     <motion.div
       variants={fadeInUp}
-      className="flex items-start gap-4 rounded-xl border border-white/5 bg-white/[0.02] p-6 transition-all hover:border-white/10 hover:bg-white/[0.04]"
+      className="flex items-start gap-4 rounded-xl border border-border bg-card p-6 transition-all hover:border-border/80 hover:bg-accent/50"
     >
       <div
         className={cn(
@@ -37,8 +38,8 @@ export function TargetCard({
         <Icon className="h-6 w-6 text-white" />
       </div>
       <div>
-        <h4 className="mb-1 font-semibold">{title}</h4>
-        <p className="text-sm text-white/60">{description}</p>
+        <h4 className="mb-1 font-semibold text-foreground">{title}</h4>
+        <p className="text-sm text-muted-foreground">{description}</p>
       </div>
     </motion.div>
   )
