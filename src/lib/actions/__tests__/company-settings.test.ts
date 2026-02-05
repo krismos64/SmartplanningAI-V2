@@ -277,7 +277,14 @@ describe('company-settings actions', () => {
       mockAuth.mockResolvedValue({
         user: { id: 'user-1', role: 'DIRECTOR' },
       })
-      const newWorkingDays = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY']
+      const newWorkingDays = [
+        'MONDAY',
+        'TUESDAY',
+        'WEDNESDAY',
+        'THURSDAY',
+        'FRIDAY',
+        'SATURDAY',
+      ]
       mockFindUnique
         .mockResolvedValueOnce({ companyId: 'company-1' })
         .mockResolvedValueOnce({
@@ -298,7 +305,17 @@ describe('company-settings actions', () => {
         })
       mockUpdate.mockResolvedValue({})
 
-      const result = await updateCompanySettings({ workingDays: newWorkingDays as ('MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY')[] })
+      const result = await updateCompanySettings({
+        workingDays: newWorkingDays as (
+          | 'MONDAY'
+          | 'TUESDAY'
+          | 'WEDNESDAY'
+          | 'THURSDAY'
+          | 'FRIDAY'
+          | 'SATURDAY'
+          | 'SUNDAY'
+        )[],
+      })
 
       expect(result.success).toBe(true)
       if (result.success) {

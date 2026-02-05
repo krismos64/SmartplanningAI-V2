@@ -177,7 +177,7 @@ describe('useNotifications', () => {
       expect(markAsRead).toHaveBeenCalledWith('notif-1')
     })
 
-    it('devrait retourner false en cas d\'erreur', async () => {
+    it("devrait retourner false en cas d'erreur", async () => {
       vi.mocked(getNotifications).mockResolvedValue({
         success: true,
         data: {
@@ -267,7 +267,7 @@ describe('useNotifications', () => {
       expect(markAllAsRead).toHaveBeenCalled()
     })
 
-    it('devrait retourner false en cas d\'erreur', async () => {
+    it("devrait retourner false en cas d'erreur", async () => {
       vi.mocked(getNotifications).mockResolvedValue({
         success: true,
         data: {
@@ -360,7 +360,7 @@ describe('useNotifications', () => {
       expect(deleteNotification).toHaveBeenCalledWith('notif-1')
     })
 
-    it('devrait retourner false en cas d\'erreur', async () => {
+    it("devrait retourner false en cas d'erreur", async () => {
       vi.mocked(getNotifications).mockResolvedValue({
         success: true,
         data: {
@@ -448,7 +448,7 @@ describe('useNotifications', () => {
       expect(deleteAllRead).toHaveBeenCalled()
     })
 
-    it('devrait retourner false en cas d\'erreur', async () => {
+    it("devrait retourner false en cas d'erreur", async () => {
       vi.mocked(getNotifications).mockResolvedValue({
         success: true,
         data: {

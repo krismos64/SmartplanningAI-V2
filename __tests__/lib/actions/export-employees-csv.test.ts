@@ -129,7 +129,7 @@ describe('exportEmployeesCsv', () => {
       )
     })
 
-    it("MANAGER sans équipes reçoit erreur", async () => {
+    it('MANAGER sans équipes reçoit erreur', async () => {
       mockAuth.mockResolvedValue({
         user: { id: 'user-1', role: 'MANAGER', companyId: 'company-1' },
       } as never)

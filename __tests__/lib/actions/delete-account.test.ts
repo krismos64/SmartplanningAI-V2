@@ -142,7 +142,9 @@ describe('deleteAccount', () => {
       })
 
       expect(result.success).toBe(false)
-      expect(result.error).toBe('Vous devez confirmer la suppression définitive')
+      expect(result.error).toBe(
+        'Vous devez confirmer la suppression définitive'
+      )
       expect(result.field).toBe('confirmDeletion')
     })
   })

@@ -354,7 +354,7 @@ export function CommandPalette({
                       className={cn(
                         'flex h-12 w-12 items-center justify-center rounded-full',
                         'text-muted-foreground hover:bg-accent hover:text-accent-foreground',
-                        'min-h-[44px] min-w-[44px] touch-manipulation shrink-0'
+                        'min-h-[44px] min-w-[44px] shrink-0 touch-manipulation'
                       )}
                       aria-label="Fermer"
                       data-testid="command-palette-close"

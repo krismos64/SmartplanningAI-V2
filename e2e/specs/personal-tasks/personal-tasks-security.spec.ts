@@ -22,7 +22,9 @@ test.describe('Notes perso - Sécurité isolation', () => {
    * Test: Employee crée une note et la voit
    * Vérifie que les notes sont bien créées et visibles pour l'utilisateur
    */
-  test('Employee voit ses propres notes @security', async ({ employeePage }) => {
+  test('Employee voit ses propres notes @security', async ({
+    employeePage,
+  }) => {
     const tasksPage = new PersonalTasksPage(employeePage)
     await tasksPage.goto()
 
@@ -38,7 +40,9 @@ test.describe('Notes perso - Sécurité isolation', () => {
    * Test: Director crée une note et la voit
    * Vérifie que les notes sont bien créées et visibles pour l'utilisateur
    */
-  test('Director voit ses propres notes @security', async ({ directorPage }) => {
+  test('Director voit ses propres notes @security', async ({
+    directorPage,
+  }) => {
     const tasksPage = new PersonalTasksPage(directorPage)
     await tasksPage.goto()
 

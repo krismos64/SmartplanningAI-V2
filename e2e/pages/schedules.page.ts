@@ -118,8 +118,7 @@ export class SchedulesPage {
 
   async setViewMode(mode: 'day' | 'week' | 'month') {
     await this.viewModeSelect.click()
-    const label =
-      mode === 'day' ? 'Jour' : mode === 'week' ? 'Semaine' : 'Mois'
+    const label = mode === 'day' ? 'Jour' : mode === 'week' ? 'Semaine' : 'Mois'
     await this.page.getByRole('option', { name: label }).click()
   }
 

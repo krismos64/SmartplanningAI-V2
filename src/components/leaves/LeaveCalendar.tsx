@@ -101,7 +101,7 @@ export function LeaveCalendar({
             size="icon"
             onClick={handlePrevMonth}
             aria-label="Mois précédent"
-            className="h-11 w-11 min-h-[44px] min-w-[44px] touch-manipulation"
+            className="h-11 min-h-[44px] w-11 min-w-[44px] touch-manipulation"
             data-testid="calendar-prev-month"
           >
             <ChevronLeft className="h-4 w-4" />
@@ -118,7 +118,7 @@ export function LeaveCalendar({
             size="icon"
             onClick={handleNextMonth}
             aria-label="Mois suivant"
-            className="h-11 w-11 min-h-[44px] min-w-[44px] touch-manipulation"
+            className="h-11 min-h-[44px] w-11 min-w-[44px] touch-manipulation"
             data-testid="calendar-next-month"
           >
             <ChevronRight className="h-4 w-4" />
@@ -159,39 +159,42 @@ export function LeaveCalendar({
 
           {/* Employee rows */}
           {employees.map((employee) => {
-            const initials = `${employee.firstName?.[0] ?? ''}${employee.lastName?.[0] ?? ''}`.toUpperCase()
+            const initials =
+              `${employee.firstName?.[0] ?? ''}${employee.lastName?.[0] ?? ''}`.toUpperCase()
             return (
-            <div key={employee.id} className="contents">
-              <div className="sticky left-0 z-10 flex items-center gap-2 border-b border-r bg-background px-2 text-sm font-medium">
-                <Avatar className="h-6 w-6 flex-shrink-0">
-                  {employee.image && (
-                    <AvatarImage
-                      src={employee.image}
-                      alt={`${employee.firstName} ${employee.lastName}`}
-                    />
-                  )}
-                  <AvatarFallback className="text-[10px]">{initials}</AvatarFallback>
-                </Avatar>
-                <span className="truncate">
-                  {employee.firstName} {employee.lastName}
-                </span>
+              <div key={employee.id} className="contents">
+                <div className="sticky left-0 z-10 flex items-center gap-2 border-b border-r bg-background px-2 text-sm font-medium">
+                  <Avatar className="h-6 w-6 flex-shrink-0">
+                    {employee.image && (
+                      <AvatarImage
+                        src={employee.image}
+                        alt={`${employee.firstName} ${employee.lastName}`}
+                      />
+                    )}
+                    <AvatarFallback className="text-[10px]">
+                      {initials}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="truncate">
+                    {employee.firstName} {employee.lastName}
+                  </span>
+                </div>
+                {days.map((day) => {
+                  const key = `${employee.id}-${format(day, 'yyyy-MM-dd')}`
+                  const absence = absenceMap.get(key)
+                  return (
+                    <div key={key} className="border-b">
+                      <LeaveCalendarDay
+                        date={day}
+                        absence={absence}
+                        isWeekend={isWeekend(day)}
+                        isToday={isToday(day)}
+                        onClick={() => onCellClick?.(employee, day)}
+                      />
+                    </div>
+                  )
+                })}
               </div>
-              {days.map((day) => {
-                const key = `${employee.id}-${format(day, 'yyyy-MM-dd')}`
-                const absence = absenceMap.get(key)
-                return (
-                  <div key={key} className="border-b">
-                    <LeaveCalendarDay
-                      date={day}
-                      absence={absence}
-                      isWeekend={isWeekend(day)}
-                      isToday={isToday(day)}
-                      onClick={() => onCellClick?.(employee, day)}
-                    />
-                  </div>
-                )
-              })}
-            </div>
             )
           })}
         </div>

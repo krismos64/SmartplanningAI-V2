@@ -14,26 +14,46 @@ describe('NotificationSkeleton', () => {
     render(<NotificationSkeleton />)
 
     expect(screen.getByTestId('notification-skeleton')).toBeInTheDocument()
-    expect(screen.getByTestId('notification-skeleton-item-0')).toBeInTheDocument()
-    expect(screen.getByTestId('notification-skeleton-item-1')).toBeInTheDocument()
-    expect(screen.getByTestId('notification-skeleton-item-2')).toBeInTheDocument()
+    expect(
+      screen.getByTestId('notification-skeleton-item-0')
+    ).toBeInTheDocument()
+    expect(
+      screen.getByTestId('notification-skeleton-item-1')
+    ).toBeInTheDocument()
+    expect(
+      screen.getByTestId('notification-skeleton-item-2')
+    ).toBeInTheDocument()
   })
 
   it('devrait afficher le nombre de skeletons spécifié', () => {
     render(<NotificationSkeleton count={5} />)
 
-    expect(screen.getByTestId('notification-skeleton-item-0')).toBeInTheDocument()
-    expect(screen.getByTestId('notification-skeleton-item-1')).toBeInTheDocument()
-    expect(screen.getByTestId('notification-skeleton-item-2')).toBeInTheDocument()
-    expect(screen.getByTestId('notification-skeleton-item-3')).toBeInTheDocument()
-    expect(screen.getByTestId('notification-skeleton-item-4')).toBeInTheDocument()
+    expect(
+      screen.getByTestId('notification-skeleton-item-0')
+    ).toBeInTheDocument()
+    expect(
+      screen.getByTestId('notification-skeleton-item-1')
+    ).toBeInTheDocument()
+    expect(
+      screen.getByTestId('notification-skeleton-item-2')
+    ).toBeInTheDocument()
+    expect(
+      screen.getByTestId('notification-skeleton-item-3')
+    ).toBeInTheDocument()
+    expect(
+      screen.getByTestId('notification-skeleton-item-4')
+    ).toBeInTheDocument()
   })
 
   it('devrait afficher 1 skeleton si count=1', () => {
     render(<NotificationSkeleton count={1} />)
 
-    expect(screen.getByTestId('notification-skeleton-item-0')).toBeInTheDocument()
-    expect(screen.queryByTestId('notification-skeleton-item-1')).not.toBeInTheDocument()
+    expect(
+      screen.getByTestId('notification-skeleton-item-0')
+    ).toBeInTheDocument()
+    expect(
+      screen.queryByTestId('notification-skeleton-item-1')
+    ).not.toBeInTheDocument()
   })
 
   it('devrait avoir les éléments skeleton corrects dans chaque item', () => {

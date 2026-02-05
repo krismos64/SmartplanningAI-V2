@@ -30,7 +30,6 @@ describe('ExportCsvButton', () => {
   // Mock action
   const mockAction = vi.fn<[], Promise<CsvExportActionResult>>()
 
-
   beforeEach(() => {
     vi.clearAllMocks()
 

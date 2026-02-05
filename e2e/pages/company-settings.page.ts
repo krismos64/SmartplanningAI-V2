@@ -111,7 +111,10 @@ export class CompanySettingsPage {
   async expectPageDisplayed() {
     await expect(this.companySettingsPage).toBeVisible()
     await expect(
-      this.page.getByRole('heading', { level: 1, name: 'Paramètres Entreprise' })
+      this.page.getByRole('heading', {
+        level: 1,
+        name: 'Paramètres Entreprise',
+      })
     ).toBeVisible()
   }
 
@@ -187,12 +190,11 @@ export class CompanySettingsPage {
 
   async expectPresetMonFriActive() {
     // Active preset has default variant (primary background)
-    await expect(this.presetMonFri).toHaveAttribute(
-      'data-state',
-      undefined
-    ).catch(() => {
-      // Fallback: check for visual class
-    })
+    await expect(this.presetMonFri)
+      .toHaveAttribute('data-state', undefined)
+      .catch(() => {
+        // Fallback: check for visual class
+      })
   }
 
   async expectWorkingDays(days: DayOfWeek[]) {
@@ -323,7 +325,9 @@ export class CompanySettingsPage {
   }
 
   async expectErrorToast(message?: string) {
-    const toast = this.page.locator('[data-sonner-toast][data-type="error"]').first()
+    const toast = this.page
+      .locator('[data-sonner-toast][data-type="error"]')
+      .first()
     await expect(toast).toBeVisible({ timeout: 5000 })
     if (message) {
       await expect(toast).toContainText(message)

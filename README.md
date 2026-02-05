@@ -161,10 +161,19 @@ import {
 } from '@/lib/animations'
 
 // AnimatedContainer pour les pages
-import { AnimatedContainer, AnimatedItem } from '@/components/ui/animated-container'
+import {
+  AnimatedContainer,
+  AnimatedItem,
+} from '@/components/ui/animated-container'
 
 // Design tokens - import unique
-import { tokens, colors, glowColors, gradients, shadow3D } from '@/styles/tokens'
+import {
+  tokens,
+  colors,
+  glowColors,
+  gradients,
+  shadow3D,
+} from '@/styles/tokens'
 ```
 
 > **Note** : L'ancien répertoire `src/app/(landing)/animations/` a été supprimé. Tous les composants utilisent maintenant `@/lib/animations`.
@@ -718,7 +727,7 @@ Fondations Prisma pour le module de gestion des plannings :
 Système complet d'upload et gestion de photo de profil avec Cloudinary :
 
 - **API Route `/api/avatar`** :
-  - `POST` : Upload avec validation (5MB max, types image/*), transformation Cloudinary (crop, resize 400x400), stockage CDN
+  - `POST` : Upload avec validation (5MB max, types image/\*), transformation Cloudinary (crop, resize 400x400), stockage CDN
   - `DELETE` : Suppression de l'avatar Cloudinary et mise à null en base
   - Authentification requise via `auth()`
   - Revalidation automatique des paths (`/app/profile`, `/app`, `/app/schedules`)

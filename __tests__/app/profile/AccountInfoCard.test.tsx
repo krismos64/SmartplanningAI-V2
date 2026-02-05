@@ -56,9 +56,7 @@ describe('AccountInfoCard', () => {
   it('should render relative last login time', () => {
     render(<AccountInfoCard {...defaultProps} />)
     // "il y a 2 heures" ou similaire selon date-fns
-    expect(screen.getByTestId('account-lastlogin')).toHaveTextContent(
-      /il y a/
-    )
+    expect(screen.getByTestId('account-lastlogin')).toHaveTextContent(/il y a/)
   })
 
   it('should render "Jamais" when lastLoginAt is null', () => {

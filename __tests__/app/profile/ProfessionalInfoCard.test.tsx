@@ -40,7 +40,9 @@ describe('ProfessionalInfoCard', () => {
 
   it('should display "Non renseigné" for null job title', () => {
     render(<ProfessionalInfoCard {...defaultProps} jobTitle={null} />)
-    expect(screen.getByTestId('pro-jobtitle')).toHaveTextContent('Non renseigné')
+    expect(screen.getByTestId('pro-jobtitle')).toHaveTextContent(
+      'Non renseigné'
+    )
   })
 
   it('should display "Aucune équipe" for null team', () => {

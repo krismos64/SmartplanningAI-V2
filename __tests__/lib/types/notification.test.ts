@@ -125,7 +125,12 @@ describe('Notification Types - SP-321', () => {
 
   describe('NOTIFICATION_PRIORITY_COLORS', () => {
     it('should have colors for all priorities', () => {
-      const priorities: NotificationPriority[] = ['LOW', 'MEDIUM', 'HIGH', 'URGENT']
+      const priorities: NotificationPriority[] = [
+        'LOW',
+        'MEDIUM',
+        'HIGH',
+        'URGENT',
+      ]
 
       priorities.forEach((priority) => {
         const colors = NOTIFICATION_PRIORITY_COLORS[priority]
@@ -178,7 +183,12 @@ describe('Notification Types - SP-321', () => {
 
   describe('NOTIFICATION_PRIORITY_ICONS', () => {
     it('should have icons for all priorities', () => {
-      const priorities: NotificationPriority[] = ['LOW', 'MEDIUM', 'HIGH', 'URGENT']
+      const priorities: NotificationPriority[] = [
+        'LOW',
+        'MEDIUM',
+        'HIGH',
+        'URGENT',
+      ]
 
       priorities.forEach((priority) => {
         expect(NOTIFICATION_PRIORITY_ICONS[priority]).toBeDefined()

@@ -205,17 +205,11 @@ export class DeleteAccountPage {
     await expect(
       this.page.getByText(/profil et informations personnelles/)
     ).toBeVisible()
-    await expect(
-      this.page.getByText(/plannings et historique/)
-    ).toBeVisible()
-    await expect(
-      this.page.getByText(/demandes de congés/)
-    ).toBeVisible()
+    await expect(this.page.getByText(/plannings et historique/)).toBeVisible()
+    await expect(this.page.getByText(/demandes de congés/)).toBeVisible()
     await expect(
       this.page.getByText(/notes et tâches personnelles/)
     ).toBeVisible()
-    await expect(
-      this.page.getByText(/notifications/)
-    ).toBeVisible()
+    await expect(this.page.getByText(/notifications/)).toBeVisible()
   }
 }

@@ -6,7 +6,11 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { NotificationType, NotificationPriority, UserRole } from '@prisma/client'
+import {
+  NotificationType,
+  NotificationPriority,
+  UserRole,
+} from '@prisma/client'
 
 // Mock Prisma avec hoisting compatible
 vi.mock('@/lib/prisma', () => ({
@@ -132,7 +136,9 @@ describe('Notification Server Actions - SP-325', () => {
 
       mockPrisma.schedule.findUnique.mockResolvedValue(mockSchedule as never)
       mockPrisma.user.findUnique.mockResolvedValue(mockUser as never)
-      mockPrisma.notification.create.mockResolvedValue(mockNotification as never)
+      mockPrisma.notification.create.mockResolvedValue(
+        mockNotification as never
+      )
 
       const result = await createPlanningNotification(
         'schedule-123',
@@ -166,8 +172,13 @@ describe('Notification Server Actions - SP-325', () => {
       }
 
       mockPrisma.schedule.findUnique.mockResolvedValue(mockSchedule as never)
-      mockPrisma.user.findUnique.mockResolvedValue({ id: 'user-123', companyId: 'company-123' } as never)
-      mockPrisma.notification.create.mockResolvedValue({ id: 'notif-123' } as never)
+      mockPrisma.user.findUnique.mockResolvedValue({
+        id: 'user-123',
+        companyId: 'company-123',
+      } as never)
+      mockPrisma.notification.create.mockResolvedValue({
+        id: 'notif-123',
+      } as never)
 
       await createPlanningNotification('schedule-123', 'user-123', 'deleted')
 
@@ -180,7 +191,11 @@ describe('Notification Server Actions - SP-325', () => {
 
     it('should return error for invalid action', async () => {
       // @ts-expect-error - Test avec action invalide
-      const result = await createPlanningNotification('schedule-123', 'user-123', 'invalid')
+      const result = await createPlanningNotification(
+        'schedule-123',
+        'user-123',
+        'invalid'
+      )
 
       expect(result.success).toBe(false)
       if (!result.success) {
@@ -191,7 +206,11 @@ describe('Notification Server Actions - SP-325', () => {
     it('should return error when schedule not found', async () => {
       mockPrisma.schedule.findUnique.mockResolvedValue(null)
 
-      const result = await createPlanningNotification('nonexistent', 'user-123', 'created')
+      const result = await createPlanningNotification(
+        'nonexistent',
+        'user-123',
+        'created'
+      )
 
       expect(result.success).toBe(false)
       if (!result.success) {
@@ -215,15 +234,24 @@ describe('Notification Server Actions - SP-325', () => {
         employee: { firstName: 'Marie', lastName: 'Martin' },
       }
 
-      mockPrisma.leaveRequest.findUnique.mockResolvedValue(mockLeaveRequest as never)
-      mockPrisma.user.findUnique.mockResolvedValue({ id: 'user-123', companyId: 'company-123' } as never)
+      mockPrisma.leaveRequest.findUnique.mockResolvedValue(
+        mockLeaveRequest as never
+      )
+      mockPrisma.user.findUnique.mockResolvedValue({
+        id: 'user-123',
+        companyId: 'company-123',
+      } as never)
       mockPrisma.notification.create.mockResolvedValue({
         id: 'notif-123',
         type: 'LEAVE',
         priority: 'MEDIUM',
       } as never)
 
-      const result = await createLeaveNotification('leave-123', 'user-123', 'requested')
+      const result = await createLeaveNotification(
+        'leave-123',
+        'user-123',
+        'requested'
+      )
 
       expect(result.success).toBe(true)
       expect(mockPrisma.notification.create).toHaveBeenCalledWith({
@@ -245,9 +273,16 @@ describe('Notification Server Actions - SP-325', () => {
         employee: { firstName: 'Marie', lastName: 'Martin' },
       }
 
-      mockPrisma.leaveRequest.findUnique.mockResolvedValue(mockLeaveRequest as never)
-      mockPrisma.user.findUnique.mockResolvedValue({ id: 'user-123', companyId: 'company-123' } as never)
-      mockPrisma.notification.create.mockResolvedValue({ id: 'notif-123' } as never)
+      mockPrisma.leaveRequest.findUnique.mockResolvedValue(
+        mockLeaveRequest as never
+      )
+      mockPrisma.user.findUnique.mockResolvedValue({
+        id: 'user-123',
+        companyId: 'company-123',
+      } as never)
+      mockPrisma.notification.create.mockResolvedValue({
+        id: 'notif-123',
+      } as never)
 
       await createLeaveNotification('leave-123', 'user-123', 'approved')
 
@@ -268,9 +303,16 @@ describe('Notification Server Actions - SP-325', () => {
         employee: { firstName: 'Marie', lastName: 'Martin' },
       }
 
-      mockPrisma.leaveRequest.findUnique.mockResolvedValue(mockLeaveRequest as never)
-      mockPrisma.user.findUnique.mockResolvedValue({ id: 'user-123', companyId: 'company-123' } as never)
-      mockPrisma.notification.create.mockResolvedValue({ id: 'notif-123' } as never)
+      mockPrisma.leaveRequest.findUnique.mockResolvedValue(
+        mockLeaveRequest as never
+      )
+      mockPrisma.user.findUnique.mockResolvedValue({
+        id: 'user-123',
+        companyId: 'company-123',
+      } as never)
+      mockPrisma.notification.create.mockResolvedValue({
+        id: 'notif-123',
+      } as never)
 
       await createLeaveNotification('leave-123', 'user-123', 'rejected')
 
@@ -303,7 +345,11 @@ describe('Notification Server Actions - SP-325', () => {
         priority: 'MEDIUM',
       } as never)
 
-      const result = await createTaskNotification('task-123', 'user-123', 'reminder')
+      const result = await createTaskNotification(
+        'task-123',
+        'user-123',
+        'reminder'
+      )
 
       expect(result.success).toBe(true)
       expect(mockPrisma.notification.create).toHaveBeenCalledWith({
@@ -326,7 +372,11 @@ describe('Notification Server Actions - SP-325', () => {
 
       mockPrisma.personalTask.findUnique.mockResolvedValue(mockTask as never)
 
-      const result = await createTaskNotification('task-123', 'user-123', 'reminder')
+      const result = await createTaskNotification(
+        'task-123',
+        'user-123',
+        'reminder'
+      )
 
       expect(result.success).toBe(false)
       if (!result.success) {
@@ -350,15 +400,24 @@ describe('Notification Server Actions - SP-325', () => {
         subject: { firstName: 'Paul', lastName: 'Durand' },
       }
 
-      mockPrisma.incidentNote.findUnique.mockResolvedValue(mockIncidentNote as never)
-      mockPrisma.user.findUnique.mockResolvedValue({ id: 'user-123', companyId: 'company-123' } as never)
+      mockPrisma.incidentNote.findUnique.mockResolvedValue(
+        mockIncidentNote as never
+      )
+      mockPrisma.user.findUnique.mockResolvedValue({
+        id: 'user-123',
+        companyId: 'company-123',
+      } as never)
       mockPrisma.notification.create.mockResolvedValue({
         id: 'notif-123',
         type: 'INCIDENT',
         priority: 'HIGH',
       } as never)
 
-      const result = await createIncidentNotification('incident-123', 'user-123', 'created')
+      const result = await createIncidentNotification(
+        'incident-123',
+        'user-123',
+        'created'
+      )
 
       expect(result.success).toBe(true)
       expect(mockPrisma.notification.create).toHaveBeenCalledWith({
@@ -459,7 +518,9 @@ describe('Notification Server Actions - SP-325', () => {
         { id: 'notif-2', title: 'Notif 2', type: 'LEAVE', isRead: true },
       ]
 
-      mockPrisma.notification.findMany.mockResolvedValue(mockNotifications as never)
+      mockPrisma.notification.findMany.mockResolvedValue(
+        mockNotifications as never
+      )
       mockPrisma.notification.count.mockResolvedValue(2)
 
       const result = await getNotifications({}, { page: 1, pageSize: 10 })
@@ -596,7 +657,9 @@ describe('Notification Server Actions - SP-325', () => {
         id: 'notif-123',
         userId: 'user-123',
       } as never)
-      mockPrisma.notification.delete.mockResolvedValue({ id: 'notif-123' } as never)
+      mockPrisma.notification.delete.mockResolvedValue({
+        id: 'notif-123',
+      } as never)
 
       const result = await deleteNotification('notif-123')
 
@@ -694,7 +757,12 @@ describe('Notification Server Actions - SP-325', () => {
     })
 
     it('should work for all user roles', async () => {
-      const roles: UserRole[] = ['EMPLOYEE', 'MANAGER', 'DIRECTOR', 'SYSTEM_ADMIN']
+      const roles: UserRole[] = [
+        'EMPLOYEE',
+        'MANAGER',
+        'DIRECTOR',
+        'SYSTEM_ADMIN',
+      ]
 
       for (const role of roles) {
         vi.clearAllMocks()

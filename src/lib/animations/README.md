@@ -153,7 +153,6 @@ import { scaleVariants, scaleSpringVariants, popVariants } from '@/lib/animation
 
 ```tsx
 import { staggerContainer, staggerItem } from '@/lib/animations'
-
 ;<motion.ul variants={staggerContainer} initial="hidden" animate="visible">
   {items.map((item) => (
     <motion.li key={item.id} variants={staggerItem}>
@@ -204,7 +203,6 @@ import { hoverScale, hoverLift, hoverGlow } from '@/lib/animations'
 
 ```tsx
 import { tapScale, tapPush } from '@/lib/animations'
-
 ;<motion.button whileHover={hoverScale} whileTap={tapScale}>
   Click me
 </motion.button>
@@ -229,7 +227,6 @@ import { buttonPrimary, buttonIcon, buttonLift } from '@/lib/animations'
 
 ```tsx
 import { cardInteractive, cardSubtle } from '@/lib/animations'
-
 ;<motion.div {...cardInteractive}>
   <Card />
 </motion.div>
@@ -366,7 +363,6 @@ import { AnimatedContainer } from '@/lib/animations'
 
 ```tsx
 import { AnimatedList } from '@/lib/animations'
-
 ;<AnimatedList
   items={users}
   keyExtractor={(user) => user.id}
@@ -377,7 +373,6 @@ import { AnimatedList } from '@/lib/animations'
 
 // Pour les grilles
 import { GridAnimatedList } from '@/lib/animations'
-
 ;<GridAnimatedList
   items={products}
   keyExtractor={(p) => p.id}

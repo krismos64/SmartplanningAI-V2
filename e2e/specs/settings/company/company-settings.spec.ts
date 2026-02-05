@@ -25,7 +25,9 @@ test.describe('Company Settings Page', () => {
       await companySettings.expectPageDisplayed()
     })
 
-    test('should redirect Employee to settings hub', async ({ employeePage }) => {
+    test('should redirect Employee to settings hub', async ({
+      employeePage,
+    }) => {
       await employeePage.goto('/app/settings/company')
 
       // Should be redirected to settings hub
@@ -144,7 +146,9 @@ test.describe('Company Settings Page', () => {
       }
     })
 
-    test('should toggle day when clicking checkbox', async ({ directorPage }) => {
+    test('should toggle day when clicking checkbox', async ({
+      directorPage,
+    }) => {
       const companySettings = new CompanySettingsPage(directorPage)
       await companySettings.goto()
       await companySettings.waitForPageLoad()

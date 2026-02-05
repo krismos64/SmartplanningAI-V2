@@ -46,9 +46,7 @@ test.describe('Schedules - Stabilité', () => {
     expect(loopErrors).toHaveLength(0)
   })
 
-  test('les stats se chargent sans spinner infini', async ({
-    managerPage,
-  }) => {
+  test('les stats se chargent sans spinner infini', async ({ managerPage }) => {
     const schedulesPage = new SchedulesPage(managerPage)
     await schedulesPage.goto()
 
@@ -188,7 +186,6 @@ test.describe('Schedules - Stats & Options', () => {
 
     await expect(schedulesPage.availabilityToggle).toBeVisible()
   })
-
 })
 
 // =============================================================================

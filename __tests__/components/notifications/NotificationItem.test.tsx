@@ -57,21 +57,25 @@ describe('NotificationItem', () => {
       expect(item).toBeInTheDocument()
     })
 
-    it('devrait afficher l\'indicateur non lu pour les notifications non lues', () => {
+    it("devrait afficher l'indicateur non lu pour les notifications non lues", () => {
       render(<NotificationItem notification={mockNotificationUnread} />)
 
-      expect(screen.getByTestId('notification-unread-indicator')).toBeInTheDocument()
+      expect(
+        screen.getByTestId('notification-unread-indicator')
+      ).toBeInTheDocument()
     })
 
-    it('ne devrait pas afficher l\'indicateur non lu pour les notifications lues', () => {
+    it("ne devrait pas afficher l'indicateur non lu pour les notifications lues", () => {
       render(<NotificationItem notification={mockNotificationRead} />)
 
-      expect(screen.queryByTestId('notification-unread-indicator')).not.toBeInTheDocument()
+      expect(
+        screen.queryByTestId('notification-unread-indicator')
+      ).not.toBeInTheDocument()
     })
   })
 
   describe('Icônes par type', () => {
-    it('devrait afficher l\'icône Calendar pour PLANNING', () => {
+    it("devrait afficher l'icône Calendar pour PLANNING", () => {
       render(<NotificationItem notification={mockNotificationUnread} />)
 
       // L'icône est dans un div avec les couleurs appropriées
@@ -79,28 +83,32 @@ describe('NotificationItem', () => {
       expect(item).toBeInTheDocument()
     })
 
-    it('devrait afficher l\'icône appropriée pour LEAVE', () => {
+    it("devrait afficher l'icône appropriée pour LEAVE", () => {
       render(<NotificationItem notification={mockNotificationRead} />)
 
       const item = screen.getByTestId('notification-item-notif-2')
       expect(item).toBeInTheDocument()
     })
 
-    it('devrait gérer les types inconnus avec l\'icône Info', () => {
+    it("devrait gérer les types inconnus avec l'icône Info", () => {
       const unknownType = {
         ...mockNotificationUnread,
         id: 'notif-unknown',
         type: 'UNKNOWN_TYPE' as unknown,
       }
 
-      render(<NotificationItem notification={unknownType as NotificationListItem} />)
+      render(
+        <NotificationItem notification={unknownType as NotificationListItem} />
+      )
 
-      expect(screen.getByTestId('notification-item-notif-unknown')).toBeInTheDocument()
+      expect(
+        screen.getByTestId('notification-item-notif-unknown')
+      ).toBeInTheDocument()
     })
   })
 
   describe('Interactions', () => {
-    it('devrait appeler onClick avec l\'ID quand cliqué (notification non lue)', () => {
+    it("devrait appeler onClick avec l'ID quand cliqué (notification non lue)", () => {
       const onClick = vi.fn()
       render(
         <NotificationItem
@@ -173,7 +181,9 @@ describe('NotificationItem', () => {
       const noUrl = { ...mockNotificationUnread, id: 'no-url', actionUrl: null }
       render(<NotificationItem notification={noUrl} />)
 
-      expect(screen.queryByTestId('notification-link-no-url')).not.toBeInTheDocument()
+      expect(
+        screen.queryByTestId('notification-link-no-url')
+      ).not.toBeInTheDocument()
       expect(screen.getByTestId('notification-item-no-url')).toBeInTheDocument()
     })
   })

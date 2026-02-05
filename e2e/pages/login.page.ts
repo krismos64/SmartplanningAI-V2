@@ -143,7 +143,9 @@ export class LoginPage {
    * Expect validation error for email
    */
   async expectEmailValidationError(): Promise<void> {
-    await expect(this.page.getByText(/email.*requis|Email invalide/i)).toBeVisible()
+    await expect(
+      this.page.getByText(/email.*requis|Email invalide/i)
+    ).toBeVisible()
   }
 
   /**

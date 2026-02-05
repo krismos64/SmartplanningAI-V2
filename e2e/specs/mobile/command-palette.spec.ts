@@ -358,7 +358,7 @@ test.describe('Mobile Command Palette', () => {
       // and role="combobox" is on the internal Command component
       // Let's just verify the dialog is properly labeled
       const dialogContent = dialog.locator('[role="dialog"]')
-      if (await dialogContent.count() > 0) {
+      if ((await dialogContent.count()) > 0) {
         await expect(dialogContent.first()).toBeVisible()
       }
     })

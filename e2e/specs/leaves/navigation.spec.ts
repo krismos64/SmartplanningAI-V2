@@ -19,7 +19,9 @@ test.describe('Leaves - Navigation et filtres', () => {
 
     // Vérifier l'URL et le titre
     await expect(employeePage).toHaveURL(/\/leaves/)
-    await expect(employeePage.getByRole('heading', { name: /congés/i })).toBeVisible()
+    await expect(
+      employeePage.getByRole('heading', { name: /congés/i })
+    ).toBeVisible()
   })
 
   test('bascule entre Liste et Calendrier @employee', async ({
@@ -47,7 +49,9 @@ test.describe('Leaves - Navigation et filtres', () => {
     await leavesPage.filterByStatus('En attente')
 
     // Vérifier que le bouton est pressé
-    const statusButton = employeePage.getByRole('button', { name: /En attente:/i })
+    const statusButton = employeePage.getByRole('button', {
+      name: /En attente:/i,
+    })
     await expect(statusButton).toHaveAttribute('aria-pressed', 'true')
   })
 
@@ -57,7 +61,9 @@ test.describe('Leaves - Navigation et filtres', () => {
 
     // Appliquer un filtre statut
     await leavesPage.filterByStatus('En attente')
-    const statusButton = employeePage.getByRole('button', { name: /En attente:/i })
+    const statusButton = employeePage.getByRole('button', {
+      name: /En attente:/i,
+    })
     await expect(statusButton).toHaveAttribute('aria-pressed', 'true')
 
     // Reset

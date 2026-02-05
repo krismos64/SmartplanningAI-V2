@@ -150,8 +150,12 @@ export async function openCommandPaletteMobile(page: Page): Promise<void> {
   await page.waitForLoadState('domcontentloaded')
 
   // Use data-testid for reliable selection
-  const mobileSearchButton = page.locator('[data-testid="mobile-search-button"]')
-  const ariaSearchButton = page.locator('button[aria-label="Ouvrir la recherche"]')
+  const mobileSearchButton = page.locator(
+    '[data-testid="mobile-search-button"]'
+  )
+  const ariaSearchButton = page.locator(
+    'button[aria-label="Ouvrir la recherche"]'
+  )
 
   // Wait for a search button to be visible
   await Promise.race([

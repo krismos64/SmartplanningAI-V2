@@ -94,7 +94,12 @@ export function Footer({ variant = 'dashboard' }: FooterProps) {
             <h4 className="text-sm font-medium">Restez connecté</h4>
             {/* WCAG 2.5.5: 44px minimum touch target */}
             <div className="flex gap-2">
-              <Button variant="outline" size="icon" className="h-11 w-11 min-h-[44px] min-w-[44px] touch-manipulation" asChild>
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-11 min-h-[44px] w-11 min-w-[44px] touch-manipulation"
+                asChild
+              >
                 <a
                   href="https://github.com/krismos64"
                   target="_blank"
@@ -117,7 +122,12 @@ export function Footer({ variant = 'dashboard' }: FooterProps) {
                   </svg>
                 </a>
               </Button>
-              <Button variant="outline" size="icon" className="h-11 w-11 min-h-[44px] min-w-[44px] touch-manipulation" asChild>
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-11 min-h-[44px] w-11 min-w-[44px] touch-manipulation"
+                asChild
+              >
                 <a
                   href="https://christophe-dev-freelance.fr"
                   target="_blank"

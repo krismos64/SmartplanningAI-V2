@@ -60,7 +60,14 @@ describe('NotificationToast', () => {
     })
 
     it('should work for different notification types', () => {
-      const types = ['PLANNING', 'LEAVE', 'INCIDENT', 'REPORT', 'SYSTEM', 'OTHER'] as const
+      const types = [
+        'PLANNING',
+        'LEAVE',
+        'INCIDENT',
+        'REPORT',
+        'SYSTEM',
+        'OTHER',
+      ] as const
 
       for (const type of types) {
         vi.clearAllMocks()

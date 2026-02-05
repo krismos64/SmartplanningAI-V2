@@ -116,7 +116,9 @@ test.describe('Profile Page Display', () => {
       await profilePage.expectRoleDisplayed('Directeur')
     })
 
-    test('should navigate to change password page', async ({ directorPage }) => {
+    test('should navigate to change password page', async ({
+      directorPage,
+    }) => {
       const profilePage = new ProfilePage(directorPage)
       await profilePage.goto()
       await profilePage.waitForPageLoad()
@@ -177,7 +179,9 @@ test.describe('Profile Page Display', () => {
   })
 
   test.describe('Responsive Layout', () => {
-    test('should display all cards in grid layout', async ({ employeePage }) => {
+    test('should display all cards in grid layout', async ({
+      employeePage,
+    }) => {
       const profilePage = new ProfilePage(employeePage)
       await profilePage.goto()
       await profilePage.waitForPageLoad()

@@ -268,7 +268,9 @@ export function EditProfileForm({
                       <PopoverContent className="w-auto p-0" align="start">
                         <CalendarComponent
                           mode="single"
-                          selected={field.value ? new Date(field.value) : undefined}
+                          selected={
+                            field.value ? new Date(field.value) : undefined
+                          }
                           onSelect={field.onChange}
                           disabled={(date) =>
                             date > new Date() || date < new Date('1950-01-01')

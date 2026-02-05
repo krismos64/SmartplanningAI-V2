@@ -82,7 +82,9 @@ async function restoreProfile(
   await editPage.submit()
 
   // Attendre la redirection vers le profil
-  await editPage.page.waitForURL(/\/app\/profile$/, { timeout: 5000 }).catch(() => {})
+  await editPage.page
+    .waitForURL(/\/app\/profile$/, { timeout: 5000 })
+    .catch(() => {})
 }
 
 test.describe('Edit Profile Page', () => {
@@ -90,7 +92,9 @@ test.describe('Edit Profile Page', () => {
   // NAVIGATION ET ACCÈS
   // ==========================================================================
   test.describe('Navigation and Access', () => {
-    test('should navigate to edit page from profile', async ({ employeePage }) => {
+    test('should navigate to edit page from profile', async ({
+      employeePage,
+    }) => {
       const profilePage = new ProfilePage(employeePage)
       await profilePage.goto()
       await profilePage.waitForPageLoad()
@@ -111,7 +115,9 @@ test.describe('Edit Profile Page', () => {
       await expect(editPage.lastNameInput).not.toHaveValue('')
     })
 
-    test('should display phone field for employee', async ({ employeePage }) => {
+    test('should display phone field for employee', async ({
+      employeePage,
+    }) => {
       const editPage = new EditProfilePage(employeePage)
       await editPage.goto()
       await editPage.waitForPageLoad()
@@ -175,7 +181,9 @@ test.describe('Edit Profile Page', () => {
       await restoreProfile(employeePage, 'EMPLOYEE')
     })
 
-    test('should update phone number successfully', async ({ employeePage }) => {
+    test('should update phone number successfully', async ({
+      employeePage,
+    }) => {
       const editPage = new EditProfilePage(employeePage)
       await editPage.goto()
       await editPage.waitForPageLoad()
@@ -221,7 +229,9 @@ test.describe('Edit Profile Page', () => {
   // VALIDATION
   // ==========================================================================
   test.describe('Form Validation', () => {
-    test('should show error for firstName too short', async ({ employeePage }) => {
+    test('should show error for firstName too short', async ({
+      employeePage,
+    }) => {
       const editPage = new EditProfilePage(employeePage)
       await editPage.goto()
       await editPage.waitForPageLoad()
@@ -256,7 +266,9 @@ test.describe('Edit Profile Page', () => {
       await editPage.expectValidationError('phone', 'Numéro invalide')
     })
 
-    test('should accept valid phone format with +33', async ({ employeePage }) => {
+    test('should accept valid phone format with +33', async ({
+      employeePage,
+    }) => {
       const editPage = new EditProfilePage(employeePage)
       await editPage.goto()
       await editPage.waitForPageLoad()
@@ -322,8 +334,7 @@ test.describe('Edit Profile Page', () => {
       // Use different values to trigger form dirty state
       const newFirstName =
         currentFirstName === 'Administrateur' ? 'Admin' : 'Administrateur'
-      const newLastName =
-        currentLastName === 'Système' ? 'System' : 'Système'
+      const newLastName = currentLastName === 'Système' ? 'System' : 'Système'
 
       await editPage.fillForm({
         firstName: newFirstName,
@@ -344,7 +355,9 @@ test.describe('Edit Profile Page', () => {
   // DIRECTOR
   // ==========================================================================
   test.describe('Director Profile', () => {
-    test('should display phone field for director', async ({ directorPage }) => {
+    test('should display phone field for director', async ({
+      directorPage,
+    }) => {
       const editPage = new EditProfilePage(directorPage)
       await editPage.goto()
       await editPage.waitForPageLoad()

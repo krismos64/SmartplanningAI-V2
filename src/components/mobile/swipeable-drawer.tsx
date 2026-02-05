@@ -331,8 +331,8 @@ export function SwipeableDrawer({
                 type="button"
                 onClick={onClose}
                 className={cn(
-                  'absolute top-4 z-10 flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full',
-                  'bg-muted/80 transition-colors hover:bg-muted touch-manipulation',
+                  'absolute top-4 z-10 flex h-11 min-h-[44px] w-11 min-w-[44px] items-center justify-center rounded-full',
+                  'touch-manipulation bg-muted/80 transition-colors hover:bg-muted',
                   'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
                   side === 'left' ? 'right-4' : 'left-4'
                 )}

@@ -12,8 +12,17 @@ import { NotificationsTable } from '@/app/app/dashboard/notifications/_component
 
 // Mock du composant NotificationItem
 vi.mock('@/components/notifications', () => ({
-  NotificationItem: ({ notification, onClick }: { notification: { id: string; title: string }; onClick: (id: string) => void }) => (
-    <div data-testid={`notification-item-${notification.id}`} onClick={() => onClick(notification.id)}>
+  NotificationItem: ({
+    notification,
+    onClick,
+  }: {
+    notification: { id: string; title: string }
+    onClick: (id: string) => void
+  }) => (
+    <div
+      data-testid={`notification-item-${notification.id}`}
+      onClick={() => onClick(notification.id)}
+    >
       {notification.title}
     </div>
   ),
@@ -142,8 +151,12 @@ describe('NotificationsTable', () => {
   it('devrait afficher les boutons de suppression', () => {
     render(<NotificationsTable {...defaultProps} />)
 
-    expect(screen.getByTestId('delete-notification-notif-1')).toBeInTheDocument()
-    expect(screen.getByTestId('delete-notification-notif-2')).toBeInTheDocument()
+    expect(
+      screen.getByTestId('delete-notification-notif-1')
+    ).toBeInTheDocument()
+    expect(
+      screen.getByTestId('delete-notification-notif-2')
+    ).toBeInTheDocument()
   })
 
   it('devrait ouvrir la dialog de suppression au clic', async () => {
@@ -174,12 +187,16 @@ describe('NotificationsTable', () => {
       />
     )
 
-    expect(screen.queryByTestId('notifications-pagination')).not.toBeInTheDocument()
+    expect(
+      screen.queryByTestId('notifications-pagination')
+    ).not.toBeInTheDocument()
   })
 
   it('ne devrait pas afficher la pagination si null', () => {
     render(<NotificationsTable {...defaultProps} pagination={null} />)
 
-    expect(screen.queryByTestId('notifications-pagination')).not.toBeInTheDocument()
+    expect(
+      screen.queryByTestId('notifications-pagination')
+    ).not.toBeInTheDocument()
   })
 })

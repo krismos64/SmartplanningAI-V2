@@ -52,7 +52,9 @@ async function loginAs(
   await page.goto('/login')
   // Use domcontentloaded - login page has no SSE but for consistency
   await page.waitForLoadState('domcontentloaded')
-  await page.getByRole('heading', { name: /Bon retour/i }).waitFor({ state: 'visible' })
+  await page
+    .getByRole('heading', { name: /Bon retour/i })
+    .waitFor({ state: 'visible' })
 
   await page.getByPlaceholder('vous@entreprise.com').fill(user.email)
   await page.getByPlaceholder('••••••••').fill(user.password)

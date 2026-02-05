@@ -65,13 +65,15 @@ describe('NotificationList', () => {
 
       render(<NotificationList />)
 
-      expect(screen.getByTestId('notification-list-loading')).toBeInTheDocument()
+      expect(
+        screen.getByTestId('notification-list-loading')
+      ).toBeInTheDocument()
       expect(screen.getByTestId('notification-skeleton')).toBeInTheDocument()
     })
   })
 
-  describe('État d\'erreur', () => {
-    it('devrait afficher le message d\'erreur', () => {
+  describe("État d'erreur", () => {
+    it("devrait afficher le message d'erreur", () => {
       vi.mocked(useNotifications).mockReturnValue({
         notifications: [],
         isLoading: false,
@@ -93,7 +95,7 @@ describe('NotificationList', () => {
   })
 
   describe('État vide', () => {
-    it('devrait afficher l\'empty state quand il n\'y a pas de notifications', () => {
+    it("devrait afficher l'empty state quand il n'y a pas de notifications", () => {
       vi.mocked(useNotifications).mockReturnValue({
         notifications: [],
         isLoading: false,
@@ -146,11 +148,13 @@ describe('NotificationList', () => {
 
       render(<NotificationList />)
 
-      expect(screen.getByTestId('notification-mark-all-read')).toBeInTheDocument()
+      expect(
+        screen.getByTestId('notification-mark-all-read')
+      ).toBeInTheDocument()
       expect(screen.getByText('Tout marquer comme lu')).toBeInTheDocument()
     })
 
-    it('ne devrait pas afficher le bouton s\'il n\'y a pas de non lues', () => {
+    it("ne devrait pas afficher le bouton s'il n'y a pas de non lues", () => {
       const allRead = mockNotifications.map((n) => ({ ...n, isRead: true }))
       vi.mocked(useNotifications).mockReturnValue({
         notifications: allRead,
@@ -165,7 +169,9 @@ describe('NotificationList', () => {
 
       render(<NotificationList />)
 
-      expect(screen.queryByTestId('notification-mark-all-read')).not.toBeInTheDocument()
+      expect(
+        screen.queryByTestId('notification-mark-all-read')
+      ).not.toBeInTheDocument()
     })
   })
 

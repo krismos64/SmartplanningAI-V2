@@ -42,7 +42,9 @@ export class SettingsPage {
     // Sections by testid
     this.profileSection = page.getByTestId('settings-section-profile')
     this.appearanceSection = page.getByTestId('settings-section-appearance')
-    this.notificationsSection = page.getByTestId('settings-section-notifications')
+    this.notificationsSection = page.getByTestId(
+      'settings-section-notifications'
+    )
     this.securitySection = page.getByTestId('settings-section-security')
     this.companySection = page.getByTestId('settings-section-company')
 
@@ -52,7 +54,6 @@ export class SettingsPage {
     this.notificationsTitle = this.notificationsSection.locator('h3')
     this.securityTitle = this.securitySection.locator('h3')
     this.companyTitle = this.companySection.locator('h3')
-
   }
 
   async goto() {

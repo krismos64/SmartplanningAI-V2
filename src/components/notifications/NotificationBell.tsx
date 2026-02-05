@@ -92,7 +92,7 @@ export function NotificationBell() {
         <Button
           variant="ghost"
           size="icon"
-          className="relative h-11 w-11 min-h-[44px] min-w-[44px] touch-manipulation"
+          className="relative h-11 min-h-[44px] w-11 min-w-[44px] touch-manipulation"
           aria-label="Notifications"
           data-testid="notification-bell-button"
         >

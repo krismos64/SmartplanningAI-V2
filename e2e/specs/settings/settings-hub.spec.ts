@@ -12,7 +12,9 @@ import { SettingsPage } from '../../pages/settings.page'
 
 test.describe('Settings Hub Page', () => {
   test.describe('Page Rendering', () => {
-    test('should display settings page with header', async ({ employeePage }) => {
+    test('should display settings page with header', async ({
+      employeePage,
+    }) => {
       const settingsPage = new SettingsPage(employeePage)
       await settingsPage.goto()
       await settingsPage.waitForPageLoad()
@@ -28,7 +30,9 @@ test.describe('Settings Hub Page', () => {
       await settingsPage.expectGridLayout()
     })
 
-    test('should display section titles correctly', async ({ employeePage }) => {
+    test('should display section titles correctly', async ({
+      employeePage,
+    }) => {
       const settingsPage = new SettingsPage(employeePage)
       await settingsPage.goto()
       await settingsPage.waitForPageLoad()

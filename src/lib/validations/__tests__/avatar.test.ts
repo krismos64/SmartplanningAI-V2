@@ -9,11 +9,7 @@ import { avatarFileSchema, AVATAR_ERRORS } from '../avatar'
 import { AVATAR_CONFIG } from '../../avatar-config'
 
 // Helper pour créer un mock File
-function createMockFile(
-  name: string,
-  size: number,
-  type: string
-): File {
+function createMockFile(name: string, size: number, type: string): File {
   const content = new Array(size).fill('a').join('')
   return new File([content], name, { type })
 }

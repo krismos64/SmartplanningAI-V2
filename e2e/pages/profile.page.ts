@@ -50,23 +50,31 @@ export class ProfilePage {
     this.profileName = page.getByTestId('profile-name')
     this.profileEmail = page.getByTestId('profile-email')
     this.profileRole = page.getByTestId('profile-role')
-    this.avatarInitials = page.locator('[data-testid="profile-name"]').locator('..')
+    this.avatarInitials = page
+      .locator('[data-testid="profile-name"]')
+      .locator('..')
 
     // Personal Info Card
-    this.personalInfoCard = page.locator('text=Informations personnelles').locator('..')
+    this.personalInfoCard = page
+      .locator('text=Informations personnelles')
+      .locator('..')
     this.personalEmail = page.getByTestId('personal-email')
     this.personalPhone = page.getByTestId('personal-phone')
     this.personalFullname = page.getByTestId('personal-fullname')
 
     // Professional Info Card
-    this.proInfoCard = page.locator('text=Informations professionnelles').locator('..')
+    this.proInfoCard = page
+      .locator('text=Informations professionnelles')
+      .locator('..')
     this.proJobTitle = page.getByTestId('pro-jobtitle')
     this.proTeam = page.getByTestId('pro-team')
     this.proHireDate = page.getByTestId('pro-hiredate')
     this.proHours = page.getByTestId('pro-hours')
 
     // Account Info Card
-    this.accountInfoCard = page.locator('text=Informations du compte').locator('..')
+    this.accountInfoCard = page
+      .locator('text=Informations du compte')
+      .locator('..')
     this.accountStatus = page.getByTestId('account-status')
     this.emailVerified = page.getByTestId('email-verified')
     this.emailNotVerified = page.getByTestId('email-not-verified')

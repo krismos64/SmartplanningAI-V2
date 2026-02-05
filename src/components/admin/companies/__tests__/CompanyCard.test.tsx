@@ -52,22 +52,22 @@ const mockInactiveCompany: CompanyWithCounts = {
 // ============================================================================
 
 describe('CompanyCard', () => {
-  it('affiche le nom de l\'entreprise', () => {
+  it("affiche le nom de l'entreprise", () => {
     render(<CompanyCard company={mockCompany} />)
     expect(screen.getByText('Acme Corporation')).toBeInTheDocument()
   })
 
-  it('affiche le slug de l\'entreprise', () => {
+  it("affiche le slug de l'entreprise", () => {
     render(<CompanyCard company={mockCompany} />)
     expect(screen.getByText('acme-corporation')).toBeInTheDocument()
   })
 
-  it('affiche le plan d\'abonnement', () => {
+  it("affiche le plan d'abonnement", () => {
     render(<CompanyCard company={mockCompany} />)
     expect(screen.getByText('Business')).toBeInTheDocument()
   })
 
-  it('affiche le statut d\'abonnement', () => {
+  it("affiche le statut d'abonnement", () => {
     render(<CompanyCard company={mockCompany} />)
     const badges = screen.getAllByText('Actif')
     expect(badges.length).toBeGreaterThanOrEqual(1)
@@ -85,12 +85,12 @@ describe('CompanyCard', () => {
     expect(screen.getByText('Inactif')).toBeInTheDocument()
   })
 
-  it('affiche le nombre d\'utilisateurs', () => {
+  it("affiche le nombre d'utilisateurs", () => {
     render(<CompanyCard company={mockCompany} />)
     expect(screen.getByText('12 utilisateurs')).toBeInTheDocument()
   })
 
-  it('affiche le nombre d\'utilisateurs au singulier', () => {
+  it("affiche le nombre d'utilisateurs au singulier", () => {
     const singleUserCompany = {
       ...mockCompany,
       _count: { users: 1, teams: 1, employees: 1 },
@@ -99,12 +99,12 @@ describe('CompanyCard', () => {
     expect(screen.getByText('1 utilisateur')).toBeInTheDocument()
   })
 
-  it('affiche le nombre d\'équipes', () => {
+  it("affiche le nombre d'équipes", () => {
     render(<CompanyCard company={mockCompany} />)
     expect(screen.getByText('3 équipes')).toBeInTheDocument()
   })
 
-  it('affiche le nombre d\'équipes au singulier', () => {
+  it("affiche le nombre d'équipes au singulier", () => {
     const singleTeamCompany = {
       ...mockCompany,
       _count: { users: 5, teams: 1, employees: 3 },
@@ -113,7 +113,7 @@ describe('CompanyCard', () => {
     expect(screen.getByText('1 équipe')).toBeInTheDocument()
   })
 
-  it('affiche l\'email de l\'entreprise', () => {
+  it("affiche l'email de l'entreprise", () => {
     render(<CompanyCard company={mockCompany} />)
     expect(screen.getByText('contact@acme.com')).toBeInTheDocument()
   })
@@ -123,7 +123,7 @@ describe('CompanyCard', () => {
     expect(screen.getByText(/Créée le 15 janv\. 2024/)).toBeInTheDocument()
   })
 
-  it('affiche l\'icône Building2', () => {
+  it("affiche l'icône Building2", () => {
     const { container } = render(<CompanyCard company={mockCompany} />)
     const icon = container.querySelector('svg')
     expect(icon).toBeInTheDocument()
@@ -216,7 +216,7 @@ describe('CompanyCard', () => {
     expect(onToggleStatus).toHaveBeenCalledTimes(1)
   })
 
-  it('n\'affiche pas les actions si les callbacks ne sont pas fournis', async () => {
+  it("n'affiche pas les actions si les callbacks ne sont pas fournis", async () => {
     const user = userEvent.setup()
     render(<CompanyCard company={mockCompany} />)
 
@@ -240,7 +240,7 @@ describe('CompanyCard', () => {
     expect(screen.getByText('0 équipe')).toBeInTheDocument()
   })
 
-  it('n\'affiche pas l\'email si absent', () => {
+  it("n'affiche pas l'email si absent", () => {
     const companyWithoutEmail = {
       ...mockCompany,
       email: null,
@@ -286,9 +286,7 @@ describe('CompanyCard', () => {
 
     // TRIAL
     rerender(
-      <CompanyCard
-        company={{ ...mockCompany, subscriptionStatus: 'TRIAL' }}
-      />
+      <CompanyCard company={{ ...mockCompany, subscriptionStatus: 'TRIAL' }} />
     )
     expect(screen.getByText('Essai')).toBeInTheDocument()
 

@@ -93,6 +93,7 @@ Password: Password123!
 ### Test multi-tenant (isolation)
 
 Connectez-vous successivement avec :
+
 - `john.doe@techcorp.com` (TechCorp)
 - `emma.jones@designstudio.com` (DesignStudio)
 
@@ -103,15 +104,18 @@ Connectez-vous successivement avec :
 ## Équipes (6)
 
 ### TechCorp
+
 - **Engineering** - Manager: Jane Smith
 - **Product** - Manager: Alice Brown
 - **Design** - Manager: Frank Martinez
 
 ### DesignStudio
+
 - **Designers** - Manager: Liam White
 - **Admin** - Manager: Ava Anderson
 
 ### StartupInc
+
 - **Core Team** - Manager: James Walker
 
 ---
@@ -119,15 +123,18 @@ Connectez-vous successivement avec :
 ## Données de démonstration
 
 ### Plannings (15)
+
 - TechCorp : 10 plannings (Development Sprint, Code Review, Remote Work, Team Building, On-Call)
 - DesignStudio : 3 plannings (Client Presentation, Creative Brainstorming, Web Design)
 - StartupInc : 2 plannings (Product Development, Design Sprint)
 
 ### Demandes de congés (8)
+
 - 3 approuvées, 3 en attente, 2 rejetées
 - Types variés : CP, RTT, maladie, sans solde
 
 ### Notifications (15)
+
 - Types : SUCCESS, INFO, WARNING, SYSTEM
 - Mix de lues et non lues
 

@@ -27,7 +27,9 @@ describe('ProfileHeader', () => {
   describe('Mode lecture seule (editable=false)', () => {
     it('should render user name', () => {
       render(<ProfileHeader {...defaultProps} editable={false} />)
-      expect(screen.getByTestId('profile-name')).toHaveTextContent('Jean Dupont')
+      expect(screen.getByTestId('profile-name')).toHaveTextContent(
+        'Jean Dupont'
+      )
     })
 
     it('should render user email', () => {
@@ -43,17 +45,23 @@ describe('ProfileHeader', () => {
     })
 
     it('should render DIRECTOR role correctly', () => {
-      render(<ProfileHeader {...defaultProps} role="DIRECTOR" editable={false} />)
+      render(
+        <ProfileHeader {...defaultProps} role="DIRECTOR" editable={false} />
+      )
       expect(screen.getByTestId('profile-role')).toHaveTextContent('Directeur')
     })
 
     it('should render MANAGER role correctly', () => {
-      render(<ProfileHeader {...defaultProps} role="MANAGER" editable={false} />)
+      render(
+        <ProfileHeader {...defaultProps} role="MANAGER" editable={false} />
+      )
       expect(screen.getByTestId('profile-role')).toHaveTextContent('Manager')
     })
 
     it('should render SYSTEM_ADMIN role correctly', () => {
-      render(<ProfileHeader {...defaultProps} role="SYSTEM_ADMIN" editable={false} />)
+      render(
+        <ProfileHeader {...defaultProps} role="SYSTEM_ADMIN" editable={false} />
+      )
       expect(screen.getByTestId('profile-role')).toHaveTextContent(
         'Administrateur Système'
       )
@@ -71,18 +79,30 @@ describe('ProfileHeader', () => {
     })
 
     it('should handle three words name for initials (max 2 letters)', () => {
-      render(<ProfileHeader {...defaultProps} name="Jean Pierre Dupont" editable={false} />)
+      render(
+        <ProfileHeader
+          {...defaultProps}
+          name="Jean Pierre Dupont"
+          editable={false}
+        />
+      )
       expect(screen.getByText('JP')).toBeInTheDocument()
     })
 
     it('should render unknown role as-is', () => {
-      render(<ProfileHeader {...defaultProps} role="UNKNOWN_ROLE" editable={false} />)
-      expect(screen.getByTestId('profile-role')).toHaveTextContent('UNKNOWN_ROLE')
+      render(
+        <ProfileHeader {...defaultProps} role="UNKNOWN_ROLE" editable={false} />
+      )
+      expect(screen.getByTestId('profile-role')).toHaveTextContent(
+        'UNKNOWN_ROLE'
+      )
     })
 
     it('should render with glass-strong class', () => {
       render(<ProfileHeader {...defaultProps} editable={false} />)
-      const container = screen.getByTestId('profile-name').closest('div')?.parentElement
+      const container = screen
+        .getByTestId('profile-name')
+        .closest('div')?.parentElement
       expect(container).toHaveClass('glass-strong')
     })
 
@@ -102,7 +122,9 @@ describe('ProfileHeader', () => {
 
     it('should render user name in editable mode', () => {
       render(<ProfileHeader {...defaultProps} />)
-      expect(screen.getByTestId('profile-name')).toHaveTextContent('Jean Dupont')
+      expect(screen.getByTestId('profile-name')).toHaveTextContent(
+        'Jean Dupont'
+      )
     })
 
     it('should render user email in editable mode', () => {

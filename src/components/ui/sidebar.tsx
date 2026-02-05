@@ -328,7 +328,10 @@ const SidebarTrigger = React.forwardRef<
       variant="ghost"
       size="icon"
       // WCAG 2.5.5: 44px minimum touch target
-      className={cn('h-11 w-11 min-h-[44px] min-w-[44px] touch-manipulation', className)}
+      className={cn(
+        'h-11 min-h-[44px] w-11 min-w-[44px] touch-manipulation',
+        className
+      )}
       onClick={(event) => {
         onClick?.(event)
         toggleSidebar()

@@ -22,7 +22,9 @@ test.describe('Notifications Preferences Page', () => {
       await settingsPage.waitForPageLoad()
 
       // Cliquer sur la section Notifications
-      await employeePage.locator('a[href="/app/settings/notifications"]').click()
+      await employeePage
+        .locator('a[href="/app/settings/notifications"]')
+        .click()
 
       // Vérifier la navigation
       await expect(employeePage).toHaveURL('/app/settings/notifications')
@@ -256,7 +258,9 @@ test.describe('Notifications Preferences Page', () => {
   // Accessibility
   // ==========================================================================
   test.describe('Accessibility', () => {
-    test('switches ont des aria-labels accessibles', async ({ employeePage }) => {
+    test('switches ont des aria-labels accessibles', async ({
+      employeePage,
+    }) => {
       const notificationsPage = new NotificationsPreferencesPage(employeePage)
 
       await notificationsPage.goto()

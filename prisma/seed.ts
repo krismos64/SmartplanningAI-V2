@@ -1595,7 +1595,9 @@ async function main() {
     })
   }
 
-  console.log(`✅ ${allEmployeesForBalance.length} soldes de congés créés (année 2026)\n`)
+  console.log(
+    `✅ ${allEmployeesForBalance.length} soldes de congés créés (année 2026)\n`
+  )
 
   // ============================================================================
   // 10. DEMANDES DE CONGÉS SUPPLÉMENTAIRES (SP-408)
@@ -1616,7 +1618,9 @@ async function main() {
         companyId: techcorp.id,
       },
     })
-  } catch { /* skip if already exists */ }
+  } catch {
+    /* skip if already exists */
+  }
 
   try {
     await prisma.leaveRequest.create({
@@ -1631,7 +1635,9 @@ async function main() {
         companyId: techcorp.id,
       },
     })
-  } catch { /* skip if already exists */ }
+  } catch {
+    /* skip if already exists */
+  }
 
   // halfDay demandes (2 demandes)
   try {
@@ -1652,7 +1658,9 @@ async function main() {
         reviewComment: 'Approuvé.',
       },
     })
-  } catch { /* skip if already exists */ }
+  } catch {
+    /* skip if already exists */
+  }
 
   try {
     await prisma.leaveRequest.create({
@@ -1669,7 +1677,9 @@ async function main() {
         companyId: designstudio.id,
       },
     })
-  } catch { /* skip if already exists */ }
+  } catch {
+    /* skip if already exists */
+  }
 
   // FAMILY_EVENT demande
   try {
@@ -1685,7 +1695,9 @@ async function main() {
         companyId: techcorp.id,
       },
     })
-  } catch { /* skip if already exists */ }
+  } catch {
+    /* skip if already exists */
+  }
 
   // PARENTAL_LEAVE demande
   try {
@@ -1704,7 +1716,9 @@ async function main() {
         reviewComment: 'Approuvé. Félicitations !',
       },
     })
-  } catch { /* skip if already exists */ }
+  } catch {
+    /* skip if already exists */
+  }
 
   console.log('✅ 6 demandes de congés supplémentaires créées\n')
 

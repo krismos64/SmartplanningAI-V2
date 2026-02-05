@@ -30,7 +30,10 @@ vi.mock('@/lib/actions/profile', () => ({
 vi.mock('@/hooks/use-crud-mutation', () => ({
   useCrudMutation: (
     action: (data: unknown) => Promise<unknown>,
-    options: { onSuccess?: () => void; onError?: (error: string, field?: string) => void }
+    options: {
+      onSuccess?: () => void
+      onError?: (error: string, field?: string) => void
+    }
   ) => ({
     mutate: async (data: unknown) => {
       const result = await action(data)
@@ -51,7 +54,10 @@ vi.mock('@/hooks/use-crud-mutation', () => ({
 describe('ChangePasswordForm', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    mockChangePassword.mockResolvedValue({ success: true, data: { message: 'OK' } })
+    mockChangePassword.mockResolvedValue({
+      success: true,
+      data: { message: 'OK' },
+    })
   })
 
   // ============================================
@@ -71,7 +77,9 @@ describe('ChangePasswordForm', () => {
 
       expect(screen.getByTestId('toggle-currentPassword')).toBeInTheDocument()
       expect(screen.getByTestId('toggle-newPassword')).toBeInTheDocument()
-      expect(screen.getByTestId('toggle-confirmNewPassword')).toBeInTheDocument()
+      expect(
+        screen.getByTestId('toggle-confirmNewPassword')
+      ).toBeInTheDocument()
     })
 
     it('should render submit button disabled initially', () => {
@@ -96,9 +104,7 @@ describe('ChangePasswordForm', () => {
     it('should have correct form title', () => {
       render(<ChangePasswordForm />)
 
-      expect(
-        screen.getByText('Changer mon mot de passe')
-      ).toBeInTheDocument()
+      expect(screen.getByText('Changer mon mot de passe')).toBeInTheDocument()
     })
   })
 
@@ -183,10 +189,7 @@ describe('ChangePasswordForm', () => {
       render(<ChangePasswordForm />)
 
       // Fill only new passwords to make form dirty
-      await user.type(
-        screen.getByTestId('input-newPassword'),
-        'NewPass123!'
-      )
+      await user.type(screen.getByTestId('input-newPassword'), 'NewPass123!')
       await user.type(
         screen.getByTestId('input-confirmNewPassword'),
         'NewPass123!'
@@ -211,10 +214,7 @@ describe('ChangePasswordForm', () => {
         'OldPass123!'
       )
       await user.type(screen.getByTestId('input-newPassword'), 'weak')
-      await user.type(
-        screen.getByTestId('input-confirmNewPassword'),
-        'weak'
-      )
+      await user.type(screen.getByTestId('input-confirmNewPassword'), 'weak')
 
       await user.click(screen.getByTestId('submit-button'))
 
@@ -233,10 +233,7 @@ describe('ChangePasswordForm', () => {
         screen.getByTestId('input-currentPassword'),
         'OldPass123!'
       )
-      await user.type(
-        screen.getByTestId('input-newPassword'),
-        'NewPass123!'
-      )
+      await user.type(screen.getByTestId('input-newPassword'), 'NewPass123!')
       await user.type(
         screen.getByTestId('input-confirmNewPassword'),
         'DifferentPass123!'
@@ -259,10 +256,7 @@ describe('ChangePasswordForm', () => {
         screen.getByTestId('input-currentPassword'),
         'SamePass123!'
       )
-      await user.type(
-        screen.getByTestId('input-newPassword'),
-        'SamePass123!'
-      )
+      await user.type(screen.getByTestId('input-newPassword'), 'SamePass123!')
       await user.type(
         screen.getByTestId('input-confirmNewPassword'),
         'SamePass123!'
@@ -307,10 +301,7 @@ describe('ChangePasswordForm', () => {
         screen.getByTestId('input-currentPassword'),
         'OldPass123!'
       )
-      await user.type(
-        screen.getByTestId('input-newPassword'),
-        'NewPass123!'
-      )
+      await user.type(screen.getByTestId('input-newPassword'), 'NewPass123!')
       await user.type(
         screen.getByTestId('input-confirmNewPassword'),
         'NewPass123!'
@@ -335,10 +326,7 @@ describe('ChangePasswordForm', () => {
         screen.getByTestId('input-currentPassword'),
         'OldPass123!'
       )
-      await user.type(
-        screen.getByTestId('input-newPassword'),
-        'NewPass123!'
-      )
+      await user.type(screen.getByTestId('input-newPassword'), 'NewPass123!')
       await user.type(
         screen.getByTestId('input-confirmNewPassword'),
         'NewPass123!'
@@ -371,10 +359,7 @@ describe('ChangePasswordForm', () => {
         screen.getByTestId('input-currentPassword'),
         'WrongPass123!'
       )
-      await user.type(
-        screen.getByTestId('input-newPassword'),
-        'NewPass123!'
-      )
+      await user.type(screen.getByTestId('input-newPassword'), 'NewPass123!')
       await user.type(
         screen.getByTestId('input-confirmNewPassword'),
         'NewPass123!'

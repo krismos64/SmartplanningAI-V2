@@ -42,7 +42,7 @@ describe('LeaveRequestedEmail', () => {
       expect(html).toContain('Pierre')
     })
 
-    it('devrait contenir le nom de l\'employé', async () => {
+    it("devrait contenir le nom de l'employé", async () => {
       const html = await render(LeaveRequestedEmail(defaultProps))
 
       expect(html).toContain('Marie Dupont')

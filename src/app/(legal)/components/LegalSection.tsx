@@ -45,7 +45,9 @@ export function LegalSection({
         )}
       >
         {number && (
-          <span className="mr-3 text-cyan-600 dark:text-cyan-400">{number}</span>
+          <span className="mr-3 text-cyan-600 dark:text-cyan-400">
+            {number}
+          </span>
         )}
         {title}
       </HeadingTag>
@@ -121,9 +123,12 @@ export function LegalHighlight({
     <div
       className={cn(
         'rounded-lg border p-4',
-        type === 'info' && 'border-blue-500/30 bg-blue-500/10 dark:border-blue-500/20',
-        type === 'warning' && 'border-amber-500/30 bg-amber-500/10 dark:border-amber-500/20',
-        type === 'important' && 'border-cyan-500/30 bg-cyan-500/10 dark:border-cyan-500/20',
+        type === 'info' &&
+          'border-blue-500/30 bg-blue-500/10 dark:border-blue-500/20',
+        type === 'warning' &&
+          'border-amber-500/30 bg-amber-500/10 dark:border-amber-500/20',
+        type === 'important' &&
+          'border-cyan-500/30 bg-cyan-500/10 dark:border-cyan-500/20',
         className
       )}
     >
@@ -168,10 +173,7 @@ export function LegalContact({
 }) {
   return (
     <div
-      className={cn(
-        'rounded-lg border border-border bg-card p-6',
-        className
-      )}
+      className={cn('rounded-lg border border-border bg-card p-6', className)}
     >
       {title && <h4 className="mb-4 font-semibold text-foreground">{title}</h4>}
       <div className="space-y-2 text-sm text-muted-foreground">

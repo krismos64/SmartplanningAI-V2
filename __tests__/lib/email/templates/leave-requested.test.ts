@@ -67,7 +67,7 @@ describe('leave-requested', () => {
       expect(result.messageId).toBe('msg-requested-123')
     })
 
-    it('devrait générer l\'URL de la demande correctement', async () => {
+    it("devrait générer l'URL de la demande correctement", async () => {
       const mockSendEmail = vi.fn().mockResolvedValue({
         success: true,
         messageId: 'msg-456',

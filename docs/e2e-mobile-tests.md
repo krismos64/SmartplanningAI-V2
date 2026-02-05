@@ -8,24 +8,24 @@
 
 Suite de tests E2E validant l'expérience utilisateur mobile sur 5 devices différents :
 
-| Device        | Viewport  | OS      | Caractéristiques                      |
-| ------------- | --------- | ------- | ------------------------------------- |
-| iPhone SE     | 320×568   | iOS     | Petit écran, contraintes espace       |
-| iPhone 14 Pro | 393×852   | iOS     | Écran moderne, notch dynamique        |
-| Pixel 7       | 412×915   | Android | Chrome mobile, référence Android      |
-| iPad Mini     | 768×1024  | iPadOS  | Tablette petite, mode intermédiaire   |
-| iPad Pro 11"  | 834×1194  | iPadOS  | Grande tablette, layout quasi-desktop |
+| Device        | Viewport | OS      | Caractéristiques                      |
+| ------------- | -------- | ------- | ------------------------------------- |
+| iPhone SE     | 320×568  | iOS     | Petit écran, contraintes espace       |
+| iPhone 14 Pro | 393×852  | iOS     | Écran moderne, notch dynamique        |
+| Pixel 7       | 412×915  | Android | Chrome mobile, référence Android      |
+| iPad Mini     | 768×1024 | iPadOS  | Tablette petite, mode intermédiaire   |
+| iPad Pro 11"  | 834×1194 | iPadOS  | Grande tablette, layout quasi-desktop |
 
 **Note importante** : Tous les projets mobiles utilisent Chromium au lieu de WebKit car WebKit a un bug connu qui upgrade `http://localhost` en `https://`, causant des erreurs TLS.
 
 ## Statistiques
 
-| Métrique | Valeur |
-|----------|--------|
-| Fichiers de tests mobile | 5 |
-| Total lignes de code | ~1900 |
-| Devices testés | 5 |
-| Fichiers specs totaux (projet) | 43 |
+| Métrique                       | Valeur |
+| ------------------------------ | ------ |
+| Fichiers de tests mobile       | 5      |
+| Total lignes de code           | ~1900  |
+| Devices testés                 | 5      |
+| Fichiers specs totaux (projet) | 43     |
 
 ## Structure des fichiers
 
@@ -305,17 +305,18 @@ workers: process.env.CI ? 1 : undefined,
 
 ## Timeouts configurés
 
-| Type | CI | Local |
-|------|-----|-------|
-| Test global | 60s | 45s |
-| Assertions expect() | 15s | 5s |
-| Actions (click, fill) | 15s | 10s |
-| Navigation | 30s | 15s |
-| WebServer startup | 120s | 120s |
+| Type                  | CI   | Local |
+| --------------------- | ---- | ----- |
+| Test global           | 60s  | 45s   |
+| Assertions expect()   | 15s  | 5s    |
+| Actions (click, fill) | 15s  | 10s   |
+| Navigation            | 30s  | 15s   |
+| WebServer startup     | 120s | 120s  |
 
 ## Intégration CI/CD
 
 Les tests mobile sont exécutés dans le pipeline CI GitHub Actions :
+
 - Les tests `*mobile*.spec.ts` sont exécutés uniquement sur les projets mobile
 - Les tests desktop (`chromium`) ignorent les fichiers `*mobile*.spec.ts`
 - Traces et screenshots capturés sur échec
@@ -323,21 +324,21 @@ Les tests mobile sont exécutés dans le pipeline CI GitHub Actions :
 
 ## Page Objects disponibles
 
-| Page Object | Fichier | Description |
-|-------------|---------|-------------|
-| AvatarUploadPage | avatar-upload.page.ts | Upload avatar (SP-272) |
-| LeavesPage | leaves.page.ts | Gestion congés |
-| PersonalTasksPage | personal-tasks.page.ts | Notes personnelles |
-| AppearancePage | appearance.page.ts | Préférences affichage |
-| ChangePasswordPage | change-password.page.ts | Mot de passe |
-| DeleteAccountPage | delete-account.page.ts | Suppression compte |
-| EditProfilePage | edit-profile.page.ts | Édition profil |
-| CompanySettingsPage | company-settings.page.ts | Paramètres entreprise |
-| NotificationsPreferencesPage | notifications-preferences.page.ts | Préférences notifications |
-| SchedulesPage | schedules.page.ts | Plannings |
-| ProfilePage | profile.page.ts | Affichage profil |
-| Dashboard*Page | dashboard-*.page.ts | Dashboards par rôle (4) |
-| CRUD Pages | crud/*.ts | Employés, Teams, Companies |
+| Page Object                  | Fichier                           | Description                |
+| ---------------------------- | --------------------------------- | -------------------------- |
+| AvatarUploadPage             | avatar-upload.page.ts             | Upload avatar (SP-272)     |
+| LeavesPage                   | leaves.page.ts                    | Gestion congés             |
+| PersonalTasksPage            | personal-tasks.page.ts            | Notes personnelles         |
+| AppearancePage               | appearance.page.ts                | Préférences affichage      |
+| ChangePasswordPage           | change-password.page.ts           | Mot de passe               |
+| DeleteAccountPage            | delete-account.page.ts            | Suppression compte         |
+| EditProfilePage              | edit-profile.page.ts              | Édition profil             |
+| CompanySettingsPage          | company-settings.page.ts          | Paramètres entreprise      |
+| NotificationsPreferencesPage | notifications-preferences.page.ts | Préférences notifications  |
+| SchedulesPage                | schedules.page.ts                 | Plannings                  |
+| ProfilePage                  | profile.page.ts                   | Affichage profil           |
+| Dashboard\*Page              | dashboard-\*.page.ts              | Dashboards par rôle (4)    |
+| CRUD Pages                   | crud/\*.ts                        | Employés, Teams, Companies |
 
 ## Références
 
@@ -351,9 +352,9 @@ Les tests mobile sont exécutés dans le pipeline CI GitHub Actions :
 
 ## Historique
 
-| Date | Description |
-|------|-------------|
+| Date       | Description                                          |
+| ---------- | ---------------------------------------------------- |
 | 04/02/2026 | Mise à jour documentation, ajout Page Objects, stats |
-| 01/2026 | Ajout avatar-upload.page.ts (SP-272) |
-| 01/2026 | Migration vers Chromium (bug WebKit https) |
-| 01/2026 | Création initiale (SP-389) |
+| 01/2026    | Ajout avatar-upload.page.ts (SP-272)                 |
+| 01/2026    | Migration vers Chromium (bug WebKit https)           |
+| 01/2026    | Création initiale (SP-389)                           |

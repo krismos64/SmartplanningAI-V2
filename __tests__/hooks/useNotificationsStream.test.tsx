@@ -35,7 +35,9 @@ class MockEventSource {
 
   simulateMessage(data: unknown) {
     if (this.onmessage) {
-      this.onmessage(new MessageEvent('message', { data: JSON.stringify(data) }))
+      this.onmessage(
+        new MessageEvent('message', { data: JSON.stringify(data) })
+      )
     }
   }
 
@@ -89,14 +91,18 @@ describe('useNotificationsStream', () => {
     })
 
     it('should be connecting initially', () => {
-      const { result } = renderHook(() => useNotificationsStream({ enabled: true }))
+      const { result } = renderHook(() =>
+        useNotificationsStream({ enabled: true })
+      )
 
       expect(result.current.isConnecting).toBe(true)
       expect(result.current.isConnected).toBe(false)
     })
 
     it('should update isConnected when connection opens', async () => {
-      const { result } = renderHook(() => useNotificationsStream({ enabled: true }))
+      const { result } = renderHook(() =>
+        useNotificationsStream({ enabled: true })
+      )
 
       act(() => {
         MockEventSource.instances[0].simulateOpen()
@@ -130,7 +136,9 @@ describe('useNotificationsStream', () => {
       await waitFor(() => {
         expect(onNotification).toHaveBeenCalled()
         expect(result.current.lastNotification?.id).toBe(mockNotification.id)
-        expect(result.current.lastNotification?.title).toBe(mockNotification.title)
+        expect(result.current.lastNotification?.title).toBe(
+          mockNotification.title
+        )
       })
     })
 
@@ -157,7 +165,9 @@ describe('useNotificationsStream', () => {
 
   describe('Error handling', () => {
     it('should set error on connection failure', async () => {
-      const { result } = renderHook(() => useNotificationsStream({ enabled: true }))
+      const { result } = renderHook(() =>
+        useNotificationsStream({ enabled: true })
+      )
 
       act(() => {
         MockEventSource.instances[0].simulateError()
@@ -170,7 +180,9 @@ describe('useNotificationsStream', () => {
     })
 
     it('should increment reconnectCount on error', async () => {
-      const { result } = renderHook(() => useNotificationsStream({ enabled: true }))
+      const { result } = renderHook(() =>
+        useNotificationsStream({ enabled: true })
+      )
 
       act(() => {
         MockEventSource.instances[0].simulateError()
@@ -183,7 +195,9 @@ describe('useNotificationsStream', () => {
 
   describe('Reconnection', () => {
     it('should provide reconnect function', () => {
-      const { result } = renderHook(() => useNotificationsStream({ enabled: true }))
+      const { result } = renderHook(() =>
+        useNotificationsStream({ enabled: true })
+      )
 
       expect(typeof result.current.reconnect).toBe('function')
     })
@@ -210,7 +224,9 @@ describe('useNotificationsStream', () => {
 
   describe('Default state', () => {
     it('should have correct default values', () => {
-      const { result } = renderHook(() => useNotificationsStream({ enabled: false }))
+      const { result } = renderHook(() =>
+        useNotificationsStream({ enabled: false })
+      )
 
       expect(result.current.isConnected).toBe(false)
       expect(result.current.isConnecting).toBe(false)

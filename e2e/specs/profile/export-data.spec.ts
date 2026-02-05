@@ -50,7 +50,9 @@ test.describe('Export Data', () => {
       ).toBeVisible()
     })
 
-    test('should display RGPD Article 20 reference', async ({ employeePage }) => {
+    test('should display RGPD Article 20 reference', async ({
+      employeePage,
+    }) => {
       await employeePage.goto('/app/profile/export')
 
       // Utiliser getByRole pour cibler spécifiquement le heading
@@ -73,12 +75,12 @@ test.describe('Export Data', () => {
     test('should display export data card', async ({ employeePage }) => {
       await employeePage.goto('/app/profile/export')
 
-      await expect(
-        employeePage.getByTestId('export-data-card')
-      ).toBeVisible()
+      await expect(employeePage.getByTestId('export-data-card')).toBeVisible()
     })
 
-    test('should display list of included data types', async ({ employeePage }) => {
+    test('should display list of included data types', async ({
+      employeePage,
+    }) => {
       await employeePage.goto('/app/profile/export')
 
       // Vérifier les éléments de la liste des données incluses
@@ -119,17 +121,15 @@ test.describe('Export Data', () => {
     test('should display export button', async ({ employeePage }) => {
       await employeePage.goto('/app/profile/export')
 
-      await expect(
-        employeePage.getByTestId('export-data-button')
-      ).toBeVisible()
+      await expect(employeePage.getByTestId('export-data-button')).toBeVisible()
     })
 
     test('should have correct button text', async ({ employeePage }) => {
       await employeePage.goto('/app/profile/export')
 
-      await expect(
-        employeePage.getByTestId('export-data-button')
-      ).toHaveText(/Exporter mes données/)
+      await expect(employeePage.getByTestId('export-data-button')).toHaveText(
+        /Exporter mes données/
+      )
     })
 
     test('should not be disabled initially', async ({ employeePage }) => {
@@ -247,25 +247,19 @@ test.describe('Export Data', () => {
     test('should be accessible by Employee', async ({ employeePage }) => {
       await employeePage.goto('/app/profile/export')
 
-      await expect(
-        employeePage.getByTestId('export-data-button')
-      ).toBeVisible()
+      await expect(employeePage.getByTestId('export-data-button')).toBeVisible()
     })
 
     test('should be accessible by Manager', async ({ managerPage }) => {
       await managerPage.goto('/app/profile/export')
 
-      await expect(
-        managerPage.getByTestId('export-data-button')
-      ).toBeVisible()
+      await expect(managerPage.getByTestId('export-data-button')).toBeVisible()
     })
 
     test('should be accessible by Director', async ({ directorPage }) => {
       await directorPage.goto('/app/profile/export')
 
-      await expect(
-        directorPage.getByTestId('export-data-button')
-      ).toBeVisible()
+      await expect(directorPage.getByTestId('export-data-button')).toBeVisible()
     })
 
     test('should be accessible by System Admin', async ({ adminPage }) => {

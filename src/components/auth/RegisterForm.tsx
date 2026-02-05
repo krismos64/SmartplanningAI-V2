@@ -220,7 +220,7 @@ export function RegisterForm() {
             <FormItem>
               <FormLabel>
                 Téléphone{' '}
-                <span className="text-muted-foreground font-normal">
+                <span className="font-normal text-muted-foreground">
                   (optionnel)
                 </span>
               </FormLabel>

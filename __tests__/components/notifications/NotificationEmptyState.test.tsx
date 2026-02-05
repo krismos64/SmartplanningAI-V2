@@ -29,9 +29,7 @@ describe('NotificationEmptyState', () => {
   })
 
   it('devrait afficher une description personnalisée', () => {
-    render(
-      <NotificationEmptyState description="Revenez plus tard" />
-    )
+    render(<NotificationEmptyState description="Revenez plus tard" />)
 
     expect(screen.getByText('Revenez plus tard')).toBeInTheDocument()
   })
@@ -42,7 +40,7 @@ describe('NotificationEmptyState', () => {
     expect(screen.getByTestId('notification-empty-state')).toBeInTheDocument()
   })
 
-  it('devrait afficher l\'icône Bell', () => {
+  it("devrait afficher l'icône Bell", () => {
     const { container } = render(<NotificationEmptyState />)
 
     // L'icône Bell devrait être présente

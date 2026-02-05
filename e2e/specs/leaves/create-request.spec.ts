@@ -10,7 +10,9 @@ import { LeavesPage } from '../../pages/leaves.page'
 import { addWeeks, addDays } from 'date-fns'
 
 test.describe('Leaves - Création demande (EMPLOYEE)', () => {
-  test('ouvre le formulaire de création @employee', async ({ employeePage }) => {
+  test('ouvre le formulaire de création @employee', async ({
+    employeePage,
+  }) => {
     const leavesPage = new LeavesPage(employeePage)
     await leavesPage.goto()
 

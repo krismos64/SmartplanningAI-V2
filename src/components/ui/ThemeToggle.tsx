@@ -97,7 +97,7 @@ export function ThemeToggle({
         'flex h-11 min-h-[44px] min-w-[44px] items-center justify-center gap-2 rounded-lg p-2',
         'text-foreground-muted hover:text-foreground',
         'hover:bg-muted/80 dark:hover:bg-muted/50',
-        'transition-colors duration-200 touch-manipulation',
+        'touch-manipulation transition-colors duration-200',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
         className
       )}

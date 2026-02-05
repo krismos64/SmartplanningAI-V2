@@ -121,7 +121,7 @@ describe('useNotificationsCount - SP-322', () => {
       expect(result.current.error).toBe('Erreur de connexion')
     })
 
-    it('retourne count = 0 en cas d\'erreur (fallback)', async () => {
+    it("retourne count = 0 en cas d'erreur (fallback)", async () => {
       mockGetUnreadCount.mockResolvedValue({
         success: false,
         error: 'Erreur serveur',

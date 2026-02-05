@@ -251,7 +251,9 @@ test.describe('Change Password Page', () => {
   // MULTI-RÔLES
   // ==========================================================================
   test.describe('Multi-role Access', () => {
-    test('EMPLOYEE can access change password page', async ({ employeePage }) => {
+    test('EMPLOYEE can access change password page', async ({
+      employeePage,
+    }) => {
       const changePwdPage = new ChangePasswordPage(employeePage)
       await changePwdPage.goto()
       await changePwdPage.waitForPageLoad()
@@ -267,7 +269,9 @@ test.describe('Change Password Page', () => {
       await expect(managerPage).toHaveURL(/\/app\/profile\/password/)
     })
 
-    test('DIRECTOR can access change password page', async ({ directorPage }) => {
+    test('DIRECTOR can access change password page', async ({
+      directorPage,
+    }) => {
       const changePwdPage = new ChangePasswordPage(directorPage)
       await changePwdPage.goto()
       await changePwdPage.waitForPageLoad()

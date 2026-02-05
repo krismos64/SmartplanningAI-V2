@@ -204,17 +204,17 @@ IMAGE_TAG=latest
 
 > **IMPORTANT** : Les noms des variables doivent correspondre exactement à ceux attendus par le code.
 
-| Variable (code)          | Fichier                   | Description                      |
-| ------------------------ | ------------------------- | -------------------------------- |
-| `SMTP_HOST`              | `src/lib/email/config.ts` | Serveur SMTP                     |
-| `SMTP_PORT`              | `src/lib/email/config.ts` | Port SMTP (587)                  |
-| `SMTP_USER`              | `src/lib/email/config.ts` | Email d'auth SMTP                |
-| `SMTP_PASSWORD`          | `src/lib/email/config.ts` | Mot de passe SMTP                |
-| `SMTP_FROM`              | `src/lib/email/config.ts` | Adresse d'expédition             |
-| `CONTACT_EMAIL`          | `src/lib/email/config.ts` | Email de réception contact       |
-| `CLOUDINARY_CLOUD_NAME`  | `src/lib/cloudinary.ts`   | Nom du cloud Cloudinary          |
-| `CLOUDINARY_API_KEY`     | `src/lib/cloudinary.ts`   | Clé API Cloudinary               |
-| `CLOUDINARY_API_SECRET`  | `src/lib/cloudinary.ts`   | Secret API Cloudinary            |
+| Variable (code)         | Fichier                   | Description                |
+| ----------------------- | ------------------------- | -------------------------- |
+| `SMTP_HOST`             | `src/lib/email/config.ts` | Serveur SMTP               |
+| `SMTP_PORT`             | `src/lib/email/config.ts` | Port SMTP (587)            |
+| `SMTP_USER`             | `src/lib/email/config.ts` | Email d'auth SMTP          |
+| `SMTP_PASSWORD`         | `src/lib/email/config.ts` | Mot de passe SMTP          |
+| `SMTP_FROM`             | `src/lib/email/config.ts` | Adresse d'expédition       |
+| `CONTACT_EMAIL`         | `src/lib/email/config.ts` | Email de réception contact |
+| `CLOUDINARY_CLOUD_NAME` | `src/lib/cloudinary.ts`   | Nom du cloud Cloudinary    |
+| `CLOUDINARY_API_KEY`    | `src/lib/cloudinary.ts`   | Clé API Cloudinary         |
+| `CLOUDINARY_API_SECRET` | `src/lib/cloudinary.ts`   | Secret API Cloudinary      |
 
 ### GitHub Secrets requis
 
@@ -440,12 +440,12 @@ docker pull ghcr.io/krismos64/smartplanningai-v2:latest
 
 ## Historique des mises à jour
 
-| Date       | Version | Description                                |
-| ---------- | ------- | ------------------------------------------ |
-| 2025-12-02 | 1.0     | Déploiement initial                        |
-| 2026-01-06 | 1.1     | Migration vers nouveau VPS (51.77.146.72)  |
-| 2026-01-16 | 1.2     | Ajout Umami Analytics                      |
-| 2026-01-19 | 2.0     | Configuration SMTP + refonte documentation |
+| Date       | Version | Description                                   |
+| ---------- | ------- | --------------------------------------------- |
+| 2025-12-02 | 1.0     | Déploiement initial                           |
+| 2026-01-06 | 1.1     | Migration vers nouveau VPS (51.77.146.72)     |
+| 2026-01-16 | 1.2     | Ajout Umami Analytics                         |
+| 2026-01-19 | 2.0     | Configuration SMTP + refonte documentation    |
 | 2026-02-04 | 2.1     | Ajout Cloudinary pour upload avatars (SP-272) |
 
 ---

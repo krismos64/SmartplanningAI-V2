@@ -133,7 +133,9 @@ describe('changePassword', () => {
       })
 
       expect(result.success).toBe(false)
-      expect(result.error).toBe('Les nouveaux mots de passe ne correspondent pas')
+      expect(result.error).toBe(
+        'Les nouveaux mots de passe ne correspondent pas'
+      )
       expect(result.field).toBe('confirmNewPassword')
     })
 
@@ -219,7 +221,9 @@ describe('changePassword', () => {
       })
 
       expect(result.success).toBe(true)
-      expect(result.data).toEqual({ message: 'Mot de passe modifié avec succès' })
+      expect(result.data).toEqual({
+        message: 'Mot de passe modifié avec succès',
+      })
     })
   })
 

@@ -118,7 +118,7 @@ export function CompanyCard({
             {/* Name + status + menu */}
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0 flex-1">
-                <h3 className="truncate font-semibold text-base">
+                <h3 className="truncate text-base font-semibold">
                   {company.name}
                 </h3>
                 {company.slug && (
@@ -195,10 +195,16 @@ export function CompanyCard({
               </Badge>
               <Badge
                 variant={
-                  STATUS_COLORS[company.subscriptionStatus as SubscriptionStatus]
+                  STATUS_COLORS[
+                    company.subscriptionStatus as SubscriptionStatus
+                  ]
                 }
               >
-                {STATUS_LABELS[company.subscriptionStatus as SubscriptionStatus]}
+                {
+                  STATUS_LABELS[
+                    company.subscriptionStatus as SubscriptionStatus
+                  ]
+                }
               </Badge>
               <Badge variant={company.isActive ? 'default' : 'secondary'}>
                 {company.isActive ? 'Actif' : 'Inactif'}
@@ -226,9 +232,7 @@ export function CompanyCard({
 
             {/* Footer: Email + Date création */}
             <div className="flex flex-col gap-1 pt-1 text-xs text-muted-foreground">
-              {company.email && (
-                <div className="truncate">{company.email}</div>
-              )}
+              {company.email && <div className="truncate">{company.email}</div>}
               {company.createdAt && (
                 <div className="flex items-center gap-1.5">
                   <Calendar className="h-3 w-3" />

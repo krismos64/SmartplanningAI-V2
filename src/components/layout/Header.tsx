@@ -75,7 +75,7 @@ export function Header({ user }: HeaderProps) {
           <Button
             variant="ghost"
             size="icon"
-            className="h-11 w-11 min-h-[44px] min-w-[44px] touch-manipulation lg:hidden"
+            className="h-11 min-h-[44px] w-11 min-w-[44px] touch-manipulation lg:hidden"
             onClick={toggleSidebar}
             data-testid="burger-menu-button"
           >
@@ -119,7 +119,7 @@ export function Header({ user }: HeaderProps) {
             variant="ghost"
             size="icon"
             onClick={() => openCommandPalette(true)}
-            className="h-11 w-11 min-h-[44px] min-w-[44px] touch-manipulation sm:hidden"
+            className="h-11 min-h-[44px] w-11 min-w-[44px] touch-manipulation sm:hidden"
             aria-label="Ouvrir la recherche"
             data-testid="mobile-search-button"
           >
@@ -137,7 +137,7 @@ export function Header({ user }: HeaderProps) {
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
-                className="flex h-11 min-h-[44px] items-center gap-2 px-2 touch-manipulation"
+                className="flex h-11 min-h-[44px] touch-manipulation items-center gap-2 px-2"
                 data-testid="user-menu-trigger"
               >
                 <Avatar className="h-8 w-8">

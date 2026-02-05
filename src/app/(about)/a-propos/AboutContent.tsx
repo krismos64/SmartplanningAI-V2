@@ -277,19 +277,16 @@ export function AboutContent() {
                   id="cta-title"
                   className="mb-4 text-3xl font-bold sm:text-4xl lg:text-5xl"
                 >
-                  Prêt à <span className={GRADIENT_TEXT_CLASSES}>simplifier</span>{' '}
-                  vos plannings ?
+                  Prêt à{' '}
+                  <span className={GRADIENT_TEXT_CLASSES}>simplifier</span> vos
+                  plannings ?
                 </h2>
                 <p className="mx-auto mb-8 max-w-2xl text-lg text-muted-foreground">
                   Rejoignez les entreprises qui ont choisi SmartPlanning pour
                   gagner du temps et améliorer leur organisation.
                 </p>
                 <div className="flex flex-col justify-center gap-4 sm:flex-row">
-                  <Button
-                    size="lg"
-                    className={GRADIENT_BUTTON_CLASSES}
-                    asChild
-                  >
+                  <Button size="lg" className={GRADIENT_BUTTON_CLASSES} asChild>
                     <Link
                       href="/register"
                       aria-label="Créer un compte et démarrer gratuitement avec SmartPlanning"

@@ -30,11 +30,13 @@ vi.mock('framer-motion', () => ({
     div: ({
       children,
       ...props
-    }: React.HTMLAttributes<HTMLDivElement> & { children?: React.ReactNode }) => (
-      <div {...props}>{children}</div>
-    ),
+    }: React.HTMLAttributes<HTMLDivElement> & {
+      children?: React.ReactNode
+    }) => <div {...props}>{children}</div>,
   },
-  AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  AnimatePresence: ({ children }: { children: React.ReactNode }) => (
+    <>{children}</>
+  ),
 }))
 
 // Mock de next/link
@@ -67,7 +69,7 @@ describe('NotificationBell - SP-322', () => {
   })
 
   describe('Rendu de base', () => {
-    it('affiche l\'icône cloche', () => {
+    it("affiche l'icône cloche", () => {
       render(<NotificationBell />)
 
       const button = screen.getByTestId('notification-bell-button')
@@ -192,7 +194,9 @@ describe('NotificationBell - SP-322', () => {
 
       render(<NotificationBell />)
 
-      expect(screen.queryByTestId('notification-loading')).not.toBeInTheDocument()
+      expect(
+        screen.queryByTestId('notification-loading')
+      ).not.toBeInTheDocument()
     })
   })
 
@@ -227,7 +231,9 @@ describe('NotificationBell - SP-322', () => {
       await user.click(screen.getByTestId('notification-bell-button'))
 
       await waitFor(() => {
-        const link = screen.getByRole('link', { name: /voir toutes les notifications/i })
+        const link = screen.getByRole('link', {
+          name: /voir toutes les notifications/i,
+        })
         expect(link).toBeInTheDocument()
         expect(link).toHaveAttribute('href', '/app/dashboard/notifications')
       })
@@ -296,7 +302,7 @@ describe('NotificationBell - SP-322', () => {
   })
 
   describe('Gestion des erreurs', () => {
-    it('affiche message d\'erreur dans le dropdown', async () => {
+    it("affiche message d'erreur dans le dropdown", async () => {
       const user = userEvent.setup()
       mockUseNotificationsCount.mockReturnValue({
         count: 0,
@@ -312,7 +318,9 @@ describe('NotificationBell - SP-322', () => {
       await user.click(screen.getByTestId('notification-bell-button'))
 
       await waitFor(() => {
-        expect(screen.getByText('Erreur lors du chargement')).toBeInTheDocument()
+        expect(
+          screen.getByText('Erreur lors du chargement')
+        ).toBeInTheDocument()
       })
     })
   })

@@ -406,7 +406,12 @@ export async function getSchedules(
         where,
         include: {
           employee: {
-            select: { id: true, firstName: true, lastName: true, user: { select: { image: true } } },
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              user: { select: { image: true } },
+            },
           },
           team: {
             select: { id: true, name: true },
@@ -455,7 +460,12 @@ export async function getScheduleById(
       where: { id },
       include: {
         employee: {
-          select: { id: true, firstName: true, lastName: true, user: { select: { image: true } } },
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            user: { select: { image: true } },
+          },
         },
         team: {
           select: { id: true, name: true },
@@ -626,7 +636,12 @@ export async function createSchedule(
           },
           include: {
             employee: {
-              select: { id: true, firstName: true, lastName: true, user: { select: { image: true } } },
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                user: { select: { image: true } },
+              },
             },
             team: {
               select: { id: true, name: true },
@@ -726,7 +741,12 @@ export async function updateSchedule(
       },
       include: {
         employee: {
-          select: { id: true, firstName: true, lastName: true, user: { select: { image: true } } },
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            user: { select: { image: true } },
+          },
         },
         team: {
           select: { id: true, name: true },
@@ -948,7 +968,12 @@ export async function duplicateSchedule(
           },
           include: {
             employee: {
-              select: { id: true, firstName: true, lastName: true, user: { select: { image: true } } },
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                user: { select: { image: true } },
+              },
             },
             team: {
               select: { id: true, name: true },
@@ -1004,7 +1029,12 @@ export async function updateScheduleStatus(
       data: { status },
       include: {
         employee: {
-          select: { id: true, firstName: true, lastName: true, user: { select: { image: true } } },
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            user: { select: { image: true } },
+          },
         },
         team: {
           select: { id: true, name: true },
@@ -1070,7 +1100,12 @@ export async function getEmployeeSchedules(
       },
       include: {
         employee: {
-          select: { id: true, firstName: true, lastName: true, user: { select: { image: true } } },
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            user: { select: { image: true } },
+          },
         },
         team: {
           select: { id: true, name: true },
@@ -1136,7 +1171,12 @@ export async function getTeamSchedules(
       },
       include: {
         employee: {
-          select: { id: true, firstName: true, lastName: true, user: { select: { image: true } } },
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            user: { select: { image: true } },
+          },
         },
         team: {
           select: { id: true, name: true },

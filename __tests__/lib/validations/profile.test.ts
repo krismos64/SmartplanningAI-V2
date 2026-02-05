@@ -100,7 +100,7 @@ describe('editProfileSchema', () => {
       expect(result.success).toBe(true)
     })
 
-    it('devrait accepter les noms composés avec trait d\'union', () => {
+    it("devrait accepter les noms composés avec trait d'union", () => {
       const data: EditProfileInput = {
         firstName: 'Jean-Pierre',
         lastName: 'De La Fontaine',
@@ -113,7 +113,7 @@ describe('editProfileSchema', () => {
 
     it('devrait accepter les apostrophes dans les noms', () => {
       const data: EditProfileInput = {
-        firstName: "Marie-Anne",
+        firstName: 'Marie-Anne',
         lastName: "D'Artagnan",
         phone: '',
       }
@@ -185,7 +185,9 @@ describe('editProfileSchema', () => {
       expect(result.success).toBe(false)
       if (!result.success) {
         expect(result.error.errors[0].path).toContain('firstName')
-        expect(result.error.errors[0].message).toBe('Caractères invalides détectés')
+        expect(result.error.errors[0].message).toBe(
+          'Caractères invalides détectés'
+        )
       }
     })
 

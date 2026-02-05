@@ -167,12 +167,12 @@ Relations NextAuth v5 (authentification)
 
 **🎯 Les 4 Rôles (Enum UserRole) :**
 
-| Rôle             | Description            | Accès                          |
-| ---------------- | ---------------------- | ------------------------------ |
-| **SYSTEM_ADMIN** | Super admin SaaS       | Toutes les entreprises         |
-| **DIRECTOR**     | Directeur entreprise   | Toute son entreprise           |
-| **MANAGER**      | Manager d'équipe       | Son équipe uniquement          |
-| **EMPLOYEE**     | Employé simple         | Son planning + demandes congés |
+| Rôle             | Description          | Accès                          |
+| ---------------- | -------------------- | ------------------------------ |
+| **SYSTEM_ADMIN** | Super admin SaaS     | Toutes les entreprises         |
+| **DIRECTOR**     | Directeur entreprise | Toute son entreprise           |
+| **MANAGER**      | Manager d'équipe     | Son équipe uniquement          |
+| **EMPLOYEE**     | Employé simple       | Son planning + demandes congés |
 
 ---
 
@@ -598,11 +598,11 @@ Employee = Métier RH (job, équipe, contrat, compétences)
 
 **🎯 Visibilité (Enum IncidentNoteVisibility) :**
 
-| Visibilité         | Qui peut voir                |
-| ------------------ | ---------------------------- |
-| `DIRECTOR_ONLY`    | Directeurs uniquement        |
-| `MANAGER_DIRECTOR` | Managers + Directeurs        |
-| `ALL`              | Tous (info générale)         |
+| Visibilité         | Qui peut voir         |
+| ------------------ | --------------------- |
+| `DIRECTOR_ONLY`    | Directeurs uniquement |
+| `MANAGER_DIRECTOR` | Managers + Directeurs |
+| `ALL`              | Tous (info générale)  |
 
 ---
 
@@ -908,22 +908,22 @@ enum IncidentNoteVisibility {
 
 ## ✅ Statistiques Actuelles
 
-| Métrique | Valeur |
-|----------|--------|
-| Tables principales | 16 |
-| Tables NextAuth | 4 |
-| Enums | 12 |
-| Migrations appliquées | 11 |
-| Index | 45+ |
+| Métrique              | Valeur |
+| --------------------- | ------ |
+| Tables principales    | 16     |
+| Tables NextAuth       | 4      |
+| Enums                 | 12     |
+| Migrations appliquées | 11     |
+| Index                 | 45+    |
 
 ---
 
 ## 📅 Historique des Mises à Jour
 
-| Date | Description |
-|------|-------------|
+| Date       | Description                                                              |
+| ---------- | ------------------------------------------------------------------------ |
 | 04/02/2026 | Ajout User.image (Cloudinary SP-272), mise à jour complète documentation |
-| 01/2026 | Ajout IncidentNote (SP-424), PersonalTask (SP-417) |
-| 01/2026 | Ajout LeaveBalance (SP-408), Availability (SP-392) |
-| 12/2025 | Ajout Subscription, Payment (Stripe) |
-| 11/2025 | Création initiale du schéma |
+| 01/2026    | Ajout IncidentNote (SP-424), PersonalTask (SP-417)                       |
+| 01/2026    | Ajout LeaveBalance (SP-408), Availability (SP-392)                       |
+| 12/2025    | Ajout Subscription, Payment (Stripe)                                     |
+| 11/2025    | Création initiale du schéma                                              |

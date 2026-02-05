@@ -163,7 +163,9 @@ describe('generateCsv', () => {
         },
       ]
 
-      const result = generateCsv(sampleData, columnsWithFn, { filename: 'test' })
+      const result = generateCsv(sampleData, columnsWithFn, {
+        filename: 'test',
+      })
 
       expect(result.data).toContain('Alice (30)')
       expect(result.data).toContain('Bob (25)')
@@ -180,7 +182,9 @@ describe('generateCsv', () => {
         { key: 'active', header: 'Actif' },
       ]
 
-      const result = generateCsv(nestedData, nestedColumns, { filename: 'test' })
+      const result = generateCsv(nestedData, nestedColumns, {
+        filename: 'test',
+      })
 
       expect(result.data).toContain('Alice')
       expect(result.data).toContain('Bob')

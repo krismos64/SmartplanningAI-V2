@@ -19,7 +19,9 @@ test.describe('Leaves - Validation demande (MANAGER)', () => {
     await leavesPage.filterByStatus('En attente')
 
     // Vérifier que le bouton est pressé (les filtres utilisent aria-pressed, pas l'URL)
-    const statusButton = managerPage.getByRole('button', { name: /En attente:/i })
+    const statusButton = managerPage.getByRole('button', {
+      name: /En attente:/i,
+    })
     await expect(statusButton).toHaveAttribute('aria-pressed', 'true')
   })
 
@@ -31,7 +33,9 @@ test.describe('Leaves - Validation demande (MANAGER)', () => {
 
     // Le manager a accès au filtre par employé (contrairement à EMPLOYEE)
     // On vérifie que la page s'affiche correctement
-    await expect(managerPage.getByRole('heading', { name: /congés/i })).toBeVisible()
+    await expect(
+      managerPage.getByRole('heading', { name: /congés/i })
+    ).toBeVisible()
   })
 
   test('affiche les statistiques des demandes @manager', async ({
@@ -46,14 +50,16 @@ test.describe('Leaves - Validation demande (MANAGER)', () => {
 })
 
 test.describe('Leaves - Validation demande (DIRECTOR)', () => {
-  test('voit toutes les demandes de l\'entreprise @director', async ({
+  test("voit toutes les demandes de l'entreprise @director", async ({
     directorPage,
   }) => {
     const leavesPage = new LeavesPage(directorPage)
     await leavesPage.goto()
 
     // Le directeur voit toutes les demandes
-    await expect(directorPage.getByRole('heading', { name: /congés/i })).toBeVisible()
+    await expect(
+      directorPage.getByRole('heading', { name: /congés/i })
+    ).toBeVisible()
   })
 
   test('peut filtrer par équipe @director', async ({ directorPage }) => {

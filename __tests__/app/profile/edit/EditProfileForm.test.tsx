@@ -162,7 +162,9 @@ describe('EditProfileForm', () => {
     it('should not display system admin notice when hasEmployee is true', () => {
       render(<EditProfileForm {...defaultProps} />)
 
-      expect(screen.queryByTestId('system-admin-notice')).not.toBeInTheDocument()
+      expect(
+        screen.queryByTestId('system-admin-notice')
+      ).not.toBeInTheDocument()
     })
   })
 

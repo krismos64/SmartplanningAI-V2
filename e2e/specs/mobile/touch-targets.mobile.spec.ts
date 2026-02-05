@@ -181,7 +181,9 @@ test.describe('Touch Target Sizes (WCAG 2.5.5)', () => {
       const result = await mobile.checkTouchTarget(closeButton)
 
       // Log dimensions for debugging
-      console.log(`Command palette close button dimensions: ${result.width}x${result.height}px (min: ${result.minRequired}px)`)
+      console.log(
+        `Command palette close button dimensions: ${result.width}x${result.height}px (min: ${result.minRequired}px)`
+      )
 
       expect(result.isValid).toBe(true)
       expect(result.width).toBeGreaterThanOrEqual(WCAG_MIN_SIZE)
@@ -227,8 +229,7 @@ test.describe('Touch Target Sizes (WCAG 2.5.5)', () => {
           // Skip Next.js dev tools and toast buttons
           if (
             excludedLabels.some(
-              (label) =>
-                ariaLabel?.includes(label) || text?.includes(label)
+              (label) => ariaLabel?.includes(label) || text?.includes(label)
             )
           ) {
             continue

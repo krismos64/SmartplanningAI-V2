@@ -136,7 +136,7 @@ test.describe('Appearance Page', () => {
       await appearancePage.waitForPageLoad()
     })
 
-    test('affiche le sélecteur de format d\'heure', async () => {
+    test("affiche le sélecteur de format d'heure", async () => {
       await expect(appearancePage.timeFormatSelect).toBeVisible()
     })
 

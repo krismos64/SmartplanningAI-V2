@@ -14,34 +14,44 @@ vi.mock('@/hooks/useNotificationsPaginated', () => ({
 
 // Mock des composants enfants
 vi.mock('@/components/notifications', () => ({
-  NotificationEmptyState: () => <div data-testid="notification-empty-state">Empty</div>,
+  NotificationEmptyState: () => (
+    <div data-testid="notification-empty-state">Empty</div>
+  ),
 }))
 
 vi.mock(
   '@/app/app/dashboard/notifications/_components/NotificationsFilters',
   () => ({
-    NotificationsFilters: () => <div data-testid="notifications-filters">Filters</div>,
+    NotificationsFilters: () => (
+      <div data-testid="notifications-filters">Filters</div>
+    ),
   })
 )
 
 vi.mock(
   '@/app/app/dashboard/notifications/_components/NotificationsBulkActions',
   () => ({
-    NotificationsBulkActions: () => <div data-testid="notifications-bulk-actions">Bulk Actions</div>,
+    NotificationsBulkActions: () => (
+      <div data-testid="notifications-bulk-actions">Bulk Actions</div>
+    ),
   })
 )
 
 vi.mock(
   '@/app/app/dashboard/notifications/_components/NotificationsTable',
   () => ({
-    NotificationsTable: () => <div data-testid="notifications-table">Table</div>,
+    NotificationsTable: () => (
+      <div data-testid="notifications-table">Table</div>
+    ),
   })
 )
 
 vi.mock(
   '@/app/app/dashboard/notifications/_components/NotificationsListSkeleton',
   () => ({
-    NotificationsListSkeleton: () => <div data-testid="notifications-skeleton">Loading...</div>,
+    NotificationsListSkeleton: () => (
+      <div data-testid="notifications-skeleton">Loading...</div>
+    ),
   })
 )
 
@@ -79,8 +89,12 @@ describe('NotificationsPageContent', () => {
   it('devrait afficher le titre et la description', () => {
     render(<NotificationsPageContent />)
 
-    expect(screen.getByRole('heading', { name: 'Notifications' })).toBeInTheDocument()
-    expect(screen.getByText('Historique complet de vos notifications')).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { name: 'Notifications' })
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText('Historique complet de vos notifications')
+    ).toBeInTheDocument()
   })
 
   it('devrait afficher les filtres et actions', () => {
@@ -101,7 +115,7 @@ describe('NotificationsPageContent', () => {
     expect(screen.getByTestId('notifications-skeleton')).toBeInTheDocument()
   })
 
-  it('devrait afficher l\'état vide si aucune notification', () => {
+  it("devrait afficher l'état vide si aucune notification", () => {
     vi.mocked(useNotificationsPaginated).mockReturnValue({
       ...mockHookReturn,
       notifications: [],
@@ -152,7 +166,7 @@ describe('NotificationsPageContent', () => {
     expect(screen.getByTestId('notifications-table')).toBeInTheDocument()
   })
 
-  it('devrait afficher l\'erreur si présente', () => {
+  it("devrait afficher l'erreur si présente", () => {
     vi.mocked(useNotificationsPaginated).mockReturnValue({
       ...mockHookReturn,
       error: 'Erreur de chargement',
@@ -164,7 +178,7 @@ describe('NotificationsPageContent', () => {
     expect(screen.getByText(/erreur de chargement/i)).toBeInTheDocument()
   })
 
-  it('devrait afficher le bouton réessayer en cas d\'erreur', () => {
+  it("devrait afficher le bouton réessayer en cas d'erreur", () => {
     vi.mocked(useNotificationsPaginated).mockReturnValue({
       ...mockHookReturn,
       error: 'Erreur',

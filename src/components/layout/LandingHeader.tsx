@@ -117,7 +117,7 @@ export function LandingHeader({
 
             {/* Mobile Menu Button - WCAG 2.5.5: 44px minimum touch target */}
             <button
-              className="flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-accent touch-manipulation dark:text-white/80 dark:hover:bg-white/10 lg:hidden"
+              className="flex h-11 min-h-[44px] w-11 min-w-[44px] touch-manipulation items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-accent dark:text-white/80 dark:hover:bg-white/10 lg:hidden"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               aria-label={
                 isMobileMenuOpen ? 'Fermer le menu' : 'Ouvrir le menu'
@@ -151,7 +151,7 @@ export function LandingHeader({
                   initial={{ opacity: 0, rotate: -90 }}
                   animate={{ opacity: 1, rotate: 0 }}
                   transition={{ duration: 0.3, delay: 0.1 }}
-                  className="absolute right-4 top-4 z-10 flex h-12 w-12 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-border bg-background text-foreground transition-all hover:border-cyan-400/50 hover:bg-cyan-400/20 hover:text-cyan-400 touch-manipulation dark:border-white/20 dark:bg-[#030712] dark:text-white"
+                  className="absolute right-4 top-4 z-10 flex h-12 min-h-[44px] w-12 min-w-[44px] touch-manipulation items-center justify-center rounded-full border border-border bg-background text-foreground transition-all hover:border-cyan-400/50 hover:bg-cyan-400/20 hover:text-cyan-400 dark:border-white/20 dark:bg-[#030712] dark:text-white"
                   onClick={() => setIsMobileMenuOpen(false)}
                   aria-label="Fermer le menu"
                   data-testid="landing-mobile-menu-close"

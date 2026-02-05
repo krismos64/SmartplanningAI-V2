@@ -214,7 +214,7 @@ export function Sidebar({ user, variant = 'neon' }: SidebarProps) {
             variant="ghost"
             size="icon"
             onClick={toggleSidebar}
-            className={`h-11 w-11 min-h-[44px] min-w-[44px] touch-manipulation text-slate-400 hover:bg-white/[0.06] hover:text-white ${isCollapsed ? 'mx-auto' : ''}`}
+            className={`h-11 min-h-[44px] w-11 min-w-[44px] touch-manipulation text-slate-400 hover:bg-white/[0.06] hover:text-white ${isCollapsed ? 'mx-auto' : ''}`}
             data-testid="sidebar-toggle-button"
           >
             {isCollapsed ? (

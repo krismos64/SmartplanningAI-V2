@@ -82,7 +82,8 @@ function createColumns(
       header: 'Employé',
       cell: ({ row }) => {
         const emp = row.original.employee
-        const initials = `${emp.firstName?.[0] ?? ''}${emp.lastName?.[0] ?? ''}`.toUpperCase()
+        const initials =
+          `${emp.firstName?.[0] ?? ''}${emp.lastName?.[0] ?? ''}`.toUpperCase()
         return (
           <div className="flex items-center gap-2">
             <Avatar className="h-8 w-8">

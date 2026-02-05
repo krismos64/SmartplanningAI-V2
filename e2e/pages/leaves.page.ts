@@ -89,7 +89,9 @@ export class LeavesPage {
     // Use domcontentloaded instead of networkidle because SSE keeps connection open
     await this.page.waitForLoadState('domcontentloaded')
     // Wait for page content to be ready (heading is always unique)
-    await this.page.getByRole('heading', { name: /congés/i }).waitFor({ state: 'visible', timeout: 20000 })
+    await this.page
+      .getByRole('heading', { name: /congés/i })
+      .waitFor({ state: 'visible', timeout: 20000 })
   }
 
   async gotoBalances() {
@@ -123,10 +125,14 @@ export class LeavesPage {
   async filterByStatus(status: string) {
     // Use the quick filter buttons (stat bar) instead of dropdown
     // The buttons have format "En attente: X"
-    const statusButton = this.page.getByRole('button', { name: new RegExp(`${status}:`, 'i') })
+    const statusButton = this.page.getByRole('button', {
+      name: new RegExp(`${status}:`, 'i'),
+    })
     await statusButton.click()
     // Wait for button to be pressed
-    await expect(statusButton).toHaveAttribute('aria-pressed', 'true', { timeout: 5000 })
+    await expect(statusButton).toHaveAttribute('aria-pressed', 'true', {
+      timeout: 5000,
+    })
   }
 
   async filterByType(type: string) {

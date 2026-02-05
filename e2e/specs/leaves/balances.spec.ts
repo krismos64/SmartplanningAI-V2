@@ -34,7 +34,7 @@ test.describe('Leaves - Gestion soldes (DIRECTOR)', () => {
     expect(tableVisible || emptyVisible).toBe(true)
   })
 
-  test('peut changer l\'année de visualisation @director', async ({
+  test("peut changer l'année de visualisation @director", async ({
     directorPage,
   }) => {
     const leavesPage = new LeavesPage(directorPage)
@@ -65,7 +65,10 @@ test.describe('Leaves - Restriction accès soldes', () => {
     const hasErrorOrRedirect =
       employeePage.url().includes('/forbidden') ||
       employeePage.url().includes('/dashboard') ||
-      (await employeePage.getByText(/accès refusé|interdit|unauthorized/i).isVisible().catch(() => false))
+      (await employeePage
+        .getByText(/accès refusé|interdit|unauthorized/i)
+        .isVisible()
+        .catch(() => false))
 
     // Soit on n'est plus sur balances, soit on voit une erreur
     expect(!isOnBalancesPage || hasErrorOrRedirect).toBe(true)
@@ -84,7 +87,10 @@ test.describe('Leaves - Restriction accès soldes', () => {
     const hasErrorOrRedirect =
       managerPage.url().includes('/forbidden') ||
       managerPage.url().includes('/dashboard') ||
-      (await managerPage.getByText(/accès refusé|interdit|unauthorized/i).isVisible().catch(() => false))
+      (await managerPage
+        .getByText(/accès refusé|interdit|unauthorized/i)
+        .isVisible()
+        .catch(() => false))
 
     expect(!isOnBalancesPage || hasErrorOrRedirect).toBe(true)
   })

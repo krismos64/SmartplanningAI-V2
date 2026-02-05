@@ -36,7 +36,10 @@ vi.mock('@/lib/actions/profile', () => ({
 vi.mock('@/hooks/use-crud-mutation', () => ({
   useCrudMutation: (
     action: (data: unknown) => Promise<unknown>,
-    options: { onSuccess?: () => void; onError?: (error: string, field?: string) => void }
+    options: {
+      onSuccess?: () => void
+      onError?: (error: string, field?: string) => void
+    }
   ) => ({
     mutate: async (data: unknown) => {
       const result = await action(data)
@@ -59,7 +62,10 @@ describe('DeleteAccountForm', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
-    mockDeleteAccount.mockResolvedValue({ success: true, data: { message: 'OK' } })
+    mockDeleteAccount.mockResolvedValue({
+      success: true,
+      data: { message: 'OK' },
+    })
     mockSignOut.mockResolvedValue(undefined)
   })
 
@@ -103,7 +109,9 @@ describe('DeleteAccountForm', () => {
     it('should render confirm deletion checkbox', () => {
       render(<DeleteAccountForm userEmail={userEmail} />)
 
-      expect(screen.getByTestId('confirm-deletion-checkbox')).toBeInTheDocument()
+      expect(
+        screen.getByTestId('confirm-deletion-checkbox')
+      ).toBeInTheDocument()
     })
 
     it('should render submit button disabled initially', () => {
@@ -207,7 +215,10 @@ describe('DeleteAccountForm', () => {
       const user = userEvent.setup()
       render(<DeleteAccountForm userEmail={userEmail} />)
 
-      await user.type(screen.getByTestId('confirm-email-input'), 'invalid-email')
+      await user.type(
+        screen.getByTestId('confirm-email-input'),
+        'invalid-email'
+      )
       await user.type(screen.getByTestId('password-input'), 'ValidP@ss123')
       await user.click(screen.getByTestId('confirm-deletion-checkbox'))
       await user.click(screen.getByTestId('delete-account-button'))
@@ -271,7 +282,10 @@ describe('DeleteAccountForm', () => {
       const user = userEvent.setup()
       render(<DeleteAccountForm userEmail={userEmail} />)
 
-      await user.type(screen.getByTestId('confirm-email-input'), 'wrong@email.com')
+      await user.type(
+        screen.getByTestId('confirm-email-input'),
+        'wrong@email.com'
+      )
       await user.type(screen.getByTestId('password-input'), 'ValidP@ss123')
       await user.click(screen.getByTestId('confirm-deletion-checkbox'))
       await user.click(screen.getByTestId('delete-account-button'))

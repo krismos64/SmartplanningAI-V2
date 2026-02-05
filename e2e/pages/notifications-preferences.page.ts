@@ -180,9 +180,9 @@ export class NotificationsPreferencesPage {
    * Vérifie qu'un toast de réinitialisation apparaît
    */
   async expectToastReset() {
-    await expect(
-      this.page.getByText('Préférences réinitialisées')
-    ).toBeVisible({ timeout: 5000 })
+    await expect(this.page.getByText('Préférences réinitialisées')).toBeVisible(
+      { timeout: 5000 }
+    )
   }
 
   /**
