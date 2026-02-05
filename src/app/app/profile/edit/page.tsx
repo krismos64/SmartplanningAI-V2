@@ -47,6 +47,8 @@ export default async function EditProfilePage() {
     lastName:
       employee?.lastName ?? user.name?.split(' ').slice(1).join(' ') ?? '',
     phone: employee?.phone ?? '',
+    jobTitle: employee?.jobTitle ?? '',
+    hireDate: employee?.hireDate ?? null,
   }
 
   return (

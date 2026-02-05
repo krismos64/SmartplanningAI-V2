@@ -18,8 +18,10 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Loader2, Save } from 'lucide-react'
+import { ArrowLeft, Loader2, Save, Briefcase, Calendar } from 'lucide-react'
 import Link from 'next/link'
+import { format } from 'date-fns'
+import { fr } from 'date-fns/locale'
 
 import {
   editProfileSchema,
@@ -43,6 +45,13 @@ import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Info } from 'lucide-react'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
+import { Calendar as CalendarComponent } from '@/components/ui/calendar'
+import { cn } from '@/lib/utils'
 
 // ============================================================================
 // TYPES
@@ -54,6 +63,8 @@ interface EditProfileFormProps {
     firstName: string
     lastName: string
     phone: string
+    jobTitle: string
+    hireDate: Date | null
   }
   /** Indique si l'utilisateur a un profil Employee associé */
   hasEmployee: boolean
@@ -193,6 +204,81 @@ export function EditProfileForm({
                       Format français : 0612345678 ou +33612345678
                     </FormDescription>
                     <FormMessage data-testid="error-phone" />
+                  </FormItem>
+                )}
+              />
+            )}
+
+            {/* Poste - Uniquement si Employee existe */}
+            {hasEmployee && (
+              <FormField
+                control={form.control}
+                name="jobTitle"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{EDIT_PROFILE_LABELS.jobTitle}</FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Briefcase className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                        <Input
+                          {...field}
+                          value={field.value ?? ''}
+                          placeholder={EDIT_PROFILE_PLACEHOLDERS.jobTitle}
+                          disabled={isPending}
+                          data-testid="input-jobTitle"
+                          className="pl-10"
+                        />
+                      </div>
+                    </FormControl>
+                    <FormMessage data-testid="error-jobTitle" />
+                  </FormItem>
+                )}
+              />
+            )}
+
+            {/* Date d'embauche - Uniquement si Employee existe */}
+            {hasEmployee && (
+              <FormField
+                control={form.control}
+                name="hireDate"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col">
+                    <FormLabel>{EDIT_PROFILE_LABELS.hireDate}</FormLabel>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant="outline"
+                            className={cn(
+                              'w-full pl-3 text-left font-normal',
+                              !field.value && 'text-muted-foreground'
+                            )}
+                            disabled={isPending}
+                            data-testid="input-hireDate"
+                          >
+                            <Calendar className="mr-2 h-4 w-4" />
+                            {field.value
+                              ? format(new Date(field.value), 'dd MMMM yyyy', {
+                                  locale: fr,
+                                })
+                              : 'Sélectionner une date'}
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <CalendarComponent
+                          mode="single"
+                          selected={field.value ? new Date(field.value) : undefined}
+                          onSelect={field.onChange}
+                          disabled={(date) =>
+                            date > new Date() || date < new Date('1950-01-01')
+                          }
+                          autoFocus
+                          locale={fr}
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    <FormMessage data-testid="error-hireDate" />
                   </FormItem>
                 )}
               />

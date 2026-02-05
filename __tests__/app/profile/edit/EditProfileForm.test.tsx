@@ -45,6 +45,8 @@ const defaultProps = {
     firstName: 'Jean',
     lastName: 'Dupont',
     phone: '0612345678',
+    jobTitle: 'Développeur',
+    hireDate: new Date('2020-03-15'),
   },
   hasEmployee: true,
 }
@@ -54,6 +56,8 @@ const systemAdminProps = {
     firstName: 'Admin',
     lastName: 'System',
     phone: '',
+    jobTitle: '',
+    hireDate: null,
   },
   hasEmployee: false,
 }
@@ -90,6 +94,8 @@ describe('EditProfileForm', () => {
       expect(screen.getByTestId('input-firstName')).toBeInTheDocument()
       expect(screen.getByTestId('input-lastName')).toBeInTheDocument()
       expect(screen.getByTestId('input-phone')).toBeInTheDocument()
+      expect(screen.getByTestId('input-jobTitle')).toBeInTheDocument()
+      expect(screen.getByTestId('input-hireDate')).toBeInTheDocument()
     })
 
     it('should render form with default values', () => {
@@ -134,12 +140,14 @@ describe('EditProfileForm', () => {
   // GESTION SYSTEM_ADMIN (SANS EMPLOYEE)
   // ==========================================================================
   describe('SYSTEM_ADMIN sans Employee', () => {
-    it('should hide phone field when hasEmployee is false', () => {
+    it('should hide employee fields when hasEmployee is false', () => {
       render(<EditProfileForm {...systemAdminProps} />)
 
       expect(screen.getByTestId('input-firstName')).toBeInTheDocument()
       expect(screen.getByTestId('input-lastName')).toBeInTheDocument()
       expect(screen.queryByTestId('input-phone')).not.toBeInTheDocument()
+      expect(screen.queryByTestId('input-jobTitle')).not.toBeInTheDocument()
+      expect(screen.queryByTestId('input-hireDate')).not.toBeInTheDocument()
     })
 
     it('should display system admin notice when hasEmployee is false', () => {
@@ -270,6 +278,8 @@ describe('EditProfileForm', () => {
           firstName: 'Pierre',
           lastName: 'Dupont',
           phone: '0612345678',
+          jobTitle: 'Développeur',
+          hireDate: defaultProps.defaultValues.hireDate,
         })
       })
     })
@@ -349,6 +359,8 @@ describe('EditProfileForm', () => {
       expect(screen.getByText('Prénom')).toBeInTheDocument()
       expect(screen.getByText('Nom')).toBeInTheDocument()
       expect(screen.getByText('Téléphone')).toBeInTheDocument()
+      expect(screen.getByText('Poste')).toBeInTheDocument()
+      expect(screen.getByText("Date d'embauche")).toBeInTheDocument()
     })
 
     it('should display phone format description', () => {
