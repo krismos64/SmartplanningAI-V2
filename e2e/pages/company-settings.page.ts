@@ -40,6 +40,8 @@ export class CompanySettingsPage {
 
   // Actions
   readonly resetButton: Locator
+  readonly saveButton: Locator
+  readonly cancelButton: Locator
   readonly backButton: Locator
 
   constructor(page: Page) {
@@ -75,6 +77,8 @@ export class CompanySettingsPage {
 
     // Actions
     this.resetButton = page.getByTestId('reset-button')
+    this.saveButton = page.getByTestId('save-button')
+    this.cancelButton = page.getByTestId('cancel-button')
     this.backButton = page.locator('a[aria-label="Retour aux paramètres"]')
   }
 
@@ -274,12 +278,36 @@ export class CompanySettingsPage {
     await this.resetButton.click()
   }
 
+  async clickSave() {
+    await this.saveButton.click()
+  }
+
+  async clickCancel() {
+    await this.cancelButton.click()
+  }
+
   async expectResetButtonDisabled() {
     await expect(this.resetButton).toBeDisabled()
   }
 
   async expectResetButtonEnabled() {
     await expect(this.resetButton).toBeEnabled()
+  }
+
+  async expectSaveButtonEnabled() {
+    await expect(this.saveButton).toBeEnabled()
+  }
+
+  async expectSaveButtonDisabled() {
+    await expect(this.saveButton).toBeDisabled()
+  }
+
+  async expectCancelButtonVisible() {
+    await expect(this.cancelButton).toBeVisible()
+  }
+
+  async expectCancelButtonHidden() {
+    await expect(this.cancelButton).not.toBeVisible()
   }
 
   // ============================================================================

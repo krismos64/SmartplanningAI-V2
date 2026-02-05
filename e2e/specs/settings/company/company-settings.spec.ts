@@ -57,6 +57,26 @@ test.describe('Company Settings Page', () => {
       await companySettings.expectResetButtonVisible()
     })
 
+    test('should display save button disabled initially', async ({
+      directorPage,
+    }) => {
+      const companySettings = new CompanySettingsPage(directorPage)
+      await companySettings.goto()
+      await companySettings.waitForPageLoad()
+
+      await companySettings.expectSaveButtonDisabled()
+    })
+
+    test('should not display cancel button when no changes', async ({
+      directorPage,
+    }) => {
+      const companySettings = new CompanySettingsPage(directorPage)
+      await companySettings.goto()
+      await companySettings.waitForPageLoad()
+
+      await companySettings.expectCancelButtonHidden()
+    })
+
     test('should display back button', async ({ directorPage }) => {
       const companySettings = new CompanySettingsPage(directorPage)
       await companySettings.goto()
@@ -129,10 +149,6 @@ test.describe('Company Settings Page', () => {
       await companySettings.goto()
       await companySettings.waitForPageLoad()
 
-      // Check initial state (Monday should be checked by default)
-      const mondayCheckbox = companySettings.getDayCheckbox('MONDAY')
-      const initialState = await mondayCheckbox.isChecked()
-
       // Saturday is likely unchecked, toggle it
       const saturdayCheckbox = companySettings.getDayCheckbox('SATURDAY')
       const saturdayInitial = await saturdayCheckbox.isChecked()
@@ -140,11 +156,14 @@ test.describe('Company Settings Page', () => {
       await companySettings.toggleDay('SATURDAY')
 
       // Wait for state update
-      await directorPage.waitForTimeout(500)
+      await directorPage.waitForTimeout(300)
 
-      // State should have changed
+      // State should have changed locally
       const saturdayFinal = await saturdayCheckbox.isChecked()
       expect(saturdayFinal).not.toBe(saturdayInitial)
+
+      // Save button should be enabled now
+      await companySettings.expectSaveButtonEnabled()
     })
 
     test('should apply Mon-Fri preset', async ({ directorPage }) => {
@@ -152,10 +171,12 @@ test.describe('Company Settings Page', () => {
       await companySettings.goto()
       await companySettings.waitForPageLoad()
 
-      await companySettings.selectPresetMonFri()
+      // First select a different preset to ensure change
+      await companySettings.selectPresetMonSat()
+      await directorPage.waitForTimeout(300)
 
-      // Wait for state update
-      await directorPage.waitForTimeout(500)
+      await companySettings.selectPresetMonFri()
+      await directorPage.waitForTimeout(300)
 
       await companySettings.expectWorkingDays([
         'MONDAY',
@@ -164,6 +185,9 @@ test.describe('Company Settings Page', () => {
         'THURSDAY',
         'FRIDAY',
       ])
+
+      // Save button should be enabled
+      await companySettings.expectSaveButtonEnabled()
     })
 
     test('should apply Mon-Sat preset', async ({ directorPage }) => {
@@ -172,9 +196,7 @@ test.describe('Company Settings Page', () => {
       await companySettings.waitForPageLoad()
 
       await companySettings.selectPresetMonSat()
-
-      // Wait for state update
-      await directorPage.waitForTimeout(500)
+      await directorPage.waitForTimeout(300)
 
       await companySettings.expectWorkingDays([
         'MONDAY',
@@ -184,6 +206,9 @@ test.describe('Company Settings Page', () => {
         'FRIDAY',
         'SATURDAY',
       ])
+
+      // Save button should be enabled
+      await companySettings.expectSaveButtonEnabled()
     })
 
     test('should apply All Week preset', async ({ directorPage }) => {
@@ -192,9 +217,7 @@ test.describe('Company Settings Page', () => {
       await companySettings.waitForPageLoad()
 
       await companySettings.selectPresetAllWeek()
-
-      // Wait for state update
-      await directorPage.waitForTimeout(500)
+      await directorPage.waitForTimeout(300)
 
       await companySettings.expectWorkingDays([
         'MONDAY',
@@ -205,6 +228,9 @@ test.describe('Company Settings Page', () => {
         'SATURDAY',
         'SUNDAY',
       ])
+
+      // Save button should be enabled
+      await companySettings.expectSaveButtonEnabled()
     })
   })
 
@@ -271,10 +297,6 @@ test.describe('Company Settings Page', () => {
       await companySettings.goto()
       await companySettings.waitForPageLoad()
 
-      // Modify some settings first
-      await companySettings.selectPresetMonSat()
-      await directorPage.waitForTimeout(500)
-
       // Click reset
       await companySettings.clickReset()
       await directorPage.waitForTimeout(1000)
@@ -287,6 +309,75 @@ test.describe('Company Settings Page', () => {
         'THURSDAY',
         'FRIDAY',
       ])
+    })
+  })
+
+  test.describe('Save Functionality', () => {
+    test('should enable save button when making changes', async ({
+      directorPage,
+    }) => {
+      const companySettings = new CompanySettingsPage(directorPage)
+      await companySettings.goto()
+      await companySettings.waitForPageLoad()
+
+      // Initially save should be disabled
+      await companySettings.expectSaveButtonDisabled()
+
+      // Make a change
+      await companySettings.fillCompanyName('Test Company Name')
+      await directorPage.waitForTimeout(300)
+
+      // Save button should now be enabled
+      await companySettings.expectSaveButtonEnabled()
+
+      // Cancel button should appear
+      await companySettings.expectCancelButtonVisible()
+    })
+
+    test('should save changes when clicking save button', async ({
+      directorPage,
+    }) => {
+      const companySettings = new CompanySettingsPage(directorPage)
+      await companySettings.goto()
+      await companySettings.waitForPageLoad()
+
+      // Make a change
+      await companySettings.selectPresetMonSat()
+      await directorPage.waitForTimeout(300)
+
+      // Click save
+      await companySettings.clickSave()
+
+      // Wait for save to complete
+      await companySettings.expectSuccessToast('Paramètres enregistrés')
+
+      // Save button should be disabled again
+      await companySettings.expectSaveButtonDisabled()
+    })
+
+    test('should cancel changes when clicking cancel button', async ({
+      directorPage,
+    }) => {
+      const companySettings = new CompanySettingsPage(directorPage)
+      await companySettings.goto()
+      await companySettings.waitForPageLoad()
+
+      // Get initial name
+      const initialName = await companySettings.companyNameInput.inputValue()
+
+      // Make a change
+      await companySettings.fillCompanyName('Different Name')
+      await directorPage.waitForTimeout(300)
+
+      // Click cancel
+      await companySettings.clickCancel()
+      await directorPage.waitForTimeout(300)
+
+      // Should revert to initial value
+      await companySettings.expectCompanyName(initialName)
+
+      // Save button should be disabled again
+      await companySettings.expectSaveButtonDisabled()
     })
   })
 })

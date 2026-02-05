@@ -7,15 +7,16 @@
  * - Informations générales (nom, adresse)
  * - Jours travaillés (7 checkboxes + presets)
  * - Horaires de travail + pause déjeuner
- * - Optimistic UI avec rollback en cas d'erreur
+ * - Validation explicite via bouton "Enregistrer"
+ * - Détection des modifications (dirty state)
  * - Bouton de réinitialisation
  *
  * @ticket SP-435
  */
 
-import { useState, useTransition, useCallback } from 'react'
+import { useState, useTransition, useMemo } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, RotateCcw } from 'lucide-react'
+import { ArrowLeft, RotateCcw, Save, Loader2 } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -46,117 +47,104 @@ interface CompanySettingsPageContentProps {
 export function CompanySettingsPageContent({
   initialSettings,
 }: CompanySettingsPageContentProps) {
-  // État local pour les paramètres (optimistic UI)
+  // État local pour les paramètres (draft)
   const [settings, setSettings] = useState<CompanySettings>(initialSettings)
+  // État sauvegardé (pour comparaison dirty state)
+  const [savedSettings, setSavedSettings] =
+    useState<CompanySettings>(initialSettings)
   const [isPending, startTransition] = useTransition()
   const { success: toastSuccess, error: toastError } = useToast()
 
   /**
-   * Sauvegarde un changement avec optimistic update
+   * Détecte si des modifications ont été faites
    */
-  const saveChange = useCallback(
-    <K extends keyof CompanySettings>(
-      key: K,
-      value: CompanySettings[K],
-      previousSettings: CompanySettings
-    ) => {
-      startTransition(async () => {
-        const result = await updateCompanySettings({ [key]: value })
-
-        if (!result.success) {
-          // Rollback
-          setSettings(previousSettings)
-          toastError(result.error || 'Erreur lors de la sauvegarde')
-        } else {
-          toastSuccess('Paramètres enregistrés')
-        }
-      })
-    },
-    [toastError, toastSuccess]
-  )
+  const isDirty = useMemo(() => {
+    return JSON.stringify(settings) !== JSON.stringify(savedSettings)
+  }, [settings, savedSettings])
 
   /**
-   * Change le nom de l'entreprise
+   * Change le nom de l'entreprise (local uniquement)
    */
   const handleNameChange = (name: string) => {
-    const previousSettings = { ...settings }
     setSettings((prev) => ({ ...prev, name }))
-
-    // Debounce implicite via startTransition
-    saveChange('name', name, previousSettings)
   }
 
   /**
-   * Change l'adresse de l'entreprise
+   * Change l'adresse de l'entreprise (local uniquement)
    */
   const handleAddressChange = (address: string) => {
-    const previousSettings = { ...settings }
     setSettings((prev) => ({ ...prev, address: address || null }))
-
-    saveChange('address', address || null, previousSettings)
   }
 
   /**
-   * Change les jours travaillés
+   * Change les jours travaillés (local uniquement)
    */
   const handleWorkingDaysChange = (workingDays: DayOfWeek[]) => {
-    const previousSettings = { ...settings }
     setSettings((prev) => ({ ...prev, workingDays }))
-
-    saveChange('workingDays', workingDays, previousSettings)
   }
 
   /**
-   * Change l'heure d'ouverture
+   * Change l'heure d'ouverture (local uniquement)
    */
   const handleWorkingHoursStartChange = (workingHoursStart: string) => {
-    const previousSettings = { ...settings }
     setSettings((prev) => ({ ...prev, workingHoursStart }))
-
-    saveChange('workingHoursStart', workingHoursStart, previousSettings)
   }
 
   /**
-   * Change l'heure de fermeture
+   * Change l'heure de fermeture (local uniquement)
    */
   const handleWorkingHoursEndChange = (workingHoursEnd: string) => {
-    const previousSettings = { ...settings }
     setSettings((prev) => ({ ...prev, workingHoursEnd }))
-
-    saveChange('workingHoursEnd', workingHoursEnd, previousSettings)
   }
 
   /**
-   * Change la pause déjeuner
+   * Change la pause déjeuner (local uniquement)
    */
   const handleLunchBreakChange = (lunchBreak: LunchBreakSettings) => {
-    const previousSettings = { ...settings }
     setSettings((prev) => ({ ...prev, lunchBreak }))
+  }
 
-    saveChange('lunchBreak', lunchBreak, previousSettings)
+  /**
+   * Sauvegarde tous les paramètres modifiés
+   */
+  const handleSave = () => {
+    startTransition(async () => {
+      const result = await updateCompanySettings(settings)
+
+      if (!result.success) {
+        toastError(result.error || 'Erreur lors de la sauvegarde')
+      } else {
+        // Met à jour l'état sauvegardé
+        setSavedSettings(settings)
+        toastSuccess('Paramètres enregistrés')
+      }
+    })
+  }
+
+  /**
+   * Annule les modifications et revient à l'état sauvegardé
+   */
+  const handleCancel = () => {
+    setSettings(savedSettings)
   }
 
   /**
    * Réinitialise tous les paramètres (sauf le nom)
    */
   const handleReset = () => {
-    // Sauvegarde pour rollback
-    const previousSettings = { ...settings }
-
-    // Optimistic update (garde le nom)
-    setSettings({
-      ...DEFAULT_COMPANY_SETTINGS,
-      name: settings.name,
-    })
-
     startTransition(async () => {
       const result = await resetCompanySettings()
 
       if (!result.success) {
-        // Rollback
-        setSettings(previousSettings)
         toastError(result.error || 'Erreur lors de la réinitialisation')
       } else {
+        // Met à jour les deux états avec les valeurs par défaut
+        const resetSettings = {
+          ...DEFAULT_COMPANY_SETTINGS,
+          name: settings.name,
+        }
+        setSettings(resetSettings)
+        setSavedSettings(resetSettings)
         toastSuccess('Paramètres réinitialisés')
       }
     })
@@ -219,9 +207,10 @@ export function CompanySettingsPageContent({
         </AnimatedItem>
       </AnimatedContainer>
 
-      {/* Bouton de réinitialisation */}
+      {/* Barre d'actions */}
       <AnimatedContainer animation="fadeInUp">
-        <div className="flex justify-end border-t pt-4">
+        <div className="flex flex-col gap-4 border-t pt-4 sm:flex-row sm:items-center sm:justify-between">
+          {/* Bouton de réinitialisation à gauche */}
           <Button
             variant="outline"
             onClick={handleReset}
@@ -231,6 +220,32 @@ export function CompanySettingsPageContent({
             <RotateCcw className="mr-2 h-4 w-4" />
             Réinitialiser par défaut
           </Button>
+
+          {/* Boutons Annuler / Enregistrer à droite */}
+          <div className="flex gap-2">
+            {isDirty && (
+              <Button
+                variant="ghost"
+                onClick={handleCancel}
+                disabled={isPending}
+                data-testid="cancel-button"
+              >
+                Annuler
+              </Button>
+            )}
+            <Button
+              onClick={handleSave}
+              disabled={!isDirty || isPending}
+              data-testid="save-button"
+            >
+              {isPending ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Save className="mr-2 h-4 w-4" />
+              )}
+              Enregistrer
+            </Button>
+          </div>
         </div>
       </AnimatedContainer>
     </div>
