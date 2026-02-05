@@ -4,6 +4,9 @@
  * @ticket SP-149, SP-156, SP-277
  */
 
+// Auth Pages
+export { LoginPage } from './login.page'
+
 // Dashboard Pages
 export { DashboardEmployeePage } from './dashboard-employee.page'
 export { DashboardManagerPage } from './dashboard-manager.page'
