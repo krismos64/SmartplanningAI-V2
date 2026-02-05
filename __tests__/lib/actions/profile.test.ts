@@ -430,6 +430,8 @@ describe('updateProfile', () => {
         firstName: 'Jean',
         lastName: 'Dupont',
         phone: '0612345678',
+        jobTitle: null,
+        hireDate: null,
       },
     })
     expect(prisma.user.update).toHaveBeenCalledWith({
@@ -575,6 +577,8 @@ describe('updateProfile', () => {
         firstName: 'Jean',
         lastName: 'Dupont',
         phone: null, // Doit être null, pas ''
+        jobTitle: null,
+        hireDate: null,
       },
     })
   })
