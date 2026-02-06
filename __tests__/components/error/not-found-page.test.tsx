@@ -241,7 +241,7 @@ describe('NotFoundPage', () => {
 
       const link = screen.getByRole('link', { name: /tarifs/i })
       expect(link).toBeInTheDocument()
-      expect(link).toHaveAttribute('href', '/#pricing')
+      expect(link).toHaveAttribute('href', '/tarifs')
     })
 
     it('renders Contact quick link', () => {
