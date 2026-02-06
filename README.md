@@ -12,16 +12,16 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 5 février 2026 (Vue mobile responsive cards pour liste entreprises - SP-462)
+- **Dernière mise à jour** : 6 février 2026 (Page /tarifs dédiée avec SEO + JSON-LD - SP-359)
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
 
 ### Frontend
 
-- **Framework** : Next.js 15.0.3 (App Router)
+- **Framework** : Next.js 15.5.9 (App Router)
 - **UI Library** : React 19.0.0
-- **Language** : TypeScript 5.6.3
+- **Language** : TypeScript 5.7.2
 - **Styling** : Tailwind CSS + Shadcn/ui
 - **Tables** : TanStack Table v8 + match-sorter-utils
 - **State Management** : Zustand (à venir)
@@ -33,7 +33,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Runtime** : Node.js 20+
 - **API** : Next.js API Routes
 - **Authentication** : NextAuth v5 (Auth.js)
-- **ORM** : Prisma 6.0.1
+- **ORM** : Prisma 6.18.0
 - **Validation** : Zod
 - **Media Storage** : Cloudinary (avatars)
 
@@ -191,13 +191,18 @@ import {
   - Comment ça marche : 3 étapes avec connecteurs animés
   - Avantages : Grille 6 bénéfices + image avant/après
   - Statistiques : 4 KPIs avec compteurs animés
-  - Tarification : 3 plans responsive avec badge "populaire"
+  - Tarification : Tarif unique per-seat (2,90 €/employé/mois) avec simulateur interactif et carte tarif (SP-358)
   - FAQ : Accordion avec sticky sidebar
   - CTA : Section finale avec gradient
   - Footer : Liens, newsletter, réseaux sociaux (LinkedIn, Instagram, TikTok)
 - **Contact** : Formulaire avec React Hook Form + Zod, animations Framer Motion
-- **Navigation** : 7 liens avec scroll smooth, menu mobile fullscreen animé
+- **Navigation** : 7 liens avec scroll smooth, menu mobile fullscreen animé, lien /tarifs dédié
 - **SEO** : Meta tags, Open Graph, sémantique HTML5
+- **Composants Pricing réutilisables** (SP-355) :
+  - `PricingSimulator` : Simulateur interactif slider 1-250 employés, calcul temps réel, modes compact/full
+  - `PricingCard` : Carte tarif per-seat avec features incluses, CTA vers inscription
+  - `src/lib/config/pricing.ts` : Source unique de vérité (prix, constantes, fonctions calcul)
+  - 55 tests unitaires (23 config + 20 simulateur + 12 carte)
 - **Performance** : Dynamic imports (Lottie), images optimisées Next.js
 
 ### Page À propos (15 janvier 2026)
@@ -211,6 +216,25 @@ import {
   - `StructuredData` : JSON-LD pour SEO et LLMs
 - **SEO avancé** : Optimisation pour moteurs de recherche ET LLMs (ChatGPT, Claude, Perplexity)
 - **Design** : Cohérent avec la landing page (dark theme, animations Framer Motion)
+
+### Page Tarifs (SP-359 - 6 février 2026)
+
+- **URL** : `/tarifs`
+- **Architecture** : Route group `(about)` avec Server Component (metadata) + Client Component (contenu animé)
+- **Composants** :
+  - `PricingPageContent` : Client Component avec 5 sections (Hero, Simulateur, Fonctionnalités, FAQ, CTA)
+  - `StructuredData` : JSON-LD combiné `@graph` (SoftwareApplication + FAQPage + WebPage)
+- **Sections** :
+  - **Hero** : Badge, titre h1 SEO, description déclarative avec prix 2,90 €
+  - **Simulateur** : `PricingSimulator` mode full avec message contact dynamique (>50 employés)
+  - **Fonctionnalités** : 10 features incluses + `PricingCard` avec CTA
+  - **FAQ** : 8 questions/réponses avec accordéon animé (Framer Motion AnimatePresence)
+  - **CTA** : Bouton inscription avec texte de réassurance
+- **SEO avancé** : Metadata complète (title, description, keywords, canonical, Open Graph, Twitter Cards)
+- **Données structurées** : SoftwareApplication (prix, features, limites), FAQPage (8 questions), WebPage (breadcrumbs)
+- **Optimisation LLMs** : JSON-LD riche pour ChatGPT, Claude, Perplexity, Gemini
+- **Navigation** : Liens mis à jour dans LandingHeader, LandingFooter, PricingSection, NotFoundPage (`/#pricing` → `/tarifs`)
+- **Tests** : 34 tests unitaires (22 PricingPageContent + 12 StructuredData)
 
 ### Pages Légales RGPD (14-15 janvier 2026)
 
@@ -1373,8 +1397,9 @@ SmartplanningAI/
 ├── src/
 │   ├── app/              # Next.js 15 App Router
 │   │   ├── (auth)/       # Routes publiques (login, register)
-│   │   ├── (about)/      # Page À propos (/a-propos)
+│   │   ├── (about)/      # Pages À propos et Tarifs
 │   │   │   ├── a-propos/         # Page principale + AboutContent + StructuredData
+│   │   │   ├── tarifs/           # Page tarifs + PricingPageContent + StructuredData (SP-359)
 │   │   │   ├── components/       # ValueCard, TargetCard
 │   │   │   └── data.ts           # Données valeurs et cibles
 │   │   ├── (landing)/    # Landing page et composants
@@ -1415,6 +1440,7 @@ SmartplanningAI/
 │   │   ├── providers/    # ThemeProvider (SP-265), CommandPaletteProvider (SP-264), KeyboardShortcutsProvider (SP-264)
 │   │   ├── dashboard/    # StatCard, TrendIndicator, StatsGrid
 │   │   ├── forms/        # FormField, FormInput, FormSelect...
+│   │   ├── pricing/      # PricingSimulator, PricingCard (SP-355)
 │   │   ├── admin/        # Employees (BulkDeleteDialog, EmployeeCard, EmployeesDataTable, EmployeeForm, columns)
 │   │   ├── schedules/    # ScheduleCalendar, ScheduleCalendarDesktop, ScheduleCalendarMobile, ShiftModal, WeeklyHoursPanel, ExportDropdown, AvailabilityOverlay/Badge/Popover
 │   │   ├── layout/       # LandingHeader, LandingFooter, Sidebar, Header, DashboardLayout, PageTracker
@@ -1451,6 +1477,7 @@ SmartplanningAI/
 │   │   │   └── templates/        # Fonctions d'envoi par type
 │   │   ├── services/     # Services métier
 │   │   │   └── dashboard/  # Services stats par rôle (SP-144)
+│   │   ├── config/       # pricing.ts (constantes et calculs tarifs SP-355)
 │   │   ├── validations/  # Schémas Zod (auth, user, employee, company, team, schedule, availability...)
 │   │   ├── pdf/          # SchedulePdfDocument, styles (SP-403)
 │   │   ├── excel/        # generateScheduleExcel (SP-404)
@@ -1910,13 +1937,14 @@ Toute la documentation est centralisée dans le dossier `/docs` :
    - [Incident UFW + Docker](docs/security/incident-2026-01-06-ufw-docker.md)
    - [Docker hardening](docs/security/docker-hardening-2026-01-05.md)
 
-9. **Pages Légales & À propos**
+9. **Pages Légales, À propos & Tarifs**
    - `/mentions-legales` : Informations légales obligatoires
    - `/cgu` : Conditions Générales d'Utilisation
    - `/cgv` : Conditions Générales de Vente
    - `/confidentialite` : Politique de Confidentialité RGPD
    - `/cookies` : Politique Cookies détaillée
    - `/a-propos` : Présentation de SmartPlanning
+   - `/tarifs` : Page tarifs dédiée avec simulateur, FAQ et JSON-LD (SP-359)
 
 10. **[Umami Analytics](/docs/analytics.md)**
     - Configuration self-hosted (Docker + Nginx)
@@ -2032,30 +2060,33 @@ function CTAButton() {
 - Sitemap.xml généré
 - Robots.txt configuré
 - Balises sémantiques HTML5
-- Schema.org JSON-LD (Organization, AboutPage)
+- Schema.org JSON-LD (Organization, AboutPage, SoftwareApplication, FAQPage)
 - Canonical URLs
 - Performance optimisée (Core Web Vitals)
 
 ### Pages optimisées SEO
 
-| Page             | Meta Title | Meta Description | Structured Data          |
-| ---------------- | ---------- | ---------------- | ------------------------ |
-| Landing          | ✅         | ✅               | Organization             |
-| À propos         | ✅         | ✅               | AboutPage + Organization |
-| Mentions légales | ✅         | ✅               | -                        |
-| CGU              | ✅         | ✅               | -                        |
-| CGV              | ✅         | ✅               | -                        |
-| Confidentialité  | ✅         | ✅               | -                        |
-| Cookies          | ✅         | ✅               | -                        |
-| Login/Register   | ✅         | ✅               | -                        |
+| Page             | Meta Title | Meta Description | Structured Data                              |
+| ---------------- | ---------- | ---------------- | -------------------------------------------- |
+| Landing          | ✅         | ✅               | Organization                                 |
+| À propos         | ✅         | ✅               | AboutPage + Organization                     |
+| Tarifs           | ✅         | ✅               | SoftwareApplication + FAQPage + WebPage (SP-359) |
+| Mentions légales | ✅         | ✅               | -                                            |
+| CGU              | ✅         | ✅               | -                                            |
+| CGV              | ✅         | ✅               | -                                            |
+| Confidentialité  | ✅         | ✅               | -                                            |
+| Cookies          | ✅         | ✅               | -                                            |
+| Login/Register   | ✅         | ✅               | -                                            |
 
 ### Optimisation LLMs
 
-La page À propos est optimisée pour être indexée par les LLMs (ChatGPT, Claude, Perplexity) avec :
+Les pages À propos et Tarifs sont optimisées pour être indexées par les LLMs (ChatGPT, Claude, Perplexity, Gemini) avec :
 
 - Keywords riches et contextuels
-- Structured Data JSON-LD étendu
+- Structured Data JSON-LD étendu (@graph combinant plusieurs schemas)
 - Descriptions longues pour Open Graph
+- FAQ structurée (FAQPage Schema.org) sur la page Tarifs
+- SoftwareApplication schema avec prix, features et limites
 
 Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 
@@ -2069,11 +2100,11 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 - **E2E** : Playwright (configuré)
 - **Coverage** : v8 provider
 
-### Couverture actuelle (4 février 2026)
+### Couverture actuelle (6 février 2026)
 
 | Catégorie                              | Coverage | Tests    |
 | -------------------------------------- | -------- | -------- |
-| **Global**                             | **~85%** | **4701** |
+| **Global**                             | **~85%** | **4790** |
 | loading                                | 100%     | 152      |
 | modals                                 | 100%     | 52       |
 | cards                                  | 77.09%   | 88       |
@@ -2144,6 +2175,11 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 | LeaveDetailContent (SP-414)            | 100%     | 13       |
 | BalancesPageContent (SP-414)           | 100%     | 15       |
 | company-settings actions (SP-435)      | 100%     | 19       |
+| pricing config (SP-355)               | 100%     | 23       |
+| PricingSimulator (SP-355)             | 100%     | 20       |
+| PricingCard (SP-355)                  | 100%     | 12       |
+| PricingPageContent (SP-359)           | 100%     | 22       |
+| StructuredData tarifs (SP-359)        | 100%     | 12       |
 
 ### Tests E2E
 
@@ -2176,14 +2212,18 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 | **Mobile Touch Targets (SP-389)**   | 16      | ✅                                |
 | **Accessibility WCAG (SP-269)**     | 14      | ✅                                |
 | **Schedules (SP-406)**              | 16      | ✅                                |
+| **Leaves (SP-416)**                 | 21      | ✅                                |
+| **Personal Tasks (SP-421)**         | 20      | ✅                                |
 | **Profile (SP-270)**                | 15      | ✅                                |
 | **Edit Profile (SP-271)**           | 22      | ✅                                |
 | **Change Password (SP-273)**        | 19      | ✅                                |
 | **Settings Hub (SP-274)**           | 20      | ✅                                |
+| **Appearance (SP-276)**             | 18      | ✅                                |
+| **Notification Preferences (SP-275)** | 14    | ✅                                |
 | **Company Settings (SP-435)**       | 21      | ✅                                |
-| **Total E2E actifs**                | **495** | ✅                                |
-| **Total E2E skipped**               | **69**  | ⏸️                                |
-| **Total E2E**                       | **564** |                                   |
+| **Total E2E actifs**                | **~629** | ✅                               |
+| **Total E2E skipped**               | **~69** | ⏸️                                |
+| **Total E2E**                       | **~698** |                                  |
 
 **Note** : Tests desktop exécutés sur Chromium uniquement. Tests mobiles exécutés sur 5 devices (iPhone SE, iPhone 14 Pro, Pixel 7, iPad Mini, iPad Pro 11") via Chromium avec émulation mobile (WebKit supprimé car bug HTTPS upgrade sur localhost).
 
@@ -2527,8 +2567,8 @@ Merge main → Build Docker → Push GHCR → Deploy VPS (~8-10 min)
 
 - **CI** (`.github/workflows/ci.yml`) : Lint, Type-check, Tests unitaires, Build, Tests E2E (PR uniquement)
 - **CD** (`.github/workflows/cd.yml`) : Build image Docker, Push sur ghcr.io, Deploy via SSH
-- Tests unitaires sur tous les push (~4548 tests Vitest)
-- Tests E2E sur PR vers main (~604 tests Playwright actifs, 5 devices mobiles)
+- Tests unitaires sur tous les push (~4790 tests Vitest)
+- Tests E2E sur PR vers main (~629 tests Playwright actifs, 5 devices mobiles)
 - Stabilisation E2E (SP-434) : Touch targets WCAG 2.5.5 (44px), command palette, mobile navigation
 - Déploiement automatique sur merge main ✅
 - Migrations Prisma automatiques

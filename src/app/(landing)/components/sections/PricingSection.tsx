@@ -9,14 +9,25 @@
  * @ticket SP-358
  */
 
+import { useState } from 'react'
 import Link from 'next/link'
-import { ArrowRight } from 'lucide-react'
-import { motion, fadeInUp, staggerContainer } from '@/lib/animations'
+import { ArrowRight, MessageSquare } from 'lucide-react'
+import {
+  motion,
+  FramerAnimatePresence,
+  fadeInUp,
+  staggerContainer,
+} from '@/lib/animations'
 import { PricingSimulator } from '@/components/pricing/PricingSimulator'
 import { PricingCard } from '@/components/pricing/PricingCard'
+import { PRICING } from '@/lib/config/pricing'
 import { SectionLogo, SectionHeader } from '../index'
 
+const LARGE_TEAM_THRESHOLD = 50
+
 export function PricingSection() {
+  const [employees, setEmployees] = useState<number>(PRICING.DEFAULT_EMPLOYEES)
+
   return (
     <section
       id="pricing"
@@ -43,7 +54,50 @@ export function PricingSection() {
         >
           {/* Simulateur */}
           <motion.div variants={fadeInUp} whileHover={{ y: -5 }}>
-            <PricingSimulator size="compact" animated={false} />
+            <PricingSimulator
+              size="compact"
+              animated={false}
+              onEmployeesChange={setEmployees}
+            />
+
+            {/* Message contact > 50 employes */}
+            <FramerAnimatePresence>
+              {employees > LARGE_TEAM_THRESHOLD && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="overflow-hidden"
+                  data-testid="large-team-message"
+                >
+                  <div className="mt-6 flex items-start gap-3 rounded-xl border border-cyan-500/20 bg-cyan-500/5 p-4">
+                    <MessageSquare
+                      className="mt-0.5 h-5 w-5 shrink-0 text-cyan-400"
+                      aria-hidden="true"
+                    />
+                    <div>
+                      <p className="text-sm font-medium text-foreground">
+                        Equipe de plus de {LARGE_TEAM_THRESHOLD} employes ?
+                      </p>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        Contactez-nous pour un accompagnement personnalise.
+                      </p>
+                      <Link
+                        href="/#contact"
+                        className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-cyan-400 transition-colors hover:text-cyan-300"
+                      >
+                        Nous contacter
+                        <ArrowRight
+                          className="h-3.5 w-3.5"
+                          aria-hidden="true"
+                        />
+                      </Link>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </FramerAnimatePresence>
           </motion.div>
 
           {/* Carte tarif */}

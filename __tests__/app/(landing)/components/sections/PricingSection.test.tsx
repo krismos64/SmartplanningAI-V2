@@ -5,7 +5,7 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, fireEvent } from '@testing-library/react'
 import { PricingSection } from '@/app/(landing)/components/sections/PricingSection'
 
 // Mock IntersectionObserver (requis par Framer Motion whileInView)
@@ -103,6 +103,28 @@ describe('PricingSection', () => {
       const { container } = render(<PricingSection />)
       const grid = container.querySelector('[class*="lg:grid-cols-2"]')
       expect(grid).toBeInTheDocument()
+    })
+  })
+
+  describe('Message grandes equipes', () => {
+    it('masque le message quand slider <= 50', () => {
+      render(<PricingSection />)
+      expect(screen.queryByTestId('large-team-message')).not.toBeInTheDocument()
+    })
+
+    it('affiche le message quand slider > 50', () => {
+      render(<PricingSection />)
+      const slider = screen.getByRole('slider')
+      fireEvent.change(slider, { target: { value: '60' } })
+      expect(screen.getByTestId('large-team-message')).toBeInTheDocument()
+    })
+
+    it('le message contient un lien vers le contact', () => {
+      render(<PricingSection />)
+      const slider = screen.getByRole('slider')
+      fireEvent.change(slider, { target: { value: '100' } })
+      const link = screen.getByRole('link', { name: /nous contacter/i })
+      expect(link).toHaveAttribute('href', '/#contact')
     })
   })
 
