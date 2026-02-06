@@ -46,14 +46,14 @@ export default function RegisterPage() {
         </Link>
       </p>
 
-      {/* Info plan FREE */}
+      {/* Info essai gratuit */}
       <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-4">
         <p className="mb-1 text-xs font-medium text-emerald-600 dark:text-emerald-400">
-          ✨ Plan FREE inclus
+          21 jours d&apos;essai gratuit
         </p>
         <p className="text-xs text-muted-foreground">
-          Jusqu&apos;à 5 employés, fonctionnalités complètes, sans limite de
-          temps. Pas de carte bancaire requise.
+          Toutes les fonctionnalités incluses, sans carte bancaire. 2,90 € par
+          employé par mois après l&apos;essai.
         </p>
       </div>
     </div>

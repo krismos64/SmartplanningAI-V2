@@ -140,4 +140,21 @@ describe('PricingSimulator', () => {
       expect(wrapper).toBeInTheDocument()
     })
   })
+
+  describe('Prop animated', () => {
+    it('rend sans wrapper motion quand animated={false}', () => {
+      const { container } = render(<PricingSimulator animated={false} />)
+      // Le premier enfant est directement le contenu, pas un motion.div avec style opacity
+      const firstChild = container.firstElementChild
+      expect(firstChild?.getAttribute('style')).toBeNull()
+      expect(screen.getByText('Simulez votre tarif')).toBeInTheDocument()
+    })
+
+    it('rend avec wrapper motion par defaut (animated=true)', () => {
+      const { container } = render(<PricingSimulator />)
+      // Le motion.div ajoute un style inline (opacity)
+      const firstChild = container.firstElementChild
+      expect(firstChild?.getAttribute('style')).toBeTruthy()
+    })
+  })
 })

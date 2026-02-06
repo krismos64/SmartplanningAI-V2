@@ -54,16 +54,6 @@ export interface Stat {
   icon: LucideIcon
 }
 
-export interface PricingPlan {
-  name: string
-  price: string
-  period?: string
-  description: string
-  features: string[]
-  cta: string
-  popular: boolean
-}
-
 export interface FAQ {
   question: string
   answer: string
@@ -228,61 +218,6 @@ export const stats: Stat[] = [
 ]
 
 // ============================================================================
-// PRICING PLANS
-// ============================================================================
-
-export const pricingPlans: PricingPlan[] = [
-  {
-    name: 'Starter',
-    price: 'Gratuit',
-    description: 'Idéal pour démarrer',
-    features: [
-      "Jusqu'à 10 employés",
-      '1 équipe',
-      'Plannings basiques',
-      'Export PDF',
-      'Support email',
-    ],
-    cta: 'Commencer gratuitement',
-    popular: false,
-  },
-  {
-    name: 'Pro',
-    price: '29€',
-    period: '/mois',
-    description: 'Pour les PME en croissance',
-    features: [
-      "Jusqu'à 100 employés",
-      'Équipes illimitées',
-      'Plannings IA',
-      'Exports avancés',
-      'Support prioritaire',
-      'Intégrations API',
-      'Rapports analytics',
-    ],
-    cta: 'Essai gratuit 14 jours',
-    popular: true,
-  },
-  {
-    name: 'Enterprise',
-    price: 'Sur mesure',
-    description: 'Pour les grandes entreprises',
-    features: [
-      'Employés illimités',
-      'Multi-sites',
-      'IA personnalisée',
-      'SSO & SAML',
-      'Support dédié 24/7',
-      'API complète',
-      'Formation incluse',
-      'SLA garanti',
-    ],
-    cta: 'Nous contacter',
-    popular: false,
-  },
-]
-
-// ============================================================================
 // FAQs
 // ============================================================================
 
@@ -290,7 +225,7 @@ export const faqs: FAQ[] = [
   {
     question: "Comment fonctionne l'essai gratuit ?",
     answer:
-      "L'essai gratuit de 14 jours vous donne accès à toutes les fonctionnalités Pro sans engagement. Aucune carte bancaire requise.",
+      "L'essai gratuit de 21 jours vous donne accès à toutes les fonctionnalités, sans restriction et sans carte bancaire.",
   },
   {
     question: 'Puis-je importer mes données existantes ?',
@@ -310,7 +245,7 @@ export const faqs: FAQ[] = [
   {
     question: 'Quel support est disponible ?',
     answer:
-      'Support email pour tous, chat en direct et téléphone pour Pro, et un manager dédié pour Enterprise.',
+      'Support email inclus pour tous les utilisateurs. Nous répondons sous 24h ouvrées.',
   },
 ]
 
