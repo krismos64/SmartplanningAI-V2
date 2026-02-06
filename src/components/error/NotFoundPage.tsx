@@ -25,7 +25,7 @@ import { motion, staggerContainer, staggerItem } from '@/lib/animations'
  */
 const quickLinks = [
   { href: '/#features', label: 'Fonctionnalités' },
-  { href: '/#pricing', label: 'Tarifs' },
+  { href: '/tarifs', label: 'Tarifs' },
   { href: '/#contact', label: 'Contact' },
 ]
 

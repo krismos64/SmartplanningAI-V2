@@ -24,7 +24,7 @@ const navLinks = [
   { href: '/#features', label: 'Fonctionnalités' },
   { href: '/#how-it-works', label: 'Comment ça marche' },
   { href: '/#benefits', label: 'Avantages' },
-  { href: '/#pricing', label: 'Tarifs' },
+  { href: '/tarifs', label: 'Tarifs' },
   { href: '/#faq', label: 'FAQ' },
   { href: '/#contact', label: 'Contact' },
   { href: '/a-propos', label: 'À propos' },

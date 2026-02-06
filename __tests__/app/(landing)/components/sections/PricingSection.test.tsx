@@ -94,7 +94,7 @@ describe('PricingSection', () => {
       const link = screen.getByRole('link', {
         name: /voir le d.tail des tarifs/i,
       })
-      expect(link).toHaveAttribute('href', '/pricing')
+      expect(link).toHaveAttribute('href', '/tarifs')
     })
   })
 
