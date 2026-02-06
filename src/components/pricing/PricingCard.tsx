@@ -26,12 +26,14 @@ export interface PricingCardProps {
   showCTA?: boolean
   showFeatures?: boolean
   className?: string
+  animated?: boolean
 }
 
 export function PricingCard({
   showCTA = true,
   showFeatures = true,
   className,
+  animated = true,
 }: PricingCardProps) {
   const prefersReducedMotion = useReducedMotion()
 
@@ -90,7 +92,7 @@ export function PricingCard({
     </div>
   )
 
-  if (prefersReducedMotion) {
+  if (!animated || prefersReducedMotion) {
     return content
   }
 

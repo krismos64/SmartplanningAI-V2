@@ -83,4 +83,19 @@ describe('PricingCard', () => {
       expect(wrapper).toBeInTheDocument()
     })
   })
+
+  describe('Prop animated', () => {
+    it('rend sans wrapper motion quand animated={false}', () => {
+      const { container } = render(<PricingCard animated={false} />)
+      const firstChild = container.firstElementChild
+      expect(firstChild?.getAttribute('style')).toBeNull()
+      expect(screen.getByText(/2,90/)).toBeInTheDocument()
+    })
+
+    it('rend avec wrapper motion par defaut (animated=true)', () => {
+      const { container } = render(<PricingCard />)
+      const firstChild = container.firstElementChild
+      expect(firstChild?.getAttribute('style')).toBeTruthy()
+    })
+  })
 })

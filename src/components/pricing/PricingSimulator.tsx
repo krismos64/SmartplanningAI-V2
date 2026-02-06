@@ -29,11 +29,13 @@ export interface PricingSimulatorProps {
   showYearlyToggle?: boolean
   className?: string
   size?: 'compact' | 'full'
+  animated?: boolean
 }
 
 export function PricingSimulator({
   className,
   size = 'full',
+  animated = true,
 }: PricingSimulatorProps) {
   const [employees, setEmployees] = useState<number>(PRICING.DEFAULT_EMPLOYEES)
   const prefersReducedMotion = useReducedMotion()
@@ -141,7 +143,7 @@ export function PricingSimulator({
     </div>
   )
 
-  if (prefersReducedMotion) {
+  if (!animated || prefersReducedMotion) {
     return content
   }
 
