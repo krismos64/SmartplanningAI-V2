@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 6 février 2026 (Page /tarifs dédiée avec SEO + JSON-LD - SP-359)
+- **Dernière mise à jour** : 6 février 2026 (Stripe SDK + configuration + validations - SP-349)
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -35,6 +35,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Authentication** : NextAuth v5 (Auth.js)
 - **ORM** : Prisma 6.18.0
 - **Validation** : Zod
+- **Paiement** : Stripe v20.3.1 (per-seat billing)
 - **Media Storage** : Cloudinary (avatars)
 
 ### Base de données
@@ -1478,7 +1479,8 @@ SmartplanningAI/
 │   │   ├── services/     # Services métier
 │   │   │   └── dashboard/  # Services stats par rôle (SP-144)
 │   │   ├── config/       # pricing.ts (constantes et calculs tarifs SP-355)
-│   │   ├── validations/  # Schémas Zod (auth, user, employee, company, team, schedule, availability...)
+│   │   ├── stripe/       # Client Stripe singleton, config centralisée, barrel export (SP-349)
+│   │   ├── validations/  # Schémas Zod (auth, user, employee, company, team, schedule, availability, stripe...)
 │   │   ├── pdf/          # SchedulePdfDocument, styles (SP-403)
 │   │   ├── excel/        # generateScheduleExcel (SP-404)
 │   │   └── utils.ts      # Fonctions utilitaires
@@ -1516,7 +1518,7 @@ SmartplanningAI/
 │   ├── utils/            # Utilitaires (touch-gestures.ts pour mobile SP-389)
 │   └── specs/            # middleware-rbac.spec.ts, auth.spec.ts, dashboard/*.spec.ts, mobile/*.spec.ts, schedules/*.spec.ts
 ├── __tests__/            # Tests unitaires Vitest
-│   └── lib/              # permissions.test.ts
+│   └── lib/              # permissions.test.ts, stripe/ (SP-349)
 ├── patches/              # Patches npm (patch-package) pour React 19 compat
 │   ├── @radix-ui+react-presence+1.1.5.patch
 │   └── @radix-ui+react-compose-refs+1.1.2.patch
@@ -1984,6 +1986,7 @@ SYSTEM_ADMIN > DIRECTOR > MANAGER > EMPLOYEE
 - Rate limiting sur les endpoints critiques
 - Hashage des mots de passe (bcryptjs via `serverExternalPackages`)
 - Variables d'environnement sécurisées (.env.local)
+- Paiement sécurisé Stripe (validation Zod des env vars, clés préfixées)
 - Gestion des permissions RBAC stricte
 - Audit logs (ActivityLog)
 - Content Security Policy (CSP) avec headers sécurisés
@@ -1997,6 +2000,8 @@ Jamais commiter :
 - `NEXTAUTH_SECRET`
 - `DATABASE_URL`
 - `REDIS_URL`
+- `STRIPE_SECRET_KEY`
+- `STRIPE_WEBHOOK_SECRET`
 - Tokens API
 
 ## Performance
@@ -2180,6 +2185,9 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 | PricingCard (SP-355)                  | 100%     | 12       |
 | PricingPageContent (SP-359)           | 100%     | 22       |
 | StructuredData tarifs (SP-359)        | 100%     | 12       |
+| stripe singleton (SP-349)            | 100%     | 9        |
+| stripe-config (SP-349)               | 100%     | 29       |
+| stripe validations (SP-349)          | 100%     | 28       |
 
 ### Tests E2E
 
@@ -2567,7 +2575,7 @@ Merge main → Build Docker → Push GHCR → Deploy VPS (~8-10 min)
 
 - **CI** (`.github/workflows/ci.yml`) : Lint, Type-check, Tests unitaires, Build, Tests E2E (PR uniquement)
 - **CD** (`.github/workflows/cd.yml`) : Build image Docker, Push sur ghcr.io, Deploy via SSH
-- Tests unitaires sur tous les push (~4790 tests Vitest)
+- Tests unitaires sur tous les push (~4856 tests Vitest)
 - Tests E2E sur PR vers main (~629 tests Playwright actifs, 5 devices mobiles)
 - Stabilisation E2E (SP-434) : Touch targets WCAG 2.5.5 (44px), command palette, mobile navigation
 - Déploiement automatique sur merge main ✅
