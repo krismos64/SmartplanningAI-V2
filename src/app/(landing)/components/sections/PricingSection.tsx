@@ -65,7 +65,7 @@ export function PricingSection() {
           className="mt-12 text-center"
         >
           <Link
-            href="/pricing"
+            href="/tarifs"
             className="inline-flex items-center gap-2 text-sm font-medium text-cyan-400 transition-colors hover:text-cyan-300"
           >
             Voir le détail des tarifs

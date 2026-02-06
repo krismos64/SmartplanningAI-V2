@@ -16,7 +16,7 @@ import { CookieSettingsButton } from '@/components/cookies'
 const footerLinks = {
   product: [
     { href: '/#features', label: 'Fonctionnalités' },
-    { href: '/#pricing', label: 'Tarifs' },
+    { href: '/tarifs', label: 'Tarifs' },
   ],
   company: [
     { href: '/a-propos', label: 'À propos' },

@@ -30,12 +30,14 @@ export interface PricingSimulatorProps {
   className?: string
   size?: 'compact' | 'full'
   animated?: boolean
+  onEmployeesChange?: (employees: number) => void
 }
 
 export function PricingSimulator({
   className,
   size = 'full',
   animated = true,
+  onEmployeesChange,
 }: PricingSimulatorProps) {
   const [employees, setEmployees] = useState<number>(PRICING.DEFAULT_EMPLOYEES)
   const prefersReducedMotion = useReducedMotion()
@@ -46,7 +48,9 @@ export function PricingSimulator({
   const isCompact = size === 'compact'
 
   const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setEmployees(Number(e.target.value))
+    const value = Number(e.target.value)
+    setEmployees(value)
+    onEmployeesChange?.(value)
   }
 
   const content = (
