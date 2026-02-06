@@ -40,3 +40,6 @@ export * from './incident-note'
 
 // User Preferences schemas (SP-433)
 export * from './preferences'
+
+// Stripe schemas (SP-349)
+export * from './stripe'
