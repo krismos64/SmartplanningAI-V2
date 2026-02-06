@@ -133,10 +133,6 @@ yarn-error.log*
 .npm/
 *.tsbuildinfo
 
-# Storybook (si utilisé)
-.storybook/
-storybook-static/
-
 # Prisma migrations (copiées séparément si nécessaire)
 # prisma/migrations/
 
