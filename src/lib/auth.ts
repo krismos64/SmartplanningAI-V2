@@ -8,7 +8,7 @@
  * - Vérifications de sécurité (isActive, company.isActive)
  *
  * @see https://authjs.dev/getting-started/authentication/credentials
- * @ticket SP-108
+ * @ticket SP-108, SP-440
  */
 
 import NextAuth from 'next-auth'
@@ -90,6 +90,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
               select: {
                 id: true,
                 isActive: true,
+                trialEndsAt: true, // SP-440 subscription guard
+                subscription: {
+                  select: {
+                    status: true,
+                    currentPeriodEnd: true,
+                  },
+                },
               },
             },
           },
@@ -137,6 +144,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           emailVerified: user.emailVerified,
           image: user.image,
           isActive: user.isActive,
+          // SP-440 : données subscription pour le middleware guard
+          subscriptionStatus: user.company?.subscription?.status ?? null,
+          trialEndsAt: user.company?.trialEndsAt?.toISOString() ?? null,
+          currentPeriodEnd:
+            user.company?.subscription?.currentPeriodEnd?.toISOString() ?? null,
         }
       },
     }),

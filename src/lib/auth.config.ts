@@ -12,7 +12,7 @@
  *
  * @see https://authjs.dev/guides/edge-compatibility
  * @see https://authjs.dev/guides/role-based-access-control
- * @ticket SP-108, SP-110
+ * @ticket SP-108, SP-110, SP-440
  */
 
 import type { NextAuthConfig } from 'next-auth'
@@ -81,7 +81,7 @@ export const authConfig: NextAuthConfig = {
      * IMPORTANT: Ce callback doit être dans authConfig pour que le
      * middleware puisse lire le rôle utilisateur.
      */
-    jwt({ token, user, trigger, session }) {
+    async jwt({ token, user, trigger, session }) {
       // Au premier login, user est défini
       if (user) {
         token.id = user.id
@@ -89,11 +89,57 @@ export const authConfig: NextAuthConfig = {
         token.companyId = user.companyId
         token.emailVerified = user.emailVerified
         token.image = user.image
+        // SP-440 : données subscription pour le guard middleware
+        token.subscriptionStatus = user.subscriptionStatus ?? null
+        token.trialEndsAt = user.trialEndsAt ?? null
+        token.currentPeriodEnd = user.currentPeriodEnd ?? null
+        token.subscriptionCheckedAt = Date.now()
       }
       // Mise à jour de la session (ex: après upload d'avatar)
       if (trigger === 'update' && session?.image !== undefined) {
         token.image = session.image
       }
+
+      // SP-440 : Rafraîchissement périodique des données subscription
+      // Ce code s'exécute côté serveur (Server Components via auth()).
+      // En Edge Runtime, l'import dynamique de Prisma échoue silencieusement.
+      const SUBSCRIPTION_CHECK_INTERVAL = 5 * 60 * 1000 // 5 minutes
+      const checkedAt = token.subscriptionCheckedAt as number | null
+      if (
+        token.companyId &&
+        token.role !== 'SYSTEM_ADMIN' &&
+        (!checkedAt || Date.now() - checkedAt > SUBSCRIPTION_CHECK_INTERVAL)
+      ) {
+        try {
+          // Import dynamique : fonctionne côté serveur, échoue en Edge (catch)
+          const { prisma } = await import('@/lib/prisma')
+          const company = await prisma.company.findUnique({
+            where: { id: token.companyId as string },
+            select: {
+              trialEndsAt: true,
+              subscription: {
+                select: {
+                  status: true,
+                  currentPeriodEnd: true,
+                },
+              },
+            },
+          })
+          if (company) {
+            token.subscriptionStatus =
+              company.subscription?.status ?? null
+            token.trialEndsAt =
+              company.trialEndsAt?.toISOString() ?? null
+            token.currentPeriodEnd =
+              company.subscription?.currentPeriodEnd?.toISOString() ?? null
+            token.subscriptionCheckedAt = Date.now()
+          }
+        } catch {
+          // En Edge Runtime, l'import Prisma échoue — comportement attendu.
+          // Le token conserve ses valeurs existantes.
+        }
+      }
+
       return token
     },
 
@@ -113,6 +159,12 @@ export const authConfig: NextAuthConfig = {
         session.user.companyId = token.companyId as string | null
         session.user.emailVerified = token.emailVerified as Date | null
         session.user.image = token.image as string | null
+        // SP-440 : données subscription exposées dans la session
+        session.user.subscriptionStatus =
+          token.subscriptionStatus as string | null
+        session.user.trialEndsAt = token.trialEndsAt as string | null
+        session.user.currentPeriodEnd =
+          token.currentPeriodEnd as string | null
       }
       return session
     },
