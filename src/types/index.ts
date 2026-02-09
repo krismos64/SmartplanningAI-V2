@@ -223,6 +223,7 @@ export type {
   CheckoutSessionResult,
   BillingPortalResult,
   WebhookHandlerResult,
+  BillingData,
 } from './stripe'
 
 // ============================================================================
