@@ -284,8 +284,8 @@ export async function getBillingDataAction(): Promise<
   }
 
   try {
-    // 2. Récupérer Subscription + derniers Payments en parallèle
-    const [subscription, payments, employeeCount] = await Promise.all([
+    // 2. Récupérer Subscription + Payments + Employees + Company en parallèle
+    const [subscription, payments, employeeCount, company] = await Promise.all([
       prisma.subscription.findUnique({
         where: { companyId: user.companyId },
       }),
@@ -296,6 +296,10 @@ export async function getBillingDataAction(): Promise<
       }),
       prisma.employee.count({
         where: { companyId: user.companyId, isActive: true },
+      }),
+      prisma.company.findUnique({
+        where: { id: user.companyId },
+        select: { trialEndsAt: true },
       }),
     ])
 
@@ -310,8 +314,11 @@ export async function getBillingDataAction(): Promise<
               quantity: subscription.quantity,
               pricePerEmployee: subscription.pricePerEmployee,
               planPrice: subscription.planPrice,
+              currentPeriodStart: subscription.currentPeriodStart,
               currentPeriodEnd: subscription.currentPeriodEnd,
               cancelAtPeriodEnd: subscription.cancelAtPeriodEnd,
+              canceledAt: subscription.canceledAt,
+              createdAt: subscription.createdAt,
               stripeCustomerId: subscription.stripeCustomerId,
             }
           : null,
@@ -322,11 +329,14 @@ export async function getBillingDataAction(): Promise<
           status: p.status,
           paidAt: p.paidAt,
           createdAt: p.createdAt,
+          stripeInvoiceId: p.stripeInvoiceId ?? null,
+          paymentMethod: p.paymentMethod ?? null,
         })),
         employeeCount,
         monthlyAmount: subscription
           ? (subscription.quantity * subscription.pricePerEmployee) / 100
           : 0,
+        trialEndsAt: company?.trialEndsAt ?? null,
       },
     }
   } catch (error) {
