@@ -124,9 +124,7 @@ model Company {
   // Exemple: { "MONDAY": { "start": "09:00", "end": "18:00", "break": "12:00-14:00" } }
   defaultOpeningHours Json?
 
-  // Abonnement SaaS
-  subscriptionPlan   SubscriptionPlan   @default(FREE)
-  subscriptionStatus SubscriptionStatus @default(TRIAL)
+  // Abonnement SaaS (source de vérité = Subscription.plan)
   trialEndsAt        DateTime?
   subscriptionEndsAt DateTime?
 
@@ -149,7 +147,6 @@ model Company {
   updatedAt DateTime @updatedAt
 
   @@index([slug])
-  @@index([subscriptionStatus])
   @@index([isActive])
   @@map("companies")
 }
@@ -167,12 +164,18 @@ model Subscription {
   stripeCustomerId     String  @unique
   stripeSubscriptionId String? @unique
   stripePriceId        String?
+  stripeProductId      String? // ID du produit Stripe
 
-  // Plan
-  plan            SubscriptionPlan @default(FREE)
-  planPrice       Float?
-  currency        String           @default("EUR")
-  billingInterval String? // "month" ou "year"
+  // Plan per-seat
+  plan             SubscriptionPlan @default(FREE)
+  quantity         Int              @default(0) // Nombre d'employés facturés (= Stripe subscription_item.quantity)
+  pricePerEmployee Int              @default(290) // Prix en CENTIMES par employé (290 = 2,90€)
+  planPrice        Int              @default(0) // Prix total en CENTIMES (calculé = quantity × pricePerEmployee)
+  currency         String           @default("EUR")
+  billingInterval  String? // "month" ou "year"
+
+  // Métadonnées techniques webhooks (jamais de PII)
+  metadata Json?
 
   // Statut
   status             SubscriptionStatus @default(TRIAL)
@@ -204,13 +207,18 @@ model Payment {
   stripePaymentId String  @unique
   stripeInvoiceId String?
 
-  // Montant
-  amount   Float
+  // Montant (en centimes)
+  amount   Int
   currency String @default("EUR")
 
   // Statut
-  status        String // "succeeded", "pending", "failed", "refunded"
-  paymentMethod String? // "card", "sepa_debit", etc.
+  status         PaymentStatus @default(PENDING)
+  paymentMethod  String? // "card", "sepa_debit", etc.
+  failureReason  String? // Code d'erreur Stripe (ex: "card_declined")
+  failureMessage String? // Message d'erreur lisible
+
+  // Métadonnées techniques
+  metadata Json?
 
   // Dates
   paidAt    DateTime?
@@ -602,18 +610,25 @@ enum UserRole {
 }
 
 enum SubscriptionPlan {
-  FREE // 0€ - 5 employés max
-  STARTER // 29€/mois - 20 employés
-  BUSINESS // 99€/mois - 100 employés
-  ENTERPRISE // Sur devis - illimité
+  FREE     // Essai gratuit / démo
+  PER_SEAT // Tarif unique 2,90€/employé/mois
 }
 
 enum SubscriptionStatus {
-  TRIAL // Période d'essai
-  ACTIVE // Actif payé
-  PAST_DUE // Paiement en retard
-  CANCELED // Annulé
-  EXPIRED // Expiré
+  TRIAL      // Période d'essai
+  ACTIVE     // Actif payé
+  PAST_DUE   // Paiement en retard
+  CANCELED   // Annulé
+  EXPIRED    // Expiré
+  INCOMPLETE // Paiement incomplet Stripe (3D Secure en attente)
+}
+
+enum PaymentStatus {
+  PENDING         // En attente de traitement
+  SUCCEEDED       // Paiement réussi
+  FAILED          // Paiement échoué
+  REFUNDED        // Remboursé
+  REQUIRES_ACTION // 3D Secure en attente
 }
 
 enum ScheduleType {
