@@ -60,3 +60,31 @@ export interface WebhookHandlerResult {
   eventType: string
   action?: string
 }
+
+// ============================================================================
+// Billing Data (SP-352)
+// ============================================================================
+
+/** Données de facturation pour le dashboard billing */
+export interface BillingData {
+  subscription: {
+    plan: string
+    status: string
+    quantity: number
+    pricePerEmployee: number
+    planPrice: number
+    currentPeriodEnd: Date | null
+    cancelAtPeriodEnd: boolean
+    stripeCustomerId: string
+  } | null
+  payments: {
+    id: string
+    amount: number
+    currency: string
+    status: string
+    paidAt: Date | null
+    createdAt: Date
+  }[]
+  employeeCount: number
+  monthlyAmount: number
+}
