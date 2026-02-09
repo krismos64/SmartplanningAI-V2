@@ -87,8 +87,8 @@ describe('Stripe Config', () => {
       expect(STRIPE_STATUS_MAP.unpaid).toBe('PAST_DUE')
     })
 
-    it('mappe incomplete → PAST_DUE', () => {
-      expect(STRIPE_STATUS_MAP.incomplete).toBe('PAST_DUE')
+    it('mappe incomplete → INCOMPLETE', () => {
+      expect(STRIPE_STATUS_MAP.incomplete).toBe('INCOMPLETE')
     })
 
     it('mappe incomplete_expired → EXPIRED', () => {
@@ -116,7 +116,7 @@ describe('Stripe Config', () => {
     })
 
     it('ne mappe que vers des statuts internes valides', () => {
-      const validInternal = ['TRIAL', 'ACTIVE', 'PAST_DUE', 'CANCELED', 'EXPIRED']
+      const validInternal = ['TRIAL', 'ACTIVE', 'PAST_DUE', 'CANCELED', 'EXPIRED', 'INCOMPLETE']
       Object.values(STRIPE_STATUS_MAP).forEach((internal) => {
         expect(validInternal).toContain(internal)
       })

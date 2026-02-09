@@ -6,6 +6,7 @@ import {
   UserRole,
   SubscriptionPlan,
   SubscriptionStatus,
+  PaymentStatus,
   ScheduleType,
   ScheduleStatus,
   LeaveType,
@@ -40,8 +41,6 @@ async function main() {
       workingHoursEnd: '18:00',
       workingDays: ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY'],
       timezone: 'Europe/Paris',
-      subscriptionPlan: SubscriptionPlan.ENTERPRISE,
-      subscriptionStatus: SubscriptionStatus.ACTIVE,
       defaultOpeningHours: {
         MONDAY: { start: '08:00', end: '18:00', break: '12:00-14:00' },
         TUESDAY: { start: '08:00', end: '18:00', break: '12:00-14:00' },
@@ -63,8 +62,6 @@ async function main() {
       workingHoursEnd: '17:00',
       workingDays: ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY'],
       timezone: 'Europe/Paris',
-      subscriptionPlan: SubscriptionPlan.BUSINESS,
-      subscriptionStatus: SubscriptionStatus.ACTIVE,
       defaultOpeningHours: {
         MONDAY: { start: '09:00', end: '17:00', break: '12:00-13:00' },
         TUESDAY: { start: '09:00', end: '17:00', break: '12:00-13:00' },
@@ -86,8 +83,6 @@ async function main() {
       workingHoursEnd: '19:00',
       workingDays: ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY'],
       timezone: 'Europe/Paris',
-      subscriptionPlan: SubscriptionPlan.STARTER,
-      subscriptionStatus: SubscriptionStatus.TRIAL,
       trialEndsAt: new Date('2025-12-31'),
       defaultOpeningHours: {
         MONDAY: { start: '10:00', end: '19:00', break: '13:00-14:00' },
@@ -111,9 +106,11 @@ async function main() {
       companyId: techcorp.id,
       stripeCustomerId: `cus_techcorp_${Date.now()}`,
       stripeSubscriptionId: `sub_techcorp_${Date.now()}`,
-      stripePriceId: 'price_enterprise',
-      plan: SubscriptionPlan.ENTERPRISE,
-      planPrice: 299.0,
+      stripePriceId: 'price_per_seat',
+      plan: SubscriptionPlan.PER_SEAT,
+      quantity: 10, // 10 employés TechCorp
+      pricePerEmployee: 290, // 2,90€ en centimes
+      planPrice: 2900, // 10 × 290 = 2900 centimes = 29,00€
       currency: 'EUR',
       billingInterval: 'month',
       status: SubscriptionStatus.ACTIVE,
@@ -128,9 +125,11 @@ async function main() {
       companyId: designstudio.id,
       stripeCustomerId: `cus_designstudio_${Date.now()}`,
       stripeSubscriptionId: `sub_designstudio_${Date.now()}`,
-      stripePriceId: 'price_business',
-      plan: SubscriptionPlan.BUSINESS,
-      planPrice: 99.0,
+      stripePriceId: 'price_per_seat',
+      plan: SubscriptionPlan.PER_SEAT,
+      quantity: 6, // 6 employés DesignStudio
+      pricePerEmployee: 290, // 2,90€ en centimes
+      planPrice: 1740, // 6 × 290 = 1740 centimes = 17,40€
       currency: 'EUR',
       billingInterval: 'month',
       status: SubscriptionStatus.ACTIVE,
@@ -144,8 +143,10 @@ async function main() {
     data: {
       companyId: startupinc.id,
       stripeCustomerId: `cus_startupinc_${Date.now()}`,
-      plan: SubscriptionPlan.STARTER,
-      planPrice: 29.0,
+      plan: SubscriptionPlan.FREE,
+      quantity: 4, // 4 employés StartupInc (en essai gratuit)
+      pricePerEmployee: 290,
+      planPrice: 0, // FREE = pas de facturation
       currency: 'EUR',
       billingInterval: 'month',
       status: SubscriptionStatus.TRIAL,
@@ -169,9 +170,9 @@ async function main() {
       subscriptionId: techcorpSub.id,
       stripePaymentId: `pi_techcorp_${Date.now()}`,
       stripeInvoiceId: `in_techcorp_${Date.now()}`,
-      amount: 299.0,
+      amount: 2900, // 29,00€ en centimes (10 employés × 2,90€)
       currency: 'EUR',
-      status: 'succeeded',
+      status: PaymentStatus.SUCCEEDED,
       paymentMethod: 'card',
       paidAt: new Date('2025-11-01T10:00:00Z'),
     },
@@ -183,9 +184,9 @@ async function main() {
       subscriptionId: designstudioSub.id,
       stripePaymentId: `pi_designstudio_${Date.now()}`,
       stripeInvoiceId: `in_designstudio_${Date.now()}`,
-      amount: 99.0,
+      amount: 1740, // 17,40€ en centimes (6 employés × 2,90€)
       currency: 'EUR',
-      status: 'succeeded',
+      status: PaymentStatus.SUCCEEDED,
       paymentMethod: 'sepa_debit',
       paidAt: new Date('2025-11-01T11:00:00Z'),
     },
@@ -1733,9 +1734,9 @@ async function main() {
   )
 
   console.log('🏢 ORGANISATIONS (3) :')
-  console.log('   • TechCorp (ENTERPRISE, 10 employés)')
-  console.log('   • DesignStudio (BUSINESS, 6 employés)')
-  console.log('   • StartupInc (STARTER, 4 employés)\n')
+  console.log('   • TechCorp (PER_SEAT, 10 employés, 29,00€/mois)')
+  console.log('   • DesignStudio (PER_SEAT, 6 employés, 17,40€/mois)')
+  console.log('   • StartupInc (FREE/TRIAL, 4 employés)\n')
 
   console.log('👥 ÉQUIPES (6) :')
   console.log('   TechCorp :')

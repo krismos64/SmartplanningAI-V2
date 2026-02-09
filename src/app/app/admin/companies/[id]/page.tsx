@@ -100,14 +100,14 @@ export default async function EditCompanyPage({
           <Badge variant="outline">
             {
               subscriptionPlanLabels[
-                company.subscriptionPlan as SubscriptionPlan
+                (company.subscription?.plan ?? 'FREE') as SubscriptionPlan
               ]
             }
           </Badge>
           <Badge variant="outline">
             {
               subscriptionStatusLabels[
-                company.subscriptionStatus as SubscriptionStatus
+                (company.subscription?.status ?? 'TRIAL') as SubscriptionStatus
               ]
             }
           </Badge>

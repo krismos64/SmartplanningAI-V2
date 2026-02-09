@@ -213,6 +213,19 @@ export {
 } from './company'
 
 // ============================================================================
+// TYPES STRIPE (SP-351)
+// ============================================================================
+export type {
+  CreateCheckoutSessionInput,
+  UpdateSubscriptionQuantityInput,
+  CancelSubscriptionInput,
+  CreateBillingPortalInput,
+  CheckoutSessionResult,
+  BillingPortalResult,
+  WebhookHandlerResult,
+} from './stripe'
+
+// ============================================================================
 // TYPES GÉNÉRIQUES UTILITAIRES
 // ============================================================================
 

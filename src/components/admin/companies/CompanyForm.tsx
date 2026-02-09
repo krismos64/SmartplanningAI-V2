@@ -74,13 +74,14 @@ const companyFormSchema = z.object({
   phone: z.string().optional().or(z.literal('')),
   address: z.string().optional().or(z.literal('')),
   timezone: z.string(),
-  subscriptionPlan: z.enum(['FREE', 'STARTER', 'BUSINESS', 'ENTERPRISE']),
+  subscriptionPlan: z.enum(['FREE', 'PER_SEAT']),
   subscriptionStatus: z.enum([
     'TRIAL',
     'ACTIVE',
     'PAST_DUE',
     'CANCELED',
     'EXPIRED',
+    'INCOMPLETE',
   ]),
   isActive: z.boolean(),
 })
@@ -131,8 +132,8 @@ export function CompanyForm({
           phone: company.phone || '',
           address: company.address || '',
           timezone: company.timezone,
-          subscriptionPlan: company.subscriptionPlan as SubscriptionPlan,
-          subscriptionStatus: company.subscriptionStatus as SubscriptionStatus,
+          subscriptionPlan: (company.subscription?.plan ?? 'FREE') as SubscriptionPlan,
+          subscriptionStatus: (company.subscription?.status ?? 'TRIAL') as SubscriptionStatus,
           isActive: company.isActive,
         }
       : {
@@ -345,8 +346,7 @@ export function CompanyForm({
                     </Select>
                   </FormControl>
                   <FormDescription>
-                    FREE: 5 employés | STARTER: 20 employés | BUSINESS: 100
-                    employés
+                    FREE : gratuit | PER_SEAT : 2,90€/employé/mois
                   </FormDescription>
                   <FormMessage />
                 </FormItem>

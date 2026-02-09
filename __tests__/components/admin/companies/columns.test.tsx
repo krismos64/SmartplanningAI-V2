@@ -85,8 +85,7 @@ const mockCompany: CompanyWithCounts = {
   slug: 'acme-corp',
   email: 'contact@acme.com',
   phone: '+33123456789',
-  subscriptionPlan: 'BUSINESS',
-  subscriptionStatus: 'ACTIVE',
+  subscription: { plan: 'PER_SEAT', status: 'ACTIVE', quantity: 10, pricePerEmployee: 290 },
   isActive: true,
   createdAt: new Date('2024-01-15'),
   updatedAt: new Date('2024-01-20'),
@@ -119,23 +118,19 @@ describe('createCompanyColumns', () => {
     ).toBeDefined()
   })
 
-  it('should include subscriptionPlan column', () => {
+  it('should include subscriptionPlan column (SP-350: via id)', () => {
     const columns = createCompanyColumns()
 
     expect(
-      columns.find(
-        (c) => 'accessorKey' in c && c.accessorKey === 'subscriptionPlan'
-      )
+      columns.find((c) => c.id === 'subscriptionPlan')
     ).toBeDefined()
   })
 
-  it('should include subscriptionStatus column', () => {
+  it('should include subscriptionStatus column (SP-350: via id)', () => {
     const columns = createCompanyColumns()
 
     expect(
-      columns.find(
-        (c) => 'accessorKey' in c && c.accessorKey === 'subscriptionStatus'
-      )
+      columns.find((c) => c.id === 'subscriptionStatus')
     ).toBeDefined()
   })
 
@@ -159,10 +154,10 @@ describe('Company columns rendering', () => {
     expect(screen.getByText('acme-corp')).toBeInTheDocument()
   })
 
-  it('should render subscription plan badge', () => {
+  it('should render subscription plan badge (SP-350: PER_SEAT)', () => {
     renderWithProviders(<TestTable data={[mockCompany]} />)
 
-    expect(screen.getByText('Business')).toBeInTheDocument()
+    expect(screen.getByText('Per-seat (2,90€/employé)')).toBeInTheDocument()
   })
 
   it('should render subscription status badge', () => {

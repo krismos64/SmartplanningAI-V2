@@ -56,8 +56,6 @@ const mockCompany = {
   workingHoursEnd: '18:00',
   workingDays: ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY'],
   timezone: 'Europe/Paris',
-  subscriptionPlan: 'BUSINESS',
-  subscriptionStatus: 'ACTIVE',
   trialEndsAt: null,
   subscriptionEndsAt: null,
   isActive: true,
@@ -67,6 +65,7 @@ const mockCompany = {
 
 const mockCompanyWithCounts = {
   ...mockCompany,
+  subscription: { plan: 'PER_SEAT', status: 'ACTIVE', quantity: 10, pricePerEmployee: 290 },
   _count: {
     users: 5,
     teams: 2,
@@ -97,16 +96,18 @@ describe('listCompanies', () => {
     }
   })
 
-  it('should filter by subscription plan', async () => {
+  it('should filter by subscription plan via relation (SP-350)', async () => {
     prismaMock.company.count.mockResolvedValue(1)
     prismaMock.company.findMany.mockResolvedValue([mockCompanyWithCounts])
 
-    await listCompanies({}, { subscriptionPlan: 'BUSINESS' })
+    await listCompanies({}, { subscriptionPlan: 'PER_SEAT' })
 
     expect(prismaMock.company.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({
-          subscriptionPlan: 'BUSINESS',
+          subscription: expect.objectContaining({
+            plan: 'PER_SEAT',
+          }),
         }),
       })
     )
@@ -211,8 +212,6 @@ describe('createCompany', () => {
       name: 'Acme Corp',
       email: 'contact@acme.com',
       timezone: 'Europe/Paris',
-      subscriptionPlan: 'BUSINESS',
-      subscriptionStatus: 'ACTIVE',
       isActive: true,
     })
 
@@ -254,7 +253,7 @@ describe('createCompany', () => {
     expect(result.success).toBe(false)
   })
 
-  it('should set default values for optional fields', async () => {
+  it('should set default values for optional fields (SP-350: no subscriptionPlan)', async () => {
     prismaMock.company.findUnique.mockResolvedValue(null)
     prismaMock.company.create.mockResolvedValue(mockCompanyWithCounts)
 
@@ -266,12 +265,14 @@ describe('createCompany', () => {
       expect.objectContaining({
         data: expect.objectContaining({
           timezone: 'Europe/Paris',
-          subscriptionPlan: 'FREE',
-          subscriptionStatus: 'TRIAL',
           isActive: true,
         }),
       })
     )
+    // SP-350: subscriptionPlan/subscriptionStatus ne sont plus dans Company
+    const createCall = prismaMock.company.create.mock.calls[0]?.[0]
+    expect(createCall?.data).not.toHaveProperty('subscriptionPlan')
+    expect(createCall?.data).not.toHaveProperty('subscriptionStatus')
   })
 })
 

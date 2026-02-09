@@ -20,8 +20,7 @@ const mockCompany: CompanyWithCounts = {
   slug: 'acme-corporation',
   email: 'contact@acme.com',
   phone: '+33123456789',
-  subscriptionPlan: 'BUSINESS',
-  subscriptionStatus: 'ACTIVE',
+  subscription: { plan: 'PER_SEAT', status: 'ACTIVE', quantity: 10, pricePerEmployee: 290 },
   isActive: true,
   createdAt: new Date('2024-01-15T10:00:00Z'),
   updatedAt: new Date('2024-01-15T10:00:00Z'),
@@ -37,8 +36,7 @@ const mockInactiveCompany: CompanyWithCounts = {
   id: 'company-2',
   name: 'Inactive Corp',
   slug: 'inactive-corp',
-  subscriptionPlan: 'FREE',
-  subscriptionStatus: 'TRIAL',
+  subscription: { plan: 'FREE', status: 'TRIAL', quantity: 0, pricePerEmployee: 0 },
   isActive: false,
   _count: {
     users: 2,
@@ -64,7 +62,7 @@ describe('CompanyCard', () => {
 
   it("affiche le plan d'abonnement", () => {
     render(<CompanyCard company={mockCompany} />)
-    expect(screen.getByText('Business')).toBeInTheDocument()
+    expect(screen.getByText('Per-seat (2,90€/employé)')).toBeInTheDocument()
   })
 
   it("affiche le statut d'abonnement", () => {
@@ -250,34 +248,20 @@ describe('CompanyCard', () => {
     expect(screen.queryByText('contact@acme.com')).not.toBeInTheDocument()
   })
 
-  it('affiche les différents plans correctement', () => {
+  it('affiche les différents plans correctement (SP-350)', () => {
     const { rerender } = render(<CompanyCard company={mockCompany} />)
 
-    // BUSINESS
-    expect(screen.getByText('Business')).toBeInTheDocument()
+    // PER_SEAT
+    expect(screen.getByText('Per-seat (2,90€/employé)')).toBeInTheDocument()
 
     // FREE
     rerender(
-      <CompanyCard company={{ ...mockCompany, subscriptionPlan: 'FREE' }} />
+      <CompanyCard company={{ ...mockCompany, subscription: { plan: 'FREE', status: 'TRIAL', quantity: 0, pricePerEmployee: 0 } }} />
     )
     expect(screen.getByText('Gratuit')).toBeInTheDocument()
-
-    // STARTER
-    rerender(
-      <CompanyCard company={{ ...mockCompany, subscriptionPlan: 'STARTER' }} />
-    )
-    expect(screen.getByText('Starter')).toBeInTheDocument()
-
-    // ENTERPRISE
-    rerender(
-      <CompanyCard
-        company={{ ...mockCompany, subscriptionPlan: 'ENTERPRISE' }}
-      />
-    )
-    expect(screen.getByText('Enterprise')).toBeInTheDocument()
   })
 
-  it('affiche les différents statuts correctement', () => {
+  it('affiche les différents statuts correctement (SP-350)', () => {
     const { rerender } = render(<CompanyCard company={mockCompany} />)
 
     // ACTIVE - 2 badges "Actif" (statut + isActive)
@@ -286,33 +270,33 @@ describe('CompanyCard', () => {
 
     // TRIAL
     rerender(
-      <CompanyCard company={{ ...mockCompany, subscriptionStatus: 'TRIAL' }} />
+      <CompanyCard company={{ ...mockCompany, subscription: { ...mockCompany.subscription!, status: 'TRIAL' } }} />
     )
-    expect(screen.getByText('Essai')).toBeInTheDocument()
+    expect(screen.getByText("Période d'essai")).toBeInTheDocument()
 
     // PAST_DUE
     rerender(
-      <CompanyCard
-        company={{ ...mockCompany, subscriptionStatus: 'PAST_DUE' }}
-      />
+      <CompanyCard company={{ ...mockCompany, subscription: { ...mockCompany.subscription!, status: 'PAST_DUE' } }} />
     )
-    expect(screen.getByText('Impayé')).toBeInTheDocument()
+    expect(screen.getByText('Paiement en retard')).toBeInTheDocument()
 
     // CANCELED
     rerender(
-      <CompanyCard
-        company={{ ...mockCompany, subscriptionStatus: 'CANCELED' }}
-      />
+      <CompanyCard company={{ ...mockCompany, subscription: { ...mockCompany.subscription!, status: 'CANCELED' } }} />
     )
     expect(screen.getByText('Annulé')).toBeInTheDocument()
 
     // EXPIRED
     rerender(
-      <CompanyCard
-        company={{ ...mockCompany, subscriptionStatus: 'EXPIRED' }}
-      />
+      <CompanyCard company={{ ...mockCompany, subscription: { ...mockCompany.subscription!, status: 'EXPIRED' } }} />
     )
     expect(screen.getByText('Expiré')).toBeInTheDocument()
+
+    // INCOMPLETE (SP-350)
+    rerender(
+      <CompanyCard company={{ ...mockCompany, subscription: { ...mockCompany.subscription!, status: 'INCOMPLETE' } }} />
+    )
+    expect(screen.getByText('Paiement incomplet')).toBeInTheDocument()
   })
 
   it('a le data-testid correct', () => {

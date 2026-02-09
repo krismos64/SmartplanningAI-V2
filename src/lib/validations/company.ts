@@ -17,13 +17,11 @@ import { phoneSchema, siretSchema, urlSchema } from './common'
 
 /**
  * Plans d'abonnement disponibles
- * Synchronisé avec enum SubscriptionPlan Prisma
+ * Synchronisé avec enum SubscriptionPlan Prisma (SP-350 per-seat)
  */
 export const subscriptionPlanEnum = z.enum([
   'FREE',
-  'STARTER',
-  'BUSINESS',
-  'ENTERPRISE',
+  'PER_SEAT',
 ])
 
 export type SubscriptionPlan = z.infer<typeof subscriptionPlanEnum>
@@ -38,6 +36,7 @@ export const subscriptionStatusEnum = z.enum([
   'PAST_DUE',
   'CANCELED',
   'EXPIRED',
+  'INCOMPLETE',
 ])
 
 export type SubscriptionStatus = z.infer<typeof subscriptionStatusEnum>
@@ -99,12 +98,6 @@ export const companyBaseSchema = z.object({
  * Herite du schema de base avec valeurs par defaut
  */
 export const createCompanySchema = companyBaseSchema.extend({
-  /** Plan d'abonnement (defaut: FREE) */
-  subscriptionPlan: subscriptionPlanEnum.default('FREE'),
-
-  /** Statut d'abonnement (defaut: TRIAL pour nouvelles entreprises) */
-  subscriptionStatus: subscriptionStatusEnum.default('TRIAL'),
-
   /** Entreprise active par defaut */
   isActive: z.boolean().default(true),
 })
@@ -123,12 +116,6 @@ export type CreateCompanyInput = z.infer<typeof createCompanySchema>
 export const updateCompanySchema = companyBaseSchema.partial().extend({
   /** ID de la Company a modifier (requis) */
   id: z.string().cuid('ID de company invalide'),
-
-  /** Plan d'abonnement */
-  subscriptionPlan: subscriptionPlanEnum.optional(),
-
-  /** Statut d'abonnement */
-  subscriptionStatus: subscriptionStatusEnum.optional(),
 
   /** Statut actif/inactif */
   isActive: z.boolean().optional(),
@@ -170,9 +157,7 @@ export type CompanyFilters = z.infer<typeof companyFiltersSchema>
  */
 export const subscriptionPlanLabels: Record<SubscriptionPlan, string> = {
   FREE: 'Gratuit',
-  STARTER: 'Starter',
-  BUSINESS: 'Business',
-  ENTERPRISE: 'Entreprise',
+  PER_SEAT: 'Per-seat (2,90€/employé)',
 }
 
 /**
@@ -184,4 +169,5 @@ export const subscriptionStatusLabels: Record<SubscriptionStatus, string> = {
   PAST_DUE: 'Paiement en retard',
   CANCELED: 'Annulé',
   EXPIRED: 'Expiré',
+  INCOMPLETE: 'Paiement incomplet',
 }

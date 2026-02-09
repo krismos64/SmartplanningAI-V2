@@ -12,6 +12,7 @@
 
 import { Prisma } from '@prisma/client'
 
+import { PRICING } from '@/lib/config/pricing'
 import { sendWelcomeEmail } from '@/lib/email/templates/welcome'
 import { hashPassword } from '@/lib/password'
 import { prisma } from '@/lib/prisma'
@@ -145,10 +146,9 @@ export async function registerAction(
           name: companyName.trim(),
           slug: companySlug,
           isActive: true,
-          // Plan FREE par défaut avec période d'essai
-          subscriptionPlan: 'FREE',
-          subscriptionStatus: 'TRIAL',
-          trialEndsAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), // 14 jours
+          trialEndsAt: new Date(
+            Date.now() + PRICING.TRIAL_DAYS * 24 * 60 * 60 * 1000
+          ),
         },
       })
 
