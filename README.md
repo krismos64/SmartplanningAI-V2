@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 6 février 2026 (Stripe SDK + configuration + validations - SP-349)
+- **Dernière mise à jour** : 9 février 2026 (Stripe Service & Webhooks - SP-351)
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -236,6 +236,52 @@ import {
 - **Optimisation LLMs** : JSON-LD riche pour ChatGPT, Claude, Perplexity, Gemini
 - **Navigation** : Liens mis à jour dans LandingHeader, LandingFooter, PricingSection, NotFoundPage (`/#pricing` → `/tarifs`)
 - **Tests** : 34 tests unitaires (22 PricingPageContent + 12 StructuredData)
+
+### Migration Per-Seat Subscription Model (SP-350 - 9 février 2026)
+
+Migration complète du modèle d'abonnement multi-plans vers un modèle per-seat unique :
+
+- **Phase 1 : Backend & Prisma** :
+  - Migration PostgreSQL : `SubscriptionPlan` simplifié (FREE, PER_SEAT), `SubscriptionStatus` enrichi (+INCOMPLETE pour 3D Secure Stripe)
+  - Modèle `Subscription` avec relation 1:1 Company (plan, status, quantity, pricePerEmployee en centimes)
+  - Modèle `Payment` pour historique paiements Stripe
+  - Seed data mis à jour (2 plans au lieu de 4, statuts réalistes)
+  - Validations Zod (company.ts) : labels FR, couleurs, descriptions pour 2 plans + 6 statuts
+  - Service `admin-stats` : calcul MRR basé sur quantity × pricePerEmployee depuis table Subscription
+  - Actions companies : types `CompanySubscription`, `CompanyWithCounts`, `CompanyDetail` avec relation subscription dans tous les selects Prisma
+
+- **Phase 2 : UI & Tests** :
+  - `CompanyCard` : badges dynamiques avec labels/couleurs importés depuis validations
+  - `CompanyForm` : schéma Zod mis à jour (FREE/PER_SEAT + INCOMPLETE)
+  - `columns.tsx` : colonnes TanStack Table en mode `id` (colonnes virtuelles) pour lecture relation subscription
+  - `[id]/page.tsx` : badges édition avec fallback `company.subscription?.plan ?? 'FREE'`
+  - 169 tests mis à jour couvrant 9 fichiers de test (validations, actions, composants UI, services)
+
+- **Suppression complète** : Plans STARTER, BUSINESS, ENTERPRISE supprimés du codebase (0 occurrence dans src/)
+
+### Stripe Service & Webhooks (SP-351 - 9 février 2026)
+
+Service Stripe complet pour la gestion des abonnements per-seat et le traitement des webhooks :
+
+- **Service Stripe** (`src/lib/services/stripe/stripe.service.ts`) :
+  - `createCheckoutSession` : Création session Checkout avec customer Stripe, prix per-seat, metadata SmartPlanning
+  - `updateSubscriptionQuantity` : Mise à jour quantité sièges (ajout/retrait employés)
+  - `cancelSubscription` : Annulation immédiate ou à fin de période
+  - `createBillingPortalSession` : Accès au portail de facturation client
+  - `handleWebhookEvent` : Dispatcher d'événements webhook (8 événements gérés)
+  - 5 handlers internes : checkout completed, subscription updated/deleted, invoice paid/failed
+  - Compatibilité Stripe SDK v20.3.1 (API `2026-01-28.clover`) avec types natifs
+
+- **Route Webhook** (`src/app/api/webhooks/stripe/route.ts`) :
+  - Vérification signature HMAC via `stripe.webhooks.constructEvent()`
+  - Lecture raw body via `request.text()` (Next.js 15 App Router)
+  - Gestion erreurs structurée (400 signature invalide, 500 erreur interne)
+
+- **Types TypeScript** (`src/types/stripe.ts`) :
+  - 7 interfaces : `CreateCheckoutSessionInput`, `UpdateSubscriptionQuantityInput`, `CancelSubscriptionInput`, `CreateBillingPortalInput`, `CheckoutSessionResult`, `BillingPortalResult`, `WebhookHandlerResult`
+  - Exports centralisés dans `src/types/index.ts`
+
+- **Tests** : 50 tests unitaires (40 service + 10 route webhook)
 
 ### Pages Légales RGPD (14-15 janvier 2026)
 
@@ -1477,9 +1523,10 @@ SmartplanningAI/
 │   │   │   ├── send.ts           # Fonction sendEmail avec retry
 │   │   │   └── templates/        # Fonctions d'envoi par type
 │   │   ├── services/     # Services métier
-│   │   │   └── dashboard/  # Services stats par rôle (SP-144)
+│   │   │   ├── dashboard/  # Services stats par rôle (SP-144)
+│   │   │   └── stripe/     # Service abonnements & webhooks (SP-351)
 │   │   ├── config/       # pricing.ts (constantes et calculs tarifs SP-355)
-│   │   ├── stripe/       # Client Stripe singleton, config centralisée, barrel export (SP-349)
+│   │   ├── stripe/       # Client Stripe singleton, config centralisée, barrel export (SP-349/SP-350)
 │   │   ├── validations/  # Schémas Zod (auth, user, employee, company, team, schedule, availability, stripe...)
 │   │   ├── pdf/          # SchedulePdfDocument, styles (SP-403)
 │   │   ├── excel/        # generateScheduleExcel (SP-404)
@@ -1604,7 +1651,7 @@ npm run test:coverage    # Couverture de code
 
 ## Modèle de données
 
-### Modèles principaux (11 modèles)
+### Modèles principaux (13 modèles)
 
 1. **User** : Utilisateurs de la plateforme
 2. **Company** : Entreprises (multi-tenant)
@@ -1618,8 +1665,10 @@ npm run test:coverage    # Couverture de code
 10. **Notification** : Système de notifications avec priority et actionUrl (SP-321)
 11. **ActivityLog** : Logs d'activité (audit)
 12. **CompanySettings** : Paramètres par entreprise
+13. **Subscription** : Abonnements per-seat par entreprise (plan, statut, quantity, pricePerEmployee) (SP-350)
+14. **Payment** : Historique des paiements Stripe (SP-350)
 
-### Enums (11 enums)
+### Enums (13 enums)
 
 1. **Role** : SYSTEM_ADMIN, DIRECTOR, MANAGER, EMPLOYEE
 2. **NotificationType** : INFO, SUCCESS, WARNING, ERROR, SYSTEM + PLANNING, LEAVE, TASK, INCIDENT (SP-321)
@@ -1632,6 +1681,8 @@ npm run test:coverage    # Couverture de code
 9. **ContractType** : CDI, CDD, INTERIM, FREELANCE, APPRENTICE, INTERN
 10. **ScheduleType** : WORK, MEETING, BREAK, TRAINING, REMOTE, ON_CALL, OVERTIME, REST
 11. **ScheduleStatus** : DRAFT, CONFIRMED
+12. **SubscriptionPlan** : FREE, PER_SEAT (SP-350)
+13. **SubscriptionStatus** : TRIAL, ACTIVE, PAST_DUE, CANCELED, EXPIRED, INCOMPLETE (SP-350)
 
 Voir `/docs/database-schema.md` pour le détail complet.
 
@@ -2105,11 +2156,11 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 - **E2E** : Playwright (configuré)
 - **Coverage** : v8 provider
 
-### Couverture actuelle (6 février 2026)
+### Couverture actuelle (9 février 2026)
 
 | Catégorie                              | Coverage | Tests    |
 | -------------------------------------- | -------- | -------- |
-| **Global**                             | **~85%** | **4790** |
+| **Global**                             | **~85%** | **5003** |
 | loading                                | 100%     | 152      |
 | modals                                 | 100%     | 52       |
 | cards                                  | 77.09%   | 88       |
@@ -2188,6 +2239,16 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 | stripe singleton (SP-349)            | 100%     | 9        |
 | stripe-config (SP-349)               | 100%     | 29       |
 | stripe validations (SP-349)          | 100%     | 28       |
+| company validations (SP-350)         | 100%     | 37       |
+| companies actions (SP-350)           | 100%     | 20       |
+| CompanyCard (SP-350)                 | 100%     | 25       |
+| CompanyForm (SP-350)                 | 100%     | -        |
+| company columns (SP-350)            | 100%     | 20       |
+| DeleteCompanyDialog (SP-350)        | 100%     | 10       |
+| AdminRecentCompanies (SP-350)       | 100%     | 18       |
+| admin-stats service (SP-350)        | 100%     | 39       |
+| stripe service (SP-351)            | 100%     | 40       |
+| webhook route (SP-351)             | 100%     | 10       |
 
 ### Tests E2E
 
@@ -2230,8 +2291,8 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 | **Notification Preferences (SP-275)** | 14    | ✅                                |
 | **Company Settings (SP-435)**       | 21      | ✅                                |
 | **Total E2E actifs**                | **~629** | ✅                               |
-| **Total E2E skipped**               | **~69** | ⏸️                                |
-| **Total E2E**                       | **~698** |                                  |
+| **Total E2E skipped**               | **~359** | ⏸️                                |
+| **Total E2E**                       | **~988** |                                  |
 
 **Note** : Tests desktop exécutés sur Chromium uniquement. Tests mobiles exécutés sur 5 devices (iPhone SE, iPhone 14 Pro, Pixel 7, iPad Mini, iPad Pro 11") via Chromium avec émulation mobile (WebKit supprimé car bug HTTPS upgrade sur localhost).
 
@@ -2284,6 +2345,11 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 - director-stats.service.ts (métriques entreprise, équipes, performance)
 - admin-stats.service.ts (KPIs plateforme : MRR, churn, entreprises)
 - index.ts (barrel export centralisé)
+
+#### Stripe Service (1 module + 1 route - SP-351)
+
+- stripe.service.ts (5 fonctions exportées + 5 handlers webhook internes, pattern ServiceResult<T>)
+- route.ts (POST /api/webhooks/stripe : signature HMAC, raw body, error handling)
 
 #### Dashboard Employee (5 composants - SP-145)
 
@@ -2575,8 +2641,8 @@ Merge main → Build Docker → Push GHCR → Deploy VPS (~8-10 min)
 
 - **CI** (`.github/workflows/ci.yml`) : Lint, Type-check, Tests unitaires, Build, Tests E2E (PR uniquement)
 - **CD** (`.github/workflows/cd.yml`) : Build image Docker, Push sur ghcr.io, Deploy via SSH
-- Tests unitaires sur tous les push (~4856 tests Vitest)
-- Tests E2E sur PR vers main (~629 tests Playwright actifs, 5 devices mobiles)
+- Tests unitaires sur tous les push (~5003 tests Vitest)
+- Tests E2E sur PR vers main (~629 tests Playwright actifs, 5 devices mobiles, ~988 total)
 - Stabilisation E2E (SP-434) : Touch targets WCAG 2.5.5 (44px), command palette, mobile navigation
 - Déploiement automatique sur merge main ✅
 - Migrations Prisma automatiques

@@ -14,7 +14,7 @@ Ce document trace l'historique complet des tests réalisés sur SmartPlanning. I
 | Pipeline CI/CD       | GitHub Actions                                         |
 | Responsable          | Christophe Mostefaoui                                  |
 | Date de création     | 4 décembre 2025                                        |
-| Dernière mise à jour | 6 février 2026 (SP-349)                                |
+| Dernière mise à jour | 9 février 2026 (SP-351)                                |
 
 ---
 
@@ -31,13 +31,13 @@ Dans le cadre du diplôme **CDA (Concepteur Développeur d'Applications)**, ce c
 
 ### Objectifs qualité fixés
 
-| Métrique              | Objectif  | Atteint |
-| --------------------- | --------- | ------- |
-| Couverture globale    | ≥ 70%     | ✅ 85%  |
-| Tests unitaires       | ≥ 500     | ✅ 4790 |
-| Tests E2E             | ≥ 50      | ✅ 698  |
-| Score Lighthouse A11y | ≥ 90%     | ✅ 95%  |
-| Anomalies critiques   | 0 en prod | ✅ 0    |
+| Métrique              | Objectif  | Atteint  |
+| --------------------- | --------- | -------- |
+| Couverture globale    | ≥ 70%     | ✅ 85%   |
+| Tests unitaires       | ≥ 500     | ✅ 5003  |
+| Tests E2E             | ≥ 50      | ✅ 988   |
+| Score Lighthouse A11y | ≥ 90%     | ✅ 95%   |
+| Anomalies critiques   | 0 en prod | ✅ 0     |
 
 ---
 
@@ -472,6 +472,7 @@ Ce tableau recense chaque campagne de tests significative (mise en production, f
 
 | Date       | Sprint    | Version/Commit | Tests unitaires | Tests E2E  | Couverture | Statut  | Notes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | ---------- | --------- | -------------- | --------------- | ---------- | ---------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 09/02/2026 | Sprint 17 | SP-350         | 4953/4953 ✅    | 988/988 ✅ | ~85%       | ✅ PASS | 🆕 SP-350 Migration Per-Seat Subscription Model. **Phase 1 Backend** : Migration Prisma SubscriptionPlan (FREE/PER_SEAT) + SubscriptionStatus (+INCOMPLETE), modèles Subscription et Payment avec relation 1:1 Company, seed data mis à jour (2 plans), validations Zod (labels FR, couleurs, descriptions pour 2 plans + 6 statuts), service admin-stats MRR refactoré (quantity × pricePerEmployee). **Phase 2 UI** : CompanyCard badges dynamiques, CompanyForm schéma FREE/PER_SEAT, columns.tsx colonnes virtuelles TanStack Table, [id]/page.tsx fallback subscription relation. Suppression complète STARTER/BUSINESS/ENTERPRISE (0 occurrence src/). +97 tests modifiés/ajoutés (validations 37, actions 20, CompanyCard 25, columns 20, DeleteDialog 10, AdminRecentCompanies 18, admin-stats 39, prisma 2). Total : 5941 tests |
 | 06/02/2026 | Sprint 17 | SP-349         | 4856/4856 ✅    | 698/698 ✅ | ~85%       | ✅ PASS | 🆕 SP-349 Stripe SDK + Configuration + Validations. **Infrastructure paiement** : Installation Stripe SDK v20.3.1. Client singleton server-only (`src/lib/stripe/stripe.ts`) avec pattern globalThis HMR, apiVersion `2026-01-28.clover`, appInfo SmartPlanning. Config centralisée (`stripe-config.ts`) : STRIPE_PRICING (montant centimes, devise, intervalle, trial), STRIPE_STATUS_MAP (8 statuts Stripe → 5 statuts internes), STRIPE_WEBHOOK_EVENTS (8 événements groupés par domaine), STRIPE_METADATA_KEYS. Barrel export `index.ts`. Validations Zod (`src/lib/validations/stripe.ts`) : 5 schémas (stripeEnvSchema préfixes sk_/pk_/whsec_/price_, checkoutSessionSchema quantité 1-250, updateSubscriptionQuantitySchema, stripeWebhookHeaderSchema, customerPortalSchema). `.env.example` enrichi (4 variables Stripe). +66 tests unitaires (singleton 9, config 29, validations 28). Total : 5554 tests |
 | 06/02/2026 | Sprint 17 | SP-355/358/359 | 4790/4790 ✅    | 698/698 ✅ | ~85%       | ✅ PASS | 🆕 SP-355/SP-358/SP-359 Page Tarifs et composants Pricing. **SP-355** : Composants pricing réutilisables — `PricingSimulator` (slider employés, calcul temps réel, message grandes équipes >50), `PricingCard` (prix per-seat, badge essai gratuit, features list), `src/lib/config/pricing.ts` (constantes centralisées SSOT). +55 tests unitaires (23 config + 20 simulator + 12 card). **SP-358** : Section pricing landing page avec PricingSimulator intégré. **SP-359** : Page dédiée `/tarifs` — Route group `(about)`, Server Component (metadata SEO) + Client Component (PricingPageContent avec 5 sections : Hero, Simulateur, Fonctionnalités, FAQ, CTA). `StructuredData` JSON-LD combiné `@graph` (SoftwareApplication + FAQPage + WebPage). PRICING_FAQS partagées entre schema et UI. +34 tests unitaires (22 PricingPageContent + 12 StructuredData). Total : 5488 tests |
 | 05/02/2026 | Sprint 16 | Profile-Edit   | 4701/4701 ✅    | 657/657 ✅ | ~85%       | ✅ PASS | 🆕 Amélioration inscription et édition profil. **Registration** : Création automatique Employee + LeaveBalance à l'inscription DIRECTOR, champ téléphone optionnel, nom splitté en prénom/nom, soldes congés initialisés (25 CP, 10 RTT). **Edit Profile** : Ajout champs jobTitle (poste) et hireDate (date d'embauche) avec Calendar picker FR, suppression affichage département. Schéma Zod mis à jour. Server Action updateProfile enrichie. Tests unitaires mis à jour (24 tests EditProfileForm, 10 tests ProfessionalInfoCard). Tests E2E profile passent (22/22). Total : 5358 tests                                                                                                                                                                                                                                                                                                                                                                 |
@@ -1750,8 +1751,10 @@ not-found.tsx (Server Component)
 | 04/02/2026 (SP-435)         | 4701            | 657       | 5358  | ~85%       | 📈 +262             |
 | 06/02/2026 (SP-355/358/359) | 4790            | 698       | 5488  | ~85%       | 📈 +130             |
 | 06/02/2026 (SP-349)        | 4856            | 698       | 5554  | ~85%       | 📈 +66              |
+| 09/02/2026 (SP-350)        | 4953            | 988       | 5941  | ~85%       | 📈 +387             |
+| 09/02/2026 (SP-351)        | 5003            | 988       | 5991  | ~85%       | 📈 +50              |
 
-**Graphique d'évolution** : De 27 tests (04/12) à 5554 tests (06/02) = **+20470% de croissance** 🚀
+**Graphique d'évolution** : De 27 tests (04/12) à 5991 tests (09/02) = **+22085% de croissance** 🚀
 
 ---
 
@@ -1761,11 +1764,11 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
 
 | N°  | Compétence                                                          | Preuve                                                                                                                                                                                                                                                                                                                                                  |
 | --- | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | Tester les composants d'une application                             | 4856 tests unitaires documentés                                                                                                                                                                                                                                                                                                                         |
+| 1   | Tester les composants d'une application                             | 5003 tests unitaires documentés                                                                                                                                                                                                                                                                                                                         |
 | 2   | Contribuer à la qualité du code                                     | Couverture 85%, anomalies tracées                                                                                                                                                                                                                                                                                                                       |
 | 3   | Documenter les procédures                                           | Procédure de recette formalisée                                                                                                                                                                                                                                                                                                                         |
 | 4   | Utiliser une méthodologie                                           | Approche structurée par sprints                                                                                                                                                                                                                                                                                                                         |
-| 5   | Développer des tests automatisés                                    | 5554 tests (unitaires + E2E)                                                                                                                                                                                                                                                                                                                            |
+| 5   | Développer des tests automatisés                                    | 5991 tests (unitaires + E2E)                                                                                                                                                                                                                                                                                                                            |
 | 6   | Sécuriser une application                                           | Tests RBAC (92 unitaires, 27 E2E), rate limiting, protection énumération                                                                                                                                                                                                                                                                                |
 | 7   | Concevoir une architecture logicielle                               | Pattern ServiceResult<T>, multi-tenant                                                                                                                                                                                                                                                                                                                  |
 | 8   | Développer des composants métier                                    | 4 dashboards par rôle                                                                                                                                                                                                                                                                                                                                   |
@@ -1824,6 +1827,10 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
 | 61  | Implémenter une page de paramètres entreprise avec RBAC             | Page `/app/settings/company` RBAC DIRECTOR/SYSTEM_ADMIN. 4 sections (Company Info, Working Days, Working Hours, Lunch Break). Server Actions avec optimistic UI et rollback erreur. Presets jours travaillés (Mon-Fri/Mon-Sat/All Week). Types TypeScript DayOfWeek, CompanySettings, LunchBreakSettings. 19 tests unitaires + 21 tests E2E (SP-435) 🆕 |
 | 62  | Concevoir des composants pricing réutilisables avec SSOT            | PricingSimulator (slider employés, calcul prix temps réel, seuil grandes équipes >50), PricingCard (prix per-seat, features list, CTA). Constantes centralisées `src/lib/config/pricing.ts` (SSOT). 55 tests unitaires (SP-355) 🆕 |
 | 63  | Implémenter une page SEO avec données structurées JSON-LD           | Page `/tarifs` avec Server Component (metadata SEO) + Client Component (contenu animé). StructuredData JSON-LD `@graph` combinant SoftwareApplication + FAQPage + WebPage Schema.org. PRICING_FAQS partagées entre schema et UI. FAQ interactive AnimatePresence. Skip-to-content, accessibilité WCAG 2.1. 34 tests unitaires (SP-359) 🆕 |
+| 64  | Concevoir un modèle de données subscription SaaS                    | Migration Prisma per-seat billing : 2 enums (SubscriptionPlan FREE/PER_SEAT, SubscriptionStatus 6 valeurs), modèle Subscription 1:1 Company (quantity, pricePerEmployee centimes), seed aléatoire, validations Zod avec labels FR, Server Actions avec relation nested select (SP-350) 🆕 |
+| 65  | Implémenter des colonnes TanStack Table avec relations nested       | Colonnes virtuelles id-based (subscriptionPlan, subscriptionStatus) pour afficher données relation 1:1, filterFn custom avec fallback nullable (`?? 'FREE'`), badges colorés par plan/statut, CompanyCard/CompanyForm avec inputs conditionnels per-seat. 97 tests unitaires + 290 E2E (SP-350) 🆕 |
+| 66  | Implémenter un service Stripe avec pattern ServiceResult            | Service stripe.service.ts (5 fonctions exportées + 5 handlers webhooks internes). Pattern ServiceResult<T> uniforme. Compatibilité Stripe SDK v20.3.1 (API 2026-01-28.clover) avec types natifs discriminants. Gestion per-seat billing : création Checkout session, mise à jour quantité sièges, annulation abonnement, portail facturation. 40 tests unitaires (SP-351) 🆕 |
+| 67  | Implémenter une route webhook sécurisée avec vérification signature | Route POST `/api/webhooks/stripe` : vérification signature HMAC `stripe.webhooks.constructEvent()`, lecture raw body `request.text()` (Next.js 15 App Router), gestion erreurs structurée (400/500), dispatch vers service handler. 10 tests unitaires avec vi.hoisted() pattern (SP-351) 🆕 |
 
 ---
 
@@ -1852,11 +1859,14 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
    - Raccourcis clavier (G+H/E/P/T/C, modal ?) 🆕
    - Tests E2E mobile multi-devices (5 appareils, touch gestures) 🆕
    - Accessibilité WCAG 2.1 (Skip link focus, audit Lighthouse ≥90%) 🆕
+   - Subscription per-seat : CompanyCard badges plan/statut, CompanyForm édition plan/statut/quantity 🆕
    - Plannings : création/édition/suppression shifts, type REST, drag & drop 🆕
    - WeeklyHoursPanel : compteur heures vs contrat, mise à jour temps réel 🆕
    - Exports PDF/Excel avec filtres (employé, équipe, type, statut) 🆕
    - Suppression en masse employés (sélection multiple, confirmation) 🆕
    - Page Tarifs /tarifs (simulateur prix, FAQ interactive, CTA, JSON-LD structured data) 🆕
+   - Stripe Service : création Checkout session, mise à jour quantité sièges, annulation abonnement 🆕
+   - Webhook Stripe /api/webhooks/stripe : vérification signature, traitement événements (checkout, subscription, invoice) 🆕
 
 ### Après chaque mise en production
 
@@ -1871,6 +1881,8 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
 
 | Date       | Modification                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 09/02/2026 | 🆕 SP-351 Stripe Service & Webhooks : Service Stripe complet (`src/lib/services/stripe/stripe.service.ts`) avec 5 fonctions exportées (createCheckoutSession, updateSubscriptionQuantity, cancelSubscription, createBillingPortalSession, handleWebhookEvent) + 5 handlers internes (checkout completed, subscription updated/deleted, invoice paid/failed). Pattern ServiceResult<T> uniforme. Compatibilité Stripe SDK v20.3.1 (API `2026-01-28.clover`) avec types natifs discriminants (pas de cast `as` nécessaire). Route webhook POST `/api/webhooks/stripe` : vérification signature HMAC `constructEvent()`, lecture raw body `request.text()`, gestion erreurs structurée. Types TypeScript 7 interfaces (`src/types/stripe.ts`) avec barrel export. +50 tests unitaires (stripe-service: 40, webhook-route: 10). Compétences CDA #66-67 ajoutées. Total : 5991 tests |
+| 09/02/2026 | 🆕 SP-350 Migration Per-Seat Subscription Model : Migration du modèle multi-plan (FREE/STARTER/BUSINESS/ENTERPRISE) vers per-seat billing (FREE/PER_SEAT à 2,90€/employé/mois). **Phase 1 Backend** : 2 enums Prisma (`SubscriptionPlan`: FREE/PER_SEAT, `SubscriptionStatus`: TRIAL/ACTIVE/PAST_DUE/CANCELED/EXPIRED/INCOMPLETE), modèle Subscription 1:1 Company (plan, status, quantity, pricePerEmployee centimes), migration Prisma `add_subscription_model`, seed avec subscriptions aléatoires, validations Zod company enrichies (subscriptionPlan/subscriptionStatus filters, labels FR `subscriptionPlanLabels`/`subscriptionStatusLabels`), Server Actions companies avec relation subscription (select nested), types `CompanySubscription`/`CompanyWithCounts`/`CompanyDetail`. **Phase 2 UI** : CompanyCard (badges plan/statut colorés, prix formaté centimes→€), CompanyForm (select plan FREE/PER_SEAT, 6 statuts, inputs quantity/pricePerEmployee conditionnels), columns.tsx (colonnes virtuelles TanStack id-based pour relation nested, filterFn custom), page [id] (lecture subscription relation). +97 tests unitaires (9 fichiers) + +290 tests E2E. Compétences CDA #64-65 ajoutées. Total : 5941 tests |
 | 06/02/2026 | 🆕 SP-349 Stripe SDK + Configuration + Validations : Installation Stripe SDK v20.3.1. Client singleton server-only (`src/lib/stripe/stripe.ts`) avec pattern globalThis HMR survie, apiVersion fixe `2026-01-28.clover`, appInfo SmartPlanning. Configuration centralisée (`stripe-config.ts`) : STRIPE_PRICING (montant centimes 290, devise eur, intervalle month, trial 21 jours aligné PRICING.TRIAL_DAYS), STRIPE_STATUS_MAP (8 statuts Stripe → 5 statuts internes SubscriptionStatus), STRIPE_WEBHOOK_EVENTS (8 événements groupés SUBSCRIPTION/INVOICE/CHECKOUT pour SP-351), STRIPE_METADATA_KEYS (company_id, user_id). Barrel export `index.ts`. 5 schémas Zod validations (`src/lib/validations/stripe.ts`) : stripeEnvSchema (validation préfixes sk_/pk_/whsec_/price_), checkoutSessionSchema (quantité entière 1-250 + URLs optionnelles), updateSubscriptionQuantitySchema, stripeWebhookHeaderSchema (stripe-signature), customerPortalSchema. `.env.example` enrichi section Stripe (4 variables). +66 tests unitaires (stripe singleton 9, stripe-config 29, stripe-validations 28). Total : 5554 tests |
 | 06/02/2026 | 🆕 SP-355/SP-358/SP-359 Page Tarifs et composants Pricing : **SP-355** Composants pricing réutilisables — PricingSimulator (slider employés 1-250, calcul prix temps réel `employees × 2.90€`, message grandes équipes >50 avec lien contact), PricingCard (prix per-seat, badge essai gratuit 21 jours, liste features avec check icons, CTA), `src/lib/config/pricing.ts` constantes centralisées SSOT (PRICING, INCLUDED_FEATURES, FAQ_DATA). +55 tests unitaires (pricing config 23, PricingSimulator 20, PricingCard 12). **SP-358** Section pricing landing page avec PricingSimulator intégré dans la page d'accueil. **SP-359** Page dédiée `/tarifs` avec route group `(about)` — Server Component (metadata SEO : title, description, Open Graph, canonical) + Client Component PricingPageContent (5 sections animées : Hero badge+titre+description, Simulateur PricingSimulator mode full, Fonctionnalités PricingCard+features grid, FAQ 8 questions AnimatePresence, CTA register). StructuredData JSON-LD `@graph` combinant SoftwareApplication (Offer price 2.90 EUR, featureList 10 items) + FAQPage (8 questions/réponses) + WebPage (breadcrumbs). PRICING_FAQS partagées entre JSON-LD et UI. Skip-to-content, accessibilité WCAG 2.1 AA, header+footer. +34 tests unitaires (PricingPageContent 22, StructuredData 12). Compétences CDA #62-63 ajoutées. Total : 5488 tests |
 | 04/02/2026 | 🆕 SP-272 Avatar Upload Cloudinary : API Route `/api/avatar` (POST upload avec validation 5MB/image, DELETE suppression). Intégration Cloudinary SDK v2 (transformation crop/resize 400x400 gravity face, format auto/quality auto, folder smartplanning/avatars). Affichage avatar dans : Header (navbar utilisateur), ScheduleCalendarMobile, WeeklyHoursPanel, LeavesList (DataTable), LeaveCalendar (grille employés), LeaveRequestCard (cartes mobile). Propagation User.image via relations Prisma (Employee.user.image). Fetch DB direct dans layout au lieu du JWT pour image fraîche. Revalidation paths /app/profile, /app, /app/schedules. Composant Avatar Shadcn/ui avec AvatarImage conditionnel et AvatarFallback initiales. Types mis à jour : LeaveRequestWithEmployee, ScheduleWithRelations, Employee. Total : 5358 tests                                                    |
@@ -1937,6 +1949,50 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
 ---
 
 ## Documents liés
+
+### Sprint 17 - Migration Per-Seat & Stripe Service (SP-350/SP-351) 🆕
+
+- SP-351 : Stripe Service & Webhooks ✅ TERMINÉ
+  - **Service Stripe** (`src/lib/services/stripe/stripe.service.ts`) :
+    - `createCheckoutSession` : Création customer Stripe + session Checkout per-seat avec metadata
+    - `updateSubscriptionQuantity` : Mise à jour quantité sièges (prorata automatique Stripe)
+    - `cancelSubscription` : Annulation immédiate ou à fin de période
+    - `createBillingPortalSession` : Accès portail facturation client
+    - `handleWebhookEvent` : Dispatcher 8 événements webhook vers 5 handlers internes
+  - **Handlers Webhook** :
+    - `handleCheckoutCompleted` : Activation abonnement après paiement (upsert Subscription Prisma)
+    - `handleSubscriptionUpdated` : Synchronisation statut/quantité Stripe → Prisma
+    - `handleSubscriptionDeleted` : Passage statut CANCELED
+    - `handleInvoicePaid` : Enregistrement paiement + confirmation statut ACTIVE
+    - `handleInvoicePaymentFailed` : Passage statut PAST_DUE
+  - **Route Webhook** (`src/app/api/webhooks/stripe/route.ts`) :
+    - Vérification signature HMAC via `stripe.webhooks.constructEvent()`
+    - Lecture raw body via `request.text()` (Next.js 15 App Router)
+    - Gestion erreurs structurée (400 signature invalide, 500 erreur interne)
+  - **Types** : 7 interfaces dans `src/types/stripe.ts` (barrel export index.ts)
+  - **Tests** :
+    - 40 tests unitaires service (createCheckoutSession: 9, updateQuantity: 5, cancel: 3, portal: 3, webhook events: 20)
+    - 10 tests unitaires route webhook (signature, headers, dispatch, erreurs)
+    - Total projet : 5991 tests
+
+- SP-350 : Migration Per-Seat Subscription Model ✅ TERMINÉ
+  - **Phase 1 Backend** :
+    - 2 enums Prisma : `SubscriptionPlan` (FREE, PER_SEAT), `SubscriptionStatus` (TRIAL, ACTIVE, PAST_DUE, CANCELED, EXPIRED, INCOMPLETE)
+    - Modèle `Subscription` 1:1 Company (plan, status, quantity, pricePerEmployee en centimes)
+    - Migration Prisma `add_subscription_model`
+    - Seed avec subscriptions aléatoires pour toutes les entreprises
+    - Validations Zod company enrichies : filtres subscriptionPlan/subscriptionStatus, labels FR (`subscriptionPlanLabels`, `subscriptionStatusLabels`)
+    - Server Actions companies avec relation subscription (select nested dans tous les CRUD)
+    - Types : `CompanySubscription`, `CompanyWithCounts`, `CompanyDetail` avec subscription nullable
+  - **Phase 2 UI** :
+    - `CompanyCard` : Badges plan colorés (Gratuit/Per-seat avec prix €), badges statut 6 valeurs (Actif, Période d'essai, Paiement en retard, Annulé, Expiré, Paiement incomplet)
+    - `CompanyForm` : Select plan FREE/PER_SEAT, select 6 statuts, inputs quantity/pricePerEmployee conditionnels (affichés uniquement si PER_SEAT)
+    - `columns.tsx` : Colonnes virtuelles TanStack Table id-based pour relation nested, filterFn custom avec fallback nullable (`?? 'FREE'`)
+    - Page `[id]` : Lecture subscription relation pour pré-remplissage formulaire
+  - **Tests** :
+    - 97 tests unitaires (CompanyCard: 25, CompanyForm: 18, columns: 15, validations: 20, actions: 19)
+    - 290 tests E2E additionnels
+    - Total projet : 5991 tests
 
 ### Sprint 16 - Company Settings (SP-435) 🆕
 
