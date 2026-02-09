@@ -39,6 +39,16 @@ import type {
 // ============================================================================
 
 /**
+ * Subscription partielle incluse dans les selects Company
+ */
+export interface CompanySubscription {
+  plan: string
+  status: string
+  quantity: number
+  pricePerEmployee: number
+}
+
+/**
  * Company avec compteurs relations pour affichage liste
  */
 export interface CompanyWithCounts {
@@ -50,6 +60,7 @@ export interface CompanyWithCounts {
   isActive: boolean
   createdAt: Date
   updatedAt: Date
+  subscription: CompanySubscription | null
   _count: {
     users: number
     teams: number
@@ -77,6 +88,7 @@ export interface CompanyDetail {
   isActive: boolean
   createdAt: Date
   updatedAt: Date
+  subscription: CompanySubscription | null
   _count: {
     users: number
     teams: number
@@ -208,6 +220,14 @@ export async function listCompanies(
           isActive: true,
           createdAt: true,
           updatedAt: true,
+          subscription: {
+            select: {
+              plan: true,
+              status: true,
+              quantity: true,
+              pricePerEmployee: true,
+            },
+          },
           _count: {
             select: {
               users: true,
@@ -256,6 +276,14 @@ export async function getCompany(
         isActive: true,
         createdAt: true,
         updatedAt: true,
+        subscription: {
+          select: {
+            plan: true,
+            status: true,
+            quantity: true,
+            pricePerEmployee: true,
+          },
+        },
         _count: {
           select: {
             users: true,
@@ -331,6 +359,14 @@ export async function createCompany(
         isActive: true,
         createdAt: true,
         updatedAt: true,
+        subscription: {
+          select: {
+            plan: true,
+            status: true,
+            quantity: true,
+            pricePerEmployee: true,
+          },
+        },
         _count: {
           select: {
             users: true,
@@ -414,6 +450,14 @@ export async function updateCompany(
         isActive: true,
         createdAt: true,
         updatedAt: true,
+        subscription: {
+          select: {
+            plan: true,
+            status: true,
+            quantity: true,
+            pricePerEmployee: true,
+          },
+        },
         _count: {
           select: {
             users: true,
@@ -524,6 +568,14 @@ export async function toggleCompanyStatus(
         isActive: true,
         createdAt: true,
         updatedAt: true,
+        subscription: {
+          select: {
+            plan: true,
+            status: true,
+            quantity: true,
+            pricePerEmployee: true,
+          },
+        },
         _count: {
           select: {
             users: true,
