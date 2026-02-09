@@ -10,6 +10,7 @@ import {
   ClipboardList,
   Users,
   UsersRound,
+  CreditCard,
   Settings,
   Building,
   Activity,
@@ -118,6 +119,13 @@ const menuItems: MenuItem[] = [
     label: 'Équipes',
     icon: UsersRound,
     href: '/app/director/teams',
+    roles: ['DIRECTOR'],
+  },
+  {
+    id: 'billing',
+    label: 'Facturation',
+    icon: CreditCard,
+    href: '/app/dashboard/billing',
     roles: ['DIRECTOR'],
   },
   {
