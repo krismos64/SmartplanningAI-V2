@@ -124,7 +124,7 @@ export interface CompanyFormData {
   /** Fuseau horaire (defaut: Europe/Paris) */
   timezone?: string
   /** Plan d'abonnement */
-  subscriptionPlan?: 'FREE' | 'STARTER' | 'PROFESSIONAL' | 'ENTERPRISE'
+  subscriptionPlan?: 'FREE' | 'PER_SEAT'
   /** Statut actif/inactif */
   isActive?: boolean
 }

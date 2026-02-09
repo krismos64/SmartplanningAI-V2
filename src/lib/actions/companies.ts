@@ -47,8 +47,6 @@ export interface CompanyWithCounts {
   slug: string
   email: string | null
   phone: string | null
-  subscriptionPlan: string
-  subscriptionStatus: string
   isActive: boolean
   createdAt: Date
   updatedAt: Date
@@ -74,8 +72,6 @@ export interface CompanyDetail {
   workingHoursEnd: string
   workingDays: string[]
   timezone: string
-  subscriptionPlan: string
-  subscriptionStatus: string
   trialEndsAt: Date | null
   subscriptionEndsAt: Date | null
   isActive: boolean
@@ -171,14 +167,20 @@ export async function listCompanies(
       ]
     }
 
-    // Filtre par plan
+    // Filtre par plan (via relation Subscription)
     if (validFilters.subscriptionPlan) {
-      where.subscriptionPlan = validFilters.subscriptionPlan
+      where.subscription = {
+        ...((where.subscription as Record<string, unknown>) || {}),
+        plan: validFilters.subscriptionPlan,
+      }
     }
 
-    // Filtre par statut
+    // Filtre par statut (via relation Subscription)
     if (validFilters.subscriptionStatus) {
-      where.subscriptionStatus = validFilters.subscriptionStatus
+      where.subscription = {
+        ...((where.subscription as Record<string, unknown>) || {}),
+        status: validFilters.subscriptionStatus,
+      }
     }
 
     // Filtre par isActive
@@ -203,8 +205,6 @@ export async function listCompanies(
           slug: true,
           email: true,
           phone: true,
-          subscriptionPlan: true,
-          subscriptionStatus: true,
           isActive: true,
           createdAt: true,
           updatedAt: true,
@@ -251,8 +251,6 @@ export async function getCompany(
         workingHoursEnd: true,
         workingDays: true,
         timezone: true,
-        subscriptionPlan: true,
-        subscriptionStatus: true,
         trialEndsAt: true,
         subscriptionEndsAt: true,
         isActive: true,
@@ -310,8 +308,6 @@ export async function createCompany(
         phone: validData.phone || null,
         address: validData.address || null,
         timezone: validData.timezone || 'Europe/Paris',
-        subscriptionPlan: validData.subscriptionPlan || 'FREE',
-        subscriptionStatus: validData.subscriptionStatus || 'TRIAL',
         isActive: validData.isActive ?? true,
         // Valeurs par défaut planning
         workingHoursStart: '09:00',
@@ -330,8 +326,6 @@ export async function createCompany(
         workingHoursEnd: true,
         workingDays: true,
         timezone: true,
-        subscriptionPlan: true,
-        subscriptionStatus: true,
         trialEndsAt: true,
         subscriptionEndsAt: true,
         isActive: true,
@@ -415,8 +409,6 @@ export async function updateCompany(
         workingHoursEnd: true,
         workingDays: true,
         timezone: true,
-        subscriptionPlan: true,
-        subscriptionStatus: true,
         trialEndsAt: true,
         subscriptionEndsAt: true,
         isActive: true,
@@ -527,8 +519,6 @@ export async function toggleCompanyStatus(
         workingHoursEnd: true,
         workingDays: true,
         timezone: true,
-        subscriptionPlan: true,
-        subscriptionStatus: true,
         trialEndsAt: true,
         subscriptionEndsAt: true,
         isActive: true,

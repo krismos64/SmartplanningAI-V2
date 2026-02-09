@@ -23,14 +23,6 @@ import {
   getLastMonthsLabels,
 } from './base-stats.service'
 
-// Prix mensuels par plan (en EUR)
-const PLAN_PRICES: Record<string, number> = {
-  FREE: 0,
-  STARTER: 29,
-  BUSINESS: 99,
-  ENTERPRISE: 299, // Prix de base, ajuste selon contrat
-}
-
 /**
  * Recupere les statistiques completes pour un admin
  * Note: Pas de verification d'acces car seul SYSTEM_ADMIN peut appeler ce service
@@ -162,14 +154,15 @@ async function getMRR(): Promise<AdminStatsResult['mrr']> {
   const dateRange = getDefaultDateRange()
   const previousPeriod = getPreviousPeriod(dateRange)
 
-  // Abonnements actifs payants actuellement
+  // Abonnements actifs payants actuellement (per-seat)
   const currentSubscriptions = await prisma.subscription.findMany({
     where: {
       status: 'ACTIVE',
     },
     select: {
       plan: true,
-      planPrice: true,
+      quantity: true,
+      pricePerEmployee: true,
       billingInterval: true,
     },
   })
@@ -184,7 +177,8 @@ async function getMRR(): Promise<AdminStatsResult['mrr']> {
     },
     select: {
       plan: true,
-      planPrice: true,
+      quantity: true,
+      pricePerEmployee: true,
       billingInterval: true,
     },
   })
@@ -199,25 +193,31 @@ async function getMRR(): Promise<AdminStatsResult['mrr']> {
 }
 
 /**
- * Calcule le MRR a partir d'une liste d'abonnements
+ * Calcule le MRR a partir d'une liste d'abonnements (modèle per-seat)
+ * MRR = somme(quantity × pricePerEmployee) pour les PER_SEAT actifs
+ * Retourne le montant en euros (centimes → euros)
  */
 function calculateMRRFromSubscriptions(
   subscriptions: Array<{
     plan: string
-    planPrice: number | null
+    quantity: number
+    pricePerEmployee: number
     billingInterval: string | null
   }>
 ): number {
   return subscriptions.reduce((total, sub) => {
-    // Utiliser le prix personnalise si disponible, sinon le prix par defaut
-    let monthlyPrice = sub.planPrice ?? PLAN_PRICES[sub.plan] ?? 0
+    // FREE = pas de revenu
+    if (sub.plan === 'FREE') return total
+
+    // Calcul per-seat en centimes puis conversion euros
+    let monthlyPriceCents = sub.quantity * sub.pricePerEmployee
 
     // Si facturation annuelle, diviser par 12
     if (sub.billingInterval === 'year') {
-      monthlyPrice = monthlyPrice / 12
+      monthlyPriceCents = monthlyPriceCents / 12
     }
 
-    return total + monthlyPrice
+    return total + monthlyPriceCents / 100
   }, 0)
 }
 
@@ -286,36 +286,40 @@ async function getCompaniesGrowth(): Promise<
  * Recupere le revenue par plan d'abonnement (pour pie/bar chart)
  */
 async function getRevenueByPlan(): Promise<AdminStatsResult['revenueByPlan']> {
-  // Grouper les abonnements par plan
-  const subscriptionsByPlan = await prisma.subscription.groupBy({
-    by: ['plan'],
+  // Récupérer les abonnements actifs avec données per-seat
+  const activeSubscriptions = await prisma.subscription.findMany({
     where: {
       status: 'ACTIVE',
     },
-    _count: true,
+    select: {
+      plan: true,
+      quantity: true,
+      pricePerEmployee: true,
+    },
   })
 
-  // Calculer le revenue pour chaque plan
-  const revenueByPlan = subscriptionsByPlan.map((item) => {
-    const monthlyPrice = PLAN_PRICES[item.plan] ?? 0
-    const revenue = monthlyPrice * item._count
+  // Calculer le revenue par plan
+  const revenueMap: Record<string, { revenue: number; count: number }> = {}
 
-    return {
-      plan: getPlanLabel(item.plan),
-      revenue,
-      count: item._count,
+  activeSubscriptions.forEach((sub) => {
+    const label = getPlanLabel(sub.plan)
+    if (!revenueMap[label]) {
+      revenueMap[label] = { revenue: 0, count: 0 }
     }
+    revenueMap[label].count++
+    // Revenue en euros (centimes → euros)
+    revenueMap[label].revenue += (sub.quantity * sub.pricePerEmployee) / 100
   })
 
-  // Ajouter les plans sans abonnements avec 0
-  const allPlans = ['FREE', 'STARTER', 'BUSINESS', 'ENTERPRISE']
-  allPlans.forEach((plan) => {
-    if (!revenueByPlan.find((r) => r.plan === getPlanLabel(plan))) {
-      revenueByPlan.push({
-        plan: getPlanLabel(plan),
-        revenue: 0,
-        count: 0,
-      })
+  // Construire le résultat avec tous les plans
+  const allPlans = ['FREE', 'PER_SEAT']
+  const revenueByPlan = allPlans.map((plan) => {
+    const label = getPlanLabel(plan)
+    const data = revenueMap[label] || { revenue: 0, count: 0 }
+    return {
+      plan: label,
+      revenue: data.revenue,
+      count: data.count,
     }
   })
 
@@ -340,6 +344,7 @@ async function getSubscriptionStatusDistribution(): Promise<
     PAST_DUE: 'Impayé',
     CANCELED: 'Annulé',
     EXPIRED: 'Expiré',
+    INCOMPLETE: 'Incomplet',
   }
 
   return subscriptionsByStatus.map((item) => ({
@@ -354,9 +359,7 @@ async function getSubscriptionStatusDistribution(): Promise<
 function getPlanLabel(plan: string): string {
   const labels: Record<string, string> = {
     FREE: 'Gratuit',
-    STARTER: 'Starter',
-    BUSINESS: 'Business',
-    ENTERPRISE: 'Enterprise',
+    PER_SEAT: 'Per-seat',
   }
   return labels[plan] || plan
 }
