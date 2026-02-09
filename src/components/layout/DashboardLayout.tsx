@@ -18,8 +18,16 @@ import { Header } from './Header'
 import { Sidebar, type SidebarVariant } from './Sidebar'
 import { Footer } from './Footer'
 import { PageTracker } from './PageTracker'
+import { SubscriptionBanner } from './SubscriptionBanner'
 
 type UserRole = 'SYSTEM_ADMIN' | 'DIRECTOR' | 'MANAGER' | 'EMPLOYEE'
+
+/** Données d'abonnement pour la bannière progressive (SP-441) */
+interface SubscriptionData {
+  subscriptionStatus: string | null
+  trialEndsAt: string | null
+  currentPeriodEnd: string | null
+}
 
 interface DashboardLayoutProps {
   children: React.ReactNode
@@ -33,6 +41,8 @@ interface DashboardLayoutProps {
     organizationId?: string
     companyName?: string
   }
+  /** Données d'abonnement pour la bannière (SP-441) */
+  subscriptionData?: SubscriptionData
   /** Variante de style de la sidebar (défaut: 'cosmic') */
   sidebarVariant?: SidebarVariant
 }
@@ -46,11 +56,13 @@ function DashboardLayoutContent({
   user,
   pathname,
   sidebarVariant,
+  subscriptionData,
 }: {
   children: React.ReactNode
   user: DashboardLayoutProps['user']
   pathname: string
   sidebarVariant: SidebarVariant
+  subscriptionData?: SubscriptionData
 }) {
   const { openShortcutsModal } = useKeyboardShortcutsContext()
 
@@ -71,6 +83,16 @@ function DashboardLayoutContent({
           <div className="flex flex-1 flex-col">
             {/* Header */}
             <Header user={user} />
+
+            {/* Subscription Banner — SP-441 */}
+            {subscriptionData && (
+              <SubscriptionBanner
+                subscriptionStatus={subscriptionData.subscriptionStatus}
+                trialEndsAt={subscriptionData.trialEndsAt}
+                currentPeriodEnd={subscriptionData.currentPeriodEnd}
+                role={user.role}
+              />
+            )}
 
             {/* Page content */}
             <main className="bg-mesh flex-1 transition-all duration-300">
@@ -107,6 +129,7 @@ function DashboardLayoutContent({
 export function DashboardLayout({
   children,
   user,
+  subscriptionData,
   sidebarVariant = 'aurora',
 }: DashboardLayoutProps) {
   const pathname = usePathname()
@@ -118,6 +141,7 @@ export function DashboardLayout({
           user={user}
           pathname={pathname}
           sidebarVariant={sidebarVariant}
+          subscriptionData={subscriptionData}
         >
           {children}
         </DashboardLayoutContent>
