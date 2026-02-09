@@ -48,21 +48,21 @@ const mockCompanies = [
     id: '1',
     name: 'TechCorp',
     createdAt: new Date('2025-12-10'),
-    subscription: { plan: 'BUSINESS', status: 'ACTIVE' },
+    subscription: { plan: 'PER_SEAT', status: 'ACTIVE' },
     _count: { users: 25 },
   },
   {
     id: '2',
     name: 'StartupXYZ',
     createdAt: new Date('2025-12-09'),
-    subscription: { plan: 'STARTER', status: 'ACTIVE' },
+    subscription: { plan: 'PER_SEAT', status: 'TRIAL' },
     _count: { users: 5 },
   },
   {
     id: '3',
     name: 'Enterprise Inc',
     createdAt: new Date('2025-12-05'),
-    subscription: { plan: 'ENTERPRISE', status: 'ACTIVE' },
+    subscription: { plan: 'PER_SEAT', status: 'ACTIVE' },
     _count: { users: 150 },
   },
   {
@@ -76,7 +76,7 @@ const mockCompanies = [
     id: '5',
     name: 'OldCompany',
     createdAt: new Date('2025-10-01'),
-    subscription: { plan: 'BUSINESS', status: 'ACTIVE' },
+    subscription: { plan: 'FREE', status: 'ACTIVE' },
     _count: { users: 45 },
   },
 ]
@@ -157,20 +157,19 @@ describe('AdminRecentCompanies', () => {
       expect(screen.getByText(/1 utilisateur(?!s)/)).toBeInTheDocument()
     })
 
-    it('devrait afficher le plan d abonnement', async () => {
+    it('devrait afficher le plan d abonnement (SP-350: FREE/PER_SEAT)', async () => {
       await renderAdminRecentCompanies(mockCompanies)
 
-      // Utiliser getAllByText car plusieurs entreprises peuvent avoir BUSINESS
-      expect(screen.getAllByText(/BUSINESS/).length).toBeGreaterThan(0)
-      expect(screen.getAllByText(/STARTER/).length).toBeGreaterThan(0)
-      expect(screen.getAllByText(/ENTERPRISE/).length).toBeGreaterThan(0)
+      // SP-350: Plans PER_SEAT et FREE uniquement
+      expect(screen.getAllByText(/PER_SEAT/).length).toBeGreaterThan(0)
+      expect(screen.getAllByText(/FREE/).length).toBeGreaterThan(0)
     })
 
     it('devrait afficher FREE si pas d abonnement', async () => {
       await renderAdminRecentCompanies(mockCompanies)
 
-      // FreeTier Co n'a pas de subscription
-      expect(screen.getByText(/FREE/)).toBeInTheDocument()
+      // FreeTier Co n'a pas de subscription → fallback FREE, OldCompany a plan FREE
+      expect(screen.getAllByText(/FREE/).length).toBeGreaterThan(0)
     })
   })
 

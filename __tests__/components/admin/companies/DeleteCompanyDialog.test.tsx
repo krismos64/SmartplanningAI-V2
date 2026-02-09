@@ -28,15 +28,21 @@ vi.mock('@/lib/actions/companies', () => ({
 
 import { DeleteCompanyDialog } from '@/components/admin/companies/DeleteCompanyDialog'
 
-// Type local pour éviter l'import de companies
+// Type local pour éviter l'import de companies (SP-350: subscription relation)
+interface CompanySubscription {
+  plan: string
+  status: string
+  quantity: number
+  pricePerEmployee: number
+}
+
 interface CompanyWithCounts {
   id: string
   name: string
   slug: string
   email: string | null
   phone: string | null
-  subscriptionPlan: string
-  subscriptionStatus: string
+  subscription: CompanySubscription | null
   isActive: boolean
   createdAt: Date
   updatedAt: Date
@@ -54,8 +60,7 @@ describe('DeleteCompanyDialog', () => {
     slug: 'acme-corp',
     email: 'contact@acme.com',
     phone: '+33123456789',
-    subscriptionPlan: 'BUSINESS',
-    subscriptionStatus: 'ACTIVE',
+    subscription: { plan: 'PER_SEAT', status: 'ACTIVE', quantity: 10, pricePerEmployee: 290 },
     isActive: true,
     createdAt: new Date('2024-01-01'),
     updatedAt: new Date('2024-01-15'),
