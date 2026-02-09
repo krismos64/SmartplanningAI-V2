@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 9 février 2026 (Dashboard Billing - SP-360)
+- **Dernière mise à jour** : 9 février 2026 (Subscription Guard - SP-440)
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -342,6 +342,49 @@ Page dashboard facturation complète avec 3 sous-composants, accessible aux DIRE
   - `UsageIndicator.test.tsx` (8 tests) : compteur employés, sièges, % utilisation, plafond 100%, prix
   - `InvoiceHistory.test.tsx` (11 tests) : table, badges statut, liens Stripe, état vide, callback portail
   - `BillingPageContent.test.tsx` (6 tests) : rendu 3 sous-composants, gestion null, action portail
+
+### Subscription Guard Middleware (SP-440 - 9 février 2026)
+
+Middleware de vérification d'abonnement actif dans le Edge Runtime Next.js 15. Architecture Defense in Depth en 3 couches :
+
+- **Couche 1 — JWT enrichi (Edge Runtime)** :
+  - Token JWT enrichi avec `subscriptionStatus`, `trialEndsAt`, `currentPeriodEnd`, `subscriptionCheckedAt`
+  - Le middleware lit ces champs pour décider l'accès → 0ms de latence ajoutée
+  - Fonction pure `checkSubscriptionAccess()` dans `src/lib/subscription-guard.ts` (Edge-compatible, 0 dépendance Node.js)
+
+- **Couche 2 — Rafraîchissement périodique (Node.js)** :
+  - Le callback `jwt()` rafraîchit les données toutes les 5 min via `import('@/lib/prisma')` dynamique
+  - En Edge Runtime, l'import échoue silencieusement (catch) — le token garde ses valeurs
+  - Côté serveur (Server Components via `auth()`), l'import réussit et les données sont rafraîchies
+
+- **Couche 3 — Webhook Stripe** :
+  - Les webhooks (SP-351) mettent déjà à jour la DB
+  - Le prochain appel `auth()` côté serveur déclenche la couche 2
+
+- **Matrice des statuts** :
+  - `ACTIVE` → autorisé
+  - `TRIAL` + `trialEndsAt` futur → autorisé ; passé → bloqué (`trial_expired`)
+  - `PAST_DUE` < 7 jours → autorisé (grâce) ; ≥ 7 jours → bloqué (`payment_overdue`)
+  - `CANCELED` → bloqué (`subscription_canceled`)
+  - `EXPIRED` → bloqué (`subscription_expired`)
+  - `INCOMPLETE` → bloqué (`payment_incomplete`)
+  - `null` → bloqué (`no_subscription`)
+
+- **Bypass** :
+  - `SYSTEM_ADMIN` : pas lié à une company
+  - Routes exemptées : `/app/dashboard/billing`, `/app/profile`, `/app/settings`
+
+- **Page billing enrichie** :
+  - Alerte contextuelle selon le query param `?reason=XXX` (6 motifs, 2 variantes warning/destructive)
+  - `data-testid="subscription-blocking-alert"` pour les tests
+
+- **Fichiers** :
+  - `src/lib/subscription-guard.ts` (nouveau) : fonction pure + types + constante `PAST_DUE_GRACE_DAYS`
+  - `src/types/auth.ts` : interfaces JWT/Session/User étendues + `SUBSCRIPTION_EXEMPT_ROUTES`
+  - `src/lib/auth.config.ts` : callbacks jwt/session/authorized enrichis (étape 7)
+  - `src/lib/auth.ts` : `authorize()` enrichi avec données subscription Prisma
+
+- **Tests** : 31 tests unitaires couvrant la matrice complète (bypass SYSTEM_ADMIN, routes exemptées, ACTIVE, TRIAL valide/expiré, PAST_DUE grâce/dépassé, CANCELED, EXPIRED, INCOMPLETE, null, statut inconnu, tous les rôles)
 
 ### Pages Légales RGPD (14-15 janvier 2026)
 
@@ -2220,7 +2263,7 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 
 | Catégorie                              | Coverage | Tests    |
 | -------------------------------------- | -------- | -------- |
-| **Global**                             | **~85%** | **5076** |
+| **Global**                             | **~85%** | **5107** |
 | loading                                | 100%     | 152      |
 | modals                                 | 100%     | 52       |
 | cards                                  | 77.09%   | 88       |
@@ -2314,6 +2357,7 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 | UsageIndicator (SP-360)           | 100%     | 8        |
 | InvoiceHistory (SP-360)           | 100%     | 11       |
 | BillingPageContent (SP-360)       | 100%     | 6        |
+| subscription-guard (SP-440)       | 100%     | 31       |
 
 ### Tests E2E
 
@@ -2422,6 +2466,10 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 - UsageIndicator (8 tests) : jauge sièges, prix unitaire/total, prorata, plafond 100%
 - InvoiceHistory (11 tests) : table factures, badges statut, liens Stripe, état vide
 - BillingPageContent (6 tests) : orchestrateur, gestion null, action portail Stripe
+
+#### Subscription Guard (SP-440)
+
+- checkSubscriptionAccess (31 tests) : bypass SYSTEM_ADMIN (2), routes exemptées billing/profile/settings (5), statut ACTIVE (1), TRIAL valide/expiré/null (4), PAST_DUE grâce 7j/dépassé/null (5), CANCELED (2), EXPIRED (2), INCOMPLETE (2), null (2), statut inconnu (2), tous les rôles non-admin (3), constante PAST_DUE_GRACE_DAYS (1). Fonction pure, 0 mock, 4ms d'exécution.
 
 #### Dashboard Employee (5 composants - SP-145)
 
@@ -2713,7 +2761,7 @@ Merge main → Build Docker → Push GHCR → Deploy VPS (~8-10 min)
 
 - **CI** (`.github/workflows/ci.yml`) : Lint, Type-check, Tests unitaires, Build, Tests E2E (PR uniquement)
 - **CD** (`.github/workflows/cd.yml`) : Build image Docker, Push sur ghcr.io, Deploy via SSH
-- Tests unitaires sur tous les push (~5076 tests Vitest)
+- Tests unitaires sur tous les push (~5107 tests Vitest)
 - Tests E2E sur PR vers main (~629 tests Playwright actifs, 5 devices mobiles, ~988 total)
 - Stabilisation E2E (SP-434) : Touch targets WCAG 2.5.5 (44px), command palette, mobile navigation
 - Déploiement automatique sur merge main ✅

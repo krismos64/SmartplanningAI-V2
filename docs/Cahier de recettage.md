@@ -14,7 +14,7 @@ Ce document trace l'historique complet des tests réalisés sur SmartPlanning. I
 | Pipeline CI/CD       | GitHub Actions                                         |
 | Responsable          | Christophe Mostefaoui                                  |
 | Date de création     | 4 décembre 2025                                        |
-| Dernière mise à jour | 9 février 2026 (SP-360)                                |
+| Dernière mise à jour | 9 février 2026 (SP-440)                                |
 
 ---
 
@@ -34,7 +34,7 @@ Dans le cadre du diplôme **CDA (Concepteur Développeur d'Applications)**, ce c
 | Métrique              | Objectif  | Atteint  |
 | --------------------- | --------- | -------- |
 | Couverture globale    | ≥ 70%     | ✅ 85%   |
-| Tests unitaires       | ≥ 500     | ✅ 5076  |
+| Tests unitaires       | ≥ 500     | ✅ 5107  |
 | Tests E2E             | ≥ 50      | ✅ 988   |
 | Score Lighthouse A11y | ≥ 90%     | ✅ 95%   |
 | Anomalies critiques   | 0 en prod | ✅ 0     |
@@ -472,6 +472,7 @@ Ce tableau recense chaque campagne de tests significative (mise en production, f
 
 | Date       | Sprint    | Version/Commit | Tests unitaires | Tests E2E  | Couverture | Statut  | Notes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | ---------- | --------- | -------------- | --------------- | ---------- | ---------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 09/02/2026 | Sprint 17 | SP-440         | 5107/5107 ✅    | 988/988 ✅ | ~85%       | ✅ PASS | 🆕 SP-440 Subscription Guard Middleware. +31 tests unitaires (1 fichier). Middleware vérification abonnement actif dans Edge Runtime. Architecture Defense in Depth 3 couches : JWT enrichi (subscriptionStatus, trialEndsAt, currentPeriodEnd, subscriptionCheckedAt), rafraîchissement périodique 5min via import dynamique Prisma (silencieux en Edge), webhooks Stripe. Fonction pure `checkSubscriptionAccess()` Edge-compatible (0 dépendance Node.js). Matrice complète : ACTIVE, TRIAL (valide/expiré), PAST_DUE (grâce 7j), CANCELED, EXPIRED, INCOMPLETE, null. Bypass SYSTEM_ADMIN + routes exemptées (billing, profile, settings). Page billing enrichie : alerte contextuelle ?reason=XXX (6 motifs, warning/destructive). Total : 6095 tests |
 | 09/02/2026 | Sprint 17 | SP-360         | 5076/5076 ✅    | 988/988 ✅ | ~85%       | ✅ PASS | 🆕 SP-360 Dashboard Billing Page. +41 tests unitaires (4 fichiers). Page `/app/dashboard/billing` avec Server Component (auth + RBAC DIRECTOR + fetch `getBillingDataAction` + sérialisation Date→ISO string). 4 composants Client : `BillingPageContent` (orchestrateur, Server Actions portail/annulation, AlertDialog), `SubscriptionStatus` (6 badges statut, countdown essai, alerte annulation programmée, EmptyState), `UsageIndicator` (ProgressBar colorée sièges, prix unitaire/total, tooltip prorata), `InvoiceHistory` (Table factures, badges Payé/Échoué/En attente, liens Stripe externes, EmptyState). Barrel export + types sérialisés. Loading skeleton. Navigation menu-items.ts : entrée "Facturation" (CreditCard, DIRECTOR, G B). Design glassmorphism + Framer Motion + useReducedMotion. Type `BillingData` enrichi (currentPeriodStart, canceledAt, createdAt, stripeInvoiceId, paymentMethod, trialEndsAt). Total : 6064 tests |
 | 09/02/2026 | Sprint 17 | SP-352         | 5035/5035 ✅    | 988/988 ✅ | ~85%       | ✅ PASS | 🆕 SP-352 Server Actions Stripe. +32 tests unitaires (1 fichier : `__tests__/lib/actions/stripe.test.ts`). 5 Server Actions connectant le service Stripe (SP-351) au frontend : `createCheckoutAction` (checkout per-seat avec email via auth() + companyName via Prisma), `createBillingPortalAction` (portail facturation via stripeCustomerId), `updateSubscriptionQuantityAction` (mise à jour sièges + revalidatePath), `cancelSubscriptionAction` (annulation fin de période ou immédiate + revalidatePath), `getBillingDataAction` (subscription + payments + employeeCount + monthlyAmount via Promise.all). RBAC DIRECTOR via `checkPermission('DIRECTOR')`, validation Zod via `validateData()`, conversion `ServiceResult<T>` → `CrudActionResult<T>`. Type `BillingData` ajouté à `src/types/stripe.ts` + barrel export. Total : 6023 tests |
 | 09/02/2026 | Sprint 17 | SP-351         | 5003/5003 ✅    | 988/988 ✅ | ~85%       | ✅ PASS | 🆕 SP-351 Stripe Service & Webhooks. +50 tests unitaires (40 service + 10 route webhook). Service Stripe (`createCheckoutSession`, `updateSubscriptionQuantity`, `cancelSubscription`, `createBillingPortalSession`, `handleWebhookEvent`). Route webhook `/api/webhooks/stripe/route.ts` avec vérification signature HMAC. 7 types TypeScript. Total : 5991 tests |
@@ -826,6 +827,72 @@ export interface BillingData {
 2. **Pourquoi 3 composants séparés + 1 orchestrateur ?** Chaque section (statut, utilisation, historique) a sa propre logique d'affichage et ses propres interactions. L'orchestrateur `BillingPageContent` gère les Server Actions partagées (portail, annulation) et l'état d'erreur global.
 
 3. **Pourquoi masquer UsageIndicator et InvoiceHistory quand subscription=null ?** Sans abonnement actif, ces sections n'ont pas de sens. Seul `SubscriptionStatus` avec l'EmptyState "S'abonner" est affiché.
+
+---
+
+## Détail des tests Sprint 17 - Subscription Guard Middleware (SP-440) 🆕
+
+### SP-440 : Middleware vérification abonnement actif — Subscription Guard (31 tests)
+
+**Objectif** : Empêcher les utilisateurs dont l'abonnement est inactif (trial expiré, impayé, annulé, etc.) d'accéder aux fonctionnalités de l'application. Rediriger vers `/app/dashboard/billing?reason=XXX` avec un motif explicite. Architecture Defense in Depth 3 couches compatible Edge Runtime.
+
+| Suite de test                                                | Tests unitaires | Tests E2E | Total  |
+| ------------------------------------------------------------ | --------------- | --------- | ------ |
+| `__tests__/lib/subscription-guard.test.ts`                   | 31              | 0         | 31     |
+| **Total SP-440**                                             | **31**          | **0**     | **31** |
+
+#### Fichiers créés
+
+| Fichier                                    | Description                                                          |
+| ------------------------------------------ | -------------------------------------------------------------------- |
+| `src/lib/subscription-guard.ts`            | Fonction pure Edge-compatible `checkSubscriptionAccess()` (164 lignes) |
+| `__tests__/lib/subscription-guard.test.ts` | 31 tests unitaires (386 lignes)                                      |
+
+#### Fichiers modifiés
+
+| Fichier                                      | Modification                                                                |
+| -------------------------------------------- | --------------------------------------------------------------------------- |
+| `src/types/auth.ts`                          | Interfaces JWT/Session/User étendues + `SUBSCRIPTION_EXEMPT_ROUTES`         |
+| `src/lib/auth.ts`                            | `authorize()` enrichi : requête Prisma subscription + retour données        |
+| `src/lib/auth.config.ts`                     | Callbacks jwt/session enrichis + rafraîchissement 5min + étape 7 authorized |
+| `src/app/app/dashboard/billing/page.tsx`     | Lecture `searchParams.reason` + passage prop `blockingReason`               |
+| `src/app/.../BillingPageContent.tsx`         | Alerte contextuelle 6 motifs (warning/destructive)                          |
+
+#### Architecture Defense in Depth (3 couches)
+
+| Couche | Runtime | Mécanisme | Latence |
+| ------ | ------- | --------- | ------- |
+| 1. JWT enrichi | Edge | Lecture `subscriptionStatus`/`trialEndsAt`/`currentPeriodEnd` depuis le token | 0ms |
+| 2. Rafraîchissement | Node.js | `import('@/lib/prisma')` dynamique dans jwt callback (silencieux en Edge) | Toutes les 5 min |
+| 3. Webhook Stripe | Node.js | DB mise à jour → prochain `auth()` déclenche couche 2 | Asynchrone |
+
+#### Matrice des statuts testés
+
+| Statut | Condition | Accès | Redirect reason | Tests |
+| ------ | --------- | ----- | --------------- | ----- |
+| `ACTIVE` | — | ✅ | — | 1 |
+| `TRIAL` | trialEndsAt futur | ✅ | — | 2 |
+| `TRIAL` | trialEndsAt passé | ❌ | `trial_expired` | 2 |
+| `PAST_DUE` | < 7 jours | ✅ | — | 3 |
+| `PAST_DUE` | ≥ 7 jours | ❌ | `payment_overdue` | 2 |
+| `CANCELED` | — | ❌ | `subscription_canceled` | 2 |
+| `EXPIRED` | — | ❌ | `subscription_expired` | 2 |
+| `INCOMPLETE` | — | ❌ | `payment_incomplete` | 2 |
+| `null` | pas d'abonnement | ❌ | `no_subscription` | 2 |
+| inconnu | statut non reconnu | ❌ | `unknown_status` | 2 |
+| SYSTEM_ADMIN | tout statut | ✅ | — | 2 |
+| Route exemptée | billing/profile/settings | ✅ | — | 5 |
+| Rôles non-admin | DIRECTOR/MANAGER/EMPLOYEE | ❌ (si bloqué) | selon statut | 3 |
+
+**Décisions techniques documentées** :
+
+1. **Pourquoi une fonction pure plutôt qu'un middleware complet ?** `checkSubscriptionAccess()` n'a aucune dépendance Node.js/Prisma — elle prend des strings du JWT et retourne `{ allowed, redirectReason }`. Cela la rend testable sans mock (31 tests en 4ms), réutilisable côté serveur, et garantit la compatibilité Edge Runtime.
+
+2. **Pourquoi un import dynamique `await import('@/lib/prisma')` ?** Le callback `jwt()` dans `auth.config.ts` est partagé entre Edge et Node.js. L'import dynamique réussit côté serveur (rafraîchissement des données) et échoue silencieusement en Edge (catch vide). C'est le mécanisme officiel pour résoudre la contrainte Edge/Prisma sans dupliquer le code.
+
+3. **Pourquoi 7 jours de grâce pour PAST_DUE ?** Standard SaaS : Stripe relance automatiquement les paiements pendant cette période. Couper l'accès immédiatement pénaliserait les utilisateurs dont la carte a expiré temporairement.
+
+4. **Pourquoi les dates en ISO string dans le JWT ?** Le JWT ne supporte que les types primitifs (string, number, boolean). Les objets Date de Prisma sont convertis via `.toISOString()` au login et parsés via `new Date()` dans le guard.
 
 ---
 
@@ -2013,8 +2080,9 @@ not-found.tsx (Server Component)
 | 09/02/2026 (SP-351)        | 5003            | 988       | 5991  | ~85%       | 📈 +50              |
 | 09/02/2026 (SP-352)        | 5035            | 988       | 6023  | ~85%       | 📈 +32              |
 | 09/02/2026 (SP-360)        | 5076            | 988       | 6064  | ~85%       | 📈 +41              |
+| 09/02/2026 (SP-440)        | 5107            | 988       | 6095  | ~85%       | 📈 +31              |
 
-**Graphique d'évolution** : De 27 tests (04/12) à 6064 tests (09/02) = **+22359% de croissance** 🚀
+**Graphique d'évolution** : De 27 tests (04/12) à 6095 tests (09/02) = **+22474% de croissance** 🚀
 
 ---
 
@@ -2024,11 +2092,11 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
 
 | N°  | Compétence                                                          | Preuve                                                                                                                                                                                                                                                                                                                                                  |
 | --- | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | Tester les composants d'une application                             | 5076 tests unitaires documentés                                                                                                                                                                                                                                                                                                                         |
+| 1   | Tester les composants d'une application                             | 5107 tests unitaires documentés                                                                                                                                                                                                                                                                                                                         |
 | 2   | Contribuer à la qualité du code                                     | Couverture 85%, anomalies tracées                                                                                                                                                                                                                                                                                                                       |
 | 3   | Documenter les procédures                                           | Procédure de recette formalisée                                                                                                                                                                                                                                                                                                                         |
 | 4   | Utiliser une méthodologie                                           | Approche structurée par sprints                                                                                                                                                                                                                                                                                                                         |
-| 5   | Développer des tests automatisés                                    | 6064 tests (unitaires + E2E)                                                                                                                                                                                                                                                                                                                            |
+| 5   | Développer des tests automatisés                                    | 6095 tests (unitaires + E2E)                                                                                                                                                                                                                                                                                                                            |
 | 6   | Sécuriser une application                                           | Tests RBAC (92 unitaires, 27 E2E), rate limiting, protection énumération                                                                                                                                                                                                                                                                                |
 | 7   | Concevoir une architecture logicielle                               | Pattern ServiceResult<T>, multi-tenant                                                                                                                                                                                                                                                                                                                  |
 | 8   | Développer des composants métier                                    | 4 dashboards par rôle                                                                                                                                                                                                                                                                                                                                   |
@@ -2093,6 +2161,7 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
 | 67  | Implémenter une route webhook sécurisée avec vérification signature | Route POST `/api/webhooks/stripe` : vérification signature HMAC `stripe.webhooks.constructEvent()`, lecture raw body `request.text()` (Next.js 15 App Router), gestion erreurs structurée (400/500), dispatch vers service handler. 10 tests unitaires avec vi.hoisted() pattern (SP-351) 🆕 |
 | 68  | Connecter un service Stripe au frontend via Server Actions RBAC     | 5 Server Actions DIRECTOR-only (checkout, portal, updateQuantity, cancel, getBillingData). Conversion ServiceResult<T> → CrudActionResult<T> discriminated union. Retour URL pour loading state client. Guard companyId (SYSTEM_ADMIN via admin panel). Email via auth() séparé. BillingData type avec Promise.all parallèle. revalidatePath billing. 32 tests unitaires (SP-352) 🆕 |
 | 69  | Implémenter un dashboard facturation SaaS avec sérialisation Date  | Page `/app/dashboard/billing` Server Component DIRECTOR : fetch getBillingDataAction + sérialisation Date→ISO string + rendu 3 Client Components (SubscriptionStatus 6 statuts + countdown essai + alerte annulation, UsageIndicator ProgressBar sièges colorée + prix prorata, InvoiceHistory Table + badges + liens Stripe). Navigation G B. 41 tests unitaires (SP-360) 🆕 |
+| 70  | Implémenter un subscription guard middleware Edge Runtime avec JWT enrichi | Fonction pure `checkSubscriptionAccess` Edge-compatible (0 dépendance Node.js). JWT enrichi (subscriptionStatus, trialEndsAt, currentPeriodEnd, subscriptionCheckedAt). Defense in Depth 3 couches : JWT Edge → refresh périodique 5min (dynamic import Prisma) → webhooks Stripe. Matrice 9 statuts (ACTIVE, TRIAL valide/expiré, PAST_DUE grâce 7j/dépassé, CANCELED, EXPIRED, INCOMPLETE, null, inconnu). Routes exemptées (billing, profile, settings). Alerte contextuelle blocking reason sur page billing (6 motifs). 31 tests unitaires (SP-440) 🆕 |
 
 ---
 
@@ -2131,6 +2200,7 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
    - Webhook Stripe /api/webhooks/stripe : vérification signature, traitement événements (checkout, subscription, invoice) 🆕
    - Server Actions Stripe : createCheckoutAction, createBillingPortalAction, updateSubscriptionQuantityAction, cancelSubscriptionAction, getBillingDataAction (RBAC DIRECTOR) 🆕
    - Dashboard Billing /app/dashboard/billing (statut abonnement, jauge sièges, historique factures, portail Stripe, annulation) 🆕
+   - Subscription Guard middleware : blocage accès TRIAL expiré/CANCELED/EXPIRED/INCOMPLETE/PAST_DUE >7j, redirection billing avec motif, bypass SYSTEM_ADMIN et routes exemptées 🆕
 
 ### Après chaque mise en production
 
@@ -2145,6 +2215,7 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
 
 | Date       | Modification                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 09/02/2026 | 🆕 SP-440 Subscription Guard Middleware : Fonction pure `checkSubscriptionAccess` Edge-compatible (`src/lib/subscription-guard.ts`). JWT enrichi dans NextAuth v5 callbacks (authorize → jwt → session → authorized) avec 4 champs subscription (status, trialEndsAt, currentPeriodEnd, subscriptionCheckedAt). Defense in Depth 3 couches : vérification JWT Edge Runtime → refresh périodique 5min via dynamic import Prisma (Node.js) → webhooks Stripe temps réel. Matrice 9 statuts : bypass SYSTEM_ADMIN + routes exemptées (billing/profile/settings), ACTIVE autorisé, TRIAL (valide/expiré), PAST_DUE (grâce 7j/dépassé), CANCELED/EXPIRED/INCOMPLETE/null/inconnu bloqués → redirection `/app/dashboard/billing?reason=XXX`. Alerte contextuelle `BillingPageContent` (6 motifs warning/destructive). Constante `SUBSCRIPTION_EXEMPT_ROUTES` dans types/auth.ts. +31 tests unitaires (`__tests__/lib/subscription-guard.test.ts`) couvrant matrice complète sans mocks. Compétence CDA #70 ajoutée. Total : 6095 tests |
 | 09/02/2026 | 🆕 SP-360 Dashboard Billing Page : Page `/app/dashboard/billing` complète avec Server Component (auth + RBAC DIRECTOR + sérialisation Date→ISO string). 4 composants Client : `BillingPageContent` (orchestrateur, Server Actions portail/annulation, AlertDialog confirmation), `SubscriptionStatus` (6 badges statut TRIAL/ACTIVE/PAST_DUE/CANCELED/EXPIRED/INCOMPLETE, countdown essai gratuit, alerte annulation programmée, EmptyState "S'abonner"), `UsageIndicator` (ProgressBar colorée sièges vert/orange/rouge, prix unitaire/total, tooltip prorata), `InvoiceHistory` (Table 5 dernières factures, badges Payé/Échoué/En attente, liens factures Stripe externes, EmptyState). Barrel export + types sérialisés (SerializedBillingData, SerializedSubscription, SerializedPayment). Loading skeleton 3 cartes. Navigation menu-items.ts : entrée "Facturation" (icône CreditCard, rôle DIRECTOR, raccourci G B). Type `BillingData` enrichi dans `src/types/stripe.ts` (ajout currentPeriodStart, canceledAt, createdAt sur subscription ; stripeInvoiceId, paymentMethod sur payments ; trialEndsAt racine). `getBillingDataAction` enrichi (Promise.all + company.trialEndsAt). Design glassmorphism + Framer Motion + useReducedMotion. +41 tests unitaires (4 fichiers : SubscriptionStatus 16, UsageIndicator 8, InvoiceHistory 11, BillingPageContent 6). Compétence CDA #69 ajoutée. Total : 6064 tests |
 | 09/02/2026 | 🆕 SP-352 Server Actions Stripe : 5 Server Actions connectant le service Stripe (SP-351) au frontend (`src/lib/actions/stripe.ts`, 339 lignes). `createCheckoutAction` (session Checkout per-seat avec email via auth() séparé + companyName via Prisma), `createBillingPortalAction` (portail facturation via stripeCustomerId depuis Subscription), `updateSubscriptionQuantityAction` (mise à jour sièges + revalidatePath billing), `cancelSubscriptionAction` (annulation fin de période ou immédiate + revalidatePath billing), `getBillingDataAction` (subscription + 5 derniers payments + employeeCount + monthlyAmount via Promise.all). RBAC strict DIRECTOR via `checkPermission('DIRECTOR')`. Validation Zod via `validateData()` avec schémas SP-349. Conversion `ServiceResult<T>` → `CrudActionResult<T>` discriminated union. Retour URL (pas redirect()) pour loading state client. Type `BillingData` ajouté à `src/types/stripe.ts` + barrel export. +32 tests unitaires (`__tests__/lib/actions/stripe.test.ts`, 625 lignes) couvrant : auth denied, RBAC denied, companyId null, Zod validation, missing subscription/customer, erreurs service Stripe, happy paths, revalidatePath, calcul monthlyAmount, erreurs Prisma. Mocking vi.hoisted() + prismaMock centralisé. Compétence CDA #68 ajoutée. Total : 6023 tests |
 | 09/02/2026 | 🆕 SP-351 Stripe Service & Webhooks : Service Stripe complet (`src/lib/services/stripe/stripe.service.ts`) avec 5 fonctions exportées (createCheckoutSession, updateSubscriptionQuantity, cancelSubscription, createBillingPortalSession, handleWebhookEvent) + 5 handlers internes (checkout completed, subscription updated/deleted, invoice paid/failed). Pattern ServiceResult<T> uniforme. Compatibilité Stripe SDK v20.3.1 (API `2026-01-28.clover`) avec types natifs discriminants (pas de cast `as` nécessaire). Route webhook POST `/api/webhooks/stripe` : vérification signature HMAC `constructEvent()`, lecture raw body `request.text()`, gestion erreurs structurée. Types TypeScript 7 interfaces (`src/types/stripe.ts`) avec barrel export. +50 tests unitaires (stripe-service: 40, webhook-route: 10). Compétences CDA #66-67 ajoutées. Total : 5991 tests |
