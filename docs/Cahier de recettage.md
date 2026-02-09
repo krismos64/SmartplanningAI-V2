@@ -14,7 +14,7 @@ Ce document trace l'historique complet des tests réalisés sur SmartPlanning. I
 | Pipeline CI/CD       | GitHub Actions                                         |
 | Responsable          | Christophe Mostefaoui                                  |
 | Date de création     | 4 décembre 2025                                        |
-| Dernière mise à jour | 9 février 2026 (SP-352)                                |
+| Dernière mise à jour | 9 février 2026 (SP-360)                                |
 
 ---
 
@@ -34,7 +34,7 @@ Dans le cadre du diplôme **CDA (Concepteur Développeur d'Applications)**, ce c
 | Métrique              | Objectif  | Atteint  |
 | --------------------- | --------- | -------- |
 | Couverture globale    | ≥ 70%     | ✅ 85%   |
-| Tests unitaires       | ≥ 500     | ✅ 5035  |
+| Tests unitaires       | ≥ 500     | ✅ 5076  |
 | Tests E2E             | ≥ 50      | ✅ 988   |
 | Score Lighthouse A11y | ≥ 90%     | ✅ 95%   |
 | Anomalies critiques   | 0 en prod | ✅ 0     |
@@ -456,7 +456,7 @@ it('should send email', async () => {
 
 | Type de test     | Outil                       | Version | Description                                      |
 | ---------------- | --------------------------- | ------- | ------------------------------------------------ |
-| Tests unitaires  | Vitest                      | 3.2.4   | Tests de logique métier et utilitaires           |
+| Tests unitaires  | Vitest                      | 2.1.8   | Tests de logique métier et utilitaires           |
 | Tests composants | React Testing Library       | 16.3.0  | Tests des composants React isolés                |
 | Tests E2E        | Playwright                  | 1.57.0  | Tests de parcours utilisateur complets           |
 | Mocking API      | MSW                         | 2.12.4  | Simulation des réponses API                      |
@@ -472,6 +472,7 @@ Ce tableau recense chaque campagne de tests significative (mise en production, f
 
 | Date       | Sprint    | Version/Commit | Tests unitaires | Tests E2E  | Couverture | Statut  | Notes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | ---------- | --------- | -------------- | --------------- | ---------- | ---------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 09/02/2026 | Sprint 17 | SP-360         | 5076/5076 ✅    | 988/988 ✅ | ~85%       | ✅ PASS | 🆕 SP-360 Dashboard Billing Page. +41 tests unitaires (4 fichiers). Page `/app/dashboard/billing` avec Server Component (auth + RBAC DIRECTOR + fetch `getBillingDataAction` + sérialisation Date→ISO string). 4 composants Client : `BillingPageContent` (orchestrateur, Server Actions portail/annulation, AlertDialog), `SubscriptionStatus` (6 badges statut, countdown essai, alerte annulation programmée, EmptyState), `UsageIndicator` (ProgressBar colorée sièges, prix unitaire/total, tooltip prorata), `InvoiceHistory` (Table factures, badges Payé/Échoué/En attente, liens Stripe externes, EmptyState). Barrel export + types sérialisés. Loading skeleton. Navigation menu-items.ts : entrée "Facturation" (CreditCard, DIRECTOR, G B). Design glassmorphism + Framer Motion + useReducedMotion. Type `BillingData` enrichi (currentPeriodStart, canceledAt, createdAt, stripeInvoiceId, paymentMethod, trialEndsAt). Total : 6064 tests |
 | 09/02/2026 | Sprint 17 | SP-352         | 5035/5035 ✅    | 988/988 ✅ | ~85%       | ✅ PASS | 🆕 SP-352 Server Actions Stripe. +32 tests unitaires (1 fichier : `__tests__/lib/actions/stripe.test.ts`). 5 Server Actions connectant le service Stripe (SP-351) au frontend : `createCheckoutAction` (checkout per-seat avec email via auth() + companyName via Prisma), `createBillingPortalAction` (portail facturation via stripeCustomerId), `updateSubscriptionQuantityAction` (mise à jour sièges + revalidatePath), `cancelSubscriptionAction` (annulation fin de période ou immédiate + revalidatePath), `getBillingDataAction` (subscription + payments + employeeCount + monthlyAmount via Promise.all). RBAC DIRECTOR via `checkPermission('DIRECTOR')`, validation Zod via `validateData()`, conversion `ServiceResult<T>` → `CrudActionResult<T>`. Type `BillingData` ajouté à `src/types/stripe.ts` + barrel export. Total : 6023 tests |
 | 09/02/2026 | Sprint 17 | SP-351         | 5003/5003 ✅    | 988/988 ✅ | ~85%       | ✅ PASS | 🆕 SP-351 Stripe Service & Webhooks. +50 tests unitaires (40 service + 10 route webhook). Service Stripe (`createCheckoutSession`, `updateSubscriptionQuantity`, `cancelSubscription`, `createBillingPortalSession`, `handleWebhookEvent`). Route webhook `/api/webhooks/stripe/route.ts` avec vérification signature HMAC. 7 types TypeScript. Total : 5991 tests |
 | 09/02/2026 | Sprint 17 | SP-350         | 4953/4953 ✅    | 988/988 ✅ | ~85%       | ✅ PASS | 🆕 SP-350 Migration Per-Seat Subscription Model. **Phase 1 Backend** : Migration Prisma SubscriptionPlan (FREE/PER_SEAT) + SubscriptionStatus (+INCOMPLETE), modèles Subscription et Payment avec relation 1:1 Company, seed data mis à jour (2 plans), validations Zod (labels FR, couleurs, descriptions pour 2 plans + 6 statuts), service admin-stats MRR refactoré (quantity × pricePerEmployee). **Phase 2 UI** : CompanyCard badges dynamiques, CompanyForm schéma FREE/PER_SEAT, columns.tsx colonnes virtuelles TanStack Table, [id]/page.tsx fallback subscription relation. Suppression complète STARTER/BUSINESS/ENTERPRISE (0 occurrence src/). +97 tests modifiés/ajoutés (validations 37, actions 20, CompanyCard 25, columns 20, DeleteDialog 10, AdminRecentCompanies 18, admin-stats 39, prisma 2). Total : 5941 tests |
@@ -690,6 +691,141 @@ export interface BillingData {
 3. **Pourquoi `undefined as void` ?** Pour `CrudActionResult<void>`, TypeScript exige une valeur pour `data` même si le type est `void`. Le pattern `data: undefined as void` satisfait le type sans ambiguïté.
 
 4. **Pourquoi pas de revalidatePath pour checkout/portal ?** Ces actions retournent une URL de redirection — l'utilisateur quitte la page. La revalidation n'a de sens que pour les mutations qui modifient les données affichées sur la même page (updateQuantity, cancel).
+
+---
+
+## Détail des tests Sprint 17 - Dashboard Billing (SP-360) 🆕
+
+### SP-360 : Dashboard Billing Page — Statut, Utilisation, Historique (41 tests)
+
+**Objectif** : Créer la page dashboard facturation complète `/app/dashboard/billing` avec 3 sous-composants (SubscriptionStatus, UsageIndicator, InvoiceHistory), orchestrateur BillingPageContent, Server Component avec sérialisation Date→ISO string, navigation sidebar, et loading skeleton.
+
+| Suite de test                                               | Tests unitaires | Tests E2E | Total  |
+| ----------------------------------------------------------- | --------------- | --------- | ------ |
+| `__tests__/components/billing/SubscriptionStatus.test.tsx`  | 16              | 0         | 16     |
+| `__tests__/components/billing/UsageIndicator.test.tsx`      | 8               | 0         | 8      |
+| `__tests__/components/billing/InvoiceHistory.test.tsx`      | 11              | 0         | 11     |
+| `__tests__/components/billing/BillingPageContent.test.tsx`  | 6               | 0         | 6      |
+| **Total**                                                   | **41**          | **0**     | **41** |
+
+**Fichiers créés** :
+
+| Fichier                                                                    | Description                                            |
+| -------------------------------------------------------------------------- | ------------------------------------------------------ |
+| `src/app/app/dashboard/billing/page.tsx`                                   | Server Component (auth + RBAC + sérialisation)         |
+| `src/app/app/dashboard/billing/loading.tsx`                                | Skeleton loading 3 cartes                              |
+| `src/app/app/dashboard/billing/_components/BillingPageContent.tsx`         | Orchestrateur Client Component (194 lignes)            |
+| `src/app/app/dashboard/billing/_components/SubscriptionStatus.tsx`        | Statut abonnement (311 lignes)                         |
+| `src/app/app/dashboard/billing/_components/UsageIndicator.tsx`            | Jauge utilisation sièges (164 lignes)                  |
+| `src/app/app/dashboard/billing/_components/InvoiceHistory.tsx`            | Historique factures (212 lignes)                       |
+| `src/app/app/dashboard/billing/_components/index.ts`                      | Barrel export composants + types                       |
+| `__tests__/components/billing/SubscriptionStatus.test.tsx`                | 16 tests unitaires                                     |
+| `__tests__/components/billing/UsageIndicator.test.tsx`                    | 8 tests unitaires                                      |
+| `__tests__/components/billing/InvoiceHistory.test.tsx`                    | 11 tests unitaires                                     |
+| `__tests__/components/billing/BillingPageContent.test.tsx`                | 6 tests unitaires                                      |
+
+**Fichiers modifiés** :
+
+| Fichier                              | Modification                                                             |
+| ------------------------------------ | ------------------------------------------------------------------------ |
+| `src/types/stripe.ts`                | BillingData enrichi (currentPeriodStart, canceledAt, createdAt, stripeInvoiceId, paymentMethod, trialEndsAt) |
+| `src/lib/actions/stripe.ts`          | getBillingDataAction enrichi (Promise.all + company.trialEndsAt)         |
+| `src/lib/navigation/menu-items.ts`   | Entrée "Facturation" (CreditCard, DIRECTOR, G B)                        |
+
+**4 composants implémentés** :
+
+| Composant            | Props                                                          | Description                                                        |
+| -------------------- | -------------------------------------------------------------- | ------------------------------------------------------------------ |
+| `SubscriptionStatus` | subscription, trialEndsAt, monthlyAmount, onManage, onCancel   | 6 badges statut, countdown essai, alerte annulation programmée     |
+| `UsageIndicator`     | employeeCount, quantity, pricePerEmployee, monthlyAmount       | ProgressBar colorée (vert/orange/rouge), prix unitaire/total       |
+| `InvoiceHistory`     | payments, onOpenPortal                                         | Table 5 dernières factures, liens Stripe, badges statut            |
+| `BillingPageContent` | billingData (SerializedBillingData)                            | Orchestrateur, portail Stripe, annulation AlertDialog, erreurs     |
+
+**Tests unitaires par catégorie** :
+
+| Fichier                      | Catégorie                  | Nb tests | Description                                                    |
+| ---------------------------- | -------------------------- | -------- | -------------------------------------------------------------- |
+| SubscriptionStatus.test.tsx  | Rendu selon le statut      | 6        | Badges ACTIVE, TRIAL, PAST_DUE, CANCELED, EXPIRED, INCOMPLETE |
+| SubscriptionStatus.test.tsx  | Countdown essai            | 1        | Jours restants trial avec alerte                               |
+| SubscriptionStatus.test.tsx  | Annulation programmée      | 2        | Alerte cancelAtPeriodEnd, masquage bouton Annuler              |
+| SubscriptionStatus.test.tsx  | Aucun abonnement           | 1        | EmptyState avec CTA "S'abonner"                                |
+| SubscriptionStatus.test.tsx  | Interactions               | 2        | Callbacks onManageSubscription, onCancelSubscription           |
+| SubscriptionStatus.test.tsx  | Affichage données          | 4        | Montant mensuel, sièges, période, label plan                   |
+| UsageIndicator.test.tsx      | Affichage                  | 8        | Employés actifs, sièges total, % utilisation, plafond 100%, prix unitaire/total, prorata, data-testid |
+| InvoiceHistory.test.tsx      | Table                      | 3        | Lignes factures, montants formatés, moyen paiement             |
+| InvoiceHistory.test.tsx      | Badges statut              | 3        | Payé (vert), Échoué (rouge), En attente (jaune)               |
+| InvoiceHistory.test.tsx      | Liens Stripe               | 2        | Lien "Voir" si stripeInvoiceId, "—" sinon                     |
+| InvoiceHistory.test.tsx      | État vide                  | 2        | EmptyState "Aucune facture", masquage bouton "Voir tout"       |
+| InvoiceHistory.test.tsx      | Interactions               | 1        | Callback onOpenPortal                                          |
+| BillingPageContent.test.tsx  | Rendu                      | 4        | 3 sous-composants, null subscription, masquage conditionnel, data-testid |
+| BillingPageContent.test.tsx  | Action Gérer               | 2        | Portail Stripe (redirection), erreur affichée                  |
+| **Total**                    |                            | **41**   |                                                                |
+
+**Sérialisation Date → ISO string** :
+
+```typescript
+// page.tsx - Server Component
+function serializeBillingData(data: BillingData): SerializedBillingData {
+  return {
+    subscription: data.subscription ? {
+      ...data.subscription,
+      currentPeriodStart: data.subscription.currentPeriodStart?.toISOString() ?? null,
+      currentPeriodEnd: data.subscription.currentPeriodEnd?.toISOString() ?? null,
+      canceledAt: data.subscription.canceledAt?.toISOString() ?? null,
+      createdAt: data.subscription.createdAt.toISOString(),
+    } : null,
+    payments: data.payments.map(p => ({
+      ...p,
+      paidAt: p.paidAt?.toISOString() ?? null,
+      createdAt: p.createdAt.toISOString(),
+    })),
+    employeeCount: data.employeeCount,
+    monthlyAmount: data.monthlyAmount,
+    trialEndsAt: data.trialEndsAt?.toISOString() ?? null,
+  }
+}
+```
+
+**Type BillingData enrichi** :
+
+```typescript
+export interface BillingData {
+  subscription: {
+    plan: string
+    status: string
+    quantity: number
+    pricePerEmployee: number
+    planPrice: number
+    currentPeriodStart: Date | null   // AJOUTÉ SP-360
+    currentPeriodEnd: Date | null
+    cancelAtPeriodEnd: boolean
+    canceledAt: Date | null           // AJOUTÉ SP-360
+    createdAt: Date                   // AJOUTÉ SP-360
+    stripeCustomerId: string
+  } | null
+  payments: {
+    id: string
+    amount: number
+    currency: string
+    status: string
+    paidAt: Date | null
+    createdAt: Date
+    stripeInvoiceId: string | null    // AJOUTÉ SP-360
+    paymentMethod: string | null      // AJOUTÉ SP-360
+  }[]
+  employeeCount: number
+  monthlyAmount: number
+  trialEndsAt: Date | null            // AJOUTÉ SP-360
+}
+```
+
+**Décisions techniques documentées** :
+
+1. **Pourquoi sérialiser les dates ?** Next.js 15 ne peut pas transmettre d'objets `Date` entre Server Components et Client Components. Les dates Prisma sont converties en ISO strings via `serializeBillingData()` dans le Server Component, puis parsées côté client avec `new Date()` ou `formatDate()`.
+
+2. **Pourquoi 3 composants séparés + 1 orchestrateur ?** Chaque section (statut, utilisation, historique) a sa propre logique d'affichage et ses propres interactions. L'orchestrateur `BillingPageContent` gère les Server Actions partagées (portail, annulation) et l'état d'erreur global.
+
+3. **Pourquoi masquer UsageIndicator et InvoiceHistory quand subscription=null ?** Sans abonnement actif, ces sections n'ont pas de sens. Seul `SubscriptionStatus` avec l'EmptyState "S'abonner" est affiché.
 
 ---
 
@@ -1876,8 +2012,9 @@ not-found.tsx (Server Component)
 | 09/02/2026 (SP-350)        | 4953            | 988       | 5941  | ~85%       | 📈 +387             |
 | 09/02/2026 (SP-351)        | 5003            | 988       | 5991  | ~85%       | 📈 +50              |
 | 09/02/2026 (SP-352)        | 5035            | 988       | 6023  | ~85%       | 📈 +32              |
+| 09/02/2026 (SP-360)        | 5076            | 988       | 6064  | ~85%       | 📈 +41              |
 
-**Graphique d'évolution** : De 27 tests (04/12) à 6023 tests (09/02) = **+22204% de croissance** 🚀
+**Graphique d'évolution** : De 27 tests (04/12) à 6064 tests (09/02) = **+22359% de croissance** 🚀
 
 ---
 
@@ -1887,11 +2024,11 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
 
 | N°  | Compétence                                                          | Preuve                                                                                                                                                                                                                                                                                                                                                  |
 | --- | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | Tester les composants d'une application                             | 5035 tests unitaires documentés                                                                                                                                                                                                                                                                                                                         |
+| 1   | Tester les composants d'une application                             | 5076 tests unitaires documentés                                                                                                                                                                                                                                                                                                                         |
 | 2   | Contribuer à la qualité du code                                     | Couverture 85%, anomalies tracées                                                                                                                                                                                                                                                                                                                       |
 | 3   | Documenter les procédures                                           | Procédure de recette formalisée                                                                                                                                                                                                                                                                                                                         |
 | 4   | Utiliser une méthodologie                                           | Approche structurée par sprints                                                                                                                                                                                                                                                                                                                         |
-| 5   | Développer des tests automatisés                                    | 6023 tests (unitaires + E2E)                                                                                                                                                                                                                                                                                                                            |
+| 5   | Développer des tests automatisés                                    | 6064 tests (unitaires + E2E)                                                                                                                                                                                                                                                                                                                            |
 | 6   | Sécuriser une application                                           | Tests RBAC (92 unitaires, 27 E2E), rate limiting, protection énumération                                                                                                                                                                                                                                                                                |
 | 7   | Concevoir une architecture logicielle                               | Pattern ServiceResult<T>, multi-tenant                                                                                                                                                                                                                                                                                                                  |
 | 8   | Développer des composants métier                                    | 4 dashboards par rôle                                                                                                                                                                                                                                                                                                                                   |
@@ -1955,6 +2092,7 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
 | 66  | Implémenter un service Stripe avec pattern ServiceResult            | Service stripe.service.ts (5 fonctions exportées + 5 handlers webhooks internes). Pattern ServiceResult<T> uniforme. Compatibilité Stripe SDK v20.3.1 (API 2026-01-28.clover) avec types natifs discriminants. Gestion per-seat billing : création Checkout session, mise à jour quantité sièges, annulation abonnement, portail facturation. 40 tests unitaires (SP-351) 🆕 |
 | 67  | Implémenter une route webhook sécurisée avec vérification signature | Route POST `/api/webhooks/stripe` : vérification signature HMAC `stripe.webhooks.constructEvent()`, lecture raw body `request.text()` (Next.js 15 App Router), gestion erreurs structurée (400/500), dispatch vers service handler. 10 tests unitaires avec vi.hoisted() pattern (SP-351) 🆕 |
 | 68  | Connecter un service Stripe au frontend via Server Actions RBAC     | 5 Server Actions DIRECTOR-only (checkout, portal, updateQuantity, cancel, getBillingData). Conversion ServiceResult<T> → CrudActionResult<T> discriminated union. Retour URL pour loading state client. Guard companyId (SYSTEM_ADMIN via admin panel). Email via auth() séparé. BillingData type avec Promise.all parallèle. revalidatePath billing. 32 tests unitaires (SP-352) 🆕 |
+| 69  | Implémenter un dashboard facturation SaaS avec sérialisation Date  | Page `/app/dashboard/billing` Server Component DIRECTOR : fetch getBillingDataAction + sérialisation Date→ISO string + rendu 3 Client Components (SubscriptionStatus 6 statuts + countdown essai + alerte annulation, UsageIndicator ProgressBar sièges colorée + prix prorata, InvoiceHistory Table + badges + liens Stripe). Navigation G B. 41 tests unitaires (SP-360) 🆕 |
 
 ---
 
@@ -1992,6 +2130,7 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
    - Stripe Service : création Checkout session, mise à jour quantité sièges, annulation abonnement 🆕
    - Webhook Stripe /api/webhooks/stripe : vérification signature, traitement événements (checkout, subscription, invoice) 🆕
    - Server Actions Stripe : createCheckoutAction, createBillingPortalAction, updateSubscriptionQuantityAction, cancelSubscriptionAction, getBillingDataAction (RBAC DIRECTOR) 🆕
+   - Dashboard Billing /app/dashboard/billing (statut abonnement, jauge sièges, historique factures, portail Stripe, annulation) 🆕
 
 ### Après chaque mise en production
 
@@ -2006,6 +2145,7 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
 
 | Date       | Modification                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 09/02/2026 | 🆕 SP-360 Dashboard Billing Page : Page `/app/dashboard/billing` complète avec Server Component (auth + RBAC DIRECTOR + sérialisation Date→ISO string). 4 composants Client : `BillingPageContent` (orchestrateur, Server Actions portail/annulation, AlertDialog confirmation), `SubscriptionStatus` (6 badges statut TRIAL/ACTIVE/PAST_DUE/CANCELED/EXPIRED/INCOMPLETE, countdown essai gratuit, alerte annulation programmée, EmptyState "S'abonner"), `UsageIndicator` (ProgressBar colorée sièges vert/orange/rouge, prix unitaire/total, tooltip prorata), `InvoiceHistory` (Table 5 dernières factures, badges Payé/Échoué/En attente, liens factures Stripe externes, EmptyState). Barrel export + types sérialisés (SerializedBillingData, SerializedSubscription, SerializedPayment). Loading skeleton 3 cartes. Navigation menu-items.ts : entrée "Facturation" (icône CreditCard, rôle DIRECTOR, raccourci G B). Type `BillingData` enrichi dans `src/types/stripe.ts` (ajout currentPeriodStart, canceledAt, createdAt sur subscription ; stripeInvoiceId, paymentMethod sur payments ; trialEndsAt racine). `getBillingDataAction` enrichi (Promise.all + company.trialEndsAt). Design glassmorphism + Framer Motion + useReducedMotion. +41 tests unitaires (4 fichiers : SubscriptionStatus 16, UsageIndicator 8, InvoiceHistory 11, BillingPageContent 6). Compétence CDA #69 ajoutée. Total : 6064 tests |
 | 09/02/2026 | 🆕 SP-352 Server Actions Stripe : 5 Server Actions connectant le service Stripe (SP-351) au frontend (`src/lib/actions/stripe.ts`, 339 lignes). `createCheckoutAction` (session Checkout per-seat avec email via auth() séparé + companyName via Prisma), `createBillingPortalAction` (portail facturation via stripeCustomerId depuis Subscription), `updateSubscriptionQuantityAction` (mise à jour sièges + revalidatePath billing), `cancelSubscriptionAction` (annulation fin de période ou immédiate + revalidatePath billing), `getBillingDataAction` (subscription + 5 derniers payments + employeeCount + monthlyAmount via Promise.all). RBAC strict DIRECTOR via `checkPermission('DIRECTOR')`. Validation Zod via `validateData()` avec schémas SP-349. Conversion `ServiceResult<T>` → `CrudActionResult<T>` discriminated union. Retour URL (pas redirect()) pour loading state client. Type `BillingData` ajouté à `src/types/stripe.ts` + barrel export. +32 tests unitaires (`__tests__/lib/actions/stripe.test.ts`, 625 lignes) couvrant : auth denied, RBAC denied, companyId null, Zod validation, missing subscription/customer, erreurs service Stripe, happy paths, revalidatePath, calcul monthlyAmount, erreurs Prisma. Mocking vi.hoisted() + prismaMock centralisé. Compétence CDA #68 ajoutée. Total : 6023 tests |
 | 09/02/2026 | 🆕 SP-351 Stripe Service & Webhooks : Service Stripe complet (`src/lib/services/stripe/stripe.service.ts`) avec 5 fonctions exportées (createCheckoutSession, updateSubscriptionQuantity, cancelSubscription, createBillingPortalSession, handleWebhookEvent) + 5 handlers internes (checkout completed, subscription updated/deleted, invoice paid/failed). Pattern ServiceResult<T> uniforme. Compatibilité Stripe SDK v20.3.1 (API `2026-01-28.clover`) avec types natifs discriminants (pas de cast `as` nécessaire). Route webhook POST `/api/webhooks/stripe` : vérification signature HMAC `constructEvent()`, lecture raw body `request.text()`, gestion erreurs structurée. Types TypeScript 7 interfaces (`src/types/stripe.ts`) avec barrel export. +50 tests unitaires (stripe-service: 40, webhook-route: 10). Compétences CDA #66-67 ajoutées. Total : 5991 tests |
 | 09/02/2026 | 🆕 SP-350 Migration Per-Seat Subscription Model : Migration du modèle multi-plan (FREE/STARTER/BUSINESS/ENTERPRISE) vers per-seat billing (FREE/PER_SEAT à 2,90€/employé/mois). **Phase 1 Backend** : 2 enums Prisma (`SubscriptionPlan`: FREE/PER_SEAT, `SubscriptionStatus`: TRIAL/ACTIVE/PAST_DUE/CANCELED/EXPIRED/INCOMPLETE), modèle Subscription 1:1 Company (plan, status, quantity, pricePerEmployee centimes), migration Prisma `add_subscription_model`, seed avec subscriptions aléatoires, validations Zod company enrichies (subscriptionPlan/subscriptionStatus filters, labels FR `subscriptionPlanLabels`/`subscriptionStatusLabels`), Server Actions companies avec relation subscription (select nested), types `CompanySubscription`/`CompanyWithCounts`/`CompanyDetail`. **Phase 2 UI** : CompanyCard (badges plan/statut colorés, prix formaté centimes→€), CompanyForm (select plan FREE/PER_SEAT, 6 statuts, inputs quantity/pricePerEmployee conditionnels), columns.tsx (colonnes virtuelles TanStack id-based pour relation nested, filterFn custom), page [id] (lecture subscription relation). +97 tests unitaires (9 fichiers) + +290 tests E2E. Compétences CDA #64-65 ajoutées. Total : 5941 tests |
@@ -2076,6 +2216,29 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
 
 ## Documents liés
 
+### Sprint 17 - Dashboard Billing (SP-360) 🆕
+
+- SP-360 : Dashboard Billing Page ✅ TERMINÉ
+  - **Page Server Component** (`src/app/app/dashboard/billing/page.tsx`) :
+    - Auth check + RBAC DIRECTOR via `checkPermission`
+    - Fetch `getBillingDataAction` + sérialisation Date → ISO string via `serializeBillingData()`
+    - Metadata SEO : `title: "Facturation | SmartPlanning"`
+    - Loading skeleton (`loading.tsx`) avec 3 cartes skeleton
+  - **Composants Client** (`_components/`) :
+    - `BillingPageContent` : Orchestrateur gérant les Server Actions (portail Stripe via `createBillingPortalAction`, annulation via `cancelSubscriptionAction` avec AlertDialog confirmation), état d'erreur global, layout responsive (SubscriptionStatus full-width, UsageIndicator + InvoiceHistory en grille 2 colonnes)
+    - `SubscriptionStatus` : 6 badges statut via STATUS_CONFIG map (TRIAL/Essai gratuit, ACTIVE/Actif, PAST_DUE/Paiement en retard, CANCELED/Annulé, EXPIRED/Expiré, INCOMPLETE/En attente). Countdown jours essai restants. Alerte annulation programmée (cancelAtPeriodEnd). EmptyState "Aucun abonnement" avec CTA "S'abonner". Montant mensuel, nombre de sièges, période facturation.
+    - `UsageIndicator` : ProgressBar avec couleur dynamique (vert <80%, orange 80-99%, rouge ≥100%). Compteur employés actifs. Prix unitaire par employé (centimes→€). Montant mensuel total. Tooltip prorata.
+    - `InvoiceHistory` : Table 5 dernières factures avec badges statut (Payé/vert, Échoué/rouge, En attente/jaune). Liens factures Stripe externes (target="_blank"). Moyen de paiement. EmptyState "Aucune facture". Bouton "Voir tout l'historique" → portail Stripe.
+    - `index.ts` : Barrel export composants + types (SerializedBillingData, SerializedSubscription, SerializedPayment)
+  - **Type BillingData enrichi** (`src/types/stripe.ts`) :
+    - Subscription : +currentPeriodStart, +canceledAt, +createdAt
+    - Payments : +stripeInvoiceId, +paymentMethod
+    - Racine : +trialEndsAt
+  - **Navigation** : Entrée "Facturation" dans `menu-items.ts` (CreditCard, DIRECTOR, `G B`)
+  - **Tests** :
+    - 41 tests unitaires (4 fichiers : SubscriptionStatus 16, UsageIndicator 8, InvoiceHistory 11, BillingPageContent 6)
+    - Total projet : 6064 tests
+
 ### Sprint 17 - Migration Per-Seat & Stripe Service (SP-350/SP-351) 🆕
 
 - SP-351 : Stripe Service & Webhooks ✅ TERMINÉ
@@ -2109,11 +2272,11 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
     - `cancelSubscriptionAction` : Annulation (fin de période ou immédiate) + `revalidatePath` billing
     - `getBillingDataAction` : Subscription + 5 derniers payments + employeeCount + monthlyAmount via `Promise.all`
   - **Patterns** : RBAC DIRECTOR via `checkPermission('DIRECTOR')`, validation Zod via `validateData()`, conversion `ServiceResult<T>` → `CrudActionResult<T>`, retour URL (pas redirect()) pour loading state client
-  - **Types** : `BillingData` ajouté à `src/types/stripe.ts` + barrel export `index.ts`
+  - **Types** : `BillingData` ajouté à `src/types/stripe.ts` + barrel export `index.ts` (enrichi en SP-360 : +currentPeriodStart, +canceledAt, +createdAt, +stripeInvoiceId, +paymentMethod, +trialEndsAt)
   - **Tests** :
     - 32 tests unitaires (`__tests__/lib/actions/stripe.test.ts`, 625 lignes)
     - Couvre : auth denied, RBAC denied, companyId null, Zod validation, missing subscription/customer, erreurs service Stripe, happy paths, revalidatePath, calcul monthlyAmount, erreurs Prisma
-    - Total projet : 6023 tests
+    - Total projet : 6023 tests (pré-SP-360)
 
 - SP-350 : Migration Per-Seat Subscription Model ✅ TERMINÉ
   - **Phase 1 Backend** :

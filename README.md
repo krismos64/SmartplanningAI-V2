@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 9 février 2026 (Server Actions Stripe - SP-352)
+- **Dernière mise à jour** : 9 février 2026 (Dashboard Billing - SP-360)
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -292,7 +292,7 @@ Service Stripe complet pour la gestion des abonnements per-seat et le traitement
   - `createBillingPortalAction` : Crée une session Billing Portal pour gérer l'abonnement existant. Récupère le `stripeCustomerId` depuis la table Subscription.
   - `updateSubscriptionQuantityAction` : Met à jour la quantité de sièges d'un abonnement (ajout/retrait employés). Déclenche un prorata automatique côté Stripe. Revalidation du path billing.
   - `cancelSubscriptionAction` : Annule un abonnement en fin de période (défaut) ou immédiatement. Revalidation du path billing.
-  - `getBillingDataAction` : Récupère les données de facturation pour le dashboard billing (subscription, 5 derniers paiements, nombre d'employés actifs, montant mensuel calculé). Requêtes Prisma parallèles via `Promise.all`.
+  - `getBillingDataAction` : Récupère les données de facturation pour le dashboard billing (subscription, 5 derniers paiements, nombre d'employés actifs, montant mensuel calculé, trialEndsAt). Requêtes Prisma parallèles via `Promise.all` (subscription + payments + employeeCount + company).
 
 - **Patterns techniques** :
   - RBAC strict : toutes les actions réservées au rôle `DIRECTOR` via `checkPermission('DIRECTOR')`
@@ -303,10 +303,45 @@ Service Stripe complet pour la gestion des abonnements per-seat et le traitement
   - Guard `companyId` — SYSTEM_ADMIN gère via admin panel, pas via billing
 
 - **Types** (`src/types/stripe.ts`) :
-  - Ajout interface `BillingData` (subscription, payments, employeeCount, monthlyAmount)
+  - Interface `BillingData` enrichie (subscription avec currentPeriodStart, canceledAt, createdAt, stripeCustomerId ; payments avec stripeInvoiceId, paymentMethod ; trialEndsAt au niveau racine)
   - Export centralisé dans `src/types/index.ts`
 
 - **Tests** : 32 tests unitaires couvrant auth denied, RBAC denied, companyId null, validation Zod, missing subscription/customer, erreurs service Stripe, happy paths, revalidatePath, calcul monthlyAmount, erreurs Prisma
+
+### Dashboard Billing (SP-360 - 9 février 2026)
+
+Page dashboard facturation complète avec 3 sous-composants, accessible aux DIRECTOR uniquement :
+
+- **Page** (`src/app/app/dashboard/billing/page.tsx`) :
+  - Server Component avec auth check + RBAC DIRECTOR
+  - Fetch `getBillingDataAction` + sérialisation des dates (Date → ISO string pour transfer Server→Client)
+  - Metadata SEO : `title: "Facturation | SmartPlanning"`
+  - Loading skeleton (`loading.tsx`) avec 3 cartes skeleton
+
+- **Composants** (`src/app/app/dashboard/billing/_components/`) :
+  - `BillingPageContent` : Orchestrateur Client Component, gestion des Server Actions (portail Stripe, annulation), AlertDialog confirmation, gestion erreurs
+  - `SubscriptionStatus` : Statut abonnement avec 6 badges (TRIAL, ACTIVE, PAST_DUE, CANCELED, EXPIRED, INCOMPLETE), countdown essai gratuit, alerte annulation programmée, EmptyState si pas d'abonnement
+  - `UsageIndicator` : Jauge utilisation sièges (ProgressBar colorée : vert <80%, orange 80-99%, rouge ≥100%), prix unitaire/total, info prorata tooltip
+  - `InvoiceHistory` : Historique 5 dernières factures (Table avec badges statut Payé/Échoué/En attente, liens factures Stripe externes, EmptyState)
+  - `index.ts` : Barrel export composants + types
+
+- **Navigation** :
+  - Entrée "Facturation" ajoutée dans `src/lib/navigation/menu-items.ts` avec icône CreditCard, rôle DIRECTOR, raccourci `G B`
+
+- **Sérialisation** :
+  - Types `SerializedBillingData`, `SerializedSubscription`, `SerializedPayment` (dates en ISO strings)
+  - Fonction `serializeBillingData()` dans page.tsx pour conversion Date → string
+
+- **Design** :
+  - Glassmorphism (glass-strong, bg-gradient-to-r, text-neon-primary)
+  - Framer Motion avec `useReducedMotion()` fallback
+  - Layout responsive : SubscriptionStatus pleine largeur, UsageIndicator + InvoiceHistory en grille 2 colonnes
+
+- **Tests** : 41 tests unitaires (4 fichiers) :
+  - `SubscriptionStatus.test.tsx` (16 tests) : 6 badges statut, countdown essai, alerte annulation, EmptyState, callbacks
+  - `UsageIndicator.test.tsx` (8 tests) : compteur employés, sièges, % utilisation, plafond 100%, prix
+  - `InvoiceHistory.test.tsx` (11 tests) : table, badges statut, liens Stripe, état vide, callback portail
+  - `BillingPageContent.test.tsx` (6 tests) : rendu 3 sous-composants, gestion null, action portail
 
 ### Pages Légales RGPD (14-15 janvier 2026)
 
@@ -2185,7 +2220,7 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 
 | Catégorie                              | Coverage | Tests    |
 | -------------------------------------- | -------- | -------- |
-| **Global**                             | **~85%** | **5003** |
+| **Global**                             | **~85%** | **5076** |
 | loading                                | 100%     | 152      |
 | modals                                 | 100%     | 52       |
 | cards                                  | 77.09%   | 88       |
@@ -2274,6 +2309,11 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 | admin-stats service (SP-350)        | 100%     | 39       |
 | stripe service (SP-351)            | 100%     | 40       |
 | webhook route (SP-351)             | 100%     | 10       |
+| stripe actions (SP-352)           | 100%     | 32       |
+| SubscriptionStatus (SP-360)       | 100%     | 16       |
+| UsageIndicator (SP-360)           | 100%     | 8        |
+| InvoiceHistory (SP-360)           | 100%     | 11       |
+| BillingPageContent (SP-360)       | 100%     | 6        |
 
 ### Tests E2E
 
@@ -2375,6 +2415,13 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 
 - stripe.service.ts (5 fonctions exportées + 5 handlers webhook internes, pattern ServiceResult<T>)
 - route.ts (POST /api/webhooks/stripe : signature HMAC, raw body, error handling)
+
+#### Billing Dashboard (4 composants - SP-360)
+
+- SubscriptionStatus (16 tests) : 6 badges statut, countdown essai, alerte annulation, EmptyState, callbacks
+- UsageIndicator (8 tests) : jauge sièges, prix unitaire/total, prorata, plafond 100%
+- InvoiceHistory (11 tests) : table factures, badges statut, liens Stripe, état vide
+- BillingPageContent (6 tests) : orchestrateur, gestion null, action portail Stripe
 
 #### Dashboard Employee (5 composants - SP-145)
 
@@ -2666,7 +2713,7 @@ Merge main → Build Docker → Push GHCR → Deploy VPS (~8-10 min)
 
 - **CI** (`.github/workflows/ci.yml`) : Lint, Type-check, Tests unitaires, Build, Tests E2E (PR uniquement)
 - **CD** (`.github/workflows/cd.yml`) : Build image Docker, Push sur ghcr.io, Deploy via SSH
-- Tests unitaires sur tous les push (~5035 tests Vitest)
+- Tests unitaires sur tous les push (~5076 tests Vitest)
 - Tests E2E sur PR vers main (~629 tests Playwright actifs, 5 devices mobiles, ~988 total)
 - Stabilisation E2E (SP-434) : Touch targets WCAG 2.5.5 (44px), command palette, mobile navigation
 - Déploiement automatique sur merge main ✅
