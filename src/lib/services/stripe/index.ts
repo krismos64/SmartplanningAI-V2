@@ -1,7 +1,7 @@
 /**
  * Stripe service — barrel export
  *
- * @ticket SP-351
+ * @ticket SP-351, SP-439
  */
 
 export {
@@ -11,3 +11,8 @@ export {
   createBillingPortalSession,
   handleWebhookEvent,
 } from './stripe.service'
+
+export {
+  syncEmployeeCountToStripe,
+  type SyncResult,
+} from './subscription-sync.service'
