@@ -62,7 +62,7 @@ export interface WebhookHandlerResult {
 }
 
 // ============================================================================
-// Billing Data (SP-352)
+// Billing Data (SP-352, enrichi SP-360)
 // ============================================================================
 
 /** Données de facturation pour le dashboard billing */
@@ -73,8 +73,11 @@ export interface BillingData {
     quantity: number
     pricePerEmployee: number
     planPrice: number
+    currentPeriodStart: Date | null
     currentPeriodEnd: Date | null
     cancelAtPeriodEnd: boolean
+    canceledAt: Date | null
+    createdAt: Date
     stripeCustomerId: string
   } | null
   payments: {
@@ -84,7 +87,10 @@ export interface BillingData {
     status: string
     paidAt: Date | null
     createdAt: Date
+    stripeInvoiceId: string | null
+    paymentMethod: string | null
   }[]
   employeeCount: number
   monthlyAmount: number
+  trialEndsAt: Date | null
 }
