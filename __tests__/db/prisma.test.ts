@@ -121,8 +121,6 @@ describe('Prisma Mock - Company Model', () => {
       workingDays: ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY'],
       timezone: 'Europe/Paris',
       defaultOpeningHours: null,
-      subscriptionPlan: 'STARTER',
-      subscriptionStatus: 'ACTIVE',
       trialEndsAt: null,
       subscriptionEndsAt: null,
       isActive: true,
@@ -138,7 +136,7 @@ describe('Prisma Mock - Company Model', () => {
 
     expect(company).not.toBeNull()
     expect(company?.name).toBe('SmartPlanning Demo')
-    expect(company?.subscriptionPlan).toBe('STARTER')
+    expect(company?.isActive).toBe(true)
   })
 })
 

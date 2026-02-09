@@ -36,7 +36,12 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import type { CompanyWithCounts } from '@/lib/actions/companies'
-import type { SubscriptionPlan, SubscriptionStatus } from '@prisma/client'
+import {
+  subscriptionPlanLabels,
+  subscriptionStatusLabels,
+  type SubscriptionPlan,
+  type SubscriptionStatus,
+} from '@/lib/validations/company'
 
 // ============================================================================
 // Types
@@ -54,29 +59,12 @@ interface CompanyCardProps {
 // Helpers
 // ============================================================================
 
-const PLAN_LABELS: Record<SubscriptionPlan, string> = {
-  FREE: 'Gratuit',
-  STARTER: 'Starter',
-  BUSINESS: 'Business',
-  ENTERPRISE: 'Enterprise',
-}
-
 const PLAN_COLORS: Record<
   SubscriptionPlan,
   'secondary' | 'default' | 'outline' | 'destructive'
 > = {
   FREE: 'secondary',
-  STARTER: 'outline',
-  BUSINESS: 'default',
-  ENTERPRISE: 'default',
-}
-
-const STATUS_LABELS: Record<SubscriptionStatus, string> = {
-  TRIAL: 'Essai',
-  ACTIVE: 'Actif',
-  PAST_DUE: 'Impayé',
-  CANCELED: 'Annulé',
-  EXPIRED: 'Expiré',
+  PER_SEAT: 'default',
 }
 
 const STATUS_COLORS: Record<
@@ -88,6 +76,7 @@ const STATUS_COLORS: Record<
   PAST_DUE: 'destructive',
   CANCELED: 'secondary',
   EXPIRED: 'destructive',
+  INCOMPLETE: 'outline',
 }
 
 // ============================================================================
@@ -188,21 +177,21 @@ export function CompanyCard({
             <div className="flex flex-wrap items-center gap-1.5">
               <Badge
                 variant={
-                  PLAN_COLORS[company.subscriptionPlan as SubscriptionPlan]
+                  PLAN_COLORS[(company.subscription?.plan ?? 'FREE') as SubscriptionPlan]
                 }
               >
-                {PLAN_LABELS[company.subscriptionPlan as SubscriptionPlan]}
+                {subscriptionPlanLabels[(company.subscription?.plan ?? 'FREE') as SubscriptionPlan]}
               </Badge>
               <Badge
                 variant={
                   STATUS_COLORS[
-                    company.subscriptionStatus as SubscriptionStatus
+                    (company.subscription?.status ?? 'TRIAL') as SubscriptionStatus
                   ]
                 }
               >
                 {
-                  STATUS_LABELS[
-                    company.subscriptionStatus as SubscriptionStatus
+                  subscriptionStatusLabels[
+                    (company.subscription?.status ?? 'TRIAL') as SubscriptionStatus
                   ]
                 }
               </Badge>

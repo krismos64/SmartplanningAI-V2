@@ -71,9 +71,7 @@ const planBadgeVariants: Record<
   'default' | 'secondary' | 'outline' | 'destructive'
 > = {
   FREE: 'secondary',
-  STARTER: 'outline',
-  BUSINESS: 'default',
-  ENTERPRISE: 'default',
+  PER_SEAT: 'default',
 }
 
 /**
@@ -88,6 +86,7 @@ const statusBadgeVariants: Record<
   PAST_DUE: 'destructive',
   CANCELED: 'destructive',
   EXPIRED: 'secondary',
+  INCOMPLETE: 'outline',
 }
 
 // ============================================================================
@@ -152,12 +151,12 @@ export function createCompanyColumns(
       },
     },
 
-    // Plan d'abonnement
+    // Plan d'abonnement (via relation subscription)
     {
-      accessorKey: 'subscriptionPlan',
+      id: 'subscriptionPlan',
       header: 'Plan',
       cell: ({ row }) => {
-        const plan = row.original.subscriptionPlan as SubscriptionPlan
+        const plan = (row.original.subscription?.plan ?? 'FREE') as SubscriptionPlan
         return (
           <Badge variant={planBadgeVariants[plan]}>
             {subscriptionPlanLabels[plan]}
@@ -165,16 +164,16 @@ export function createCompanyColumns(
         )
       },
       filterFn: (row, _id, value: string[]) => {
-        return value.includes(row.original.subscriptionPlan)
+        return value.includes(row.original.subscription?.plan ?? 'FREE')
       },
     },
 
-    // Statut d'abonnement
+    // Statut d'abonnement (via relation subscription)
     {
-      accessorKey: 'subscriptionStatus',
+      id: 'subscriptionStatus',
       header: 'Statut',
       cell: ({ row }) => {
-        const status = row.original.subscriptionStatus as SubscriptionStatus
+        const status = (row.original.subscription?.status ?? 'TRIAL') as SubscriptionStatus
         return (
           <Badge variant={statusBadgeVariants[status]}>
             {subscriptionStatusLabels[status]}
@@ -182,7 +181,7 @@ export function createCompanyColumns(
         )
       },
       filterFn: (row, _id, value: string[]) => {
-        return value.includes(row.original.subscriptionStatus)
+        return value.includes(row.original.subscription?.status ?? 'TRIAL')
       },
     },
 
