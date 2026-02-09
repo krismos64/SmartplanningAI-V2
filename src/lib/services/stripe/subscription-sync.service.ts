@@ -74,6 +74,11 @@ export async function syncEmployeeCountToStripe(
 
     // 2. Early returns — conditions de skip
     if (!subscription) {
+      console.info('[StripeSync]', {
+        action: 'skipped',
+        companyId,
+        reason: 'no_subscription',
+      })
       return {
         synced: false,
         previousQuantity: 0,
