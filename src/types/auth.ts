@@ -5,7 +5,7 @@
  * personnalisés SmartPlanning (role, companyId) dans Session et JWT.
  *
  * @see https://authjs.dev/getting-started/typescript
- * @ticket SP-108, SP-110
+ * @ticket SP-108, SP-110, SP-440
  */
 
 import { DefaultSession } from 'next-auth'
@@ -47,6 +47,12 @@ declare module 'next-auth' {
       companyId: string | null
       /** Date de vérification email */
       emailVerified: Date | null
+      /** Statut de l'abonnement (SubscriptionStatus enum ou null) @ticket SP-440 */
+      subscriptionStatus: string | null
+      /** Date de fin du trial en ISO string @ticket SP-440 */
+      trialEndsAt: string | null
+      /** Date de fin de période courante en ISO string @ticket SP-440 */
+      currentPeriodEnd: string | null
     } & DefaultSession['user']
   }
 
@@ -64,6 +70,12 @@ declare module 'next-auth' {
     emailVerified: Date | null
     image: string | null
     isActive: boolean
+    /** Statut de l'abonnement enrichi depuis Company.Subscription @ticket SP-440 */
+    subscriptionStatus: string | null
+    /** Date de fin du trial en ISO string @ticket SP-440 */
+    trialEndsAt: string | null
+    /** Date de fin de période courante en ISO string @ticket SP-440 */
+    currentPeriodEnd: string | null
   }
 }
 
@@ -89,6 +101,14 @@ declare module '@auth/core/jwt' {
     companyId: string | null
     /** Email vérifié */
     emailVerified: Date | null
+    /** Statut de l'abonnement (SubscriptionStatus enum ou null) @ticket SP-440 */
+    subscriptionStatus: string | null
+    /** Date de fin du trial en ISO string @ticket SP-440 */
+    trialEndsAt: string | null
+    /** Date de fin de période courante en ISO string @ticket SP-440 */
+    currentPeriodEnd: string | null
+    /** Timestamp du dernier check subscription (Date.now()) @ticket SP-440 */
+    subscriptionCheckedAt: number | null
   }
 }
 
@@ -243,3 +263,19 @@ export const DEFAULT_REDIRECT_BY_ROLE: Record<UserRole, string> = {
  * @ticket SP-110
  */
 export const ACCESS_DENIED_REDIRECT = '/app/dashboard' as const
+
+// ============================================================================
+// CONSTANTES SUBSCRIPTION GUARD (SP-440)
+// ============================================================================
+
+/**
+ * Routes accessibles même si l'abonnement est inactif.
+ * Permet au directeur de régler son paiement ou gérer son profil.
+ *
+ * @ticket SP-440
+ */
+export const SUBSCRIPTION_EXEMPT_ROUTES = [
+  '/app/dashboard/billing',
+  '/app/profile',
+  '/app/settings',
+] as const

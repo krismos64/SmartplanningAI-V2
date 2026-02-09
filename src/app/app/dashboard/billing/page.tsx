@@ -5,7 +5,7 @@
  * via getBillingDataAction() et les passe sérialisées au client.
  * Accessible uniquement au rôle DIRECTOR.
  *
- * @ticket SP-360
+ * @ticket SP-360, SP-440
  */
 import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
@@ -91,8 +91,10 @@ function serializeBillingData(data: {
           quantity: data.subscription.quantity,
           pricePerEmployee: data.subscription.pricePerEmployee,
           planPrice: data.subscription.planPrice,
-          currentPeriodStart: data.subscription.currentPeriodStart?.toISOString() ?? null,
-          currentPeriodEnd: data.subscription.currentPeriodEnd?.toISOString() ?? null,
+          currentPeriodStart:
+            data.subscription.currentPeriodStart?.toISOString() ?? null,
+          currentPeriodEnd:
+            data.subscription.currentPeriodEnd?.toISOString() ?? null,
           cancelAtPeriodEnd: data.subscription.cancelAtPeriodEnd,
           canceledAt: data.subscription.canceledAt?.toISOString() ?? null,
           createdAt: data.subscription.createdAt.toISOString(),
@@ -115,7 +117,12 @@ function serializeBillingData(data: {
   }
 }
 
-export default async function BillingPage() {
+export default async function BillingPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ reason?: string }>
+}) {
+  const { reason } = await searchParams
   const session = await auth()
 
   if (!session?.user) {
@@ -148,7 +155,10 @@ export default async function BillingPage() {
       </div>
 
       {/* Contenu billing */}
-      <BillingPageContent billingData={serializedData} />
+      <BillingPageContent
+        billingData={serializedData}
+        blockingReason={reason}
+      />
     </div>
   )
 }

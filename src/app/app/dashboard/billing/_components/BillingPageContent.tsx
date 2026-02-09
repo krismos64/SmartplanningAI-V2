@@ -5,7 +5,7 @@
  * gère les appels aux Server Actions (portail, annulation)
  * et distribue les props aux 3 composants enfants.
  *
- * @ticket SP-360
+ * @ticket SP-360, SP-440
  */
 'use client'
 
@@ -47,8 +47,58 @@ export interface SerializedBillingData {
 export interface BillingPageContentProps {
   /** Données de facturation sérialisées */
   billingData: SerializedBillingData
+  /** Motif de blocage transmis par le middleware subscription guard (SP-440) */
+  blockingReason?: string
   /** Classes CSS additionnelles */
   className?: string
+}
+
+/**
+ * Messages d'alerte affichés quand le middleware redirige vers billing
+ * avec un query param ?reason=XXX.
+ *
+ * @ticket SP-440
+ */
+const BLOCKING_REASONS: Record<
+  string,
+  { title: string; message: string; variant: 'warning' | 'destructive' }
+> = {
+  trial_expired: {
+    title: 'Votre essai gratuit est terminé',
+    message:
+      'Pour continuer à utiliser SmartPlanning, choisissez un abonnement ci-dessous.',
+    variant: 'warning',
+  },
+  payment_overdue: {
+    title: 'Paiement en retard',
+    message:
+      'Votre dernier paiement a échoué. Mettez à jour votre moyen de paiement pour rétablir l\u2019accès.',
+    variant: 'destructive',
+  },
+  subscription_canceled: {
+    title: 'Abonnement annulé',
+    message:
+      'Votre abonnement a été annulé. Réabonnez-vous pour retrouver l\u2019accès à vos fonctionnalités.',
+    variant: 'warning',
+  },
+  subscription_expired: {
+    title: 'Abonnement expiré',
+    message:
+      'Votre abonnement a expiré. Renouvelez-le pour continuer.',
+    variant: 'destructive',
+  },
+  payment_incomplete: {
+    title: 'Paiement en attente',
+    message:
+      'Votre paiement n\u2019a pas été finalisé. Complétez le processus pour activer votre abonnement.',
+    variant: 'warning',
+  },
+  no_subscription: {
+    title: 'Aucun abonnement actif',
+    message:
+      'Souscrivez à un abonnement pour accéder à toutes les fonctionnalités de SmartPlanning.',
+    variant: 'warning',
+  },
 }
 
 // =============================================================================
@@ -57,6 +107,7 @@ export interface BillingPageContentProps {
 
 export function BillingPageContent({
   billingData,
+  blockingReason,
   className,
 }: BillingPageContentProps) {
   const router = useRouter()
@@ -124,6 +175,26 @@ export function BillingPageContent({
 
   return (
     <div className={className} data-testid="billing-page-content">
+      {/* SP-440 : Alerte de blocage subscription guard */}
+      {blockingReason && BLOCKING_REASONS[blockingReason] && (
+        <div
+          className={`mb-4 rounded-lg border p-4 ${
+            BLOCKING_REASONS[blockingReason].variant === 'destructive'
+              ? 'border-destructive/50 bg-destructive/10 text-destructive'
+              : 'border-amber-500/50 bg-amber-500/10 text-amber-700 dark:text-amber-400'
+          }`}
+          role="alert"
+          data-testid="subscription-blocking-alert"
+        >
+          <h3 className="font-semibold">
+            {BLOCKING_REASONS[blockingReason].title}
+          </h3>
+          <p className="mt-1 text-sm opacity-90">
+            {BLOCKING_REASONS[blockingReason].message}
+          </p>
+        </div>
+      )}
+
       {/* Erreur action */}
       {actionError && (
         <div

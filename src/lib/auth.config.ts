@@ -12,7 +12,7 @@
  *
  * @see https://authjs.dev/guides/edge-compatibility
  * @see https://authjs.dev/guides/role-based-access-control
- * @ticket SP-108, SP-110
+ * @ticket SP-108, SP-110, SP-440
  */
 
 import type { NextAuthConfig } from 'next-auth'
@@ -28,6 +28,7 @@ import {
   getRequiredRoleForRoute,
   getDefaultDashboardForRole,
 } from '@/lib/permissions'
+import { checkSubscriptionAccess } from '@/lib/subscription-guard'
 
 /**
  * Configuration NextAuth partagée (Edge-compatible)
@@ -81,7 +82,7 @@ export const authConfig: NextAuthConfig = {
      * IMPORTANT: Ce callback doit être dans authConfig pour que le
      * middleware puisse lire le rôle utilisateur.
      */
-    jwt({ token, user, trigger, session }) {
+    async jwt({ token, user, trigger, session }) {
       // Au premier login, user est défini
       if (user) {
         token.id = user.id
@@ -89,11 +90,57 @@ export const authConfig: NextAuthConfig = {
         token.companyId = user.companyId
         token.emailVerified = user.emailVerified
         token.image = user.image
+        // SP-440 : données subscription pour le guard middleware
+        token.subscriptionStatus = user.subscriptionStatus ?? null
+        token.trialEndsAt = user.trialEndsAt ?? null
+        token.currentPeriodEnd = user.currentPeriodEnd ?? null
+        token.subscriptionCheckedAt = Date.now()
       }
       // Mise à jour de la session (ex: après upload d'avatar)
       if (trigger === 'update' && session?.image !== undefined) {
         token.image = session.image
       }
+
+      // SP-440 : Rafraîchissement périodique des données subscription
+      // Ce code s'exécute côté serveur (Server Components via auth()).
+      // En Edge Runtime, l'import dynamique de Prisma échoue silencieusement.
+      const SUBSCRIPTION_CHECK_INTERVAL = 5 * 60 * 1000 // 5 minutes
+      const checkedAt = token.subscriptionCheckedAt as number | null
+      if (
+        token.companyId &&
+        token.role !== 'SYSTEM_ADMIN' &&
+        (!checkedAt || Date.now() - checkedAt > SUBSCRIPTION_CHECK_INTERVAL)
+      ) {
+        try {
+          // Import dynamique : fonctionne côté serveur, échoue en Edge (catch)
+          const { prisma } = await import('@/lib/prisma')
+          const company = await prisma.company.findUnique({
+            where: { id: token.companyId as string },
+            select: {
+              trialEndsAt: true,
+              subscription: {
+                select: {
+                  status: true,
+                  currentPeriodEnd: true,
+                },
+              },
+            },
+          })
+          if (company) {
+            token.subscriptionStatus =
+              company.subscription?.status ?? null
+            token.trialEndsAt =
+              company.trialEndsAt?.toISOString() ?? null
+            token.currentPeriodEnd =
+              company.subscription?.currentPeriodEnd?.toISOString() ?? null
+            token.subscriptionCheckedAt = Date.now()
+          }
+        } catch {
+          // En Edge Runtime, l'import Prisma échoue — comportement attendu.
+          // Le token conserve ses valeurs existantes.
+        }
+      }
+
       return token
     },
 
@@ -113,6 +160,12 @@ export const authConfig: NextAuthConfig = {
         session.user.companyId = token.companyId as string | null
         session.user.emailVerified = token.emailVerified as Date | null
         session.user.image = token.image as string | null
+        // SP-440 : données subscription exposées dans la session
+        session.user.subscriptionStatus =
+          token.subscriptionStatus as string | null
+        session.user.trialEndsAt = token.trialEndsAt as string | null
+        session.user.currentPeriodEnd =
+          token.currentPeriodEnd as string | null
       }
       return session
     },
@@ -131,12 +184,13 @@ export const authConfig: NextAuthConfig = {
      * 4. Routes d'auth (login/register) → redirect si déjà connecté
      * 5. Routes /app/* non authentifié → redirect vers login
      * 6. RBAC : vérification du rôle requis pour la route
+     * 7. Subscription Guard : vérification abonnement actif (SP-440)
      *
      * @param auth - Session utilisateur (null si non connecté)
      * @param request - Requête Next.js
      * @returns true si autorisé, Response pour rediriger
      *
-     * @ticket SP-108, SP-110
+     * @ticket SP-108, SP-110, SP-440
      */
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth
@@ -197,6 +251,31 @@ export const authConfig: NextAuthConfig = {
         if (requiredRole && !hasRequiredRole(userRole, requiredRole)) {
           // Redirection silencieuse vers le dashboard par défaut
           return Response.redirect(new URL(ACCESS_DENIED_REDIRECT, nextUrl))
+        }
+      }
+
+      // 7. Subscription Guard (SP-440) : vérification abonnement actif
+      // S'applique aux routes /app/* pour les utilisateurs connectés
+      // Les routes exemptées (billing, profile, settings) et SYSTEM_ADMIN
+      // sont gérés dans checkSubscriptionAccess (function pure)
+      if (isLoggedIn && isAppRoute) {
+        const subscriptionCheck = checkSubscriptionAccess({
+          role: (userRole as string) ?? '',
+          subscriptionStatus: auth?.user?.subscriptionStatus ?? null,
+          trialEndsAt: auth?.user?.trialEndsAt ?? null,
+          currentPeriodEnd: auth?.user?.currentPeriodEnd ?? null,
+          pathname,
+        })
+
+        if (!subscriptionCheck.allowed) {
+          const billingUrl = new URL('/app/dashboard/billing', nextUrl)
+          if (subscriptionCheck.redirectReason) {
+            billingUrl.searchParams.set(
+              'reason',
+              subscriptionCheck.redirectReason
+            )
+          }
+          return Response.redirect(billingUrl)
         }
       }
 
