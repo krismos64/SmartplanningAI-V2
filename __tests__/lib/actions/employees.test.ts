@@ -31,6 +31,17 @@ vi.mock('next/cache', () => ({
   revalidatePath: vi.fn(),
 }))
 
+// Mock syncEmployeeCountToStripe (SP-439)
+const mockSyncEmployeeCountToStripe = vi.fn().mockResolvedValue({
+  synced: true,
+  previousQuantity: 5,
+  newQuantity: 6,
+})
+vi.mock('@/lib/services/stripe', () => ({
+  syncEmployeeCountToStripe: (...args: unknown[]) =>
+    mockSyncEmployeeCountToStripe(...args),
+}))
+
 // Import apres les mocks
 import {
   listEmployees,
@@ -40,6 +51,7 @@ import {
   deleteEmployee,
   toggleEmployeeStatus,
   getTeamsForSelect,
+  bulkDeleteEmployees,
 } from '@/lib/actions/employees'
 
 // ============================================================================
@@ -761,5 +773,111 @@ describe('getTeamsForSelect', () => {
         where: { id: { in: [TEAM_ID] } },
       })
     )
+  })
+})
+
+// ============================================================================
+// Tests SP-439 - Synchronisation Stripe quantity
+// ============================================================================
+
+describe('SP-439 - Stripe quantity sync', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mockSyncEmployeeCountToStripe.mockResolvedValue({
+      synced: true,
+      previousQuantity: 5,
+      newQuantity: 6,
+    })
+  })
+
+  it('appelle syncEmployeeCountToStripe après createEmployee', async () => {
+    setMockUser('DIRECTOR', COMPANY_ID)
+    prismaMock.employee.create.mockResolvedValue(mockEmployeeWithRelations as never)
+
+    await createEmployee({
+      firstName: 'Jean',
+      lastName: 'Dupont',
+      companyId: COMPANY_ID,
+    })
+
+    // Attendre le fire-and-forget
+    await new Promise((r) => setTimeout(r, 10))
+
+    expect(mockSyncEmployeeCountToStripe).toHaveBeenCalledWith(COMPANY_ID)
+  })
+
+  it('appelle syncEmployeeCountToStripe après deleteEmployee', async () => {
+    setMockUser('DIRECTOR', COMPANY_ID)
+    prismaMock.employee.findUnique.mockResolvedValue({
+      ...mockEmployeeWithRelations,
+      _count: { schedules: 0, leaveRequests: 0 },
+    } as never)
+    prismaMock.employee.delete.mockResolvedValue(mockEmployee as never)
+
+    await deleteEmployee(EMP_ID)
+
+    await new Promise((r) => setTimeout(r, 10))
+
+    expect(mockSyncEmployeeCountToStripe).toHaveBeenCalledWith(COMPANY_ID)
+  })
+
+  it('appelle syncEmployeeCountToStripe après toggleEmployeeStatus', async () => {
+    setMockUser('DIRECTOR', COMPANY_ID)
+    prismaMock.employee.findUnique.mockResolvedValue(mockEmployeeWithRelations as never)
+    prismaMock.employee.update.mockResolvedValue(mockEmployeeWithRelations as never)
+
+    await toggleEmployeeStatus(EMP_ID, false)
+
+    await new Promise((r) => setTimeout(r, 10))
+
+    expect(mockSyncEmployeeCountToStripe).toHaveBeenCalledWith(COMPANY_ID)
+  })
+
+  it('appelle syncEmployeeCountToStripe après bulkDeleteEmployees', async () => {
+    setMockUser('DIRECTOR', COMPANY_ID)
+    prismaMock.employee.findMany.mockResolvedValue([
+      { ...mockEmployee, _count: { schedules: 0 } },
+    ] as never)
+    prismaMock.$transaction.mockResolvedValue([])
+
+    await bulkDeleteEmployees([EMP_ID])
+
+    await new Promise((r) => setTimeout(r, 10))
+
+    expect(mockSyncEmployeeCountToStripe).toHaveBeenCalledWith(COMPANY_ID)
+  })
+
+  it('ne crash PAS si syncEmployeeCountToStripe throw', async () => {
+    setMockUser('DIRECTOR', COMPANY_ID)
+    mockSyncEmployeeCountToStripe.mockRejectedValue(new Error('Stripe down'))
+    prismaMock.employee.create.mockResolvedValue(mockEmployeeWithRelations as never)
+
+    // Ne doit PAS throw — fire-and-forget
+    const result = await createEmployee({
+      firstName: 'Jean',
+      lastName: 'Dupont',
+      companyId: COMPANY_ID,
+    })
+
+    await new Promise((r) => setTimeout(r, 10))
+
+    expect(result.success).toBe(true)
+  })
+
+  it('passe le bon companyId après deleteEmployee', async () => {
+    setMockUser('SYSTEM_ADMIN')
+    const empWithOtherCompany = {
+      ...mockEmployeeWithRelations,
+      companyId: COMPANY_ID_2,
+      _count: { schedules: 0, leaveRequests: 0 },
+    }
+    prismaMock.employee.findUnique.mockResolvedValue(empWithOtherCompany as never)
+    prismaMock.employee.delete.mockResolvedValue(mockEmployee as never)
+
+    await deleteEmployee(EMP_ID)
+
+    await new Promise((r) => setTimeout(r, 10))
+
+    expect(mockSyncEmployeeCountToStripe).toHaveBeenCalledWith(COMPANY_ID_2)
   })
 })

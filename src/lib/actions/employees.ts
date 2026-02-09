@@ -7,7 +7,7 @@
  * - MANAGER : Acces uniquement aux employes de ses equipes
  * - EMPLOYEE : Aucun acces
  *
- * @ticket SP-152
+ * @ticket SP-152, SP-439
  * @see Context7 - Next.js 15 Server Actions + Prisma dynamic WHERE
  */
 
@@ -38,6 +38,7 @@ import type {
   ListActionResult,
   ListQueryParams,
 } from '@/types'
+import { syncEmployeeCountToStripe } from '@/lib/services/stripe'
 
 // ============================================================================
 // Types internes
@@ -564,6 +565,11 @@ export async function createEmployee(
       },
     })
 
+    // SP-439 : Sync Stripe quantity (fire-and-forget)
+    syncEmployeeCountToStripe(validData.companyId).catch((err) => {
+      console.error('[SP-439] Stripe sync failed after employee creation:', err)
+    })
+
     // Revalide le cache
     revalidatePath('/app/dashboard/employees')
 
@@ -776,6 +782,11 @@ export async function deleteEmployee(id: string): Promise<DeleteActionResult> {
       where: { id },
     })
 
+    // SP-439 : Sync Stripe quantity (fire-and-forget)
+    syncEmployeeCountToStripe(employee.companyId).catch((err) => {
+      console.error('[SP-439] Stripe sync failed after employee deletion:', err)
+    })
+
     // Revalide le cache
     revalidatePath('/app/dashboard/employees')
 
@@ -858,6 +869,11 @@ export async function toggleEmployeeStatus(
           },
         },
       },
+    })
+
+    // SP-439 : Sync Stripe quantity (fire-and-forget)
+    syncEmployeeCountToStripe(existing.companyId).catch((err) => {
+      console.error('[SP-439] Stripe sync failed after employee status toggle:', err)
     })
 
     revalidatePath('/app/dashboard/employees')
@@ -1112,6 +1128,7 @@ export async function bulkDeleteEmployees(
 
     const toDelete: string[] = []
     const skippedNames: string[] = []
+    const affectedCompanyIds = new Set<string>()
 
     for (const emp of employees) {
       // Verification RBAC
@@ -1131,6 +1148,7 @@ export async function bulkDeleteEmployees(
       }
 
       toDelete.push(emp.id)
+      affectedCompanyIds.add(emp.companyId)
     }
 
     // Suppression en batch : d'abord les dependances, puis les employes
@@ -1150,6 +1168,13 @@ export async function bulkDeleteEmployees(
           where: { id: { in: toDelete } },
         }),
       ])
+
+      // SP-439 : Sync Stripe quantity pour chaque company affectée (fire-and-forget)
+      for (const cId of affectedCompanyIds) {
+        syncEmployeeCountToStripe(cId).catch((err) => {
+          console.error('[SP-439] Stripe sync failed after bulk delete:', err)
+        })
+      }
     }
 
     revalidatePath('/app/dashboard/employees')
