@@ -70,13 +70,12 @@ export async function POST(request: Request): Promise<NextResponse> {
   try {
     const result = await handleWebhookEvent(event)
 
-    return NextResponse.json(
-      { received: true, ...result },
-      { status: 200 }
-    )
+    return NextResponse.json({ received: true, ...result }, { status: 200 })
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error'
-    console.error(`[Stripe Webhook] Erreur traitement ${event.type}: ${message}`)
+    console.error(
+      `[Stripe Webhook] Erreur traitement ${event.type}: ${message}`
+    )
     return NextResponse.json(
       { error: `Webhook handler failed: ${message}` },
       { status: 500 }

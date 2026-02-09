@@ -47,9 +47,7 @@ function getSubscriptionIdFromInvoice(invoice: Stripe.Invoice): string | null {
 }
 
 /** Extrait le payment intent ID depuis un Invoice (SDK v20 : payments.data[].payment) */
-function getPaymentIntentIdFromInvoice(
-  invoice: Stripe.Invoice
-): string | null {
+function getPaymentIntentIdFromInvoice(invoice: Stripe.Invoice): string | null {
   const invoicePayment = invoice.payments?.data?.[0]
   if (!invoicePayment) return null
   const pi = invoicePayment.payment?.payment_intent
@@ -178,8 +176,7 @@ export async function createCheckoutSession(
     }
     return {
       success: false,
-      error:
-        error instanceof Error ? error.message : 'Erreur lors du checkout',
+      error: error instanceof Error ? error.message : 'Erreur lors du checkout',
     }
   }
 }
@@ -315,9 +312,7 @@ export async function cancelSubscription(
     return {
       success: false,
       error:
-        error instanceof Error
-          ? error.message
-          : "Erreur lors de l'annulation",
+        error instanceof Error ? error.message : "Erreur lors de l'annulation",
     }
   }
 }
@@ -370,29 +365,20 @@ export async function handleWebhookEvent(
   try {
     switch (event.type) {
       case 'checkout.session.completed':
-        return handleCheckoutCompleted(
-          event.data.object as Stripe.Checkout.Session
-        )
+        return handleCheckoutCompleted(event.data.object)
 
       case 'customer.subscription.created':
       case 'customer.subscription.updated':
-        return handleSubscriptionUpdated(
-          event.data.object as Stripe.Subscription,
-          event.type
-        )
+        return handleSubscriptionUpdated(event.data.object, event.type)
 
       case 'customer.subscription.deleted':
-        return handleSubscriptionDeleted(
-          event.data.object as Stripe.Subscription
-        )
+        return handleSubscriptionDeleted(event.data.object)
 
       case 'invoice.paid':
-        return handleInvoicePaid(event.data.object as Stripe.Invoice)
+        return handleInvoicePaid(event.data.object)
 
       case 'invoice.payment_failed':
-        return handleInvoicePaymentFailed(
-          event.data.object as Stripe.Invoice
-        )
+        return handleInvoicePaymentFailed(event.data.object)
 
       default:
         return {
@@ -408,9 +394,7 @@ export async function handleWebhookEvent(
     return {
       success: false,
       error:
-        error instanceof Error
-          ? error.message
-          : 'Erreur traitement webhook',
+        error instanceof Error ? error.message : 'Erreur traitement webhook',
     }
   }
 }
@@ -448,8 +432,7 @@ async function handleCheckoutCompleted(
   }
 
   // Récupérer les détails de la subscription Stripe
-  const stripeSub =
-    await stripe.subscriptions.retrieve(stripeSubscriptionId)
+  const stripeSub = await stripe.subscriptions.retrieve(stripeSubscriptionId)
   const quantity = stripeSub.items.data[0]?.quantity ?? 0
 
   // SDK v20 : billing_cycle_anchor pour la période (current_period_start/end supprimés)
@@ -504,8 +487,7 @@ async function handleSubscriptionUpdated(
   subscription: Stripe.Subscription,
   eventType: string
 ): Promise<ServiceResult<WebhookHandlerResult>> {
-  const companyId =
-    subscription.metadata?.[STRIPE_METADATA_KEYS.COMPANY_ID]
+  const companyId = subscription.metadata?.[STRIPE_METADATA_KEYS.COMPANY_ID]
 
   if (!companyId) {
     return {
@@ -597,8 +579,7 @@ async function handleSubscriptionUpdated(
 async function handleSubscriptionDeleted(
   subscription: Stripe.Subscription
 ): Promise<ServiceResult<WebhookHandlerResult>> {
-  const companyId =
-    subscription.metadata?.[STRIPE_METADATA_KEYS.COMPANY_ID]
+  const companyId = subscription.metadata?.[STRIPE_METADATA_KEYS.COMPANY_ID]
 
   if (!companyId) {
     return {
