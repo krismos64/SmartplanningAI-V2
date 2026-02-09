@@ -28,6 +28,7 @@ import {
   getRequiredRoleForRoute,
   getDefaultDashboardForRole,
 } from '@/lib/permissions'
+import { checkSubscriptionAccess } from '@/lib/subscription-guard'
 
 /**
  * Configuration NextAuth partagée (Edge-compatible)
@@ -183,12 +184,13 @@ export const authConfig: NextAuthConfig = {
      * 4. Routes d'auth (login/register) → redirect si déjà connecté
      * 5. Routes /app/* non authentifié → redirect vers login
      * 6. RBAC : vérification du rôle requis pour la route
+     * 7. Subscription Guard : vérification abonnement actif (SP-440)
      *
      * @param auth - Session utilisateur (null si non connecté)
      * @param request - Requête Next.js
      * @returns true si autorisé, Response pour rediriger
      *
-     * @ticket SP-108, SP-110
+     * @ticket SP-108, SP-110, SP-440
      */
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth
@@ -249,6 +251,31 @@ export const authConfig: NextAuthConfig = {
         if (requiredRole && !hasRequiredRole(userRole, requiredRole)) {
           // Redirection silencieuse vers le dashboard par défaut
           return Response.redirect(new URL(ACCESS_DENIED_REDIRECT, nextUrl))
+        }
+      }
+
+      // 7. Subscription Guard (SP-440) : vérification abonnement actif
+      // S'applique aux routes /app/* pour les utilisateurs connectés
+      // Les routes exemptées (billing, profile, settings) et SYSTEM_ADMIN
+      // sont gérés dans checkSubscriptionAccess (function pure)
+      if (isLoggedIn && isAppRoute) {
+        const subscriptionCheck = checkSubscriptionAccess({
+          role: (userRole as string) ?? '',
+          subscriptionStatus: auth?.user?.subscriptionStatus ?? null,
+          trialEndsAt: auth?.user?.trialEndsAt ?? null,
+          currentPeriodEnd: auth?.user?.currentPeriodEnd ?? null,
+          pathname,
+        })
+
+        if (!subscriptionCheck.allowed) {
+          const billingUrl = new URL('/app/dashboard/billing', nextUrl)
+          if (subscriptionCheck.redirectReason) {
+            billingUrl.searchParams.set(
+              'reason',
+              subscriptionCheck.redirectReason
+            )
+          }
+          return Response.redirect(billingUrl)
         }
       }
 
