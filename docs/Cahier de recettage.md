@@ -14,7 +14,7 @@ Ce document trace l'historique complet des tests réalisés sur SmartPlanning. I
 | Pipeline CI/CD       | GitHub Actions                                         |
 | Responsable          | Christophe Mostefaoui                                  |
 | Date de création     | 4 décembre 2025                                        |
-| Dernière mise à jour | 9 février 2026 (SP-351)                                |
+| Dernière mise à jour | 9 février 2026 (SP-352)                                |
 
 ---
 
@@ -34,7 +34,7 @@ Dans le cadre du diplôme **CDA (Concepteur Développeur d'Applications)**, ce c
 | Métrique              | Objectif  | Atteint  |
 | --------------------- | --------- | -------- |
 | Couverture globale    | ≥ 70%     | ✅ 85%   |
-| Tests unitaires       | ≥ 500     | ✅ 5003  |
+| Tests unitaires       | ≥ 500     | ✅ 5035  |
 | Tests E2E             | ≥ 50      | ✅ 988   |
 | Score Lighthouse A11y | ≥ 90%     | ✅ 95%   |
 | Anomalies critiques   | 0 en prod | ✅ 0     |
@@ -472,6 +472,8 @@ Ce tableau recense chaque campagne de tests significative (mise en production, f
 
 | Date       | Sprint    | Version/Commit | Tests unitaires | Tests E2E  | Couverture | Statut  | Notes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | ---------- | --------- | -------------- | --------------- | ---------- | ---------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 09/02/2026 | Sprint 17 | SP-352         | 5035/5035 ✅    | 988/988 ✅ | ~85%       | ✅ PASS | 🆕 SP-352 Server Actions Stripe. +32 tests unitaires (1 fichier : `__tests__/lib/actions/stripe.test.ts`). 5 Server Actions connectant le service Stripe (SP-351) au frontend : `createCheckoutAction` (checkout per-seat avec email via auth() + companyName via Prisma), `createBillingPortalAction` (portail facturation via stripeCustomerId), `updateSubscriptionQuantityAction` (mise à jour sièges + revalidatePath), `cancelSubscriptionAction` (annulation fin de période ou immédiate + revalidatePath), `getBillingDataAction` (subscription + payments + employeeCount + monthlyAmount via Promise.all). RBAC DIRECTOR via `checkPermission('DIRECTOR')`, validation Zod via `validateData()`, conversion `ServiceResult<T>` → `CrudActionResult<T>`. Type `BillingData` ajouté à `src/types/stripe.ts` + barrel export. Total : 6023 tests |
+| 09/02/2026 | Sprint 17 | SP-351         | 5003/5003 ✅    | 988/988 ✅ | ~85%       | ✅ PASS | 🆕 SP-351 Stripe Service & Webhooks. +50 tests unitaires (40 service + 10 route webhook). Service Stripe (`createCheckoutSession`, `updateSubscriptionQuantity`, `cancelSubscription`, `createBillingPortalSession`, `handleWebhookEvent`). Route webhook `/api/webhooks/stripe/route.ts` avec vérification signature HMAC. 7 types TypeScript. Total : 5991 tests |
 | 09/02/2026 | Sprint 17 | SP-350         | 4953/4953 ✅    | 988/988 ✅ | ~85%       | ✅ PASS | 🆕 SP-350 Migration Per-Seat Subscription Model. **Phase 1 Backend** : Migration Prisma SubscriptionPlan (FREE/PER_SEAT) + SubscriptionStatus (+INCOMPLETE), modèles Subscription et Payment avec relation 1:1 Company, seed data mis à jour (2 plans), validations Zod (labels FR, couleurs, descriptions pour 2 plans + 6 statuts), service admin-stats MRR refactoré (quantity × pricePerEmployee). **Phase 2 UI** : CompanyCard badges dynamiques, CompanyForm schéma FREE/PER_SEAT, columns.tsx colonnes virtuelles TanStack Table, [id]/page.tsx fallback subscription relation. Suppression complète STARTER/BUSINESS/ENTERPRISE (0 occurrence src/). +97 tests modifiés/ajoutés (validations 37, actions 20, CompanyCard 25, columns 20, DeleteDialog 10, AdminRecentCompanies 18, admin-stats 39, prisma 2). Total : 5941 tests |
 | 06/02/2026 | Sprint 17 | SP-349         | 4856/4856 ✅    | 698/698 ✅ | ~85%       | ✅ PASS | 🆕 SP-349 Stripe SDK + Configuration + Validations. **Infrastructure paiement** : Installation Stripe SDK v20.3.1. Client singleton server-only (`src/lib/stripe/stripe.ts`) avec pattern globalThis HMR, apiVersion `2026-01-28.clover`, appInfo SmartPlanning. Config centralisée (`stripe-config.ts`) : STRIPE_PRICING (montant centimes, devise, intervalle, trial), STRIPE_STATUS_MAP (8 statuts Stripe → 5 statuts internes), STRIPE_WEBHOOK_EVENTS (8 événements groupés par domaine), STRIPE_METADATA_KEYS. Barrel export `index.ts`. Validations Zod (`src/lib/validations/stripe.ts`) : 5 schémas (stripeEnvSchema préfixes sk_/pk_/whsec_/price_, checkoutSessionSchema quantité 1-250, updateSubscriptionQuantitySchema, stripeWebhookHeaderSchema, customerPortalSchema). `.env.example` enrichi (4 variables Stripe). +66 tests unitaires (singleton 9, config 29, validations 28). Total : 5554 tests |
 | 06/02/2026 | Sprint 17 | SP-355/358/359 | 4790/4790 ✅    | 698/698 ✅ | ~85%       | ✅ PASS | 🆕 SP-355/SP-358/SP-359 Page Tarifs et composants Pricing. **SP-355** : Composants pricing réutilisables — `PricingSimulator` (slider employés, calcul temps réel, message grandes équipes >50), `PricingCard` (prix per-seat, badge essai gratuit, features list), `src/lib/config/pricing.ts` (constantes centralisées SSOT). +55 tests unitaires (23 config + 20 simulator + 12 card). **SP-358** : Section pricing landing page avec PricingSimulator intégré. **SP-359** : Page dédiée `/tarifs` — Route group `(about)`, Server Component (metadata SEO) + Client Component (PricingPageContent avec 5 sections : Hero, Simulateur, Fonctionnalités, FAQ, CTA). `StructuredData` JSON-LD combiné `@graph` (SoftwareApplication + FAQPage + WebPage). PRICING_FAQS partagées entre schema et UI. +34 tests unitaires (22 PricingPageContent + 12 StructuredData). Total : 5488 tests |
@@ -568,6 +570,126 @@ Ce tableau recense chaque campagne de tests significative (mise en production, f
 | 09/12/2025 | Sprint 5  | SP-141         | 570/570 ✅      | 59/59 ✅   | ~85%       | ✅ PASS | SP-141 Tests E2E Auth. +18 tests Playwright login/register                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | 05/12/2025 | Sprint 4  | SP-126         | 474/474 ✅      | 12/12 ✅   | 83.83%     | ✅ PASS | SP-126 Tests unitaires UI. 6 catégories                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | 04/12/2025 | Sprint 4  | SP-125         | 15/15 ✅        | 12/12 ✅   | ~70%       | ✅ PASS | Setup initial. Vitest + RTL + Playwright + MSW                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+
+---
+
+## Détail des tests Sprint 17 - Server Actions Stripe (SP-352) 🆕
+
+### SP-352 : Server Actions Stripe — Checkout, Portal, Quantity, Cancel, Billing (32 tests)
+
+**Objectif** : Connecter le service Stripe (SP-351) au frontend avec authentification RBAC, validation Zod et conversion ServiceResult → CrudActionResult. Toutes les actions sont réservées au rôle DIRECTOR.
+
+| Suite de test                              | Tests unitaires | Tests E2E | Total  |
+| ------------------------------------------ | --------------- | --------- | ------ |
+| `__tests__/lib/actions/stripe.test.ts`     | 32              | 0         | 32     |
+| **Total**                                  | **32**          | **0**     | **32** |
+
+**Fichiers créés** :
+
+| Fichier                                     | Description                                          |
+| ------------------------------------------- | ---------------------------------------------------- |
+| `src/lib/actions/stripe.ts`                 | 5 Server Actions Stripe (339 lignes)                 |
+| `__tests__/lib/actions/stripe.test.ts`      | 32 tests unitaires (625 lignes)                      |
+
+**Fichiers modifiés** :
+
+| Fichier                    | Modification                                    |
+| -------------------------- | ----------------------------------------------- |
+| `src/types/stripe.ts`      | Ajout interface `BillingData`                   |
+| `src/types/index.ts`       | Ajout `BillingData` au barrel export            |
+
+**5 Server Actions implémentées** :
+
+| Action                              | Input                                | Output                              | Description                                             |
+| ----------------------------------- | ------------------------------------ | ----------------------------------- | ------------------------------------------------------- |
+| `createCheckoutAction`              | `{ quantity, successUrl?, cancelUrl? }` | `CrudActionResult<CheckoutSessionResult>` | Crée session Checkout Stripe per-seat              |
+| `createBillingPortalAction`         | `{ returnUrl? }`                     | `CrudActionResult<BillingPortalResult>`   | Crée session Billing Portal                        |
+| `updateSubscriptionQuantityAction`  | `{ quantity }`                       | `CrudActionResult<void>`                  | Met à jour la quantité de sièges (prorata)         |
+| `cancelSubscriptionAction`          | `cancelImmediately?: boolean`        | `CrudActionResult<void>`                  | Annule l'abonnement (fin de période ou immédiat)   |
+| `getBillingDataAction`              | aucun                                | `CrudActionResult<BillingData>`           | Récupère données facturation dashboard billing     |
+
+**Patterns techniques utilisés** :
+
+| Pattern                          | Implémentation                                                                     |
+| -------------------------------- | ---------------------------------------------------------------------------------- |
+| RBAC                             | `checkPermission('DIRECTOR')` depuis `@/lib/actions/crud-utils`                    |
+| Validation Zod                   | `validateData(schema, input)` depuis `@/lib/actions/crud-helpers`                  |
+| Conversion ServiceResult→CRUD    | `if (!result.success) return error; return { success: true, data: result.data! }`  |
+| Retour URL (pas redirect)        | Le client gère le loading state et la redirection navigateur                       |
+| revalidatePath                   | Uniquement pour mutations (updateQuantity, cancel) sur `/app/dashboard/billing`    |
+| Guard companyId                  | SYSTEM_ADMIN n'a pas de company → message erreur dédié                             |
+| Email via auth()                 | `checkPermission` ne retourne pas l'email → appel `auth()` séparé                 |
+
+**Tests unitaires par catégorie (stripe.test.ts)** :
+
+| Catégorie                         | Nb tests | Description                                                              |
+| --------------------------------- | -------- | ------------------------------------------------------------------------ |
+| createCheckoutAction              | 7        | Auth denied, RBAC denied, no companyId, Zod error, no email, service error, happy path |
+| createBillingPortalAction         | 6        | Auth denied, no companyId, Zod error, no subscription, service error, happy path |
+| updateSubscriptionQuantityAction  | 6        | Auth denied, no companyId, Zod error, no subscription, service error, happy path + revalidatePath |
+| cancelSubscriptionAction          | 6        | Auth denied, no companyId, no subscription, service error, happy path default, happy path immediate + revalidatePath |
+| getBillingDataAction              | 7        | Auth denied, no companyId, subscription + payments, no subscription (null), employee count, monthlyAmount calculation, Prisma error catch |
+| **Total**                         | **32**   |                                                                          |
+
+**Mocking strategy** :
+
+```typescript
+// vi.hoisted() pour variables référencées dans vi.mock()
+const { mockCheckPermission, mockAuth, ... } = vi.hoisted(() => ({
+  mockCheckPermission: vi.fn(),
+  mockAuth: vi.fn(),
+  mockCreateCheckoutSession: vi.fn(),
+  // ...
+}))
+
+// Mock des modules
+vi.mock('@/lib/actions/crud-utils', () => ({ checkPermission: mockCheckPermission }))
+vi.mock('@/lib/auth', () => ({ auth: mockAuth }))
+vi.mock('@/lib/services/stripe', () => ({
+  createCheckoutSession: mockCreateCheckoutSession,
+  // ...
+}))
+
+// Prisma via mock centralisé
+import { prismaMock } from '@tests/mocks/prisma'
+```
+
+**Type BillingData ajouté** :
+
+```typescript
+export interface BillingData {
+  subscription: {
+    plan: string
+    status: string
+    quantity: number
+    pricePerEmployee: number
+    planPrice: number
+    currentPeriodEnd: Date | null
+    cancelAtPeriodEnd: boolean
+    stripeCustomerId: string
+  } | null
+  payments: {
+    id: string
+    amount: number
+    currency: string
+    status: string
+    paidAt: Date | null
+    createdAt: Date
+  }[]
+  employeeCount: number
+  monthlyAmount: number  // (quantity × pricePerEmployee) / 100
+}
+```
+
+**Décisions techniques documentées** :
+
+1. **Pourquoi `auth()` séparé pour l'email ?** `checkPermission('DIRECTOR')` retourne `AuthenticatedUser = { id, role, companyId }` mais pas l'email. Pour `createCheckoutAction`, il faut l'email du customer Stripe, d'où l'appel séparé à `auth()` pour accéder à `session.user.email`.
+
+2. **Pourquoi retourner l'URL au lieu de redirect() ?** Le client doit gérer le loading state (spinner) avant la redirection. Avec `redirect()` serveur, le client ne peut pas afficher de feedback utilisateur.
+
+3. **Pourquoi `undefined as void` ?** Pour `CrudActionResult<void>`, TypeScript exige une valeur pour `data` même si le type est `void`. Le pattern `data: undefined as void` satisfait le type sans ambiguïté.
+
+4. **Pourquoi pas de revalidatePath pour checkout/portal ?** Ces actions retournent une URL de redirection — l'utilisateur quitte la page. La revalidation n'a de sens que pour les mutations qui modifient les données affichées sur la même page (updateQuantity, cancel).
 
 ---
 
@@ -1753,8 +1875,9 @@ not-found.tsx (Server Component)
 | 06/02/2026 (SP-349)        | 4856            | 698       | 5554  | ~85%       | 📈 +66              |
 | 09/02/2026 (SP-350)        | 4953            | 988       | 5941  | ~85%       | 📈 +387             |
 | 09/02/2026 (SP-351)        | 5003            | 988       | 5991  | ~85%       | 📈 +50              |
+| 09/02/2026 (SP-352)        | 5035            | 988       | 6023  | ~85%       | 📈 +32              |
 
-**Graphique d'évolution** : De 27 tests (04/12) à 5991 tests (09/02) = **+22085% de croissance** 🚀
+**Graphique d'évolution** : De 27 tests (04/12) à 6023 tests (09/02) = **+22204% de croissance** 🚀
 
 ---
 
@@ -1764,11 +1887,11 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
 
 | N°  | Compétence                                                          | Preuve                                                                                                                                                                                                                                                                                                                                                  |
 | --- | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | Tester les composants d'une application                             | 5003 tests unitaires documentés                                                                                                                                                                                                                                                                                                                         |
+| 1   | Tester les composants d'une application                             | 5035 tests unitaires documentés                                                                                                                                                                                                                                                                                                                         |
 | 2   | Contribuer à la qualité du code                                     | Couverture 85%, anomalies tracées                                                                                                                                                                                                                                                                                                                       |
 | 3   | Documenter les procédures                                           | Procédure de recette formalisée                                                                                                                                                                                                                                                                                                                         |
 | 4   | Utiliser une méthodologie                                           | Approche structurée par sprints                                                                                                                                                                                                                                                                                                                         |
-| 5   | Développer des tests automatisés                                    | 5991 tests (unitaires + E2E)                                                                                                                                                                                                                                                                                                                            |
+| 5   | Développer des tests automatisés                                    | 6023 tests (unitaires + E2E)                                                                                                                                                                                                                                                                                                                            |
 | 6   | Sécuriser une application                                           | Tests RBAC (92 unitaires, 27 E2E), rate limiting, protection énumération                                                                                                                                                                                                                                                                                |
 | 7   | Concevoir une architecture logicielle                               | Pattern ServiceResult<T>, multi-tenant                                                                                                                                                                                                                                                                                                                  |
 | 8   | Développer des composants métier                                    | 4 dashboards par rôle                                                                                                                                                                                                                                                                                                                                   |
@@ -1831,6 +1954,7 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
 | 65  | Implémenter des colonnes TanStack Table avec relations nested       | Colonnes virtuelles id-based (subscriptionPlan, subscriptionStatus) pour afficher données relation 1:1, filterFn custom avec fallback nullable (`?? 'FREE'`), badges colorés par plan/statut, CompanyCard/CompanyForm avec inputs conditionnels per-seat. 97 tests unitaires + 290 E2E (SP-350) 🆕 |
 | 66  | Implémenter un service Stripe avec pattern ServiceResult            | Service stripe.service.ts (5 fonctions exportées + 5 handlers webhooks internes). Pattern ServiceResult<T> uniforme. Compatibilité Stripe SDK v20.3.1 (API 2026-01-28.clover) avec types natifs discriminants. Gestion per-seat billing : création Checkout session, mise à jour quantité sièges, annulation abonnement, portail facturation. 40 tests unitaires (SP-351) 🆕 |
 | 67  | Implémenter une route webhook sécurisée avec vérification signature | Route POST `/api/webhooks/stripe` : vérification signature HMAC `stripe.webhooks.constructEvent()`, lecture raw body `request.text()` (Next.js 15 App Router), gestion erreurs structurée (400/500), dispatch vers service handler. 10 tests unitaires avec vi.hoisted() pattern (SP-351) 🆕 |
+| 68  | Connecter un service Stripe au frontend via Server Actions RBAC     | 5 Server Actions DIRECTOR-only (checkout, portal, updateQuantity, cancel, getBillingData). Conversion ServiceResult<T> → CrudActionResult<T> discriminated union. Retour URL pour loading state client. Guard companyId (SYSTEM_ADMIN via admin panel). Email via auth() séparé. BillingData type avec Promise.all parallèle. revalidatePath billing. 32 tests unitaires (SP-352) 🆕 |
 
 ---
 
@@ -1867,6 +1991,7 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
    - Page Tarifs /tarifs (simulateur prix, FAQ interactive, CTA, JSON-LD structured data) 🆕
    - Stripe Service : création Checkout session, mise à jour quantité sièges, annulation abonnement 🆕
    - Webhook Stripe /api/webhooks/stripe : vérification signature, traitement événements (checkout, subscription, invoice) 🆕
+   - Server Actions Stripe : createCheckoutAction, createBillingPortalAction, updateSubscriptionQuantityAction, cancelSubscriptionAction, getBillingDataAction (RBAC DIRECTOR) 🆕
 
 ### Après chaque mise en production
 
@@ -1881,6 +2006,7 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
 
 | Date       | Modification                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 09/02/2026 | 🆕 SP-352 Server Actions Stripe : 5 Server Actions connectant le service Stripe (SP-351) au frontend (`src/lib/actions/stripe.ts`, 339 lignes). `createCheckoutAction` (session Checkout per-seat avec email via auth() séparé + companyName via Prisma), `createBillingPortalAction` (portail facturation via stripeCustomerId depuis Subscription), `updateSubscriptionQuantityAction` (mise à jour sièges + revalidatePath billing), `cancelSubscriptionAction` (annulation fin de période ou immédiate + revalidatePath billing), `getBillingDataAction` (subscription + 5 derniers payments + employeeCount + monthlyAmount via Promise.all). RBAC strict DIRECTOR via `checkPermission('DIRECTOR')`. Validation Zod via `validateData()` avec schémas SP-349. Conversion `ServiceResult<T>` → `CrudActionResult<T>` discriminated union. Retour URL (pas redirect()) pour loading state client. Type `BillingData` ajouté à `src/types/stripe.ts` + barrel export. +32 tests unitaires (`__tests__/lib/actions/stripe.test.ts`, 625 lignes) couvrant : auth denied, RBAC denied, companyId null, Zod validation, missing subscription/customer, erreurs service Stripe, happy paths, revalidatePath, calcul monthlyAmount, erreurs Prisma. Mocking vi.hoisted() + prismaMock centralisé. Compétence CDA #68 ajoutée. Total : 6023 tests |
 | 09/02/2026 | 🆕 SP-351 Stripe Service & Webhooks : Service Stripe complet (`src/lib/services/stripe/stripe.service.ts`) avec 5 fonctions exportées (createCheckoutSession, updateSubscriptionQuantity, cancelSubscription, createBillingPortalSession, handleWebhookEvent) + 5 handlers internes (checkout completed, subscription updated/deleted, invoice paid/failed). Pattern ServiceResult<T> uniforme. Compatibilité Stripe SDK v20.3.1 (API `2026-01-28.clover`) avec types natifs discriminants (pas de cast `as` nécessaire). Route webhook POST `/api/webhooks/stripe` : vérification signature HMAC `constructEvent()`, lecture raw body `request.text()`, gestion erreurs structurée. Types TypeScript 7 interfaces (`src/types/stripe.ts`) avec barrel export. +50 tests unitaires (stripe-service: 40, webhook-route: 10). Compétences CDA #66-67 ajoutées. Total : 5991 tests |
 | 09/02/2026 | 🆕 SP-350 Migration Per-Seat Subscription Model : Migration du modèle multi-plan (FREE/STARTER/BUSINESS/ENTERPRISE) vers per-seat billing (FREE/PER_SEAT à 2,90€/employé/mois). **Phase 1 Backend** : 2 enums Prisma (`SubscriptionPlan`: FREE/PER_SEAT, `SubscriptionStatus`: TRIAL/ACTIVE/PAST_DUE/CANCELED/EXPIRED/INCOMPLETE), modèle Subscription 1:1 Company (plan, status, quantity, pricePerEmployee centimes), migration Prisma `add_subscription_model`, seed avec subscriptions aléatoires, validations Zod company enrichies (subscriptionPlan/subscriptionStatus filters, labels FR `subscriptionPlanLabels`/`subscriptionStatusLabels`), Server Actions companies avec relation subscription (select nested), types `CompanySubscription`/`CompanyWithCounts`/`CompanyDetail`. **Phase 2 UI** : CompanyCard (badges plan/statut colorés, prix formaté centimes→€), CompanyForm (select plan FREE/PER_SEAT, 6 statuts, inputs quantity/pricePerEmployee conditionnels), columns.tsx (colonnes virtuelles TanStack id-based pour relation nested, filterFn custom), page [id] (lecture subscription relation). +97 tests unitaires (9 fichiers) + +290 tests E2E. Compétences CDA #64-65 ajoutées. Total : 5941 tests |
 | 06/02/2026 | 🆕 SP-349 Stripe SDK + Configuration + Validations : Installation Stripe SDK v20.3.1. Client singleton server-only (`src/lib/stripe/stripe.ts`) avec pattern globalThis HMR survie, apiVersion fixe `2026-01-28.clover`, appInfo SmartPlanning. Configuration centralisée (`stripe-config.ts`) : STRIPE_PRICING (montant centimes 290, devise eur, intervalle month, trial 21 jours aligné PRICING.TRIAL_DAYS), STRIPE_STATUS_MAP (8 statuts Stripe → 5 statuts internes SubscriptionStatus), STRIPE_WEBHOOK_EVENTS (8 événements groupés SUBSCRIPTION/INVOICE/CHECKOUT pour SP-351), STRIPE_METADATA_KEYS (company_id, user_id). Barrel export `index.ts`. 5 schémas Zod validations (`src/lib/validations/stripe.ts`) : stripeEnvSchema (validation préfixes sk_/pk_/whsec_/price_), checkoutSessionSchema (quantité entière 1-250 + URLs optionnelles), updateSubscriptionQuantitySchema, stripeWebhookHeaderSchema (stripe-signature), customerPortalSchema. `.env.example` enrichi section Stripe (4 variables). +66 tests unitaires (stripe singleton 9, stripe-config 29, stripe-validations 28). Total : 5554 tests |
@@ -1974,6 +2100,20 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
     - 40 tests unitaires service (createCheckoutSession: 9, updateQuantity: 5, cancel: 3, portal: 3, webhook events: 20)
     - 10 tests unitaires route webhook (signature, headers, dispatch, erreurs)
     - Total projet : 5991 tests
+
+- SP-352 : Server Actions Stripe ✅ TERMINÉ
+  - 5 Server Actions (`src/lib/actions/stripe.ts`, 339 lignes) :
+    - `createCheckoutAction` : Session Checkout per-seat avec email via `auth()` séparé + companyName via Prisma
+    - `createBillingPortalAction` : Portail facturation via stripeCustomerId depuis table Subscription
+    - `updateSubscriptionQuantityAction` : Mise à jour sièges + `revalidatePath` billing
+    - `cancelSubscriptionAction` : Annulation (fin de période ou immédiate) + `revalidatePath` billing
+    - `getBillingDataAction` : Subscription + 5 derniers payments + employeeCount + monthlyAmount via `Promise.all`
+  - **Patterns** : RBAC DIRECTOR via `checkPermission('DIRECTOR')`, validation Zod via `validateData()`, conversion `ServiceResult<T>` → `CrudActionResult<T>`, retour URL (pas redirect()) pour loading state client
+  - **Types** : `BillingData` ajouté à `src/types/stripe.ts` + barrel export `index.ts`
+  - **Tests** :
+    - 32 tests unitaires (`__tests__/lib/actions/stripe.test.ts`, 625 lignes)
+    - Couvre : auth denied, RBAC denied, companyId null, Zod validation, missing subscription/customer, erreurs service Stripe, happy paths, revalidatePath, calcul monthlyAmount, erreurs Prisma
+    - Total projet : 6023 tests
 
 - SP-350 : Migration Per-Seat Subscription Model ✅ TERMINÉ
   - **Phase 1 Backend** :

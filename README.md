@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 9 février 2026 (Stripe Service & Webhooks - SP-351)
+- **Dernière mise à jour** : 9 février 2026 (Server Actions Stripe - SP-352)
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -282,6 +282,31 @@ Service Stripe complet pour la gestion des abonnements per-seat et le traitement
   - Exports centralisés dans `src/types/index.ts`
 
 - **Tests** : 50 tests unitaires (40 service + 10 route webhook)
+
+### Server Actions Stripe (SP-352 - 9 février 2026)
+
+5 Server Actions connectant le service Stripe (SP-351) au frontend avec authentification RBAC, validation Zod et conversion ServiceResult → CrudActionResult :
+
+- **Actions** (`src/lib/actions/stripe.ts`) :
+  - `createCheckoutAction` : Crée une session Stripe Checkout pour souscrire à un abonnement per-seat. Récupère l'email via `auth()` (non disponible dans AuthenticatedUser) et le nom d'entreprise via Prisma. Retourne l'URL de redirection Stripe.
+  - `createBillingPortalAction` : Crée une session Billing Portal pour gérer l'abonnement existant. Récupère le `stripeCustomerId` depuis la table Subscription.
+  - `updateSubscriptionQuantityAction` : Met à jour la quantité de sièges d'un abonnement (ajout/retrait employés). Déclenche un prorata automatique côté Stripe. Revalidation du path billing.
+  - `cancelSubscriptionAction` : Annule un abonnement en fin de période (défaut) ou immédiatement. Revalidation du path billing.
+  - `getBillingDataAction` : Récupère les données de facturation pour le dashboard billing (subscription, 5 derniers paiements, nombre d'employés actifs, montant mensuel calculé). Requêtes Prisma parallèles via `Promise.all`.
+
+- **Patterns techniques** :
+  - RBAC strict : toutes les actions réservées au rôle `DIRECTOR` via `checkPermission('DIRECTOR')`
+  - Validation Zod via `validateData(schema, input)` avec schémas `checkoutSessionSchema`, `updateSubscriptionQuantitySchema`, `customerPortalSchema`
+  - Conversion `ServiceResult<T>` → `CrudActionResult<T>` (discriminated union)
+  - Retour URL au lieu de `redirect()` — le client gère le loading state et la redirection navigateur
+  - `revalidatePath()` uniquement pour les mutations (updateQuantity, cancel)
+  - Guard `companyId` — SYSTEM_ADMIN gère via admin panel, pas via billing
+
+- **Types** (`src/types/stripe.ts`) :
+  - Ajout interface `BillingData` (subscription, payments, employeeCount, monthlyAmount)
+  - Export centralisé dans `src/types/index.ts`
+
+- **Tests** : 32 tests unitaires couvrant auth denied, RBAC denied, companyId null, validation Zod, missing subscription/customer, erreurs service Stripe, happy paths, revalidatePath, calcul monthlyAmount, erreurs Prisma
 
 ### Pages Légales RGPD (14-15 janvier 2026)
 
@@ -2641,7 +2666,7 @@ Merge main → Build Docker → Push GHCR → Deploy VPS (~8-10 min)
 
 - **CI** (`.github/workflows/ci.yml`) : Lint, Type-check, Tests unitaires, Build, Tests E2E (PR uniquement)
 - **CD** (`.github/workflows/cd.yml`) : Build image Docker, Push sur ghcr.io, Deploy via SSH
-- Tests unitaires sur tous les push (~5003 tests Vitest)
+- Tests unitaires sur tous les push (~5035 tests Vitest)
 - Tests E2E sur PR vers main (~629 tests Playwright actifs, 5 devices mobiles, ~988 total)
 - Stabilisation E2E (SP-434) : Touch targets WCAG 2.5.5 (44px), command palette, mobile navigation
 - Déploiement automatique sur merge main ✅
