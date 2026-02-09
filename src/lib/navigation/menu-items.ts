@@ -21,6 +21,7 @@ import {
   Building,
   Activity,
   AlertCircle,
+  CreditCard,
   Sun,
   Moon,
   Monitor,
@@ -135,6 +136,15 @@ export const navigationItems: NavigationItem[] = [
     roles: ['DIRECTOR'],
     keywords: ['team', 'équipe', 'groupe'],
     shortcut: 'G T',
+  },
+  {
+    id: 'billing',
+    label: 'Facturation',
+    icon: CreditCard,
+    href: '/app/dashboard/billing',
+    roles: ['DIRECTOR'],
+    keywords: ['billing', 'facturation', 'abonnement', 'paiement', 'stripe'],
+    shortcut: 'G B',
   },
   // Common items
   {
