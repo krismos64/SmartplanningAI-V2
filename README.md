@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 9 février 2026 (Subscription Guard - SP-440)
+- **Dernière mise à jour** : 9 février 2026 (Subscription Banner - SP-441)
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -342,6 +342,46 @@ Page dashboard facturation complète avec 3 sous-composants, accessible aux DIRE
   - `UsageIndicator.test.tsx` (8 tests) : compteur employés, sièges, % utilisation, plafond 100%, prix
   - `InvoiceHistory.test.tsx` (11 tests) : table, badges statut, liens Stripe, état vide, callback portail
   - `BillingPageContent.test.tsx` (6 tests) : rendu 3 sous-composants, gestion null, action portail
+
+### Bannières Progressives Subscription (SP-441 - 9 février 2026)
+
+Bannières d'avertissement progressives affichées globalement sur toutes les pages `/app/*` avant l'expiration du trial ou pendant la période de grâce PAST_DUE :
+
+- **Fonction pure `getSubscriptionBannerConfig()`** :
+  - Même pattern que `checkSubscriptionAccess()` (SP-440) : pure, Edge-compatible, 0 dépendance React
+  - Calcul du palier selon `subscriptionStatus`, `trialEndsAt`, `currentPeriodEnd`
+  - Constantes `TRIAL_BANNER_THRESHOLDS` exportées (INFO: 14j, WARNING: 6j, URGENT: 3j)
+
+- **Paliers progressifs trial** :
+  - `info` (bleu, 7-14 jours) : "Essai gratuit : X jours restants" — dismissable
+  - `warning` (orange, 4-6 jours) : "Plus que X jours — Abonnez-vous" — dismissable
+  - `urgent` (rouge, 1-3 jours) : "Expire dans X jour(s) !" — NON dismissable
+
+- **Bannière PAST_DUE** : warning orange pendant les 7 jours de grâce, non dismissable
+
+- **Composant `SubscriptionBanner`** :
+  - Client Component dans `components/layout/`, inséré entre Header et main
+  - Dismiss par palier via `localStorage` (réapparaît au changement de tier)
+  - Exclusion page billing (alertes SP-440 déjà présentes)
+  - Accessibilité : `role="alert"` (urgent) / `role="status"` (info/warning)
+  - Design tokens CSS existants : `--info`, `--warning`, `--destructive`
+
+- **Intégration layout** :
+  - Props `subscriptionData` passées depuis Server Component `layout.tsx` via `session.user`
+  - Pattern Server→Client props (pas de `useSession`/`SessionProvider`)
+
+- **Héro conversion page billing** :
+  - Section CTA proéminente quand `reason=trial_expired` ou `no_subscription`
+  - Icône contextuelle, prix dynamique via `PRICING.PRICE_PER_EMPLOYEE`, scroll anchor
+
+- **Fichiers** :
+  - `src/lib/subscription-banner.ts` (nouveau) : fonction pure + types + constantes
+  - `src/components/layout/SubscriptionBanner.tsx` (nouveau) : composant bannière
+  - `src/app/app/layout.tsx` : ajout `subscriptionData` props
+  - `src/components/layout/DashboardLayout.tsx` : insertion bannière
+  - `src/app/.../BillingPageContent.tsx` : héro conversion
+
+- **Tests** : 73 tests unitaires (44 logique paliers + 29 composant)
 
 ### Subscription Guard Middleware (SP-440 - 9 février 2026)
 
@@ -2259,11 +2299,11 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 - **E2E** : Playwright (configuré)
 - **Coverage** : v8 provider
 
-### Couverture actuelle (9 février 2026)
+### Couverture actuelle (9 février 2026 - SP-441)
 
 | Catégorie                              | Coverage | Tests    |
 | -------------------------------------- | -------- | -------- |
-| **Global**                             | **~85%** | **5107** |
+| **Global**                             | **~85%** | **5180** |
 | loading                                | 100%     | 152      |
 | modals                                 | 100%     | 52       |
 | cards                                  | 77.09%   | 88       |
@@ -2358,6 +2398,8 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 | InvoiceHistory (SP-360)           | 100%     | 11       |
 | BillingPageContent (SP-360)       | 100%     | 6        |
 | subscription-guard (SP-440)       | 100%     | 31       |
+| subscription-banner (SP-441)      | 100%     | 44       |
+| SubscriptionBanner (SP-441)       | 100%     | 29       |
 
 ### Tests E2E
 
@@ -2466,6 +2508,11 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 - UsageIndicator (8 tests) : jauge sièges, prix unitaire/total, prorata, plafond 100%
 - InvoiceHistory (11 tests) : table factures, badges statut, liens Stripe, état vide
 - BillingPageContent (6 tests) : orchestrateur, gestion null, action portail Stripe
+
+#### Subscription Banner (SP-441)
+
+- getSubscriptionBannerConfig (44 tests) : bypass SYSTEM_ADMIN/ACTIVE/null/CANCELED/EXPIRED/INCOMPLETE/inconnu (7), TRIAL info 7-14j (9), TRIAL warning 4-6j (5), TRIAL urgent 1-3j (6), TRIAL cas limites expiré/null/20j (3), PAST_DUE grâce (10), rôles DIRECTOR/MANAGER/EMPLOYEE (3), constantes seuils (1). Fonction pure, 0 mock.
+- SubscriptionBanner composant (29 tests) : rendu conditionnel ACTIVE/SYSTEM_ADMIN/billing/info/warning/urgent/PAST_DUE (8), variants visuels info/warning/destructive (3), CTA labels et href (5), dismiss localStorage et palier (6), accessibilité role/aria-label/data-testid (5), messages trial/payment (2).
 
 #### Subscription Guard (SP-440)
 
@@ -2761,7 +2808,7 @@ Merge main → Build Docker → Push GHCR → Deploy VPS (~8-10 min)
 
 - **CI** (`.github/workflows/ci.yml`) : Lint, Type-check, Tests unitaires, Build, Tests E2E (PR uniquement)
 - **CD** (`.github/workflows/cd.yml`) : Build image Docker, Push sur ghcr.io, Deploy via SSH
-- Tests unitaires sur tous les push (~5107 tests Vitest)
+- Tests unitaires sur tous les push (~5180 tests Vitest)
 - Tests E2E sur PR vers main (~629 tests Playwright actifs, 5 devices mobiles, ~988 total)
 - Stabilisation E2E (SP-434) : Touch targets WCAG 2.5.5 (44px), command palette, mobile navigation
 - Déploiement automatique sur merge main ✅

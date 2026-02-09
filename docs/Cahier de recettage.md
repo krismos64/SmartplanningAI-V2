@@ -14,7 +14,7 @@ Ce document trace l'historique complet des tests réalisés sur SmartPlanning. I
 | Pipeline CI/CD       | GitHub Actions                                         |
 | Responsable          | Christophe Mostefaoui                                  |
 | Date de création     | 4 décembre 2025                                        |
-| Dernière mise à jour | 9 février 2026 (SP-440)                                |
+| Dernière mise à jour | 9 février 2026 (SP-441)                                |
 
 ---
 
@@ -34,7 +34,7 @@ Dans le cadre du diplôme **CDA (Concepteur Développeur d'Applications)**, ce c
 | Métrique              | Objectif  | Atteint  |
 | --------------------- | --------- | -------- |
 | Couverture globale    | ≥ 70%     | ✅ 85%   |
-| Tests unitaires       | ≥ 500     | ✅ 5107  |
+| Tests unitaires       | ≥ 500     | ✅ 5180  |
 | Tests E2E             | ≥ 50      | ✅ 988   |
 | Score Lighthouse A11y | ≥ 90%     | ✅ 95%   |
 | Anomalies critiques   | 0 en prod | ✅ 0     |
@@ -893,6 +893,63 @@ export interface BillingData {
 3. **Pourquoi 7 jours de grâce pour PAST_DUE ?** Standard SaaS : Stripe relance automatiquement les paiements pendant cette période. Couper l'accès immédiatement pénaliserait les utilisateurs dont la carte a expiré temporairement.
 
 4. **Pourquoi les dates en ISO string dans le JWT ?** Le JWT ne supporte que les types primitifs (string, number, boolean). Les objets Date de Prisma sont convertis via `.toISOString()` au login et parsés via `new Date()` dans le guard.
+
+---
+
+## Détail des tests Sprint 17 - Bannières Progressives Subscription (SP-441) 🆕
+
+### SP-441 : Bannières progressives de conversion SaaS (73 tests)
+
+**Objectif** : Afficher des bannières progressives dans le dashboard pour inciter les utilisateurs en période d'essai ou avec un paiement en retard à s'abonner. Architecture en 2 couches : fonction pure `getSubscriptionBannerConfig` (logique métier) + composant React `SubscriptionBanner` (UI). Héro de conversion sur la page billing pour les cas trial expiré / pas d'abonnement.
+
+| Suite de test                                                        | Tests unitaires | Tests E2E | Total  |
+| -------------------------------------------------------------------- | --------------- | --------- | ------ |
+| `__tests__/lib/subscription-banner.test.ts`                          | 44              | 0         | 44     |
+| `__tests__/components/layout/SubscriptionBanner.test.tsx`            | 29              | 0         | 29     |
+| **Total SP-441**                                                     | **73**          | **0**     | **73** |
+
+#### Fichiers créés
+
+| Fichier                                                    | Description                                                          |
+| ---------------------------------------------------------- | -------------------------------------------------------------------- |
+| `src/lib/subscription-banner.ts`                           | Fonction pure `getSubscriptionBannerConfig()` — logique paliers      |
+| `src/components/layout/SubscriptionBanner.tsx`              | Composant client bannière progressive avec dismiss localStorage      |
+| `__tests__/lib/subscription-banner.test.ts`                | 44 tests unitaires (logique pure sans mocks)                         |
+| `__tests__/components/layout/SubscriptionBanner.test.tsx`  | 29 tests unitaires (rendu, variants, CTA, dismiss, accessibilité)    |
+
+#### Fichiers modifiés
+
+| Fichier                                           | Modification                                                                   |
+| ------------------------------------------------- | ------------------------------------------------------------------------------ |
+| `src/app/app/layout.tsx`                          | Construction `subscriptionData` depuis session.user, passage prop DashboardLayout |
+| `src/components/layout/DashboardLayout.tsx`       | Interface SubscriptionData, prop subscriptionData, rendu SubscriptionBanner     |
+| `src/app/.../BillingPageContent.tsx`              | Héro conversion (Rocket/Sparkles), ancre `#subscription-section`, @ticket SP-441 |
+
+#### Paliers progressifs TRIAL
+
+| Palier  | Jours restants | Couleur     | Icône          | CTA                    | Masquable | Rôle ARIA |
+| ------- | -------------- | ----------- | -------------- | ---------------------- | --------- | --------- |
+| info    | 7-14 jours     | Bleu (info) | Info           | Voir les offres        | Oui       | status    |
+| warning | 4-6 jours      | Orange      | AlertTriangle  | S'abonner              | Oui       | status    |
+| urgent  | 1-3 jours      | Rouge       | AlertCircle    | S'abonner maintenant   | Non       | alert     |
+
+#### Logique PAST_DUE
+
+| Condition                    | Affichage                                     | Masquable |
+| ---------------------------- | --------------------------------------------- | --------- |
+| < 7 jours depuis expiration  | Bannière warning "Paiement en retard"         | Non       |
+| ≥ 7 jours depuis expiration  | Masquée (bloqué par SP-440 guard)             | —         |
+| currentPeriodEnd null        | Bannière warning générique                    | Non       |
+
+**Décisions techniques documentées** :
+
+1. **Pourquoi une fonction pure séparée du composant React ?** `getSubscriptionBannerConfig()` est testable sans mocks React (44 tests en < 5ms), réutilisable côté serveur, et compatible Edge Runtime. Le composant React ne fait que du rendu conditionnel à partir de la config retournée.
+
+2. **Pourquoi un dismiss par tier dans localStorage ?** Quand l'utilisateur masque la bannière au palier "info" (10 jours), elle réapparaît au passage au palier "warning" (6 jours). Cela évite de masquer indéfiniment une information dont l'urgence augmente.
+
+3. **Pourquoi exclure la page billing ?** La page billing affiche déjà les alertes SP-440 (blocking reasons) et le héro de conversion SP-441. Afficher la bannière en plus serait redondant et visuellement encombrant.
+
+4. **Pourquoi passer subscriptionData depuis le Server Component ?** Pattern Next.js 15 recommandé : les données session sont lues côté serveur dans `layout.tsx` (auth()) et passées en props aux Client Components. Pas de `useSession()` ni `SessionProvider` nécessaire, ce qui évite un fetch client supplémentaire.
 
 ---
 
@@ -2081,8 +2138,9 @@ not-found.tsx (Server Component)
 | 09/02/2026 (SP-352)        | 5035            | 988       | 6023  | ~85%       | 📈 +32              |
 | 09/02/2026 (SP-360)        | 5076            | 988       | 6064  | ~85%       | 📈 +41              |
 | 09/02/2026 (SP-440)        | 5107            | 988       | 6095  | ~85%       | 📈 +31              |
+| 09/02/2026 (SP-441)        | 5180            | 988       | 6168  | ~85%       | 📈 +73              |
 
-**Graphique d'évolution** : De 27 tests (04/12) à 6095 tests (09/02) = **+22474% de croissance** 🚀
+**Graphique d'évolution** : De 27 tests (04/12) à 6168 tests (09/02) = **+22744% de croissance** 🚀
 
 ---
 
@@ -2092,11 +2150,11 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
 
 | N°  | Compétence                                                          | Preuve                                                                                                                                                                                                                                                                                                                                                  |
 | --- | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | Tester les composants d'une application                             | 5107 tests unitaires documentés                                                                                                                                                                                                                                                                                                                         |
+| 1   | Tester les composants d'une application                             | 5180 tests unitaires documentés                                                                                                                                                                                                                                                                                                                         |
 | 2   | Contribuer à la qualité du code                                     | Couverture 85%, anomalies tracées                                                                                                                                                                                                                                                                                                                       |
 | 3   | Documenter les procédures                                           | Procédure de recette formalisée                                                                                                                                                                                                                                                                                                                         |
 | 4   | Utiliser une méthodologie                                           | Approche structurée par sprints                                                                                                                                                                                                                                                                                                                         |
-| 5   | Développer des tests automatisés                                    | 6095 tests (unitaires + E2E)                                                                                                                                                                                                                                                                                                                            |
+| 5   | Développer des tests automatisés                                    | 6168 tests (unitaires + E2E)                                                                                                                                                                                                                                                                                                                            |
 | 6   | Sécuriser une application                                           | Tests RBAC (92 unitaires, 27 E2E), rate limiting, protection énumération                                                                                                                                                                                                                                                                                |
 | 7   | Concevoir une architecture logicielle                               | Pattern ServiceResult<T>, multi-tenant                                                                                                                                                                                                                                                                                                                  |
 | 8   | Développer des composants métier                                    | 4 dashboards par rôle                                                                                                                                                                                                                                                                                                                                   |
@@ -2162,6 +2220,7 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
 | 68  | Connecter un service Stripe au frontend via Server Actions RBAC     | 5 Server Actions DIRECTOR-only (checkout, portal, updateQuantity, cancel, getBillingData). Conversion ServiceResult<T> → CrudActionResult<T> discriminated union. Retour URL pour loading state client. Guard companyId (SYSTEM_ADMIN via admin panel). Email via auth() séparé. BillingData type avec Promise.all parallèle. revalidatePath billing. 32 tests unitaires (SP-352) 🆕 |
 | 69  | Implémenter un dashboard facturation SaaS avec sérialisation Date  | Page `/app/dashboard/billing` Server Component DIRECTOR : fetch getBillingDataAction + sérialisation Date→ISO string + rendu 3 Client Components (SubscriptionStatus 6 statuts + countdown essai + alerte annulation, UsageIndicator ProgressBar sièges colorée + prix prorata, InvoiceHistory Table + badges + liens Stripe). Navigation G B. 41 tests unitaires (SP-360) 🆕 |
 | 70  | Implémenter un subscription guard middleware Edge Runtime avec JWT enrichi | Fonction pure `checkSubscriptionAccess` Edge-compatible (0 dépendance Node.js). JWT enrichi (subscriptionStatus, trialEndsAt, currentPeriodEnd, subscriptionCheckedAt). Defense in Depth 3 couches : JWT Edge → refresh périodique 5min (dynamic import Prisma) → webhooks Stripe. Matrice 9 statuts (ACTIVE, TRIAL valide/expiré, PAST_DUE grâce 7j/dépassé, CANCELED, EXPIRED, INCOMPLETE, null, inconnu). Routes exemptées (billing, profile, settings). Alerte contextuelle blocking reason sur page billing (6 motifs). 31 tests unitaires (SP-440) 🆕 |
+| 71  | Implémenter des bannières progressives de conversion SaaS                  | Fonction pure `getSubscriptionBannerConfig` (0 dépendance React, Edge-compatible). 3 paliers TRIAL progressifs (info 7-14j bleu, warning 4-6j orange, urgent 1-3j rouge non-masquable). Bannière PAST_DUE grâce 7j. Composant `SubscriptionBanner` client avec dismiss localStorage par tier, exclusion page billing, rôles ARIA (alert/status), data-testid. Héro conversion `BillingPageContent` (trial_expired/no_subscription). Intégration Server→Client via layout.tsx. 73 tests unitaires (SP-441) 🆕 |
 
 ---
 
@@ -2201,6 +2260,7 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
    - Server Actions Stripe : createCheckoutAction, createBillingPortalAction, updateSubscriptionQuantityAction, cancelSubscriptionAction, getBillingDataAction (RBAC DIRECTOR) 🆕
    - Dashboard Billing /app/dashboard/billing (statut abonnement, jauge sièges, historique factures, portail Stripe, annulation) 🆕
    - Subscription Guard middleware : blocage accès TRIAL expiré/CANCELED/EXPIRED/INCOMPLETE/PAST_DUE >7j, redirection billing avec motif, bypass SYSTEM_ADMIN et routes exemptées 🆕
+   - Bannières progressives subscription : affichage info/warning/urgent selon jours restants trial, bannière PAST_DUE grâce, dismiss localStorage, héro conversion billing 🆕
 
 ### Après chaque mise en production
 
@@ -2215,6 +2275,7 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
 
 | Date       | Modification                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 09/02/2026 | 🆕 SP-441 Bannières progressives subscription : Fonction pure `getSubscriptionBannerConfig` (`src/lib/subscription-banner.ts`) Edge-compatible (0 dépendance React). 3 paliers TRIAL progressifs : info (7-14j, bleu, masquable), warning (4-6j, orange, masquable), urgent (1-3j, rouge, non-masquable). Bannière PAST_DUE grâce 7j (non-masquable). Composant `SubscriptionBanner` (`src/components/layout/SubscriptionBanner.tsx`) client : dismiss localStorage par tier (`sp-banner-dismissed-tier`), exclusion page billing via `usePathname()`, rôles ARIA (alert pour urgent, status pour info/warning), icônes Lucide par palier, CTA progressif (Voir les offres → S'abonner → S'abonner maintenant). Intégration layout : `subscriptionData` passé de `layout.tsx` (Server Component) → `DashboardLayout` → `SubscriptionBanner` (Client Component). Héro conversion `BillingPageContent` pour `trial_expired` et `no_subscription` (icône Rocket/Sparkles, prix dynamique `formatPrice`, ancre `#subscription-section`). Bypass SYSTEM_ADMIN. +73 tests unitaires (subscription-banner: 44, SubscriptionBanner: 29). Compétence CDA #71 ajoutée. Total : 6168 tests |
 | 09/02/2026 | 🆕 SP-440 Subscription Guard Middleware : Fonction pure `checkSubscriptionAccess` Edge-compatible (`src/lib/subscription-guard.ts`). JWT enrichi dans NextAuth v5 callbacks (authorize → jwt → session → authorized) avec 4 champs subscription (status, trialEndsAt, currentPeriodEnd, subscriptionCheckedAt). Defense in Depth 3 couches : vérification JWT Edge Runtime → refresh périodique 5min via dynamic import Prisma (Node.js) → webhooks Stripe temps réel. Matrice 9 statuts : bypass SYSTEM_ADMIN + routes exemptées (billing/profile/settings), ACTIVE autorisé, TRIAL (valide/expiré), PAST_DUE (grâce 7j/dépassé), CANCELED/EXPIRED/INCOMPLETE/null/inconnu bloqués → redirection `/app/dashboard/billing?reason=XXX`. Alerte contextuelle `BillingPageContent` (6 motifs warning/destructive). Constante `SUBSCRIPTION_EXEMPT_ROUTES` dans types/auth.ts. +31 tests unitaires (`__tests__/lib/subscription-guard.test.ts`) couvrant matrice complète sans mocks. Compétence CDA #70 ajoutée. Total : 6095 tests |
 | 09/02/2026 | 🆕 SP-360 Dashboard Billing Page : Page `/app/dashboard/billing` complète avec Server Component (auth + RBAC DIRECTOR + sérialisation Date→ISO string). 4 composants Client : `BillingPageContent` (orchestrateur, Server Actions portail/annulation, AlertDialog confirmation), `SubscriptionStatus` (6 badges statut TRIAL/ACTIVE/PAST_DUE/CANCELED/EXPIRED/INCOMPLETE, countdown essai gratuit, alerte annulation programmée, EmptyState "S'abonner"), `UsageIndicator` (ProgressBar colorée sièges vert/orange/rouge, prix unitaire/total, tooltip prorata), `InvoiceHistory` (Table 5 dernières factures, badges Payé/Échoué/En attente, liens factures Stripe externes, EmptyState). Barrel export + types sérialisés (SerializedBillingData, SerializedSubscription, SerializedPayment). Loading skeleton 3 cartes. Navigation menu-items.ts : entrée "Facturation" (icône CreditCard, rôle DIRECTOR, raccourci G B). Type `BillingData` enrichi dans `src/types/stripe.ts` (ajout currentPeriodStart, canceledAt, createdAt sur subscription ; stripeInvoiceId, paymentMethod sur payments ; trialEndsAt racine). `getBillingDataAction` enrichi (Promise.all + company.trialEndsAt). Design glassmorphism + Framer Motion + useReducedMotion. +41 tests unitaires (4 fichiers : SubscriptionStatus 16, UsageIndicator 8, InvoiceHistory 11, BillingPageContent 6). Compétence CDA #69 ajoutée. Total : 6064 tests |
 | 09/02/2026 | 🆕 SP-352 Server Actions Stripe : 5 Server Actions connectant le service Stripe (SP-351) au frontend (`src/lib/actions/stripe.ts`, 339 lignes). `createCheckoutAction` (session Checkout per-seat avec email via auth() séparé + companyName via Prisma), `createBillingPortalAction` (portail facturation via stripeCustomerId depuis Subscription), `updateSubscriptionQuantityAction` (mise à jour sièges + revalidatePath billing), `cancelSubscriptionAction` (annulation fin de période ou immédiate + revalidatePath billing), `getBillingDataAction` (subscription + 5 derniers payments + employeeCount + monthlyAmount via Promise.all). RBAC strict DIRECTOR via `checkPermission('DIRECTOR')`. Validation Zod via `validateData()` avec schémas SP-349. Conversion `ServiceResult<T>` → `CrudActionResult<T>` discriminated union. Retour URL (pas redirect()) pour loading state client. Type `BillingData` ajouté à `src/types/stripe.ts` + barrel export. +32 tests unitaires (`__tests__/lib/actions/stripe.test.ts`, 625 lignes) couvrant : auth denied, RBAC denied, companyId null, Zod validation, missing subscription/customer, erreurs service Stripe, happy paths, revalidatePath, calcul monthlyAmount, erreurs Prisma. Mocking vi.hoisted() + prismaMock centralisé. Compétence CDA #68 ajoutée. Total : 6023 tests |
