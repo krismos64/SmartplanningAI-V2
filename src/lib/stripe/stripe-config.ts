@@ -41,7 +41,7 @@ export const STRIPE_PRICING = {
  * Mappage statut Stripe Subscription → statut interne SmartPlanning.
  *
  * Correspondance avec l'enum SubscriptionStatus du schéma Prisma :
- * TRIAL | ACTIVE | PAST_DUE | CANCELED | EXPIRED
+ * TRIAL | ACTIVE | PAST_DUE | CANCELED | EXPIRED | INCOMPLETE
  */
 export const STRIPE_STATUS_MAP = {
   trialing: 'TRIAL',
@@ -49,7 +49,7 @@ export const STRIPE_STATUS_MAP = {
   past_due: 'PAST_DUE',
   canceled: 'CANCELED',
   unpaid: 'PAST_DUE',
-  incomplete: 'PAST_DUE',
+  incomplete: 'INCOMPLETE',
   incomplete_expired: 'EXPIRED',
   paused: 'CANCELED',
 } as const satisfies Record<string, string>
@@ -76,11 +76,7 @@ export const STRIPE_WEBHOOK_EVENTS = {
     'customer.subscription.trial_will_end',
   ],
   /** Paiements et factures */
-  INVOICE: [
-    'invoice.paid',
-    'invoice.payment_failed',
-    'invoice.finalized',
-  ],
+  INVOICE: ['invoice.paid', 'invoice.payment_failed', 'invoice.finalized'],
   /** Checkout (création d'abonnement) */
   CHECKOUT: ['checkout.session.completed'],
 } as const
