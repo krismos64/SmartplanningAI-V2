@@ -177,21 +177,29 @@ export function CompanyCard({
             <div className="flex flex-wrap items-center gap-1.5">
               <Badge
                 variant={
-                  PLAN_COLORS[(company.subscription?.plan ?? 'FREE') as SubscriptionPlan]
+                  PLAN_COLORS[
+                    (company.subscription?.plan ?? 'FREE') as SubscriptionPlan
+                  ]
                 }
               >
-                {subscriptionPlanLabels[(company.subscription?.plan ?? 'FREE') as SubscriptionPlan]}
+                {
+                  subscriptionPlanLabels[
+                    (company.subscription?.plan ?? 'FREE') as SubscriptionPlan
+                  ]
+                }
               </Badge>
               <Badge
                 variant={
                   STATUS_COLORS[
-                    (company.subscription?.status ?? 'TRIAL') as SubscriptionStatus
+                    (company.subscription?.status ??
+                      'TRIAL') as SubscriptionStatus
                   ]
                 }
               >
                 {
                   subscriptionStatusLabels[
-                    (company.subscription?.status ?? 'TRIAL') as SubscriptionStatus
+                    (company.subscription?.status ??
+                      'TRIAL') as SubscriptionStatus
                   ]
                 }
               </Badge>

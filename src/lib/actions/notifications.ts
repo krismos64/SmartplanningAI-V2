@@ -201,7 +201,7 @@ export async function createPlanningNotification(
 
     if (!isInAppNotificationEnabled(userPrefs, category)) {
       if (process.env.NODE_ENV === 'development') {
-        console.log(
+        console.warn(
           `[Notification] In-app désactivé pour ${category} (user: ${employeeUserId})`
         )
       }
@@ -328,7 +328,7 @@ export async function createLeaveNotification(
 
     if (!isInAppNotificationEnabled(userPrefs, category)) {
       if (process.env.NODE_ENV === 'development') {
-        console.log(
+        console.warn(
           `[Notification] In-app désactivé pour ${category} (user: ${targetUserId})`
         )
       }
@@ -444,7 +444,7 @@ export async function createTaskNotification(
 
     if (!isInAppNotificationEnabled(userPrefs, category)) {
       if (process.env.NODE_ENV === 'development') {
-        console.log(
+        console.warn(
           `[Notification] In-app désactivé pour ${category} (user: ${userId})`
         )
       }
@@ -559,7 +559,7 @@ export async function createIncidentNotification(
 
     if (!isInAppNotificationEnabled(userPrefs, category)) {
       if (process.env.NODE_ENV === 'development') {
-        console.log(
+        console.warn(
           `[Notification] In-app désactivé pour ${category} (user: ${targetUserId})`
         )
       }
@@ -685,7 +685,7 @@ export async function createSystemNotification(
 
     if (eligibleUsers.length === 0) {
       if (process.env.NODE_ENV === 'development') {
-        console.log(
+        console.warn(
           `[Notification] Aucun utilisateur avec notifications système activées (company: ${companyId})`
         )
       }

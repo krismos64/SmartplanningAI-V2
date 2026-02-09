@@ -19,10 +19,7 @@ import { phoneSchema, siretSchema, urlSchema } from './common'
  * Plans d'abonnement disponibles
  * Synchronisé avec enum SubscriptionPlan Prisma (SP-350 per-seat)
  */
-export const subscriptionPlanEnum = z.enum([
-  'FREE',
-  'PER_SEAT',
-])
+export const subscriptionPlanEnum = z.enum(['FREE', 'PER_SEAT'])
 
 export type SubscriptionPlan = z.infer<typeof subscriptionPlanEnum>
 

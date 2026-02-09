@@ -156,7 +156,8 @@ export function createCompanyColumns(
       id: 'subscriptionPlan',
       header: 'Plan',
       cell: ({ row }) => {
-        const plan = (row.original.subscription?.plan ?? 'FREE') as SubscriptionPlan
+        const plan = (row.original.subscription?.plan ??
+          'FREE') as SubscriptionPlan
         return (
           <Badge variant={planBadgeVariants[plan]}>
             {subscriptionPlanLabels[plan]}
@@ -173,7 +174,8 @@ export function createCompanyColumns(
       id: 'subscriptionStatus',
       header: 'Statut',
       cell: ({ row }) => {
-        const status = (row.original.subscription?.status ?? 'TRIAL') as SubscriptionStatus
+        const status = (row.original.subscription?.status ??
+          'TRIAL') as SubscriptionStatus
         return (
           <Badge variant={statusBadgeVariants[status]}>
             {subscriptionStatusLabels[status]}

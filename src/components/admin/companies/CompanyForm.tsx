@@ -132,8 +132,10 @@ export function CompanyForm({
           phone: company.phone || '',
           address: company.address || '',
           timezone: company.timezone,
-          subscriptionPlan: (company.subscription?.plan ?? 'FREE') as SubscriptionPlan,
-          subscriptionStatus: (company.subscription?.status ?? 'TRIAL') as SubscriptionStatus,
+          subscriptionPlan: (company.subscription?.plan ??
+            'FREE') as SubscriptionPlan,
+          subscriptionStatus: (company.subscription?.status ??
+            'TRIAL') as SubscriptionStatus,
           isActive: company.isActive,
         }
       : {

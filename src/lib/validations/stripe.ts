@@ -52,14 +52,8 @@ export const checkoutSessionSchema = z.object({
   quantity: z
     .number()
     .int('Le nombre de sièges doit être un entier')
-    .min(
-      PRICING.MIN_EMPLOYEES,
-      `Minimum ${PRICING.MIN_EMPLOYEES} employé`
-    )
-    .max(
-      PRICING.MAX_EMPLOYEES,
-      `Maximum ${PRICING.MAX_EMPLOYEES} employés`
-    ),
+    .min(PRICING.MIN_EMPLOYEES, `Minimum ${PRICING.MIN_EMPLOYEES} employé`)
+    .max(PRICING.MAX_EMPLOYEES, `Maximum ${PRICING.MAX_EMPLOYEES} employés`),
   /** URL de succès après paiement */
   successUrl: z.string().url('URL de succès invalide').optional(),
   /** URL d'annulation */
@@ -80,14 +74,8 @@ export const updateSubscriptionQuantitySchema = z.object({
   quantity: z
     .number()
     .int('Le nombre de sièges doit être un entier')
-    .min(
-      PRICING.MIN_EMPLOYEES,
-      `Minimum ${PRICING.MIN_EMPLOYEES} employé`
-    )
-    .max(
-      PRICING.MAX_EMPLOYEES,
-      `Maximum ${PRICING.MAX_EMPLOYEES} employés`
-    ),
+    .min(PRICING.MIN_EMPLOYEES, `Minimum ${PRICING.MIN_EMPLOYEES} employé`)
+    .max(PRICING.MAX_EMPLOYEES, `Maximum ${PRICING.MAX_EMPLOYEES} employés`),
 })
 
 export type UpdateSubscriptionQuantityInput = z.infer<
@@ -103,9 +91,7 @@ export type UpdateSubscriptionQuantityInput = z.infer<
  * La vérification complète est faite par stripe.webhooks.constructEvent().
  */
 export const stripeWebhookHeaderSchema = z.object({
-  'stripe-signature': z
-    .string()
-    .min(1, 'En-tête Stripe-Signature manquant'),
+  'stripe-signature': z.string().min(1, 'En-tête Stripe-Signature manquant'),
 })
 
 export type StripeWebhookHeader = z.infer<typeof stripeWebhookHeaderSchema>

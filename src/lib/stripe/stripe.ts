@@ -39,8 +39,7 @@ const globalForStripe = globalThis as typeof globalThis & {
   stripe?: Stripe
 }
 
-export const stripe =
-  globalForStripe.stripe ?? createStripeClient()
+export const stripe = globalForStripe.stripe ?? createStripeClient()
 
 if (process.env.NODE_ENV !== 'production') {
   globalForStripe.stripe = stripe
