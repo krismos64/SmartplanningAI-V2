@@ -14,7 +14,7 @@ Ce document trace l'historique complet des tests réalisés sur SmartPlanning. I
 | Pipeline CI/CD       | GitHub Actions                                         |
 | Responsable          | Christophe Mostefaoui                                  |
 | Date de création     | 4 décembre 2025                                        |
-| Dernière mise à jour | 9 février 2026 (SP-441)                                |
+| Dernière mise à jour | 9 février 2026 (SP-439)                                |
 
 ---
 
@@ -34,7 +34,7 @@ Dans le cadre du diplôme **CDA (Concepteur Développeur d'Applications)**, ce c
 | Métrique              | Objectif  | Atteint  |
 | --------------------- | --------- | -------- |
 | Couverture globale    | ≥ 70%     | ✅ 85%   |
-| Tests unitaires       | ≥ 500     | ✅ 5180  |
+| Tests unitaires       | ≥ 500     | ✅ 5213  |
 | Tests E2E             | ≥ 50      | ✅ 988   |
 | Score Lighthouse A11y | ≥ 90%     | ✅ 95%   |
 | Anomalies critiques   | 0 en prod | ✅ 0     |
@@ -2139,8 +2139,9 @@ not-found.tsx (Server Component)
 | 09/02/2026 (SP-360)        | 5076            | 988       | 6064  | ~85%       | 📈 +41              |
 | 09/02/2026 (SP-440)        | 5107            | 988       | 6095  | ~85%       | 📈 +31              |
 | 09/02/2026 (SP-441)        | 5180            | 988       | 6168  | ~85%       | 📈 +73              |
+| 09/02/2026 (SP-439)        | 5213            | 988       | 6201  | ~85%       | 📈 +33              |
 
-**Graphique d'évolution** : De 27 tests (04/12) à 6168 tests (09/02) = **+22744% de croissance** 🚀
+**Graphique d'évolution** : De 27 tests (04/12) à 6201 tests (09/02) = **+22867% de croissance** 🚀
 
 ---
 
@@ -2150,11 +2151,11 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
 
 | N°  | Compétence                                                          | Preuve                                                                                                                                                                                                                                                                                                                                                  |
 | --- | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | Tester les composants d'une application                             | 5180 tests unitaires documentés                                                                                                                                                                                                                                                                                                                         |
+| 1   | Tester les composants d'une application                             | 5213 tests unitaires documentés                                                                                                                                                                                                                                                                                                                         |
 | 2   | Contribuer à la qualité du code                                     | Couverture 85%, anomalies tracées                                                                                                                                                                                                                                                                                                                       |
 | 3   | Documenter les procédures                                           | Procédure de recette formalisée                                                                                                                                                                                                                                                                                                                         |
 | 4   | Utiliser une méthodologie                                           | Approche structurée par sprints                                                                                                                                                                                                                                                                                                                         |
-| 5   | Développer des tests automatisés                                    | 6168 tests (unitaires + E2E)                                                                                                                                                                                                                                                                                                                            |
+| 5   | Développer des tests automatisés                                    | 6201 tests (unitaires + E2E)                                                                                                                                                                                                                                                                                                                            |
 | 6   | Sécuriser une application                                           | Tests RBAC (92 unitaires, 27 E2E), rate limiting, protection énumération                                                                                                                                                                                                                                                                                |
 | 7   | Concevoir une architecture logicielle                               | Pattern ServiceResult<T>, multi-tenant                                                                                                                                                                                                                                                                                                                  |
 | 8   | Développer des composants métier                                    | 4 dashboards par rôle                                                                                                                                                                                                                                                                                                                                   |
@@ -2221,6 +2222,7 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
 | 69  | Implémenter un dashboard facturation SaaS avec sérialisation Date  | Page `/app/dashboard/billing` Server Component DIRECTOR : fetch getBillingDataAction + sérialisation Date→ISO string + rendu 3 Client Components (SubscriptionStatus 6 statuts + countdown essai + alerte annulation, UsageIndicator ProgressBar sièges colorée + prix prorata, InvoiceHistory Table + badges + liens Stripe). Navigation G B. 41 tests unitaires (SP-360) 🆕 |
 | 70  | Implémenter un subscription guard middleware Edge Runtime avec JWT enrichi | Fonction pure `checkSubscriptionAccess` Edge-compatible (0 dépendance Node.js). JWT enrichi (subscriptionStatus, trialEndsAt, currentPeriodEnd, subscriptionCheckedAt). Defense in Depth 3 couches : JWT Edge → refresh périodique 5min (dynamic import Prisma) → webhooks Stripe. Matrice 9 statuts (ACTIVE, TRIAL valide/expiré, PAST_DUE grâce 7j/dépassé, CANCELED, EXPIRED, INCOMPLETE, null, inconnu). Routes exemptées (billing, profile, settings). Alerte contextuelle blocking reason sur page billing (6 motifs). 31 tests unitaires (SP-440) 🆕 |
 | 71  | Implémenter des bannières progressives de conversion SaaS                  | Fonction pure `getSubscriptionBannerConfig` (0 dépendance React, Edge-compatible). 3 paliers TRIAL progressifs (info 7-14j bleu, warning 4-6j orange, urgent 1-3j rouge non-masquable). Bannière PAST_DUE grâce 7j. Composant `SubscriptionBanner` client avec dismiss localStorage par tier, exclusion page billing, rôles ARIA (alert/status), data-testid. Héro conversion `BillingPageContent` (trial_expired/no_subscription). Intégration Server→Client via layout.tsx. 73 tests unitaires (SP-441) 🆕 |
+| 72  | Implémenter une synchronisation automatique quantité Stripe per-seat       | Service `syncEmployeeCountToStripe` (fire-and-forget, ne throw jamais, SyncResult typé). Skip intelligent 4 statuts (TRIAL/CANCELED/EXPIRED/INCOMPLETE) + quantity_unchanged + no_subscription. `stripe.subscriptions.update()` avec `proration_behavior: 'create_prorations'`. Intégration dans 4 Server Actions employés (create/delete/toggle/bulkDelete). `Math.max(1, employeeCount)`. Logging structuré `[StripeSync]`. 33 tests unitaires (subscription-sync: 27, employees: 6) (SP-439) 🆕 |
 
 ---
 
@@ -2261,6 +2263,7 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
    - Dashboard Billing /app/dashboard/billing (statut abonnement, jauge sièges, historique factures, portail Stripe, annulation) 🆕
    - Subscription Guard middleware : blocage accès TRIAL expiré/CANCELED/EXPIRED/INCOMPLETE/PAST_DUE >7j, redirection billing avec motif, bypass SYSTEM_ADMIN et routes exemptées 🆕
    - Bannières progressives subscription : affichage info/warning/urgent selon jours restants trial, bannière PAST_DUE grâce, dismiss localStorage, héro conversion billing 🆕
+   - Sync employés → Stripe : vérifier que créer/supprimer/toggle/bulk-delete un employé déclenche la synchronisation quantité Stripe (logs [StripeSync]) 🆕
 
 ### Après chaque mise en production
 
@@ -2275,6 +2278,7 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
 
 | Date       | Modification                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 09/02/2026 | 🆕 SP-439 Synchronisation employés → Stripe quantity : Service `syncEmployeeCountToStripe` (`src/lib/services/stripe/subscription-sync.service.ts`) fire-and-forget, ne throw jamais, retourne `SyncResult` typé (synced, previousQuantity, newQuantity, reason). Skip intelligent : pas de subscription, pas de stripeSubscriptionId, statuts TRIAL/CANCELED/EXPIRED/INCOMPLETE, quantité inchangée (`quantity_unchanged`), pas de subscription item (`no_stripe_item_id`). `Math.max(1, employeeCount)` (Stripe exige ≥1). `stripe.subscriptions.retrieve()` pour obtenir itemId dynamiquement (pas de champ Prisma). `stripe.subscriptions.update()` avec `proration_behavior: 'create_prorations'`. Mise à jour Prisma `subscription.quantity` + `planPrice` (quantity × pricePerEmployee). Barrel export `src/lib/services/stripe/index.ts`. Intégration dans 4 Server Actions employés (`src/lib/actions/employees.ts`) : `createEmployee`, `deleteEmployee`, `toggleEmployeeStatus` (sync directe), `bulkDeleteEmployees` (Set<companyId> pour multi-tenant). Pattern `.catch()` fire-and-forget (ne bloque jamais la réponse CRUD). Logging structuré `[StripeSync]` (action, companyId, quantities, timestamp). +33 tests unitaires (subscription-sync: 27 couvrant 8 skip conditions + 5 sync success + 2 quantity unchanged + 5 erreurs Stripe + 3 erreurs Prisma + 4 edge cases ; employees SP-439: 6 couvrant sync après create/delete/toggle/bulk + fire-and-forget safety + bon companyId). Compétence CDA #72 ajoutée. Total : 6201 tests |
 | 09/02/2026 | 🆕 SP-441 Bannières progressives subscription : Fonction pure `getSubscriptionBannerConfig` (`src/lib/subscription-banner.ts`) Edge-compatible (0 dépendance React). 3 paliers TRIAL progressifs : info (7-14j, bleu, masquable), warning (4-6j, orange, masquable), urgent (1-3j, rouge, non-masquable). Bannière PAST_DUE grâce 7j (non-masquable). Composant `SubscriptionBanner` (`src/components/layout/SubscriptionBanner.tsx`) client : dismiss localStorage par tier (`sp-banner-dismissed-tier`), exclusion page billing via `usePathname()`, rôles ARIA (alert pour urgent, status pour info/warning), icônes Lucide par palier, CTA progressif (Voir les offres → S'abonner → S'abonner maintenant). Intégration layout : `subscriptionData` passé de `layout.tsx` (Server Component) → `DashboardLayout` → `SubscriptionBanner` (Client Component). Héro conversion `BillingPageContent` pour `trial_expired` et `no_subscription` (icône Rocket/Sparkles, prix dynamique `formatPrice`, ancre `#subscription-section`). Bypass SYSTEM_ADMIN. +73 tests unitaires (subscription-banner: 44, SubscriptionBanner: 29). Compétence CDA #71 ajoutée. Total : 6168 tests |
 | 09/02/2026 | 🆕 SP-440 Subscription Guard Middleware : Fonction pure `checkSubscriptionAccess` Edge-compatible (`src/lib/subscription-guard.ts`). JWT enrichi dans NextAuth v5 callbacks (authorize → jwt → session → authorized) avec 4 champs subscription (status, trialEndsAt, currentPeriodEnd, subscriptionCheckedAt). Defense in Depth 3 couches : vérification JWT Edge Runtime → refresh périodique 5min via dynamic import Prisma (Node.js) → webhooks Stripe temps réel. Matrice 9 statuts : bypass SYSTEM_ADMIN + routes exemptées (billing/profile/settings), ACTIVE autorisé, TRIAL (valide/expiré), PAST_DUE (grâce 7j/dépassé), CANCELED/EXPIRED/INCOMPLETE/null/inconnu bloqués → redirection `/app/dashboard/billing?reason=XXX`. Alerte contextuelle `BillingPageContent` (6 motifs warning/destructive). Constante `SUBSCRIPTION_EXEMPT_ROUTES` dans types/auth.ts. +31 tests unitaires (`__tests__/lib/subscription-guard.test.ts`) couvrant matrice complète sans mocks. Compétence CDA #70 ajoutée. Total : 6095 tests |
 | 09/02/2026 | 🆕 SP-360 Dashboard Billing Page : Page `/app/dashboard/billing` complète avec Server Component (auth + RBAC DIRECTOR + sérialisation Date→ISO string). 4 composants Client : `BillingPageContent` (orchestrateur, Server Actions portail/annulation, AlertDialog confirmation), `SubscriptionStatus` (6 badges statut TRIAL/ACTIVE/PAST_DUE/CANCELED/EXPIRED/INCOMPLETE, countdown essai gratuit, alerte annulation programmée, EmptyState "S'abonner"), `UsageIndicator` (ProgressBar colorée sièges vert/orange/rouge, prix unitaire/total, tooltip prorata), `InvoiceHistory` (Table 5 dernières factures, badges Payé/Échoué/En attente, liens factures Stripe externes, EmptyState). Barrel export + types sérialisés (SerializedBillingData, SerializedSubscription, SerializedPayment). Loading skeleton 3 cartes. Navigation menu-items.ts : entrée "Facturation" (icône CreditCard, rôle DIRECTOR, raccourci G B). Type `BillingData` enrichi dans `src/types/stripe.ts` (ajout currentPeriodStart, canceledAt, createdAt sur subscription ; stripeInvoiceId, paymentMethod sur payments ; trialEndsAt racine). `getBillingDataAction` enrichi (Promise.all + company.trialEndsAt). Design glassmorphism + Framer Motion + useReducedMotion. +41 tests unitaires (4 fichiers : SubscriptionStatus 16, UsageIndicator 8, InvoiceHistory 11, BillingPageContent 6). Compétence CDA #69 ajoutée. Total : 6064 tests |
@@ -2347,6 +2351,31 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
 ---
 
 ## Documents liés
+
+### Sprint 17 - Sync Employés → Stripe (SP-439) 🆕
+
+- SP-439 : Synchronisation automatique quantité employés → Stripe ✅ TERMINÉ
+  - **Service** (`src/lib/services/stripe/subscription-sync.service.ts`) :
+    - `syncEmployeeCountToStripe(companyId)` → `Promise<SyncResult>`
+    - Récupération parallèle `Promise.all([subscription.findUnique, employee.count])`
+    - Skip conditions : pas de subscription, pas de stripeSubscriptionId, statuts TRIAL/CANCELED/EXPIRED/INCOMPLETE, quantité inchangée, pas de subscription item Stripe
+    - `Math.max(1, employeeCount)` — Stripe exige quantity >= 1
+    - `stripe.subscriptions.retrieve()` pour obtenir l'itemId dynamiquement
+    - `stripe.subscriptions.update()` avec `proration_behavior: 'create_prorations'`
+    - Mise à jour Prisma : `subscription.quantity` + `planPrice` (quantity × pricePerEmployee)
+    - Ne throw jamais : retourne toujours un `SyncResult` typé
+    - Logging structuré `[StripeSync]` avec action, companyId, quantities, timestamp
+  - **Intégration Server Actions** (`src/lib/actions/employees.ts`) :
+    - `createEmployee` → sync fire-and-forget après création
+    - `deleteEmployee` → sync fire-and-forget après suppression
+    - `toggleEmployeeStatus` → sync fire-and-forget après toggle isActive
+    - `bulkDeleteEmployees` → sync fire-and-forget par companyId unique (Set pour multi-tenant SYSTEM_ADMIN)
+    - Pattern `.catch()` : ne bloque jamais la réponse CRUD
+  - **Barrel export** : `src/lib/services/stripe/index.ts` mis à jour
+  - **Tests** :
+    - 27 tests subscription-sync : 8 skip conditions, 5 sync success avec prorata, 2 quantity unchanged, 5 erreurs Stripe (StripeError, network, timeout, invalid_request, authentication), 3 erreurs Prisma (retrieve, update, count), 4 edge cases (quantity=0→1, 1 employé, 250 employés, Decimal pricePerEmployee)
+    - 6 tests employees SP-439 : sync appelé après create/delete/toggle/bulk, fire-and-forget safety, bon companyId transmis
+    - Total projet : 6201 tests
 
 ### Sprint 17 - Dashboard Billing (SP-360) 🆕
 

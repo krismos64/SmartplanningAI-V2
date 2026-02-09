@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 9 février 2026 (Subscription Banner - SP-441)
+- **Dernière mise à jour** : 9 février 2026 (Sync Employés → Stripe - SP-439)
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -342,6 +342,34 @@ Page dashboard facturation complète avec 3 sous-composants, accessible aux DIRE
   - `UsageIndicator.test.tsx` (8 tests) : compteur employés, sièges, % utilisation, plafond 100%, prix
   - `InvoiceHistory.test.tsx` (11 tests) : table, badges statut, liens Stripe, état vide, callback portail
   - `BillingPageContent.test.tsx` (6 tests) : rendu 3 sous-composants, gestion null, action portail
+
+### Synchronisation Employés → Stripe Quantity (SP-439 - 9 février 2026)
+
+Synchronisation automatique du nombre d'employés actifs vers la quantité de l'abonnement Stripe avec prorata :
+
+- **Service `syncEmployeeCountToStripe(companyId)`** :
+  - Compte les employés actifs (`isActive: true`) de la company
+  - Compare avec la quantité actuelle de l'abonnement Stripe
+  - Met à jour via `stripe.subscriptions.update()` avec `proration_behavior: 'create_prorations'`
+  - Synchronise `quantity` et `planPrice` en base Prisma
+  - Ne throw jamais : retourne un `SyncResult` typé (synced, previousQuantity, newQuantity, reason)
+  - Skip intelligent : pas de subscription, pas de stripeSubscriptionId, statuts TRIAL/CANCELED/EXPIRED/INCOMPLETE, quantité inchangée
+  - `Math.max(1, employeeCount)` — Stripe exige quantity >= 1
+  - Logging structuré `[StripeSync]` avec action, companyId, quantities, timestamp
+
+- **Intégration Server Actions employés** :
+  - `createEmployee` → sync fire-and-forget après création
+  - `deleteEmployee` → sync fire-and-forget après suppression
+  - `toggleEmployeeStatus` → sync fire-and-forget après toggle isActive
+  - `bulkDeleteEmployees` → sync fire-and-forget par companyId unique (Set)
+  - Pattern `.catch()` pour ne jamais bloquer la réponse CRUD
+
+- **Fichiers** :
+  - `src/lib/services/stripe/subscription-sync.service.ts` (nouveau) : service de synchronisation
+  - `src/lib/services/stripe/index.ts` : barrel export mis à jour
+  - `src/lib/actions/employees.ts` : intégration sync dans 4 actions CRUD
+
+- **Tests** : 33 tests unitaires (subscription-sync: 27, employees SP-439: 6)
 
 ### Bannières Progressives Subscription (SP-441 - 9 février 2026)
 
@@ -2299,11 +2327,11 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 - **E2E** : Playwright (configuré)
 - **Coverage** : v8 provider
 
-### Couverture actuelle (9 février 2026 - SP-441)
+### Couverture actuelle (9 février 2026 - SP-439)
 
 | Catégorie                              | Coverage | Tests    |
 | -------------------------------------- | -------- | -------- |
-| **Global**                             | **~85%** | **5180** |
+| **Global**                             | **~85%** | **5213** |
 | loading                                | 100%     | 152      |
 | modals                                 | 100%     | 52       |
 | cards                                  | 77.09%   | 88       |
@@ -2400,6 +2428,8 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 | subscription-guard (SP-440)       | 100%     | 31       |
 | subscription-banner (SP-441)      | 100%     | 44       |
 | SubscriptionBanner (SP-441)       | 100%     | 29       |
+| subscription-sync (SP-439)       | 100%     | 27       |
+| employees SP-439 (SP-439)        | 100%     | 6        |
 
 ### Tests E2E
 
@@ -2508,6 +2538,11 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 - UsageIndicator (8 tests) : jauge sièges, prix unitaire/total, prorata, plafond 100%
 - InvoiceHistory (11 tests) : table factures, badges statut, liens Stripe, état vide
 - BillingPageContent (6 tests) : orchestrateur, gestion null, action portail Stripe
+
+#### Subscription Sync Employés → Stripe (SP-439)
+
+- subscription-sync.service.ts (27 tests) : skip no_subscription (1), skip no_stripe_subscription_id (1), skip statuts TRIAL/CANCELED/EXPIRED/INCOMPLETE (4), skip quantity_unchanged (2), skip no_stripe_item_id (1), sync success avec prorata (5), erreurs Stripe (StripeError, network, timeout, invalid_request, authentication) (5), erreurs Prisma (retrieve, update, count) (3), edge cases (quantity=0→1, 1 employé, 250 employés, Decimal pricePerEmployee) (4), logging structuré (1).
+- employees.test.ts SP-439 (6 tests) : sync appelé après createEmployee (1), deleteEmployee (1), toggleEmployeeStatus (1), bulkDeleteEmployees (1), fire-and-forget safety avec rejection (1), bon companyId transmis (1).
 
 #### Subscription Banner (SP-441)
 
@@ -2808,7 +2843,7 @@ Merge main → Build Docker → Push GHCR → Deploy VPS (~8-10 min)
 
 - **CI** (`.github/workflows/ci.yml`) : Lint, Type-check, Tests unitaires, Build, Tests E2E (PR uniquement)
 - **CD** (`.github/workflows/cd.yml`) : Build image Docker, Push sur ghcr.io, Deploy via SSH
-- Tests unitaires sur tous les push (~5180 tests Vitest)
+- Tests unitaires sur tous les push (~5213 tests Vitest)
 - Tests E2E sur PR vers main (~629 tests Playwright actifs, 5 devices mobiles, ~988 total)
 - Stabilisation E2E (SP-434) : Touch targets WCAG 2.5.5 (44px), command palette, mobile navigation
 - Déploiement automatique sur merge main ✅
