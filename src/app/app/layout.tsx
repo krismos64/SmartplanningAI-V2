@@ -49,5 +49,16 @@ export default async function AppLayout({
     companyName,
   }
 
-  return <DashboardLayout user={user}>{children}</DashboardLayout>
+  // SP-441 : données subscription pour la bannière progressive
+  const subscriptionData = {
+    subscriptionStatus: session.user.subscriptionStatus ?? null,
+    trialEndsAt: session.user.trialEndsAt ?? null,
+    currentPeriodEnd: session.user.currentPeriodEnd ?? null,
+  }
+
+  return (
+    <DashboardLayout user={user} subscriptionData={subscriptionData}>
+      {children}
+    </DashboardLayout>
+  )
 }

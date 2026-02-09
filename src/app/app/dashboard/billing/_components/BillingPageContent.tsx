@@ -5,12 +5,13 @@
  * gère les appels aux Server Actions (portail, annulation)
  * et distribue les props aux 3 composants enfants.
  *
- * @ticket SP-360, SP-440
+ * @ticket SP-360, SP-440, SP-441
  */
 'use client'
 
 import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
+import { Rocket, Sparkles } from 'lucide-react'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,6 +22,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
+import { Button } from '@/components/ui/button'
 import { SubscriptionStatus } from './SubscriptionStatus'
 import type { SerializedSubscription } from './SubscriptionStatus'
 import { UsageIndicator } from './UsageIndicator'
@@ -30,6 +32,7 @@ import {
   createBillingPortalAction,
   cancelSubscriptionAction,
 } from '@/lib/actions/stripe'
+import { PRICING, formatPrice } from '@/lib/config/pricing'
 
 // =============================================================================
 // TYPES
@@ -83,8 +86,7 @@ const BLOCKING_REASONS: Record<
   },
   subscription_expired: {
     title: 'Abonnement expiré',
-    message:
-      'Votre abonnement a expiré. Renouvelez-le pour continuer.',
+    message: 'Votre abonnement a expiré. Renouvelez-le pour continuer.',
     variant: 'destructive',
   },
   payment_incomplete: {
@@ -175,6 +177,36 @@ export function BillingPageContent({
 
   return (
     <div className={className} data-testid="billing-page-content">
+      {/* SP-441 : Héro conversion quand trial expiré ou pas d'abonnement */}
+      {(blockingReason === 'trial_expired' ||
+        blockingReason === 'no_subscription') && (
+        <div
+          className="mb-6 rounded-xl border border-primary/20 bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 p-8 text-center"
+          data-testid="billing-conversion-hero"
+        >
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+            {blockingReason === 'trial_expired' ? (
+              <Rocket className="h-6 w-6 text-primary" aria-hidden="true" />
+            ) : (
+              <Sparkles className="h-6 w-6 text-primary" aria-hidden="true" />
+            )}
+          </div>
+          <h2 className="mb-2 text-2xl font-bold text-foreground">
+            {blockingReason === 'trial_expired'
+              ? 'Votre essai gratuit est terminé'
+              : 'Activez votre abonnement SmartPlanning'}
+          </h2>
+          <p className="mb-6 text-muted-foreground">
+            {blockingReason === 'trial_expired'
+              ? `Continuez à gérer vos plannings et vos équipes pour seulement ${formatPrice(PRICING.PRICE_PER_EMPLOYEE)}/employé/mois.`
+              : `Commencez à organiser votre équipe pour seulement ${formatPrice(PRICING.PRICE_PER_EMPLOYEE)}/employé/mois.`}
+          </p>
+          <Button size="lg" className="px-8 text-lg" asChild>
+            <a href="#subscription-section">Choisir mon abonnement</a>
+          </Button>
+        </div>
+      )}
+
       {/* SP-440 : Alerte de blocage subscription guard */}
       {blockingReason && BLOCKING_REASONS[blockingReason] && (
         <div
@@ -207,15 +239,17 @@ export function BillingPageContent({
       )}
 
       {/* Statut abonnement — pleine largeur */}
-      <SubscriptionStatus
-        subscription={billingData.subscription}
-        trialEndsAt={billingData.trialEndsAt}
-        monthlyAmount={billingData.monthlyAmount}
-        onManageSubscription={handleManageSubscription}
-        onCancelSubscription={handleCancelSubscription}
-        isManageLoading={isManageLoading}
-        isCancelLoading={isCancelLoading}
-      />
+      <div id="subscription-section">
+        <SubscriptionStatus
+          subscription={billingData.subscription}
+          trialEndsAt={billingData.trialEndsAt}
+          monthlyAmount={billingData.monthlyAmount}
+          onManageSubscription={handleManageSubscription}
+          onCancelSubscription={handleCancelSubscription}
+          isManageLoading={isManageLoading}
+          isCancelLoading={isCancelLoading}
+        />
+      </div>
 
       {/* Usage + Factures — 2 colonnes sur md+ */}
       {billingData.subscription && (
@@ -240,9 +274,9 @@ export function BillingPageContent({
           <AlertDialogHeader>
             <AlertDialogTitle>Annuler l&apos;abonnement ?</AlertDialogTitle>
             <AlertDialogDescription>
-              Votre abonnement restera actif jusqu&apos;à la fin de la période de
-              facturation en cours. Après cette date, vous perdrez l&apos;accès
-              aux fonctionnalités premium.
+              Votre abonnement restera actif jusqu&apos;à la fin de la période
+              de facturation en cours. Après cette date, vous perdrez
+              l&apos;accès aux fonctionnalités premium.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
