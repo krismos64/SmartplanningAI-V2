@@ -8,7 +8,7 @@
  * - getAdminChurnRateOnly
  * - getAdminQuickStats
  *
- * @ticket SP-144
+ * @ticket SP-144, SP-350
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
@@ -55,7 +55,7 @@ describe('admin-stats.service', () => {
       // Mock subscriptions actives
       prismaMock.subscription.count.mockResolvedValue(45)
 
-      // Mock abonnements pour MRR
+      // Mock abonnements pour MRR (per-seat model)
       prismaMock.subscription.findMany.mockResolvedValue([
         {
           id: 'sub-1',
@@ -63,8 +63,11 @@ describe('admin-stats.service', () => {
           stripeCustomerId: 'cus_1',
           stripeSubscriptionId: 'sub_1',
           stripePriceId: 'price_1',
-          plan: 'STARTER',
-          planPrice: null,
+          stripeProductId: null,
+          plan: 'PER_SEAT',
+          planPrice: 2900,
+          quantity: 10,
+          pricePerEmployee: 290,
           currency: 'EUR',
           billingInterval: 'month',
           status: 'ACTIVE',
@@ -72,34 +75,16 @@ describe('admin-stats.service', () => {
           currentPeriodEnd: new Date(),
           cancelAtPeriodEnd: false,
           canceledAt: null,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-        {
-          id: 'sub-2',
-          companyId: 'company-2',
-          stripeCustomerId: 'cus_2',
-          stripeSubscriptionId: 'sub_2',
-          stripePriceId: 'price_2',
-          plan: 'BUSINESS',
-          planPrice: 99,
-          currency: 'EUR',
-          billingInterval: 'month',
-          status: 'ACTIVE',
-          currentPeriodStart: new Date(),
-          currentPeriodEnd: new Date(),
-          cancelAtPeriodEnd: false,
-          canceledAt: null,
+          metadata: null,
           createdAt: new Date(),
           updatedAt: new Date(),
         },
       ])
 
-      // Mock groupBy pour revenue par plan
+      // Mock groupBy pour distribution statuts
       prismaMock.subscription.groupBy.mockResolvedValue([
-        { plan: 'STARTER', _count: 20 },
-        { plan: 'BUSINESS', _count: 15 },
-        { plan: 'ENTERPRISE', _count: 5 },
+        { status: 'ACTIVE', _count: 40 },
+        { status: 'TRIAL', _count: 5 },
       ] as any)
 
       const result = await getAdminStats()
@@ -116,66 +101,12 @@ describe('admin-stats.service', () => {
       expect(result.data?.subscriptionStatusDistribution).toBeDefined()
     })
 
-    it('devrait calculer correctement le MRR', async () => {
+    it('devrait calculer correctement le MRR per-seat', async () => {
       prismaMock.company.count.mockResolvedValue(10)
       prismaMock.user.count.mockResolvedValue(100)
       prismaMock.subscription.count.mockResolvedValue(10)
 
-      // 5 STARTER (29€) + 3 BUSINESS (99€) = 145 + 297 = 442€ MRR
-      prismaMock.subscription.findMany.mockResolvedValue([
-        ...Array(5).fill({
-          id: 'sub-starter',
-          companyId: 'company-1',
-          stripeCustomerId: 'cus_1',
-          stripeSubscriptionId: 'sub_1',
-          stripePriceId: 'price_1',
-          plan: 'STARTER',
-          planPrice: null,
-          currency: 'EUR',
-          billingInterval: 'month',
-          status: 'ACTIVE',
-          currentPeriodStart: new Date(),
-          currentPeriodEnd: new Date(),
-          cancelAtPeriodEnd: false,
-          canceledAt: null,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        }),
-        ...Array(3).fill({
-          id: 'sub-business',
-          companyId: 'company-2',
-          stripeCustomerId: 'cus_2',
-          stripeSubscriptionId: 'sub_2',
-          stripePriceId: 'price_2',
-          plan: 'BUSINESS',
-          planPrice: null,
-          currency: 'EUR',
-          billingInterval: 'month',
-          status: 'ACTIVE',
-          currentPeriodStart: new Date(),
-          currentPeriodEnd: new Date(),
-          cancelAtPeriodEnd: false,
-          canceledAt: null,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        }),
-      ])
-
-      prismaMock.subscription.groupBy.mockResolvedValue([])
-
-      const result = await getAdminStats()
-
-      expect(result.success).toBe(true)
-      // 5 * 29 + 3 * 99 = 145 + 297 = 442
-      expect(result.data?.mrr.current).toBe(442)
-    })
-
-    it('devrait diviser par 12 pour les abonnements annuels', async () => {
-      prismaMock.company.count.mockResolvedValue(1)
-      prismaMock.user.count.mockResolvedValue(10)
-      prismaMock.subscription.count.mockResolvedValue(1)
-
-      // 1 BUSINESS annuel (99€ * 12 / 12 = 99€ MRR)
+      // 2 abonnements PER_SEAT: 10 emp × 290c + 5 emp × 290c = 2900 + 1450 = 4350c = 43.50€
       prismaMock.subscription.findMany.mockResolvedValue([
         {
           id: 'sub-1',
@@ -183,15 +114,41 @@ describe('admin-stats.service', () => {
           stripeCustomerId: 'cus_1',
           stripeSubscriptionId: 'sub_1',
           stripePriceId: 'price_1',
-          plan: 'BUSINESS',
-          planPrice: 99 * 12,
+          stripeProductId: null,
+          plan: 'PER_SEAT',
+          planPrice: 2900,
+          quantity: 10,
+          pricePerEmployee: 290,
           currency: 'EUR',
-          billingInterval: 'year',
+          billingInterval: 'month',
           status: 'ACTIVE',
           currentPeriodStart: new Date(),
           currentPeriodEnd: new Date(),
           cancelAtPeriodEnd: false,
           canceledAt: null,
+          metadata: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          id: 'sub-2',
+          companyId: 'company-2',
+          stripeCustomerId: 'cus_2',
+          stripeSubscriptionId: 'sub_2',
+          stripePriceId: 'price_2',
+          stripeProductId: null,
+          plan: 'PER_SEAT',
+          planPrice: 1450,
+          quantity: 5,
+          pricePerEmployee: 290,
+          currency: 'EUR',
+          billingInterval: 'month',
+          status: 'ACTIVE',
+          currentPeriodStart: new Date(),
+          currentPeriodEnd: new Date(),
+          cancelAtPeriodEnd: false,
+          canceledAt: null,
+          metadata: null,
           createdAt: new Date(),
           updatedAt: new Date(),
         },
@@ -202,14 +159,114 @@ describe('admin-stats.service', () => {
       const result = await getAdminStats()
 
       expect(result.success).toBe(true)
-      expect(result.data?.mrr.current).toBe(99)
+      // (10 × 290 + 5 × 290) / 100 = 43.50€
+      expect(result.data?.mrr.current).toBe(43.5)
+    })
+
+    it('devrait ignorer les abonnements FREE dans le MRR', async () => {
+      prismaMock.company.count.mockResolvedValue(2)
+      prismaMock.user.count.mockResolvedValue(20)
+      prismaMock.subscription.count.mockResolvedValue(2)
+
+      prismaMock.subscription.findMany.mockResolvedValue([
+        {
+          id: 'sub-1',
+          companyId: 'company-1',
+          stripeCustomerId: null,
+          stripeSubscriptionId: null,
+          stripePriceId: null,
+          stripeProductId: null,
+          plan: 'FREE',
+          planPrice: 0,
+          quantity: 5,
+          pricePerEmployee: 0,
+          currency: 'EUR',
+          billingInterval: 'month',
+          status: 'ACTIVE',
+          currentPeriodStart: new Date(),
+          currentPeriodEnd: new Date(),
+          cancelAtPeriodEnd: false,
+          canceledAt: null,
+          metadata: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          id: 'sub-2',
+          companyId: 'company-2',
+          stripeCustomerId: 'cus_2',
+          stripeSubscriptionId: 'sub_2',
+          stripePriceId: 'price_2',
+          stripeProductId: null,
+          plan: 'PER_SEAT',
+          planPrice: 2900,
+          quantity: 10,
+          pricePerEmployee: 290,
+          currency: 'EUR',
+          billingInterval: 'month',
+          status: 'ACTIVE',
+          currentPeriodStart: new Date(),
+          currentPeriodEnd: new Date(),
+          cancelAtPeriodEnd: false,
+          canceledAt: null,
+          metadata: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ])
+
+      prismaMock.subscription.groupBy.mockResolvedValue([])
+
+      const result = await getAdminStats()
+
+      expect(result.success).toBe(true)
+      // Seulement PER_SEAT: 10 × 290 / 100 = 29€
+      expect(result.data?.mrr.current).toBe(29)
+    })
+
+    it('devrait diviser par 12 pour les abonnements annuels', async () => {
+      prismaMock.company.count.mockResolvedValue(1)
+      prismaMock.user.count.mockResolvedValue(10)
+      prismaMock.subscription.count.mockResolvedValue(1)
+
+      // 1 PER_SEAT annuel: 10 emp × 290c = 2900c/mois, annuel = 2900/12 ≈ 241.67c = 2.4167€
+      prismaMock.subscription.findMany.mockResolvedValue([
+        {
+          id: 'sub-1',
+          companyId: 'company-1',
+          stripeCustomerId: 'cus_1',
+          stripeSubscriptionId: 'sub_1',
+          stripePriceId: 'price_1',
+          stripeProductId: null,
+          plan: 'PER_SEAT',
+          planPrice: 34800,
+          quantity: 10,
+          pricePerEmployee: 290,
+          currency: 'EUR',
+          billingInterval: 'year',
+          status: 'ACTIVE',
+          currentPeriodStart: new Date(),
+          currentPeriodEnd: new Date(),
+          cancelAtPeriodEnd: false,
+          canceledAt: null,
+          metadata: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ])
+
+      prismaMock.subscription.groupBy.mockResolvedValue([])
+
+      const result = await getAdminStats()
+
+      expect(result.success).toBe(true)
+      // (10 × 290) / 12 / 100 = 2900 / 12 / 100 ≈ 2.4167
+      const expectedMRR = (10 * 290) / 12 / 100
+      expect(result.data?.mrr.current).toBeCloseTo(expectedMRR, 2)
     })
 
     it('devrait calculer la tendance des entreprises', async () => {
-      // Ce test vérifie que la tendance est calculée correctement
-      // Le service appelle company.count plusieurs fois pour différentes requêtes
       prismaMock.company.count.mockResolvedValue(50)
-
       prismaMock.user.count.mockResolvedValue(100)
       prismaMock.subscription.count.mockResolvedValue(10)
       prismaMock.subscription.findMany.mockResolvedValue([])
@@ -267,7 +324,8 @@ describe('admin-stats.service', () => {
   // ==========================================================================
 
   describe('getAdminMRROnly', () => {
-    it('devrait retourner le MRR avec tendance', async () => {
+    it('devrait retourner le MRR per-seat avec tendance', async () => {
+      // 10 employés × 290 centimes = 2900 centimes = 29€
       prismaMock.subscription.findMany.mockResolvedValue([
         {
           id: 'sub-1',
@@ -275,8 +333,11 @@ describe('admin-stats.service', () => {
           stripeCustomerId: 'cus_1',
           stripeSubscriptionId: 'sub_1',
           stripePriceId: 'price_1',
-          plan: 'BUSINESS',
-          planPrice: null,
+          stripeProductId: null,
+          plan: 'PER_SEAT',
+          planPrice: 2900,
+          quantity: 10,
+          pricePerEmployee: 290,
           currency: 'EUR',
           billingInterval: 'month',
           status: 'ACTIVE',
@@ -284,6 +345,7 @@ describe('admin-stats.service', () => {
           currentPeriodEnd: new Date(),
           cancelAtPeriodEnd: false,
           canceledAt: null,
+          metadata: null,
           createdAt: new Date(),
           updatedAt: new Date(),
         },
@@ -292,7 +354,7 @@ describe('admin-stats.service', () => {
       const result = await getAdminMRROnly()
 
       expect(result.success).toBe(true)
-      expect(result.data?.current).toBe(99)
+      expect(result.data?.current).toBe(29)
     })
 
     it("devrait retourner 0 si pas d'abonnements", async () => {
@@ -357,8 +419,11 @@ describe('admin-stats.service', () => {
           stripeCustomerId: 'cus_1',
           stripeSubscriptionId: 'sub_1',
           stripePriceId: 'price_1',
-          plan: 'STARTER',
-          planPrice: null,
+          stripeProductId: null,
+          plan: 'PER_SEAT',
+          planPrice: 2900,
+          quantity: 10,
+          pricePerEmployee: 290,
           currency: 'EUR',
           billingInterval: 'month',
           status: 'ACTIVE',
@@ -366,6 +431,7 @@ describe('admin-stats.service', () => {
           currentPeriodEnd: new Date(),
           cancelAtPeriodEnd: false,
           canceledAt: null,
+          metadata: null,
           createdAt: new Date(),
           updatedAt: new Date(),
         },
@@ -420,23 +486,21 @@ describe('admin-stats.service', () => {
       expect(result.data?.companiesGrowth[0]).toHaveProperty('count')
     })
 
-    it('devrait inclure tous les plans dans revenueByPlan', async () => {
+    it('devrait inclure FREE et PER_SEAT dans revenueByPlan (SP-350)', async () => {
       prismaMock.company.count.mockResolvedValue(10)
       prismaMock.user.count.mockResolvedValue(100)
       prismaMock.subscription.count.mockResolvedValue(5)
       prismaMock.subscription.findMany.mockResolvedValue([])
-
-      // Seulement STARTER et BUSINESS ont des abonnements
-      prismaMock.subscription.groupBy.mockResolvedValue([
-        { plan: 'STARTER', _count: 3 },
-        { plan: 'BUSINESS', _count: 2 },
-      ] as any)
+      prismaMock.subscription.groupBy.mockResolvedValue([])
 
       const result = await getAdminStats()
 
       expect(result.success).toBe(true)
-      // Devrait inclure FREE et ENTERPRISE avec 0
-      expect(result.data?.revenueByPlan.length).toBeGreaterThanOrEqual(2)
+      // Devrait inclure FREE et PER_SEAT
+      expect(result.data?.revenueByPlan).toHaveLength(2)
+      const planNames = result.data?.revenueByPlan.map((r) => r.plan)
+      expect(planNames).toContain('Gratuit')
+      expect(planNames).toContain('Per-seat')
     })
 
     it("devrait traduire les statuts d'abonnement en francais", async () => {
@@ -445,13 +509,14 @@ describe('admin-stats.service', () => {
       prismaMock.subscription.count.mockResolvedValue(10)
       prismaMock.subscription.findMany.mockResolvedValue([])
 
-      prismaMock.subscription.groupBy
-        .mockResolvedValueOnce([]) // Pour revenueByPlan
-        .mockResolvedValueOnce([
+      prismaMock.subscription.groupBy.mockResolvedValueOnce(
+        [
           { status: 'ACTIVE', _count: 8 },
           { status: 'TRIAL', _count: 5 },
           { status: 'CANCELED', _count: 2 },
-        ] as any)
+          { status: 'INCOMPLETE', _count: 1 },
+        ] as any
+      )
 
       const result = await getAdminStats()
 
@@ -468,23 +533,30 @@ describe('admin-stats.service', () => {
         status: 'Annulé',
         count: 2,
       })
+      expect(result.data?.subscriptionStatusDistribution).toContainEqual({
+        status: 'Incomplet',
+        count: 1,
+      })
     })
 
-    it('devrait gerer les prix personnalises (planPrice)', async () => {
-      prismaMock.company.count.mockResolvedValue(1)
-      prismaMock.user.count.mockResolvedValue(10)
-      prismaMock.subscription.count.mockResolvedValue(1)
+    it('devrait calculer le MRR per-seat correctement avec quantities variées', async () => {
+      prismaMock.company.count.mockResolvedValue(3)
+      prismaMock.user.count.mockResolvedValue(30)
+      prismaMock.subscription.count.mockResolvedValue(3)
 
-      // Prix personnalise de 500€ au lieu de 299€ par defaut pour Enterprise
+      // 3 abonnements: 10×290 + 20×290 + 50×290 = 2900 + 5800 + 14500 = 23200c = 232€
       prismaMock.subscription.findMany.mockResolvedValue([
         {
           id: 'sub-1',
-          companyId: 'company-1',
+          companyId: 'c1',
           stripeCustomerId: 'cus_1',
           stripeSubscriptionId: 'sub_1',
-          stripePriceId: 'price_1',
-          plan: 'ENTERPRISE',
-          planPrice: 500,
+          stripePriceId: 'p1',
+          stripeProductId: null,
+          plan: 'PER_SEAT',
+          planPrice: 2900,
+          quantity: 10,
+          pricePerEmployee: 290,
           currency: 'EUR',
           billingInterval: 'month',
           status: 'ACTIVE',
@@ -492,6 +564,51 @@ describe('admin-stats.service', () => {
           currentPeriodEnd: new Date(),
           cancelAtPeriodEnd: false,
           canceledAt: null,
+          metadata: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          id: 'sub-2',
+          companyId: 'c2',
+          stripeCustomerId: 'cus_2',
+          stripeSubscriptionId: 'sub_2',
+          stripePriceId: 'p2',
+          stripeProductId: null,
+          plan: 'PER_SEAT',
+          planPrice: 5800,
+          quantity: 20,
+          pricePerEmployee: 290,
+          currency: 'EUR',
+          billingInterval: 'month',
+          status: 'ACTIVE',
+          currentPeriodStart: new Date(),
+          currentPeriodEnd: new Date(),
+          cancelAtPeriodEnd: false,
+          canceledAt: null,
+          metadata: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          id: 'sub-3',
+          companyId: 'c3',
+          stripeCustomerId: 'cus_3',
+          stripeSubscriptionId: 'sub_3',
+          stripePriceId: 'p3',
+          stripeProductId: null,
+          plan: 'PER_SEAT',
+          planPrice: 14500,
+          quantity: 50,
+          pricePerEmployee: 290,
+          currency: 'EUR',
+          billingInterval: 'month',
+          status: 'ACTIVE',
+          currentPeriodStart: new Date(),
+          currentPeriodEnd: new Date(),
+          cancelAtPeriodEnd: false,
+          canceledAt: null,
+          metadata: null,
           createdAt: new Date(),
           updatedAt: new Date(),
         },
@@ -502,41 +619,8 @@ describe('admin-stats.service', () => {
       const result = await getAdminStats()
 
       expect(result.success).toBe(true)
-      expect(result.data?.mrr.current).toBe(500) // Prix personnalise
-    })
-
-    it('devrait utiliser le prix par defaut si planPrice est null', async () => {
-      prismaMock.company.count.mockResolvedValue(1)
-      prismaMock.user.count.mockResolvedValue(10)
-      prismaMock.subscription.count.mockResolvedValue(1)
-
-      prismaMock.subscription.findMany.mockResolvedValue([
-        {
-          id: 'sub-1',
-          companyId: 'company-1',
-          stripeCustomerId: 'cus_1',
-          stripeSubscriptionId: 'sub_1',
-          stripePriceId: 'price_1',
-          plan: 'STARTER',
-          planPrice: null, // Pas de prix personnalise
-          currency: 'EUR',
-          billingInterval: 'month',
-          status: 'ACTIVE',
-          currentPeriodStart: new Date(),
-          currentPeriodEnd: new Date(),
-          cancelAtPeriodEnd: false,
-          canceledAt: null,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-      ])
-
-      prismaMock.subscription.groupBy.mockResolvedValue([])
-
-      const result = await getAdminStats()
-
-      expect(result.success).toBe(true)
-      expect(result.data?.mrr.current).toBe(29) // Prix par defaut STARTER
+      // (10+20+50) × 290 / 100 = 80 × 290 / 100 = 232€
+      expect(result.data?.mrr.current).toBe(232)
     })
   })
 })
