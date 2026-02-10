@@ -62,7 +62,7 @@ test.describe('Billing — Trial Flow (SP-373)', () => {
     await billing.goto()
 
     await expect(
-      directorPage.locator('text=Gérez votre abonnement et consultez vos factures.')
+      directorPage.getByText('Gérez votre abonnement et consultez vos factures.').first()
     ).toBeVisible()
   })
 })
