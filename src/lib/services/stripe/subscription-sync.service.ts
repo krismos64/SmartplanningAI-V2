@@ -13,6 +13,8 @@ import Stripe from 'stripe'
 
 import { prisma } from '@/lib/prisma'
 import { stripe } from '@/lib/stripe'
+import { formatAmountEuros } from '@/lib/email/billing/format'
+import { sendQuantityUpdatedEmail } from '@/lib/email/templates/billing'
 
 // ============================================================================
 // Types
@@ -152,6 +154,7 @@ export async function syncEmployeeCountToStripe(
       },
     })
 
+    // eslint-disable-next-line no-console
     console.info('[StripeSync]', {
       action: 'quantity_updated',
       companyId,
@@ -160,6 +163,41 @@ export async function syncEmployeeCountToStripe(
       stripeSubscriptionId: subscription.stripeSubscriptionId,
       timestamp: new Date().toISOString(),
     })
+
+    // Fire-and-forget : email de mise à jour de quantité (SP-370)
+    prisma.company
+      .findUnique({
+        where: { id: companyId },
+        select: {
+          name: true,
+          users: {
+            where: { role: 'DIRECTOR' },
+            take: 1,
+            select: { email: true, name: true },
+          },
+        },
+      })
+      .then((company) => {
+        const director = company?.users[0]
+        if (!company || !director) return
+        sendQuantityUpdatedEmail({
+          companyId,
+          subscriptionId: subscription.stripeSubscriptionId!,
+          recipientEmail: director.email,
+          firstName: director.name?.split(' ')[0] ?? 'Dirigeant',
+          companyName: company.name,
+          oldQuantity: subscription.quantity,
+          newQuantity,
+          newMonthlyAmount: formatAmountEuros(
+            newQuantity * subscription.pricePerEmployee
+          ),
+        }).catch((err) =>
+          console.error('[StripeSync] Email QuantityUpdated failed:', err)
+        )
+      })
+      .catch((err) =>
+        console.error('[StripeSync] Director lookup failed:', err)
+      )
 
     return {
       synced: true,
