@@ -1,6 +1,6 @@
 # Guide de Déploiement SmartPlanning V2
 
-**Dernière mise à jour** : 4 février 2026
+**Dernière mise à jour** : 10 février 2026
 **Version** : 2.0.0
 **Environnement** : Production
 **URL** : https://smartplanning.fr
@@ -138,7 +138,7 @@ Le fichier `.env` sur le VPS doit contenir :
 ```bash
 # ==============================================
 # SMARTPLANNING V2 - PRODUCTION ENVIRONMENT
-# Dernière mise à jour : 4 février 2026
+# Dernière mise à jour : 10 février 2026
 # ==============================================
 
 # ----------------------------------------------
@@ -193,11 +193,13 @@ NODE_ENV=production
 IMAGE_TAG=latest
 
 # ----------------------------------------------
-# STRIPE (À configurer pour les paiements)
+# STRIPE (Paiements per-seat 2,90€/employé/mois)
 # ----------------------------------------------
-# STRIPE_SECRET_KEY=sk_live_...
-# STRIPE_WEBHOOK_SECRET=whsec_...
-# NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_live_...
+STRIPE_SECRET_KEY=sk_live_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_live_...
+STRIPE_PRICE_ID=price_...
+NEXT_PUBLIC_APP_URL=https://smartplanning.fr
 ```
 
 ### Correspondance des noms de variables
@@ -215,6 +217,10 @@ IMAGE_TAG=latest
 | `CLOUDINARY_CLOUD_NAME` | `src/lib/cloudinary.ts`   | Nom du cloud Cloudinary    |
 | `CLOUDINARY_API_KEY`    | `src/lib/cloudinary.ts`   | Clé API Cloudinary         |
 | `CLOUDINARY_API_SECRET` | `src/lib/cloudinary.ts`   | Secret API Cloudinary      |
+| `STRIPE_SECRET_KEY`              | `src/lib/stripe/`         | Clé secrète Stripe         |
+| `STRIPE_WEBHOOK_SECRET`          | `src/lib/stripe/`         | Secret webhook Stripe      |
+| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | `src/lib/stripe/`     | Clé publique Stripe        |
+| `STRIPE_PRICE_ID`                | `src/lib/stripe/`         | ID du prix per-seat Stripe |
 
 ### GitHub Secrets requis
 
@@ -242,12 +248,12 @@ Les secrets suivants doivent être configurés dans GitHub (Settings → Secrets
 
 **Jobs** :
 
-| Job        | Description                   | Condition                     |
-| ---------- | ----------------------------- | ----------------------------- |
-| `lint`     | ESLint + TypeScript           | Tous les push                 |
-| `test`     | Tests unitaires Vitest (1693) | Tous les push                 |
-| `test-e2e` | Tests E2E Playwright (219)    | PR vers main OU push sur main |
-| `build`    | Build Next.js                 | Tous les push                 |
+| Job        | Description                    | Condition                     |
+| ---------- | ------------------------------ | ----------------------------- |
+| `lint`     | ESLint + TypeScript            | Tous les push                 |
+| `test`     | Tests unitaires Vitest (~5213) | Tous les push                 |
+| `test-e2e` | Tests E2E Playwright (~988)    | PR vers main OU push sur main |
+| `build`    | Build Next.js                  | Tous les push                 |
 
 ### CD Pipeline (`.github/workflows/cd.yml`)
 
@@ -446,6 +452,7 @@ docker pull ghcr.io/krismos64/smartplanningai-v2:latest
 | 2026-01-06 | 1.1     | Migration vers nouveau VPS (51.77.146.72)     |
 | 2026-01-16 | 1.2     | Ajout Umami Analytics                         |
 | 2026-01-19 | 2.0     | Configuration SMTP + refonte documentation    |
+| 2026-02-10 | 2.2     | Variables Stripe activées, compteurs tests à jour (~5213 unit / ~988 E2E) |
 | 2026-02-04 | 2.1     | Ajout Cloudinary pour upload avatars (SP-272) |
 
 ---

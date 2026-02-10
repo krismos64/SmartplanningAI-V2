@@ -1,7 +1,7 @@
 # Données de Test - SmartPlanning V2
 
 > **Usage** : Comptes de démonstration pour tests et soutenance CDA
-> **Dernière mise à jour** : 4 février 2026
+> **Dernière mise à jour** : 10 février 2026
 
 ---
 
@@ -17,11 +17,11 @@ Password123!
 
 ## Organisations (3)
 
-| Organisation | Plan       | Statut | Employés | Email                  |
-| ------------ | ---------- | ------ | -------- | ---------------------- |
-| TechCorp     | ENTERPRISE | ACTIVE | 10       | contact@techcorp.com   |
-| DesignStudio | BUSINESS   | ACTIVE | 6        | hello@designstudio.com |
-| StartupInc   | STARTER    | TRIAL  | 4        | team@startupinc.com    |
+| Organisation | Plan     | Statut | Employés | Prix/mois | Email                  |
+| ------------ | -------- | ------ | -------- | --------- | ---------------------- |
+| TechCorp     | PER_SEAT | ACTIVE | 10       | 29,00€    | contact@techcorp.com   |
+| DesignStudio | PER_SEAT | ACTIVE | 6        | 17,40€    | hello@designstudio.com |
+| StartupInc   | FREE     | TRIAL  | 4        | 0€        | team@startupinc.com    |
 
 ---
 
@@ -128,21 +128,50 @@ Connectez-vous successivement avec :
 - DesignStudio : 3 plannings (Client Presentation, Creative Brainstorming, Web Design)
 - StartupInc : 2 plannings (Product Development, Design Sprint)
 
-### Demandes de congés (8)
+### Demandes de congés (14)
 
-- 3 approuvées, 3 en attente, 2 rejetées
-- Types variés : CP, RTT, maladie, sans solde
+- 5 approuvées (dont 1 halfDay AM, 1 congé parental)
+- 5 en attente (dont 1 halfDay PM, 1 événement familial)
+- 2 rejetées
+- 2 annulées
+- Types variés : CP, RTT, maladie, sans solde, parental, événement familial
+
+### Soldes de congés (20)
+
+- 1 LeaveBalance par employé (année 2026)
+- Soldes variés (CP 0-12 utilisés, RTT 0-6 utilisés)
 
 ### Notifications (15)
 
 - Types : SUCCESS, INFO, WARNING, SYSTEM
-- Mix de lues et non lues
+- 8 lues, 7 non lues
 
 ---
 
-## Note SYSTEM_ADMIN
+## Compte SYSTEM_ADMIN
 
-Le rôle `SYSTEM_ADMIN` n'est **pas créé dans le seed**. Il est réservé au propriétaire de la plateforme SaaS et créé manuellement en production.
+Le seed crée un compte `SYSTEM_ADMIN` pour les tests E2E RBAC :
+
+```
+Email: admin@smartplanning.io
+Password: Password123!
+→ Super admin global, n'appartient à aucune entreprise (companyId: null)
+```
+
+## Abonnements Stripe (3)
+
+| Organisation | Plan     | Quantity | Prix unitaire | Prix total | Statut |
+| ------------ | -------- | -------- | ------------- | ---------- | ------ |
+| TechCorp     | PER_SEAT | 10       | 2,90€         | 29,00€     | ACTIVE |
+| DesignStudio | PER_SEAT | 6        | 2,90€         | 17,40€     | ACTIVE |
+| StartupInc   | FREE     | 4        | 2,90€         | 0€         | TRIAL  |
+
+## Paiements (2)
+
+| Organisation | Montant | Méthode    | Statut    |
+| ------------ | ------- | ---------- | --------- |
+| TechCorp     | 29,00€  | card       | SUCCEEDED |
+| DesignStudio | 17,40€  | sepa_debit | SUCCEEDED |
 
 ---
 

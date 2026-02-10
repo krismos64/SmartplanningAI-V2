@@ -2,7 +2,7 @@
 
 > **Ticket** : SP-345 - Intégration Umami Analytics
 > **Statut** : ✅ Implémenté
-> **Dernière mise à jour** : 4 février 2026
+> **Dernière mise à jour** : 10 février 2026
 
 ## Vue d'ensemble
 
@@ -107,9 +107,9 @@ function CTAButton() {
 | ----------------- | ----------------------------- | ----------------------------------------------- |
 | `cta-click`       | Clic sur un CTA               | `{ location: 'hero' \| 'pricing' \| 'footer' }` |
 | `signup-start`    | Début d'inscription           | `{ source: 'landing' \| 'pricing' }`            |
-| `signup-complete` | Inscription terminée          | `{ plan: 'free' \| 'pro' \| 'enterprise' }`     |
+| `signup-complete` | Inscription terminée          | `{ plan: 'free' \| 'per_seat' }`                |
 | `login`           | Connexion                     | `{ method: 'email' \| 'google' \| 'github' }`   |
-| `pricing-view`    | Vue page pricing              | `{ plan: 'free' \| 'pro' \| 'enterprise' }`     |
+| `pricing-view`    | Vue page pricing              | `{ plan: 'free' \| 'per_seat' }`                |
 | `contact-submit`  | Soumission formulaire contact | `{ subject: string }`                           |
 | `feature-use`     | Utilisation d'une feature     | `{ feature: 'planning' \| 'team' \| 'export' }` |
 

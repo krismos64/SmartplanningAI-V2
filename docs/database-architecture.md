@@ -1,6 +1,6 @@
 # 🗄️ Architecture Base de Données - SmartPlanning V2
 
-**Dernière mise à jour** : 4 février 2026
+**Dernière mise à jour** : 10 février 2026
 **ORM** : Prisma 6.18.0
 **Base** : PostgreSQL 16
 **Migrations** : 11 migrations appliquées
@@ -18,7 +18,7 @@
 ## 🏗️ Diagramme des Relations
 
 ```
-┌─────────────────────────────────────────────────────────────────────────────┐
+┌──────────────────────────────────────────────────────────────────────────────┐
 │                           MULTI-TENANT SaaS                                  │
 │                                                                              │
 │  ┌──────────────┐                                                            │
@@ -34,12 +34,12 @@
 │  ┌─────────┐        ┌──────┐          ┌──────────┐  ┌────────────┐         │
 │  │  User   │        │ Team │          │Subscription│ │IncidentNote│         │
 │  │ (Auth)  │        └──┬───┘          │  (Stripe) │ └────────────┘         │
-│  └────┬────┘           │              └──────────┘                          │
-│       │                │ N:1                                                 │
-│       │ 1:1            │                                                     │
-│       ▼                ▼                                                     │
-│  ┌──────────┐      ┌─────────────┐                                          │
-│  │ Employee │◄─────┤   Manager   │                                          │
+│  └────┬────┘           │              └─────┬────┘                          │
+│       │                │ N:1                │ 1:N                           │
+│       │ 1:1            │                    ▼                               │
+│       ▼                ▼              ┌──────────┐                          │
+│  ┌──────────┐      ┌─────────────┐   │ Payment  │                          │
+│  │ Employee │◄─────┤   Manager   │   └──────────┘                          │
 │  │ (Métier) │      │ (Employee)  │                                          │
 │  └────┬─────┘      └─────────────┘                                          │
 │       │                                                                      │
@@ -94,9 +94,7 @@ Relations NextAuth v5 (authentification)
 - timezone: String                // "Europe/Paris"
 - defaultOpeningHours: Json?      // Configuration avancée par jour
 
-// Abonnement SaaS
-- subscriptionPlan: Enum          // FREE, STARTER, BUSINESS, ENTERPRISE
-- subscriptionStatus: Enum        // TRIAL, ACTIVE, PAST_DUE, CANCELED, EXPIRED
+// Abonnement SaaS (source de vérité = Subscription.plan)
 - trialEndsAt: DateTime?
 - subscriptionEndsAt: DateTime?
 
@@ -608,7 +606,9 @@ Employee = Métier RH (job, équipe, contrat, compétences)
 
 ### 1️⃣2️⃣ **Subscription** (Abonnement Stripe)
 
-**Rôle :** Gestion des abonnements SaaS via Stripe.
+**Rôle :** Gestion des abonnements SaaS via Stripe. Relation 1:1 avec Company.
+
+**Modèle tarifaire :** Per-seat à 2,90€/employé/mois. La `quantity` est synchronisée automatiquement avec le nombre d'employés actifs via `syncEmployeeCountToStripe` (SP-439).
 
 **Champs principaux :**
 
@@ -620,15 +620,21 @@ Employee = Métier RH (job, équipe, contrat, compétences)
 - stripeCustomerId: String (unique)
 - stripeSubscriptionId: String? (unique)
 - stripePriceId: String?
+- stripeProductId: String?         // ID du produit Stripe
 
-// Plan
-- plan: SubscriptionPlan          // FREE, STARTER, BUSINESS, ENTERPRISE
-- planPrice: Float?
+// Plan per-seat
+- plan: SubscriptionPlan          // FREE, PER_SEAT
+- quantity: Int                   // Nombre d'employés facturés (= Stripe quantity)
+- pricePerEmployee: Int           // Prix en CENTIMES (290 = 2,90€)
+- planPrice: Int                  // Prix total CENTIMES (quantity × pricePerEmployee)
 - currency: String                // "EUR"
 - billingInterval: String?        // "month" ou "year"
 
+// Métadonnées techniques webhooks (jamais de PII)
+- metadata: Json?
+
 // Statut
-- status: SubscriptionStatus
+- status: SubscriptionStatus      // TRIAL, ACTIVE, PAST_DUE, CANCELED, EXPIRED, INCOMPLETE
 - currentPeriodStart: DateTime?
 - currentPeriodEnd: DateTime?
 - cancelAtPeriodEnd: Boolean
@@ -638,11 +644,16 @@ Employee = Métier RH (job, équipe, contrat, compétences)
 - createdAt, updatedAt
 ```
 
+**Relations :**
+
+- **N:1 Company** → Un abonnement appartient à UNE entreprise (1:1)
+- **1:N Payment** → Un abonnement génère plusieurs paiements
+
 ---
 
 ### 1️⃣3️⃣ **Payment** (Paiements Stripe)
 
-**Rôle :** Historique des paiements.
+**Rôle :** Historique des paiements liés aux abonnements.
 
 **Champs principaux :**
 
@@ -655,18 +666,36 @@ Employee = Métier RH (job, équipe, contrat, compétences)
 - stripePaymentId: String (unique)
 - stripeInvoiceId: String?
 
-// Montant
-- amount: Float
+// Montant (en centimes)
+- amount: Int                     // Montant en centimes (ex: 2900 = 29,00€)
 - currency: String                // "EUR"
 
 // Statut
-- status: String                  // "succeeded", "pending", "failed", "refunded"
-- paymentMethod: String?          // "card", "sepa_debit"
+- status: PaymentStatus           // PENDING, SUCCEEDED, FAILED, REFUNDED, REQUIRES_ACTION
+- paymentMethod: String?          // "card", "sepa_debit", etc.
+- failureReason: String?          // Code d'erreur Stripe (ex: "card_declined")
+- failureMessage: String?         // Message d'erreur lisible
+
+// Métadonnées techniques
+- metadata: Json?
 
 // Dates
 - paidAt: DateTime?
 - createdAt: DateTime
 ```
+
+**Relations :**
+
+- **N:1 Company** → Un paiement appartient à UNE entreprise
+- **N:1 Subscription** → Un paiement est lié à UN abonnement (optionnel)
+
+**🎯 Statuts de Paiement (Enum PaymentStatus) :**
+
+- `PENDING` : En attente de traitement
+- `SUCCEEDED` : Paiement réussi
+- `FAILED` : Paiement échoué
+- `REFUNDED` : Remboursé
+- `REQUIRES_ACTION` : 3D Secure en attente
 
 ---
 
@@ -742,10 +771,8 @@ enum UserRole {
 
 ```prisma
 enum SubscriptionPlan {
-  FREE        // 0€ - 5 employés max
-  STARTER     // 29€/mois - 20 employés
-  BUSINESS    // 99€/mois - 100 employés
-  ENTERPRISE  // Sur devis - illimité
+  FREE        // Essai gratuit / démo
+  PER_SEAT    // Tarif unique 2,90€/employé/mois
 }
 ```
 
@@ -758,6 +785,7 @@ enum SubscriptionStatus {
   PAST_DUE    // Paiement en retard
   CANCELED    // Annulé
   EXPIRED     // Expiré
+  INCOMPLETE  // Paiement incomplet Stripe (3D Secure en attente)
 }
 ```
 
@@ -922,6 +950,7 @@ enum IncidentNoteVisibility {
 
 | Date       | Description                                                              |
 | ---------- | ------------------------------------------------------------------------ |
+| 10/02/2026 | Correction Subscription per-seat, Payment typé, SubscriptionStatus +INCOMPLETE, diagramme Subscription→Payment |
 | 04/02/2026 | Ajout User.image (Cloudinary SP-272), mise à jour complète documentation |
 | 01/2026    | Ajout IncidentNote (SP-424), PersonalTask (SP-417)                       |
 | 01/2026    | Ajout LeaveBalance (SP-408), Availability (SP-392)                       |
