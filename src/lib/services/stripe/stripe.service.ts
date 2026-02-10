@@ -764,7 +764,7 @@ async function handleInvoicePaid(
         if (!director) return
         sendPaymentConfirmedEmail({
           companyId: dbSub.companyId,
-          subscriptionId: subscriptionId!,
+          subscriptionId: subscriptionId,
           recipientEmail: director.email,
           firstName: director.firstName,
           companyName: director.companyName,
@@ -855,7 +855,7 @@ async function handleInvoicePaymentFailed(
         if (!director) return
         sendPaymentFailedEmail({
           companyId: dbSub.companyId,
-          subscriptionId: subscriptionId!,
+          subscriptionId: subscriptionId,
           recipientEmail: director.email,
           firstName: director.firstName,
           companyName: director.companyName,

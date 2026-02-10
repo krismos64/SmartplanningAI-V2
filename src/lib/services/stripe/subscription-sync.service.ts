@@ -76,6 +76,7 @@ export async function syncEmployeeCountToStripe(
 
     // 2. Early returns — conditions de skip
     if (!subscription) {
+      // eslint-disable-next-line no-console
       console.info('[StripeSync]', {
         action: 'skipped',
         companyId,
