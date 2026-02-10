@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 10 février 2026 (Epic SP-348 Stripe complète - SP-373)
+- **Dernière mise à jour** : 10 février 2026 (SP-461 — Déploiement Stripe live en production)
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -532,6 +532,38 @@ Automatisation des emails billing via cron job et intégration webhooks Stripe :
 - **Fixtures** (`e2e/helpers/billing-fixtures.ts`) : 7 mock data generators (trial, active, past_due, canceled, expired, trial_expired, no_subscription)
 
 - **Stratégie** : Tests basés sur le seed TechCorp (ACTIVE, 10 employés) + query params `?reason=` pour simuler les différents états de subscription
+
+### Déploiement Stripe Production (SP-461 - 10 février 2026)
+
+Mise en production complète de l'intégration Stripe per-seat billing :
+
+- **Audit pré-déploiement** :
+  - 5 283 tests unitaires (Vitest) + 30 E2E billing (Playwright) — 100% pass
+  - Vérification webhook best practices via Context7
+  - Audit infrastructure VPS (containers, SSL, migrations, env vars)
+
+- **Corrections CI/CD bloquantes** :
+  - Fix 3 erreurs `@typescript-eslint/no-misused-promises` dans `BillingPageContent.tsx` (handlers async en onClick)
+  - Fix Prettier warnings sur 7 fichiers Billing
+  - Lazy init client Stripe via Proxy pour éviter crash CI sans `STRIPE_SECRET_KEY`
+  - Tests `stripe.test.ts` adaptés au pattern lazy (11 tests, import sans crash, getStripe() throw si absent)
+
+- **Fix Docker** :
+  - Ajout `mkdir -p /app/.next/cache` dans Dockerfile runner (erreur ENOENT image optimization)
+  - Correction chemin tmpfs docker-compose.prod.yml (`/.next/cache` → `/app/.next/cache`)
+  - Ajout `STRIPE_PRICE_ID` et `CRON_SECRET` dans docker-compose.prod.yml
+
+- **Fix Checkout flow** :
+  - Le bouton "S'abonner" (sans subscription existante) appelle désormais `createCheckoutAction` → Stripe Checkout Session
+  - Avant : appelait `createBillingPortalAction` qui échouait silencieusement (nécessite un customer existant)
+  - Nouvelle prop `onSubscribe` sur `SubscriptionStatus` pour distinguer checkout vs portail
+
+- **Configuration production VPS** :
+  - Variables Stripe live configurées dans `/var/www/smartplanning/.env` (sk_live_, pk_live_, whsec_, price_)
+  - `CRON_SECRET` configuré pour sécuriser l'endpoint `/api/cron/trial-emails`
+  - 2 migrations Prisma appliquées (`sp350_per_seat_model`, `add_email_log`)
+  - Cron job trial-emails : `0 8 * * *` (9h Paris) sur user deploy
+  - Webhook endpoint vérifié : `https://smartplanning.fr/api/webhooks/stripe`
 
 ### Pages Légales RGPD (14-15 janvier 2026)
 
