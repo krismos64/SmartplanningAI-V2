@@ -41,3 +41,7 @@ export { ProfilePage } from './profile.page'
 export { EditProfilePage } from './edit-profile.page'
 export { ChangePasswordPage } from './change-password.page'
 export { DeleteAccountPage } from './delete-account.page'
+
+// Billing Pages (SP-373)
+export { BillingPage } from './billing.page'
+export { PricingPage } from './pricing.page'
