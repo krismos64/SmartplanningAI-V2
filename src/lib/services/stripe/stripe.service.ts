@@ -24,6 +24,13 @@ import {
   STRIPE_METADATA_KEYS,
   type StripeSubscriptionStatus,
 } from '@/lib/stripe'
+import { formatAmountEuros } from '@/lib/email/billing/format'
+import {
+  sendSubscriptionActivatedEmail,
+  sendPaymentConfirmedEmail,
+  sendPaymentFailedEmail,
+  sendSubscriptionCanceledEmail,
+} from '@/lib/email/templates/billing'
 import type { ServiceResult } from '@/lib/services/dashboard/types'
 import type {
   CreateCheckoutSessionInput,
@@ -53,6 +60,33 @@ function getPaymentIntentIdFromInvoice(invoice: Stripe.Invoice): string | null {
   const pi = invoicePayment.payment?.payment_intent
   if (!pi) return null
   return typeof pi === 'string' ? pi : pi.id
+}
+
+/**
+ * Récupère le director d'une company pour l'envoi d'emails billing.
+ * Retourne null si aucun director n'est trouvé.
+ */
+async function getCompanyDirector(companyId: string) {
+  const company = await prisma.company.findUnique({
+    where: { id: companyId },
+    select: {
+      name: true,
+      users: {
+        where: { role: 'DIRECTOR' },
+        take: 1,
+        select: { email: true, name: true },
+      },
+    },
+  })
+
+  const director = company?.users[0]
+  if (!company || !director) return null
+
+  return {
+    email: director.email,
+    firstName: director.name?.split(' ')[0] ?? 'Dirigeant',
+    companyName: company.name,
+  }
 }
 
 // ============================================================================
@@ -469,6 +503,26 @@ async function handleCheckoutCompleted(
     },
   })
 
+  // Fire-and-forget : email d'activation (SP-370)
+  getCompanyDirector(companyId)
+    .then((director) => {
+      if (!director) return
+      sendSubscriptionActivatedEmail({
+        companyId,
+        subscriptionId: stripeSubscriptionId,
+        recipientEmail: director.email,
+        firstName: director.firstName,
+        companyName: director.companyName,
+        employeeCount: quantity,
+        monthlyAmount: formatAmountEuros(
+          quantity * STRIPE_PRICING.UNIT_AMOUNT_CENTS
+        ),
+      }).catch((err) =>
+        console.error('[Webhook] Email SubscriptionActivated failed:', err)
+      )
+    })
+    .catch((err) => console.error('[Webhook] Director lookup failed:', err))
+
   return {
     success: true,
     data: {
@@ -588,6 +642,12 @@ async function handleSubscriptionDeleted(
     }
   }
 
+  // Récupérer la subscription en DB pour le subscriptionId
+  const dbSub = await prisma.subscription.findUnique({
+    where: { companyId },
+    select: { id: true, stripeSubscriptionId: true },
+  })
+
   await prisma.subscription.updateMany({
     where: { companyId },
     data: {
@@ -596,6 +656,31 @@ async function handleSubscriptionDeleted(
       cancelAtPeriodEnd: false,
     },
   })
+
+  // Fire-and-forget : email de confirmation d'annulation (SP-370)
+  // SDK v20 : billing_cycle_anchor représente l'ancrage, on utilise canceled_at ou now
+  const endTimestamp = subscription.canceled_at ?? Math.floor(Date.now() / 1000)
+  const endDate = new Date(endTimestamp * 1000).toLocaleDateString('fr-FR', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  })
+
+  getCompanyDirector(companyId)
+    .then((director) => {
+      if (!director) return
+      sendSubscriptionCanceledEmail({
+        companyId,
+        subscriptionId: dbSub?.stripeSubscriptionId ?? subscription.id,
+        recipientEmail: director.email,
+        firstName: director.firstName,
+        companyName: director.companyName,
+        endDate,
+      }).catch((err) =>
+        console.error('[Webhook] Email SubscriptionCanceled failed:', err)
+      )
+    })
+    .catch((err) => console.error('[Webhook] Director lookup failed:', err))
 
   return {
     success: true,
@@ -651,6 +736,8 @@ async function handleInvoicePaid(
     }
   }
 
+  const amountPaid = invoice.amount_paid ?? 0
+
   await prisma.payment.upsert({
     where: { stripePaymentId: paymentIntentId },
     create: {
@@ -658,7 +745,7 @@ async function handleInvoicePaid(
       subscriptionId: dbSub.id,
       stripePaymentId: paymentIntentId,
       stripeInvoiceId: invoice.id,
-      amount: invoice.amount_paid ?? 0,
+      amount: amountPaid,
       currency: (invoice.currency ?? 'eur').toUpperCase(),
       status: 'SUCCEEDED',
       paidAt: new Date(),
@@ -666,9 +753,31 @@ async function handleInvoicePaid(
     update: {
       status: 'SUCCEEDED',
       paidAt: new Date(),
-      amount: invoice.amount_paid ?? 0,
+      amount: amountPaid,
     },
   })
+
+  // Fire-and-forget : email de confirmation de paiement (SP-370)
+  if (subscriptionId) {
+    getCompanyDirector(dbSub.companyId)
+      .then((director) => {
+        if (!director) return
+        sendPaymentConfirmedEmail({
+          companyId: dbSub.companyId,
+          subscriptionId: subscriptionId!,
+          recipientEmail: director.email,
+          firstName: director.firstName,
+          companyName: director.companyName,
+          amount: formatAmountEuros(amountPaid),
+          employeeCount:
+            Math.round(amountPaid / STRIPE_PRICING.UNIT_AMOUNT_CENTS) || 1,
+          invoiceUrl: invoice.hosted_invoice_url ?? undefined,
+        }).catch((err) =>
+          console.error('[Webhook] Email PaymentConfirmed failed:', err)
+        )
+      })
+      .catch((err) => console.error('[Webhook] Director lookup failed:', err))
+  }
 
   return {
     success: true,
@@ -711,6 +820,8 @@ async function handleInvoicePaymentFailed(
 
   const paymentIntentId = getPaymentIntentIdFromInvoice(invoice)
 
+  const amountDue = invoice.amount_due ?? 0
+
   // Transaction : créer/update payment + passer subscription en PAST_DUE
   await prisma.$transaction(async (tx) => {
     if (paymentIntentId) {
@@ -721,7 +832,7 @@ async function handleInvoicePaymentFailed(
           subscriptionId: dbSub.id,
           stripePaymentId: paymentIntentId,
           stripeInvoiceId: invoice.id,
-          amount: invoice.amount_due ?? 0,
+          amount: amountDue,
           currency: (invoice.currency ?? 'eur').toUpperCase(),
           status: 'FAILED',
         },
@@ -736,6 +847,25 @@ async function handleInvoicePaymentFailed(
       data: { status: 'PAST_DUE' },
     })
   })
+
+  // Fire-and-forget : email d'échec de paiement (SP-370)
+  if (subscriptionId) {
+    getCompanyDirector(dbSub.companyId)
+      .then((director) => {
+        if (!director) return
+        sendPaymentFailedEmail({
+          companyId: dbSub.companyId,
+          subscriptionId: subscriptionId!,
+          recipientEmail: director.email,
+          firstName: director.firstName,
+          companyName: director.companyName,
+          amount: formatAmountEuros(amountDue),
+        }).catch((err) =>
+          console.error('[Webhook] Email PaymentFailed failed:', err)
+        )
+      })
+      .catch((err) => console.error('[Webhook] Director lookup failed:', err))
+  }
 
   return {
     success: true,
