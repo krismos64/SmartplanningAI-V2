@@ -31,6 +31,15 @@ vi.mock('@/lib/stripe', () => ({
   stripe: mockStripe,
 }))
 
+vi.mock('@/lib/email/billing/format', () => ({
+  formatAmountEuros: (cents: number) =>
+    `${(cents / 100).toFixed(2).replace('.', ',')} €`,
+}))
+
+vi.mock('@/lib/email/templates/billing', () => ({
+  sendQuantityUpdatedEmail: vi.fn().mockResolvedValue({ success: true }),
+}))
+
 // Imports après mocks
 import { prisma } from '@/lib/prisma'
 import { syncEmployeeCountToStripe } from '@/lib/services/stripe/subscription-sync.service'
@@ -75,6 +84,8 @@ describe('syncEmployeeCountToStripe', () => {
     vi.clearAllMocks()
     vi.spyOn(console, 'info').mockImplementation(() => {})
     vi.spyOn(console, 'error').mockImplementation(() => {})
+    // Mock par défaut pour le fire-and-forget email (SP-370)
+    prismaMock.company.findUnique.mockResolvedValue(null)
   })
 
   // --------------------------------------------------------------------------
