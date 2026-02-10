@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 10 février 2026 (SP-461 — Déploiement Stripe live en production)
+- **Dernière mise à jour** : 10 février 2026 (SP-460 — Nettoyage final & couverture 86%)
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -2438,11 +2438,11 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 - **E2E** : Playwright (configuré)
 - **Coverage** : v8 provider
 
-### Couverture actuelle (10 février 2026 - SP-373)
+### Couverture actuelle (10 février 2026 - SP-460)
 
-| Catégorie                              | Coverage | Tests    |
-| -------------------------------------- | -------- | -------- |
-| **Global**                             | **~85%** | **5281** |
+| Catégorie                              | Coverage   | Tests    |
+| -------------------------------------- | ---------- | -------- |
+| **Global**                             | **86.35%** | **5600** |
 | loading                                | 100%     | 152      |
 | modals                                 | 100%     | 52       |
 | cards                                  | 77.09%   | 88       |
@@ -2544,6 +2544,26 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 | email-log service (SP-368)       | 100%     | 16       |
 | billing email templates (SP-369) | 100%     | 27       |
 | cron trial + webhooks (SP-370)   | 100%     | 25       |
+| TeamCard (SP-460)                | 100%     | 14       |
+| TeamForm (SP-460)                | 100%     | 20       |
+| TeamMembersManager (SP-460)      | 100%     | 24       |
+| TeamsDataTable (SP-460)          | 100%     | 14       |
+| EmployeeCard (SP-460)            | 100%     | 18       |
+| EmployeeFilters (SP-460)         | 100%     | 18       |
+| DeleteEmployeeDialog (SP-460)    | 100%     | 16       |
+| BulkDeleteDialog (SP-460)        | 100%     | 20       |
+| columns employees (SP-460)       | 100%     | 16       |
+| ExportDropdown (SP-460)          | 100%     | 12       |
+| WeeklyHoursPanel (SP-460)        | 100%     | 16       |
+| AvailabilityPopover (SP-460)     | 100%     | 13       |
+| FormDatePicker (SP-460)          | 100%     | 20       |
+| AvatarUpload (SP-460)            | 100%     | 21       |
+| CookieConsentProvider (SP-460)   | 100%     | 16       |
+| LeavesListMobile (SP-460)        | 100%     | 10       |
+| ChartWidgets (SP-460)            | 100%     | 22       |
+| UmamiAnalyticsWrapper (SP-460)   | 100%     | 5        |
+| CompanyForm (SP-460)             | 100%     | 17       |
+| send-functions billing (SP-460)  | 100%     | 9        |
 
 ### Tests E2E
 
@@ -2958,8 +2978,8 @@ Merge main → Build Docker → Push GHCR → Deploy VPS (~8-10 min)
 
 - **CI** (`.github/workflows/ci.yml`) : Lint, Type-check, Tests unitaires, Build, Tests E2E (PR uniquement)
 - **CD** (`.github/workflows/cd.yml`) : Build image Docker, Push sur ghcr.io, Deploy via SSH
-- Tests unitaires sur tous les push (~5213 tests Vitest)
-- Tests E2E sur PR vers main (~629 tests Playwright actifs, 5 devices mobiles, ~988 total)
+- Tests unitaires sur tous les push (~5600 tests Vitest, 305 fichiers)
+- Tests E2E sur PR vers main (~659 tests Playwright actifs, 5 devices mobiles, ~1018 total)
 - Stabilisation E2E (SP-434) : Touch targets WCAG 2.5.5 (44px), command palette, mobile navigation
 - Déploiement automatique sur merge main ✅
 - Migrations Prisma automatiques

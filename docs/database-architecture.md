@@ -11,7 +11,7 @@
 
 **Type :** Architecture **multi-tenant** avec isolation par entreprise
 **Pattern :** SaaS avec abonnements Stripe
-**Modèles :** 16 tables principales + 4 tables NextAuth
+**Modèles :** 17 tables principales + 4 tables NextAuth
 
 ---
 
@@ -37,10 +37,10 @@
 │  └────┬────┘           │              └─────┬────┘                          │
 │       │                │ N:1                │ 1:N                           │
 │       │ 1:1            │                    ▼                               │
-│       ▼                ▼              ┌──────────┐                          │
-│  ┌──────────┐      ┌─────────────┐   │ Payment  │                          │
-│  │ Employee │◄─────┤   Manager   │   └──────────┘                          │
-│  │ (Métier) │      │ (Employee)  │                                          │
+│       ▼                ▼              ┌──────────┐   ┌──────────┐          │
+│  ┌──────────┐      ┌─────────────┐   │ Payment  │   │ EmailLog │          │
+│  │ Employee │◄─────┤   Manager   │   └──────────┘   │ (Billing)│          │
+│  │ (Métier) │      │ (Employee)  │                   └──────────┘          │
 │  └────┬─────┘      └─────────────┘                                          │
 │       │                                                                      │
 │       │ 1:N (Un employé, plusieurs...)                                      │
@@ -116,6 +116,7 @@ Relations NextAuth v5 (authentification)
 - **1:N Payment** → Historique des paiements
 - **1:N Availability** → Disponibilités des employés
 - **1:N IncidentNote** → Notes d'incident
+- **1:N EmailLog** → Logs des emails billing (SP-368)
 
 **🔐 Sécurité :** Toutes les requêtes doivent filtrer par `companyId` pour l'isolation.
 
@@ -699,6 +700,42 @@ Employee = Métier RH (job, équipe, contrat, compétences)
 
 ---
 
+### 1️⃣4️⃣ **EmailLog** (Logs Emails Billing - SP-368)
+
+**Rôle :** Traçabilité des emails transactionnels envoyés pour le billing (confirmations, relances trial, échecs paiement). Empêche les doublons via contrainte unique.
+
+**Champs principaux :**
+
+```prisma
+- id: String (cuid)
+- companyId: String
+- subscriptionId: String?
+
+// Email
+- emailType: String               // PAYMENT_CONFIRMED, PAYMENT_FAILED, SUBSCRIPTION_ACTIVATED,
+                                   // SUBSCRIPTION_CANCELED, TRIAL_REMINDER_14, TRIAL_REMINDER_7,
+                                   // TRIAL_REMINDER_3, TRIAL_EXPIRED, QUANTITY_UPDATED
+- recipientEmail: String
+- sentAt: DateTime                 // Date d'envoi
+- status: String                   // "SENT", "FAILED", "BOUNCED"
+
+// Métadonnées techniques
+- metadata: Json?
+```
+
+**Relations :**
+
+- **N:1 Company** → Un log email appartient à UNE entreprise
+
+**Contrainte unique :** `@@unique([subscriptionId, emailType])` - Un seul email de chaque type par abonnement (anti-doublon).
+
+**Index :**
+
+- `[companyId]` — recherche par entreprise
+- `[emailType, sentAt]` — recherche par type et date
+
+---
+
 ## 🔐 Isolation Multi-Tenant
 
 **Principe :** Chaque requête doit filtrer par `companyId` pour éviter les fuites de données.
@@ -938,7 +975,7 @@ enum IncidentNoteVisibility {
 
 | Métrique              | Valeur |
 | --------------------- | ------ |
-| Tables principales    | 16     |
+| Tables principales    | 17     |
 | Tables NextAuth       | 4      |
 | Enums                 | 12     |
 | Migrations appliquées | 11     |
@@ -950,6 +987,7 @@ enum IncidentNoteVisibility {
 
 | Date       | Description                                                              |
 | ---------- | ------------------------------------------------------------------------ |
+| 10/02/2026 | Ajout EmailLog (SP-368), correction compteur 16→17 tables, mise à jour diagramme et relations Company |
 | 10/02/2026 | Correction Subscription per-seat, Payment typé, SubscriptionStatus +INCOMPLETE, diagramme Subscription→Payment |
 | 04/02/2026 | Ajout User.image (Cloudinary SP-272), mise à jour complète documentation |
 | 01/2026    | Ajout IncidentNote (SP-424), PersonalTask (SP-417)                       |
