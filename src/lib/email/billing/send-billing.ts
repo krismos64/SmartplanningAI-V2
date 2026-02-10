@@ -63,6 +63,7 @@ export async function sendBillingEmail(
       })
 
       if (existing) {
+        // eslint-disable-next-line no-console
         console.info('[BillingEmail] Doublon détecté, email ignoré:', {
           emailType,
           subscriptionId,
@@ -121,6 +122,7 @@ export async function sendBillingEmail(
 
     emailLogId = log.id
 
+    // eslint-disable-next-line no-console
     console.info('[BillingEmail] Log créé:', {
       emailLogId: log.id,
       emailType,
