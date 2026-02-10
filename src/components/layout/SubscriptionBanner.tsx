@@ -123,7 +123,10 @@ export function SubscriptionBanner({
   }, [config.tier])
 
   // Ne pas afficher sur la page billing (les alertes contextuelles SP-440 y sont déjà)
-  if (pathname === '/app/dashboard/billing' || pathname.startsWith('/app/dashboard/billing/')) {
+  if (
+    pathname === '/app/dashboard/billing' ||
+    pathname.startsWith('/app/dashboard/billing/')
+  ) {
     return null
   }
 
@@ -137,9 +140,11 @@ export function SubscriptionBanner({
   }
 
   const icon =
-    config.type === 'payment'
-      ? <CreditCard className="h-4 w-4 shrink-0" aria-hidden="true" />
-      : TIER_ICONS[config.tier]
+    config.type === 'payment' ? (
+      <CreditCard className="h-4 w-4 shrink-0" aria-hidden="true" />
+    ) : (
+      TIER_ICONS[config.tier]
+    )
 
   return (
     <div
@@ -161,7 +166,13 @@ export function SubscriptionBanner({
       {/* CTA */}
       {config.ctaHref && config.ctaLabel && (
         <Button
-          variant={config.tier === 'urgent' ? 'destructive' : config.tier === 'warning' ? 'default' : 'outline'}
+          variant={
+            config.tier === 'urgent'
+              ? 'destructive'
+              : config.tier === 'warning'
+                ? 'default'
+                : 'outline'
+          }
           size="sm"
           asChild
           className="shrink-0"

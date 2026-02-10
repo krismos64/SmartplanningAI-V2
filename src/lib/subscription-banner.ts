@@ -235,8 +235,7 @@ function getPastDueBannerConfig(
     return {
       show: true,
       tier: 'warning',
-      message:
-        'Paiement en retard — Mettez à jour votre moyen de paiement',
+      message: 'Paiement en retard — Mettez à jour votre moyen de paiement',
       ctaLabel: 'Mettre à jour',
       ctaHref: '/app/dashboard/billing',
       dismissable: false,
@@ -257,8 +256,7 @@ function getPastDueBannerConfig(
   return {
     show: true,
     tier: 'warning',
-    message:
-      'Paiement en retard — Mettez à jour votre moyen de paiement',
+    message: 'Paiement en retard — Mettez à jour votre moyen de paiement',
     ctaLabel: 'Mettre à jour',
     ctaHref: '/app/dashboard/billing',
     dismissable: false,

@@ -20,7 +20,4 @@ export { UsageIndicator } from './UsageIndicator'
 export type { UsageIndicatorProps } from './UsageIndicator'
 
 export { InvoiceHistory } from './InvoiceHistory'
-export type {
-  InvoiceHistoryProps,
-  SerializedPayment,
-} from './InvoiceHistory'
+export type { InvoiceHistoryProps, SerializedPayment } from './InvoiceHistory'

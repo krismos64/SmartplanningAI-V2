@@ -64,7 +64,10 @@ export interface InvoiceHistoryProps {
 
 const PAYMENT_STATUS_CONFIG: Record<
   string,
-  { label: string; variant: 'success' | 'destructive' | 'warning' | 'secondary' }
+  {
+    label: string
+    variant: 'success' | 'destructive' | 'warning' | 'secondary'
+  }
 > = {
   SUCCEEDED: { label: 'Payé', variant: 'success' },
   FAILED: { label: 'Échoué', variant: 'destructive' },
@@ -105,7 +108,10 @@ export function InvoiceHistory({
   const shouldReduceMotion = useReducedMotion()
 
   const content = (
-    <Card className={cn('glass-strong', className)} data-testid="invoice-history">
+    <Card
+      className={cn('glass-strong', className)}
+      data-testid="invoice-history"
+    >
       <CardHeader>
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
@@ -138,12 +144,17 @@ export function InvoiceHistory({
               </TableHeader>
               <TableBody>
                 {payments.map((payment) => {
-                  const statusConfig = PAYMENT_STATUS_CONFIG[payment.status] ?? {
+                  const statusConfig = PAYMENT_STATUS_CONFIG[
+                    payment.status
+                  ] ?? {
                     label: payment.status,
                     variant: 'secondary' as const,
                   }
                   return (
-                    <TableRow key={payment.id} data-testid={`payment-row-${payment.id}`}>
+                    <TableRow
+                      key={payment.id}
+                      data-testid={`payment-row-${payment.id}`}
+                    >
                       <TableCell className="whitespace-nowrap">
                         {formatDate(payment.paidAt ?? payment.createdAt)}
                       </TableCell>
@@ -168,10 +179,15 @@ export function InvoiceHistory({
                             data-testid={`invoice-link-${payment.id}`}
                           >
                             Voir
-                            <ExternalLink className="h-3 w-3" aria-hidden="true" />
+                            <ExternalLink
+                              className="h-3 w-3"
+                              aria-hidden="true"
+                            />
                           </a>
                         ) : (
-                          <span className="text-xs text-muted-foreground">—</span>
+                          <span className="text-xs text-muted-foreground">
+                            —
+                          </span>
                         )}
                       </TableCell>
                     </TableRow>
@@ -192,7 +208,9 @@ export function InvoiceHistory({
             className="w-full"
             data-testid="view-all-invoices-btn"
           >
-            {isPortalLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {isPortalLoading && (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            )}
             Voir tout l&apos;historique
           </Button>
         </CardFooter>
@@ -205,7 +223,11 @@ export function InvoiceHistory({
   }
 
   return (
-    <motion.div variants={fadeSlideUpVariants} initial="hidden" animate="visible">
+    <motion.div
+      variants={fadeSlideUpVariants}
+      initial="hidden"
+      animate="visible"
+    >
       {content}
     </motion.div>
   )

@@ -873,7 +873,10 @@ export async function toggleEmployeeStatus(
 
     // SP-439 : Sync Stripe quantity (fire-and-forget)
     syncEmployeeCountToStripe(existing.companyId).catch((err) => {
-      console.error('[SP-439] Stripe sync failed after employee status toggle:', err)
+      console.error(
+        '[SP-439] Stripe sync failed after employee status toggle:',
+        err
+      )
     })
 
     revalidatePath('/app/dashboard/employees')

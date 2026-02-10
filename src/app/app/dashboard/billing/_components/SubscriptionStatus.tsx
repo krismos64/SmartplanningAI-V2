@@ -77,7 +77,11 @@ export interface SubscriptionStatusProps {
 
 const STATUS_CONFIG: Record<
   string,
-  { label: string; variant: 'success' | 'warning' | 'destructive' | 'secondary' | 'info'; icon: React.ReactNode }
+  {
+    label: string
+    variant: 'success' | 'warning' | 'destructive' | 'secondary' | 'info'
+    icon: React.ReactNode
+  }
 > = {
   TRIAL: {
     label: 'Essai gratuit',
@@ -164,7 +168,10 @@ export function SubscriptionStatus({
   // Aucun abonnement
   if (!subscription) {
     return (
-      <Card className={cn('glass-strong', className)} data-testid="subscription-status">
+      <Card
+        className={cn('glass-strong', className)}
+        data-testid="subscription-status"
+      >
         <CardContent className="p-6">
           <EmptyState
             title="Aucun abonnement"
@@ -189,7 +196,10 @@ export function SubscriptionStatus({
   const pricePerEmployee = subscription.pricePerEmployee / 100
 
   const content = (
-    <Card className={cn('glass-strong', className)} data-testid="subscription-status">
+    <Card
+      className={cn('glass-strong', className)}
+      data-testid="subscription-status"
+    >
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -229,7 +239,8 @@ export function SubscriptionStatus({
             <AlertTriangle className="h-4 w-4" />
             <AlertTitle>Annulation programmée</AlertTitle>
             <AlertDescription>
-              Votre abonnement sera annulé le {formatDate(subscription.currentPeriodEnd)}.
+              Votre abonnement sera annulé le{' '}
+              {formatDate(subscription.currentPeriodEnd)}.
             </AlertDescription>
           </Alert>
         )}
@@ -251,7 +262,8 @@ export function SubscriptionStatus({
               {subscription.quantity}
             </p>
             <p className="text-xs text-muted-foreground">
-              employé{subscription.quantity > 1 ? 's' : ''} facturé{subscription.quantity > 1 ? 's' : ''}
+              employé{subscription.quantity > 1 ? 's' : ''} facturé
+              {subscription.quantity > 1 ? 's' : ''}
             </p>
           </div>
         </div>
@@ -260,13 +272,17 @@ export function SubscriptionStatus({
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <CalendarDays className="h-4 w-4" aria-hidden="true" />
           <span data-testid="billing-period">
-            Période : {formatDate(subscription.currentPeriodStart)} → {formatDate(subscription.currentPeriodEnd)}
+            Période : {formatDate(subscription.currentPeriodStart)} →{' '}
+            {formatDate(subscription.currentPeriodEnd)}
           </span>
         </div>
 
         {/* Date annulation */}
         {subscription.canceledAt && (
-          <p className="text-sm text-muted-foreground" data-testid="canceled-at">
+          <p
+            className="text-sm text-muted-foreground"
+            data-testid="canceled-at"
+          >
             Annulé le {formatDate(subscription.canceledAt)}
           </p>
         )}
@@ -291,7 +307,9 @@ export function SubscriptionStatus({
               className="text-destructive hover:text-destructive"
               data-testid="cancel-subscription-btn"
             >
-              {isCancelLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {isCancelLoading && (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              )}
               Annuler
             </Button>
           )}
@@ -304,7 +322,11 @@ export function SubscriptionStatus({
   }
 
   return (
-    <motion.div variants={fadeSlideUpVariants} initial="hidden" animate="visible">
+    <motion.div
+      variants={fadeSlideUpVariants}
+      initial="hidden"
+      animate="visible"
+    >
       {content}
     </motion.div>
   )

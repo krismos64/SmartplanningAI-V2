@@ -244,7 +244,7 @@ export function BillingPageContent({
           subscription={billingData.subscription}
           trialEndsAt={billingData.trialEndsAt}
           monthlyAmount={billingData.monthlyAmount}
-          onManageSubscription={handleManageSubscription}
+          onManageSubscription={() => void handleManageSubscription()}
           onCancelSubscription={handleCancelSubscription}
           isManageLoading={isManageLoading}
           isCancelLoading={isCancelLoading}
@@ -262,7 +262,7 @@ export function BillingPageContent({
           />
           <InvoiceHistory
             payments={billingData.payments}
-            onOpenPortal={handleOpenPortal}
+            onOpenPortal={() => void handleOpenPortal()}
             isPortalLoading={isPortalLoading}
           />
         </div>
@@ -284,7 +284,7 @@ export function BillingPageContent({
               Conserver
             </AlertDialogCancel>
             <AlertDialogAction
-              onClick={handleConfirmCancel}
+              onClick={() => void handleConfirmCancel()}
               disabled={isCancelLoading}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               data-testid="confirm-cancel-btn"
