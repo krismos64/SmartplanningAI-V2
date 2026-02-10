@@ -127,10 +127,8 @@ export const authConfig: NextAuthConfig = {
             },
           })
           if (company) {
-            token.subscriptionStatus =
-              company.subscription?.status ?? null
-            token.trialEndsAt =
-              company.trialEndsAt?.toISOString() ?? null
+            token.subscriptionStatus = company.subscription?.status ?? null
+            token.trialEndsAt = company.trialEndsAt?.toISOString() ?? null
             token.currentPeriodEnd =
               company.subscription?.currentPeriodEnd?.toISOString() ?? null
             token.subscriptionCheckedAt = Date.now()
@@ -161,11 +159,11 @@ export const authConfig: NextAuthConfig = {
         session.user.emailVerified = token.emailVerified as Date | null
         session.user.image = token.image as string | null
         // SP-440 : données subscription exposées dans la session
-        session.user.subscriptionStatus =
-          token.subscriptionStatus as string | null
+        session.user.subscriptionStatus = token.subscriptionStatus as
+          | string
+          | null
         session.user.trialEndsAt = token.trialEndsAt as string | null
-        session.user.currentPeriodEnd =
-          token.currentPeriodEnd as string | null
+        session.user.currentPeriodEnd = token.currentPeriodEnd as string | null
       }
       return session
     },

@@ -101,8 +101,6 @@ export async function checkConnection(): Promise<boolean> {
 export async function connectDB(): Promise<void> {
   try {
     await prisma.$connect()
-    // eslint-disable-next-line no-console
-    console.log('✅ Connexion Prisma établie')
   } catch (error) {
     console.error('❌ Échec connexion Prisma:', error)
     throw new Error('Impossible de se connecter à la base de données')
@@ -125,8 +123,6 @@ export async function connectDB(): Promise<void> {
 export async function disconnectDB(): Promise<void> {
   try {
     await prisma.$disconnect()
-    // eslint-disable-next-line no-console
-    console.log('✅ Prisma déconnecté proprement')
   } catch (error) {
     console.error('❌ Erreur lors de la déconnexion:', error)
     throw new Error('Erreur lors de la déconnexion de la base de données')

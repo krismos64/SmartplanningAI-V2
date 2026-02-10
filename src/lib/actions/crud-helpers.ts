@@ -255,21 +255,12 @@ export function logActivity(
   entityId: string,
   details?: Record<string, unknown>
 ): void {
-  // Note: ActivityLog doit exister dans le schema Prisma
-  // Si le modele n'existe pas encore, on log en console
-  if (process.env.NODE_ENV === 'development') {
-    // eslint-disable-next-line no-console
-    console.log('[Activity]', {
-      userId,
-      action,
-      entityType,
-      entityId,
-      details,
-      timestamp: new Date().toISOString(),
-    })
-  }
-
-  // TODO: Implementer quand le modele ActivityLog sera cree
+  // Hors scope CDA — implémentation ActivityLog post-soutenance
+  void userId
+  void action
+  void entityType
+  void entityId
+  void details
 }
 
 // ============================================================================

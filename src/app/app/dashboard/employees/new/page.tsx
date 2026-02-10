@@ -45,7 +45,7 @@ export default async function NewEmployeePage() {
   // SYSTEM_ADMIN n'a pas de companyId, il doit en choisir un
   if (role === 'SYSTEM_ADMIN' && !companyId) {
     // Pour l'instant, rediriger vers la liste
-    // TODO: Ajouter un select entreprise dans le formulaire
+    // Hors scope CDA — ajout select entreprise post-soutenance
     redirect('/app/dashboard/employees')
   }
 

@@ -5,7 +5,6 @@
  */
 
 export { SchedulesPageContent } from './SchedulesPageContent'
-export { SchedulesList } from './SchedulesList' // @deprecated - Utiliser ScheduleCalendar
 export { SchedulesFilters } from './SchedulesFilters'
 
 // ScheduleCalendar est exporté depuis @/components/schedules

@@ -14,7 +14,7 @@ import { nameSchema, phoneSchema } from './common'
  * - hireDate : Date d'embauche
  *
  * Champs NON modifiables ici :
- * - email : Nécessite un flux de vérification séparé (SP-XXX futur)
+ * - email : Nécessite un flux de vérification séparé (hors scope CDA)
  * - role : Modifiable uniquement par SYSTEM_ADMIN/DIRECTOR
  * - weeklyHours : Géré par le DIRECTOR/MANAGER
  * - team : Assignation gérée par le DIRECTOR/MANAGER
