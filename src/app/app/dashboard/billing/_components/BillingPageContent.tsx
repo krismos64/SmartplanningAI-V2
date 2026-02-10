@@ -29,6 +29,7 @@ import { UsageIndicator } from './UsageIndicator'
 import { InvoiceHistory } from './InvoiceHistory'
 import type { SerializedPayment } from './InvoiceHistory'
 import {
+  createCheckoutAction,
   createBillingPortalAction,
   cancelSubscriptionAction,
 } from '@/lib/actions/stripe'
@@ -113,11 +114,30 @@ export function BillingPageContent({
   className,
 }: BillingPageContentProps) {
   const router = useRouter()
+  const [isSubscribeLoading, setIsSubscribeLoading] = useState(false)
   const [isManageLoading, setIsManageLoading] = useState(false)
   const [isCancelLoading, setIsCancelLoading] = useState(false)
   const [isPortalLoading, setIsPortalLoading] = useState(false)
   const [showCancelDialog, setShowCancelDialog] = useState(false)
   const [actionError, setActionError] = useState<string | null>(null)
+
+  const handleSubscribe = useCallback(async () => {
+    setIsSubscribeLoading(true)
+    setActionError(null)
+    try {
+      const quantity = Math.max(billingData.employeeCount, 1)
+      const result = await createCheckoutAction({ quantity })
+      if (result.success) {
+        window.location.href = result.data.url
+      } else {
+        setActionError(result.error ?? 'Erreur lors de la création du checkout')
+      }
+    } catch {
+      setActionError('Une erreur inattendue est survenue')
+    } finally {
+      setIsSubscribeLoading(false)
+    }
+  }, [billingData.employeeCount])
 
   const handleManageSubscription = useCallback(async () => {
     setIsManageLoading(true)
@@ -244,6 +264,8 @@ export function BillingPageContent({
           subscription={billingData.subscription}
           trialEndsAt={billingData.trialEndsAt}
           monthlyAmount={billingData.monthlyAmount}
+          onSubscribe={() => void handleSubscribe()}
+          isSubscribeLoading={isSubscribeLoading}
           onManageSubscription={() => void handleManageSubscription()}
           onCancelSubscription={handleCancelSubscription}
           isManageLoading={isManageLoading}

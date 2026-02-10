@@ -59,6 +59,10 @@ export interface SubscriptionStatusProps {
   trialEndsAt: string | null
   /** Montant mensuel calculé en euros */
   monthlyAmount: number
+  /** Callback pour créer un checkout Stripe (nouvel abonnement) */
+  onSubscribe: () => void
+  /** État de chargement du bouton "S'abonner" */
+  isSubscribeLoading?: boolean
   /** Callback pour ouvrir le portail Stripe */
   onManageSubscription: () => void
   /** Callback pour annuler l'abonnement */
@@ -157,6 +161,8 @@ export function SubscriptionStatus({
   subscription,
   trialEndsAt,
   monthlyAmount,
+  onSubscribe,
+  isSubscribeLoading = false,
   onManageSubscription,
   onCancelSubscription,
   isManageLoading = false,
@@ -177,8 +183,8 @@ export function SubscriptionStatus({
             title="Aucun abonnement"
             description="Souscrivez à un abonnement pour accéder à toutes les fonctionnalités de SmartPlanning."
             action={{
-              label: "S'abonner",
-              onClick: onManageSubscription,
+              label: isSubscribeLoading ? 'Redirection...' : "S'abonner",
+              onClick: onSubscribe,
             }}
             size="sm"
           />
