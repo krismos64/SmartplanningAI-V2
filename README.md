@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 9 février 2026 (Sync Employés → Stripe - SP-439)
+- **Dernière mise à jour** : 10 février 2026 (Epic SP-348 Stripe complète - SP-373)
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -453,6 +453,85 @@ Middleware de vérification d'abonnement actif dans le Edge Runtime Next.js 15. 
   - `src/lib/auth.ts` : `authorize()` enrichi avec données subscription Prisma
 
 - **Tests** : 31 tests unitaires couvrant la matrice complète (bypass SYSTEM_ADMIN, routes exemptées, ACTIVE, TRIAL valide/expiré, PAST_DUE grâce/dépassé, CANCELED, EXPIRED, INCOMPLETE, null, statut inconnu, tous les rôles)
+
+### Modèle EmailLog & Service (SP-368 - 10 février 2026)
+
+Table de suivi des emails transactionnels avec service d'envoi robuste :
+
+- **Migration Prisma** (`20260210_add_email_log`) :
+  - Table `EmailLog` : id, to, subject, template, status (PENDING/SENT/FAILED/BOUNCED), sentAt, error, metadata (JSON), createdAt
+  - Index sur `(template, status)` et `(createdAt)` pour requêtes analytiques
+
+- **Service Email** (`src/lib/services/email/email-log.service.ts`) :
+  - `sendAndLog()` : Envoi Nodemailer + logging automatique en base (statut SENT/FAILED)
+  - `getEmailLogs()` : Liste paginée avec filtres (template, status, date range)
+  - `getEmailStats()` : Statistiques agrégées (total, sent, failed, taux de réussite)
+  - `retryFailedEmail()` : Relance d'un email échoué avec mise à jour du log
+  - Fire-and-forget pattern pour ne pas bloquer les actions utilisateur
+
+- **Intégration existante** : Remplace les appels directs `sendEmail()` dans les Server Actions (register, forgot-password, leave-request, etc.)
+
+- **Tests** : 16 tests unitaires (sendAndLog succès/échec, getEmailLogs pagination/filtres, getEmailStats agrégation, retryFailedEmail)
+
+### Templates Emails Billing (SP-369 - 10 février 2026)
+
+7 templates React Email pour le cycle de vie des abonnements Stripe :
+
+- **Templates** (`src/emails/`) :
+  - `TrialWelcomeEmail` : Bienvenue + jours restants trial + CTA dashboard
+  - `TrialExpiringEmail` : Alerte expiration trial (3/7 jours avant) + CTA abonnement
+  - `TrialExpiredEmail` : Trial expiré + CTA réactivation
+  - `SubscriptionConfirmedEmail` : Confirmation abonnement per-seat + récapitulatif prix
+  - `PaymentFailedEmail` : Échec paiement + CTA mise à jour moyen de paiement
+  - `SubscriptionCanceledEmail` : Confirmation annulation + date de fin + CTA réabonnement
+  - `InvoiceEmail` : Facture avec montant, période, nombre de sièges, lien PDF
+
+- **Design** : Design tokens centralisés, layout responsive, header/footer SmartPlanning, boutons CTA gradient bleu-cyan
+
+- **Tests** : 27 tests unitaires (rendering, props dynamiques, liens, formatage prix, dates, contenu conditionnel par template)
+
+### Cron Trial Expiration & Webhook Emails (SP-370 - 10 février 2026)
+
+Automatisation des emails billing via cron job et intégration webhooks Stripe :
+
+- **Cron API** (`/api/cron/trial-expiration`) :
+  - Endpoint sécurisé par `CRON_SECRET` header
+  - Détecte les trials expirant dans 3 jours et 7 jours → envoie `TrialExpiringEmail`
+  - Détecte les trials expirés depuis 24h → envoie `TrialExpiredEmail`
+  - Logging via `EmailLog` pour traçabilité et déduplication
+  - Exécution recommandée : toutes les 24h via cron externe
+
+- **Webhooks Stripe enrichis** (`/api/webhooks/stripe`) :
+  - `checkout.session.completed` → `SubscriptionConfirmedEmail`
+  - `invoice.payment_failed` → `PaymentFailedEmail`
+  - `customer.subscription.deleted` → `SubscriptionCanceledEmail`
+  - `invoice.paid` → `InvoiceEmail` avec détails facture
+
+- **Service d'envoi** (`src/lib/services/stripe/subscription-sync.service.ts`) :
+  - `sendBillingEmail()` : Envoi fire-and-forget avec logging EmailLog
+  - Résolution automatique du director de l'entreprise pour le destinataire
+
+- **Tests** : 25 tests unitaires (cron auth, détection trials, envoi emails, webhooks enrichis, gestion erreurs, edge cases)
+
+### Tests E2E Billing (SP-373 - 10 février 2026)
+
+30 tests Playwright E2E couvrant l'intégralité du parcours billing :
+
+- **Page Objects** :
+  - `BillingPage` (`e2e/pages/billing.page.ts`) : 25+ locators `data-testid`, méthodes goto/gotoWithReason, assertions par statut (trial, active, past_due, canceled)
+  - `PricingPage` (`e2e/pages/pricing.page.ts`) : Hero, simulateur, features, CTA, méthodes d'interaction slider
+
+- **6 suites de tests** (`e2e/specs/billing/`) :
+  - `trial-flow.spec.ts` (5 tests) : Accès dashboard billing, titre, card subscription, bouton gestion, description
+  - `checkout-flow.spec.ts` (5 tests) : Statut ACTIVE, montant mensuel, nombre de sièges, absence bannière trial, calcul per-seat
+  - `subscription-management.spec.ts` (5 tests) : Détails abonnement, usage indicator, prix unitaire/total, prorata, historique factures
+  - `payment-failure.spec.ts` (5 tests) : Alertes payment_overdue/payment_incomplete, style destructive, mention mise à jour, absence sans reason
+  - `trial-expiry.spec.ts` (5 tests) : Alerte trial expiré, hero conversion, prix/employé, CTA abonnement, hero no_subscription
+  - `cancellation-flow.spec.ts` (5 tests) : Alertes canceled/expired, texte réabonnement, bouton annulation, dialog confirmation
+
+- **Fixtures** (`e2e/helpers/billing-fixtures.ts`) : 7 mock data generators (trial, active, past_due, canceled, expired, trial_expired, no_subscription)
+
+- **Stratégie** : Tests basés sur le seed TechCorp (ACTIVE, 10 employés) + query params `?reason=` pour simuler les différents états de subscription
 
 ### Pages Légales RGPD (14-15 janvier 2026)
 
@@ -2327,11 +2406,11 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 - **E2E** : Playwright (configuré)
 - **Coverage** : v8 provider
 
-### Couverture actuelle (9 février 2026 - SP-439)
+### Couverture actuelle (10 février 2026 - SP-373)
 
 | Catégorie                              | Coverage | Tests    |
 | -------------------------------------- | -------- | -------- |
-| **Global**                             | **~85%** | **5213** |
+| **Global**                             | **~85%** | **5281** |
 | loading                                | 100%     | 152      |
 | modals                                 | 100%     | 52       |
 | cards                                  | 77.09%   | 88       |
@@ -2430,6 +2509,9 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 | SubscriptionBanner (SP-441)       | 100%     | 29       |
 | subscription-sync (SP-439)       | 100%     | 27       |
 | employees SP-439 (SP-439)        | 100%     | 6        |
+| email-log service (SP-368)       | 100%     | 16       |
+| billing email templates (SP-369) | 100%     | 27       |
+| cron trial + webhooks (SP-370)   | 100%     | 25       |
 
 ### Tests E2E
 
@@ -2471,9 +2553,10 @@ Voir `/docs/seo-optimization.md` (à créer) pour le détail.
 | **Appearance (SP-276)**             | 18      | ✅                                |
 | **Notification Preferences (SP-275)** | 14    | ✅                                |
 | **Company Settings (SP-435)**       | 21      | ✅                                |
-| **Total E2E actifs**                | **~629** | ✅                               |
+| **Billing (SP-373)**                | 30      | ✅                                |
+| **Total E2E actifs**                | **~659** | ✅                               |
 | **Total E2E skipped**               | **~359** | ⏸️                                |
-| **Total E2E**                       | **~988** |                                  |
+| **Total E2E**                       | **~1018** |                                  |
 
 **Note** : Tests desktop exécutés sur Chromium uniquement. Tests mobiles exécutés sur 5 devices (iPhone SE, iPhone 14 Pro, Pixel 7, iPad Mini, iPad Pro 11") via Chromium avec émulation mobile (WebKit supprimé car bug HTTPS upgrade sur localhost).
 
