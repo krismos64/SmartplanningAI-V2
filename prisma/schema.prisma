@@ -140,6 +140,7 @@ model Company {
   payments       Payment[]
   availabilities Availability[]
   incidentNotes  IncidentNote[]
+  emailLogs      EmailLog[]
 
   // Audit
   isActive  Boolean  @default(true)
@@ -228,6 +229,27 @@ model Payment {
   @@index([subscriptionId])
   @@index([status])
   @@map("payments")
+}
+
+// ============================================================================
+// LOGS EMAILS BILLING (SP-368)
+// ============================================================================
+
+model EmailLog {
+  id             String   @id @default(cuid())
+  companyId      String
+  company        Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  subscriptionId String?
+  emailType      String   // PAYMENT_CONFIRMED, PAYMENT_FAILED, SUBSCRIPTION_ACTIVATED, SUBSCRIPTION_CANCELED, TRIAL_REMINDER_14, TRIAL_REMINDER_7, TRIAL_REMINDER_3, TRIAL_EXPIRED, QUANTITY_UPDATED
+  recipientEmail String
+  sentAt         DateTime @default(now())
+  status         String   @default("SENT") // SENT, FAILED, BOUNCED
+  metadata       Json?
+
+  @@unique([subscriptionId, emailType])
+  @@index([companyId])
+  @@index([emailType, sentAt])
+  @@map("email_logs")
 }
 
 // ============================================================================
