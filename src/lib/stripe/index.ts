@@ -7,7 +7,7 @@
  * @ticket SP-349
  */
 
-export { stripe } from './stripe'
+export { stripe, getStripe } from './stripe'
 export {
   STRIPE_PRICING,
   STRIPE_STATUS_MAP,

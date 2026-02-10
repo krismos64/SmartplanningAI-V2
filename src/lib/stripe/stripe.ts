@@ -4,10 +4,18 @@
  * Initialise une instance unique du SDK Stripe pour toute l'application.
  * Ce fichier ne doit JAMAIS être importé côté client ("use client").
  *
+ * L'initialisation est lazy (au premier appel de getStripe()) pour éviter
+ * un crash si STRIPE_SECRET_KEY est absente dans les environnements
+ * qui n'utilisent pas Stripe directement (tests unitaires, CI).
+ *
  * @ticket SP-349
  */
 
 import Stripe from 'stripe'
+
+const globalForStripe = globalThis as typeof globalThis & {
+  stripe?: Stripe
+}
 
 function createStripeClient(): Stripe {
   const secretKey = process.env.STRIPE_SECRET_KEY
@@ -30,17 +38,32 @@ function createStripeClient(): Stripe {
 }
 
 /**
- * Instance Stripe singleton.
+ * Retourne l'instance Stripe singleton (lazy init).
  *
  * En développement, stockée sur globalThis pour survivre au HMR.
  * En production, instanciée une seule fois.
  */
-const globalForStripe = globalThis as typeof globalThis & {
-  stripe?: Stripe
+export function getStripe(): Stripe {
+  if (!globalForStripe.stripe) {
+    globalForStripe.stripe = createStripeClient()
+  }
+  return globalForStripe.stripe
 }
 
-export const stripe = globalForStripe.stripe ?? createStripeClient()
-
-if (process.env.NODE_ENV !== 'production') {
-  globalForStripe.stripe = stripe
-}
+/**
+ * Instance Stripe singleton — accès par propriété pour rétro-compatibilité.
+ *
+ * Utilise un Proxy pour différer l'initialisation au premier accès réel
+ * (appel de méthode / lecture de propriété), évitant ainsi le crash si
+ * STRIPE_SECRET_KEY est absente à l'import.
+ */
+export const stripe: Stripe = new Proxy({} as Stripe, {
+  get(_target: Stripe, prop: string | symbol, receiver: unknown): unknown {
+    const instance = getStripe()
+    const value: unknown = Reflect.get(instance, prop, receiver)
+    if (typeof value === 'function') {
+      return (value as (...args: unknown[]) => unknown).bind(instance)
+    }
+    return value
+  },
+})

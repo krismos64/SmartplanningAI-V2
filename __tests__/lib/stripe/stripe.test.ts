@@ -1,5 +1,9 @@
 /**
- * Tests unitaires pour le client Stripe singleton
+ * Tests unitaires pour le client Stripe singleton (lazy init)
+ *
+ * Le client Stripe est initialisé de façon lazy (au premier appel
+ * de getStripe() ou au premier accès via le Proxy) pour éviter
+ * les crashs dans les environnements sans STRIPE_SECRET_KEY (CI, tests).
  *
  * @ticket SP-349
  */
@@ -10,6 +14,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 vi.mock('stripe', () => {
   const MockStripe = vi.fn().mockImplementation(() => ({
     _isMockStripe: true,
+    customers: { create: vi.fn() },
   }))
   return { default: MockStripe }
 })
@@ -30,28 +35,44 @@ describe('Stripe Client Singleton', () => {
     process.env = ORIGINAL_ENV
   })
 
-  describe('createStripeClient()', () => {
-    it('lance une erreur si STRIPE_SECRET_KEY est manquante', async () => {
+  describe('Lazy initialization', () => {
+    it("l'import ne crash pas sans STRIPE_SECRET_KEY", async () => {
       delete process.env.STRIPE_SECRET_KEY
 
-      await expect(
-        import('@/lib/stripe/stripe')
-      ).rejects.toThrow('STRIPE_SECRET_KEY manquante')
+      const mod = await import('@/lib/stripe/stripe')
+      expect(mod.stripe).toBeDefined()
+      expect(mod.getStripe).toBeDefined()
     })
 
-    it('lance une erreur si STRIPE_SECRET_KEY est vide', async () => {
+    it('getStripe() lance une erreur si STRIPE_SECRET_KEY est manquante', async () => {
+      delete process.env.STRIPE_SECRET_KEY
+
+      const { getStripe } = await import('@/lib/stripe/stripe')
+      expect(() => getStripe()).toThrow('STRIPE_SECRET_KEY manquante')
+    })
+
+    it('getStripe() lance une erreur si STRIPE_SECRET_KEY est vide', async () => {
       process.env.STRIPE_SECRET_KEY = ''
 
-      await expect(
-        import('@/lib/stripe/stripe')
-      ).rejects.toThrow('STRIPE_SECRET_KEY manquante')
+      const { getStripe } = await import('@/lib/stripe/stripe')
+      expect(() => getStripe()).toThrow('STRIPE_SECRET_KEY manquante')
     })
 
+    it('le Proxy stripe lance une erreur au premier accès sans clé', async () => {
+      delete process.env.STRIPE_SECRET_KEY
+
+      const { stripe } = await import('@/lib/stripe/stripe')
+      expect(() => stripe.customers).toThrow('STRIPE_SECRET_KEY manquante')
+    })
+  })
+
+  describe('createStripeClient()', () => {
     it('crée un client Stripe avec la clé secrète', async () => {
       process.env.STRIPE_SECRET_KEY = 'sk_test_123'
 
       const { default: MockStripe } = await import('stripe')
-      await import('@/lib/stripe/stripe')
+      const { getStripe } = await import('@/lib/stripe/stripe')
+      getStripe()
 
       expect(MockStripe).toHaveBeenCalledWith('sk_test_123', {
         apiVersion: '2026-01-28.clover',
@@ -68,7 +89,8 @@ describe('Stripe Client Singleton', () => {
       process.env.STRIPE_SECRET_KEY = 'sk_test_123'
 
       const { default: MockStripe } = await import('stripe')
-      await import('@/lib/stripe/stripe')
+      const { getStripe } = await import('@/lib/stripe/stripe')
+      getStripe()
 
       const callArgs = (MockStripe as unknown as ReturnType<typeof vi.fn>).mock
         .calls[0]
@@ -79,7 +101,8 @@ describe('Stripe Client Singleton', () => {
       process.env.STRIPE_SECRET_KEY = 'sk_test_123'
 
       const { default: MockStripe } = await import('stripe')
-      await import('@/lib/stripe/stripe')
+      const { getStripe } = await import('@/lib/stripe/stripe')
+      getStripe()
 
       const callArgs = (MockStripe as unknown as ReturnType<typeof vi.fn>).mock
         .calls[0]
@@ -92,42 +115,41 @@ describe('Stripe Client Singleton', () => {
   })
 
   describe('Singleton pattern', () => {
-    it('exporte une instance stripe', async () => {
+    it('exporte une instance stripe (Proxy)', async () => {
       process.env.STRIPE_SECRET_KEY = 'sk_test_123'
 
       const mod = await import('@/lib/stripe/stripe')
       expect(mod.stripe).toBeDefined()
     })
 
-    it('stocke sur globalThis en développement', async () => {
+    it('getStripe() retourne toujours la même instance', async () => {
       process.env.STRIPE_SECRET_KEY = 'sk_test_123'
-      process.env.NODE_ENV = 'development'
 
-      await import('@/lib/stripe/stripe')
+      const { getStripe } = await import('@/lib/stripe/stripe')
+      const first = getStripe()
+      const second = getStripe()
+      expect(first).toBe(second)
+    })
+
+    it('stocke sur globalThis après le premier appel', async () => {
+      process.env.STRIPE_SECRET_KEY = 'sk_test_123'
+
+      const { getStripe } = await import('@/lib/stripe/stripe')
+      getStripe()
 
       const g = globalThis as typeof globalThis & { stripe?: unknown }
       expect(g.stripe).toBeDefined()
     })
 
-    it('ne stocke pas sur globalThis en production', async () => {
-      process.env.STRIPE_SECRET_KEY = 'sk_test_123'
-      process.env.NODE_ENV = 'production'
-
-      await import('@/lib/stripe/stripe')
-
-      const g = globalThis as typeof globalThis & { stripe?: unknown }
-      expect(g.stripe).toBeUndefined()
-    })
-
     it('réutilise le singleton existant sur globalThis', async () => {
       process.env.STRIPE_SECRET_KEY = 'sk_test_123'
 
-      const fakeStripe = { _reused: true }
+      const fakeStripe = { _reused: true, customers: { create: vi.fn() } }
       const g = globalThis as typeof globalThis & { stripe?: unknown }
       g.stripe = fakeStripe
 
-      const mod = await import('@/lib/stripe/stripe')
-      expect(mod.stripe).toBe(fakeStripe)
+      const { getStripe } = await import('@/lib/stripe/stripe')
+      expect(getStripe()).toBe(fakeStripe)
     })
   })
 })
