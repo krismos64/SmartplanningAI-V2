@@ -76,6 +76,10 @@ COPY --from=builder /app/prisma ./prisma
 # Installer Prisma CLI pour les migrations en production
 RUN npm install -g prisma@6.18.0 && npm cache clean --force
 
+# Créer le répertoire cache Next.js pour l'optimisation d'images
+# Sans ce répertoire, le container en read_only échoue avec ENOENT
+RUN mkdir -p /app/.next/cache
+
 # Changer les permissions
 RUN chown -R nextjs:nodejs /app
 

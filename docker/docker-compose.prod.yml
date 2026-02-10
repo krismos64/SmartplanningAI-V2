@@ -57,7 +57,7 @@ services:
     read_only: true
     tmpfs:
       - /tmp:rw,size=100m,mode=1777
-      - /.next/cache:rw,size=500m,mode=0755
+      - /app/.next/cache:rw,size=500m,mode=0755
     security_opt:
       - no-new-privileges:true
     cap_drop:
@@ -83,6 +83,10 @@ services:
       STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
       STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
       NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY}
+      STRIPE_PRICE_ID: ${STRIPE_PRICE_ID}
+
+      # Cron (emails trial)
+      CRON_SECRET: ${CRON_SECRET}
 
       # Mode production
       NODE_ENV: production
