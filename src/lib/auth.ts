@@ -170,18 +170,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
    * Pour logging ou analytics
    */
   events: {
-    signIn({ user }) {
-      // Log de connexion (peut être envoyé à un service externe)
-      if (process.env.NODE_ENV === 'development') {
-        // eslint-disable-next-line no-console
-        console.log(`[AUTH] User signed in: ${user?.email}`)
-      }
+    signIn() {
+      // Placeholder pour logging externe (Sentry, Datadog, etc.)
     },
     signOut() {
-      if (process.env.NODE_ENV === 'development') {
-        // eslint-disable-next-line no-console
-        console.log('[AUTH] User signed out')
-      }
+      // Placeholder pour logging externe
     },
   },
 

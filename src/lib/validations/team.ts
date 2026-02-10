@@ -157,14 +157,6 @@ export const teamMembersSchema = z.object({
 export type TeamMembersInput = z.infer<typeof teamMembersSchema>
 
 /**
- * Schema pour retirer un seul membre
- * @deprecated Utiliser teamMemberSchema a la place
- */
-export const removeTeamMemberSchema = teamMemberSchema
-
-export type RemoveTeamMemberInput = TeamMemberInput
-
-/**
  * Schema pour assigner un manager
  */
 export const assignManagerSchema = z.object({

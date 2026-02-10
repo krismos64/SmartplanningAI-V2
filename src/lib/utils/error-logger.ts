@@ -162,7 +162,7 @@ export async function logServerError(
   }
   /* eslint-enable no-console */
 
-  // TODO: Future integration with monitoring services
+  // Hors scope CDA — intégration Sentry post-soutenance
   // Uncomment and configure when ready:
   //
   // Sentry integration example:
