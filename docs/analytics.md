@@ -207,8 +207,9 @@ npx playwright test e2e/specs/analytics.spec.ts
 ```
 src/
 ├── components/analytics/
-│   ├── UmamiAnalytics.tsx    # Composant de chargement du script
-│   └── index.ts              # Barrel export
+│   ├── UmamiAnalytics.tsx          # Client Component - chargement du script
+│   ├── UmamiAnalyticsWrapper.tsx   # Server Component - lecture env vars runtime (utilisé dans layout.tsx)
+│   └── index.ts                    # Barrel export (Analytics + Wrapper + hook + types)
 ├── hooks/
 │   └── useUmamiTrack.ts      # Hook pour events custom
 ├── lib/cookies/
@@ -225,7 +226,8 @@ src/
 
 __tests__/
 ├── components/analytics/
-│   └── UmamiAnalytics.test.tsx
+│   ├── UmamiAnalytics.test.tsx
+│   └── UmamiAnalyticsWrapper.test.tsx
 └── hooks/
     └── useUmamiTrack.test.ts
 

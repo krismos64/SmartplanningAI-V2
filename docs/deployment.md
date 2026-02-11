@@ -92,9 +92,9 @@
 | Fournisseur     | OVH              |
 | IP              | 51.77.146.72     |
 | OS              | Ubuntu 24.04 LTS |
-| RAM             | 4 GB             |
-| CPU             | 2 vCPU           |
-| Stockage        | 40 GB SSD        |
+| RAM             | 8 GB             |
+| CPU             | 4 vCPU           |
+| Stockage        | 75 GB SSD NVMe   |
 
 ### Accès SSH
 
@@ -251,8 +251,8 @@ Les secrets suivants doivent être configurés dans GitHub (Settings → Secrets
 | Job        | Description                    | Condition                     |
 | ---------- | ------------------------------ | ----------------------------- |
 | `lint`     | ESLint + TypeScript            | Tous les push                 |
-| `test`     | Tests unitaires Vitest (~5213) | Tous les push                 |
-| `test-e2e` | Tests E2E Playwright (~988)    | PR vers main OU push sur main |
+| `test`     | Tests unitaires Vitest (~5281) | Tous les push                 |
+| `test-e2e` | Tests E2E Playwright (~1018)   | PR vers main OU push sur main |
 | `build`    | Build Next.js                  | Tous les push                 |
 
 ### CD Pipeline (`.github/workflows/cd.yml`)
@@ -452,8 +452,8 @@ docker pull ghcr.io/krismos64/smartplanningai-v2:latest
 | 2026-01-06 | 1.1     | Migration vers nouveau VPS (51.77.146.72)     |
 | 2026-01-16 | 1.2     | Ajout Umami Analytics                         |
 | 2026-01-19 | 2.0     | Configuration SMTP + refonte documentation    |
-| 2026-02-10 | 2.2     | Variables Stripe activées, compteurs tests à jour (~5213 unit / ~988 E2E) |
 | 2026-02-04 | 2.1     | Ajout Cloudinary pour upload avatars (SP-272) |
+| 2026-02-10 | 2.2     | Variables Stripe activées, compteurs tests à jour (~5281 unit / ~1018 E2E) |
 
 ---
 

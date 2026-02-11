@@ -230,6 +230,16 @@ test.describe('Notifications Preferences Page', () => {
       await notificationsPage.goto()
       await notificationsPage.waitForPageLoad()
 
+      // Reset d'abord pour partir d'un état connu (tout activé)
+      await notificationsPage.reset()
+      await notificationsPage.expectToastReset()
+
+      // Attendre la stabilisation
+      await employeePage.waitForTimeout(500)
+
+      // Vérifier l'état initial après reset
+      await notificationsPage.expectAllPreferencesEnabled()
+
       // Toggle quelques préférences off
       await notificationsPage.toggleEmail('planning')
       await notificationsPage.expectToastSuccess()

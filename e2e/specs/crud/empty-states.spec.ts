@@ -27,9 +27,9 @@ test.describe('Empty States - Companies', () => {
 
     await adminPage.waitForTimeout(1000)
 
-    // Verifier le message d'etat vide
+    // Verifier le message d'etat vide (first() car le texte peut apparaitre dans le tableau et en dessous)
     await expect(
-      adminPage.locator('text=/aucune entreprise|aucun resultat/i')
+      adminPage.locator('text=/aucune entreprise|aucun resultat/i').first()
     ).toBeVisible()
   })
 
@@ -120,10 +120,10 @@ test.describe('Accessibilite Empty States', () => {
 
     await adminPage.waitForTimeout(1000)
 
-    // Verifier que le message est dans un element accessible
-    const emptyElement = adminPage.locator(
-      'text=/aucune entreprise|aucun resultat/i'
-    )
+    // Verifier que le message est dans un element accessible (first() car doublon possible)
+    const emptyElement = adminPage
+      .locator('text=/aucune entreprise|aucun resultat/i')
+      .first()
     await expect(emptyElement).toBeVisible()
   })
 

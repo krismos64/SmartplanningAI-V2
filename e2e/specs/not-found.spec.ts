@@ -106,7 +106,7 @@ test.describe('Not Found Page (404)', () => {
     // Verify Tarifs link
     const pricingLink = page.getByRole('link', { name: /tarifs/i })
     await expect(pricingLink).toBeVisible()
-    await expect(pricingLink).toHaveAttribute('href', '/#pricing')
+    await expect(pricingLink).toHaveAttribute('href', '/tarifs')
 
     // Verify Contact link
     const contactLink = page.getByRole('link', { name: /contact/i })

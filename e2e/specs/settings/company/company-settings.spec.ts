@@ -175,10 +175,17 @@ test.describe('Company Settings Page', () => {
       await companySettings.goto()
       await companySettings.waitForPageLoad()
 
-      // First select a different preset to ensure change
+      // First save Mon-Sat so the saved state differs from Mon-Fri
       await companySettings.selectPresetMonSat()
       await directorPage.waitForTimeout(300)
+      await companySettings.clickSave()
+      await companySettings.expectSuccessToast()
 
+      // Reload to ensure saved state is Mon-Sat
+      await directorPage.reload()
+      await companySettings.waitForPageLoad()
+
+      // Now select Mon-Fri which will differ from saved Mon-Sat
       await companySettings.selectPresetMonFri()
       await directorPage.waitForTimeout(300)
 
@@ -190,8 +197,12 @@ test.describe('Company Settings Page', () => {
         'FRIDAY',
       ])
 
-      // Save button should be enabled
+      // Save button should be enabled (Mon-Fri != saved Mon-Sat)
       await companySettings.expectSaveButtonEnabled()
+
+      // Save to restore Mon-Fri as default for other tests
+      await companySettings.clickSave()
+      await companySettings.expectSuccessToast()
     })
 
     test('should apply Mon-Sat preset', async ({ directorPage }) => {

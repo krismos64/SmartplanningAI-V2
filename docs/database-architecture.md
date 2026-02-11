@@ -3,7 +3,7 @@
 **Dernière mise à jour** : 10 février 2026
 **ORM** : Prisma 6.18.0
 **Base** : PostgreSQL 16
-**Migrations** : 11 migrations appliquées
+**Migrations** : 13 migrations appliquées
 
 ---
 
@@ -978,7 +978,7 @@ enum IncidentNoteVisibility {
 | Tables principales    | 17     |
 | Tables NextAuth       | 4      |
 | Enums                 | 12     |
-| Migrations appliquées | 11     |
+| Migrations appliquées | 13     |
 | Index                 | 45+    |
 
 ---
