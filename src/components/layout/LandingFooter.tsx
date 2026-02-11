@@ -91,7 +91,7 @@ export function LandingFooter() {
 
           {/* Product Links */}
           <div>
-            <h4 className="mb-4 font-semibold text-foreground">Produit</h4>
+            <h3 className="mb-4 text-base font-semibold text-foreground">Produit</h3>
             <ul className="space-y-3">
               {footerLinks.product.map((link) => (
                 <li key={link.label}>
@@ -108,7 +108,7 @@ export function LandingFooter() {
 
           {/* Company Links */}
           <div>
-            <h4 className="mb-4 font-semibold text-foreground">Entreprise</h4>
+            <h3 className="mb-4 text-base font-semibold text-foreground">Entreprise</h3>
             <ul className="space-y-3">
               {footerLinks.company.map((link) => (
                 <li key={link.label}>
@@ -125,7 +125,7 @@ export function LandingFooter() {
 
           {/* Legal Links */}
           <div>
-            <h4 className="mb-4 font-semibold text-foreground">Légal</h4>
+            <h3 className="mb-4 text-base font-semibold text-foreground">Légal</h3>
             <ul className="space-y-3">
               {footerLinks.legal.map((link) => (
                 <li key={link.label}>
@@ -142,7 +142,7 @@ export function LandingFooter() {
 
           {/* Contact */}
           <div>
-            <h4 className="mb-4 font-semibold text-foreground">Contact</h4>
+            <h3 className="mb-4 text-base font-semibold text-foreground">Contact</h3>
             <div className="space-y-3">
               <a
                 href="mailto:contact@smartplanning.fr"
