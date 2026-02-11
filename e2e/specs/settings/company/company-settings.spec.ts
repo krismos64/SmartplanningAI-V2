@@ -31,14 +31,18 @@ test.describe('Company Settings Page', () => {
       await employeePage.goto('/app/settings/company')
 
       // Should be redirected to settings hub
-      await expect(employeePage).toHaveURL(/\/app\/settings$/)
+      await expect(employeePage).toHaveURL(/\/app\/settings$/, {
+        timeout: 15000,
+      })
     })
 
     test('should redirect Manager to settings hub', async ({ managerPage }) => {
       await managerPage.goto('/app/settings/company')
 
       // Should be redirected to settings hub
-      await expect(managerPage).toHaveURL(/\/app\/settings$/)
+      await expect(managerPage).toHaveURL(/\/app\/settings$/, {
+        timeout: 15000,
+      })
     })
   })
 
@@ -183,6 +187,7 @@ test.describe('Company Settings Page', () => {
 
       // Reload to ensure saved state is Mon-Sat
       await directorPage.reload()
+      await directorPage.waitForLoadState('domcontentloaded')
       await companySettings.waitForPageLoad()
 
       // Now select Mon-Fri which will differ from saved Mon-Sat

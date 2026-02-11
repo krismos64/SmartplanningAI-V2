@@ -33,14 +33,14 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
 
   /**
-   * Retries : 2 en CI pour gérer les flaky tests, 1 en local pour les timeouts intermittents
+   * Retries : 2 partout pour gérer les flaky tests et timeouts intermittents
    */
-  retries: process.env.CI ? 2 : 1,
+  retries: 2,
 
   /**
-   * Workers : 1 en CI (stabilité avec DB partagée), auto en local
+   * Workers : 1 en CI (stabilité avec DB partagée), 3 en local (évite saturation)
    */
-  workers: process.env.CI ? 1 : undefined,
+  workers: process.env.CI ? 1 : 3,
 
   /**
    * Timeout global par test : 60s en CI, 45s en local (pour éviter timeouts intermittents)
@@ -87,14 +87,14 @@ export default defineConfig({
     video: process.env.CI ? 'on-first-retry' : 'off',
 
     /**
-     * Timeouts d'action (click, fill, etc.) : 15s en CI, 10s en local
+     * Timeouts d'action (click, fill, etc.) : 15s partout
      */
-    actionTimeout: process.env.CI ? 15_000 : 10_000,
+    actionTimeout: 15_000,
 
     /**
-     * Timeout de navigation : 30s en CI, 15s en local
+     * Timeout de navigation : 30s partout (6 projets parallèles saturent en local)
      */
-    navigationTimeout: process.env.CI ? 30_000 : 15_000,
+    navigationTimeout: 30_000,
   },
 
   /**

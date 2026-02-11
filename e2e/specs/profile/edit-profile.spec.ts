@@ -43,9 +43,10 @@ async function restoreProfile(
 
   // Navigate et attendre
   await editPage.goto()
+  await editPage.page.waitForLoadState('domcontentloaded')
 
   // Attendre que la page soit chargée avec un timeout plus long
-  await editPage.page.waitForTimeout(500)
+  await editPage.page.waitForTimeout(1000)
 
   try {
     await editPage.waitForPageLoad()
@@ -83,7 +84,7 @@ async function restoreProfile(
 
   // Attendre la redirection vers le profil
   await editPage.page
-    .waitForURL(/\/app\/profile$/, { timeout: 5000 })
+    .waitForURL(/\/app\/profile$/, { timeout: 15000 })
     .catch(() => {})
 }
 

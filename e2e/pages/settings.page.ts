@@ -63,6 +63,8 @@ export class SettingsPage {
   async waitForPageLoad() {
     await expect(this.settingsPage).toBeVisible({ timeout: 10000 })
     await expect(this.settingsHeader).toBeVisible()
+    // Attendre la fin de l'animation stagger des sections
+    await this.page.waitForTimeout(500)
   }
 
   async expectHeaderDisplayed() {
@@ -89,7 +91,7 @@ export class SettingsPage {
 
   async expectSectionCount(count: number) {
     const sections = this.page.locator('[data-testid^="settings-section-"]')
-    await expect(sections).toHaveCount(count)
+    await expect(sections).toHaveCount(count, { timeout: 10000 })
   }
 
   async expectNoBadges() {

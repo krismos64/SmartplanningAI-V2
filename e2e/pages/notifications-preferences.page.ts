@@ -42,7 +42,9 @@ export class NotificationsPreferencesPage {
    * Attend que la page soit chargée
    */
   async waitForPageLoad() {
-    await expect(this.pageContainer).toBeVisible({ timeout: 10000 })
+    await expect(this.pageContainer).toBeVisible({ timeout: 15000 })
+    // Attendre la fin de l'animation
+    await this.page.waitForTimeout(500)
   }
 
   /**
@@ -180,9 +182,9 @@ export class NotificationsPreferencesPage {
    * Vérifie qu'un toast de réinitialisation apparaît
    */
   async expectToastReset() {
-    await expect(this.page.getByText('Préférences réinitialisées')).toBeVisible(
-      { timeout: 5000 }
-    )
+    await expect(
+      this.page.getByText('Préférences réinitialisées').first()
+    ).toBeVisible({ timeout: 10000 })
   }
 
   /**

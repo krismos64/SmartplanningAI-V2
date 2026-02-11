@@ -1,8 +1,9 @@
 /**
  * Page Object - Dashboard Manager
  *
- * Encapsule les selecteurs et actions pour le dashboard manager.
- * Utilise le pattern Page Object Model pour des tests maintenables.
+ * Basé sur l'UI réelle avec les composants :
+ * ManagerWelcome, ManagerStats, ManagerTeamChart,
+ * ManagerPendingLeaves, ManagerQuickActions, PersonalTasksWidget
  *
  * @ticket SP-149
  */
@@ -13,241 +14,150 @@ export class DashboardManagerPage {
   readonly page: Page
 
   // ==========================================================================
-  // Locators - Elements de la page
+  // Locators - Sections principales
   // ==========================================================================
 
-  /** Conteneur principal */
-  readonly container: Locator
+  /** Carte de bienvenue */
+  readonly welcomeCard: Locator
 
-  /** Titre du dashboard */
-  readonly pageTitle: Locator
+  /** Conteneur des statistiques (4 KPI) */
+  readonly statsContainer: Locator
 
-  /** Sous-titre avec nom de l'equipe */
-  readonly teamSubtitle: Locator
+  /** Cartes de statistiques individuelles */
+  readonly statCards: Locator
 
-  /** Cartes de statistiques */
-  readonly membersCard: Locator
-  readonly shiftsCard: Locator
-  readonly pendingRequestsCard: Locator
+  /** Carte performance équipe (chart) */
+  readonly teamChartCard: Locator
 
-  /** Section actions rapides */
-  readonly quickActionsSection: Locator
-  readonly createShiftButton: Locator
-  readonly validateLeavesButton: Locator
-  readonly viewTeamButton: Locator
+  /** Carte congés en attente */
+  readonly pendingLeavesCard: Locator
 
-  /** Tableau planning de l'equipe */
-  readonly teamScheduleTable: Locator
-  readonly scheduleRows: Locator
+  /** Actions rapides */
+  readonly quickActionsCard: Locator
 
-  /** Section demandes de conges */
-  readonly leaveRequestsSection: Locator
-  readonly leaveRequestItems: Locator
-  readonly approveButtons: Locator
-  readonly rejectButtons: Locator
+  /** Widget notes perso */
+  readonly tasksWidget: Locator
+
+  // ==========================================================================
+  // Locators - Welcome
+  // ==========================================================================
+
+  readonly pendingLeavesBadge: Locator
+  readonly absencesBadge: Locator
+  readonly allGoodBadge: Locator
+
+  // ==========================================================================
+  // Locators - Quick Actions
+  // ==========================================================================
+
+  readonly viewTeamLink: Locator
+  readonly viewPlanningLink: Locator
+  readonly viewLeavesLink: Locator
+  readonly viewIncidentsLink: Locator
 
   constructor(page: Page) {
     this.page = page
 
-    // Conteneur
-    this.container = page.locator('div.space-y-6').first()
+    // Sections principales
+    this.welcomeCard = page.getByTestId('manager-welcome')
+    this.statsContainer = page.getByTestId('manager-stats')
+    this.statCards = page.getByTestId('stat-card')
+    this.teamChartCard = page.getByTestId('manager-team-chart')
+    this.pendingLeavesCard = page.getByTestId('manager-pending-leaves')
+    this.quickActionsCard = page.getByTestId('manager-quick-actions')
+    this.tasksWidget = page.getByTestId('tasks-widget')
 
-    // Titre
-    this.pageTitle = page.getByRole('heading', { name: /dashboard manager/i })
-    this.teamSubtitle = page.locator('text=/Gerez votre equipe/i')
+    // Welcome badges
+    this.pendingLeavesBadge = page.getByTestId('pending-leaves-badge')
+    this.absencesBadge = page.getByTestId('absences-badge')
+    this.allGoodBadge = page.getByTestId('all-good-badge')
 
-    // Stats Cards
-    this.membersCard = page
-      .locator("text=Membres d'equipe")
-      .locator('..')
-      .locator('..')
-    this.shiftsCard = page
-      .locator('text=Shifts cette semaine')
-      .locator('..')
-      .locator('..')
-    this.pendingRequestsCard = page
-      .locator('text=Demandes en attente')
-      .locator('..')
-      .locator('..')
-
-    // Quick Actions
-    this.quickActionsSection = page
-      .locator('text=Actions rapides')
-      .locator('..')
-    this.createShiftButton = page.getByRole('button', {
-      name: /creer un shift/i,
+    // Quick action links
+    this.viewTeamLink = page.getByRole('link', { name: /voir l'équipe/i })
+    this.viewPlanningLink = page.getByRole('link', {
+      name: /voir le planning/i,
     })
-    this.validateLeavesButton = page.getByRole('button', {
-      name: /valider des conges/i,
+    this.viewLeavesLink = page.getByRole('link', {
+      name: /tous les congés/i,
     })
-    this.viewTeamButton = page.getByRole('button', { name: /vue equipe/i })
-
-    // Team Schedule
-    this.teamScheduleTable = page.locator('table')
-    this.scheduleRows = page.locator('tbody tr')
-
-    // Leave Requests
-    this.leaveRequestsSection = page
-      .locator('text=Demandes de conges a valider')
-      .locator('..')
-    this.leaveRequestItems = page.locator(
-      '[class*="flex items-center justify-between"]'
-    )
-    this.approveButtons = page.getByRole('button', { name: /approuver/i })
-    this.rejectButtons = page.getByRole('button', { name: /rejeter/i })
+    this.viewIncidentsLink = page.getByRole('link', {
+      name: /notes d'incident/i,
+    })
   }
 
   // ==========================================================================
   // Navigation
   // ==========================================================================
 
-  /**
-   * Navigue vers le dashboard manager
-   */
   async goto(): Promise<void> {
     await this.page.goto('/app/manager/dashboard')
   }
 
-  /**
-   * Attend que la page soit completement chargee
-   */
   async waitForLoad(): Promise<void> {
-    await expect(this.pageTitle).toBeVisible({ timeout: 15000 })
+    await this.page.waitForLoadState('domcontentloaded')
+    await expect(this.welcomeCard).toBeVisible({ timeout: 15000 })
   }
 
   // ==========================================================================
-  // Assertions
+  // Assertions - Structure
   // ==========================================================================
 
-  /**
-   * Verifie que le dashboard est affiche correctement
-   */
-  async expectToBeVisible(): Promise<void> {
-    await expect(this.pageTitle).toBeVisible()
-    await expect(this.container).toBeVisible()
+  async expectWelcomeVisible(): Promise<void> {
+    await expect(this.welcomeCard).toBeVisible()
+    // Le greeting contient le nom de l'utilisateur
+    const heading = this.welcomeCard.locator('h1')
+    await expect(heading).toBeVisible()
   }
 
-  /**
-   * Verifie que les statistiques d'equipe sont affichees
-   */
-  async expectTeamStatsVisible(): Promise<void> {
-    await expect(this.page.locator("text=Membres d'equipe")).toBeVisible()
-    await expect(this.page.locator('text=Shifts cette semaine')).toBeVisible()
-    await expect(this.page.locator('text=Demandes en attente')).toBeVisible()
+  async expectGreetingContainsName(name: string): Promise<void> {
+    const heading = this.welcomeCard.locator('h1')
+    await expect(heading).toContainText(name)
   }
 
-  /**
-   * Verifie que le planning d'equipe est affiche
-   */
-  async expectTeamScheduleVisible(): Promise<void> {
+  async expectStatsVisible(): Promise<void> {
+    await expect(this.statsContainer).toBeVisible()
+    await expect(this.statCards).toHaveCount(4, { timeout: 10000 })
+  }
+
+  async expectTeamChartVisible(): Promise<void> {
+    await expect(this.teamChartCard).toBeVisible()
     await expect(
-      this.page.locator("text=Planning de l'equipe cette semaine")
-    ).toBeVisible()
-    await expect(this.teamScheduleTable).toBeVisible()
-  }
-
-  /**
-   * Verifie que la section demandes de conges est affichee
-   */
-  async expectLeaveRequestsVisible(): Promise<void> {
-    await expect(
-      this.page.locator('text=Demandes de conges a valider')
+      this.teamChartCard.getByText('Performance équipe')
     ).toBeVisible()
   }
 
-  /**
-   * Verifie que les actions rapides sont affichees
-   */
+  async expectPendingLeavesVisible(): Promise<void> {
+    await expect(this.pendingLeavesCard).toBeVisible()
+    await expect(
+      this.pendingLeavesCard.getByText('Congés à valider')
+    ).toBeVisible()
+  }
+
   async expectQuickActionsVisible(): Promise<void> {
-    await expect(this.page.locator('text=Actions rapides')).toBeVisible()
-    await expect(this.createShiftButton).toBeVisible()
-    await expect(this.validateLeavesButton).toBeVisible()
-    await expect(this.viewTeamButton).toBeVisible()
-  }
-
-  /**
-   * Verifie le nombre de membres d'equipe affiche
-   */
-  async expectTeamMembersCount(count: number | string): Promise<void> {
-    const countText = this.membersCard.locator('p.text-3xl')
-    await expect(countText).toContainText(String(count))
-  }
-
-  /**
-   * Verifie le nombre de demandes en attente
-   */
-  async expectPendingRequestsCount(count: number | string): Promise<void> {
-    const countText = this.pendingRequestsCard.locator('p.text-3xl')
-    await expect(countText).toContainText(String(count))
+    await expect(this.quickActionsCard).toBeVisible()
+    await expect(this.viewTeamLink).toBeVisible()
+    await expect(this.viewPlanningLink).toBeVisible()
+    await expect(this.viewLeavesLink).toBeVisible()
+    await expect(this.viewIncidentsLink).toBeVisible()
   }
 
   // ==========================================================================
   // Actions
   // ==========================================================================
 
-  /**
-   * Clique sur "Creer un shift"
-   */
-  async clickCreateShift(): Promise<void> {
-    await this.createShiftButton.click()
-  }
-
-  /**
-   * Clique sur "Valider des conges"
-   */
-  async clickValidateLeaves(): Promise<void> {
-    await this.validateLeavesButton.click()
-  }
-
-  /**
-   * Clique sur "Vue equipe"
-   */
   async clickViewTeam(): Promise<void> {
-    await this.viewTeamButton.click()
+    await this.viewTeamLink.click()
   }
 
-  /**
-   * Approuve la premiere demande de conge
-   */
-  async approveFirstLeaveRequest(): Promise<void> {
-    await this.approveButtons.first().click()
+  async clickViewPlanning(): Promise<void> {
+    await this.viewPlanningLink.click()
   }
 
-  /**
-   * Rejette la premiere demande de conge
-   */
-  async rejectFirstLeaveRequest(): Promise<void> {
-    await this.rejectButtons.first().click()
+  async clickViewLeaves(): Promise<void> {
+    await this.viewLeavesLink.click()
   }
 
-  /**
-   * Recupere le nombre de lignes dans le planning d'equipe
-   */
-  async getScheduleRowsCount(): Promise<number> {
-    return await this.scheduleRows.count()
-  }
-
-  /**
-   * Recupere le nombre de demandes de conges affichees
-   */
-  async getLeaveRequestsCount(): Promise<number> {
-    return await this.approveButtons.count()
-  }
-
-  /**
-   * Verifie le titre de la page
-   */
-  async expectPageTitle(): Promise<void> {
-    await expect(this.page).toHaveTitle(/dashboard manager/i)
-  }
-
-  /**
-   * Verifie que les jours de la semaine sont affiches
-   */
-  async expectWeekDaysVisible(): Promise<void> {
-    const headers = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven']
-    for (const day of headers) {
-      await expect(this.page.locator(`th:has-text("${day}")`)).toBeVisible()
-    }
+  async clickViewIncidents(): Promise<void> {
+    await this.viewIncidentsLink.click()
   }
 }

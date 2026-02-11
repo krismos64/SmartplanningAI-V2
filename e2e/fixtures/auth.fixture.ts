@@ -82,6 +82,7 @@ export const TEST_USERS: Record<string, TestUser> = {
  */
 export async function loginAs(page: Page, user: TestUser): Promise<void> {
   await page.goto('/login')
+  await page.waitForLoadState('domcontentloaded')
 
   // Remplir le formulaire
   await page.getByPlaceholder('vous@entreprise.com').fill(user.email)

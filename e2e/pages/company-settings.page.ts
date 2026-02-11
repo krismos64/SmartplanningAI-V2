@@ -91,7 +91,9 @@ export class CompanySettingsPage {
   }
 
   async waitForPageLoad() {
-    await expect(this.companySettingsPage).toBeVisible({ timeout: 10000 })
+    // Attendre que le loading disparaisse si présent
+    await expect(this.loadingState).not.toBeVisible({ timeout: 15000 }).catch(() => {})
+    await expect(this.companySettingsPage).toBeVisible({ timeout: 15000 })
   }
 
   async waitForLoadingComplete() {

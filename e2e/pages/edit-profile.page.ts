@@ -70,7 +70,8 @@ export class EditProfilePage {
    * Attendre que la page soit chargée
    */
   async waitForPageLoad() {
-    await expect(this.pageContainer).toBeVisible({ timeout: 10000 })
+    await this.page.waitForLoadState('domcontentloaded')
+    await expect(this.pageContainer).toBeVisible({ timeout: 15000 })
     await expect(this.firstNameInput).toBeVisible()
   }
 

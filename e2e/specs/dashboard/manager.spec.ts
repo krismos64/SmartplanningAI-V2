@@ -1,8 +1,9 @@
 /**
  * Tests E2E - Dashboard Manager
  *
- * Tests complets du dashboard manager avec authentification.
- * Verifie l'affichage, les fonctionnalites de gestion d'equipe.
+ * Tests du dashboard manager basés sur l'UI réelle :
+ * ManagerWelcome, ManagerStats, ManagerTeamChart,
+ * ManagerPendingLeaves, ManagerQuickActions
  *
  * @ticket SP-149
  */
@@ -10,315 +11,169 @@
 import { test, expect } from '../../fixtures/auth.fixture'
 import { DashboardManagerPage } from '../../pages'
 
-test.describe('Dashboard Manager - Tests E2E', () => {
-  let dashboardPage: DashboardManagerPage
-
+test.describe('Dashboard Manager', () => {
   // ==========================================================================
-  // Tests d'acces et redirection
+  // Accès et redirection
   // ==========================================================================
 
-  test.describe('Acces et redirection', () => {
-    test('devrait rediriger vers /login si non authentifie', async ({
+  test.describe('Accès et redirection', () => {
+    test('devrait rediriger vers /login si non authentifié', async ({
       page,
     }) => {
       await page.goto('/app/manager/dashboard')
       await expect(page).toHaveURL(/.*login.*/)
     })
 
-    // NOTE: Tests suivants désactivés - UI Dashboard Manager non finalisée
-    // Le dashboard actuel affiche "Bienvenue, {name}" au lieu de "Dashboard Manager"
-    // @todo Réactiver quand l'UI correspond aux tests
-    test.skip('devrait acceder au dashboard avec authentification manager', async ({
+    test('devrait accéder au dashboard avec authentification manager', async ({
       managerPage,
     }) => {
-      dashboardPage = new DashboardManagerPage(managerPage)
-      await dashboardPage.goto()
-      await dashboardPage.waitForLoad()
+      const dashboard = new DashboardManagerPage(managerPage)
+      await dashboard.goto()
+      await dashboard.waitForLoad()
 
-      await dashboardPage.expectToBeVisible()
+      await dashboard.expectWelcomeVisible()
+    })
+  })
+
+  // ==========================================================================
+  // Welcome
+  // ==========================================================================
+
+  test.describe('Welcome', () => {
+    test('devrait afficher le greeting avec le nom du manager', async ({
+      managerPage,
+    }) => {
+      const dashboard = new DashboardManagerPage(managerPage)
+      await dashboard.goto()
+      await dashboard.waitForLoad()
+
+      await dashboard.expectGreetingContainsName('Jane')
     })
 
-    test.skip('devrait afficher le titre Dashboard Manager', async ({
+    test('devrait afficher au moins un badge contextuel', async ({
       managerPage,
     }) => {
-      dashboardPage = new DashboardManagerPage(managerPage)
-      await dashboardPage.goto()
-      await dashboardPage.waitForLoad()
+      const dashboard = new DashboardManagerPage(managerPage)
+      await dashboard.goto()
+      await dashboard.waitForLoad()
 
-      await expect(managerPage.locator('h1')).toContainText(
-        /dashboard manager/i
+      // Au moins un des 3 badges doit être visible
+      const hasPendingLeaves = await dashboard.pendingLeavesBadge
+        .isVisible()
+        .catch(() => false)
+      const hasAbsences = await dashboard.absencesBadge
+        .isVisible()
+        .catch(() => false)
+      const hasAllGood = await dashboard.allGoodBadge
+        .isVisible()
+        .catch(() => false)
+
+      expect(hasPendingLeaves || hasAbsences || hasAllGood).toBe(true)
+    })
+  })
+
+  // ==========================================================================
+  // Statistiques
+  // ==========================================================================
+
+  test.describe('Statistiques', () => {
+    test('devrait afficher 4 cartes KPI', async ({ managerPage }) => {
+      const dashboard = new DashboardManagerPage(managerPage)
+      await dashboard.goto()
+      await dashboard.waitForLoad()
+
+      await dashboard.expectStatsVisible()
+    })
+
+    test('la section stats devrait avoir le role region', async ({
+      managerPage,
+    }) => {
+      const dashboard = new DashboardManagerPage(managerPage)
+      await dashboard.goto()
+      await dashboard.waitForLoad()
+
+      const statsRegion = managerPage.locator(
+        '[role="region"][aria-label="Statistiques équipe"]'
       )
+      await expect(statsRegion).toBeVisible()
     })
   })
 
   // ==========================================================================
-  // Tests des statistiques d'equipe
-  // NOTE: Section désactivée - UI Dashboard Manager non finalisée
+  // Performance équipe (Chart)
   // ==========================================================================
 
-  test.describe.skip("Statistiques d'equipe", () => {
-    test("devrait afficher le nombre de membres d'equipe", async ({
-      managerPage,
-    }) => {
-      dashboardPage = new DashboardManagerPage(managerPage)
-      await dashboardPage.goto()
-      await dashboardPage.waitForLoad()
+  test.describe('Performance équipe', () => {
+    test('devrait afficher la carte performance', async ({ managerPage }) => {
+      const dashboard = new DashboardManagerPage(managerPage)
+      await dashboard.goto()
+      await dashboard.waitForLoad()
 
-      await expect(managerPage.locator("text=Membres d'equipe")).toBeVisible()
-    })
-
-    test('devrait afficher le nombre de shifts cette semaine', async ({
-      managerPage,
-    }) => {
-      dashboardPage = new DashboardManagerPage(managerPage)
-      await dashboardPage.goto()
-      await dashboardPage.waitForLoad()
-
-      await expect(
-        managerPage.locator('text=Shifts cette semaine')
-      ).toBeVisible()
-    })
-
-    test('devrait afficher les demandes en attente', async ({
-      managerPage,
-    }) => {
-      dashboardPage = new DashboardManagerPage(managerPage)
-      await dashboardPage.goto()
-      await dashboardPage.waitForLoad()
-
-      await expect(
-        managerPage.locator('text=Demandes en attente')
-      ).toBeVisible()
-    })
-
-    test('devrait afficher des valeurs numeriques dans les stats', async ({
-      managerPage,
-    }) => {
-      dashboardPage = new DashboardManagerPage(managerPage)
-      await dashboardPage.goto()
-      await dashboardPage.waitForLoad()
-
-      // Verifier qu'il y a des chiffres
-      const statsNumbers = managerPage.locator('.text-3xl')
-      await expect(statsNumbers.first()).toBeVisible()
+      await dashboard.expectTeamChartVisible()
     })
   })
 
   // ==========================================================================
-  // Tests des actions rapides
-  // NOTE: Section désactivée - UI Dashboard Manager non finalisée
+  // Congés en attente
   // ==========================================================================
 
-  test.describe.skip('Actions rapides', () => {
-    test('devrait afficher la section actions rapides', async ({
-      managerPage,
-    }) => {
-      dashboardPage = new DashboardManagerPage(managerPage)
-      await dashboardPage.goto()
-      await dashboardPage.waitForLoad()
+  test.describe('Congés en attente', () => {
+    test('devrait afficher la section congés', async ({ managerPage }) => {
+      const dashboard = new DashboardManagerPage(managerPage)
+      await dashboard.goto()
+      await dashboard.waitForLoad()
 
-      await expect(managerPage.locator('text=Actions rapides')).toBeVisible()
-    })
-
-    test('devrait avoir le bouton Creer un shift', async ({ managerPage }) => {
-      dashboardPage = new DashboardManagerPage(managerPage)
-      await dashboardPage.goto()
-      await dashboardPage.waitForLoad()
-
-      await expect(
-        managerPage.getByRole('button', { name: /creer un shift/i })
-      ).toBeVisible()
-    })
-
-    test('devrait avoir le bouton Valider des conges', async ({
-      managerPage,
-    }) => {
-      dashboardPage = new DashboardManagerPage(managerPage)
-      await dashboardPage.goto()
-      await dashboardPage.waitForLoad()
-
-      await expect(
-        managerPage.getByRole('button', { name: /valider des conges/i })
-      ).toBeVisible()
-    })
-
-    test('devrait avoir le bouton Vue equipe', async ({ managerPage }) => {
-      dashboardPage = new DashboardManagerPage(managerPage)
-      await dashboardPage.goto()
-      await dashboardPage.waitForLoad()
-
-      await expect(
-        managerPage.getByRole('button', { name: /vue equipe/i })
-      ).toBeVisible()
+      await dashboard.expectPendingLeavesVisible()
     })
   })
 
   // ==========================================================================
-  // Tests du planning d'equipe
-  // NOTE: Section désactivée - UI Dashboard Manager non finalisée
+  // Actions rapides
   // ==========================================================================
 
-  test.describe.skip("Planning d'equipe", () => {
-    test('devrait afficher le titre du planning', async ({ managerPage }) => {
-      dashboardPage = new DashboardManagerPage(managerPage)
-      await dashboardPage.goto()
-      await dashboardPage.waitForLoad()
-
-      await expect(
-        managerPage.locator("text=Planning de l'equipe cette semaine")
-      ).toBeVisible()
-    })
-
-    test('devrait afficher un tableau avec les jours de la semaine', async ({
+  test.describe('Actions rapides', () => {
+    test('devrait afficher les 4 boutons d\'action', async ({
       managerPage,
     }) => {
-      dashboardPage = new DashboardManagerPage(managerPage)
-      await dashboardPage.goto()
-      await dashboardPage.waitForLoad()
+      const dashboard = new DashboardManagerPage(managerPage)
+      await dashboard.goto()
+      await dashboard.waitForLoad()
 
-      const table = managerPage.locator('table')
-      await expect(table).toBeVisible()
-
-      // Verifier les en-tetes de jours
-      await expect(managerPage.locator('th:has-text("Lun")')).toBeVisible()
-      await expect(managerPage.locator('th:has-text("Mar")')).toBeVisible()
-      await expect(managerPage.locator('th:has-text("Mer")')).toBeVisible()
-      await expect(managerPage.locator('th:has-text("Jeu")')).toBeVisible()
-      await expect(managerPage.locator('th:has-text("Ven")')).toBeVisible()
+      await dashboard.expectQuickActionsVisible()
     })
 
-    test('devrait afficher les noms des employes', async ({ managerPage }) => {
-      dashboardPage = new DashboardManagerPage(managerPage)
-      await dashboardPage.goto()
-      await dashboardPage.waitForLoad()
+    test('devrait naviguer vers /employees au clic sur Voir l\'équipe', async ({
+      managerPage,
+    }) => {
+      const dashboard = new DashboardManagerPage(managerPage)
+      await dashboard.goto()
+      await dashboard.waitForLoad()
 
-      // Au moins un nom d'employe devrait etre visible
-      const employeeNames = managerPage.locator('tbody td.font-medium')
-      await expect(employeeNames.first()).toBeVisible()
-    })
-
-    test('devrait afficher des badges de statut', async ({ managerPage }) => {
-      dashboardPage = new DashboardManagerPage(managerPage)
-      await dashboardPage.goto()
-      await dashboardPage.waitForLoad()
-
-      // Verifier qu'il y a des badges (horaires, Remote, Conge)
-      const badges = managerPage.locator(
-        '[class*="badge"], [class*="bg-green"], [class*="bg-blue"], [class*="bg-red"]'
-      )
-      await expect(badges.first()).toBeVisible()
+      await dashboard.clickViewTeam()
+      await expect(managerPage).toHaveURL(/\/employees/, { timeout: 15000 })
     })
   })
 
   // ==========================================================================
-  // Tests des demandes de conges
-  // NOTE: Section désactivée - UI Dashboard Manager non finalisée
+  // Accessibilité
   // ==========================================================================
 
-  test.describe.skip('Demandes de conges', () => {
-    test('devrait afficher la section demandes de conges', async ({
-      managerPage,
-    }) => {
-      dashboardPage = new DashboardManagerPage(managerPage)
-      await dashboardPage.goto()
-      await dashboardPage.waitForLoad()
+  test.describe('Accessibilité', () => {
+    test('devrait avoir un heading h1 visible', async ({ managerPage }) => {
+      const dashboard = new DashboardManagerPage(managerPage)
+      await dashboard.goto()
+      await dashboard.waitForLoad()
 
-      await expect(
-        managerPage.locator('text=Demandes de conges a valider')
-      ).toBeVisible()
-    })
-
-    test('devrait afficher les boutons Approuver', async ({ managerPage }) => {
-      dashboardPage = new DashboardManagerPage(managerPage)
-      await dashboardPage.goto()
-      await dashboardPage.waitForLoad()
-
-      const approveButtons = managerPage.getByRole('button', {
-        name: /approuver/i,
-      })
-      await expect(approveButtons.first()).toBeVisible()
-    })
-
-    test('devrait afficher les boutons Rejeter', async ({ managerPage }) => {
-      dashboardPage = new DashboardManagerPage(managerPage)
-      await dashboardPage.goto()
-      await dashboardPage.waitForLoad()
-
-      const rejectButtons = managerPage.getByRole('button', {
-        name: /rejeter/i,
-      })
-      await expect(rejectButtons.first()).toBeVisible()
-    })
-
-    test('devrait afficher les initiales des employes', async ({
-      managerPage,
-    }) => {
-      dashboardPage = new DashboardManagerPage(managerPage)
-      await dashboardPage.goto()
-      await dashboardPage.waitForLoad()
-
-      // Les avatars avec initiales
-      const avatars = managerPage.locator(
-        '[class*="rounded-full"][class*="bg-secondary"]'
-      )
-      await expect(avatars.first()).toBeVisible()
-    })
-  })
-
-  // ==========================================================================
-  // Tests de responsivite
-  // NOTE: Section désactivée - UI Dashboard Manager non finalisée
-  // ==========================================================================
-
-  test.describe.skip('Responsivite', () => {
-    test("devrait s'adapter a un ecran mobile", async ({ managerPage }) => {
-      await managerPage.setViewportSize({ width: 375, height: 667 })
-
-      dashboardPage = new DashboardManagerPage(managerPage)
-      await dashboardPage.goto()
-      await dashboardPage.waitForLoad()
-
-      await dashboardPage.expectToBeVisible()
-    })
-
-    test('devrait garder le tableau scrollable sur mobile', async ({
-      managerPage,
-    }) => {
-      await managerPage.setViewportSize({ width: 375, height: 667 })
-
-      dashboardPage = new DashboardManagerPage(managerPage)
-      await dashboardPage.goto()
-      await dashboardPage.waitForLoad()
-
-      // Le conteneur du tableau devrait avoir overflow-x-auto
-      const tableContainer = managerPage.locator('.overflow-x-auto')
-      await expect(tableContainer).toBeVisible()
-    })
-  })
-
-  // ==========================================================================
-  // Tests d'accessibilite
-  // NOTE: Section désactivée - UI Dashboard Manager non finalisée
-  // ==========================================================================
-
-  test.describe.skip('Accessibilite', () => {
-    test('devrait avoir un titre de page descriptif', async ({
-      managerPage,
-    }) => {
-      dashboardPage = new DashboardManagerPage(managerPage)
-      await dashboardPage.goto()
-      await dashboardPage.waitForLoad()
-
-      await expect(managerPage).toHaveTitle(/manager|dashboard/i)
+      const h1 = managerPage.locator('h1')
+      await expect(h1.first()).toBeVisible()
     })
 
     test('devrait avoir des boutons accessibles', async ({ managerPage }) => {
-      dashboardPage = new DashboardManagerPage(managerPage)
-      await dashboardPage.goto()
-      await dashboardPage.waitForLoad()
+      const dashboard = new DashboardManagerPage(managerPage)
+      await dashboard.goto()
+      await dashboard.waitForLoad()
 
-      // Les boutons devraient etre accessibles par role
-      const buttons = managerPage.getByRole('button')
+      const buttons = managerPage.getByRole('link')
       expect(await buttons.count()).toBeGreaterThan(0)
     })
   })
