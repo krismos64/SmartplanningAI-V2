@@ -2873,7 +2873,7 @@ Conformité WCAG 2.1 niveau AA avec tests automatisés axe-core et audit Lightho
   - Utilisation sécurisée `execFileSync` (vs execSync)
 
 - **Résultats audit** :
-  - Score moyen : **95%** (objectif ≥ 90%)
+  - Score moyen : **100%** (objectif ≥ 90%)
   - Pages conformes : Accueil, Login, Register
 
 **Scripts NPM** :
@@ -3005,13 +3005,13 @@ Merge main → Build Docker → Push GHCR → Deploy VPS (~8-10 min)
 - [Script de sécurisation VPS](scripts/secure-vps-part1.sh)
 - [Incident UFW + Docker](docs/security/incident-2026-01-06-ufw-docker.md)
 
-### Scores Lighthouse (3 décembre 2025)
+### Scores Lighthouse (11 février 2026)
 
 | Métrique           | Score |
 | ------------------ | ----- |
-| **Performance**    | 86%   |
+| **Performance**    | 91%   |
 | **SEO**            | 100%  |
-| **Accessibilité**  | 98%   |
+| **Accessibilité**  | 100%  |
 | **Best Practices** | 96%   |
 
 ## Auteur
