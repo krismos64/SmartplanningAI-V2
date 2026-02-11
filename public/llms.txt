@@ -1,0 +1,20 @@
+# SmartPlanning
+
+> Logiciel SaaS francais de gestion de plannings pour TPE et PME. Alternative moderne et abordable a Skello, Combo et Planning Conge.
+
+SmartPlanning simplifie la gestion des plannings d'equipe, des conges et des ressources humaines pour les petites et moyennes entreprises francaises (5 a 250 employes).
+
+## Docs
+
+- [Accueil](https://smartplanning.fr): Page principale du logiciel de planning
+- [Tarifs](https://smartplanning.fr/tarifs): 2,90 EUR HT par employe par mois, essai gratuit 21 jours
+- [A propos](https://smartplanning.fr/a-propos): Mission, valeurs et cible de SmartPlanning
+- [CGU](https://smartplanning.fr/cgu): Conditions generales d'utilisation
+- [CGV](https://smartplanning.fr/cgv): Conditions generales de vente
+- [Confidentialite](https://smartplanning.fr/confidentialite): Politique de confidentialite RGPD
+- [Mentions legales](https://smartplanning.fr/mentions-legales): Informations legales
+- [Cookies](https://smartplanning.fr/cookies): Politique cookies
+
+## Optional
+
+- [llms-full.txt](https://smartplanning.fr/llms-full.txt): Version detaillee de ce fichier avec contenu complet
