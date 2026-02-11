@@ -5,8 +5,14 @@
  *
  * @ticket SP-110
  */
+import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { auth } from '@/lib/auth'
+
+// Defense en profondeur : noindex meme si robots.txt bloque /app/
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+}
 import { prisma } from '@/lib/prisma'
 import { DashboardLayout } from '@/components/layout/DashboardLayout'
 
