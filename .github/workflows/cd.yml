@@ -190,7 +190,10 @@ jobs:
           echo "📋 Image digest:"
           docker images ghcr.io/krismos64/smartplanningai-v2:latest --format "{{.ID}} {{.CreatedAt}}"
           echo "⏹️ Arrêt des conteneurs..."
-          docker compose --env-file .env down --remove-orphans
+          docker compose --env-file .env down --remove-orphans || true
+          echo "🧹 Nettoyage des conteneurs orphelins..."
+          docker rm -f smartplanning-app smartplanning-postgres smartplanning-redis 2>/dev/null || true
+          docker network rm smartplanning_smartplanning-network 2>/dev/null || true
           echo "▶️ Démarrage des nouveaux conteneurs..."
           docker compose --env-file .env up -d --pull always
           echo "⏳ Attente du démarrage (60s)..."
