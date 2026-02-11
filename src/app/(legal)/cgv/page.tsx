@@ -27,6 +27,9 @@ export const metadata: Metadata = {
   title: 'Conditions Générales de Vente | SmartPlanning',
   description:
     'Consultez les conditions générales de vente de SmartPlanning. Informations sur les tarifs, abonnements, modalités de paiement et droit de rétractation.',
+  alternates: {
+    canonical: `${process.env.NEXT_PUBLIC_APP_URL || 'https://smartplanning.fr'}/cgv`,
+  },
   openGraph: {
     title: 'Conditions Générales de Vente | SmartPlanning',
     description:

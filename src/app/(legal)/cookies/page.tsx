@@ -29,6 +29,9 @@ export const metadata: Metadata = {
   title: 'Politique Cookies | SmartPlanning',
   description:
     'Découvrez comment SmartPlanning utilise les cookies et traceurs. Informations sur les types de cookies, leurs finalités et comment gérer vos préférences.',
+  alternates: {
+    canonical: `${process.env.NEXT_PUBLIC_APP_URL || 'https://smartplanning.fr'}/cookies`,
+  },
   openGraph: {
     title: 'Politique Cookies | SmartPlanning',
     description: 'Gestion des cookies et traceurs sur SmartPlanning.',

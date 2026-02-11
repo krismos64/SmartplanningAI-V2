@@ -26,6 +26,9 @@ export const metadata: Metadata = {
   title: 'Mentions Légales | SmartPlanning',
   description:
     "Mentions légales de SmartPlanning : informations sur l'éditeur, l'hébergeur, le directeur de publication et la propriété intellectuelle.",
+  alternates: {
+    canonical: `${process.env.NEXT_PUBLIC_APP_URL || 'https://smartplanning.fr'}/mentions-legales`,
+  },
   openGraph: {
     title: 'Mentions Légales | SmartPlanning',
     description:

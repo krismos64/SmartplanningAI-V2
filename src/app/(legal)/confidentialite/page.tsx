@@ -28,6 +28,9 @@ export const metadata: Metadata = {
   title: 'Politique de Confidentialité | SmartPlanning',
   description:
     'Découvrez comment SmartPlanning collecte, utilise et protège vos données personnelles. Politique de confidentialité conforme au RGPD.',
+  alternates: {
+    canonical: `${process.env.NEXT_PUBLIC_APP_URL || 'https://smartplanning.fr'}/confidentialite`,
+  },
   openGraph: {
     title: 'Politique de Confidentialité | SmartPlanning',
     description: 'Protection de vos données personnelles - Conformité RGPD.',

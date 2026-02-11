@@ -34,6 +34,9 @@ export const metadata: Metadata = {
       "Conditions générales d'utilisation de la plateforme SmartPlanning",
     type: 'website',
   },
+  alternates: {
+    canonical: `${process.env.NEXT_PUBLIC_APP_URL || 'https://smartplanning.fr'}/cgu`,
+  },
   robots: {
     index: true,
     follow: true,
