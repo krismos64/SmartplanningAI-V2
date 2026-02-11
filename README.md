@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 10 février 2026 (SP-460 — Nettoyage final & couverture 86%)
+- **Dernière mise à jour** : 11 février 2026 (SP-462 — Optimisation SEO Google + LLMs)
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -2261,7 +2261,7 @@ Toute la documentation est centralisée dans le dossier `/docs` :
    - Responsive design et accessibilité
    - [Décisions techniques](https://christophedev.atlassian.net/wiki/spaces/SP/pages/57901057/DataTable+D+cisions+techniques)
 
-7. **[Guide de déploiement](/.github/DEPLOY.md)**
+7. **[Guide de déploiement](/docs/deployment.md)**
    - Configuration VPS complète
    - Script de sécurisation automatisé
    - Résolution des problèmes UFW + Docker
@@ -2389,44 +2389,47 @@ function CTAButton() {
 - LogRocket pour le comportement utilisateur
 - Lighthouse CI pour les performances
 
-## SEO
+## SEO (SP-462)
 
 ### Optimisations automatiques
 
-- Meta tags dynamiques (Next.js Metadata API)
+- Meta tags dynamiques (Next.js 15 Metadata API)
 - Open Graph et Twitter Cards
-- Sitemap.xml généré
-- Robots.txt configuré
+- `src/app/sitemap.ts` — 8 pages publiques avec priorités hiérarchisées (homepage 1.0, tarifs 0.9, légales 0.3)
+- `src/app/robots.ts` — Bloque /app/, /api/ et pages auth de l'indexation
+- Favicon convention Next.js 15 (`src/app/favicon.ico`, `icon.png`, `apple-icon.png`)
 - Balises sémantiques HTML5
-- Schema.org JSON-LD (Organization, AboutPage, SoftwareApplication, FAQPage)
-- Canonical URLs
+- Schema.org JSON-LD @graph (WebSite, Organization avec logo, SoftwareApplication, FAQPage)
+- Canonical URLs sur toutes les pages publiques
+- Keywords long-tail français (10 expressions ciblées)
+- noindex defense-in-depth sur le layout dashboard
 - Performance optimisée (Core Web Vitals)
 
 ### Pages optimisées SEO
 
-| Page             | Meta Title | Meta Description | Structured Data                              |
-| ---------------- | ---------- | ---------------- | -------------------------------------------- |
-| Landing          | ✅         | ✅               | Organization                                 |
-| À propos         | ✅         | ✅               | AboutPage + Organization                     |
-| Tarifs           | ✅         | ✅               | SoftwareApplication + FAQPage + WebPage (SP-359) |
-| Mentions légales | ✅         | ✅               | -                                            |
-| CGU              | ✅         | ✅               | -                                            |
-| CGV              | ✅         | ✅               | -                                            |
-| Confidentialité  | ✅         | ✅               | -                                            |
-| Cookies          | ✅         | ✅               | -                                            |
-| Login/Register   | ✅         | ✅               | -                                            |
+| Page             | Meta Title | Meta Description | Canonical | Structured Data                                              |
+| ---------------- | ---------- | ---------------- | --------- | ------------------------------------------------------------ |
+| Landing          | ✅         | ✅               | ✅        | WebSite + Organization (logo) + SoftwareApplication + FAQPage (SP-462) |
+| À propos         | ✅         | ✅               | ✅        | AboutPage + Organization + SoftwareApplication + FAQ         |
+| Tarifs           | ✅         | ✅               | ✅        | SoftwareApplication + FAQPage + WebPage (SP-359)             |
+| CGU              | ✅         | ✅               | ✅        | -                                                            |
+| CGV              | ✅         | ✅               | ✅        | -                                                            |
+| Confidentialité  | ✅         | ✅               | ✅        | -                                                            |
+| Mentions légales | ✅         | ✅               | ✅        | -                                                            |
+| Cookies          | ✅         | ✅               | ✅        | -                                                            |
+| Login/Register   | ✅         | ✅               | -         | -                                                            |
 
-### Optimisation LLMs
+### Optimisation LLMs (SP-462)
 
-Les pages À propos et Tarifs sont optimisées pour être indexées par les LLMs (ChatGPT, Claude, Perplexity, Gemini) avec :
+Toutes les pages publiques sont optimisées pour les LLMs (ChatGPT, Claude, Perplexity, Gemini) :
 
-- Keywords riches et contextuels
-- Structured Data JSON-LD étendu (@graph combinant plusieurs schemas)
-- Descriptions longues pour Open Graph
-- FAQ structurée (FAQPage Schema.org) sur la page Tarifs
-- SoftwareApplication schema avec prix, features et limites
-
-Voir `/docs/seo-optimization.md` (à créer) pour le détail.
+- `public/llms.txt` — Résumé structuré suivant la convention llmstxt.org
+- `public/llms-full.txt` — Version détaillée avec fonctionnalités, comparaison tarifaire, stack et sécurité
+- Homepage Server Component avec JSON-LD @graph 4 schemas (WebSite, Organization, SoftwareApplication, FAQPage)
+- Keywords long-tail français pour le marché TPE/PME
+- Structured Data JSON-LD étendu sur les pages À propos et Tarifs
+- FAQ structurée (FAQPage Schema.org) sur la homepage et la page Tarifs
+- Organization schema avec logo pour Google Knowledge Panel
 
 ## Tests
 
@@ -2925,7 +2928,7 @@ git push origin feature/SP-XX-description
 
 ### Guide complet
 
-📚 **Voir le guide de déploiement détaillé** : [`.github/DEPLOY.md`](.github/DEPLOY.md)
+📚 **Voir le guide de déploiement détaillé** : [`docs/deployment.md`](docs/deployment.md)
 
 Le guide inclut :
 
@@ -2978,7 +2981,7 @@ Merge main → Build Docker → Push GHCR → Deploy VPS (~8-10 min)
 
 - **CI** (`.github/workflows/ci.yml`) : Lint, Type-check, Tests unitaires, Build, Tests E2E (PR uniquement)
 - **CD** (`.github/workflows/cd.yml`) : Build image Docker, Push sur ghcr.io, Deploy via SSH
-- Tests unitaires sur tous les push (~5600 tests Vitest, 305 fichiers)
+- Tests unitaires sur tous les push (~5637 tests Vitest, 309 fichiers)
 - Tests E2E sur PR vers main (~659 tests Playwright actifs, 5 devices mobiles, ~1018 total)
 - Stabilisation E2E (SP-434) : Touch targets WCAG 2.5.5 (44px), command palette, mobile navigation
 - Déploiement automatique sur merge main ✅

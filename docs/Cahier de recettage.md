@@ -14,7 +14,7 @@ Ce document trace l'historique complet des tests réalisés sur SmartPlanning. I
 | Pipeline CI/CD       | GitHub Actions                                         |
 | Responsable          | Christophe Mostefaoui                                  |
 | Date de création     | 4 décembre 2025                                        |
-| Dernière mise à jour | 10 février 2026 (SP-460 - Nettoyage final & couverture 86%) |
+| Dernière mise à jour | 11 février 2026 (SP-462 - Optimisation SEO Google + LLMs) |
 
 ---
 
@@ -34,7 +34,7 @@ Dans le cadre du diplôme **CDA (Concepteur Développeur d'Applications)**, ce c
 | Métrique              | Objectif  | Atteint  |
 | --------------------- | --------- | -------- |
 | Couverture globale    | ≥ 70%     | ✅ 86.35% |
-| Tests unitaires       | ≥ 500     | ✅ 5600   |
+| Tests unitaires       | ≥ 500     | ✅ 5637   |
 | Tests E2E             | ≥ 50      | ✅ 1018   |
 | Score Lighthouse A11y | ≥ 90%     | ✅ 95%   |
 | Anomalies critiques   | 0 en prod | ✅ 0     |
@@ -2146,8 +2146,9 @@ not-found.tsx (Server Component)
 | 09/02/2026 (SP-441)        | 5180            | 988       | 6168  | ~85%       | 📈 +73              |
 | 09/02/2026 (SP-439)        | 5213            | 988       | 6201  | ~85%       | 📈 +33              |
 | 10/02/2026 (SP-460)        | 5600            | 1018      | 6618  | 86.35%     | 📈 +417             |
+| 11/02/2026 (SP-462)        | 5637            | 1018      | 6655  | ~86%       | 📈 +37              |
 
-**Graphique d'évolution** : De 27 tests (04/12) à 6618 tests (10/02) = **+24400% de croissance** 🚀
+**Graphique d'évolution** : De 27 tests (04/12) à 6655 tests (11/02) = **+24550% de croissance** 🚀
 
 ---
 
@@ -2286,6 +2287,7 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
 
 | Date       | Modification                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 11/02/2026 | 🆕 SP-462 Optimisation SEO Google + LLMs : Homepage refactorisée en Server Component (extraction LandingPageContent.tsx + StructuredData.tsx JSON-LD @graph 4 schemas WebSite/Organization/SoftwareApplication/FAQPage). robots.ts (Metadata API Next.js 15, block /app/ /api/ auth pages). sitemap.ts (8 pages, priorités hiérarchisées homepage 1.0 → légales 0.3). Favicon convention Next.js 15 (src/app/favicon.ico + icon.png + apple-icon.png). Correction layout root ("Bientôt disponible" → "Essai gratuit 21 jours", keywords long-tail FR). noindex dashboard layout (défense en profondeur). llms.txt + llms-full.txt (convention llmstxt.org, comparaison tarifaire Skello/Combo). Canonical URLs 5 pages légales (CGU, CGV, confidentialité, mentions-legales, cookies). +37 tests unitaires (robots 6, sitemap 7, StructuredData 22, LandingPageContent 2). 9 commits atomiques. Build OK, 0 régression. Total : 6655 tests |
 | 10/02/2026 | 🆕 SP-460 Nettoyage final & couverture 86% : Cleanup code mort (suppression route `test-datatable/`, `console.log`, imports inutilisés, 6 dépendances npm obsolètes). +387 tests unitaires (20 fichiers) couvrant Teams (TeamCard, TeamForm, TeamMembersManager, TeamsDataTable : 72 tests), Admin/Employees (EmployeeCard, EmployeeFilters, DeleteEmployeeDialog, BulkDeleteDialog, columns : 88 tests), Schedules (ExportDropdown, WeeklyHoursPanel, AvailabilityPopover : 41 tests), Couverture (FormDatePicker, AvatarUpload MSW, CookieConsentProvider, LeavesListMobile, ChartWidgets mock Recharts, UmamiAnalyticsWrapper, CompanyForm, columns employees, AvailabilityPopover : 140 tests). +30 tests E2E billing (SP-373). Couverture 80.38% → 86.35%. ANO-023 vi.hoisted() MSW, ANO-024 server.use() vs stubGlobal, ANO-025 TooltipProvider Radix. Lint 0, tsc 0, build OK. Compétences CDA #77-78 ajoutées. Total : 6618 tests |
 | 10/02/2026 | 🆕 **EPIC SP-348 COMPLÈTE** — SP-373 Tests E2E Billing : 30 tests Playwright (6 suites × 5 tests). 2 Page Objects : `BillingPage` (25+ locators data-testid, méthodes goto/gotoWithReason/waitForLoad/expect*) et `PricingPage` (hero, simulateur slider, features, CTA). Fixtures `billing-fixtures.ts` (7 mock generators : trial, active, past_due, canceled, expired, trial_expired, no_subscription). Suites : trial-flow (accès billing, titre, card, bouton gestion, description), checkout-flow (ACTIVE, montant, sièges, pas bannière trial, usage), subscription-management (détails, usage indicator, prix/total, prorata, historique factures), payment-failure (alertes payment_overdue/payment_incomplete, style destructive, pas d'alerte sans reason), trial-expiry (alerte trial_expired, hero conversion, prix/employé, CTA #subscription-section, hero no_subscription), cancellation-flow (alertes canceled/expired, réabonnement, bouton annulation, dialog confirmation). Stratégie : seed TechCorp ACTIVE 10 employés + query params ?reason= pour simulation états bloquants. Barrel exports BillingPage/PricingPage dans pages/index.ts. **Bilan Epic SP-348 : 15 tickets, 487+ tests**. Compétence CDA #76 ajoutée. Total : 6299 tests |
 | 10/02/2026 | 🆕 SP-370 Cron Trial Expiration & Webhook Emails : +25 tests unitaires. Endpoint cron `/api/cron/trial-expiration` sécurisé CRON_SECRET header. Détection trials expirant 3j/7j → TrialExpiringEmail, trials expirés 24h → TrialExpiredEmail. Logging EmailLog traçabilité + déduplication. Webhooks Stripe enrichis : checkout.session.completed → SubscriptionConfirmedEmail, invoice.payment_failed → PaymentFailedEmail, customer.subscription.deleted → SubscriptionCanceledEmail, invoice.paid → InvoiceEmail. Service `sendBillingEmail()` fire-and-forget avec logging EmailLog, résolution automatique director destinataire. Compétence CDA #75 ajoutée. Total : 6269 tests |
@@ -2400,12 +2402,55 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
     - `columns.test.tsx` employees (16 tests) : Renderers cellules, email fallback, avatar
     - `AvailabilityPopover.test.tsx` (13 tests) : Types disponibilité, dates, fermeture
   - **Couverture** : 80.38% → **86.35%** (statements), 83.56% (branches), 77.75% (functions)
-  - **Vérifications finales** : lint 0 erreurs, tsc 0 erreurs, 5600 tests Vitest OK, build OK
+  - **Vérifications finales** : lint 0 erreurs, tsc 0 erreurs, 5637 tests Vitest OK, build OK
   - **Anomalies résolues** :
     - ANO-023 : `vi.hoisted()` requis pour mocks MSW dans AvatarUpload (hoisting `vi.mock`)
     - ANO-024 : MSW `server.use()` au lieu de `vi.stubGlobal('fetch')` quand MSW est actif
     - ANO-025 : `TooltipProvider` obligatoire pour colonnes DataTable avec Radix Tooltip
-  - Total projet : 6618 tests (5600 unitaires + 1018 E2E)
+  - Total projet : 6655 tests (5637 unitaires + 1018 E2E)
+
+### Sprint 18 - Optimisation SEO Google + LLMs (SP-462) 🆕
+
+- SP-462 : Optimisation SEO pour Google SERP + découvrabilité LLMs ✅ TERMINÉ
+  - **Favicon convention Next.js 15** :
+    - `src/app/favicon.ico` (48x48), `src/app/icon.png` (192x192), `src/app/apple-icon.png` (180x180)
+    - Détection automatique par Next.js 15, URL stable pour Google SERP
+  - **robots.ts** (`src/app/robots.ts`) :
+    - Metadata API Next.js 15 générant `/robots.txt`
+    - Allow `/`, disallow `/app/`, `/api/`, `/login`, `/register`, `/forgot-password`, `/reset-password`
+    - Référence sitemap.xml
+  - **sitemap.ts** (`src/app/sitemap.ts`) :
+    - 8 pages publiques avec priorités hiérarchisées
+    - Homepage 1.0, tarifs 0.9, a-propos 0.8, pages légales 0.3
+    - changeFrequency weekly/monthly/yearly selon le type
+  - **Homepage refactorisée en Server Component** :
+    - Extraction contenu client dans `LandingPageContent.tsx`
+    - `StructuredData.tsx` avec JSON-LD @graph 4 schemas : WebSite, Organization (logo 512x512), SoftwareApplication (prix 2.90 EUR per-seat), FAQPage (5 questions landing)
+    - Metadata complète : title, description, canonical, Open Graph, Twitter Cards, 10 keywords long-tail français
+    - Pattern identique à tarifs/page.tsx et a-propos/page.tsx
+  - **Correction layout root** :
+    - Suppression "Bientôt disponible" remplacé par "Essai gratuit 21 jours"
+    - Keywords génériques remplacés par 10 expressions long-tail françaises
+  - **noindex dashboard** :
+    - `src/app/app/layout.tsx` : metadata `robots: { index: false, follow: false }`
+    - Défense en profondeur : certains crawlers LLM ignorent robots.txt
+  - **Fichiers LLM** :
+    - `public/llms.txt` : Résumé structuré convention llmstxt.org (8 pages publiques + lien llms-full.txt)
+    - `public/llms-full.txt` : Version détaillée avec fonctionnalités, comparaison tarifaire (SmartPlanning 58 EUR vs Skello 79 EUR vs Combo 60 EUR), stack, sécurité
+  - **Canonical URLs pages légales** :
+    - Ajout `alternates.canonical` aux 5 pages : CGU, CGV, confidentialité, mentions-legales, cookies
+  - **Vérification navigation** :
+    - Header : Tarifs, À propos, Connexion, Essai gratuit (pas de liens légales) — favorise les sitelinks Google
+    - Footer : pages légales cantonnées dans la section "Légal" (poids SEO inférieur)
+  - **Tests** : 37 nouveaux tests unitaires
+    - `robots.test.ts` (6 tests) : objet valide, allow /, userAgent *, disallow /app/ et /api/, pages auth, URL sitemap
+    - `sitemap.test.ts` (7 tests) : 8 URLs, URLs exactes, priorités, changeFrequency, lastModified
+    - `StructuredData.test.tsx` (22 tests) : WebSite (type, @id, name, langue, publisher, pas de SearchAction), Organization (type, @id, name, logo url/width/height, zone France), SoftwareApplication (type, prix 2.90 EUR, spec unitaire, features, provider), FAQPage (type, questions, format Schema.org), rendu script JSON-LD, @graph 4 schemas, 4 types attendus
+    - `LandingPageContent.test.tsx` (2 tests) : rendu sans erreur, sections principales présentes
+  - **9 commits atomiques** sur branche `feature/SP-462-seo-visibility`
+  - **Build** : OK (robots.txt, sitemap.xml, icon.png, apple-icon.png visibles dans le build)
+  - **Zéro régression** : 5637 tests Vitest passent (309 fichiers)
+  - Total projet : 6655 tests
 
 ### Sprint 17 - Tests E2E Billing (SP-373) — Epic SP-348 COMPLÈTE 🆕
 
