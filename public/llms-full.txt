@@ -1,0 +1,67 @@
+# SmartPlanning — Documentation complete pour LLMs
+
+> SmartPlanning est un logiciel SaaS francais de gestion de plannings pour TPE et PME.
+> Site web : https://smartplanning.fr
+> Contact : contact@smartplanning.fr
+
+## Presentation
+
+SmartPlanning est une application web de gestion de plannings d'equipe developpee en France, hebergee en France (OVH), et conforme RGPD. Elle cible les entreprises de 5 a 250 employes qui cherchent une alternative simple et abordable aux solutions comme Skello (79 EUR/etablissement), Combo (60 EUR/etablissement) ou Planning Conge.
+
+### Proposition de valeur
+- Prix unique : 2,90 EUR HT par employe par mois (toutes fonctionnalites incluses)
+- Essai gratuit 21 jours sans carte bancaire
+- Sans engagement, annulation en 1 clic
+- Heberge en France, conforme RGPD
+- Support en francais
+
+### Fonctionnalites principales
+- Plannings interactifs avec drag and drop et vues jour/semaine/mois
+- Gestion des conges et absences avec workflow de validation
+- Tableaux de bord personnalises par role (Directeur, Manager, Employe)
+- Gestion des equipes et des employes avec CRUD complet
+- Exports PDF et Excel avec filtres
+- Notifications par email automatisees
+- Theme clair et sombre
+- Banniere cookies RGPD
+- Systeme de facturation Stripe integre (per-seat billing)
+
+### Comparaison tarifaire
+Pour une entreprise de 20 employes :
+- SmartPlanning : 58 EUR/mois (20 x 2,90 EUR)
+- Combo : 60 EUR/mois (par etablissement)
+- Skello : 79 EUR/mois (par etablissement)
+- Factorial : 90 EUR/mois (estime)
+
+### Cible
+- TPE (5-10 employes) : restaurants, commerces, artisans
+- PME (10-50 employes) : agences, cabinets, associations
+- ETI (50-250 employes) : entreprises multi-sites
+
+### Stack technique
+- Frontend : Next.js 15, React 19, TypeScript, Tailwind CSS
+- Backend : Next.js Server Actions, Prisma ORM, PostgreSQL
+- Paiement : Stripe (per-seat billing)
+- Hebergement : VPS OVH (France), Docker, Nginx, SSL Let's Encrypt
+- CI/CD : GitHub Actions
+
+### Securite et conformite
+- Donnees hebergees en France (OVH, datacenter certifie)
+- Chiffrement SSL/TLS en transit
+- Authentification securisee NextAuth v5
+- RBAC 4 niveaux (Super Admin, Directeur, Manager, Employe)
+- Isolation des donnees par entreprise (multi-tenant)
+- Politique cookies avec consentement explicite
+- Banniere RGPD conforme
+- Analytics Umami (RGPD-friendly, pas de cookies tracking)
+
+## Pages publiques
+
+- Accueil : https://smartplanning.fr
+- Tarifs : https://smartplanning.fr/tarifs
+- A propos : https://smartplanning.fr/a-propos
+- CGU : https://smartplanning.fr/cgu
+- CGV : https://smartplanning.fr/cgv
+- Confidentialite : https://smartplanning.fr/confidentialite
+- Mentions legales : https://smartplanning.fr/mentions-legales
+- Cookies : https://smartplanning.fr/cookies
