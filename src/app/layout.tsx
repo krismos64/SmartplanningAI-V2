@@ -86,18 +86,18 @@ export const metadata: Metadata = {
     template: '%s | SmartPlanning',
   },
   description:
-    "Solution SaaS de gestion des plannings d'entreprise. Automatisez vos plannings, gérez vos équipes et optimisez votre organisation. Bientôt disponible !",
+    "Solution SaaS de gestion des plannings d'entreprise. Automatisez vos plannings, gerez vos equipes et optimisez votre organisation. Essai gratuit 21 jours.",
   keywords: [
-    'planning',
-    'gestion',
-    'entreprise',
-    'RH',
-    'équipes',
-    'SaaS',
-    'ressources humaines',
-    'congés',
-    'shifts',
-    'organisation',
+    'logiciel gestion planning entreprise',
+    'outil planning equipe en ligne',
+    'SaaS planning francais',
+    'planning TPE PME',
+    'gestion conges en ligne',
+    'alternative planning Excel',
+    'logiciel RH francais',
+    'planning employes en ligne',
+    'gestion horaires equipe',
+    'solution planning cloud',
   ],
   authors: [
     { name: 'Christophe Dev', url: 'https://christophe-dev-freelance.fr' },
@@ -112,7 +112,7 @@ export const metadata: Metadata = {
     url: 'https://smartplanning.fr',
     title: 'SmartPlanning - Gestion intelligente des plannings',
     description:
-      "Solution SaaS de gestion des plannings d'entreprise. Automatisez vos plannings, gérez vos équipes et optimisez votre organisation.",
+      "Solution SaaS de gestion des plannings d'entreprise. Automatisez vos plannings, gerez vos equipes et optimisez votre organisation. Essai gratuit 21 jours.",
     siteName: 'SmartPlanning',
     images: [
       {
@@ -138,7 +138,7 @@ export const metadata: Metadata = {
     site: '@smartplanning',
     title: 'SmartPlanning - Gestion intelligente des plannings',
     description:
-      "Solution SaaS de gestion des plannings d'entreprise. Automatisez vos plannings, gérez vos équipes et optimisez votre organisation.",
+      "Solution SaaS de gestion des plannings d'entreprise. Automatisez vos plannings, gerez vos equipes et optimisez votre organisation. Essai gratuit 21 jours.",
     images: [
       {
         url: '/twitter-image.png',
