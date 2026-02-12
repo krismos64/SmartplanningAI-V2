@@ -322,18 +322,31 @@ describe('checkSubscriptionAccess', () => {
   // --------------------------------------------------------------------------
 
   describe('Pas d\u2019abonnement (null)', () => {
-    it('devrait bloquer si subscriptionStatus est null', () => {
+    it('devrait autoriser si subscriptionStatus est null mais trialEndsAt dans le futur', () => {
       const result = checkSubscriptionAccess(
-        makeInput({ subscriptionStatus: null })
+        makeInput({ subscriptionStatus: null, trialEndsAt: futureDate(15) })
       )
-      expect(result.allowed).toBe(false)
+      expect(result).toEqual<SubscriptionAccessResult>({ allowed: true })
     })
 
-    it('devrait retourner reason=no_subscription', () => {
+    it('devrait bloquer avec trial_expired si subscriptionStatus est null et trialEndsAt dans le passé', () => {
       const result = checkSubscriptionAccess(
-        makeInput({ subscriptionStatus: null })
+        makeInput({ subscriptionStatus: null, trialEndsAt: pastDate(1) })
       )
-      expect(result.redirectReason).toBe('no_subscription')
+      expect(result).toEqual<SubscriptionAccessResult>({
+        allowed: false,
+        redirectReason: 'trial_expired',
+      })
+    })
+
+    it('devrait bloquer avec no_subscription si subscriptionStatus et trialEndsAt sont null', () => {
+      const result = checkSubscriptionAccess(
+        makeInput({ subscriptionStatus: null, trialEndsAt: null })
+      )
+      expect(result).toEqual<SubscriptionAccessResult>({
+        allowed: false,
+        redirectReason: 'no_subscription',
+      })
     })
   })
 

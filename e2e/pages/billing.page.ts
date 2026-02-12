@@ -60,9 +60,6 @@ export class BillingPage {
   // Locators — Blocking Alert (SP-440)
   // ==========================================================================
 
-  /** Hero de conversion (trial expire / no subscription) */
-  readonly conversionHero: Locator
-
   /** Alerte de blocage subscription guard */
   readonly blockingAlert: Locator
 
@@ -137,7 +134,6 @@ export class BillingPage {
     this.confirmCancelBtn = page.getByTestId('confirm-cancel-btn')
 
     // Blocking Alert (SP-440)
-    this.conversionHero = page.getByTestId('billing-conversion-hero')
     this.blockingAlert = page.getByTestId('subscription-blocking-alert')
     this.billingError = page.getByTestId('billing-error')
 
@@ -290,10 +286,6 @@ export class BillingPage {
   async expectBlockingAlert(title: string): Promise<void> {
     await expect(this.blockingAlert).toBeVisible()
     await expect(this.blockingAlert.locator('h3')).toContainText(title)
-  }
-
-  async expectConversionHero(): Promise<void> {
-    await expect(this.conversionHero).toBeVisible()
   }
 
   async expectNoBlockingAlert(): Promise<void> {

@@ -107,8 +107,16 @@ export function checkSubscriptionAccess(
     return { allowed: true }
   }
 
-  // 3. Pas d'abonnement du tout
+  // 3. Pas d'abonnement du tout — vérifier le trial Company d'abord
   if (subscriptionStatus === null || subscriptionStatus === undefined) {
+    // Nouvel utilisateur en trial : pas encore de Subscription mais trialEndsAt défini
+    if (trialEndsAt) {
+      const trialEnd = new Date(trialEndsAt).getTime()
+      if (trialEnd > Date.now()) {
+        return { allowed: true }
+      }
+      return { allowed: false, redirectReason: 'trial_expired' }
+    }
     return { allowed: false, redirectReason: 'no_subscription' }
   }
 
