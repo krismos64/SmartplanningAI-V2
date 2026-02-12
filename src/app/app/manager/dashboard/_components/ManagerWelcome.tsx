@@ -36,7 +36,7 @@ function getGreeting(): string {
     return 'Bonjour'
   }
   if (hour >= 12 && hour < 18) {
-    return 'Bon apres-midi'
+    return 'Bon après-midi'
   }
   return 'Bonsoir'
 }
@@ -90,7 +90,7 @@ export function ManagerWelcome({
             </h1>
             <p className="text-muted-foreground">{today}</p>
             <p className="text-sm text-muted-foreground">
-              Vue d&apos;ensemble de votre equipe
+              Vue d&apos;ensemble de votre équipe
             </p>
           </div>
 
@@ -116,8 +116,8 @@ export function ManagerWelcome({
                   <circle cx="12" cy="12" r="10" />
                   <polyline points="12 6 12 12 16 14" />
                 </svg>
-                {pendingLeaveRequests} conge
-                {pendingLeaveRequests > 1 ? 's' : ''} a valider
+                {pendingLeaveRequests} congé
+                {pendingLeaveRequests > 1 ? 's' : ''} à valider
               </Badge>
             )}
             {todayAbsences > 0 && (

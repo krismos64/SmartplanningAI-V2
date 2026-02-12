@@ -69,7 +69,7 @@ export function ManagerQuickActions({
                 <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
                 <path d="M16 3.13a4 4 0 0 1 0 7.75" />
               </svg>
-              Voir l&apos;equipe
+              Voir l&apos;équipe
             </Link>
           </Button>
 
@@ -123,7 +123,7 @@ export function ManagerQuickActions({
                 <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
                 <line x1="12" y1="22.08" x2="12" y2="12" />
               </svg>
-              Tous les conges
+              Tous les congés
               {pendingLeaveRequests > 0 && (
                 <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-orange-500 text-xs font-medium text-white">
                   {pendingLeaveRequests > 9 ? '9+' : pendingLeaveRequests}

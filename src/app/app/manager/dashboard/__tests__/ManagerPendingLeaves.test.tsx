@@ -38,7 +38,7 @@ describe('ManagerPendingLeaves', () => {
   it('affiche le titre "Conges a valider"', () => {
     render(<ManagerPendingLeaves pendingLeaves={mockLeaves} />)
 
-    expect(screen.getByText('Conges a valider')).toBeInTheDocument()
+    expect(screen.getByText('Congés à valider')).toBeInTheDocument()
   })
 
   it('affiche le nombre de demandes en attente', () => {
@@ -72,7 +72,7 @@ describe('ManagerPendingLeaves', () => {
     render(<ManagerPendingLeaves pendingLeaves={[]} />)
 
     expect(
-      screen.getByText('Toutes les demandes ont ete traitees')
+      screen.getByText('Toutes les demandes ont été traitées')
     ).toBeInTheDocument()
   })
 

@@ -35,13 +35,13 @@ describe('ManagerTeamChart', () => {
   it('affiche le titre "Performance equipe"', () => {
     render(<ManagerTeamChart teamPerformance={mockTeamPerformance} />)
 
-    expect(screen.getByText('Performance equipe')).toBeInTheDocument()
+    expect(screen.getByText('Performance équipe')).toBeInTheDocument()
   })
 
   it('affiche la description', () => {
     render(<ManagerTeamChart teamPerformance={mockTeamPerformance} />)
 
-    expect(screen.getByText('Heures travaillees ce mois')).toBeInTheDocument()
+    expect(screen.getByText('Heures travaillées ce mois')).toBeInTheDocument()
   })
 
   it('affiche le total des heures', () => {
@@ -67,7 +67,7 @@ describe('ManagerTeamChart', () => {
   it('affiche message si equipe vide', () => {
     render(<ManagerTeamChart teamPerformance={[]} />)
 
-    expect(screen.getByText("Aucun membre dans l'equipe")).toBeInTheDocument()
+    expect(screen.getByText("Aucun membre dans l'équipe")).toBeInTheDocument()
   })
 
   it('applique couleur verte pour completion >= 90%', () => {

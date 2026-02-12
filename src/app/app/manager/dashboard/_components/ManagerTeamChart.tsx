@@ -100,10 +100,10 @@ export function ManagerTeamChart({
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <div>
           <CardTitle className="text-base font-medium">
-            Performance equipe
+            Performance équipe
           </CardTitle>
           <p className="text-sm text-muted-foreground">
-            Heures travaillees ce mois
+            Heures travaillées ce mois
           </p>
         </div>
         <div className="text-right">
@@ -114,7 +114,7 @@ export function ManagerTeamChart({
             </span>
           </p>
           <p className="text-xs text-muted-foreground">
-            Completion moyenne :{' '}
+            Complétion moyenne :{' '}
             <span
               className={cn(
                 'font-semibold',
@@ -134,7 +134,7 @@ export function ManagerTeamChart({
         {teamPerformance.length === 0 && !isLoading ? (
           <div className="flex h-[200px] items-center justify-center">
             <p className="text-sm text-muted-foreground">
-              Aucun membre dans l&apos;equipe
+              Aucun membre dans l&apos;équipe
             </p>
           </div>
         ) : (
@@ -147,8 +147,8 @@ export function ManagerTeamChart({
             showTooltip
             barSize={24}
             colors={[CHART_COLORS.primary[0]]}
-            emptyMessage="Aucune donnee de performance"
-            title="Heures travaillees par membre"
+            emptyMessage="Aucune donnée de performance"
+            title="Heures travaillées par membre"
           />
         )}
       </CardContent>

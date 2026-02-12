@@ -18,7 +18,7 @@ describe('ManagerQuickActions', () => {
   it('affiche le bouton "Voir l equipe"', () => {
     render(<ManagerQuickActions />)
 
-    expect(screen.getByText("Voir l'equipe")).toBeInTheDocument()
+    expect(screen.getByText("Voir l'équipe")).toBeInTheDocument()
   })
 
   it('affiche le bouton "Voir le planning"', () => {
@@ -30,7 +30,7 @@ describe('ManagerQuickActions', () => {
   it('affiche le bouton "Tous les conges"', () => {
     render(<ManagerQuickActions />)
 
-    expect(screen.getByText('Tous les conges')).toBeInTheDocument()
+    expect(screen.getByText('Tous les congés')).toBeInTheDocument()
   })
 
   it('affiche le bouton "Notes d incident"', () => {
@@ -43,7 +43,7 @@ describe('ManagerQuickActions', () => {
     render(<ManagerQuickActions />)
 
     // Lien equipe
-    const equipeLink = screen.getByRole('link', { name: /Voir l'equipe/i })
+    const equipeLink = screen.getByRole('link', { name: /Voir l'équipe/i })
     expect(equipeLink).toHaveAttribute('href', '/app/dashboard/employees')
 
     // Lien planning
@@ -51,7 +51,7 @@ describe('ManagerQuickActions', () => {
     expect(planningLink).toHaveAttribute('href', '/app/dashboard/schedules')
 
     // Lien conges
-    const congesLink = screen.getByRole('link', { name: /Tous les conges/i })
+    const congesLink = screen.getByRole('link', { name: /Tous les congés/i })
     expect(congesLink).toHaveAttribute('href', '/app/dashboard/leaves')
 
     // Lien incidents

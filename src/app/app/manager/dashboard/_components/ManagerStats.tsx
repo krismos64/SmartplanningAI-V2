@@ -66,14 +66,14 @@ export function ManagerStats({
   // Construction des StatCards (4 KPIs) avec variants Cyber Glass 3D
   const statCards: StatCardProps[] = [
     {
-      title: 'Membres equipe',
+      title: 'Membres équipe',
       value: stats.teamSize,
       icon: Users,
       description: 'Collaborateurs actifs',
       variant: 'primary',
     },
     {
-      title: 'Conges a valider',
+      title: 'Congés à valider',
       value: stats.pendingLeaveRequests,
       icon: CalendarClock,
       description:
@@ -89,11 +89,11 @@ export function ManagerStats({
       description:
         stats.todayAbsences > 0
           ? 'Collaborateurs absents'
-          : 'Equipe au complet',
+          : 'Équipe au complet',
       variant: stats.todayAbsences > 0 ? 'danger' : 'success',
     },
     {
-      title: 'Heures equipe',
+      title: 'Heures équipe',
       value: formatHours(stats.teamHoursWorked.current),
       icon: Clock,
       trend: {
@@ -114,7 +114,7 @@ export function ManagerStats({
       <div
         className={cn('grid grid-cols-2 gap-4 md:grid-cols-4', className)}
         role="region"
-        aria-label="Statistiques equipe"
+        aria-label="Statistiques équipe"
         data-testid="manager-stats"
       >
         {statCards.map((stat, index) => (
@@ -131,7 +131,7 @@ export function ManagerStats({
       animate="visible"
       className={cn('grid grid-cols-2 gap-4 md:grid-cols-4', className)}
       role="region"
-      aria-label="Statistiques equipe"
+      aria-label="Statistiques équipe"
       data-testid="manager-stats"
     >
       {statCards.map((stat, index) => (

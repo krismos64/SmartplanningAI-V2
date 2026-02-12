@@ -120,7 +120,7 @@ export function ManagerPendingLeaves({
     startTransition(async () => {
       const result = await onApprove(leaveId)
       if (result.success) {
-        toast.success('Demande approuvee')
+        toast.success('Demande approuvée')
       } else {
         toast.error(result.error ?? "Erreur lors de l'approbation")
       }
@@ -135,7 +135,7 @@ export function ManagerPendingLeaves({
     startTransition(async () => {
       const result = await onReject(leaveId)
       if (result.success) {
-        toast.success('Demande refusee')
+        toast.success('Demande refusée')
       } else {
         toast.error(result.error ?? 'Erreur lors du refus')
       }
@@ -152,7 +152,7 @@ export function ManagerPendingLeaves({
         <div className="flex items-center justify-between">
           <div>
             <CardTitle className="text-base font-medium">
-              Conges a valider
+              Congés à valider
             </CardTitle>
             <p className="text-sm text-muted-foreground">
               {pendingLeaves.length > 0
@@ -193,7 +193,7 @@ export function ManagerPendingLeaves({
               </svg>
             </div>
             <p className="mt-2 text-sm text-muted-foreground">
-              Toutes les demandes ont ete traitees
+              Toutes les demandes ont été traitées
             </p>
           </div>
         ) : (

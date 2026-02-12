@@ -57,7 +57,7 @@ describe('ManagerWelcome', () => {
 
     const badge = screen.getByTestId('pending-leaves-badge')
     expect(badge).toBeInTheDocument()
-    expect(badge).toHaveTextContent('3 conges a valider')
+    expect(badge).toHaveTextContent('3 congés à valider')
   })
 
   it('affiche le badge singulier pour 1 conge', () => {
@@ -70,7 +70,7 @@ describe('ManagerWelcome', () => {
     )
 
     const badge = screen.getByTestId('pending-leaves-badge')
-    expect(badge).toHaveTextContent('1 conge a valider')
+    expect(badge).toHaveTextContent('1 congé à valider')
   })
 
   it('affiche le badge absences si absents > 0', () => {
@@ -149,7 +149,7 @@ describe('ManagerWelcome', () => {
       />
     )
 
-    expect(screen.getByText(/Bon apres-midi/)).toBeInTheDocument()
+    expect(screen.getByText(/Bon après-midi/)).toBeInTheDocument()
   })
 
   it('affiche le bon message selon l heure - soir', () => {

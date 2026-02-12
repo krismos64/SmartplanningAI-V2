@@ -75,10 +75,10 @@ describe('ManagerStats', () => {
   it('affiche les 4 KPIs', () => {
     render(<ManagerStats stats={mockStats} />)
 
-    expect(screen.getByText('Membres equipe')).toBeInTheDocument()
-    expect(screen.getByText('Conges a valider')).toBeInTheDocument()
+    expect(screen.getByText('Membres équipe')).toBeInTheDocument()
+    expect(screen.getByText('Congés à valider')).toBeInTheDocument()
     expect(screen.getByText("Absents aujourd'hui")).toBeInTheDocument()
-    expect(screen.getByText('Heures equipe')).toBeInTheDocument()
+    expect(screen.getByText('Heures équipe')).toBeInTheDocument()
   })
 
   it('affiche la valeur du nombre de membres', () => {
@@ -136,7 +136,7 @@ describe('ManagerStats', () => {
     }
     render(<ManagerStats stats={statsNoAbsences} />)
 
-    expect(screen.getByText('Equipe au complet')).toBeInTheDocument()
+    expect(screen.getByText('Équipe au complet')).toBeInTheDocument()
   })
 
   it('a le data-testid manager-stats', () => {
@@ -149,7 +149,7 @@ describe('ManagerStats', () => {
     render(<ManagerStats stats={mockStats} />)
 
     expect(
-      screen.getByRole('region', { name: 'Statistiques equipe' })
+      screen.getByRole('region', { name: 'Statistiques équipe' })
     ).toBeInTheDocument()
   })
 
