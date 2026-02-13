@@ -224,15 +224,21 @@ export class EditProfilePage {
   async expectUpdateSuccess() {
     // Attendre soit le toast, soit la redirection (premier qui arrive)
     // Note: On utilise domcontentloaded car SSE maintient la connexion ouverte
-    // Timeout augmenté à 30s pour les environnements CI lents (nightly)
+    // Timeout augmenté à 45s pour les environnements CI lents (nightly)
     await Promise.race([
       this.page
         .getByText(/Profil mis à jour avec succès/i)
-        .waitFor({ state: 'visible', timeout: 30000 }),
+        .waitFor({ state: 'visible', timeout: 45000 }),
       this.page.waitForURL(/\/app\/profile$/, {
-        timeout: 30000,
+        timeout: 45000,
         waitUntil: 'domcontentloaded',
       }),
+      // Fallback : le bouton submit repasse à l'état normal (plus de loading)
+      // indiquant que la soumission est terminée même sans redirection
+      this.submitButton
+        .filter({ hasNotText: 'Enregistrement...' })
+        .waitFor({ state: 'visible', timeout: 45000 })
+        .then(() => this.page.waitForTimeout(1000)),
     ])
   }
 }

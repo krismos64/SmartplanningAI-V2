@@ -385,7 +385,8 @@ test.describe('Scenarios avances', () => {
     await page.getByRole('button', { name: 'Se connecter' }).click()
 
     // Apres connexion, doit revenir a /app/profile (ou dashboard si profile n'existe pas)
-    await page.waitForURL(/\/app/, { timeout: 15000 })
+    // Timeout augmenté pour CI nightly (serveur dev plus lent)
+    await page.waitForURL(/\/app/, { timeout: 30000 })
   })
 
   // NOTE: Test flaky désactivé - problèmes de timing avec networkidle

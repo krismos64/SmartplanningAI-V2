@@ -81,7 +81,16 @@ export const TEST_USERS: Record<string, TestUser> = {
  * @param user - Utilisateur a authentifier
  */
 export async function loginAs(page: Page, user: TestUser): Promise<void> {
-  await page.goto('/login')
+  // Goto avec retry en cas de connection reset (serveur CI lent au démarrage)
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      await page.goto('/login', { timeout: 30000 })
+      break
+    } catch (error) {
+      if (attempt === 2) throw error
+      await page.waitForTimeout(2000)
+    }
+  }
   await page.waitForLoadState('domcontentloaded')
 
   // Remplir le formulaire
@@ -94,8 +103,9 @@ export async function loginAs(page: Page, user: TestUser): Promise<void> {
   // Attendre la redirection vers un dashboard (pattern permissif)
   // Note: Le login peut rediriger vers /app/dashboard d'abord, puis le middleware
   // redirige vers le dashboard spécifique au rôle. On accepte les deux.
+  // Timeout 45s pour CI nightly (serveur dev plus lent)
   await page.waitForURL(/\/app\/(dashboard|director|manager|admin|employee)/, {
-    timeout: 30000,
+    timeout: 45000,
   })
 
   // Si on n'est pas encore sur le bon dashboard, attendre la redirection finale

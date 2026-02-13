@@ -254,7 +254,7 @@ export class PersonalTasksPage {
 
   async expectToastSuccess(message?: string) {
     const toast = this.page.locator('[data-sonner-toast]').first()
-    await expect(toast).toBeVisible({ timeout: 10000 })
+    await expect(toast).toBeVisible({ timeout: 15000 })
     if (message) {
       await expect(toast).toContainText(message)
     }
