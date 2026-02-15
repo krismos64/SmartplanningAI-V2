@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 11 février 2026 (SP-462 — Optimisation SEO Google + LLMs)
+- **Dernière mise à jour** : 15 février 2026 (E2E en mode production — CI/nightly passent de `npm run dev` à `npm run start`)
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -47,7 +47,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 ### DevOps
 
 - **Containerization** : Docker + Docker Compose
-- **CI/CD** : GitHub Actions ✅ (CI optimisé ~10min, nightly complet)
+- **CI/CD** : GitHub Actions ✅ (CI optimisé ~10min, nightly complet, E2E en mode production)
 - **Hosting** : VPS OVH (Ubuntu 24.04 LTS) ✅
 - **SSL** : Let's Encrypt (auto-renew) ✅
 - **Reverse Proxy** : Nginx
@@ -532,6 +532,19 @@ Automatisation des emails billing via cron job et intégration webhooks Stripe :
 - **Fixtures** (`e2e/helpers/billing-fixtures.ts`) : 7 mock data generators (trial, active, past_due, canceled, expired, trial_expired, no_subscription)
 
 - **Stratégie** : Tests basés sur le seed TechCorp (ACTIVE, 10 employés) + query params `?reason=` pour simuler les différents états de subscription
+
+### Tests E2E en mode production (15 février 2026)
+
+Migration des tests E2E CI et nightly de `npm run dev` vers `npm run start` pour des résultats représentatifs de la production :
+
+- **Problème résolu** : `ERR_TOO_MANY_REDIRECTS` causé par 3 facteurs en mode production sur HTTP localhost
+- **Cause 1** : NextAuth v5 active les cookies `secure: true` en production → refusés par le navigateur sur HTTP
+- **Cause 2** : `AUTH_URL` manquant → `trustHost` désactivé, requêtes rejetées
+- **Cause 3** : CSP `upgrade-insecure-requests` force le navigateur à upgrader HTTP → HTTPS sur localhost
+- **Fix CSP** (`next.config.ts`) : `upgrade-insecure-requests` conditionnel selon le protocole de `AUTH_URL`/`NEXTAUTH_URL`
+- **Fix Playwright** : `playwright.ci.config.ts` et `playwright.nightly.config.ts` → `command: 'npm run start'`
+- **Fix CI** : Ajout `AUTH_URL`, `AUTH_SECRET`, `AUTH_TRUST_HOST` + étape `npm run build` dans `ci.yml` et `nightly-e2e.yml`
+- **Gains** : Tests plus rapides (pas de HMR/Turbopack), plus fiables (pas de React Strict Mode double mount), représentatifs de la prod
 
 ### Déploiement Stripe Production (SP-461 - 10 février 2026)
 
@@ -2322,7 +2335,7 @@ SYSTEM_ADMIN > DIRECTOR > MANAGER > EMPLOYEE
 - Paiement sécurisé Stripe (validation Zod des env vars, clés préfixées)
 - Gestion des permissions RBAC stricte
 - Audit logs (ActivityLog)
-- Content Security Policy (CSP) avec headers sécurisés
+- Content Security Policy (CSP) avec headers sécurisés (`upgrade-insecure-requests` conditionnel HTTP/HTTPS)
 - SRI (Subresource Integrity) activé en production
 
 ### Variables d'environnement sensibles
@@ -2967,22 +2980,26 @@ ssh -i ~/.ssh/smartplanning_deploy deploy@smartplanning.fr
 
 ```
 Push feature → Tests unitaires (~3-5 min)
-PR vers main → Tests unitaires + E2E multi-navigateurs (~15-20 min)
+PR vers main → Tests unitaires + Build + E2E production (~15-20 min)
 Merge main → Build Docker → Push GHCR → Deploy VPS (~8-10 min)
+Nightly → Build + Suite E2E complète en mode production (2h00 UTC)
 ```
 
 **Stratégie optimisée (SP-113)** :
 
-| Scénario            | Tests Unit | Tests E2E          | Déploiement | Temps      |
-| ------------------- | ---------- | ------------------ | ----------- | ---------- |
-| Push feature branch | ✅         | ❌                 | ❌          | ~3-5 min   |
-| PR vers main        | ✅         | ✅ (3 navigateurs) | ❌          | ~15-20 min |
-| Merge sur main      | ✅         | ❌                 | ✅          | ~8-10 min  |
+| Scénario            | Tests Unit | Tests E2E              | Déploiement | Temps      |
+| ------------------- | ---------- | ---------------------- | ----------- | ---------- |
+| Push feature branch | ✅         | ❌                     | ❌          | ~3-5 min   |
+| PR vers main        | ✅         | ✅ (prod, Chromium)    | ❌          | ~15-20 min |
+| Merge sur main      | ✅         | ❌                     | ✅          | ~8-10 min  |
+| Nightly (2h UTC)    | ❌         | ✅ (prod, suite complète) | ❌       | ~30-45 min |
 
-- **CI** (`.github/workflows/ci.yml`) : Lint, Type-check, Tests unitaires, Build, Tests E2E (PR uniquement)
+- **CI** (`.github/workflows/ci.yml`) : Lint, Type-check, Tests unitaires, Build, Tests E2E en mode production (PR/push main)
 - **CD** (`.github/workflows/cd.yml`) : Build image Docker, Push sur ghcr.io, Deploy via SSH
+- **Nightly** (`.github/workflows/nightly-e2e.yml`) : Suite E2E complète en mode production (`npm run start`)
 - Tests unitaires sur tous les push (~5637 tests Vitest, 309 fichiers)
-- Tests E2E sur PR vers main (~659 tests Playwright actifs, 5 devices mobiles, ~1018 total)
+- Tests E2E en mode production (`npm run build` + `npm run start`) pour des résultats représentatifs de la prod
+- Env vars CI : `AUTH_URL`, `AUTH_SECRET`, `AUTH_TRUST_HOST` pour NextAuth v5 sur HTTP localhost
 - Stabilisation E2E (SP-434) : Touch targets WCAG 2.5.5 (44px), command palette, mobile navigation
 - Déploiement automatique sur merge main ✅
 - Migrations Prisma automatiques

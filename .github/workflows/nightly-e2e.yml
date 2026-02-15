@@ -79,6 +79,9 @@ jobs:
           echo "DATABASE_URL=postgresql://test:test@localhost:5432/smartplanning_test" > .env
           echo "NEXTAUTH_SECRET=test-secret-for-nightly" >> .env
           echo "NEXTAUTH_URL=http://localhost:3000" >> .env
+          echo "AUTH_URL=http://localhost:3000" >> .env
+          echo "AUTH_SECRET=test-secret-for-nightly" >> .env
+          echo "AUTH_TRUST_HOST=true" >> .env
 
       - name: Wait for PostgreSQL
         run: |
@@ -101,8 +104,18 @@ jobs:
         env:
           DATABASE_URL: postgresql://test:test@localhost:5432/smartplanning_test
 
+      # === BUILD PRODUCTION ===
+      - name: Build Next.js application
+        run: npm run build
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/smartplanning_test
+          NEXTAUTH_SECRET: test-secret-for-nightly
+          NEXTAUTH_URL: http://localhost:3000
+          AUTH_URL: http://localhost:3000
+          AUTH_SECRET: test-secret-for-nightly
+          AUTH_TRUST_HOST: 'true'
+
       # === SUITE COMPLÈTE NIGHTLY ===
-      # Note: Utilise npm run dev (pas besoin de build préalable)
       - name: Run Full E2E Suite
         run: npx playwright test --config=playwright.nightly.config.ts
         env:
@@ -110,6 +123,9 @@ jobs:
           DATABASE_URL: postgresql://test:test@localhost:5432/smartplanning_test
           NEXTAUTH_SECRET: test-secret-for-nightly
           NEXTAUTH_URL: http://localhost:3000
+          AUTH_URL: http://localhost:3000
+          AUTH_SECRET: test-secret-for-nightly
+          AUTH_TRUST_HOST: 'true'
 
       - name: Upload test report
         if: always()

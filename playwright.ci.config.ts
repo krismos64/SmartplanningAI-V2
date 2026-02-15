@@ -105,10 +105,9 @@ export default defineConfig({
   // === SERVEUR WEB ===
 
   webServer: {
-    // NOTE: On utilise 'npm run dev' car 'npm run start' en CI cause des
-    // problèmes de redirections infinies (ERR_TOO_MANY_REDIRECTS).
-    // Le mode dev est légèrement plus lent mais fonctionne de façon fiable.
-    command: 'npm run dev',
+    // Mode production : nécessite npm run build au préalable.
+    // Les env vars AUTH_URL + AUTH_TRUST_HOST résolvent les redirections.
+    command: 'npm run start',
     url: 'http://localhost:3000',
     reuseExistingServer: false,
     timeout: 120_000,

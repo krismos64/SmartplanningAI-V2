@@ -12,6 +12,9 @@ import path from 'path'
  * @see Context7 - Next.js CSP/SRI documentation
  */
 const isDev = process.env.NODE_ENV === 'development'
+const isHttps = (
+  process.env.AUTH_URL ?? process.env.NEXTAUTH_URL ?? 'https://'
+).startsWith('https://')
 
 const nextConfig: NextConfig = {
   // Mode strict React
@@ -82,7 +85,7 @@ const nextConfig: NextConfig = {
       frame-ancestors 'none';
       frame-src 'self' https://www.youtube.com https://youtube.com https://www.youtube-nocookie.com;
       connect-src 'self' https://*.pusher.com wss://*.pusher.com https://analytics.smartplanning.fr;
-      upgrade-insecure-requests;
+      ${isHttps ? 'upgrade-insecure-requests;' : ''}
     `
       .replace(/\s{2,}/g, ' ')
       .trim()

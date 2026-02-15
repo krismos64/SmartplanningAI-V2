@@ -157,8 +157,8 @@ jobs:
     if: |
       (github.event_name == 'pull_request' && github.base_ref == 'main') ||
       (github.event_name == 'push' && github.ref == 'refs/heads/main')
-    # Timeout réduit grâce à l'optimisation
-    timeout-minutes: 25
+    # Timeout ajusté : build (~5min) + tests E2E (~10-12min)
+    timeout-minutes: 30
 
     # Service container PostgreSQL pour les tests E2E
     services:
@@ -206,6 +206,9 @@ jobs:
           echo "DATABASE_URL=postgresql://test:test@localhost:5432/smartplanning_test" > .env
           echo "NEXTAUTH_SECRET=test-secret-for-ci" >> .env
           echo "NEXTAUTH_URL=http://localhost:3000" >> .env
+          echo "AUTH_URL=http://localhost:3000" >> .env
+          echo "AUTH_SECRET=test-secret-for-ci" >> .env
+          echo "AUTH_TRUST_HOST=true" >> .env
         env:
           DATABASE_URL: postgresql://test:test@localhost:5432/smartplanning_test
 
@@ -257,8 +260,18 @@ jobs:
         env:
           DATABASE_URL: postgresql://test:test@localhost:5432/smartplanning_test
 
+      # Build production avant les tests E2E
+      - name: Build Next.js application
+        run: npm run build
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/smartplanning_test
+          NEXTAUTH_SECRET: test-secret-for-ci
+          NEXTAUTH_URL: http://localhost:3000
+          AUTH_URL: http://localhost:3000
+          AUTH_SECRET: test-secret-for-ci
+          AUTH_TRUST_HOST: 'true'
+
       # Lance les tests E2E critiques avec config optimisée
-      # Note: Utilise npm run dev (pas besoin de build préalable)
       - name: Run E2E tests (Critical subset)
         run: npx playwright test --config=playwright.ci.config.ts
         env:
@@ -266,6 +279,9 @@ jobs:
           DATABASE_URL: postgresql://test:test@localhost:5432/smartplanning_test
           NEXTAUTH_SECRET: test-secret-for-ci
           NEXTAUTH_URL: http://localhost:3000
+          AUTH_URL: http://localhost:3000
+          AUTH_SECRET: test-secret-for-ci
+          AUTH_TRUST_HOST: 'true'
 
       # Upload du rapport Playwright (même en cas d'échec)
       - name: Upload Playwright report
