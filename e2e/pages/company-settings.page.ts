@@ -87,7 +87,18 @@ export class CompanySettingsPage {
   // ============================================================================
 
   async goto() {
-    await this.page.goto('/app/settings/company')
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        await this.page.goto('/app/settings/company', {
+          waitUntil: 'domcontentloaded',
+          timeout: 30000,
+        })
+        return
+      } catch (error) {
+        if (attempt === 2) throw error
+        await this.page.waitForTimeout(2000)
+      }
+    }
   }
 
   async waitForPageLoad() {

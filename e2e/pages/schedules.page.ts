@@ -90,14 +90,25 @@ export class SchedulesPage {
   }
 
   async goto() {
-    await this.page.goto('/app/dashboard/schedules', {
-      waitUntil: 'domcontentloaded',
-    })
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        await this.page.goto('/app/dashboard/schedules', {
+          waitUntil: 'domcontentloaded',
+          timeout: 30000,
+        })
+        break
+      } catch (error) {
+        if (attempt === 2) throw error
+        await this.page.waitForTimeout(2000)
+      }
+    }
     await this.waitForLoad()
   }
 
   async waitForLoad() {
-    await this.schedulesPage.waitFor({ state: 'visible', timeout: 15000 })
+    await this.schedulesPage
+      .first()
+      .waitFor({ state: 'visible', timeout: 15000 })
   }
 
   async navigateNext() {

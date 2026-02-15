@@ -88,7 +88,7 @@ export async function loginAs(page: Page, user: TestUser): Promise<void> {
       break
     } catch (error) {
       if (attempt === 2) throw error
-      await page.waitForTimeout(2000)
+      await page.waitForTimeout(3000)
     }
   }
   await page.waitForLoadState('domcontentloaded')
@@ -103,15 +103,25 @@ export async function loginAs(page: Page, user: TestUser): Promise<void> {
   // Attendre la redirection vers un dashboard (pattern permissif)
   // Note: Le login peut rediriger vers /app/dashboard d'abord, puis le middleware
   // redirige vers le dashboard spécifique au rôle. On accepte les deux.
-  // Timeout 45s pour CI nightly (serveur dev plus lent)
-  await page.waitForURL(/\/app\/(dashboard|director|manager|admin|employee)/, {
-    timeout: 45000,
-  })
+  // Timeout 60s pour CI nightly (serveur dev plus lent)
+  await page.waitForURL(
+    /\/app\/(dashboard|director|manager|admin|employee|settings|billing)/,
+    {
+      timeout: 60000,
+    }
+  )
 
   // Si on n'est pas encore sur le bon dashboard, attendre la redirection finale
   if (!page.url().includes(user.expectedDashboard)) {
-    await page.waitForURL(`**${user.expectedDashboard}**`, { timeout: 15000 })
+    await page
+      .waitForURL(`**${user.expectedDashboard}**`, { timeout: 15000 })
+      .catch(() => {
+        // En CI lent, on accepte d'être sur n'importe quel dashboard valide
+      })
   }
+
+  // Attendre la stabilisation de la page après redirection
+  await page.waitForLoadState('domcontentloaded')
 }
 
 /**

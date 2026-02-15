@@ -20,7 +20,9 @@ test.describe('Export Data', () => {
       await profilePage.waitForPageLoad()
 
       await profilePage.clickExportData()
-      await expect(employeePage).toHaveURL(/\/app\/profile\/export/)
+      await expect(employeePage).toHaveURL(/\/app\/profile\/export/, {
+        timeout: 30000,
+      })
     })
 
     test('should display back to profile link', async ({ employeePage }) => {
