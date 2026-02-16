@@ -185,33 +185,41 @@ jobs:
           set -e
           echo "🚀 Début du déploiement SmartPlanning..."
           cd /var/www/smartplanning
-          echo "📦 Pull de la nouvelle image..."
+
+          echo "📦 Pull de la nouvelle image (avant arrêt = zero-downtime)..."
           docker pull --quiet ghcr.io/krismos64/smartplanningai-v2:latest
           echo "📋 Image digest:"
           docker images ghcr.io/krismos64/smartplanningai-v2:latest --format "{{.ID}} {{.CreatedAt}}"
-          echo "⏹️ Arrêt des conteneurs..."
-          docker compose --env-file .env down --remove-orphans || true
-          echo "🧹 Nettoyage des conteneurs orphelins..."
-          docker rm -f smartplanning-app smartplanning-postgres smartplanning-redis 2>/dev/null || true
-          docker network rm smartplanning_smartplanning-network 2>/dev/null || true
-          echo "▶️ Démarrage des nouveaux conteneurs..."
-          docker compose --env-file .env up -d --pull always
-          echo "⏳ Attente du démarrage (60s)..."
-          sleep 60
-          echo "🔍 Test du healthcheck..."
-          HEALTH_RESPONSE=$(curl -s -w "\nHTTP_CODE:%{http_code}" http://localhost:3000/api/health || echo "CURL_FAILED")
-          echo "Réponse healthcheck: $HEALTH_RESPONSE"
-          if echo "$HEALTH_RESPONSE" | grep -q "HTTP_CODE:200"; then
-            echo "✅ Application déployée avec succès !"
-          else
-            echo "⚠️ Healthcheck a retourné une erreur, mais l'app est démarrée"
+
+          echo "♻️ Redémarrage du conteneur app avec la nouvelle image..."
+          # On ne fait PAS down/up complet : seul le conteneur app est recréé
+          # PostgreSQL et Redis restent up = pas de coupure DB
+          docker compose --env-file .env up -d --no-deps --force-recreate app
+          # Downtime réduit à ~5-10s (temps de recréation du conteneur)
+
+          echo "⏳ Attente du healthcheck..."
+          RETRIES=0
+          MAX_RETRIES=30
+          until [ $RETRIES -ge $MAX_RETRIES ]; do
+            HEALTH_RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/api/health 2>/dev/null || echo "000")
+            if [ "$HEALTH_RESPONSE" = "200" ]; then
+              echo "✅ Application déployée avec succès ! (healthcheck OK en ~$((RETRIES * 5))s)"
+              break
+            fi
+            RETRIES=$((RETRIES + 1))
+            echo "  ⏳ Tentative $RETRIES/$MAX_RETRIES (HTTP $HEALTH_RESPONSE)..."
+            sleep 5
+          done
+
+          if [ $RETRIES -ge $MAX_RETRIES ]; then
+            echo "⚠️ Healthcheck timeout après $((MAX_RETRIES * 5))s"
             echo "📋 Logs récents:"
-            docker compose --env-file .env logs app --tail 20
+            docker compose --env-file .env logs app --tail 30
             echo "📋 Status des conteneurs:"
             docker compose --env-file .env ps
-            # On ne fait pas exit 1 pour permettre de voir l'état
             echo "✅ Déploiement terminé (avec warnings)"
           fi
+
           echo "🧹 Nettoyage des anciennes images..."
           docker image prune -f
           echo "🎉 Déploiement terminé !"

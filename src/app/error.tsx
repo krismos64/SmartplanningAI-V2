@@ -42,6 +42,22 @@ interface ErrorPageProps {
  */
 export default function Error({ error, reset }: ErrorPageProps) {
   useEffect(() => {
+    // ChunkLoadError = déploiement en cours, les anciens chunks n'existent plus
+    // On recharge la page une seule fois pour charger les nouveaux fichiers
+    if (
+      error.name === 'ChunkLoadError' ||
+      error.message?.includes('Loading chunk')
+    ) {
+      const reloadKey = 'chunk-reload-' + window.location.pathname
+      if (!sessionStorage.getItem(reloadKey)) {
+        sessionStorage.setItem(reloadKey, '1')
+        window.location.reload()
+        return
+      }
+      // Déjà rechargé une fois, nettoyer et afficher l'erreur
+      sessionStorage.removeItem(reloadKey)
+    }
+
     // Log the error to an error reporting service
     console.error('🚨 Next.js Error Boundary caught:', error)
 

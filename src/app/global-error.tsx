@@ -45,6 +45,20 @@ interface GlobalErrorPageProps {
  */
 export default function GlobalError({ error, reset }: GlobalErrorPageProps) {
   useEffect(() => {
+    // ChunkLoadError = déploiement en cours, les anciens chunks n'existent plus
+    if (
+      error.name === 'ChunkLoadError' ||
+      error.message?.includes('Loading chunk')
+    ) {
+      const reloadKey = 'chunk-reload-global'
+      if (!sessionStorage.getItem(reloadKey)) {
+        sessionStorage.setItem(reloadKey, '1')
+        window.location.reload()
+        return
+      }
+      sessionStorage.removeItem(reloadKey)
+    }
+
     // Log the critical error
     console.error('🚨 CRITICAL: Next.js Global Error Boundary caught:', error)
 
