@@ -46,10 +46,10 @@ export class ProfilePage {
   constructor(page: Page) {
     this.page = page
 
-    // Header
-    this.profileName = page.getByTestId('profile-name')
-    this.profileEmail = page.getByTestId('profile-email')
-    this.profileRole = page.getByTestId('profile-role')
+    // Header (use .first() to avoid strict mode violation from SSR/hydration double render)
+    this.profileName = page.getByTestId('profile-name').first()
+    this.profileEmail = page.getByTestId('profile-email').first()
+    this.profileRole = page.getByTestId('profile-role').first()
     this.avatarInitials = page
       .locator('[data-testid="profile-name"]')
       .locator('..')

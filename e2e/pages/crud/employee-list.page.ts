@@ -64,9 +64,9 @@ export class EmployeeListPage {
     // Header
     this.pageTitle = page.getByRole('heading', { name: /employ/i })
     this.totalCount = page.locator('text=/\\d+ employ/i')
-    this.newEmployeeButton = page.getByRole('link', {
-      name: /nouvel employ/i,
-    })
+    this.newEmployeeButton = page.locator(
+      'a[href="/app/dashboard/employees/new"]'
+    )
     this.refreshButton = page.getByRole('button', { name: /actualiser/i })
 
     // Filtres
@@ -165,6 +165,7 @@ export class EmployeeListPage {
    * Clique sur le bouton nouvel employe
    */
   async clickNewEmployee(): Promise<void> {
+    await expect(this.newEmployeeButton).toBeVisible({ timeout: 15000 })
     await this.newEmployeeButton.click()
   }
 

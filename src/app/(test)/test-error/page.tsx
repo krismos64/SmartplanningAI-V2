@@ -35,15 +35,6 @@ function BuggyComponent({ shouldThrow }: { shouldThrow: boolean }) {
 export default function TestErrorPage() {
   const [triggerError, setTriggerError] = useState(false)
 
-  // Only accessible in development/test environments
-  if (process.env.NODE_ENV === 'production') {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <p>This page is not available in production.</p>
-      </div>
-    )
-  }
-
   return (
     <div className="container mx-auto max-w-2xl py-12">
       <Card>

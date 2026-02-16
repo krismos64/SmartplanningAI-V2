@@ -64,9 +64,9 @@ export class CompanyListPage {
     // Header
     this.pageTitle = page.getByRole('heading', { name: /entreprises/i })
     this.totalCount = page.locator('text=/\\d+ entreprise/i')
-    this.newCompanyButton = page.getByRole('link', {
-      name: /nouvelle entreprise/i,
-    })
+    this.newCompanyButton = page.locator(
+      'a[href="/app/admin/companies/new"]'
+    )
     this.refreshButton = page.getByRole('button', { name: /actualiser/i })
 
     // Filtres
@@ -154,6 +154,7 @@ export class CompanyListPage {
    * Clique sur le bouton nouvelle entreprise
    */
   async clickNewCompany(): Promise<void> {
+    await expect(this.newCompanyButton).toBeVisible({ timeout: 15000 })
     await this.newCompanyButton.click()
   }
 
