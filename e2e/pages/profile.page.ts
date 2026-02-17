@@ -75,7 +75,7 @@ export class ProfilePage {
     this.accountInfoCard = page
       .locator('text=Informations du compte')
       .locator('..')
-    this.accountStatus = page.getByTestId('account-status')
+    this.accountStatus = page.getByTestId('account-status').first()
     this.emailVerified = page.getByTestId('email-verified')
     this.emailNotVerified = page.getByTestId('email-not-verified')
     this.accountCreated = page.getByTestId('account-created')

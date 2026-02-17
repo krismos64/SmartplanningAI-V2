@@ -167,6 +167,9 @@ export class EmployeeListPage {
   async clickNewEmployee(): Promise<void> {
     await expect(this.newEmployeeButton).toBeVisible({ timeout: 15000 })
     await this.newEmployeeButton.click()
+    await this.page.waitForURL(/\/app\/dashboard\/employees\/new/, {
+      timeout: 10000,
+    })
   }
 
   /**

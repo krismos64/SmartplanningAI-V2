@@ -118,7 +118,7 @@ describe('BillingPageContent', () => {
 
     it('gère subscription=null sans crash', () => {
       render(<BillingPageContent billingData={mockBillingDataNoSub} />)
-      expect(screen.getByTestId('subscription-status')).toBeInTheDocument()
+      expect(screen.getByTestId('subscription-empty-state')).toBeInTheDocument()
       expect(screen.getByText('Aucun abonnement')).toBeInTheDocument()
     })
 
