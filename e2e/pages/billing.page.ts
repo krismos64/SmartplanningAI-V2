@@ -169,7 +169,11 @@ export class BillingPage {
   }
 
   async waitForLoad(): Promise<void> {
-    await expect(this.subscriptionStatus).toBeVisible({ timeout: 15000 })
+    // Use .first() to avoid strict mode violation when DashboardLayout Suspense causes brief DOM duplication
+    // Also handle empty-state variant (subscription-empty-state testid)
+    await expect(
+      this.subscriptionStatus.first().or(this.page.getByTestId('subscription-empty-state').first())
+    ).toBeVisible({ timeout: 15000 })
   }
 
   // ==========================================================================

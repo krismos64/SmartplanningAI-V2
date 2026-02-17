@@ -41,7 +41,7 @@ test.describe('Billing — Trial Flow (SP-373)', () => {
     await billing.goto()
     await billing.waitForLoad()
 
-    await expect(billing.subscriptionStatus).toBeVisible()
+    await expect(billing.subscriptionStatus.first()).toBeVisible()
   })
 
   test('bouton "Gerer mon abonnement" present et cliquable', async ({

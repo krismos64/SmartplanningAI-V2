@@ -23,15 +23,17 @@ test.describe('Leaves - Gestion soldes (DIRECTOR)', () => {
     const leavesPage = new LeavesPage(directorPage)
     await leavesPage.gotoBalances()
 
+    // Attendre que le heading soit visible (contenu chargé)
+    await expect(
+      directorPage.getByRole('heading', { name: /soldes/i })
+    ).toBeVisible({ timeout: 15000 })
+
     // La table ou le message "aucun solde" doit être visible
     const table = directorPage.getByRole('table')
     const emptyMessage = directorPage.getByText(/aucun solde/i)
 
-    // L'un des deux doit être visible
-    const tableVisible = await table.isVisible().catch(() => false)
-    const emptyVisible = await emptyMessage.isVisible().catch(() => false)
-
-    expect(tableVisible || emptyVisible).toBe(true)
+    // Attendre que l'un des deux apparaisse
+    await expect(table.or(emptyMessage)).toBeVisible({ timeout: 10000 })
   })
 
   test("peut changer l'année de visualisation @director", async ({

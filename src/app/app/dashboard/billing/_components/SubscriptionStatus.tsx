@@ -176,7 +176,7 @@ export function SubscriptionStatus({
     return (
       <Card
         className={cn('glass-strong', className)}
-        data-testid="subscription-status"
+        data-testid="subscription-empty-state"
       >
         <CardContent className="p-6">
           <EmptyState

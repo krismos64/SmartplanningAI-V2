@@ -104,13 +104,14 @@ export class CompanySettingsPage {
   async waitForPageLoad() {
     // Attendre que le loading disparaisse si présent
     await expect(this.loadingState).not.toBeVisible({ timeout: 15000 }).catch(() => {})
-    await expect(this.companySettingsPage).toBeVisible({ timeout: 15000 })
+    // Use .first() to avoid strict mode violation when DashboardLayout Suspense causes brief DOM duplication
+    await expect(this.companySettingsPage.first()).toBeVisible({ timeout: 15000 })
   }
 
   async waitForLoadingComplete() {
     // Wait for loading state to disappear if present
     await expect(this.loadingState).not.toBeVisible({ timeout: 10000 })
-    await expect(this.companySettingsPage).toBeVisible()
+    await expect(this.companySettingsPage.first()).toBeVisible()
   }
 
   async goBack() {

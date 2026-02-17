@@ -71,7 +71,8 @@ export class EditProfilePage {
    */
   async waitForPageLoad() {
     await this.page.waitForLoadState('domcontentloaded')
-    await expect(this.pageContainer).toBeVisible({ timeout: 15000 })
+    // Use .first() to avoid strict mode violation when DashboardLayout Suspense causes brief DOM duplication
+    await expect(this.pageContainer.first()).toBeVisible({ timeout: 15000 })
     await expect(this.firstNameInput).toBeVisible()
   }
 
