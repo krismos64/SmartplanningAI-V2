@@ -353,7 +353,7 @@ jobs:
 #
 # STRATÉGIE E2E OPTIMISÉE :
 # - CI : Tests critiques uniquement (~180 tests, ~10-12 min)
-# - Nightly : Suite complète (~500 tests, chaque nuit à 2h00 UTC)
+# - Nightly : Suite complète (~5281 unitaires + ~549 E2E desktop + ~170 E2E mobile, chaque nuit à 2h00 UTC)
 #
 # FLUX D'EXÉCUTION (Push sur feature branch) :
 #
@@ -398,10 +398,11 @@ jobs:
 # - schedules, leaves/navigation, leaves/create-request
 # - profile/profile-display
 #
-# TESTS NIGHTLY (playwright.nightly.config.ts) :
-# - Tous les tests E2E (~500 tests)
+# TESTS NIGHTLY (nightly-e2e.yml) :
+# - Tests unitaires Vitest (~5281 tests)
+# - Tests E2E desktop Chromium (~549 tests)
+# - Tests E2E mobile 5 devices (~170 tests)
 # - Exécuté chaque nuit à 2h00 UTC
-# - Workflow : nightly-e2e.yml
 #
 # SÉCURITÉ DU DÉPLOIEMENT :
 # - Le CD ne se déclenche que si le CI complet réussit

@@ -15,8 +15,8 @@
 # Le CD ne se déclenche QUE si le workflow CI réussit complètement.
 # Cela inclut :
 # - Lint & Type Check ✅
-# - Tests unitaires (1374 tests) ✅
-# - Tests E2E Playwright (214 tests) ✅
+# - Tests unitaires (~5281 tests) ✅
+# - Tests E2E Playwright (~180 tests critiques) ✅
 # - Build Next.js ✅
 #
 # Ainsi, même un push direct sur main sans PR passe par les tests E2E
@@ -282,7 +282,7 @@ jobs:
 # │  ┌──────────┐   ┌──────────┐   ┌──────────────┐   ┌───────────┐    │
 # │  │   LINT   │──►│  TESTS   │──►│  TESTS E2E   │──►│   BUILD   │    │
 # │  │ TypeCheck│   │  UNIT    │   │  (Chromium)  │   │  Next.js  │    │
-# │  └──────────┘   │  1374+   │   │    214+      │   └───────────┘    │
+# │  └──────────┘   │  5281+   │   │    ~180      │   └───────────┘    │
 # │                 └──────────┘   └──────────────┘                     │
 # └─────────────────────────────────────────────────────────────────────┘
 #                                    │
