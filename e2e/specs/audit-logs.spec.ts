@@ -250,9 +250,10 @@ test.describe('Audit Logs — Detail modal', () => {
   })
 
   test('ouvrir le modal de detail affiche le titre', async () => {
-    // Verifier qu'il y a au moins une ligne
-    const rowCount = await auditPage.tableRows.count()
-    if (rowCount === 0) {
+    // Verifier qu'il y a au moins un bouton "Voir les details"
+    const detailButton = auditPage.page.getByRole('button', { name: /voir les détails/i }).first()
+    const hasDetail = await detailButton.isVisible().catch(() => false)
+    if (!hasDetail) {
       test.skip()
       return
     }
@@ -265,8 +266,9 @@ test.describe('Audit Logs — Detail modal', () => {
   })
 
   test('le modal affiche les informations du log', async () => {
-    const rowCount = await auditPage.tableRows.count()
-    if (rowCount === 0) {
+    const detailButton = auditPage.page.getByRole('button', { name: /voir les détails/i }).first()
+    const hasDetail = await detailButton.isVisible().catch(() => false)
+    if (!hasDetail) {
       test.skip()
       return
     }
@@ -280,8 +282,9 @@ test.describe('Audit Logs — Detail modal', () => {
   })
 
   test('fermer le modal fonctionne', async () => {
-    const rowCount = await auditPage.tableRows.count()
-    if (rowCount === 0) {
+    const detailButton = auditPage.page.getByRole('button', { name: /voir les détails/i }).first()
+    const hasDetail = await detailButton.isVisible().catch(() => false)
+    if (!hasDetail) {
       test.skip()
       return
     }

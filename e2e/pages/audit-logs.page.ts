@@ -152,7 +152,7 @@ export class AuditLogsPage {
     // Le premier trigger est "Toutes les actions"
     const triggers = this.page.locator('button[role="combobox"]')
     await triggers.first().click()
-    await this.page.getByRole('option', { name: label }).click()
+    await this.page.getByRole('option', { name: label, exact: true }).click()
     // Attendre la mise a jour URL
     await this.page.waitForURL(/action=/, { timeout: 10000 })
   }
