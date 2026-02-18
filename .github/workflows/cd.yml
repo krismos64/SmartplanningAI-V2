@@ -15,7 +15,7 @@
 # Le CD ne se déclenche QUE si le workflow CI réussit complètement.
 # Cela inclut :
 # - Lint & Type Check ✅
-# - Tests unitaires (~5281 tests) ✅
+# - Tests unitaires (~5638 tests) ✅
 # - Tests E2E Playwright (~180 tests critiques) ✅
 # - Build Next.js ✅
 #
@@ -282,7 +282,7 @@ jobs:
 # │  ┌──────────┐   ┌──────────┐   ┌──────────────┐   ┌───────────┐    │
 # │  │   LINT   │──►│  TESTS   │──►│  TESTS E2E   │──►│   BUILD   │    │
 # │  │ TypeCheck│   │  UNIT    │   │  (Chromium)  │   │  Next.js  │    │
-# │  └──────────┘   │  5281+   │   │    ~180      │   └───────────┘    │
+# │  └──────────┘   │  5638+   │   │    ~180      │   └───────────┘    │
 # │                 └──────────┘   └──────────────┘                     │
 # └─────────────────────────────────────────────────────────────────────┘
 #                                    │

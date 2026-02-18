@@ -14,7 +14,7 @@ Ce document trace l'historique complet des tests réalisés sur SmartPlanning. I
 | Pipeline CI/CD       | GitHub Actions                                         |
 | Responsable          | Christophe Mostefaoui                                  |
 | Date de création     | 4 décembre 2025                                        |
-| Dernière mise à jour | 15 février 2026 (E2E CI/nightly en mode production `npm run start`) |
+| Dernière mise à jour | 18 février 2026 (consolidation E2E 50→38 fichiers, nightly complet unit+E2E+5 mobiles) |
 
 ---
 
@@ -35,7 +35,7 @@ Dans le cadre du diplôme **CDA (Concepteur Développeur d'Applications)**, ce c
 | --------------------- | --------- | -------- |
 | Couverture globale    | ≥ 70%     | ✅ 86.35% |
 | Tests unitaires       | ≥ 500     | ✅ 5638   |
-| Tests E2E             | ≥ 50      | ✅ 1018   |
+| Tests E2E             | ≥ 50      | ✅ 549 (38 fichiers)   |
 | Score Lighthouse A11y | ≥ 90%     | ✅ 95%   |
 | Anomalies critiques   | 0 en prod | ✅ 0     |
 
@@ -472,6 +472,7 @@ Ce tableau recense chaque campagne de tests significative (mise en production, f
 
 | Date       | Sprint    | Version/Commit | Tests unitaires | Tests E2E  | Couverture | Statut  | Notes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | ---------- | --------- | -------------- | --------------- | ---------- | ---------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 18/02/2026 | Sprint 19 | Consolidation  | 5638/5638 ✅    | 549/549 ✅   | ~86%       | ✅ PASS | 🔧 Consolidation E2E : 50→38 fichiers (suppression redondances, fusion suites similaires). Correction 38 tests command-palette sur tablets (data-testid desktop-search-button, Meta+k iPad). Alignement nightly : ajout job tests unitaires Vitest + 5 devices mobiles. Mise à jour commentaires CI/CD. Total : 6187 tests |
 | 15/02/2026 | Sprint 18 | Prod E2E       | 5638/5638 ✅    | 1018/1018 ✅ | ~86%       | ✅ PASS | 🔧 Migration E2E CI/nightly vers mode production (`npm run start`). Résolution définitive ANO-026 : CSP `upgrade-insecure-requests` conditionnel, env vars `AUTH_URL`/`AUTH_SECRET`/`AUTH_TRUST_HOST` pour NextAuth v5 sur HTTP localhost, étape `npm run build` ajoutée aux workflows. 5 fichiers modifiés. Total : 6656 tests |
 | 13/02/2026 | Sprint 18 | Stabilisation  | 5638/5638 ✅    | 1018/1018 ✅ | ~86%       | ✅ PASS | 🔧 Stabilisation nightly E2E (ANO-026) + fix billing trial sans subscription + fix i18n accents dashboard Manager + stabilisation 62 tests E2E. 14 commits depuis 11/02. Total : 6656 tests |
 | 11/02/2026 | Sprint 18 | SP-462         | 5637/5637 ✅    | 1018/1018 ✅ | ~86%       | ✅ PASS | 🆕 SP-462 Optimisation SEO Google + LLMs : Homepage Server Component, robots.ts, sitemap.ts, favicon Next.js 15, JSON-LD @graph 4 schemas, llms.txt, canonical URLs pages légales, noindex dashboard. +37 tests unitaires. Total : 6655 tests |
@@ -2156,8 +2157,9 @@ not-found.tsx (Server Component)
 | 10/02/2026 (SP-460)        | 5600            | 1018      | 6618  | 86.35%     | 📈 +417             |
 | 11/02/2026 (SP-462)        | 5637            | 1018      | 6655  | ~86%       | 📈 +37              |
 | 13/02/2026 (Stabilisation) | 5638            | 1018      | 6656  | ~86%       | 🔧 +1 / Fixes E2E   |
+| 18/02/2026 (Consolidation) | 5638            | 549       | 6187  | ~86%       | 🔧 Consolidation 50→38 fichiers E2E, fix tablets, nightly complet |
 
-**Graphique d'évolution** : De 27 tests (04/12) à 6656 tests (13/02) = **+24554% de croissance** 🚀
+**Graphique d'évolution** : De 27 tests (04/12) à 6187 tests (18/02) — consolidation E2E (suppression 469 tests redondants, de 1018 à 549 E2E) 🚀
 
 ---
 
@@ -2171,7 +2173,7 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
 | 2   | Contribuer à la qualité du code                                     | Couverture 86.35%, anomalies tracées                                                                                                                                                                                                                                                                                                                    |
 | 3   | Documenter les procédures                                           | Procédure de recette formalisée                                                                                                                                                                                                                                                                                                                         |
 | 4   | Utiliser une méthodologie                                           | Approche structurée par sprints                                                                                                                                                                                                                                                                                                                         |
-| 5   | Développer des tests automatisés                                    | 6656 tests (unitaires + E2E)                                                                                                                                                                                                                                                                                                                            |
+| 5   | Développer des tests automatisés                                    | 6187 tests (5638 unitaires + 549 E2E, 38 fichiers)                                                                                                                                                                                                                                                                                                      |
 | 6   | Sécuriser une application                                           | Tests RBAC (92 unitaires, 27 E2E), rate limiting, protection énumération                                                                                                                                                                                                                                                                                |
 | 7   | Concevoir une architecture logicielle                               | Pattern ServiceResult<T>, multi-tenant                                                                                                                                                                                                                                                                                                                  |
 | 8   | Développer des composants métier                                    | 4 dashboards par rôle                                                                                                                                                                                                                                                                                                                                   |
@@ -2285,11 +2287,13 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
 
 ### Tests nightly (quotidiens)
 
-1. **Exécution automatique** : GitHub Actions cron, tous les tests E2E sur Chromium en **mode production** (`npm run build` + `npm run start`)
-2. **Configuration** : `playwright.nightly.config.ts` (3 workers, 2 retries, timeout 60s)
-3. **Env vars CI** : `AUTH_URL=http://localhost:3000`, `AUTH_SECRET`, `AUTH_TRUST_HOST=true` (nécessaires pour NextAuth v5 en production sur HTTP — voir ANO-027)
-4. **Analyse résultats** : Vérifier annotations GitHub (failed vs flaky vs passed)
-5. **Avantages mode production** : Tests plus rapides (pas de HMR/Turbopack), plus fiables (pas de React Strict Mode double mount), représentatifs de la prod
+1. **Exécution automatique** : GitHub Actions cron 2h00 UTC, suite COMPLÈTE en **mode production** (`npm run build` + `npm run start`)
+2. **Job 1 — Tests unitaires** : ~5638 tests Vitest avec couverture (pas besoin de PostgreSQL)
+3. **Job 2 — Tests E2E complets** : Desktop Chromium (~549 tests) + 5 devices mobiles (iPhone SE, iPhone 14 Pro, Pixel 7, iPad Mini, iPad Pro 11")
+4. **Configuration** : `playwright.nightly.config.ts` (3 workers, 2 retries, timeout 60s, 6 projets)
+5. **Env vars CI** : `AUTH_URL=http://localhost:3000`, `AUTH_SECRET`, `AUTH_TRUST_HOST=true` (nécessaires pour NextAuth v5 en production sur HTTP — voir ANO-027)
+6. **Analyse résultats** : Vérifier annotations GitHub (failed vs flaky vs passed)
+7. **Avantages mode production** : Tests plus rapides (pas de HMR/Turbopack), plus fiables (pas de React Strict Mode double mount), représentatifs de la prod
 
 ### Après chaque mise en production
 
@@ -2304,6 +2308,7 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
 
 | Date       | Modification                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 18/02/2026 | 🔧 Consolidation E2E 50→38 fichiers (suppression redondances, fusion error-pages/account-actions/billing). Correction 38 tests command-palette échouant sur tablets (data-testid desktop-search-button, Meta+k au lieu de Control+k). Alignement workflow nightly : ajout job tests unitaires Vitest (~5638), ajout 5 devices mobiles (iPhone SE, 14 Pro, Pixel 7, iPad Mini, iPad Pro 11"). Mise à jour commentaires CI/CD avec chiffres actuels. Total : 6187 tests (5638 unitaires + 549 E2E) |
 | 15/02/2026 | 🔧 Migration E2E CI/nightly vers mode production (ANO-027) : `playwright.ci.config.ts` et `playwright.nightly.config.ts` passent de `npm run dev` à `npm run start`. 3 causes racines `ERR_TOO_MANY_REDIRECTS` identifiées et corrigées : (1) `next.config.ts` CSP `upgrade-insecure-requests` rendu conditionnel via `isHttps` (basé sur `AUTH_URL`/`NEXTAUTH_URL`), (2) `ci.yml` et `nightly-e2e.yml` ajout env vars `AUTH_URL=http://localhost:3000`, `AUTH_SECRET`, `AUTH_TRUST_HOST=true` + étape `npm run build`, (3) timeout E2E CI augmenté 25→30 min. 5 fichiers modifiés. Gains : tests plus rapides, plus fiables (pas de Strict Mode double mount), représentatifs de la production |
 | 13/02/2026 | 🔧 Stabilisation nightly E2E (ANO-026) : 2 tests failed + 5 flaky sur nightly CI. Cause : serveur `npm run dev` lent en CI GitHub Actions avec 3 workers parallèles, causant `net::ERR_CONNECTION_RESET` et timeouts `waitForURL`. Corrections : `auth.fixture.ts` retry 3x sur `page.goto('/login')` + timeout login 30s→45s. `edit-profile.page.ts` timeout `expectUpdateSuccess` 30s→45s + fallback submit button état normal. `personal-tasks.page.ts` timeout toast 10s→15s. `middleware-rbac.spec.ts` timeout callbackUrl 15s→30s. `playwright.nightly.config.ts` actionTimeout 15s→20s, navigationTimeout 30s→45s. 5 fichiers modifiés. Total : 6656 tests |
 | 13/02/2026 | 🔧 fix(billing) : Autoriser l'accès trial sans subscription active et supprimer le héro conversion sur la page billing. Corrige le cas où un utilisateur en trial n'a pas encore de ligne Subscription en base |
@@ -2429,7 +2434,7 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
     - ANO-023 : `vi.hoisted()` requis pour mocks MSW dans AvatarUpload (hoisting `vi.mock`)
     - ANO-024 : MSW `server.use()` au lieu de `vi.stubGlobal('fetch')` quand MSW est actif
     - ANO-025 : `TooltipProvider` obligatoire pour colonnes DataTable avec Radix Tooltip
-  - Total projet : 6655 tests (5637 unitaires + 1018 E2E)
+  - Total projet : 6655 tests (5637 unitaires + 1018 E2E) — _consolidé à 6187 tests le 18/02/2026 (suppression 469 tests E2E redondants : 1018→549)_
 
 ### Sprint 18 - Optimisation SEO Google + LLMs (SP-462) 🆕
 

@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 15 février 2026 (E2E en mode production — CI/nightly passent de `npm run dev` à `npm run start`)
+- **Dernière mise à jour** : 18 février 2026 (consolidation E2E 50→38 fichiers, nightly aligné : tests unitaires + 5 devices mobiles)
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -2599,13 +2599,11 @@ Toutes les pages publiques sont optimisées pour les LLMs (ChatGPT, Claude, Perp
 | **Empty States**                    | 8       | ✅                                |
 | **Cookies RGPD**                    | 18      | ✅                                |
 | **Analytics Umami**                 | 8       | ✅                                |
-| **Error Boundary**                  | 5       | ✅                                |
-| **Page 404**                        | 8       | ✅                                |
-| **Page 500**                        | 22      | ✅                                |
+| **Error Pages** (404/500/boundary)  | 15      | ✅                                |
 | **Command Palette (SP-264)**        | 6       | ✅                                |
 | **Recent Pages (SP-264)**           | 6       | ✅                                |
 | **Keyboard Shortcuts (SP-264)**     | 6       | ✅                                |
-| **Mobile Navigation (SP-389)**      | 9       | ✅ (+ 4 échouent - bugs UX réels) |
+| **Mobile Navigation (SP-389)**      | 9       | ✅                                |
 | **Mobile Command Palette (SP-389)** | 15      | ✅                                |
 | **Mobile Breadcrumbs (SP-389)**     | 20      | ✅                                |
 | **Mobile Data Table (SP-389)**      | 15      | ✅                                |
@@ -2616,17 +2614,17 @@ Toutes les pages publiques sont optimisées pour les LLMs (ChatGPT, Claude, Perp
 | **Personal Tasks (SP-421)**         | 20      | ✅                                |
 | **Profile (SP-270)**                | 15      | ✅                                |
 | **Edit Profile (SP-271)**           | 22      | ✅                                |
-| **Change Password (SP-273)**        | 19      | ✅                                |
+| **Change Password (SP-273)**        | 9       | ✅                                |
+| **Account Actions** (delete/export) | 11      | ✅                                |
 | **Settings Hub (SP-274)**           | 20      | ✅                                |
 | **Appearance (SP-276)**             | 18      | ✅                                |
 | **Notification Preferences (SP-275)** | 14    | ✅                                |
 | **Company Settings (SP-435)**       | 21      | ✅                                |
-| **Billing (SP-373)**                | 30      | ✅                                |
-| **Total E2E actifs**                | **~659** | ✅                               |
-| **Total E2E skipped**               | **~359** | ⏸️                                |
-| **Total E2E**                       | **~1018** |                                  |
+| **Billing Alerts (SP-373)**         | 8       | ✅                                |
+| **Billing Subscription (SP-373)**   | 7       | ✅                                |
+| **Total E2E (38 fichiers)**         | **~549** | ✅                               |
 
-**Note** : Tests desktop exécutés sur Chromium uniquement. Tests mobiles exécutés sur 5 devices (iPhone SE, iPhone 14 Pro, Pixel 7, iPad Mini, iPad Pro 11") via Chromium avec émulation mobile (WebKit supprimé car bug HTTPS upgrade sur localhost).
+**Note** : Tests desktop exécutés sur Chromium uniquement. Tests mobiles exécutés sur 5 devices (iPhone SE, iPhone 14 Pro, Pixel 7, iPad Mini, iPad Pro 11") via Chromium avec émulation mobile (WebKit supprimé car bug HTTPS upgrade sur localhost). Consolidation 50→38 fichiers le 18/02/2026 (suppression redondances, fusion suites similaires).
 
 ### Composants testés
 
@@ -2982,7 +2980,7 @@ ssh -i ~/.ssh/smartplanning_deploy deploy@smartplanning.fr
 Push feature → Tests unitaires (~3-5 min)
 PR vers main → Tests unitaires + Build + E2E production (~15-20 min)
 Merge main → Build Docker → Push GHCR → Deploy VPS (~8-10 min)
-Nightly → Build + Suite E2E complète en mode production (2h00 UTC)
+Nightly → Tests unitaires + Build + Suite E2E complète desktop + 5 mobiles (2h00 UTC)
 ```
 
 **Stratégie optimisée (SP-113)** :
@@ -2992,12 +2990,12 @@ Nightly → Build + Suite E2E complète en mode production (2h00 UTC)
 | Push feature branch | ✅         | ❌                     | ❌          | ~3-5 min   |
 | PR vers main        | ✅         | ✅ (prod, Chromium)    | ❌          | ~15-20 min |
 | Merge sur main      | ✅         | ❌                     | ✅          | ~8-10 min  |
-| Nightly (2h UTC)    | ❌         | ✅ (prod, suite complète) | ❌       | ~30-45 min |
+| Nightly (2h UTC)    | ✅         | ✅ (prod, desktop + 5 mobiles) | ❌  | ~45-60 min |
 
 - **CI** (`.github/workflows/ci.yml`) : Lint, Type-check, Tests unitaires, Build, Tests E2E en mode production (PR/push main)
 - **CD** (`.github/workflows/cd.yml`) : Build image Docker, Push sur ghcr.io, Deploy via SSH
-- **Nightly** (`.github/workflows/nightly-e2e.yml`) : Suite E2E complète en mode production (`npm run start`)
-- Tests unitaires sur tous les push (~5637 tests Vitest, 309 fichiers)
+- **Nightly** (`.github/workflows/nightly-e2e.yml`) : Tests unitaires Vitest + Suite E2E complète desktop + 5 devices mobiles en mode production (`npm run start`)
+- Tests unitaires sur tous les push (~5638 tests Vitest)
 - Tests E2E en mode production (`npm run build` + `npm run start`) pour des résultats représentatifs de la prod
 - Env vars CI : `AUTH_URL`, `AUTH_SECRET`, `AUTH_TRUST_HOST` pour NextAuth v5 sur HTTP localhost
 - Stabilisation E2E (SP-434) : Touch targets WCAG 2.5.5 (44px), command palette, mobile navigation

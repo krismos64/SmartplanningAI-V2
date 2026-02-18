@@ -3,7 +3,7 @@
 # ==============================================
 #
 # Suite COMPLÈTE des tests exécutée chaque nuit :
-# 1. Tests unitaires Vitest (~5281 tests)
+# 1. Tests unitaires Vitest (~5638 tests)
 # 2. Tests E2E Playwright desktop (~549 tests)
 # 3. Tests E2E Playwright mobile (5 devices)
 #
@@ -39,7 +39,7 @@ jobs:
   # ============================================
   # JOB 1 : TESTS UNITAIRES (Vitest)
   # ============================================
-  # Lance TOUS les tests unitaires (~5281 tests)
+  # Lance TOUS les tests unitaires (~5638 tests)
   # Pas besoin de PostgreSQL : les tests unitaires mockent Prisma
   unit-tests:
     name: Unit Tests (Vitest)
