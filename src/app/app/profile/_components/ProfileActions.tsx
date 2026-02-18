@@ -11,7 +11,7 @@
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Settings, Pencil, Lock, Download, Trash2 } from 'lucide-react'
+import { Settings, Pencil, Lock, Download, Trash2, Activity } from 'lucide-react'
 
 export function ProfileActions() {
   return (
@@ -56,6 +56,18 @@ export function ProfileActions() {
           <Link href="/app/profile/export">
             <Download className="h-4 w-4" />
             Exporter mes données
+          </Link>
+        </Button>
+
+        <Button
+          asChild
+          variant="outline"
+          className="w-full justify-start gap-2"
+          data-testid="action-view-activity"
+        >
+          <Link href="/app/profile/activity">
+            <Activity className="h-4 w-4" />
+            Mon activité récente
           </Link>
         </Button>
 

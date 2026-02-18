@@ -1,14 +1,17 @@
 'use server'
 
 /**
- * Server Actions pour la page Audit Logs (admin)
+ * Server Actions pour les Audit Logs
  *
- * @ticket SP-445
- * @security SYSTEM_ADMIN uniquement (double protection: middleware + checkPermission)
+ * - getAuditLogs / exportAuditLogsCsv : admin (SYSTEM_ADMIN) — SP-445
+ * - getUserActivity : utilisateur courant (tous rôles) — SP-463
+ *
+ * @ticket SP-445, SP-463
  */
 
 import type { Prisma } from '@prisma/client'
 
+import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { checkPermission } from '@/lib/actions/crud-utils'
 import {
@@ -260,6 +263,95 @@ export async function exportAuditLogsCsv(
     return {
       success: false,
       error: "Erreur lors de l'export des logs",
+    }
+  }
+}
+
+// ============================================================================
+// USER ACTIVITY (SP-463) — Accessible à tous les rôles authentifiés
+// ============================================================================
+
+/**
+ * Paramètres pour getUserActivity
+ */
+export interface UserActivityInput {
+  page?: number
+  pageSize?: number
+  action?: string
+}
+
+/** Page size par défaut pour l'activité utilisateur */
+const USER_ACTIVITY_PAGE_SIZE = 20
+
+/**
+ * Récupère l'activité de l'utilisateur courant
+ *
+ * @security Le userId vient TOUJOURS de la session JWT — jamais d'un paramètre client.
+ * Un utilisateur ne peut jamais voir l'activité d'un autre.
+ *
+ * @param input - Pagination et filtre action optionnel
+ * @returns Liste paginée de AuditLogEntry (uniquement les logs du user connecté)
+ *
+ * @ticket SP-463
+ */
+export async function getUserActivity(
+  input: UserActivityInput = {}
+): Promise<ListActionResult<AuditLogEntry>> {
+  try {
+    // 1. Authentification (tous rôles)
+    const session = await auth()
+    if (!session?.user?.id) {
+      return {
+        success: false,
+        error: 'Vous devez être connecté pour voir votre activité',
+      }
+    }
+
+    // 2. Construire la clause WHERE — isolation stricte par userId
+    const where: Prisma.AuditLogWhereInput = {
+      userId: session.user.id, // 🔒 Toujours depuis la session
+    }
+
+    // Filtre optionnel par action
+    if (input.action) {
+      where.action = input.action as Prisma.AuditLogWhereInput['action']
+    }
+
+    // 3. Pagination
+    const page = Math.max(1, input.page ?? 1)
+    const pageSize = Math.min(
+      100,
+      Math.max(1, input.pageSize ?? USER_ACTIVITY_PAGE_SIZE)
+    )
+    const skip = (page - 1) * pageSize
+
+    // 4. Requêtes parallèles
+    const [total, logs] = await Promise.all([
+      prisma.auditLog.count({ where }),
+      prisma.auditLog.findMany({
+        where,
+        select: AUDIT_LOG_SELECT,
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: pageSize,
+      }),
+    ])
+
+    // 5. Formater
+    const entries = logs.map(toAuditLogEntry)
+    const totalPages = Math.ceil(total / pageSize)
+
+    return {
+      success: true,
+      data: { data: entries, total, page, pageSize, totalPages },
+    }
+  } catch (error) {
+    if (process.env.NODE_ENV === 'development') {
+      console.error('[getUserActivity] Error:', error)
+    }
+    return {
+      success: false,
+      error: 'Erreur lors de la récupération de votre activité',
     }
   }
 }

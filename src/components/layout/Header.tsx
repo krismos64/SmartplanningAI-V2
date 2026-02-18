@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
 import { signOut } from 'next-auth/react'
-import { Menu, LogOut, User, Settings, Search } from 'lucide-react'
+import { Menu, LogOut, User, Settings, Search, Activity } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
@@ -174,6 +174,12 @@ export function Header({ user }: HeaderProps) {
                 <Link href="/app/profile" className="cursor-pointer">
                   <User className="mr-2 h-4 w-4" />
                   Mon profil
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/app/profile/activity" className="cursor-pointer">
+                  <Activity className="mr-2 h-4 w-4" />
+                  Mon activité
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
