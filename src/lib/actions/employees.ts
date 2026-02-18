@@ -15,7 +15,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/prisma'
-import { UserRole } from '@prisma/client'
+import { UserRole, type Prisma } from '@prisma/client'
 import { auth } from '@/lib/auth'
 import {
   validateData,
@@ -38,6 +38,7 @@ import type {
   ListActionResult,
   ListQueryParams,
 } from '@/types'
+import { logAuditAction } from '@/lib/services/audit'
 import { syncEmployeeCountToStripe } from '@/lib/services/stripe'
 
 // ============================================================================
@@ -570,6 +571,20 @@ export async function createEmployee(
       console.error('[SP-439] Stripe sync failed after employee creation:', err)
     })
 
+    // SP-444 : Audit trail (fire-and-forget)
+    logAuditAction({
+      action: 'CREATE',
+      entityType: 'EMPLOYEE',
+      entityId: employee.id,
+      userId: user.id,
+      companyId: validData.companyId,
+      details: {
+        firstName: validData.firstName,
+        lastName: validData.lastName,
+        teamId: validData.teamId || null,
+      },
+    }).catch(console.error)
+
     // Revalide le cache
     revalidatePath('/app/dashboard/employees')
 
@@ -705,6 +720,16 @@ export async function updateEmployee(
       },
     })
 
+    // SP-444 : Audit trail (fire-and-forget)
+    logAuditAction({
+      action: 'UPDATE',
+      entityType: 'EMPLOYEE',
+      entityId: id,
+      userId: user.id,
+      companyId: existing.companyId,
+      details: updateData as unknown as Prisma.InputJsonValue,
+    }).catch(console.error)
+
     // Revalide le cache
     revalidatePath('/app/dashboard/employees')
     revalidatePath(`/app/dashboard/employees/${id}`)
@@ -786,6 +811,19 @@ export async function deleteEmployee(id: string): Promise<DeleteActionResult> {
     syncEmployeeCountToStripe(employee.companyId).catch((err) => {
       console.error('[SP-439] Stripe sync failed after employee deletion:', err)
     })
+
+    // SP-444 : Audit trail (fire-and-forget)
+    logAuditAction({
+      action: 'DELETE',
+      entityType: 'EMPLOYEE',
+      entityId: id,
+      userId: user.id,
+      companyId: employee.companyId,
+      details: {
+        firstName: employee.firstName,
+        lastName: employee.lastName,
+      },
+    }).catch(console.error)
 
     // Revalide le cache
     revalidatePath('/app/dashboard/employees')
@@ -878,6 +916,16 @@ export async function toggleEmployeeStatus(
         err
       )
     })
+
+    // SP-444 : Audit trail (fire-and-forget)
+    logAuditAction({
+      action: 'STATUS_CHANGE',
+      entityType: 'EMPLOYEE',
+      entityId: id,
+      userId: user.id,
+      companyId: existing.companyId,
+      details: { from: !isActive, to: isActive },
+    }).catch(console.error)
 
     revalidatePath('/app/dashboard/employees')
     revalidatePath(`/app/dashboard/employees/${id}`)
@@ -1178,6 +1226,18 @@ export async function bulkDeleteEmployees(
           console.error('[SP-439] Stripe sync failed after bulk delete:', err)
         })
       }
+
+      // SP-444 : Audit trail pour chaque employé supprimé (fire-and-forget)
+      for (const empId of toDelete) {
+        logAuditAction({
+          action: 'DELETE',
+          entityType: 'EMPLOYEE',
+          entityId: empId,
+          userId: user.id,
+          companyId: user.companyId ?? undefined,
+          details: { bulk: true, totalDeleted: toDelete.length },
+        }).catch(console.error)
+      }
     }
 
     revalidatePath('/app/dashboard/employees')
@@ -1356,6 +1416,15 @@ export async function exportEmployeesCsv(
     console.warn(
       `[exportEmployeesCsv] User ${user.id} (${user.role}) exported ${employees.length} employees at ${new Date().toISOString()}`
     )
+
+    // SP-444 : Audit trail export RGPD (fire-and-forget)
+    logAuditAction({
+      action: 'EXPORT',
+      entityType: 'EMPLOYEE',
+      userId: user.id,
+      companyId: user.companyId ?? undefined,
+      details: { count: employees.length, filters: (filters ?? null) as Prisma.InputJsonValue },
+    }).catch(console.error)
 
     return { success: true, data: result }
   } catch (error) {
