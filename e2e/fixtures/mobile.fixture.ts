@@ -144,38 +144,39 @@ export async function waitForDrawerClosed(page: Page): Promise<void> {
 
 /**
  * Open command palette on mobile (via search icon)
+ *
+ * On phones (< 640px): clicks [data-testid="mobile-search-button"]
+ * On tablets (>= 640px): clicks [data-testid="desktop-search-button"]
+ *   which is visible from sm: breakpoint
+ * Fallback: Meta+K (iPad/Mac userAgent) or Control+K
  */
 export async function openCommandPaletteMobile(page: Page): Promise<void> {
-  // Wait for page to be ready
   await page.waitForLoadState('domcontentloaded')
 
-  // Use data-testid for reliable selection
   const mobileSearchButton = page.locator(
     '[data-testid="mobile-search-button"]'
   )
-  const ariaSearchButton = page.locator(
-    'button[aria-label="Ouvrir la recherche"]'
+  const desktopSearchButton = page.locator(
+    '[data-testid="desktop-search-button"]'
   )
 
-  // Wait for a search button to be visible
+  // Wait for either search button to appear
   await Promise.race([
     mobileSearchButton.waitFor({ state: 'visible', timeout: 10000 }),
-    ariaSearchButton.waitFor({ state: 'visible', timeout: 10000 }),
+    desktopSearchButton.waitFor({ state: 'visible', timeout: 10000 }),
   ]).catch(() => {
-    // If neither visible, try keyboard shortcut
+    // Neither visible — will fallback to keyboard shortcut
   })
 
-  // Click the visible button
   if (await mobileSearchButton.isVisible()) {
     await mobileSearchButton.click()
-  } else if (await ariaSearchButton.isVisible()) {
-    await ariaSearchButton.click()
+  } else if (await desktopSearchButton.isVisible()) {
+    await desktopSearchButton.click()
   } else {
-    // Fallback to keyboard shortcut
-    await page.keyboard.press('Control+k')
+    // Fallback: Meta+K on Mac/iPad, Control+K on others
+    await page.keyboard.press('Meta+k')
   }
 
-  // Wait for dialog to be visible
   await page
     .locator('[data-testid="command-palette-dialog"]')
     .waitFor({ state: 'visible', timeout: 5000 })

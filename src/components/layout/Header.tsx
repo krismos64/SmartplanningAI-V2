@@ -106,6 +106,8 @@ export function Header({ user }: HeaderProps) {
             variant="outline"
             onClick={() => openCommandPalette(true)}
             className="hidden h-9 gap-2 border-border/50 bg-muted/50 px-3 text-muted-foreground hover:bg-muted hover:text-foreground sm:flex"
+            aria-label="Ouvrir la recherche"
+            data-testid="desktop-search-button"
           >
             <Search className="h-4 w-4" />
             <span className="text-sm">Rechercher...</span>
