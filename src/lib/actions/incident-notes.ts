@@ -22,6 +22,7 @@ import {
   handlePrismaError,
   canAccessCompanyEntity,
 } from './crud-helpers'
+import { logAuditAction } from '@/lib/services/audit'
 import {
   incidentNoteCreateSchema,
   incidentNoteUpdateSchema,
@@ -283,6 +284,16 @@ export async function createIncidentNote(
       include: INCIDENT_NOTE_INCLUDE,
     })
 
+    // SP-444 : Audit trail (fire-and-forget)
+    logAuditAction({
+      action: 'CREATE',
+      entityType: 'INCIDENT_NOTE',
+      entityId: note.id,
+      userId: user.id,
+      companyId: subject.companyId,
+      details: { subjectId: data.subjectId, visibility: data.visibility },
+    }).catch(console.error)
+
     revalidatePath(INCIDENT_PATH)
     return { success: true, data: note }
   } catch (error) {
@@ -502,6 +513,16 @@ export async function updateIncidentNote(
       include: INCIDENT_NOTE_INCLUDE,
     })
 
+    // SP-444 : Audit trail (fire-and-forget)
+    logAuditAction({
+      action: 'UPDATE',
+      entityType: 'INCIDENT_NOTE',
+      entityId: id,
+      userId: user.id,
+      companyId: existing.companyId,
+      details: data as unknown as Prisma.InputJsonValue,
+    }).catch(console.error)
+
     revalidatePath(INCIDENT_PATH)
     return { success: true, data: updated }
   } catch (error) {
@@ -559,6 +580,15 @@ export async function deleteIncidentNote(
 
     // Supprimer
     await prisma.incidentNote.delete({ where: { id } })
+
+    // SP-444 : Audit trail (fire-and-forget)
+    logAuditAction({
+      action: 'DELETE',
+      entityType: 'INCIDENT_NOTE',
+      entityId: id,
+      userId: user.id,
+      companyId: existing.companyId,
+    }).catch(console.error)
 
     revalidatePath(INCIDENT_PATH)
     return { success: true, data: { id } }
