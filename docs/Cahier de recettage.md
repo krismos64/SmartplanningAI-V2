@@ -14,7 +14,7 @@ Ce document trace l'historique complet des tests réalisés sur SmartPlanning. I
 | Pipeline CI/CD       | GitHub Actions                                         |
 | Responsable          | Christophe Mostefaoui                                  |
 | Date de création     | 4 décembre 2025                                        |
-| Dernière mise à jour | 18 février 2026 (consolidation E2E 50→38 fichiers, nightly complet unit+E2E+5 mobiles) |
+| Dernière mise à jour | 18 février 2026 (Audit System SP-442→446 + User Activity SP-463, 5760 unitaires + 575 E2E) |
 
 ---
 
@@ -34,8 +34,8 @@ Dans le cadre du diplôme **CDA (Concepteur Développeur d'Applications)**, ce c
 | Métrique              | Objectif  | Atteint  |
 | --------------------- | --------- | -------- |
 | Couverture globale    | ≥ 70%     | ✅ 86.35% |
-| Tests unitaires       | ≥ 500     | ✅ 5638   |
-| Tests E2E             | ≥ 50      | ✅ 549 (38 fichiers)   |
+| Tests unitaires       | ≥ 500     | ✅ 5760   |
+| Tests E2E             | ≥ 50      | ✅ 575 (39 fichiers)   |
 | Score Lighthouse A11y | ≥ 90%     | ✅ 95%   |
 | Anomalies critiques   | 0 en prod | ✅ 0     |
 
@@ -472,6 +472,7 @@ Ce tableau recense chaque campagne de tests significative (mise en production, f
 
 | Date       | Sprint    | Version/Commit | Tests unitaires | Tests E2E  | Couverture | Statut  | Notes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | ---------- | --------- | -------------- | --------------- | ---------- | ---------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 18/02/2026 | Sprint 19 | SP-442→446, SP-463 | 5760/5760 ✅ | 575/575 ✅ | ~86%       | ✅ PASS | 🆕 Audit System (schema, service, injection, admin page, E2E) + User Activity page. +122 tests unitaires, +26 tests E2E. Migration Prisma add_audit_log. Total : 6335 tests |
 | 18/02/2026 | Sprint 19 | Consolidation  | 5638/5638 ✅    | 549/549 ✅   | ~86%       | ✅ PASS | 🔧 Consolidation E2E : 50→38 fichiers (suppression redondances, fusion suites similaires). Correction 38 tests command-palette sur tablets (data-testid desktop-search-button, Meta+k iPad). Alignement nightly : ajout job tests unitaires Vitest + 5 devices mobiles. Mise à jour commentaires CI/CD. Total : 6187 tests |
 | 15/02/2026 | Sprint 18 | Prod E2E       | 5638/5638 ✅    | 1018/1018 ✅ | ~86%       | ✅ PASS | 🔧 Migration E2E CI/nightly vers mode production (`npm run start`). Résolution définitive ANO-026 : CSP `upgrade-insecure-requests` conditionnel, env vars `AUTH_URL`/`AUTH_SECRET`/`AUTH_TRUST_HOST` pour NextAuth v5 sur HTTP localhost, étape `npm run build` ajoutée aux workflows. 5 fichiers modifiés. Total : 6656 tests |
 | 13/02/2026 | Sprint 18 | Stabilisation  | 5638/5638 ✅    | 1018/1018 ✅ | ~86%       | ✅ PASS | 🔧 Stabilisation nightly E2E (ANO-026) + fix billing trial sans subscription + fix i18n accents dashboard Manager + stabilisation 62 tests E2E. 14 commits depuis 11/02. Total : 6656 tests |
@@ -2158,8 +2159,9 @@ not-found.tsx (Server Component)
 | 11/02/2026 (SP-462)        | 5637            | 1018      | 6655  | ~86%       | 📈 +37              |
 | 13/02/2026 (Stabilisation) | 5638            | 1018      | 6656  | ~86%       | 🔧 +1 / Fixes E2E   |
 | 18/02/2026 (Consolidation) | 5638            | 549       | 6187  | ~86%       | 🔧 Consolidation 50→38 fichiers E2E, fix tablets, nightly complet |
+| 18/02/2026 (SP-442→446, SP-463) | 5760       | 575       | 6335  | ~86%       | 🆕 Audit System (schema, service, injection, logs, E2E) + User Activity page. +122 unitaires, +26 E2E |
 
-**Graphique d'évolution** : De 27 tests (04/12) à 6187 tests (18/02) — consolidation E2E (suppression 469 tests redondants, de 1018 à 549 E2E) 🚀
+**Graphique d'évolution** : De 27 tests (04/12) à 6335 tests (18/02) — Audit System + User Activity 🚀
 
 ---
 
@@ -2169,11 +2171,11 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
 
 | N°  | Compétence                                                          | Preuve                                                                                                                                                                                                                                                                                                                                                  |
 | --- | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | Tester les composants d'une application                             | 5638 tests unitaires documentés                                                                                                                                                                                                                                                                                                                         |
+| 1   | Tester les composants d'une application                             | 5760 tests unitaires documentés                                                                                                                                                                                                                                                                                                                         |
 | 2   | Contribuer à la qualité du code                                     | Couverture 86.35%, anomalies tracées                                                                                                                                                                                                                                                                                                                    |
 | 3   | Documenter les procédures                                           | Procédure de recette formalisée                                                                                                                                                                                                                                                                                                                         |
 | 4   | Utiliser une méthodologie                                           | Approche structurée par sprints                                                                                                                                                                                                                                                                                                                         |
-| 5   | Développer des tests automatisés                                    | 6187 tests (5638 unitaires + 549 E2E, 38 fichiers)                                                                                                                                                                                                                                                                                                      |
+| 5   | Développer des tests automatisés                                    | 6335 tests (5760 unitaires + 575 E2E, 39 fichiers)                                                                                                                                                                                                                                                                                                      |
 | 6   | Sécuriser une application                                           | Tests RBAC (92 unitaires, 27 E2E), rate limiting, protection énumération                                                                                                                                                                                                                                                                                |
 | 7   | Concevoir une architecture logicielle                               | Pattern ServiceResult<T>, multi-tenant                                                                                                                                                                                                                                                                                                                  |
 | 8   | Développer des composants métier                                    | 4 dashboards par rôle                                                                                                                                                                                                                                                                                                                                   |
@@ -2243,6 +2245,8 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
 | 72  | Implémenter une synchronisation automatique quantité Stripe per-seat       | Service `syncEmployeeCountToStripe` (fire-and-forget, ne throw jamais, SyncResult typé). Skip intelligent 4 statuts (TRIAL/CANCELED/EXPIRED/INCOMPLETE) + quantity_unchanged + no_subscription. `stripe.subscriptions.update()` avec `proration_behavior: 'create_prorations'`. Intégration dans 4 Server Actions employés (create/delete/toggle/bulkDelete). `Math.max(1, employeeCount)`. Logging structuré `[StripeSync]`. 33 tests unitaires (subscription-sync: 27, employees: 6) (SP-439) 🆕 |
 | 73  | Nettoyer une codebase pour préparation soutenance                          | Suppression code mort (routes test, console.log, imports inutilisés), suppression 6 dépendances npm obsolètes, nettoyage barrel exports. Cleanup systématique pré-production (SP-460) 🆕 |
 | 74  | Atteindre une couverture de test > 85% avec stratégie ciblée               | Identification composants 0% couverture via rapport coverage v8, création de 20 fichiers de tests ciblés (+387 tests), résolution anomalies MSW/Radix. Couverture 80.38% → 86.35% (SP-460) 🆕 |
+| 75  | Implémenter un journal d'audit complet avec protection anti-injection      | Modèle Prisma AuditLog (9 actions, 10 entités), service fire-and-forget, sanitization HTML/SQL/NoSQL/XSS, Server Actions RBAC paginées avec filtres, export CSV, page admin DataTable TanStack. 105 tests unitaires + 26 tests E2E (SP-442→446) 🆕 |
+| 76  | Implémenter une page d'activité utilisateur avec timeline relative         | Server Action getUserActivity avec isolation userId JWT, page `/app/profile/activity` timeline `Intl.RelativeTimeFormat('fr')`, navigation Header dropdown + ProfileActions. 17 tests unitaires (SP-463) 🆕 |
 
 ---
 
@@ -2262,6 +2266,8 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
    - Envoi emails (bienvenue, reset password, vérification)
    - Réinitialisation mot de passe (/forgot-password, /reset-password, flux complet) 🆕
    - Formulaire de contact (validation, soumission, états succès/erreur)
+   - Journal d'audit admin `/app/admin/logs` (filtres, pagination, export CSV, modal détail) 🆕
+   - Activité utilisateur `/app/profile/activity` (timeline, accès depuis Header et ProfileActions) 🆕
    - API /api/contact (test avec curl/Postman)
    - Error Boundary (test /test-error pour déclencher erreur)
    - Page 404 (test URL inexistante, navigation de secours)
@@ -2288,8 +2294,8 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
 ### Tests nightly (quotidiens)
 
 1. **Exécution automatique** : GitHub Actions cron 2h00 UTC, suite COMPLÈTE en **mode production** (`npm run build` + `npm run start`)
-2. **Job 1 — Tests unitaires** : ~5638 tests Vitest avec couverture (pas besoin de PostgreSQL)
-3. **Job 2 — Tests E2E complets** : Desktop Chromium (~549 tests) + 5 devices mobiles (iPhone SE, iPhone 14 Pro, Pixel 7, iPad Mini, iPad Pro 11")
+2. **Job 1 — Tests unitaires** : ~5760 tests Vitest avec couverture (pas besoin de PostgreSQL)
+3. **Job 2 — Tests E2E complets** : Desktop Chromium (~575 tests) + 5 devices mobiles (iPhone SE, iPhone 14 Pro, Pixel 7, iPad Mini, iPad Pro 11")
 4. **Configuration** : `playwright.nightly.config.ts` (3 workers, 2 retries, timeout 60s, 6 projets)
 5. **Env vars CI** : `AUTH_URL=http://localhost:3000`, `AUTH_SECRET`, `AUTH_TRUST_HOST=true` (nécessaires pour NextAuth v5 en production sur HTTP — voir ANO-027)
 6. **Analyse résultats** : Vérifier annotations GitHub (failed vs flaky vs passed)
@@ -2308,6 +2314,7 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
 
 | Date       | Modification                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 18/02/2026 | 🆕 Sprint 19 — Audit System (SP-442→446) + User Activity (SP-463) : Migration Prisma `add_audit_log` (table AuditLog, enums AuditAction 9 valeurs + AuditEntityType 10 valeurs). Service `logAuditAction` fire-and-forget. Protection anti-injection (sanitization HTML/SQL/NoSQL/XSS). Page admin `/app/admin/logs` DataTable TanStack (filtres, pagination serveur, export CSV, modal détail). Page `/app/profile/activity` timeline relative française. +122 tests unitaires (audit-schema 30, audit.service 22, audit-injection 20, audit-logs 33, getUserActivity 17) + 26 tests E2E (audit-logs.spec.ts). Fix E2E exact:true filter + detail modal skip. Fix lint CI (prettier + ESLint). Total : 6335 tests (5760 unitaires + 575 E2E, 39 fichiers) |
 | 18/02/2026 | 🔧 Consolidation E2E 50→38 fichiers (suppression redondances, fusion error-pages/account-actions/billing). Correction 38 tests command-palette échouant sur tablets (data-testid desktop-search-button, Meta+k au lieu de Control+k). Alignement workflow nightly : ajout job tests unitaires Vitest (~5638), ajout 5 devices mobiles (iPhone SE, 14 Pro, Pixel 7, iPad Mini, iPad Pro 11"). Mise à jour commentaires CI/CD avec chiffres actuels. Total : 6187 tests (5638 unitaires + 549 E2E) |
 | 15/02/2026 | 🔧 Migration E2E CI/nightly vers mode production (ANO-027) : `playwright.ci.config.ts` et `playwright.nightly.config.ts` passent de `npm run dev` à `npm run start`. 3 causes racines `ERR_TOO_MANY_REDIRECTS` identifiées et corrigées : (1) `next.config.ts` CSP `upgrade-insecure-requests` rendu conditionnel via `isHttps` (basé sur `AUTH_URL`/`NEXTAUTH_URL`), (2) `ci.yml` et `nightly-e2e.yml` ajout env vars `AUTH_URL=http://localhost:3000`, `AUTH_SECRET`, `AUTH_TRUST_HOST=true` + étape `npm run build`, (3) timeout E2E CI augmenté 25→30 min. 5 fichiers modifiés. Gains : tests plus rapides, plus fiables (pas de Strict Mode double mount), représentatifs de la production |
 | 13/02/2026 | 🔧 Stabilisation nightly E2E (ANO-026) : 2 tests failed + 5 flaky sur nightly CI. Cause : serveur `npm run dev` lent en CI GitHub Actions avec 3 workers parallèles, causant `net::ERR_CONNECTION_RESET` et timeouts `waitForURL`. Corrections : `auth.fixture.ts` retry 3x sur `page.goto('/login')` + timeout login 30s→45s. `edit-profile.page.ts` timeout `expectUpdateSuccess` 30s→45s + fallback submit button état normal. `personal-tasks.page.ts` timeout toast 10s→15s. `middleware-rbac.spec.ts` timeout callbackUrl 15s→30s. `playwright.nightly.config.ts` actionTimeout 15s→20s, navigationTimeout 30s→45s. 5 fichiers modifiés. Total : 6656 tests |
@@ -2393,6 +2400,37 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
 ---
 
 ## Documents liés
+
+### Sprint 19 - Audit System & User Activity (SP-442→446, SP-463) 🆕
+
+- SP-442 : Schéma Prisma AuditLog ✅ TERMINÉ
+  - Migration Prisma `20260218183732_add_audit_log` : table `AuditLog` avec 9 actions (CREATE, UPDATE, DELETE, LOGIN, LOGOUT, EXPORT, STATUS_CHANGE, IMPERSONATE, PASSWORD_CHANGE), 10 types d'entités (COMPANY, EMPLOYEE, TEAM, SCHEDULE, LEAVE, SUBSCRIPTION, USER, SETTINGS, INCIDENT_NOTE, AVAILABILITY)
+  - Relations User et Company, champs entityId/companyId optionnels, details Json
+  - **Tests** : 30 tests unitaires (audit-schema.test.ts) — création avec tous champs, companyId null (SYSTEM_ADMIN), details Json complexe, entityId null (LOGIN), enums AuditAction (9 valeurs), enums AuditEntityType (10 valeurs), findMany avec relations, count avec filtres, filtre par plage de dates
+
+- SP-443 : Service logAuditAction ✅ TERMINÉ
+  - Service `src/lib/services/audit/audit.service.ts` : fire-and-forget (ne throw jamais), création via Prisma, logging console.error structuré en cas d'échec
+  - **Tests** : 22 tests unitaires (audit.service.test.ts) — création avec tous les champs, details optionnel, erreur silencieuse (Error + non-Error), companyId optionnel (null/fourni), entityId optionnel, paramètres obligatoires, toutes valeurs AuditAction (9), toutes valeurs AuditEntityType (10), details complexes before/after
+
+- SP-444 : Protection anti-injection AuditLog ✅ TERMINÉ
+  - Sanitization des inputs audit : HTML tags, SQL injection, NoSQL injection, XSS payloads, script injection dans entityId/companyId/userId/details
+  - **Tests** : 20 tests unitaires (audit-injection.test.ts) — XSS dans details, SQL injection entityId, NoSQL $gt companyId, script tag userId, HTML dans details nested, details null/undefined/vide, types primitifs dans details
+
+- SP-445 : Page Admin Audit Logs ✅ TERMINÉ
+  - Server Actions : `getAuditLogs` (paginé, filtres action/entityType/userId/companyId/dateFrom/dateTo, validation Zod), `exportAuditLogsCsv` (export CSV complet)
+  - Page `/app/admin/logs` : DataTable TanStack avec colonnes Date/Utilisateur/Action/Entité/Entreprise, AuditActionBadge (badges colorés par action), AuditLogFilterBar (filtres action/entité/utilisateur/dates), AuditLogDetailModal (modal détail JSON formaté), pagination serveur, export CSV
+  - **Tests** : 33 tests unitaires (audit-logs.test.ts) — auth (non-connecté, non-admin), RBAC 4 rôles, filtres (action, entityType, dates, companyId), pagination, export CSV (succès, contenu), sanitization HTML/SQL
+
+- SP-446 : Tests E2E Audit Logs ✅ TERMINÉ
+  - Page Object `AuditLogsPage` (`e2e/pages/audit-logs.page.ts`) : locators data-testid, méthodes navigation/filtres/export/détail
+  - **Tests** : 26 tests E2E (audit-logs.spec.ts, 23 pass + 3 skip) — navigation, titre/description, boutons actualiser/exporter, filtres action/entité (exact: true fix), reset filtres, pagination, modal détail, responsive
+
+- SP-463 : Page Activité Utilisateur ✅ TERMINÉ
+  - Server Action `getUserActivity` : filtrage par userId JWT, isolation RBAC, pagination, filtre action optionnel
+  - Page `/app/profile/activity` Server Component avec `UserActivityTimeline` (timeline relative française `Intl.RelativeTimeFormat`)
+  - Navigation : lien "Mon activité" dans Header dropdown + bouton dans ProfileActions
+  - **Tests** : 17 tests unitaires (getUserActivity) — auth, RBAC 4 rôles, isolation userId, pagination, filtre action, résultats vides, transformation, erreur DB
+  - **Bilan Sprint 19** : +122 tests unitaires, +26 tests E2E. Total : 6335 tests (5760 unitaires + 575 E2E, 39 fichiers)
 
 ### Sprint 18 - Nettoyage Final & Couverture 86% (SP-460) 🆕
 

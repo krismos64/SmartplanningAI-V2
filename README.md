@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 18 février 2026 (consolidation E2E 50→38 fichiers, nightly aligné : tests unitaires + 5 devices mobiles)
+- **Dernière mise à jour** : 18 février 2026 (Audit System SP-442→446 + User Activity SP-463, 5760 tests unitaires + 575 E2E)
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -79,6 +79,8 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Display Preferences** (SP-276) : Page préférences d'affichage `/app/settings/appearance` avec sélection thème (Système/Clair/Sombre via next-themes), format de date (DD/MM/YYYY, MM/DD/YYYY, YYYY-MM-DD), format d'heure (24h, 12h), prévisualisation en temps réel. Architecture Cookie + DB pour persistence SSR sans flash. Server Actions (getDisplayPreferences, updateDisplayPreferences, syncPreferencesFromCookie, resetDisplayPreferences). Helpers date-fns (9 fonctions : formatDate, formatTime, formatDateTime, formatRelativeDate, formatShortDate, formatLongDate, formatWeekday, formatMonthYear, createFormatter). 43 tests unitaires + 18 tests E2E
 - **Notification Preferences** (SP-275) : Page préférences de notifications `/app/settings/notifications` avec gestion par catégorie (Planning, Congés, Tâches, Système) et par canal (Email, In-App). Switches toggle pour chaque combinaison catégorie/canal. Architecture optimistic UI avec useTransition. Server Actions (getNotificationPreferences, updateNotificationPreferences, resetNotificationPreferences). Helper notification-categories.ts pour mapping NotificationType → catégorie. Intégration factory functions notifications (vérification préférences avant création). 27 tests unitaires + 14 tests E2E. Badge "Bientôt" retiré de section Notifications
 - **Company Settings** (SP-435) : Page paramètres entreprise `/app/settings/company` pour DIRECTOR et SYSTEM_ADMIN. Configuration du nom et adresse de l'entreprise, jours travaillés (7 checkboxes + 3 presets Lun-Ven, Lun-Sam, Tous), horaires de travail (ouverture/fermeture), pause déjeuner (toggle + horaires). Types TypeScript (DayOfWeek, CompanySettings, LunchBreakSettings), validations Zod avec cross-field validation, Server Actions (getCompanySettings, updateCompanySettings, resetCompanySettings) avec RBAC strict. Architecture optimistic UI avec rollback. Stockage Prisma (Company.workingDays, Company.workingHoursStart/End, Company.defaultOpeningHours JSON pour lunch break). 19 tests unitaires + 21 tests E2E. Badge "Bientôt" retiré de section Entreprise
+- **Audit System** (SP-442, SP-443, SP-444, SP-445, SP-446) : Journal d'audit complet avec modèle Prisma AuditLog (9 actions, 10 types d'entités), service `logAuditAction` fire-and-forget, Server Actions RBAC (`getAuditLogs` paginé avec filtres, `exportAuditLogsCsv`), page admin `/app/admin/logs` avec DataTable TanStack, filtres action/entité/utilisateur/date, export CSV, modal détail JSON. Protection anti-injection (sanitization HTML/SQL/NoSQL). 122 tests unitaires + 26 tests E2E
+- **User Activity Page** (SP-463) : Page activité utilisateur `/app/profile/activity` avec timeline relative française (`Intl.RelativeTimeFormat`). Server Action `getUserActivity` filtrant par userId JWT avec isolation RBAC. Accès depuis Header dropdown "Mon activité" et ProfileActions. 17 tests unitaires
 
 ### MVP (Phases 1-4)
 
@@ -2454,11 +2456,11 @@ Toutes les pages publiques sont optimisées pour les LLMs (ChatGPT, Claude, Perp
 - **E2E** : Playwright (configuré)
 - **Coverage** : v8 provider
 
-### Couverture actuelle (10 février 2026 - SP-460)
+### Couverture actuelle (18 février 2026 - SP-463)
 
 | Catégorie                              | Coverage   | Tests    |
 | -------------------------------------- | ---------- | -------- |
-| **Global**                             | **86.35%** | **5600** |
+| **Global**                             | **~86%**   | **5760** |
 | loading                                | 100%     | 152      |
 | modals                                 | 100%     | 52       |
 | cards                                  | 77.09%   | 88       |
@@ -2580,6 +2582,11 @@ Toutes les pages publiques sont optimisées pour les LLMs (ChatGPT, Claude, Perp
 | UmamiAnalyticsWrapper (SP-460)   | 100%     | 5        |
 | CompanyForm (SP-460)             | 100%     | 17       |
 | send-functions billing (SP-460)  | 100%     | 9        |
+| audit-schema (SP-442)            | 100%     | 30       |
+| audit.service (SP-443)           | 100%     | 22       |
+| audit-injection (SP-444)         | 100%     | 20       |
+| audit-logs actions (SP-445)      | 100%     | 33       |
+| getUserActivity (SP-463)         | 100%     | 17       |
 
 ### Tests E2E
 
@@ -2622,9 +2629,10 @@ Toutes les pages publiques sont optimisées pour les LLMs (ChatGPT, Claude, Perp
 | **Company Settings (SP-435)**       | 21      | ✅                                |
 | **Billing Alerts (SP-373)**         | 8       | ✅                                |
 | **Billing Subscription (SP-373)**   | 7       | ✅                                |
-| **Total E2E (38 fichiers)**         | **~549** | ✅                               |
+| **Audit Logs (SP-446)**            | 26      | ✅ (23 pass + 3 skip)            |
+| **Total E2E (39 fichiers)**         | **~575** | ✅                               |
 
-**Note** : Tests desktop exécutés sur Chromium uniquement. Tests mobiles exécutés sur 5 devices (iPhone SE, iPhone 14 Pro, Pixel 7, iPad Mini, iPad Pro 11") via Chromium avec émulation mobile (WebKit supprimé car bug HTTPS upgrade sur localhost). Consolidation 50→38 fichiers le 18/02/2026 (suppression redondances, fusion suites similaires).
+**Note** : Tests desktop exécutés sur Chromium uniquement. Tests mobiles exécutés sur 5 devices (iPhone SE, iPhone 14 Pro, Pixel 7, iPad Mini, iPad Pro 11") via Chromium avec émulation mobile (WebKit supprimé car bug HTTPS upgrade sur localhost). Consolidation 50→38 fichiers le 18/02/2026 (suppression redondances, fusion suites similaires). Ajout audit-logs.spec.ts le 18/02/2026 (39 fichiers).
 
 ### Composants testés
 
@@ -2995,7 +3003,7 @@ Nightly → Tests unitaires + Build + Suite E2E complète desktop + 5 mobiles (2
 - **CI** (`.github/workflows/ci.yml`) : Lint, Type-check, Tests unitaires, Build, Tests E2E en mode production (PR/push main)
 - **CD** (`.github/workflows/cd.yml`) : Build image Docker, Push sur ghcr.io, Deploy via SSH
 - **Nightly** (`.github/workflows/nightly-e2e.yml`) : Tests unitaires Vitest + Suite E2E complète desktop + 5 devices mobiles en mode production (`npm run start`)
-- Tests unitaires sur tous les push (~5638 tests Vitest)
+- Tests unitaires sur tous les push (~5760 tests Vitest)
 - Tests E2E en mode production (`npm run build` + `npm run start`) pour des résultats représentatifs de la prod
 - Env vars CI : `AUTH_URL`, `AUTH_SECRET`, `AUTH_TRUST_HOST` pour NextAuth v5 sur HTTP localhost
 - Stabilisation E2E (SP-434) : Touch targets WCAG 2.5.5 (44px), command palette, mobile navigation
