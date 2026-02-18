@@ -1872,7 +1872,10 @@ export async function exportSchedulesCsv(
       entityType: 'SCHEDULE',
       userId: user.id,
       companyId: user.companyId ?? undefined,
-      details: { count: schedules.length, filters: (filters ?? null) as Prisma.InputJsonValue },
+      details: {
+        count: schedules.length,
+        filters: (filters ?? null) as Prisma.InputJsonValue,
+      },
     }).catch(console.error)
 
     return { success: true, data: result }

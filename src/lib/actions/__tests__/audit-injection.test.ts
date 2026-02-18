@@ -12,6 +12,8 @@
 
 /* eslint-disable @typescript-eslint/unbound-method */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
@@ -300,7 +302,12 @@ describe('SP-444 Audit Injection - Incident Notes', () => {
       authorId: USER_ID,
       companyId: COMPANY_ID,
       subject: { id: EMPLOYEE_ID, firstName: 'Jean', lastName: 'Dupont' },
-      author: { id: USER_ID, name: 'Admin', email: 'admin@test.com', image: null },
+      author: {
+        id: USER_ID,
+        name: 'Admin',
+        email: 'admin@test.com',
+        image: null,
+      },
     } as any)
 
     const { createIncidentNote } = await import('../incident-notes')

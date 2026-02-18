@@ -61,7 +61,9 @@ interface AuditLogFilterBarProps {
   disabled?: boolean
 }
 
-export function AuditLogFilterBar({ disabled = false }: AuditLogFilterBarProps) {
+export function AuditLogFilterBar({
+  disabled = false,
+}: AuditLogFilterBarProps) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()

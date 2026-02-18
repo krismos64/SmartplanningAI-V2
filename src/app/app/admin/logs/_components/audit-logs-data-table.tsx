@@ -187,7 +187,9 @@ export function AuditLogsDataTable({ data }: AuditLogsDataTableProps) {
       })
       const result = await exportAuditLogsCsv(filters)
       if (result.success) {
-        const blob = new Blob([result.data], { type: 'text/csv;charset=utf-8;' })
+        const blob = new Blob([result.data], {
+          type: 'text/csv;charset=utf-8;',
+        })
         const url = URL.createObjectURL(blob)
         const link = document.createElement('a')
         link.href = url
@@ -236,18 +238,14 @@ export function AuditLogsDataTable({ data }: AuditLogsDataTableProps) {
         </div>
 
         <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => router.refresh()}
-          >
+          <Button variant="outline" size="sm" onClick={() => router.refresh()}>
             <RefreshCw className="mr-2 h-4 w-4" />
             Actualiser
           </Button>
           <Button
             variant="outline"
             size="sm"
-            onClick={handleExport}
+            onClick={() => void handleExport()}
             disabled={isExporting || data.total === 0}
           >
             <Download className="mr-2 h-4 w-4" />
@@ -310,10 +308,7 @@ export function AuditLogsDataTable({ data }: AuditLogsDataTableProps) {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-2">
           <span className="text-sm text-muted-foreground">Lignes par page</span>
-          <Select
-            value={String(data.pageSize)}
-            onValueChange={changePageSize}
-          >
+          <Select value={String(data.pageSize)} onValueChange={changePageSize}>
             <SelectTrigger className="w-20">
               <SelectValue />
             </SelectTrigger>

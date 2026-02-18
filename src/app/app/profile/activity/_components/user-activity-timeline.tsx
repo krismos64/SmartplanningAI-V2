@@ -10,7 +10,10 @@
  */
 
 import type { AuditLogEntry } from '@/types/audit'
-import { AuditActionBadge, ENTITY_TYPE_LABELS } from '@/app/app/admin/logs/_components/audit-action-badge'
+import {
+  AuditActionBadge,
+  ENTITY_TYPE_LABELS,
+} from '@/app/app/admin/logs/_components/audit-action-badge'
 
 // ============================================================================
 // HELPERS
@@ -30,7 +33,8 @@ function formatRelativeTime(date: Date): string {
   if (diffSec < 3600) return rtf.format(-Math.round(diffSec / 60), 'minute')
   if (diffSec < 86400) return rtf.format(-Math.round(diffSec / 3600), 'hour')
   if (diffSec < 604800) return rtf.format(-Math.round(diffSec / 86400), 'day')
-  if (diffSec < 2592000) return rtf.format(-Math.round(diffSec / 604800), 'week')
+  if (diffSec < 2592000)
+    return rtf.format(-Math.round(diffSec / 604800), 'week')
   return rtf.format(-Math.round(diffSec / 2592000), 'month')
 }
 
@@ -121,7 +125,7 @@ export function UserActivityTimeline({ logs }: UserActivityTimelineProps) {
   return (
     <div className="relative space-y-0">
       {/* Ligne verticale de timeline */}
-      <div className="absolute left-[11px] top-2 bottom-2 w-px bg-border" />
+      <div className="absolute bottom-2 left-[11px] top-2 w-px bg-border" />
 
       {logs.map((entry) => (
         <div key={entry.id} className="relative flex gap-4 pb-6 last:pb-0">

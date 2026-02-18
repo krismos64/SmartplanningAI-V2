@@ -7,6 +7,9 @@
  * @ticket SP-442
  */
 
+/* eslint-disable @typescript-eslint/unbound-method */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 // Mock Prisma (pattern du projet)
@@ -200,20 +203,23 @@ describe('AuditLog Schema', () => {
       'PASSWORD_CHANGE',
     ] as const
 
-    it.each(AUDIT_ACTIONS)('accepte la valeur AuditAction.%s', async (action) => {
-      const log = { ...MOCK_AUDIT_LOG, action }
-      vi.mocked(prisma.auditLog.create).mockResolvedValue(log as never)
+    it.each(AUDIT_ACTIONS)(
+      'accepte la valeur AuditAction.%s',
+      async (action) => {
+        const log = { ...MOCK_AUDIT_LOG, action }
+        vi.mocked(prisma.auditLog.create).mockResolvedValue(log as never)
 
-      const result = await prisma.auditLog.create({
-        data: {
-          action,
-          entityType: 'USER',
-          userId: 'cluser00000000000001',
-        },
-      })
+        const result = await prisma.auditLog.create({
+          data: {
+            action,
+            entityType: 'USER',
+            userId: 'cluser00000000000001',
+          },
+        })
 
-      expect(result.action).toBe(action)
-    })
+        expect(result.action).toBe(action)
+      }
+    )
 
     it('contient exactement 9 valeurs', () => {
       expect(AUDIT_ACTIONS).toHaveLength(9)

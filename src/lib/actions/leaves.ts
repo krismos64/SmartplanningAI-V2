@@ -607,7 +607,11 @@ export async function cancelLeaveRequest(
         entityId: id,
         userId: user.id,
         companyId: leaveRequest.companyId,
-        details: { from: leaveRequest.status, to: 'CANCELLED', balanceRecredited: true },
+        details: {
+          from: leaveRequest.status,
+          to: 'CANCELLED',
+          balanceRecredited: true,
+        },
       }).catch(console.error)
 
       revalidatePath(LEAVE_PATH)
@@ -901,7 +905,11 @@ export async function updateLeaveBalance(
       entityId: balance.id,
       userId: user.id,
       companyId: employee.companyId,
-      details: { employeeId, year, balanceUpdate: data as unknown as Prisma.InputJsonValue },
+      details: {
+        employeeId,
+        year,
+        balanceUpdate: data as unknown as Prisma.InputJsonValue,
+      },
     }).catch(console.error)
 
     revalidatePath(LEAVE_PATH)
@@ -1485,7 +1493,10 @@ export async function exportLeavesCsv(
       entityType: 'LEAVE',
       userId,
       companyId: companyId ?? undefined,
-      details: { count: leaves.length, filters: (filters ?? null) as Prisma.InputJsonValue },
+      details: {
+        count: leaves.length,
+        filters: (filters ?? null) as Prisma.InputJsonValue,
+      },
     }).catch(console.error)
 
     return { success: true, data: result }

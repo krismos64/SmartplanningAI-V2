@@ -9,6 +9,9 @@
  * @ticket SP-443
  */
 
+/* eslint-disable @typescript-eslint/unbound-method */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 // Mock Prisma (pattern du projet — inline par fichier)

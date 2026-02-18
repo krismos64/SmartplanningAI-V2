@@ -606,7 +606,10 @@ export async function updateAvailability(
       entityId: validated.id,
       userId: user.id,
       companyId: existing.companyId,
-      details: { employeeId: existing.employeeId, type: validated.type ?? existing.type },
+      details: {
+        employeeId: existing.employeeId,
+        type: validated.type ?? existing.type,
+      },
     }).catch(console.error)
 
     revalidatePath('/app/availabilities')

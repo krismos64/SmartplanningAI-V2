@@ -10,6 +10,9 @@
  */
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
@@ -42,7 +45,11 @@ vi.mock('@/lib/prisma', () => ({
 // Imports
 // ============================================================================
 
-import { getAuditLogs, exportAuditLogsCsv, getUserActivity } from '../audit-logs'
+import {
+  getAuditLogs,
+  exportAuditLogsCsv,
+  getUserActivity,
+} from '../audit-logs'
 
 // ============================================================================
 // Fixtures
@@ -638,7 +645,7 @@ describe('getUserActivity', () => {
     )
   })
 
-  it('ne permet pas de voir les logs d\'un autre utilisateur', async () => {
+  it("ne permet pas de voir les logs d'un autre utilisateur", async () => {
     mockAuth.mockResolvedValue(EMPLOYEE_SESSION)
     mockCount.mockResolvedValue(0)
     mockFindMany.mockResolvedValue([])

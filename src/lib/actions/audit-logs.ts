@@ -190,7 +190,7 @@ export async function getAuditLogs(
     }
     return {
       success: false,
-      error: 'Erreur lors de la récupération des logs d\'audit',
+      error: "Erreur lors de la récupération des logs d'audit",
     }
   }
 }

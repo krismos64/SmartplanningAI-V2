@@ -22,7 +22,8 @@ import { UserActivityPagination } from './_components/user-activity-pagination'
 
 export const metadata: Metadata = {
   title: 'Mon activité | SmartPlanning',
-  description: 'Consultez votre historique d\'activité récente sur SmartPlanning',
+  description:
+    "Consultez votre historique d'activité récente sur SmartPlanning",
 }
 
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>

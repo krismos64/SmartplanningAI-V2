@@ -256,7 +256,12 @@ export async function updateProfile(
       entityType: 'USER',
       entityId: session.user.id,
       userId: session.user.id,
-      details: { firstName, lastName, phone: phone || null, jobTitle: jobTitle || null },
+      details: {
+        firstName,
+        lastName,
+        phone: phone || null,
+        jobTitle: jobTitle || null,
+      },
     }).catch(console.error)
 
     // 5. Revalidate le cache

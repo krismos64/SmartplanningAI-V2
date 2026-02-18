@@ -11,7 +11,14 @@
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Settings, Pencil, Lock, Download, Trash2, Activity } from 'lucide-react'
+import {
+  Settings,
+  Pencil,
+  Lock,
+  Download,
+  Trash2,
+  Activity,
+} from 'lucide-react'
 
 export function ProfileActions() {
   return (
