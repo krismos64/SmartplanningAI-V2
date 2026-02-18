@@ -18,6 +18,7 @@ import { prisma } from '@/lib/prisma'
 import { UserRole, Prisma, AvailabilityType } from '@prisma/client'
 import { auth } from '@/lib/auth'
 import { validateData, handlePrismaError } from './crud-helpers'
+import { logAuditAction } from '@/lib/services/audit'
 import {
   createAvailabilitySchema,
   updateAvailabilitySchema,
@@ -500,6 +501,20 @@ export async function createAvailability(
       },
     })
 
+    // SP-444 : Audit trail (fire-and-forget)
+    logAuditAction({
+      action: 'CREATE',
+      entityType: 'AVAILABILITY',
+      entityId: availability.id,
+      userId: user.id,
+      companyId: validated.companyId,
+      details: {
+        employeeId: validated.employeeId,
+        type: validated.type,
+        startDate: validated.startDate.toISOString(),
+      },
+    }).catch(console.error)
+
     revalidatePath('/app/availabilities')
     revalidatePath('/app/schedules')
     revalidatePath('/app/dashboard')
@@ -584,6 +599,16 @@ export async function updateAvailability(
       },
     })
 
+    // SP-444 : Audit trail (fire-and-forget)
+    logAuditAction({
+      action: 'UPDATE',
+      entityType: 'AVAILABILITY',
+      entityId: validated.id,
+      userId: user.id,
+      companyId: existing.companyId,
+      details: { employeeId: existing.employeeId, type: validated.type ?? existing.type },
+    }).catch(console.error)
+
     revalidatePath('/app/availabilities')
     revalidatePath(`/app/availabilities/${validated.id}`)
     revalidatePath('/app/schedules')
@@ -629,6 +654,16 @@ export async function deleteAvailability(
     }
 
     await prisma.availability.delete({ where: { id } })
+
+    // SP-444 : Audit trail (fire-and-forget)
+    logAuditAction({
+      action: 'DELETE',
+      entityType: 'AVAILABILITY',
+      entityId: id,
+      userId: user.id,
+      companyId: availability.companyId,
+      details: { employeeId: availability.employeeId, type: availability.type },
+    }).catch(console.error)
 
     revalidatePath('/app/availabilities')
     revalidatePath('/app/schedules')
