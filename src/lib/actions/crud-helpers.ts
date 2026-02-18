@@ -233,20 +233,30 @@ export function revalidatePaths(paths: string[]): void {
 }
 
 // ============================================================================
-// Logging d'activite
+// Logging d'activite (SP-443 : implémentation réelle via AuditLog)
 // ============================================================================
 
+import {
+  logAuditAction,
+  type LogAuditActionParams,
+} from '@/lib/services/audit'
+
+export type { LogAuditActionParams }
+
 /**
- * Log une activite dans la base de donnees
+ * Log une activite dans la table audit_logs
  *
- * Utilise pour l'audit trail et l'historique des modifications.
- * Ne bloque pas l'action principale en cas d'echec.
+ * Wrapper de compatibilite pour les Server Actions existantes.
+ * Mappe l'ancienne signature (ActivityAction) vers les enums Prisma AuditAction/AuditEntityType.
+ * Pattern fire-and-forget : ne bloque pas l'action principale.
  *
  * @param userId - ID de l'utilisateur
- * @param action - Type d'action
+ * @param action - Type d'action (CREATE, UPDATE, DELETE, VIEW)
  * @param entityType - Type d'entite (Company, User, Team, etc.)
  * @param entityId - ID de l'entite
  * @param details - Details supplementaires (optionnel)
+ *
+ * @ticket SP-443
  */
 export function logActivity(
   userId: string,
@@ -255,12 +265,35 @@ export function logActivity(
   entityId: string,
   details?: Record<string, unknown>
 ): void {
-  // Hors scope CDA — implémentation ActivityLog post-soutenance
-  void userId
-  void action
-  void entityType
-  void entityId
-  void details
+  // Mapper ActivityAction vers AuditAction (VIEW n'est pas audité)
+  if (action === 'VIEW') return
+
+  const entityTypeMap: Record<string, LogAuditActionParams['entityType']> = {
+    Company: 'COMPANY',
+    Employee: 'EMPLOYEE',
+    Team: 'TEAM',
+    Schedule: 'SCHEDULE',
+    LeaveRequest: 'LEAVE',
+    Leave: 'LEAVE',
+    Subscription: 'SUBSCRIPTION',
+    User: 'USER',
+    Settings: 'SETTINGS',
+    IncidentNote: 'INCIDENT_NOTE',
+    Availability: 'AVAILABILITY',
+  }
+
+  const mappedEntityType = entityTypeMap[entityType]
+  if (!mappedEntityType) return
+
+  logAuditAction({
+    action: action as LogAuditActionParams['action'],
+    entityType: mappedEntityType,
+    entityId,
+    userId,
+    details: details as Prisma.InputJsonValue | undefined,
+  }).catch((err) => {
+    console.error('[logActivity] Audit log failed:', err)
+  })
 }
 
 // ============================================================================

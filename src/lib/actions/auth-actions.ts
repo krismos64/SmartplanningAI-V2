@@ -16,6 +16,7 @@ import { PRICING } from '@/lib/config/pricing'
 import { sendWelcomeEmail } from '@/lib/email/templates/welcome'
 import { hashPassword } from '@/lib/password'
 import { prisma } from '@/lib/prisma'
+import { logAuditAction } from '@/lib/services/audit'
 import { signupSchema, type SignupFormData } from '@/lib/validations'
 
 /**
@@ -200,7 +201,26 @@ export async function registerAction(
       return { user, company, employee }
     })
 
-    // 6. Envoyer l'email de bienvenue (non bloquant)
+    // 6. Audit trail : log CREATE pour Company et User (fire-and-forget, SP-443)
+    logAuditAction({
+      action: 'CREATE',
+      entityType: 'COMPANY',
+      entityId: result.company.id,
+      userId: result.user.id,
+      companyId: result.company.id,
+      details: { companyName: companyName.trim(), slug: companySlug },
+    }).catch(console.error)
+
+    logAuditAction({
+      action: 'CREATE',
+      entityType: 'USER',
+      entityId: result.user.id,
+      userId: result.user.id,
+      companyId: result.company.id,
+      details: { email: email.toLowerCase(), role: 'DIRECTOR' },
+    }).catch(console.error)
+
+    // 8. Envoyer l'email de bienvenue (non bloquant)
     // L'échec de l'envoi ne doit PAS bloquer l'inscription
     try {
       const firstName = name.trim().split(' ')[0] || name.trim()
