@@ -42,7 +42,7 @@ vi.mock('@/lib/prisma', () => ({
 // Imports
 // ============================================================================
 
-import { getAuditLogs, exportAuditLogsCsv } from '../audit-logs'
+import { getAuditLogs, exportAuditLogsCsv, getUserActivity } from '../audit-logs'
 
 // ============================================================================
 // Fixtures
@@ -60,6 +60,22 @@ const DIRECTOR_SESSION = {
   user: {
     id: 'director-001',
     role: 'DIRECTOR',
+    companyId: 'company-001',
+  },
+}
+
+const EMPLOYEE_SESSION = {
+  user: {
+    id: 'employee-001',
+    role: 'EMPLOYEE',
+    companyId: 'company-001',
+  },
+}
+
+const MANAGER_SESSION = {
+  user: {
+    id: 'manager-001',
+    role: 'MANAGER',
     companyId: 'company-001',
   },
 }
@@ -515,6 +531,286 @@ describe('exportAuditLogsCsv', () => {
     mockFindMany.mockRejectedValue(new Error('DB timeout'))
 
     const result = await exportAuditLogsCsv()
+
+    expect(result.success).toBe(false)
+    if (!result.success) {
+      expect(result.error).toContain('Erreur')
+    }
+  })
+})
+
+// ============================================================================
+// Validation schema (auditLogFiltersSchema)
+// ============================================================================
+
+// ============================================================================
+// getUserActivity (SP-463)
+// ============================================================================
+
+describe('getUserActivity', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  // --- Auth ---
+
+  it('refuse les utilisateurs non authentifiés', async () => {
+    setupUnauthenticated()
+
+    const result = await getUserActivity()
+
+    expect(result.success).toBe(false)
+    if (!result.success) {
+      expect(result.error).toContain('connecté')
+    }
+    expect(mockCount).not.toHaveBeenCalled()
+  })
+
+  it('refuse une session sans user.id', async () => {
+    mockAuth.mockResolvedValue({ user: { role: 'EMPLOYEE' } })
+
+    const result = await getUserActivity()
+
+    expect(result.success).toBe(false)
+    expect(mockCount).not.toHaveBeenCalled()
+  })
+
+  // --- Accessible à tous les rôles ---
+
+  it('autorise les EMPLOYEE', async () => {
+    mockAuth.mockResolvedValue(EMPLOYEE_SESSION)
+    mockCount.mockResolvedValue(0)
+    mockFindMany.mockResolvedValue([])
+
+    const result = await getUserActivity()
+
+    expect(result.success).toBe(true)
+  })
+
+  it('autorise les MANAGER', async () => {
+    mockAuth.mockResolvedValue(MANAGER_SESSION)
+    mockCount.mockResolvedValue(0)
+    mockFindMany.mockResolvedValue([])
+
+    const result = await getUserActivity()
+
+    expect(result.success).toBe(true)
+  })
+
+  it('autorise les DIRECTOR', async () => {
+    setupDirector()
+    mockCount.mockResolvedValue(0)
+    mockFindMany.mockResolvedValue([])
+
+    const result = await getUserActivity()
+
+    expect(result.success).toBe(true)
+  })
+
+  it('autorise les SYSTEM_ADMIN', async () => {
+    setupAdmin()
+    mockCount.mockResolvedValue(0)
+    mockFindMany.mockResolvedValue([])
+
+    const result = await getUserActivity()
+
+    expect(result.success).toBe(true)
+  })
+
+  // --- Isolation par userId ---
+
+  it('filtre toujours par le userId de la session (isolation stricte)', async () => {
+    mockAuth.mockResolvedValue(EMPLOYEE_SESSION)
+    mockCount.mockResolvedValue(5)
+    mockFindMany.mockResolvedValue([])
+
+    await getUserActivity()
+
+    expect(mockCount).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ userId: 'employee-001' }),
+      })
+    )
+    expect(mockFindMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ userId: 'employee-001' }),
+      })
+    )
+  })
+
+  it('ne permet pas de voir les logs d\'un autre utilisateur', async () => {
+    mockAuth.mockResolvedValue(EMPLOYEE_SESSION)
+    mockCount.mockResolvedValue(0)
+    mockFindMany.mockResolvedValue([])
+
+    // Même en passant un action filter, le userId reste celui de la session
+    await getUserActivity({ action: 'LOGIN' })
+
+    const countCall = mockCount.mock.calls[0]![0] as {
+      where: { userId: string }
+    }
+    expect(countCall.where.userId).toBe('employee-001')
+  })
+
+  // --- Pagination ---
+
+  it('retourne page 1 et pageSize 20 par défaut', async () => {
+    mockAuth.mockResolvedValue(EMPLOYEE_SESSION)
+    mockCount.mockResolvedValue(45)
+    mockFindMany.mockResolvedValue([SAMPLE_LOG])
+
+    const result = await getUserActivity()
+
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(result.data.page).toBe(1)
+      expect(result.data.pageSize).toBe(20)
+      expect(result.data.total).toBe(45)
+      expect(result.data.totalPages).toBe(3)
+    }
+
+    expect(mockFindMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        skip: 0,
+        take: 20,
+        orderBy: { createdAt: 'desc' },
+      })
+    )
+  })
+
+  it('respecte les paramètres de pagination personnalisés', async () => {
+    mockAuth.mockResolvedValue(EMPLOYEE_SESSION)
+    mockCount.mockResolvedValue(100)
+    mockFindMany.mockResolvedValue([])
+
+    await getUserActivity({ page: 3, pageSize: 10 })
+
+    expect(mockFindMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        skip: 20,
+        take: 10,
+      })
+    )
+  })
+
+  it('cap pageSize à 100 maximum', async () => {
+    mockAuth.mockResolvedValue(EMPLOYEE_SESSION)
+    mockCount.mockResolvedValue(0)
+    mockFindMany.mockResolvedValue([])
+
+    await getUserActivity({ pageSize: 500 })
+
+    expect(mockFindMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        take: 100,
+      })
+    )
+  })
+
+  it('force page minimum à 1', async () => {
+    mockAuth.mockResolvedValue(EMPLOYEE_SESSION)
+    mockCount.mockResolvedValue(0)
+    mockFindMany.mockResolvedValue([])
+
+    await getUserActivity({ page: -5 })
+
+    expect(mockFindMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        skip: 0,
+      })
+    )
+  })
+
+  it('force pageSize minimum à 1', async () => {
+    mockAuth.mockResolvedValue(EMPLOYEE_SESSION)
+    mockCount.mockResolvedValue(0)
+    mockFindMany.mockResolvedValue([])
+
+    await getUserActivity({ pageSize: 0 })
+
+    expect(mockFindMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        take: 1,
+      })
+    )
+  })
+
+  // --- Filtre action ---
+
+  it('filtre par action', async () => {
+    mockAuth.mockResolvedValue(EMPLOYEE_SESSION)
+    mockCount.mockResolvedValue(2)
+    mockFindMany.mockResolvedValue([SAMPLE_LOG])
+
+    await getUserActivity({ action: 'LOGIN' })
+
+    expect(mockCount).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          userId: 'employee-001',
+          action: 'LOGIN',
+        }),
+      })
+    )
+  })
+
+  it('ne filtre pas par action quand action est undefined', async () => {
+    mockAuth.mockResolvedValue(EMPLOYEE_SESSION)
+    mockCount.mockResolvedValue(10)
+    mockFindMany.mockResolvedValue([])
+
+    await getUserActivity({})
+
+    const countCall = mockCount.mock.calls[0]![0] as {
+      where: Record<string, unknown>
+    }
+    expect(countCall.where).not.toHaveProperty('action')
+  })
+
+  // --- Résultat vide ---
+
+  it('retourne un résultat vide valide', async () => {
+    mockAuth.mockResolvedValue(EMPLOYEE_SESSION)
+    mockCount.mockResolvedValue(0)
+    mockFindMany.mockResolvedValue([])
+
+    const result = await getUserActivity()
+
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(result.data.data).toEqual([])
+      expect(result.data.total).toBe(0)
+      expect(result.data.totalPages).toBe(0)
+    }
+  })
+
+  // --- Transformation ---
+
+  it('transforme les enregistrements en AuditLogEntry', async () => {
+    mockAuth.mockResolvedValue(EMPLOYEE_SESSION)
+    mockCount.mockResolvedValue(1)
+    mockFindMany.mockResolvedValue([SAMPLE_LOG])
+
+    const result = await getUserActivity()
+
+    expect(result.success).toBe(true)
+    if (result.success) {
+      const entry = result.data.data[0]!
+      expect(entry.id).toBe('log-001')
+      expect(entry.action).toBe('CREATE')
+      expect(entry.entityType).toBe('EMPLOYEE')
+      expect(entry.user.email).toBe('admin@test.com')
+      expect(entry.details).toEqual({ name: 'Jean Dupont' })
+    }
+  })
+
+  // --- Erreur DB ---
+
+  it('gère les erreurs Prisma', async () => {
+    mockAuth.mockResolvedValue(EMPLOYEE_SESSION)
+    mockCount.mockRejectedValue(new Error('DB connection lost'))
+
+    const result = await getUserActivity()
 
     expect(result.success).toBe(false)
     if (!result.success) {
