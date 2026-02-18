@@ -260,7 +260,8 @@ describe('getAuditLogs', () => {
 
     await getAuditLogs({ dateFrom: '2026-02-01', dateTo: '2026-02-28' })
 
-    const callArgs = mockCount.mock.calls[0][0] as {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const callArgs = mockCount.mock.calls[0]![0] as {
       where: { createdAt: { gte: Date; lte: Date } }
     }
     expect(callArgs.where.createdAt).toBeDefined()
@@ -320,7 +321,7 @@ describe('getAuditLogs', () => {
 
     expect(result.success).toBe(true)
     if (result.success) {
-      const entry = result.data.data[0]
+      const entry = result.data.data[0]!
       expect(entry.id).toBe('log-001')
       expect(entry.action).toBe('CREATE')
       expect(entry.entityType).toBe('EMPLOYEE')
@@ -340,7 +341,7 @@ describe('getAuditLogs', () => {
 
     expect(result.success).toBe(true)
     if (result.success) {
-      const entry = result.data.data[0]
+      const entry = result.data.data[0]!
       expect(entry.company).toBeNull()
       expect(entry.details).toBeNull()
     }
