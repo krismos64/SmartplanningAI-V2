@@ -236,10 +236,7 @@ export function revalidatePaths(paths: string[]): void {
 // Logging d'activite (SP-443 : implémentation réelle via AuditLog)
 // ============================================================================
 
-import {
-  logAuditAction,
-  type LogAuditActionParams,
-} from '@/lib/services/audit'
+import { logAuditAction, type LogAuditActionParams } from '@/lib/services/audit'
 
 export type { LogAuditActionParams }
 
