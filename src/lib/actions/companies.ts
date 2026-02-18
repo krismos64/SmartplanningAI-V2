@@ -11,6 +11,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import type { Prisma } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
 import { withRoleCheck } from './crud-utils'
 import {
@@ -19,6 +20,7 @@ import {
   formatPaginatedResult,
   handlePrismaError,
 } from './crud-helpers'
+import { logAuditAction } from '@/lib/services/audit'
 import {
   createCompanySchema,
   updateCompanySchema,
@@ -315,7 +317,7 @@ export async function getCompany(
 export async function createCompany(
   data: CreateCompanyInput
 ): Promise<CrudActionResult<CompanyDetail>> {
-  return withRoleCheck('SYSTEM_ADMIN', async () => {
+  return withRoleCheck('SYSTEM_ADMIN', async (user) => {
     // Validation Zod
     const validation = validateData(createCompanySchema, data)
     if (!validation.success) {
@@ -377,6 +379,15 @@ export async function createCompany(
       },
     })
 
+    // SP-444 : Audit trail (fire-and-forget)
+    logAuditAction({
+      action: 'CREATE',
+      entityType: 'COMPANY',
+      entityId: company.id,
+      userId: user.id,
+      details: { name: validData.name, slug },
+    }).catch(console.error)
+
     // Revalide le cache
     revalidatePath('/admin/companies')
 
@@ -397,7 +408,7 @@ export async function createCompany(
 export async function updateCompany(
   data: UpdateCompanyInput
 ): Promise<CrudActionResult<CompanyDetail>> {
-  return withRoleCheck('SYSTEM_ADMIN', async () => {
+  return withRoleCheck('SYSTEM_ADMIN', async (user) => {
     // Validation Zod
     const validation = validateData(updateCompanySchema, data)
     if (!validation.success) {
@@ -468,6 +479,15 @@ export async function updateCompany(
       },
     })
 
+    // SP-444 : Audit trail (fire-and-forget)
+    logAuditAction({
+      action: 'UPDATE',
+      entityType: 'COMPANY',
+      entityId: id,
+      userId: user.id,
+      details: updateData as unknown as Prisma.InputJsonValue,
+    }).catch(console.error)
+
     // Revalide le cache
     revalidatePath('/admin/companies')
     revalidatePath(`/admin/companies/${id}`)
@@ -490,7 +510,7 @@ export async function updateCompany(
  */
 export async function deleteCompany(id: string): Promise<DeleteActionResult> {
   try {
-    const authResult = await withRoleCheck('SYSTEM_ADMIN', async () => {
+    const authResult = await withRoleCheck('SYSTEM_ADMIN', async (user) => {
       // Vérifie que la Company existe
       const company = await prisma.company.findUnique({
         where: { id },
@@ -511,6 +531,15 @@ export async function deleteCompany(id: string): Promise<DeleteActionResult> {
       await prisma.company.delete({
         where: { id },
       })
+
+      // SP-444 : Audit trail (fire-and-forget)
+      logAuditAction({
+        action: 'DELETE',
+        entityType: 'COMPANY',
+        entityId: id,
+        userId: user.id,
+        details: { name: company.name },
+      }).catch(console.error)
 
       // Revalide le cache
       revalidatePath('/admin/companies')
@@ -547,7 +576,7 @@ export async function toggleCompanyStatus(
   id: string,
   isActive: boolean
 ): Promise<CrudActionResult<CompanyDetail>> {
-  return withRoleCheck('SYSTEM_ADMIN', async () => {
+  return withRoleCheck('SYSTEM_ADMIN', async (user) => {
     const company = await prisma.company.update({
       where: { id },
       data: { isActive },
@@ -585,6 +614,15 @@ export async function toggleCompanyStatus(
         },
       },
     })
+
+    // SP-444 : Audit trail (fire-and-forget)
+    logAuditAction({
+      action: 'STATUS_CHANGE',
+      entityType: 'COMPANY',
+      entityId: id,
+      userId: user.id,
+      details: { from: !isActive, to: isActive },
+    }).catch(console.error)
 
     revalidatePath('/admin/companies')
     revalidatePath(`/admin/companies/${id}`)

@@ -15,7 +15,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/prisma'
-import { UserRole } from '@prisma/client'
+import { UserRole, type Prisma } from '@prisma/client'
 import { auth } from '@/lib/auth'
 import {
   validateData,
@@ -23,6 +23,7 @@ import {
   formatPaginatedResult,
   handlePrismaError,
 } from './crud-helpers'
+import { logAuditAction } from '@/lib/services/audit'
 import {
   createTeamSchema,
   updateTeamSchema,
@@ -574,6 +575,16 @@ export async function createTeam(
       },
     })
 
+    // SP-444 : Audit trail (fire-and-forget)
+    logAuditAction({
+      action: 'CREATE',
+      entityType: 'TEAM',
+      entityId: team.id,
+      userId: user.id,
+      companyId: validData.companyId,
+      details: { name: validData.name, managerId: validData.managerId || null },
+    }).catch(console.error)
+
     // Revalide le cache
     revalidatePath('/app/director/teams')
 
@@ -708,6 +719,16 @@ export async function updateTeam(
       },
     })
 
+    // SP-444 : Audit trail (fire-and-forget)
+    logAuditAction({
+      action: 'UPDATE',
+      entityType: 'TEAM',
+      entityId: id,
+      userId: user.id,
+      companyId: existing.companyId,
+      details: updateData as unknown as Prisma.InputJsonValue,
+    }).catch(console.error)
+
     // Revalide le cache
     revalidatePath('/app/director/teams')
     revalidatePath(`/app/director/teams/${id}`)
@@ -786,6 +807,16 @@ export async function deleteTeam(id: string): Promise<DeleteActionResult> {
     await prisma.team.delete({
       where: { id },
     })
+
+    // SP-444 : Audit trail (fire-and-forget)
+    logAuditAction({
+      action: 'DELETE',
+      entityType: 'TEAM',
+      entityId: id,
+      userId: user.id,
+      companyId: team.companyId,
+      details: { name: team.name },
+    }).catch(console.error)
 
     // Revalide le cache
     revalidatePath('/app/director/teams')
@@ -902,6 +933,20 @@ export async function assignManager(
         },
       },
     })
+
+    // SP-444 : Audit trail (fire-and-forget)
+    logAuditAction({
+      action: 'UPDATE',
+      entityType: 'TEAM',
+      entityId: teamId,
+      userId: user.id,
+      companyId: existing.companyId,
+      details: {
+        field: 'managerId',
+        from: existing.managerId ?? null,
+        to: managerId,
+      },
+    }).catch(console.error)
 
     revalidatePath('/app/director/teams')
     revalidatePath(`/app/director/teams/${teamId}`)
@@ -1045,6 +1090,16 @@ export async function addTeamMember(
       }
     }
 
+    // SP-444 : Audit trail (fire-and-forget)
+    logAuditAction({
+      action: 'UPDATE',
+      entityType: 'TEAM',
+      entityId: teamId,
+      userId: user.id,
+      companyId: existingTeam.companyId,
+      details: { action: 'addMember', employeeId },
+    }).catch(console.error)
+
     revalidatePath('/app/director/teams')
     revalidatePath(`/app/director/teams/${teamId}`)
     revalidatePath('/app/dashboard/employees')
@@ -1177,6 +1232,16 @@ export async function removeTeamMember(
         error: "Erreur lors de la récupération de l'équipe",
       }
     }
+
+    // SP-444 : Audit trail (fire-and-forget)
+    logAuditAction({
+      action: 'UPDATE',
+      entityType: 'TEAM',
+      entityId: teamId,
+      userId: user.id,
+      companyId: existingTeam.companyId,
+      details: { action: 'removeMember', employeeId },
+    }).catch(console.error)
 
     revalidatePath('/app/director/teams')
     revalidatePath(`/app/director/teams/${teamId}`)

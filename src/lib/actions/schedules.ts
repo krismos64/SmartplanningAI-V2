@@ -18,6 +18,7 @@ import { prisma } from '@/lib/prisma'
 import { UserRole, Prisma } from '@prisma/client'
 import { auth } from '@/lib/auth'
 import { validateData, handlePrismaError } from './crud-helpers'
+import { logAuditAction } from '@/lib/services/audit'
 import {
   createScheduleSchema,
   updateScheduleSchema,
@@ -656,6 +657,23 @@ export async function createSchedule(
       createOperations.map((op) => prisma.schedule.create(op))
     )
 
+    // SP-444 : Audit trail (fire-and-forget)
+    for (const s of schedules) {
+      logAuditAction({
+        action: 'CREATE',
+        entityType: 'SCHEDULE',
+        entityId: s.id,
+        userId: user.id,
+        companyId: validated.companyId,
+        details: {
+          employeeId: s.employeeId,
+          type: validated.type,
+          startDate: validated.startDate.toISOString(),
+          isRecurring: validated.isRecurring,
+        },
+      }).catch(console.error)
+    }
+
     revalidatePath('/app/schedules')
     revalidatePath('/app/dashboard')
 
@@ -754,6 +772,19 @@ export async function updateSchedule(
       },
     })
 
+    // SP-444 : Audit trail (fire-and-forget)
+    logAuditAction({
+      action: 'UPDATE',
+      entityType: 'SCHEDULE',
+      entityId: validated.id,
+      userId: user.id,
+      companyId: existing.companyId,
+      details: {
+        employeeId: existing.employeeId,
+        type: validated.type ?? existing.type,
+      },
+    }).catch(console.error)
+
     revalidatePath('/app/schedules')
     revalidatePath(`/app/schedules/${validated.id}`)
     revalidatePath('/app/dashboard')
@@ -796,6 +827,16 @@ export async function deleteSchedule(id: string): Promise<DeleteActionResult> {
     }
 
     await prisma.schedule.delete({ where: { id } })
+
+    // SP-444 : Audit trail (fire-and-forget)
+    logAuditAction({
+      action: 'DELETE',
+      entityType: 'SCHEDULE',
+      entityId: id,
+      userId: user.id,
+      companyId: schedule.companyId,
+      details: { employeeId: schedule.employeeId, type: schedule.type },
+    }).catch(console.error)
 
     revalidatePath('/app/schedules')
     revalidatePath('/app/dashboard')
@@ -847,6 +888,15 @@ export async function deleteScheduleGroup(
     const result = await prisma.schedule.deleteMany({
       where: { scheduleGroupId },
     })
+
+    // SP-444 : Audit trail (fire-and-forget)
+    logAuditAction({
+      action: 'DELETE',
+      entityType: 'SCHEDULE',
+      userId: user.id,
+      companyId: schedules[0]?.companyId ?? undefined,
+      details: { scheduleGroupId, deletedCount: result.count },
+    }).catch(console.error)
 
     revalidatePath('/app/schedules')
     revalidatePath('/app/dashboard')
@@ -983,6 +1033,18 @@ export async function duplicateSchedule(
       )
     )
 
+    // SP-444 : Audit trail (fire-and-forget)
+    for (const dup of duplicates) {
+      logAuditAction({
+        action: 'CREATE',
+        entityType: 'SCHEDULE',
+        entityId: dup.id,
+        userId: user.id,
+        companyId: original.companyId,
+        details: { duplicatedFrom: id, employeeId: dup.employeeId },
+      }).catch(console.error)
+    }
+
     revalidatePath('/app/schedules')
     revalidatePath('/app/dashboard')
 
@@ -1041,6 +1103,16 @@ export async function updateScheduleStatus(
         },
       },
     })
+
+    // SP-444 : Audit trail (fire-and-forget)
+    logAuditAction({
+      action: 'STATUS_CHANGE',
+      entityType: 'SCHEDULE',
+      entityId: id,
+      userId: user.id,
+      companyId: schedule.companyId,
+      details: { from: schedule.status, to: status },
+    }).catch(console.error)
 
     revalidatePath('/app/schedules')
     revalidatePath(`/app/schedules/${id}`)
@@ -1370,6 +1442,20 @@ export async function deleteRecurringSchedules(
         break
     }
 
+    // SP-444 : Audit trail (fire-and-forget)
+    logAuditAction({
+      action: 'DELETE',
+      entityType: 'SCHEDULE',
+      entityId: scheduleId,
+      userId: user.id,
+      companyId: schedule.companyId,
+      details: {
+        scope,
+        recurrenceGroupId: schedule.recurrenceGroupId,
+        deletedCount,
+      },
+    }).catch(console.error)
+
     revalidatePath('/app/schedules')
     revalidatePath('/app/dashboard')
 
@@ -1550,6 +1636,20 @@ export async function updateRecurringSchedules(
         }
         break
     }
+
+    // SP-444 : Audit trail (fire-and-forget)
+    logAuditAction({
+      action: 'UPDATE',
+      entityType: 'SCHEDULE',
+      entityId: scheduleId,
+      userId: user.id,
+      companyId: schedule.companyId,
+      details: {
+        scope,
+        recurrenceGroupId: schedule.recurrenceGroupId,
+        updatedCount,
+      },
+    }).catch(console.error)
 
     revalidatePath('/app/schedules')
     revalidatePath('/app/dashboard')
@@ -1765,6 +1865,15 @@ export async function exportSchedulesCsv(
     console.warn(
       `[exportSchedulesCsv] User ${user.id} (${user.role}) exported ${schedules.length} schedules at ${new Date().toISOString()}`
     )
+
+    // SP-444 : Audit trail export RGPD (fire-and-forget)
+    logAuditAction({
+      action: 'EXPORT',
+      entityType: 'SCHEDULE',
+      userId: user.id,
+      companyId: user.companyId ?? undefined,
+      details: { count: schedules.length, filters: (filters ?? null) as Prisma.InputJsonValue },
+    }).catch(console.error)
 
     return { success: true, data: result }
   } catch (error) {

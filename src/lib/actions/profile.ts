@@ -14,6 +14,7 @@ import { revalidatePath } from 'next/cache'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { hashPassword, verifyPassword } from '@/lib/password'
+import { logAuditAction } from '@/lib/services/audit'
 import {
   editProfileSchema,
   type EditProfileInput,
@@ -249,6 +250,15 @@ export async function updateProfile(
       })
     }
 
+    // SP-444 : Audit trail (fire-and-forget)
+    logAuditAction({
+      action: 'UPDATE',
+      entityType: 'USER',
+      entityId: session.user.id,
+      userId: session.user.id,
+      details: { firstName, lastName, phone: phone || null, jobTitle: jobTitle || null },
+    }).catch(console.error)
+
     // 5. Revalidate le cache
     revalidatePath('/app/profile')
     revalidatePath('/app/profile/edit')
@@ -343,6 +353,15 @@ export async function changePassword(
       where: { id: user.id },
       data: { password: hashedNewPassword },
     })
+
+    // SP-444 : Audit trail (fire-and-forget)
+    logAuditAction({
+      action: 'PASSWORD_CHANGE',
+      entityType: 'USER',
+      entityId: session.user.id,
+      userId: session.user.id,
+      details: { method: 'change-password' },
+    }).catch(console.error)
 
     // 7. Revalidate (même si pas de données affichées, pour cohérence)
     revalidatePath('/app/profile')
@@ -467,6 +486,15 @@ export async function deleteAccount(
     console.warn(
       `[deleteAccount] User ${user.id} (${user.email}) requested account deletion at ${new Date().toISOString()}`
     )
+
+    // SP-444 : Audit trail avant suppression (fire-and-forget)
+    logAuditAction({
+      action: 'DELETE',
+      entityType: 'USER',
+      entityId: user.id,
+      userId: user.id,
+      details: { email: user.email, selfDeletion: true },
+    }).catch(console.error)
 
     // 7. Transaction : Nettoyer les FK puis supprimer
     await prisma.$transaction(async (tx) => {
@@ -754,6 +782,15 @@ export async function exportUserData(): Promise<
     console.warn(
       `[exportUserData] User ${userId} exported their data at ${new Date().toISOString()}`
     )
+
+    // SP-444 : Audit trail export RGPD (fire-and-forget)
+    logAuditAction({
+      action: 'EXPORT',
+      entityType: 'USER',
+      entityId: userId,
+      userId,
+      details: { format: 'json', filename },
+    }).catch(console.error)
 
     return {
       success: true,
