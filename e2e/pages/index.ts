@@ -45,3 +45,6 @@ export { DeleteAccountPage } from './delete-account.page'
 // Billing Pages (SP-373)
 export { BillingPage } from './billing.page'
 export { PricingPage } from './pricing.page'
+
+// Audit Logs Pages (SP-446)
+export { AuditLogsPage } from './audit-logs.page'
