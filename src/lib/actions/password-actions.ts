@@ -21,6 +21,7 @@ import { sendResetPasswordEmail } from '@/lib/email/templates/reset-password'
 import { hashPassword } from '@/lib/password'
 import { prisma } from '@/lib/prisma'
 import { forgotPasswordSchema, resetPasswordSchema } from '@/lib/validations'
+import { logAuditAction } from '@/lib/services/audit'
 
 // =============================================================================
 // TYPES
@@ -225,6 +226,15 @@ export async function resetPasswordAction(data: {
         where: { token },
       }),
     ])
+
+    // SP-444 : Audit trail (fire-and-forget)
+    logAuditAction({
+      action: 'PASSWORD_CHANGE',
+      entityType: 'USER',
+      entityId: user.id,
+      userId: user.id,
+      details: { method: 'reset-token' },
+    }).catch(console.error)
 
     return { success: true }
   } catch (error) {
