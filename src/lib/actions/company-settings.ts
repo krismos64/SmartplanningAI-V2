@@ -16,6 +16,7 @@ import type { Prisma } from '@prisma/client'
 
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { logAuditAction } from '@/lib/services/audit'
 import {
   updateCompanySettingsSchema,
   type UpdateCompanySettingsInput,
@@ -295,6 +296,16 @@ export async function updateCompanySettings(
       lunchBreak: updatedOpeningHours.lunchBreak ?? { ...DEFAULT_LUNCH_BREAK },
     }
 
+    // SP-444 : Audit trail (fire-and-forget)
+    logAuditAction({
+      action: 'UPDATE',
+      entityType: 'SETTINGS',
+      entityId: accessCheck.companyId,
+      userId: session.user.id,
+      companyId: accessCheck.companyId,
+      details: updates as unknown as Prisma.InputJsonValue,
+    }).catch(console.error)
+
     revalidatePath('/app/settings')
     revalidatePath('/app/settings/company')
 
@@ -362,6 +373,16 @@ export async function resetCompanySettings(): Promise<
           defaultOpeningHours as unknown as Prisma.InputJsonValue,
       },
     })
+
+    // SP-444 : Audit trail (fire-and-forget)
+    logAuditAction({
+      action: 'UPDATE',
+      entityType: 'SETTINGS',
+      entityId: accessCheck.companyId,
+      userId: session.user.id,
+      companyId: accessCheck.companyId,
+      details: { action: 'reset', restoredDefaults: true },
+    }).catch(console.error)
 
     revalidatePath('/app/settings')
     revalidatePath('/app/settings/company')
