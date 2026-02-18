@@ -18,6 +18,7 @@ import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { verifyPassword } from '@/lib/password'
 import { authConfig } from '@/lib/auth.config'
+import { logAuditAction } from '@/lib/services/audit'
 
 /**
  * Schéma de validation des credentials
@@ -134,7 +135,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           data: { lastLoginAt: new Date() },
         })
 
-        // 8. Retourner l'utilisateur (sans le mot de passe)
+        // 8. Audit trail : log LOGIN (fire-and-forget, SP-443)
+        logAuditAction({
+          action: 'LOGIN',
+          entityType: 'USER',
+          entityId: user.id,
+          userId: user.id,
+          companyId: user.companyId ?? undefined,
+          details: { email: user.email },
+        }).catch(console.error)
+
+        // 9. Retourner l'utilisateur (sans le mot de passe)
         return {
           id: user.id,
           email: user.email,
@@ -171,10 +182,20 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
    */
   events: {
     signIn() {
-      // Placeholder pour logging externe (Sentry, Datadog, etc.)
+      // LOGIN audit est géré dans authorize() avec les données complètes (SP-443)
     },
-    signOut() {
-      // Placeholder pour logging externe
+    signOut(message) {
+      // Audit trail : log LOGOUT (fire-and-forget, SP-443)
+      const token = 'token' in message ? message.token : null
+      if (token?.sub) {
+        logAuditAction({
+          action: 'LOGOUT',
+          entityType: 'USER',
+          entityId: token.sub,
+          userId: token.sub,
+          companyId: (token.companyId as string) ?? undefined,
+        }).catch(console.error)
+      }
     },
   },
 
