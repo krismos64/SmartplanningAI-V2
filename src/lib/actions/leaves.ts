@@ -23,6 +23,7 @@ import {
   type LeaveBalance,
 } from '@prisma/client'
 import { auth } from '@/lib/auth'
+import { logAuditAction } from '@/lib/services/audit'
 import {
   validateData,
   getPaginationParams,
@@ -424,6 +425,22 @@ export async function createLeaveRequest(
       console.error('[createLeaveRequest] Email notification error:', err)
     )
 
+    // SP-444 : Audit trail (fire-and-forget)
+    logAuditAction({
+      action: 'CREATE',
+      entityType: 'LEAVE',
+      entityId: leaveRequest.id,
+      userId: user.id,
+      companyId: employee.companyId,
+      details: {
+        type: data.type,
+        startDate: data.startDate.toISOString(),
+        endDate: data.endDate.toISOString(),
+        days,
+        employeeId: data.employeeId,
+      },
+    }).catch(console.error)
+
     revalidatePath(LEAVE_PATH)
     return { success: true, data: leaveRequest, warning }
   } catch (error) {
@@ -499,6 +516,21 @@ export async function updateLeaveRequest(
       },
     })
 
+    // SP-444 : Audit trail (fire-and-forget)
+    logAuditAction({
+      action: 'UPDATE',
+      entityType: 'LEAVE',
+      entityId: id,
+      userId: user.id,
+      companyId: existing.companyId,
+      details: {
+        type: data.type,
+        startDate: data.startDate.toISOString(),
+        endDate: data.endDate.toISOString(),
+        days,
+      },
+    }).catch(console.error)
+
     revalidatePath(LEAVE_PATH)
     return { success: true, data: updated }
   } catch (error) {
@@ -568,6 +600,16 @@ export async function cancelLeaveRequest(
         }),
       ])
 
+      // SP-444 : Audit trail (fire-and-forget)
+      logAuditAction({
+        action: 'STATUS_CHANGE',
+        entityType: 'LEAVE',
+        entityId: id,
+        userId: user.id,
+        companyId: leaveRequest.companyId,
+        details: { from: leaveRequest.status, to: 'CANCELLED', balanceRecredited: true },
+      }).catch(console.error)
+
       revalidatePath(LEAVE_PATH)
       return { success: true, data: updated }
     }
@@ -577,6 +619,16 @@ export async function cancelLeaveRequest(
       where: { id },
       data: { status: LeaveRequestStatus.CANCELLED },
     })
+
+    // SP-444 : Audit trail (fire-and-forget)
+    logAuditAction({
+      action: 'STATUS_CHANGE',
+      entityType: 'LEAVE',
+      entityId: id,
+      userId: user.id,
+      companyId: leaveRequest.companyId,
+      details: { from: leaveRequest.status, to: 'CANCELLED' },
+    }).catch(console.error)
 
     revalidatePath(LEAVE_PATH)
     return { success: true, data: updated }
@@ -704,6 +756,20 @@ export async function reviewLeaveRequest(
       // Ne pas bloquer l'action si l'email échoue
     }
 
+    // SP-444 : Audit trail (fire-and-forget)
+    logAuditAction({
+      action: 'STATUS_CHANGE',
+      entityType: 'LEAVE',
+      entityId: id,
+      userId: user.id,
+      companyId: leaveRequest.companyId,
+      details: {
+        from: 'PENDING',
+        to: data.status,
+        reviewComment: data.reviewComment ?? null,
+      },
+    }).catch(console.error)
+
     revalidatePath(LEAVE_PATH)
     return { success: true, data: updated }
   } catch (error) {
@@ -827,6 +893,16 @@ export async function updateLeaveBalance(
         updatedById: user.id,
       },
     })
+
+    // SP-444 : Audit trail (fire-and-forget)
+    logAuditAction({
+      action: 'UPDATE',
+      entityType: 'LEAVE',
+      entityId: balance.id,
+      userId: user.id,
+      companyId: employee.companyId,
+      details: { employeeId, year, balanceUpdate: data as unknown as Prisma.InputJsonValue },
+    }).catch(console.error)
 
     revalidatePath(LEAVE_PATH)
     return { success: true, data: balance }
@@ -1402,6 +1478,15 @@ export async function exportLeavesCsv(
     console.warn(
       `[exportLeavesCsv] User ${userId} (${role}) exported ${leaves.length} leave requests at ${new Date().toISOString()}`
     )
+
+    // SP-444 : Audit trail export RGPD (fire-and-forget)
+    logAuditAction({
+      action: 'EXPORT',
+      entityType: 'LEAVE',
+      userId,
+      companyId: companyId ?? undefined,
+      details: { count: leaves.length, filters: (filters ?? null) as Prisma.InputJsonValue },
+    }).catch(console.error)
 
     return { success: true, data: result }
   } catch (error) {
