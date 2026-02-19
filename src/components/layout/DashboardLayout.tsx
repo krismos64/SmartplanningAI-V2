@@ -19,6 +19,7 @@ import { Sidebar, type SidebarVariant } from './Sidebar'
 import { Footer } from './Footer'
 import { PageTracker } from './PageTracker'
 import { SubscriptionBanner } from './SubscriptionBanner'
+import { ImpersonationBanner } from './ImpersonationBanner'
 
 type UserRole = 'SYSTEM_ADMIN' | 'DIRECTOR' | 'MANAGER' | 'EMPLOYEE'
 
@@ -27,6 +28,13 @@ interface SubscriptionData {
   subscriptionStatus: string | null
   trialEndsAt: string | null
   currentPeriodEnd: string | null
+}
+
+/** Données d'impersonation pour la bannière (SP-453) */
+interface ImpersonationData {
+  isImpersonating: boolean
+  impersonatedCompanyName: string
+  impersonatedUserEmail: string
 }
 
 interface DashboardLayoutProps {
@@ -43,6 +51,8 @@ interface DashboardLayoutProps {
   }
   /** Données d'abonnement pour la bannière (SP-441) */
   subscriptionData?: SubscriptionData
+  /** Données d'impersonation pour la bannière (SP-453) */
+  impersonationData?: ImpersonationData
   /** Variante de style de la sidebar (défaut: 'cosmic') */
   sidebarVariant?: SidebarVariant
 }
@@ -57,12 +67,14 @@ function DashboardLayoutContent({
   pathname,
   sidebarVariant,
   subscriptionData,
+  impersonationData,
 }: {
   children: React.ReactNode
   user: DashboardLayoutProps['user']
   pathname: string
   sidebarVariant: SidebarVariant
   subscriptionData?: SubscriptionData
+  impersonationData?: ImpersonationData
 }) {
   const { openShortcutsModal } = useKeyboardShortcutsContext()
 
@@ -81,8 +93,19 @@ function DashboardLayoutContent({
 
           {/* Main content area */}
           <div className="flex flex-1 flex-col">
+            {/* Impersonation Banner — SP-453 (above header) */}
+            {impersonationData?.isImpersonating && (
+              <ImpersonationBanner
+                companyName={impersonationData.impersonatedCompanyName}
+                userEmail={impersonationData.impersonatedUserEmail}
+              />
+            )}
+
             {/* Header */}
-            <Header user={user} />
+            <Header
+              user={user}
+              isImpersonating={impersonationData?.isImpersonating}
+            />
 
             {/* Subscription Banner — SP-441 */}
             {subscriptionData && (
@@ -130,6 +153,7 @@ export function DashboardLayout({
   children,
   user,
   subscriptionData,
+  impersonationData,
   sidebarVariant = 'aurora',
 }: DashboardLayoutProps) {
   const pathname = usePathname()
@@ -142,6 +166,7 @@ export function DashboardLayout({
           pathname={pathname}
           sidebarVariant={sidebarVariant}
           subscriptionData={subscriptionData}
+          impersonationData={impersonationData}
         >
           {children}
         </DashboardLayoutContent>
