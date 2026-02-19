@@ -5,7 +5,7 @@
  * personnalisés SmartPlanning (role, companyId) dans Session et JWT.
  *
  * @see https://authjs.dev/getting-started/typescript
- * @ticket SP-108, SP-110, SP-440
+ * @ticket SP-108, SP-110, SP-440, SP-447
  */
 
 import { DefaultSession } from 'next-auth'
@@ -53,6 +53,18 @@ declare module 'next-auth' {
       trialEndsAt: string | null
       /** Date de fin de période courante en ISO string @ticket SP-440 */
       currentPeriodEnd: string | null
+      /** Mode impersonation actif @ticket SP-447 */
+      isImpersonating?: boolean
+      /** ID du SYSTEM_ADMIN qui impersonne @ticket SP-447 */
+      originalAdminId?: string
+      /** ID de l'utilisateur impersonné @ticket SP-447 */
+      impersonatedUserId?: string
+      /** ID de l'entreprise impersonnée @ticket SP-447 */
+      impersonatedCompanyId?: string
+      /** Email de l'utilisateur impersonné @ticket SP-447 */
+      impersonatedUserEmail?: string
+      /** Nom de l'entreprise impersonnée @ticket SP-447 */
+      impersonatedCompanyName?: string
     } & DefaultSession['user']
   }
 
@@ -109,6 +121,18 @@ declare module '@auth/core/jwt' {
     currentPeriodEnd: string | null
     /** Timestamp du dernier check subscription (Date.now()) @ticket SP-440 */
     subscriptionCheckedAt: number | null
+    /** Mode impersonation actif @ticket SP-447 */
+    isImpersonating?: boolean
+    /** ID du SYSTEM_ADMIN qui impersonne @ticket SP-447 */
+    originalAdminId?: string
+    /** ID de l'utilisateur impersonné @ticket SP-447 */
+    impersonatedUserId?: string
+    /** ID de l'entreprise impersonnée @ticket SP-447 */
+    impersonatedCompanyId?: string
+    /** Email de l'utilisateur impersonné @ticket SP-447 */
+    impersonatedUserEmail?: string
+    /** Nom de l'entreprise impersonnée @ticket SP-447 */
+    impersonatedCompanyName?: string
   }
 }
 
@@ -279,3 +303,39 @@ export const SUBSCRIPTION_EXEMPT_ROUTES = [
   '/app/profile',
   '/app/settings',
 ] as const
+
+// ============================================================================
+// IMPERSONATION (SP-447)
+// ============================================================================
+
+/**
+ * Contexte d'impersonation stocké dans le cookie sp-impersonation
+ *
+ * @ticket SP-447
+ */
+export interface ImpersonationContext {
+  /** ID du SYSTEM_ADMIN qui impersonne */
+  originalAdminId: string
+  /** ID de l'utilisateur cible */
+  targetUserId: string
+  /** ID de l'entreprise cible */
+  targetCompanyId: string
+  /** Rôle de l'utilisateur cible */
+  targetRole: string
+  /** Email de l'utilisateur cible */
+  targetEmail: string
+  /** Nom de l'entreprise cible */
+  targetCompanyName: string
+  /** Timestamp de début d'impersonation */
+  startedAt: number
+}
+
+/**
+ * Nom du cookie d'impersonation
+ */
+export const IMPERSONATION_COOKIE_NAME = 'sp-impersonation' as const
+
+/**
+ * Durée de vie du cookie d'impersonation (1 heure)
+ */
+export const IMPERSONATION_MAX_AGE = 3600 as const
