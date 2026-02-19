@@ -48,3 +48,6 @@ export { PricingPage } from './pricing.page'
 
 // Audit Logs Pages (SP-446)
 export { AuditLogsPage } from './audit-logs.page'
+
+// Impersonation Pages (SP-456)
+export { ImpersonationPage } from './impersonation.page'
