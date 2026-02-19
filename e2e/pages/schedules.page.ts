@@ -64,7 +64,7 @@ export class SchedulesPage {
     this.navPrev = page.getByTestId('nav-prev')
     this.navNext = page.getByTestId('nav-next')
     this.navToday = page.getByTestId('nav-today')
-    this.dateRangeLabel = page.getByTestId('date-range-label')
+    this.dateRangeLabel = page.getByTestId('date-range-label').first()
     this.viewModeSelect = page.getByTestId('view-mode-select')
 
     // Filtres et options

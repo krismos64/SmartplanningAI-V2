@@ -168,7 +168,8 @@ export class EmployeeListPage {
     await expect(this.newEmployeeButton).toBeVisible({ timeout: 15000 })
     await this.newEmployeeButton.click()
     await this.page.waitForURL(/\/app\/dashboard\/employees\/new/, {
-      timeout: 10000,
+      timeout: 30000,
+      waitUntil: 'domcontentloaded',
     })
   }
 

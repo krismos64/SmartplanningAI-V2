@@ -94,7 +94,10 @@ test.describe('Profile Page Display', () => {
 
       // Vérifier que la carte professionnelle est visible
       await expect(
-        managerPage.locator('text=Informations professionnelles')
+        managerPage
+          .locator('#main-content')
+          .getByText('Informations professionnelles')
+          .first()
       ).toBeVisible()
     })
   })
