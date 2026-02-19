@@ -307,9 +307,12 @@ export const authConfig: NextAuthConfig = {
         }
       }
 
-      // 7. Impersonation Guard (SP-453) : bloquer /app/admin/* en impersonation
-      // Lecture Edge-compatible du cookie sp-impersonation via request.cookies
-      if (isLoggedIn && pathname.startsWith('/app/admin')) {
+      // 7. Impersonation Guard (SP-453, SP-454) : bloquer routes sensibles en impersonation
+      // /app/admin/* (panel admin) + /app/dashboard/billing (facturation)
+      const isImpersonationBlockedRoute =
+        pathname.startsWith('/app/admin') ||
+        pathname.startsWith('/app/dashboard/billing')
+      if (isLoggedIn && isImpersonationBlockedRoute) {
         try {
           const impersonationCookie = request.cookies.get(
             IMPERSONATION_COOKIE_NAME
