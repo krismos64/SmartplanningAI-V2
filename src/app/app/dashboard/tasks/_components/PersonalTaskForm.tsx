@@ -14,6 +14,7 @@ import { format } from 'date-fns'
 import { Loader2 } from 'lucide-react'
 import type { PersonalTask } from '@prisma/client'
 
+import { useIsImpersonating } from '@/hooks'
 import { useMediaQuery } from '@/hooks/use-media-query'
 import {
   personalTaskCreateSchema,
@@ -54,6 +55,7 @@ export function PersonalTaskForm({
   onSubmit,
   isSubmitting,
 }: PersonalTaskFormProps) {
+  const isImpersonating = useIsImpersonating()
   const isDesktop = useMediaQuery('(min-width: 768px)')
   const isEditMode = !!task
 
@@ -172,7 +174,8 @@ export function PersonalTaskForm({
       <Button
         type="submit"
         onClick={onButtonClick}
-        disabled={isSubmitting}
+        disabled={isSubmitting || isImpersonating}
+        title={isImpersonating ? 'Non disponible en mode support' : undefined}
         data-testid="task-submit-button"
       >
         {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

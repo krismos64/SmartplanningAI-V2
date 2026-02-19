@@ -46,6 +46,7 @@ import {
   sendLeaveRejectedEmail,
 } from '@/lib/email/templates/leave-decision'
 import { sendLeaveRequestedEmail } from '@/lib/email/templates/leave-requested'
+import { assertNotImpersonating } from '@/lib/impersonation'
 import type { ListActionResult, ListQueryParams } from '@/types'
 import type { LeaveEmailData, LeaveRequestedEmailData } from '@/types'
 
@@ -327,6 +328,9 @@ export async function createLeaveRequest(
   if (!authResult.success) return { success: false, error: authResult.error }
   const { user } = authResult
 
+  const impersonationBlock = await assertNotImpersonating()
+  if (impersonationBlock) return impersonationBlock
+
   // Validation Zod
   const validation = validateData(createLeaveRequestSchema, input)
   if (!validation.success)
@@ -461,6 +465,9 @@ export async function updateLeaveRequest(
   if (!authResult.success) return { success: false, error: authResult.error }
   const { user } = authResult
 
+  const impersonationBlock = await assertNotImpersonating()
+  if (impersonationBlock) return impersonationBlock
+
   const validation = validateData(createLeaveRequestSchema, input)
   if (!validation.success)
     return { success: false, error: validation.error, field: validation.field }
@@ -549,6 +556,9 @@ export async function cancelLeaveRequest(
   const authResult = await getAuthenticatedUser()
   if (!authResult.success) return { success: false, error: authResult.error }
   const { user } = authResult
+
+  const impersonationBlock = await assertNotImpersonating()
+  if (impersonationBlock) return impersonationBlock
 
   try {
     const leaveRequest = await prisma.leaveRequest.findUnique({ where: { id } })
@@ -657,6 +667,9 @@ export async function reviewLeaveRequest(
   ])
   if (!authResult.success) return { success: false, error: authResult.error }
   const { user } = authResult
+
+  const impersonationBlock = await assertNotImpersonating()
+  if (impersonationBlock) return impersonationBlock
 
   const validation = validateData(updateLeaveRequestSchema, input)
   if (!validation.success)
@@ -865,6 +878,9 @@ export async function updateLeaveBalance(
   const authResult = await getAuthenticatedUser(['DIRECTOR', 'SYSTEM_ADMIN'])
   if (!authResult.success) return { success: false, error: authResult.error }
   const { user } = authResult
+
+  const impersonationBlock = await assertNotImpersonating()
+  if (impersonationBlock) return impersonationBlock
 
   const validation = validateData(updateLeaveBalanceSchema, input)
   if (!validation.success)

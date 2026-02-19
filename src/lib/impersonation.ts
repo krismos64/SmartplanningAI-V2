@@ -88,22 +88,31 @@ export async function stopImpersonation(): Promise<void> {
   cookieStore.delete(IMPERSONATION_COOKIE_NAME)
 }
 
+/** Résultat de blocage impersonation, compatible CrudActionResult */
+type ImpersonationBlockResult = { success: false; error: string }
+
 /**
  * Vérifie qu'aucune impersonation n'est active
  *
- * À appeler dans les Server Actions sensibles (ex: suppression de données,
- * changement de mot de passe) pour empêcher l'admin impersonné d'effectuer
- * des actions destructrices.
+ * À appeler en première ligne des Server Actions de mutation :
+ * ```typescript
+ * const impersonationBlock = await assertNotImpersonating()
+ * if (impersonationBlock) return impersonationBlock
+ * ```
  *
- * @throws Error avec message 403 si une impersonation est active
+ * @returns null si pas d'impersonation, { success: false, error } sinon
+ * @ticket SP-447, SP-454
  */
-export async function assertNotImpersonating(): Promise<void> {
+export async function assertNotImpersonating(): Promise<ImpersonationBlockResult | null> {
   const context = await getImpersonationContextFromHeaders()
   if (context) {
-    throw new Error(
-      'Action interdite en mode impersonation. Quittez le mode impersonation pour effectuer cette action.'
-    )
+    return {
+      success: false,
+      error:
+        'Action non disponible en mode support. Le mode support est en lecture seule.',
+    }
   }
+  return null
 }
 
 // ============================================================================

@@ -31,6 +31,7 @@ import {
 } from '@/lib/validations/profile'
 import { updateProfile } from '@/lib/actions/profile'
 import { useCrudMutation } from '@/hooks/use-crud-mutation'
+import { useIsImpersonating } from '@/hooks'
 import {
   Form,
   FormField,
@@ -79,6 +80,7 @@ export function EditProfileForm({
   hasEmployee,
 }: EditProfileFormProps) {
   const router = useRouter()
+  const isImpersonating = useIsImpersonating()
 
   // Initialiser le formulaire avec React Hook Form + Zod
   const form = useForm<EditProfileInput>({
@@ -114,7 +116,7 @@ export function EditProfileForm({
 
   // Vérifier si le formulaire a été modifié
   const isDirty = form.formState.isDirty
-  const isSubmitDisabled = isPending || !isDirty
+  const isSubmitDisabled = isPending || !isDirty || isImpersonating
 
   return (
     <Card className="glass hover-lift" data-testid="edit-profile-form">
@@ -311,6 +313,9 @@ export function EditProfileForm({
               <Button
                 type="submit"
                 disabled={isSubmitDisabled}
+                title={
+                  isImpersonating ? 'Non disponible en mode support' : undefined
+                }
                 data-testid="submit-button"
               >
                 {isPending ? (

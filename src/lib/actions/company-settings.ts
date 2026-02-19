@@ -28,6 +28,7 @@ import type {
   LunchBreakSettings,
 } from '@/types/company'
 import { DEFAULT_COMPANY_SETTINGS, DEFAULT_LUNCH_BREAK } from '@/types/company'
+import { assertNotImpersonating } from '@/lib/impersonation'
 
 // ============================================================================
 // TYPES INTERNES
@@ -192,6 +193,9 @@ export async function updateCompanySettings(
       return { success: false, error: accessCheck.error }
     }
 
+    const impersonationBlock = await assertNotImpersonating()
+    if (impersonationBlock) return impersonationBlock
+
     // Validation Zod
     const validation = updateCompanySettingsSchema.safeParse(input)
     if (!validation.success) {
@@ -346,6 +350,9 @@ export async function resetCompanySettings(): Promise<
     if (!accessCheck.allowed) {
       return { success: false, error: accessCheck.error }
     }
+
+    const impersonationBlock = await assertNotImpersonating()
+    if (impersonationBlock) return impersonationBlock
 
     // Récupérer le nom actuel (on ne le réinitialise pas)
     const company = await prisma.company.findUnique({

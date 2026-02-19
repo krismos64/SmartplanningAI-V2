@@ -39,6 +39,7 @@ import {
 } from '@/components/ui/select'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
+import { useIsImpersonating } from '@/hooks'
 import { useCrudMutation } from '@/hooks/use-crud-mutation'
 import {
   DEFAULT_TEAM_COLOR,
@@ -94,6 +95,7 @@ export function TeamForm({
   onCancel,
 }: TeamFormProps) {
   const router = useRouter()
+  const isImpersonating = useIsImpersonating()
   const isEditing = !!team
 
   // Hook mutation pour create
@@ -326,7 +328,13 @@ export function TeamForm({
           >
             Annuler
           </Button>
-          <Button type="submit" disabled={isPending}>
+          <Button
+            type="submit"
+            disabled={isPending || isImpersonating}
+            title={
+              isImpersonating ? 'Non disponible en mode support' : undefined
+            }
+          >
             {isPending
               ? isEditing
                 ? 'Modification...'

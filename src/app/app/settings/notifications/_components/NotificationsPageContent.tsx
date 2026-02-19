@@ -21,7 +21,7 @@ import {
   AnimatedContainer,
   AnimatedItem,
 } from '@/components/ui/animated-container'
-import { useToast } from '@/hooks'
+import { useToast, useIsImpersonating } from '@/hooks'
 import {
   updateNotificationPreferences,
   resetNotificationPreferences,
@@ -54,6 +54,7 @@ export function NotificationsPageContent({
   const [preferences, setPreferences] =
     useState<NotificationPreferences>(initialPreferences)
   const [isPending, startTransition] = useTransition()
+  const isImpersonating = useIsImpersonating()
   const { success: toastSuccess, error: toastError } = useToast()
 
   /**
@@ -149,7 +150,7 @@ export function NotificationsPageContent({
               onInAppChange={(enabled) =>
                 handleToggle('inApp', category, enabled)
               }
-              disabled={isPending}
+              disabled={isPending || isImpersonating}
             />
           </AnimatedItem>
         ))}
@@ -161,7 +162,10 @@ export function NotificationsPageContent({
           <Button
             variant="outline"
             onClick={handleReset}
-            disabled={isPending}
+            disabled={isPending || isImpersonating}
+            title={
+              isImpersonating ? 'Non disponible en mode support' : undefined
+            }
             data-testid="reset-button"
           >
             <RotateCcw className="mr-2 h-4 w-4" />

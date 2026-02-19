@@ -53,6 +53,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover'
 import { Switch } from '@/components/ui/switch'
+import { useIsImpersonating } from '@/hooks'
 import { cn } from '@/lib/utils'
 
 import {
@@ -171,6 +172,8 @@ export function AvailabilityModal({
   employeeName,
   onSuccess,
 }: AvailabilityModalProps) {
+  const isImpersonating = useIsImpersonating()
+
   // États locaux
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
@@ -531,7 +534,13 @@ export function AvailabilityModal({
             >
               Annuler
             </Button>
-            <Button type="submit" disabled={isSubmitting}>
+            <Button
+              type="submit"
+              disabled={isSubmitting || isImpersonating}
+              title={
+                isImpersonating ? 'Non disponible en mode support' : undefined
+              }
+            >
               {isSubmitting && (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               )}

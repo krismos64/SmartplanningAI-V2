@@ -55,6 +55,8 @@ export interface EmployeeActionsProps {
   onToggleStatus?: (employee: EmployeeWithCounts) => void
   /** MANAGER ne peut pas supprimer, seulement desactiver */
   canDelete?: boolean
+  /** Mode impersonation - desactive les actions de mutation */
+  isImpersonating?: boolean
 }
 
 // ============================================================================
@@ -70,7 +72,14 @@ export interface EmployeeActionsProps {
 export function createEmployeeColumns(
   actions: EmployeeActionsProps = {}
 ): ColumnDef<EmployeeWithCounts>[] {
-  const { onView, onEdit, onDelete, onToggleStatus, canDelete = true } = actions
+  const {
+    onView,
+    onEdit,
+    onDelete,
+    onToggleStatus,
+    canDelete = true,
+    isImpersonating = false,
+  } = actions
 
   return [
     // Checkbox de selection
@@ -257,14 +266,30 @@ export function createEmployeeColumns(
               )}
 
               {onEdit && (
-                <DropdownMenuItem onClick={() => onEdit(employee)}>
+                <DropdownMenuItem
+                  onClick={() => onEdit(employee)}
+                  disabled={isImpersonating}
+                  title={
+                    isImpersonating
+                      ? 'Non disponible en mode support'
+                      : undefined
+                  }
+                >
                   <Pencil className="mr-2 h-4 w-4" />
                   Modifier
                 </DropdownMenuItem>
               )}
 
               {onToggleStatus && (
-                <DropdownMenuItem onClick={() => onToggleStatus(employee)}>
+                <DropdownMenuItem
+                  onClick={() => onToggleStatus(employee)}
+                  disabled={isImpersonating}
+                  title={
+                    isImpersonating
+                      ? 'Non disponible en mode support'
+                      : undefined
+                  }
+                >
                   {employee.isActive ? (
                     <>
                       <PowerOff className="mr-2 h-4 w-4" />
@@ -285,6 +310,12 @@ export function createEmployeeColumns(
                   <DropdownMenuItem
                     onClick={() => onDelete(employee)}
                     className="text-destructive focus:text-destructive"
+                    disabled={isImpersonating}
+                    title={
+                      isImpersonating
+                        ? 'Non disponible en mode support'
+                        : undefined
+                    }
                   >
                     <Trash2 className="mr-2 h-4 w-4" />
                     Supprimer

@@ -42,6 +42,7 @@ import {
 
 // Hooks
 import { useMediaQuery } from '@/hooks/use-media-query'
+import { useIsImpersonating } from '@/hooks'
 
 // Actions
 import {
@@ -138,6 +139,9 @@ export function LeavesPageContent({
   const searchParams = useSearchParams()
   const router = useRouter()
   const pathname = usePathname()
+
+  // Impersonation guard
+  const isImpersonating = useIsImpersonating()
 
   // Responsive
   const isMobile = useMediaQuery('(max-width: 1024px)')
@@ -406,7 +410,8 @@ export function LeavesPageContent({
   const createButtonContent = (
     <Button
       onClick={() => setIsCreateOpen(true)}
-      disabled={!canCreate}
+      disabled={!canCreate || isImpersonating}
+      title={isImpersonating ? 'Non disponible en mode support' : undefined}
       data-testid="create-leave-button"
     >
       <Plus className="mr-2 h-4 w-4" />

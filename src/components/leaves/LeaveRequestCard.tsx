@@ -8,6 +8,7 @@ import { LeaveTypeBadge } from './LeaveTypeBadge'
 import { LeaveStatusBadge } from './LeaveStatusBadge'
 import { Pencil, X, CheckCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useIsImpersonating } from '@/hooks'
 
 type LeaveRequestWithEmployee = LeaveRequest & {
   employee: {
@@ -47,6 +48,7 @@ export function LeaveRequestCard({
   onReview,
   className,
 }: LeaveRequestCardProps) {
+  const isImpersonating = useIsImpersonating()
   const isOwner = request.employee.id === currentUserId
   const isPending = request.status === ('PENDING' as LeaveRequestStatus)
   const isCancelled = request.status === ('CANCELLED' as LeaveRequestStatus)
@@ -104,6 +106,10 @@ export function LeaveRequestCard({
               variant="outline"
               size="sm"
               onClick={() => onEdit(request.id)}
+              disabled={isImpersonating}
+              title={
+                isImpersonating ? 'Non disponible en mode support' : undefined
+              }
             >
               <Pencil className="mr-1 h-3 w-3" />
               Modifier
@@ -114,13 +120,24 @@ export function LeaveRequestCard({
               variant="outline"
               size="sm"
               onClick={() => onCancel(request.id)}
+              disabled={isImpersonating}
+              title={
+                isImpersonating ? 'Non disponible en mode support' : undefined
+              }
             >
               <X className="mr-1 h-3 w-3" />
               Annuler
             </Button>
           )}
           {showReview && (
-            <Button size="sm" onClick={() => onReview(request.id)}>
+            <Button
+              size="sm"
+              onClick={() => onReview(request.id)}
+              disabled={isImpersonating}
+              title={
+                isImpersonating ? 'Non disponible en mode support' : undefined
+              }
+            >
               <CheckCircle className="mr-1 h-3 w-3" />
               Examiner
             </Button>

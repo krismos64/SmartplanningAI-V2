@@ -22,6 +22,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
+import { useIsImpersonating } from '@/hooks'
 import { useDeleteMutation } from '@/hooks/use-crud-mutation'
 import { deleteEmployee } from '@/lib/actions/employees'
 import type { EmployeeWithCounts } from '@/lib/validations/employee'
@@ -51,6 +52,8 @@ export function DeleteEmployeeDialog({
   onOpenChange,
   onSuccess,
 }: DeleteEmployeeDialogProps) {
+  const isImpersonating = useIsImpersonating()
+
   // Hook mutation pour delete
   const deleteMutation = useDeleteMutation(deleteEmployee, {
     successMessage: 'Employe supprime avec succes',
@@ -131,7 +134,12 @@ export function DeleteEmployeeDialog({
           </AlertDialogCancel>
           <AlertDialogAction
             onClick={handleConfirm}
-            disabled={deleteMutation.isPending || hasSchedules}
+            disabled={
+              deleteMutation.isPending || hasSchedules || isImpersonating
+            }
+            title={
+              isImpersonating ? 'Non disponible en mode support' : undefined
+            }
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
           >
             {deleteMutation.isPending ? 'Suppression...' : 'Supprimer'}

@@ -18,6 +18,7 @@ import {
   checkLeaveConflicts,
 } from '@/lib/actions/leaves'
 import { useCrudMutation } from '@/hooks/use-crud-mutation'
+import { useIsImpersonating } from '@/hooks'
 import {
   Form,
   FormControl,
@@ -66,6 +67,7 @@ export function LeaveRequestForm({
   onSuccess,
   onCancel,
 }: LeaveRequestFormProps) {
+  const isImpersonating = useIsImpersonating()
   const [conflictPercentage, setConflictPercentage] = useState(0)
   const [dateRange, setDateRange] = useState<DateRange | undefined>(
     defaultValues?.startDate && defaultValues?.endDate
@@ -290,7 +292,14 @@ export function LeaveRequestForm({
               Annuler
             </Button>
           )}
-          <Button type="submit" disabled={isPending} data-testid="leave-submit">
+          <Button
+            type="submit"
+            disabled={isPending || isImpersonating}
+            title={
+              isImpersonating ? 'Non disponible en mode support' : undefined
+            }
+            data-testid="leave-submit"
+          >
             {isPending
               ? 'Envoi...'
               : mode === 'create'

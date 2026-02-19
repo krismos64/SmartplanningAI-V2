@@ -11,6 +11,7 @@ import { useState, useCallback, useTransition } from 'react'
 import { Plus } from 'lucide-react'
 import { toast } from 'sonner'
 
+import { useIsImpersonating } from '@/hooks'
 import { Button } from '@/components/ui/button'
 import type { UserRole } from '@/lib/navigation/menu-items'
 import type { IncidentNoteWithRelations } from '@/lib/actions/incident-notes'
@@ -42,6 +43,8 @@ export function IncidentNotesPageContent({
   initialNotes,
   userRole,
 }: IncidentNotesPageContentProps) {
+  const isImpersonating = useIsImpersonating()
+
   // État local des notes (optimistic updates)
   const [notes, setNotes] = useState<IncidentNoteWithRelations[]>(initialNotes)
 
@@ -208,7 +211,14 @@ export function IncidentNotesPageContent({
           </p>
         </div>
         {canCreate && (
-          <Button onClick={handleCreateNote} data-testid="create-note-button">
+          <Button
+            onClick={handleCreateNote}
+            disabled={isImpersonating}
+            title={
+              isImpersonating ? 'Non disponible en mode support' : undefined
+            }
+            data-testid="create-note-button"
+          >
             <Plus className="mr-2 h-4 w-4" aria-hidden="true" />
             Nouvelle note
           </Button>

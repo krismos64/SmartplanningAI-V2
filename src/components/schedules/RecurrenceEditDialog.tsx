@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import { CalendarX, CalendarClock, Calendar, Trash2, Edit } from 'lucide-react'
+import { useIsImpersonating } from '@/hooks'
 
 // ============================================================================
 // Types
@@ -60,6 +61,7 @@ export function RecurrenceEditDialog({
   counts = { single: 1, future: 0, all: 0 },
   isLoading = false,
 }: RecurrenceEditDialogProps) {
+  const isImpersonating = useIsImpersonating()
   const isDelete = action === 'delete'
 
   const title = isDelete
@@ -95,7 +97,10 @@ export function RecurrenceEditDialog({
             variant="outline"
             className="h-auto justify-start gap-3 p-4 text-left"
             onClick={() => handleConfirm('single')}
-            disabled={isLoading}
+            disabled={isLoading || isImpersonating}
+            title={
+              isImpersonating ? 'Non disponible en mode support' : undefined
+            }
           >
             <CalendarX className="h-5 w-5 flex-shrink-0 text-muted-foreground" />
             <div className="flex-1">
@@ -113,7 +118,10 @@ export function RecurrenceEditDialog({
               variant="outline"
               className="h-auto justify-start gap-3 p-4 text-left"
               onClick={() => handleConfirm('future')}
-              disabled={isLoading}
+              disabled={isLoading || isImpersonating}
+              title={
+                isImpersonating ? 'Non disponible en mode support' : undefined
+              }
             >
               <CalendarClock className="h-5 w-5 flex-shrink-0 text-muted-foreground" />
               <div className="flex-1">
@@ -133,7 +141,10 @@ export function RecurrenceEditDialog({
               variant="outline"
               className="h-auto justify-start gap-3 p-4 text-left"
               onClick={() => handleConfirm('all')}
-              disabled={isLoading}
+              disabled={isLoading || isImpersonating}
+              title={
+                isImpersonating ? 'Non disponible en mode support' : undefined
+              }
             >
               <Calendar className="h-5 w-5 flex-shrink-0 text-muted-foreground" />
               <div className="flex-1">
@@ -176,6 +187,8 @@ export function DeleteConfirmDialog({
   description = 'Cette action est irréversible. Le créneau sera définitivement supprimé.',
   isLoading = false,
 }: DeleteConfirmDialogProps) {
+  const isImpersonating = useIsImpersonating()
+
   return (
     <AlertDialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <AlertDialogContent>
@@ -190,7 +203,10 @@ export function DeleteConfirmDialog({
           <AlertDialogCancel disabled={isLoading}>Annuler</AlertDialogCancel>
           <AlertDialogAction
             onClick={onConfirm}
-            disabled={isLoading}
+            disabled={isLoading || isImpersonating}
+            title={
+              isImpersonating ? 'Non disponible en mode support' : undefined
+            }
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
           >
             {isLoading ? 'Suppression...' : 'Supprimer'}

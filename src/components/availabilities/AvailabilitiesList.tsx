@@ -45,6 +45,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
+import { useIsImpersonating } from '@/hooks'
 import { cn } from '@/lib/utils'
 
 import { AvailabilityCard } from './AvailabilityCard'
@@ -94,6 +95,8 @@ export function AvailabilitiesList({
   showAddButton = true,
   pageSize = 10,
 }: AvailabilitiesListProps) {
+  const isImpersonating = useIsImpersonating()
+
   // États
   const [availabilities, setAvailabilities] = useState<
     AvailabilityWithRelations[]
@@ -256,7 +259,13 @@ export function AvailabilitiesList({
         </div>
 
         {showAddButton && employeeId && (
-          <Button onClick={handleCreate}>
+          <Button
+            onClick={handleCreate}
+            disabled={isImpersonating}
+            title={
+              isImpersonating ? 'Non disponible en mode support' : undefined
+            }
+          >
             <Plus className="mr-2 h-4 w-4" />
             Ajouter
           </Button>
@@ -377,7 +386,15 @@ export function AvailabilitiesList({
             Aucune indisponibilité trouvée
           </p>
           {showAddButton && employeeId && (
-            <Button variant="outline" className="mt-4" onClick={handleCreate}>
+            <Button
+              variant="outline"
+              className="mt-4"
+              onClick={handleCreate}
+              disabled={isImpersonating}
+              title={
+                isImpersonating ? 'Non disponible en mode support' : undefined
+              }
+            >
               <Plus className="mr-2 h-4 w-4" />
               Ajouter une indisponibilité
             </Button>
@@ -392,6 +409,7 @@ export function AvailabilitiesList({
               onEdit={handleEdit}
               onDelete={handleDeleteConfirm}
               showEmployee={showEmployeeNames}
+              disabled={isImpersonating}
             />
           ))}
         </div>
@@ -459,7 +477,10 @@ export function AvailabilitiesList({
             <AlertDialogCancel disabled={isDeleting}>Annuler</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => void handleDelete()}
-              disabled={isDeleting}
+              disabled={isDeleting || isImpersonating}
+              title={
+                isImpersonating ? 'Non disponible en mode support' : undefined
+              }
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               {isDeleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

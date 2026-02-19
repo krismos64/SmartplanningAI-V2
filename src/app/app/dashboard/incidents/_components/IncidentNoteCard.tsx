@@ -12,6 +12,7 @@ import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { Eye, Pencil, Trash2, User, Calendar } from 'lucide-react'
 
+import { useIsImpersonating } from '@/hooks'
 import { cn } from '@/lib/utils'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -45,6 +46,7 @@ function IncidentNoteCardComponent({
   onEdit,
   onDelete,
 }: IncidentNoteCardProps) {
+  const isImpersonating = useIsImpersonating()
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
 
   // Permissions RBAC
@@ -117,6 +119,10 @@ function IncidentNoteCardComponent({
                 variant="ghost"
                 size="icon"
                 onClick={() => onEdit(note)}
+                disabled={isImpersonating}
+                title={
+                  isImpersonating ? 'Non disponible en mode support' : undefined
+                }
                 aria-label="Modifier la note"
                 data-testid={`edit-button-${note.id}`}
               >
@@ -128,6 +134,10 @@ function IncidentNoteCardComponent({
                 variant="ghost"
                 size="icon"
                 onClick={() => setShowDeleteDialog(true)}
+                disabled={isImpersonating}
+                title={
+                  isImpersonating ? 'Non disponible en mode support' : undefined
+                }
                 aria-label="Supprimer la note"
                 className="text-destructive hover:bg-destructive/10 hover:text-destructive"
                 data-testid={`delete-button-${note.id}`}
@@ -153,6 +163,10 @@ function IncidentNoteCardComponent({
             <AlertDialogCancel>Annuler</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => onDelete(note.id)}
+              disabled={isImpersonating}
+              title={
+                isImpersonating ? 'Non disponible en mode support' : undefined
+              }
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               Supprimer

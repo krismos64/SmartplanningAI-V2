@@ -22,6 +22,7 @@ import {
 import { Plus, Building2, RefreshCw } from 'lucide-react'
 import Link from 'next/link'
 
+import { useIsImpersonating } from '@/hooks'
 import { Button } from '@/components/ui/button'
 import {
   Table,
@@ -52,6 +53,7 @@ import type { CompanyFilters as CompanyFiltersType } from '@/lib/validations/com
 export function CompaniesDataTable() {
   const router = useRouter()
   const { update: updateSession } = useSession()
+  const isImpersonating = useIsImpersonating()
 
   // État local
   const [data, setData] = useState<CompanyWithCounts[]>([])
@@ -188,6 +190,7 @@ export function CompaniesDataTable() {
         onDelete: handleDelete,
         onToggleStatus: handleToggleStatus,
         onImpersonate: handleImpersonate,
+        isImpersonating,
       }),
     [
       handleView,
@@ -195,6 +198,7 @@ export function CompaniesDataTable() {
       handleDelete,
       handleToggleStatus,
       handleImpersonate,
+      isImpersonating,
     ]
   )
 
@@ -240,12 +244,19 @@ export function CompaniesDataTable() {
               />
               Actualiser
             </Button>
-            <Button asChild>
-              <Link href="/app/admin/companies/new">
+            {isImpersonating ? (
+              <Button disabled title="Non disponible en mode support">
                 <Plus className="mr-2 h-4 w-4" />
                 Nouvelle entreprise
-              </Link>
-            </Button>
+              </Button>
+            ) : (
+              <Button asChild>
+                <Link href="/app/admin/companies/new">
+                  <Plus className="mr-2 h-4 w-4" />
+                  Nouvelle entreprise
+                </Link>
+              </Button>
+            )}
           </div>
         </div>
 
