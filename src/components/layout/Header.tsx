@@ -4,7 +4,15 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
 import { signOut } from 'next-auth/react'
-import { Menu, LogOut, User, Settings, Search, Activity } from 'lucide-react'
+import {
+  Menu,
+  LogOut,
+  User,
+  Settings,
+  Search,
+  Activity,
+  Shield,
+} from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
@@ -35,9 +43,11 @@ interface HeaderProps {
     role: UserRole
     companyName?: string
   }
+  /** Mode impersonation actif (SP-453) */
+  isImpersonating?: boolean
 }
 
-export function Header({ user }: HeaderProps) {
+export function Header({ user, isImpersonating }: HeaderProps) {
   const { toggleSidebar } = useSidebar()
   const { setOpen: openCommandPalette } = useCommandPalette()
   // Type object pour les données d'animation Lottie
@@ -130,6 +140,17 @@ export function Header({ user }: HeaderProps) {
 
           {/* Theme Toggle (SP-265) */}
           <ThemeToggle />
+
+          {/* Badge Mode Support — SP-453 */}
+          {isImpersonating && (
+            <div
+              className="flex items-center gap-1.5 rounded-full border border-orange-500/30 bg-orange-500/10 px-3 py-1 text-xs font-medium text-orange-700 dark:text-orange-300"
+              data-testid="impersonation-badge"
+            >
+              <Shield className="h-3.5 w-3.5" aria-hidden="true" />
+              <span className="hidden sm:inline">Mode Support</span>
+            </div>
+          )}
 
           {/* Notifications - SP-322 */}
           <NotificationBell />
