@@ -19,6 +19,52 @@ import { afterAll, afterEach, beforeAll, vi } from 'vitest'
 import { server } from './mocks/server'
 
 /**
+ * Mock global pour next-auth/react
+ *
+ * useSession() est utilisé par useIsImpersonating() et d'autres hooks.
+ * Ce mock global évite les erreurs dans tous les tests de composants.
+ *
+ * @ticket SP-454
+ */
+vi.mock('next-auth/react', () => ({
+  useSession: vi.fn(() => ({
+    data: { user: { id: 'test-user', role: 'DIRECTOR', isImpersonating: false } },
+    status: 'authenticated',
+  })),
+  SessionProvider: ({ children }: { children: React.ReactNode }) => children,
+}))
+
+/**
+ * Mock global pour next/headers
+ *
+ * cookies() est appelé par assertNotImpersonating() (SP-454) dans
+ * toutes les Server Actions de mutation. Sans ce mock, les tests
+ * échouent avec "cookies was called outside a request scope".
+ *
+ * Les tests qui mockent explicitement next/headers (ex: impersonation-guard.test.ts)
+ * remplaceront automatiquement ce mock global.
+ *
+ * @ticket SP-454
+ */
+vi.mock('next/headers', () => ({
+  cookies: vi.fn(() =>
+    Promise.resolve({
+      get: vi.fn(() => null),
+      set: vi.fn(),
+      delete: vi.fn(),
+    })
+  ),
+  headers: vi.fn(() =>
+    Promise.resolve(
+      new Map([
+        ['x-forwarded-for', '127.0.0.1'],
+        ['user-agent', 'vitest'],
+      ])
+    )
+  ),
+}))
+
+/**
  * Polyfills pour jsdom
  *
  * ResizeObserver n'est pas implémenté dans jsdom,

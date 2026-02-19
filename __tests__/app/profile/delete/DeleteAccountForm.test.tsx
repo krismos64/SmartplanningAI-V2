@@ -24,6 +24,10 @@ vi.mock('next/navigation', () => ({
 const mockSignOut = vi.fn()
 vi.mock('next-auth/react', () => ({
   signOut: (options: { callbackUrl: string }) => mockSignOut(options),
+  useSession: vi.fn(() => ({
+    data: { user: { id: 'test-user', role: 'DIRECTOR', isImpersonating: false } },
+    status: 'authenticated',
+  })),
 }))
 
 // Mock deleteAccount action

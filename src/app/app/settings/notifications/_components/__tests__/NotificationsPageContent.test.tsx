@@ -21,6 +21,7 @@ vi.mock('@/hooks', () => ({
     success: vi.fn(),
     error: vi.fn(),
   }),
+  useIsImpersonating: () => false,
 }))
 
 // Mock with inline values (cannot use imports or external variables in vi.mock factory due to hoisting)
