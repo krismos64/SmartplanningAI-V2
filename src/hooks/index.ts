@@ -41,6 +41,9 @@ export {
   type UseKeyboardShortcutsOptions,
 } from './use-keyboard-shortcuts'
 
+// Impersonation hook (SP-454)
+export { useIsImpersonating } from './useIsImpersonating'
+
 // Breadcrumb resolver hooks (SP-264)
 export {
   useBreadcrumbResolver,
