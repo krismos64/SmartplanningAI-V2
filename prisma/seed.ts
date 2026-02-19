@@ -108,9 +108,9 @@ async function main() {
       stripeSubscriptionId: `sub_techcorp_${Date.now()}`,
       stripePriceId: 'price_per_seat',
       plan: SubscriptionPlan.PER_SEAT,
-      quantity: 10, // 10 employés TechCorp
+      quantity: 16, // 16 employés TechCorp
       pricePerEmployee: 290, // 2,90€ en centimes
-      planPrice: 2900, // 10 × 290 = 2900 centimes = 29,00€
+      planPrice: 4640, // 16 × 290 = 4640 centimes = 46,40€
       currency: 'EUR',
       billingInterval: 'month',
       status: SubscriptionStatus.ACTIVE,
@@ -170,7 +170,7 @@ async function main() {
       subscriptionId: techcorpSub.id,
       stripePaymentId: `pi_techcorp_${Date.now()}`,
       stripeInvoiceId: `in_techcorp_${Date.now()}`,
-      amount: 2900, // 29,00€ en centimes (10 employés × 2,90€)
+      amount: 4640, // 46,40€ en centimes (16 employés × 2,90€)
       currency: 'EUR',
       status: PaymentStatus.SUCCEEDED,
       paymentMethod: 'card',
@@ -583,6 +583,177 @@ async function main() {
     include: { employee: true },
   })
 
+  // EMPLOYEES Engineering supplémentaires (3) — pour activer la pagination E2E
+  const lucasNguyen = await prisma.user.create({
+    data: {
+      email: 'lucas.nguyen@techcorp.com',
+      name: 'Lucas Nguyen',
+      password: hashedPassword,
+      emailVerified: new Date(),
+      role: UserRole.EMPLOYEE,
+      companyId: techcorp.id,
+      isActive: true,
+      isEmailVerified: true,
+      employee: {
+        create: {
+          firstName: 'Lucas',
+          lastName: 'Nguyen',
+          jobTitle: 'Backend Developer',
+          department: 'Engineering',
+          phone: '+33 6 31 31 31 31',
+          hireDate: new Date('2024-01-15'),
+          weeklyHours: 35.0,
+          companyId: techcorp.id,
+          teamId: engineering.id,
+          skills: ['Go', 'PostgreSQL', 'Docker'],
+        },
+      },
+    },
+    include: { employee: true },
+  })
+
+  const chloePerez = await prisma.user.create({
+    data: {
+      email: 'chloe.perez@techcorp.com',
+      name: 'Chloe Perez',
+      password: hashedPassword,
+      emailVerified: new Date(),
+      role: UserRole.EMPLOYEE,
+      companyId: techcorp.id,
+      isActive: true,
+      isEmailVerified: true,
+      employee: {
+        create: {
+          firstName: 'Chloe',
+          lastName: 'Perez',
+          jobTitle: 'QA Engineer',
+          department: 'Engineering',
+          phone: '+33 6 42 42 42 42',
+          hireDate: new Date('2024-03-01'),
+          weeklyHours: 35.0,
+          companyId: techcorp.id,
+          teamId: engineering.id,
+          skills: ['Playwright', 'Cypress', 'Jest'],
+        },
+      },
+    },
+    include: { employee: true },
+  })
+
+  const maximeRoux = await prisma.user.create({
+    data: {
+      email: 'maxime.roux@techcorp.com',
+      name: 'Maxime Roux',
+      password: hashedPassword,
+      emailVerified: new Date(),
+      role: UserRole.EMPLOYEE,
+      companyId: techcorp.id,
+      isActive: true,
+      isEmailVerified: true,
+      employee: {
+        create: {
+          firstName: 'Maxime',
+          lastName: 'Roux',
+          jobTitle: 'DevOps Engineer',
+          department: 'Engineering',
+          phone: '+33 6 53 53 53 53',
+          hireDate: new Date('2024-05-01'),
+          weeklyHours: 35.0,
+          companyId: techcorp.id,
+          teamId: engineering.id,
+          skills: ['Kubernetes', 'Terraform', 'CI/CD'],
+        },
+      },
+    },
+    include: { employee: true },
+  })
+
+  // EMPLOYEES Product supplémentaires (2) — pour activer la pagination E2E
+  const sarahDubois = await prisma.user.create({
+    data: {
+      email: 'sarah.dubois@techcorp.com',
+      name: 'Sarah Dubois',
+      password: hashedPassword,
+      emailVerified: new Date(),
+      role: UserRole.EMPLOYEE,
+      companyId: techcorp.id,
+      isActive: true,
+      isEmailVerified: true,
+      employee: {
+        create: {
+          firstName: 'Sarah',
+          lastName: 'Dubois',
+          jobTitle: 'UX Researcher',
+          department: 'Product',
+          phone: '+33 6 64 64 64 64',
+          hireDate: new Date('2024-06-01'),
+          weeklyHours: 35.0,
+          companyId: techcorp.id,
+          teamId: product.id,
+          skills: ['User Research', 'Figma', 'Accessibility'],
+        },
+      },
+    },
+    include: { employee: true },
+  })
+
+  const thomasBernard = await prisma.user.create({
+    data: {
+      email: 'thomas.bernard@techcorp.com',
+      name: 'Thomas Bernard',
+      password: hashedPassword,
+      emailVerified: new Date(),
+      role: UserRole.EMPLOYEE,
+      companyId: techcorp.id,
+      isActive: true,
+      isEmailVerified: true,
+      employee: {
+        create: {
+          firstName: 'Thomas',
+          lastName: 'Bernard',
+          jobTitle: 'Technical Writer',
+          department: 'Product',
+          phone: '+33 6 75 75 75 75',
+          hireDate: new Date('2024-07-01'),
+          weeklyHours: 35.0,
+          companyId: techcorp.id,
+          teamId: product.id,
+          skills: ['Documentation', 'Markdown', 'API Docs'],
+        },
+      },
+    },
+    include: { employee: true },
+  })
+
+  // EMPLOYEE Design supplémentaire (1) — pour activer la pagination E2E
+  const julieMoreau = await prisma.user.create({
+    data: {
+      email: 'julie.moreau@techcorp.com',
+      name: 'Julie Moreau',
+      password: hashedPassword,
+      emailVerified: new Date(),
+      role: UserRole.EMPLOYEE,
+      companyId: techcorp.id,
+      isActive: true,
+      isEmailVerified: true,
+      employee: {
+        create: {
+          firstName: 'Julie',
+          lastName: 'Moreau',
+          jobTitle: 'Motion Designer',
+          department: 'Design',
+          phone: '+33 6 86 86 86 86',
+          hireDate: new Date('2024-08-01'),
+          weeklyHours: 35.0,
+          companyId: techcorp.id,
+          teamId: design.id,
+          skills: ['After Effects', 'Lottie', 'Animation'],
+        },
+      },
+    },
+    include: { employee: true },
+  })
+
   // ========== DESIGNSTUDIO (6 users) ==========
 
   // DIRECTOR DesignStudio
@@ -893,10 +1064,10 @@ async function main() {
     include: { employee: true },
   })
 
-  console.log('✅ 20 utilisateurs et employés créés')
+  console.log('✅ 26 utilisateurs et employés créés')
   console.log('   - 3 DIRECTOR (1 par organisation)')
   console.log('   - 6 MANAGER')
-  console.log('   - 11 EMPLOYEE')
+  console.log('   - 17 EMPLOYEE (dont 6 supplémentaires TechCorp pour pagination E2E)')
   console.log('   - 1 SYSTEM_ADMIN (admin@smartplanning.io)\n')
 
   // ============================================================================
@@ -1543,6 +1714,12 @@ async function main() {
     { employee: davidMiller.employee!, company: techcorp },
     { employee: frankMartinez.employee!, company: techcorp },
     { employee: graceRodriguez.employee!, company: techcorp },
+    { employee: lucasNguyen.employee!, company: techcorp },
+    { employee: chloePerez.employee!, company: techcorp },
+    { employee: maximeRoux.employee!, company: techcorp },
+    { employee: sarahDubois.employee!, company: techcorp },
+    { employee: thomasBernard.employee!, company: techcorp },
+    { employee: julieMoreau.employee!, company: techcorp },
     { employee: emmaJones.employee!, company: designstudio },
     { employee: liamWhite.employee!, company: designstudio },
     { employee: oliviaMartin.employee!, company: designstudio },
@@ -1567,6 +1744,12 @@ async function main() {
     { paidLeaveTotal: 25, paidLeaveUsed: 5, rttTotal: 10, rttUsed: 3 },
     { paidLeaveTotal: 25, paidLeaveUsed: 0, rttTotal: 10, rttUsed: 0 },
     { paidLeaveTotal: 25, paidLeaveUsed: 10, rttTotal: 10, rttUsed: 6 },
+    { paidLeaveTotal: 25, paidLeaveUsed: 1, rttTotal: 10, rttUsed: 1 },
+    { paidLeaveTotal: 25, paidLeaveUsed: 4, rttTotal: 10, rttUsed: 2 },
+    { paidLeaveTotal: 25, paidLeaveUsed: 7, rttTotal: 10, rttUsed: 4 },
+    { paidLeaveTotal: 25, paidLeaveUsed: 2, rttTotal: 8, rttUsed: 0 },
+    { paidLeaveTotal: 25, paidLeaveUsed: 6, rttTotal: 10, rttUsed: 3 },
+    { paidLeaveTotal: 25, paidLeaveUsed: 3, rttTotal: 10, rttUsed: 1 },
     { paidLeaveTotal: 25, paidLeaveUsed: 4, rttTotal: 8, rttUsed: 2 },
     { paidLeaveTotal: 25, paidLeaveUsed: 7, rttTotal: 10, rttUsed: 3 },
     { paidLeaveTotal: 25, paidLeaveUsed: 2, rttTotal: 10, rttUsed: 1 },
@@ -1734,7 +1917,7 @@ async function main() {
   )
 
   console.log('🏢 ORGANISATIONS (3) :')
-  console.log('   • TechCorp (PER_SEAT, 10 employés, 29,00€/mois)')
+  console.log('   • TechCorp (PER_SEAT, 16 employés, 46,40€/mois)')
   console.log('   • DesignStudio (PER_SEAT, 6 employés, 17,40€/mois)')
   console.log('   • StartupInc (FREE/TRIAL, 4 employés)\n')
 
@@ -1749,11 +1932,11 @@ async function main() {
   console.log('   StartupInc :')
   console.log('   • Core Team (Manager: James Walker)\n')
 
-  console.log('👤 UTILISATEURS & EMPLOYÉS (20) :')
+  console.log('👤 UTILISATEURS & EMPLOYÉS (26) :')
   console.log('   Rôles :')
   console.log('   • 3 DIRECTOR (1 par organisation)')
   console.log('   • 6 MANAGER')
-  console.log('   • 11 EMPLOYEE')
+  console.log('   • 17 EMPLOYEE (16 TechCorp pour pagination E2E)')
   console.log('   • 1 SYSTEM_ADMIN (admin@smartplanning.io)\n')
 
   console.log('💳 ABONNEMENTS & PAIEMENTS :')
@@ -1772,7 +1955,7 @@ async function main() {
   console.log('   • 2 CANCELLED (David, Grace)')
   console.log('   • 2 avec halfDay (Bob AM, Olivia PM)\n')
 
-  console.log('💰 SOLDES DE CONGÉS (20) :')
+  console.log('💰 SOLDES DE CONGÉS (26) :')
   console.log('   • 1 LeaveBalance par employé (année 2026)')
   console.log('   • Soldes variés (CP 0-12 utilisés, RTT 0-6 utilisés)\n')
 
