@@ -233,27 +233,30 @@ describe('impersonation', () => {
   // --------------------------------------------------------------------------
 
   describe('assertNotImpersonating', () => {
-    it("ne lance pas d'erreur si pas d'impersonation active", async () => {
+    it("retourne null si pas d'impersonation active", async () => {
       mockGet.mockReturnValue(null)
-      await expect(assertNotImpersonating()).resolves.toBeUndefined()
+      const result = await assertNotImpersonating()
+      expect(result).toBeNull()
     })
 
-    it('lance une erreur si une impersonation est active', async () => {
+    it('retourne { success: false } si une impersonation est active', async () => {
       const context = createValidContext()
       mockGet.mockReturnValue({ value: JSON.stringify(context) })
 
-      await expect(assertNotImpersonating()).rejects.toThrow(
-        'Action interdite en mode impersonation'
-      )
+      const result = await assertNotImpersonating()
+      expect(result).not.toBeNull()
+      expect(result?.success).toBe(false)
+      expect(result?.error).toContain('mode support')
     })
 
-    it("ne lance pas d'erreur si le cookie est expiré", async () => {
+    it('retourne null si le cookie est expiré', async () => {
       const expiredContext = createValidContext({
         startedAt: Date.now() - (IMPERSONATION_MAX_AGE + 1) * 1000,
       })
       mockGet.mockReturnValue({ value: JSON.stringify(expiredContext) })
 
-      await expect(assertNotImpersonating()).resolves.toBeUndefined()
+      const result = await assertNotImpersonating()
+      expect(result).toBeNull()
     })
   })
 
