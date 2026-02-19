@@ -12,6 +12,7 @@ import { Camera, Upload, X, Loader2 } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { useIsImpersonating } from '@/hooks'
 import { AVATAR_CONFIG, type AllowedMimeType } from '@/lib/avatar-config'
 import { AVATAR_ERRORS } from '@/lib/validations/avatar'
 import { toast } from 'sonner'
@@ -45,6 +46,7 @@ export function AvatarUpload({
   className,
 }: AvatarUploadProps) {
   const router = useRouter()
+  const isImpersonating = useIsImpersonating()
   const [isUploading, setIsUploading] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [isDragging, setIsDragging] = useState(false)
@@ -253,7 +255,8 @@ export function AvatarUpload({
           variant="outline"
           size="touch-sm"
           onClick={handleClick}
-          disabled={isLoading}
+          disabled={isLoading || isImpersonating}
+          title={isImpersonating ? 'Non disponible en mode support' : undefined}
           data-testid="avatar-upload-button"
         >
           {isUploading ? (
@@ -270,7 +273,10 @@ export function AvatarUpload({
             variant="ghost"
             size="touch-sm"
             onClick={() => void handleDelete()}
-            disabled={isLoading}
+            disabled={isLoading || isImpersonating}
+            title={
+              isImpersonating ? 'Non disponible en mode support' : undefined
+            }
             className="text-destructive hover:bg-destructive/10 hover:text-destructive"
             data-testid="avatar-delete-button"
           >

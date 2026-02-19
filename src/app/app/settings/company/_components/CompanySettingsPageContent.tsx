@@ -23,7 +23,7 @@ import {
   AnimatedContainer,
   AnimatedItem,
 } from '@/components/ui/animated-container'
-import { useToast } from '@/hooks'
+import { useToast, useIsImpersonating } from '@/hooks'
 import {
   updateCompanySettings,
   resetCompanySettings,
@@ -53,6 +53,7 @@ export function CompanySettingsPageContent({
   const [savedSettings, setSavedSettings] =
     useState<CompanySettings>(initialSettings)
   const [isPending, startTransition] = useTransition()
+  const isImpersonating = useIsImpersonating()
   const { success: toastSuccess, error: toastError } = useToast()
 
   /**
@@ -228,7 +229,10 @@ export function CompanySettingsPageContent({
           <Button
             variant="outline"
             onClick={handleReset}
-            disabled={isPending}
+            disabled={isPending || isImpersonating}
+            title={
+              isImpersonating ? 'Non disponible en mode support' : undefined
+            }
             data-testid="reset-button"
             className="w-full sm:w-auto"
           >
@@ -251,7 +255,10 @@ export function CompanySettingsPageContent({
             )}
             <Button
               onClick={handleSave}
-              disabled={!isDirty || isPending}
+              disabled={!isDirty || isPending || isImpersonating}
+              title={
+                isImpersonating ? 'Non disponible en mode support' : undefined
+              }
               data-testid="save-button"
               className="flex-1 sm:flex-initial"
             >

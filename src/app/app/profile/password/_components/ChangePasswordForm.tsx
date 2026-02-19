@@ -25,6 +25,7 @@ import {
 } from '@/lib/validations/user'
 import { changePassword } from '@/lib/actions/profile'
 import { useCrudMutation } from '@/hooks/use-crud-mutation'
+import { useIsImpersonating } from '@/hooks'
 import {
   Form,
   FormField,
@@ -46,6 +47,7 @@ import { PasswordStrengthIndicator } from './PasswordStrengthIndicator'
 
 export function ChangePasswordForm() {
   const router = useRouter()
+  const isImpersonating = useIsImpersonating()
 
   // États pour les toggles de visibilité (3 champs séparés)
   const [showCurrentPassword, setShowCurrentPassword] = useState(false)
@@ -275,7 +277,12 @@ export function ChangePasswordForm() {
               </Link>
               <Button
                 type="submit"
-                disabled={isPending || !form.formState.isDirty}
+                disabled={
+                  isPending || !form.formState.isDirty || isImpersonating
+                }
+                title={
+                  isImpersonating ? 'Non disponible en mode support' : undefined
+                }
                 data-testid="submit-button"
               >
                 {isPending ? (

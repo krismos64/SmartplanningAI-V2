@@ -43,6 +43,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { toast } from 'sonner'
+import { useIsImpersonating } from '@/hooks'
 
 import {
   type TeamMemberInfo,
@@ -77,11 +78,13 @@ function MemberItem({
   onRemove,
   isRemoving,
   readOnly,
+  isImpersonating,
 }: {
   member: TeamMemberInfo
   onRemove: () => void
   isRemoving: boolean
   readOnly: boolean
+  isImpersonating: boolean
 }) {
   return (
     <div className="flex items-center justify-between rounded-lg border p-3">
@@ -115,7 +118,8 @@ function MemberItem({
           size="sm"
           className="text-destructive hover:text-destructive"
           onClick={onRemove}
-          disabled={isRemoving}
+          disabled={isRemoving || isImpersonating}
+          title={isImpersonating ? 'Non disponible en mode support' : undefined}
         >
           {isRemoving ? (
             <Loader2 className="h-4 w-4 animate-spin" />
@@ -137,6 +141,7 @@ export function TeamMembersManager({
   onMembersChange,
   readOnly = false,
 }: TeamMembersManagerProps) {
+  const isImpersonating = useIsImpersonating()
   const [members, setMembers] = useState<TeamMemberInfo[]>(team.employees)
   const [availableEmployees, setAvailableEmployees] = useState<
     TeamMemberInfo[]
@@ -245,7 +250,14 @@ export function TeamMembersManager({
           {!readOnly && (
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
-                <Button>
+                <Button
+                  disabled={isImpersonating}
+                  title={
+                    isImpersonating
+                      ? 'Non disponible en mode support'
+                      : undefined
+                  }
+                >
                   <UserPlus className="mr-2 h-4 w-4" />
                   Ajouter un membre
                 </Button>
@@ -315,7 +327,14 @@ export function TeamMembersManager({
                           <Button
                             size="sm"
                             onClick={() => void handleAddMember(employee.id)}
-                            disabled={addingMemberId === employee.id}
+                            disabled={
+                              addingMemberId === employee.id || isImpersonating
+                            }
+                            title={
+                              isImpersonating
+                                ? 'Non disponible en mode support'
+                                : undefined
+                            }
                           >
                             {addingMemberId === employee.id ? (
                               <Loader2 className="h-4 w-4 animate-spin" />
@@ -341,7 +360,16 @@ export function TeamMembersManager({
                 Aucun membre dans cette équipe
               </p>
               {!readOnly && (
-                <Button variant="outline" onClick={() => setIsDialogOpen(true)}>
+                <Button
+                  variant="outline"
+                  onClick={() => setIsDialogOpen(true)}
+                  disabled={isImpersonating}
+                  title={
+                    isImpersonating
+                      ? 'Non disponible en mode support'
+                      : undefined
+                  }
+                >
                   <UserPlus className="mr-2 h-4 w-4" />
                   Ajouter le premier membre
                 </Button>
@@ -356,6 +384,7 @@ export function TeamMembersManager({
                   onRemove={() => setConfirmRemove(member)}
                   isRemoving={removingMemberId === member.id}
                   readOnly={readOnly}
+                  isImpersonating={isImpersonating}
                 />
               ))}
             </div>
@@ -387,6 +416,10 @@ export function TeamMembersManager({
             <AlertDialogCancel>Annuler</AlertDialogCancel>
             <AlertDialogAction
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              disabled={isImpersonating}
+              title={
+                isImpersonating ? 'Non disponible en mode support' : undefined
+              }
               onClick={() =>
                 confirmRemove && void handleRemoveMember(confirmRemove.id)
               }

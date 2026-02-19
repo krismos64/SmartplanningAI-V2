@@ -60,6 +60,8 @@ export interface CompanyActionsProps {
   onToggleStatus?: (company: CompanyWithCounts) => void
   /** SP-447 : Impersonation — voir l'espace client */
   onImpersonate?: (company: CompanyWithCounts) => void
+  /** Mode support : désactive les actions de mutation */
+  isImpersonating?: boolean
 }
 
 // ============================================================================
@@ -105,7 +107,14 @@ const statusBadgeVariants: Record<
 export function createCompanyColumns(
   actions: CompanyActionsProps = {}
 ): ColumnDef<CompanyWithCounts>[] {
-  const { onView, onEdit, onDelete, onToggleStatus, onImpersonate } = actions
+  const {
+    onView,
+    onEdit,
+    onDelete,
+    onToggleStatus,
+    onImpersonate,
+    isImpersonating,
+  } = actions
 
   return [
     // Checkbox de sélection
@@ -289,14 +298,30 @@ export function createCompanyColumns(
               )}
 
               {onEdit && (
-                <DropdownMenuItem onClick={() => onEdit(company)}>
+                <DropdownMenuItem
+                  onClick={() => onEdit(company)}
+                  disabled={isImpersonating}
+                  title={
+                    isImpersonating
+                      ? 'Non disponible en mode support'
+                      : undefined
+                  }
+                >
                   <Pencil className="mr-2 h-4 w-4" />
                   Modifier
                 </DropdownMenuItem>
               )}
 
               {onToggleStatus && (
-                <DropdownMenuItem onClick={() => onToggleStatus(company)}>
+                <DropdownMenuItem
+                  onClick={() => onToggleStatus(company)}
+                  disabled={isImpersonating}
+                  title={
+                    isImpersonating
+                      ? 'Non disponible en mode support'
+                      : undefined
+                  }
+                >
                   {company.isActive ? (
                     <>
                       <PowerOff className="mr-2 h-4 w-4" />
@@ -326,6 +351,12 @@ export function createCompanyColumns(
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
                     onClick={() => onDelete(company)}
+                    disabled={isImpersonating}
+                    title={
+                      isImpersonating
+                        ? 'Non disponible en mode support'
+                        : undefined
+                    }
                     className="text-destructive focus:text-destructive"
                   >
                     <Trash2 className="mr-2 h-4 w-4" />

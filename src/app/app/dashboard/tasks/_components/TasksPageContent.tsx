@@ -12,6 +12,7 @@ import { Plus } from 'lucide-react'
 import { toast } from 'sonner'
 import type { PersonalTask } from '@prisma/client'
 
+import { useIsImpersonating } from '@/hooks'
 import { Button } from '@/components/ui/button'
 import type { PersonalTaskCreateInput } from '@/lib/validations/personal-task'
 
@@ -32,6 +33,8 @@ interface TasksPageContentProps {
 }
 
 export function TasksPageContent({ initialTasks }: TasksPageContentProps) {
+  const isImpersonating = useIsImpersonating()
+
   // État local des tâches (optimistic updates)
   const [tasks, setTasks] = useState<PersonalTask[]>(initialTasks)
 
@@ -169,7 +172,12 @@ export function TasksPageContent({ initialTasks }: TasksPageContentProps) {
             Organisez vos notes par glisser-déposer
           </p>
         </div>
-        <Button onClick={handleCreateTask} data-testid="create-task-button">
+        <Button
+          onClick={handleCreateTask}
+          disabled={isImpersonating}
+          title={isImpersonating ? 'Non disponible en mode support' : undefined}
+          data-testid="create-task-button"
+        >
           <Plus className="mr-2 h-4 w-4" aria-hidden="true" />
           Nouvelle note
         </Button>

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useIsImpersonating } from '@/hooks'
 import { AlertTriangle } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -31,6 +32,7 @@ export function BulkDeleteDialog({
   onOpenChange,
   onSuccess,
 }: BulkDeleteDialogProps) {
+  const isImpersonating = useIsImpersonating()
   const [isPending, setIsPending] = useState(false)
 
   const handleConfirm = async () => {
@@ -103,7 +105,10 @@ export function BulkDeleteDialog({
               e.preventDefault()
               void handleConfirm()
             }}
-            disabled={isPending}
+            disabled={isPending || isImpersonating}
+            title={
+              isImpersonating ? 'Non disponible en mode support' : undefined
+            }
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
           >
             {isPending ? 'Suppression...' : 'Supprimer'}

@@ -15,6 +15,7 @@ import { fr } from 'date-fns/locale'
 import { GripVertical, Pencil, Trash2, Calendar } from 'lucide-react'
 import type { PersonalTask } from '@prisma/client'
 
+import { useIsImpersonating } from '@/hooks'
 import { cn } from '@/lib/utils'
 import { Card, CardContent } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -34,6 +35,8 @@ function PersonalTaskCardComponent({
   onEdit,
   onDelete,
 }: PersonalTaskCardProps) {
+  const isImpersonating = useIsImpersonating()
+
   const {
     attributes,
     listeners,
@@ -107,6 +110,8 @@ function PersonalTaskCardComponent({
         <Checkbox
           checked={task.completed}
           onCheckedChange={() => onToggle(task.id)}
+          disabled={isImpersonating}
+          title={isImpersonating ? 'Non disponible en mode support' : undefined}
           aria-label={
             task.completed ? 'Marquer comme non fait' : 'Marquer comme fait'
           }
@@ -155,6 +160,10 @@ function PersonalTaskCardComponent({
             variant="ghost"
             size="icon"
             onClick={() => onEdit(task)}
+            disabled={isImpersonating}
+            title={
+              isImpersonating ? 'Non disponible en mode support' : undefined
+            }
             aria-label="Modifier la tâche"
             data-testid={`edit-button-${task.id}`}
           >
@@ -164,6 +173,10 @@ function PersonalTaskCardComponent({
             variant="ghost"
             size="icon"
             onClick={() => onDelete(task.id)}
+            disabled={isImpersonating}
+            title={
+              isImpersonating ? 'Non disponible en mode support' : undefined
+            }
             aria-label="Supprimer la tâche"
             className="text-destructive hover:bg-destructive/10 hover:text-destructive"
             data-testid={`delete-button-${task.id}`}

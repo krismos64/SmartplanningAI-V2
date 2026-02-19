@@ -21,6 +21,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
+import { useIsImpersonating } from '@/hooks'
 import { useDeleteMutation } from '@/hooks/use-crud-mutation'
 import { deleteCompany, type CompanyWithCounts } from '@/lib/actions/companies'
 
@@ -49,6 +50,8 @@ export function DeleteCompanyDialog({
   onOpenChange,
   onSuccess,
 }: DeleteCompanyDialogProps) {
+  const isImpersonating = useIsImpersonating()
+
   // Hook mutation pour delete
   const deleteMutation = useDeleteMutation(deleteCompany, {
     successMessage: 'Entreprise supprimée avec succès',
@@ -129,7 +132,10 @@ export function DeleteCompanyDialog({
           </AlertDialogCancel>
           <AlertDialogAction
             onClick={handleConfirm}
-            disabled={deleteMutation.isPending}
+            disabled={deleteMutation.isPending || isImpersonating}
+            title={
+              isImpersonating ? 'Non disponible en mode support' : undefined
+            }
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
           >
             {deleteMutation.isPending ? 'Suppression...' : 'Supprimer'}

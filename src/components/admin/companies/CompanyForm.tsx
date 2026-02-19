@@ -38,6 +38,7 @@ import {
 import { Switch } from '@/components/ui/switch'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
+import { useIsImpersonating } from '@/hooks'
 import { useCrudMutation } from '@/hooks/use-crud-mutation'
 import {
   subscriptionPlanLabels,
@@ -98,6 +99,7 @@ export function CompanyForm({
   onCancel,
 }: CompanyFormProps) {
   const router = useRouter()
+  const isImpersonating = useIsImpersonating()
   const isEditing = !!company
 
   // Hook mutation pour create
@@ -427,7 +429,13 @@ export function CompanyForm({
           >
             Annuler
           </Button>
-          <Button type="submit" disabled={isPending}>
+          <Button
+            type="submit"
+            disabled={isPending || isImpersonating}
+            title={
+              isImpersonating ? 'Non disponible en mode support' : undefined
+            }
+          >
             {isPending
               ? isEditing
                 ? 'Modification...'

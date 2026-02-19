@@ -41,6 +41,7 @@ const incidentNoteFormSchema = z.object({
 
 type IncidentNoteFormData = z.infer<typeof incidentNoteFormSchema>
 
+import { useIsImpersonating } from '@/hooks'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -73,6 +74,7 @@ export function IncidentNoteForm({
   isSubmitting,
   onCancel,
 }: IncidentNoteFormProps) {
+  const isImpersonating = useIsImpersonating()
   const isEditMode = !!note
   const [employees, setEmployees] = useState<EmployeeOption[]>([])
   const [loadingEmployees, setLoadingEmployees] = useState(true)
@@ -278,7 +280,8 @@ export function IncidentNoteForm({
         </Button>
         <Button
           type="submit"
-          disabled={isSubmitting}
+          disabled={isSubmitting || isImpersonating}
+          title={isImpersonating ? 'Non disponible en mode support' : undefined}
           data-testid="submit-button"
         >
           {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

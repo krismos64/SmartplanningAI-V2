@@ -9,6 +9,7 @@ import {
 } from '@/lib/validations/leave'
 import { updateLeaveBalance } from '@/lib/actions/leaves'
 import { useCrudMutation } from '@/hooks/use-crud-mutation'
+import { useIsImpersonating } from '@/hooks'
 import {
   Dialog,
   DialogContent,
@@ -41,6 +42,8 @@ export function LeaveBalanceEditDialog({
   balance,
   onSuccess,
 }: LeaveBalanceEditDialogProps) {
+  const isImpersonating = useIsImpersonating()
+
   const form = useForm<UpdateLeaveBalanceInput>({
     resolver: zodResolver(updateLeaveBalanceSchema),
     defaultValues: {
@@ -136,7 +139,13 @@ export function LeaveBalanceEditDialog({
               >
                 Annuler
               </Button>
-              <Button type="submit" disabled={isPending}>
+              <Button
+                type="submit"
+                disabled={isPending || isImpersonating}
+                title={
+                  isImpersonating ? 'Non disponible en mode support' : undefined
+                }
+              >
                 {isPending ? 'Enregistrement...' : 'Enregistrer'}
               </Button>
             </DialogFooter>

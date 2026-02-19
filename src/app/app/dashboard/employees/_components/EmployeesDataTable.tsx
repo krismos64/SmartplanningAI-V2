@@ -22,6 +22,7 @@ import {
 import { Plus, Users, RefreshCw, Trash2 } from 'lucide-react'
 import Link from 'next/link'
 
+import { useIsImpersonating } from '@/hooks'
 import { Button } from '@/components/ui/button'
 import {
   Table,
@@ -66,6 +67,7 @@ interface EmployeesDataTableProps {
 
 export function EmployeesDataTable({ userRole }: EmployeesDataTableProps) {
   const router = useRouter()
+  const isImpersonating = useIsImpersonating()
 
   // Etat local
   const [data, setData] = useState<EmployeeWithCounts[]>([])
@@ -173,8 +175,16 @@ export function EmployeesDataTable({ userRole }: EmployeesDataTableProps) {
       onDelete: canDelete ? handleDelete : undefined,
       onToggleStatus: handleToggleStatus,
       canDelete,
+      isImpersonating,
     })
-  }, [handleView, handleEdit, handleDelete, handleToggleStatus, canDelete])
+  }, [
+    handleView,
+    handleEdit,
+    handleDelete,
+    handleToggleStatus,
+    canDelete,
+    isImpersonating,
+  ])
 
   // Configuration TanStack Table
   const table = useReactTable({
@@ -228,12 +238,19 @@ export function EmployeesDataTable({ userRole }: EmployeesDataTableProps) {
               />
               Actualiser
             </Button>
-            <Button asChild>
-              <Link href="/app/dashboard/employees/new">
+            {isImpersonating ? (
+              <Button disabled title="Non disponible en mode support">
                 <Plus className="mr-2 h-4 w-4" />
                 Nouvel employe
-              </Link>
-            </Button>
+              </Button>
+            ) : (
+              <Button asChild>
+                <Link href="/app/dashboard/employees/new">
+                  <Plus className="mr-2 h-4 w-4" />
+                  Nouvel employe
+                </Link>
+              </Button>
+            )}
           </div>
         </div>
 
@@ -258,6 +275,10 @@ export function EmployeesDataTable({ userRole }: EmployeesDataTableProps) {
               variant="destructive"
               size="sm"
               onClick={() => setBulkDeleteOpen(true)}
+              disabled={isImpersonating}
+              title={
+                isImpersonating ? 'Non disponible en mode support' : undefined
+              }
             >
               <Trash2 className="mr-2 h-4 w-4" />
               Supprimer la selection

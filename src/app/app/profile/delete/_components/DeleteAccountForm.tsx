@@ -40,6 +40,7 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { useCrudMutation } from '@/hooks/use-crud-mutation'
+import { useIsImpersonating } from '@/hooks'
 import { deleteAccount } from '@/lib/actions/profile'
 import {
   deleteAccountSchema,
@@ -52,6 +53,7 @@ interface DeleteAccountFormProps {
 
 export function DeleteAccountForm({ userEmail }: DeleteAccountFormProps) {
   const [showPassword, setShowPassword] = useState(false)
+  const isImpersonating = useIsImpersonating()
 
   const form = useForm<DeleteAccountInput>({
     resolver: zodResolver(deleteAccountSchema),
@@ -252,7 +254,13 @@ export function DeleteAccountForm({ userEmail }: DeleteAccountFormProps) {
               type="submit"
               variant="destructive"
               disabled={
-                !form.formState.isDirty || isPending || !confirmDeletion
+                !form.formState.isDirty ||
+                isPending ||
+                !confirmDeletion ||
+                isImpersonating
+              }
+              title={
+                isImpersonating ? 'Non disponible en mode support' : undefined
               }
               data-testid="delete-account-button"
             >

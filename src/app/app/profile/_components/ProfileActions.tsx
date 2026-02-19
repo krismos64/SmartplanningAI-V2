@@ -1,3 +1,5 @@
+'use client'
+
 /**
  * ProfileActions - Carte des actions disponibles
  *
@@ -19,8 +21,11 @@ import {
   Trash2,
   Activity,
 } from 'lucide-react'
+import { useIsImpersonating } from '@/hooks'
 
 export function ProfileActions() {
+  const isImpersonating = useIsImpersonating()
+
   return (
     <Card className="glass hover-lift h-full">
       <CardHeader>
@@ -30,29 +35,55 @@ export function ProfileActions() {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
-        <Button
-          asChild
-          variant="default"
-          className="w-full justify-start gap-2"
-          data-testid="action-edit-profile"
-        >
-          <Link href="/app/profile/edit">
+        {isImpersonating ? (
+          <Button
+            variant="default"
+            className="w-full justify-start gap-2"
+            data-testid="action-edit-profile"
+            disabled
+            title="Non disponible en mode support"
+          >
             <Pencil className="h-4 w-4" />
             Modifier mon profil
-          </Link>
-        </Button>
+          </Button>
+        ) : (
+          <Button
+            asChild
+            variant="default"
+            className="w-full justify-start gap-2"
+            data-testid="action-edit-profile"
+          >
+            <Link href="/app/profile/edit">
+              <Pencil className="h-4 w-4" />
+              Modifier mon profil
+            </Link>
+          </Button>
+        )}
 
-        <Button
-          asChild
-          variant="secondary"
-          className="w-full justify-start gap-2"
-          data-testid="action-change-password"
-        >
-          <Link href="/app/profile/password">
+        {isImpersonating ? (
+          <Button
+            variant="secondary"
+            className="w-full justify-start gap-2"
+            data-testid="action-change-password"
+            disabled
+            title="Non disponible en mode support"
+          >
             <Lock className="h-4 w-4" />
             Changer mon mot de passe
-          </Link>
-        </Button>
+          </Button>
+        ) : (
+          <Button
+            asChild
+            variant="secondary"
+            className="w-full justify-start gap-2"
+            data-testid="action-change-password"
+          >
+            <Link href="/app/profile/password">
+              <Lock className="h-4 w-4" />
+              Changer mon mot de passe
+            </Link>
+          </Button>
+        )}
 
         <Button
           asChild
@@ -78,17 +109,30 @@ export function ProfileActions() {
           </Link>
         </Button>
 
-        <Button
-          asChild
-          variant="ghost"
-          className="w-full justify-start gap-2 text-destructive hover:text-destructive"
-          data-testid="action-delete-account"
-        >
-          <Link href="/app/profile/delete">
+        {isImpersonating ? (
+          <Button
+            variant="ghost"
+            className="w-full justify-start gap-2 text-destructive hover:text-destructive"
+            data-testid="action-delete-account"
+            disabled
+            title="Non disponible en mode support"
+          >
             <Trash2 className="h-4 w-4" />
             Supprimer mon compte
-          </Link>
-        </Button>
+          </Button>
+        ) : (
+          <Button
+            asChild
+            variant="ghost"
+            className="w-full justify-start gap-2 text-destructive hover:text-destructive"
+            data-testid="action-delete-account"
+          >
+            <Link href="/app/profile/delete">
+              <Trash2 className="h-4 w-4" />
+              Supprimer mon compte
+            </Link>
+          </Button>
+        )}
       </CardContent>
     </Card>
   )

@@ -78,6 +78,7 @@ import {
   calculateTotalSchedules,
 } from '@/lib/utils/recurrence'
 import { useConflictDetection } from '@/hooks/useConflictDetection'
+import { useIsImpersonating } from '@/hooks'
 
 // ============================================================================
 // Types
@@ -146,6 +147,8 @@ export function ShiftModal({
   companyId,
   onSuccess,
 }: ShiftModalProps) {
+  const isImpersonating = useIsImpersonating()
+
   // Charger les données du formulaire
   const {
     employees,
@@ -920,7 +923,10 @@ export function ShiftModal({
                 type="button"
                 variant="destructive"
                 onClick={() => void handleDelete()}
-                disabled={isDeleting || isSubmitting}
+                disabled={isDeleting || isSubmitting || isImpersonating}
+                title={
+                  isImpersonating ? 'Non disponible en mode support' : undefined
+                }
                 data-testid="shift-delete-button"
                 className="mr-auto"
               >
@@ -943,7 +949,12 @@ export function ShiftModal({
             <Button
               type="submit"
               data-testid="shift-save-button"
-              disabled={isSubmitting || isDeleting || isLoadingData}
+              disabled={
+                isSubmitting || isDeleting || isLoadingData || isImpersonating
+              }
+              title={
+                isImpersonating ? 'Non disponible en mode support' : undefined
+              }
               variant={hasHardConflict ? 'destructive' : 'default'}
             >
               {isSubmitting && (

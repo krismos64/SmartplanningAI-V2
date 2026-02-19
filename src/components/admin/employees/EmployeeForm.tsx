@@ -47,6 +47,7 @@ import {
 import { Switch } from '@/components/ui/switch'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
+import { useIsImpersonating } from '@/hooks'
 import { useCrudMutation } from '@/hooks/use-crud-mutation'
 import { type EmployeeWithCounts } from '@/lib/validations/employee'
 import { createEmployee, updateEmployee } from '@/lib/actions/employees'
@@ -112,6 +113,7 @@ export function EmployeeForm({
   onCancel,
 }: EmployeeFormProps) {
   const router = useRouter()
+  const isImpersonating = useIsImpersonating()
   const isEditing = !!employee
 
   // Hook mutation pour create
@@ -459,7 +461,13 @@ export function EmployeeForm({
           >
             Annuler
           </Button>
-          <Button type="submit" disabled={isPending}>
+          <Button
+            type="submit"
+            disabled={isPending || isImpersonating}
+            title={
+              isImpersonating ? 'Non disponible en mode support' : undefined
+            }
+          >
             {isPending
               ? isEditing
                 ? 'Modification...'

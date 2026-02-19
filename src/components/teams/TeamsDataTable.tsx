@@ -60,6 +60,7 @@ import {
   formatMembersCount,
   getFullName,
 } from '@/lib/validations/team'
+import { useIsImpersonating } from '@/hooks'
 import { TeamCard } from './TeamCard'
 
 // ============================================================================
@@ -81,7 +82,7 @@ interface TeamsDataTableProps {
 // Colonnes du tableau
 // ============================================================================
 
-const columns: ColumnDef<TeamWithCounts>[] = [
+const getColumns = (isImpersonating: boolean): ColumnDef<TeamWithCounts>[] => [
   {
     accessorKey: 'name',
     header: ({ column }) => (
@@ -208,27 +209,57 @@ const columns: ColumnDef<TeamWithCounts>[] = [
                 Voir les détails
               </Link>
             </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link
-                href={`/app/director/teams/${team.id}/edit`}
-                className="flex items-center"
-              >
-                <Edit className="mr-2 h-4 w-4" />
-                Modifier
-              </Link>
+            <DropdownMenuItem
+              asChild={!isImpersonating}
+              disabled={isImpersonating}
+              title={
+                isImpersonating ? 'Non disponible en mode support' : undefined
+              }
+            >
+              {isImpersonating ? (
+                <span className="flex items-center">
+                  <Edit className="mr-2 h-4 w-4" />
+                  Modifier
+                </span>
+              ) : (
+                <Link
+                  href={`/app/director/teams/${team.id}/edit`}
+                  className="flex items-center"
+                >
+                  <Edit className="mr-2 h-4 w-4" />
+                  Modifier
+                </Link>
+              )}
             </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link
-                href={`/app/director/teams/${team.id}/members`}
-                className="flex items-center"
-              >
-                <Users className="mr-2 h-4 w-4" />
-                Gérer les membres
-              </Link>
+            <DropdownMenuItem
+              asChild={!isImpersonating}
+              disabled={isImpersonating}
+              title={
+                isImpersonating ? 'Non disponible en mode support' : undefined
+              }
+            >
+              {isImpersonating ? (
+                <span className="flex items-center">
+                  <Users className="mr-2 h-4 w-4" />
+                  Gérer les membres
+                </span>
+              ) : (
+                <Link
+                  href={`/app/director/teams/${team.id}/members`}
+                  className="flex items-center"
+                >
+                  <Users className="mr-2 h-4 w-4" />
+                  Gérer les membres
+                </Link>
+              )}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
               className="text-destructive focus:text-destructive"
+              disabled={isImpersonating}
+              title={
+                isImpersonating ? 'Non disponible en mode support' : undefined
+              }
               onClick={() => {
                 // Le callback onDelete sera géré par le parent
                 const event = new CustomEvent('team-delete', {
@@ -257,6 +288,7 @@ export function TeamsDataTable({
   isDeleting: _isDeleting = false,
   showCreateButton = true,
 }: TeamsDataTableProps) {
+  const isImpersonating = useIsImpersonating()
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
@@ -264,6 +296,9 @@ export function TeamsDataTable({
 
   // Memoize les données pour éviter les re-renders
   const data = useMemo(() => teams, [teams])
+
+  // Memoize les colonnes avec le flag impersonation
+  const columns = useMemo(() => getColumns(isImpersonating), [isImpersonating])
 
   const table = useReactTable({
     data,
@@ -328,14 +363,20 @@ export function TeamsDataTable({
             className="pl-10"
           />
         </div>
-        {showCreateButton && (
-          <Button asChild>
-            <Link href="/app/director/teams/new">
+        {showCreateButton &&
+          (isImpersonating ? (
+            <Button disabled title="Non disponible en mode support">
               <Plus className="mr-2 h-4 w-4" />
               Nouvelle équipe
-            </Link>
-          </Button>
-        )}
+            </Button>
+          ) : (
+            <Button asChild>
+              <Link href="/app/director/teams/new">
+                <Plus className="mr-2 h-4 w-4" />
+                Nouvelle équipe
+              </Link>
+            </Button>
+          ))}
       </div>
 
       {/* Table desktop */}
@@ -385,14 +426,25 @@ export function TeamsDataTable({
                     <p className="text-muted-foreground">
                       Aucune équipe trouvée
                     </p>
-                    {showCreateButton && (
-                      <Button variant="outline" size="sm" asChild>
-                        <Link href="/app/director/teams/new">
+                    {showCreateButton &&
+                      (isImpersonating ? (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled
+                          title="Non disponible en mode support"
+                        >
                           <Plus className="mr-2 h-4 w-4" />
                           Créer une équipe
-                        </Link>
-                      </Button>
-                    )}
+                        </Button>
+                      ) : (
+                        <Button variant="outline" size="sm" asChild>
+                          <Link href="/app/director/teams/new">
+                            <Plus className="mr-2 h-4 w-4" />
+                            Créer une équipe
+                          </Link>
+                        </Button>
+                      ))}
                   </div>
                 </TableCell>
               </TableRow>
@@ -418,14 +470,25 @@ export function TeamsDataTable({
           <div className="flex flex-col items-center justify-center gap-2 py-12">
             <Users className="h-8 w-8 text-muted-foreground" />
             <p className="text-muted-foreground">Aucune équipe trouvée</p>
-            {showCreateButton && (
-              <Button variant="outline" size="sm" asChild>
-                <Link href="/app/director/teams/new">
+            {showCreateButton &&
+              (isImpersonating ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled
+                  title="Non disponible en mode support"
+                >
                   <Plus className="mr-2 h-4 w-4" />
                   Créer une équipe
-                </Link>
-              </Button>
-            )}
+                </Button>
+              ) : (
+                <Button variant="outline" size="sm" asChild>
+                  <Link href="/app/director/teams/new">
+                    <Plus className="mr-2 h-4 w-4" />
+                    Créer une équipe
+                  </Link>
+                </Button>
+              ))}
           </div>
         )}
       </div>

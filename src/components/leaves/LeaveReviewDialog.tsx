@@ -4,6 +4,7 @@ import type { LeaveRequest, LeaveRequestStatus } from '@prisma/client'
 import { useState, useCallback } from 'react'
 import { reviewLeaveRequest } from '@/lib/actions/leaves'
 import { useCrudMutation } from '@/hooks/use-crud-mutation'
+import { useIsImpersonating } from '@/hooks'
 import {
   Dialog,
   DialogContent,
@@ -45,6 +46,7 @@ export function LeaveReviewDialog({
   request,
   onSuccess,
 }: LeaveReviewDialogProps) {
+  const isImpersonating = useIsImpersonating()
   const [comment, setComment] = useState('')
   const [commentError, setCommentError] = useState('')
 
@@ -132,7 +134,10 @@ export function LeaveReviewDialog({
           <Button
             variant="destructive"
             onClick={handleReject}
-            disabled={isPending}
+            disabled={isPending || isImpersonating}
+            title={
+              isImpersonating ? 'Non disponible en mode support' : undefined
+            }
             data-testid="reject-button"
           >
             <XCircle className="mr-1 h-4 w-4" />
@@ -140,7 +145,10 @@ export function LeaveReviewDialog({
           </Button>
           <Button
             onClick={handleApprove}
-            disabled={isPending}
+            disabled={isPending || isImpersonating}
+            title={
+              isImpersonating ? 'Non disponible en mode support' : undefined
+            }
             className="bg-green-600 hover:bg-green-700"
             data-testid="approve-button"
           >
