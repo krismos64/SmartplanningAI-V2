@@ -14,7 +14,7 @@ Ce document trace l'historique complet des tests réalisés sur SmartPlanning. I
 | Pipeline CI/CD       | GitHub Actions                                         |
 | Responsable          | Christophe Mostefaoui                                  |
 | Date de création     | 4 décembre 2025                                        |
-| Dernière mise à jour | 18 février 2026 (Audit System SP-442→446 + User Activity SP-463, 5760 unitaires + 575 E2E) |
+| Dernière mise à jour | 19 février 2026 (Impersonation E2E + Unit Tests SP-456, 5770 unitaires + 584 E2E) |
 
 ---
 
@@ -34,8 +34,8 @@ Dans le cadre du diplôme **CDA (Concepteur Développeur d'Applications)**, ce c
 | Métrique              | Objectif  | Atteint  |
 | --------------------- | --------- | -------- |
 | Couverture globale    | ≥ 70%     | ✅ 86.35% |
-| Tests unitaires       | ≥ 500     | ✅ 5760   |
-| Tests E2E             | ≥ 50      | ✅ 575 (39 fichiers)   |
+| Tests unitaires       | ≥ 500     | ✅ 5770   |
+| Tests E2E             | ≥ 50      | ✅ 584 (40 fichiers)   |
 | Score Lighthouse A11y | ≥ 90%     | ✅ 95%   |
 | Anomalies critiques   | 0 en prod | ✅ 0     |
 
@@ -450,6 +450,75 @@ it('should send email', async () => {
 
 **Apprentissage** : Pour mocker des modules ESM dans Vitest, utiliser `vi.doMock()` (non hoisté) + `vi.resetModules()` + import dynamique `await import()`.
 
+### Difficulté 6 : Boucle redirect infinie et updateSession() NextAuth v5 (Sprint 19) 🆕
+
+**Contexte** : Sprint 19, développement des tests E2E impersonation (SP-456). Le mode impersonation permet au SYSTEM_ADMIN de "voir l'espace client" d'une entreprise.
+
+**Symptôme 1** : `ERR_TOO_MANY_REDIRECTS` lors du démarrage de l'impersonation. L'utilisateur est pris dans une boucle infinie de redirections.
+
+**Investigation** :
+
+- Tracé de la chaîne de redirection : `/app/dashboard` → `/app/director/dashboard` (RBAC role redirect) → `/app/dashboard/billing` (subscription guard) → `/app/dashboard` (impersonation guard) → boucle ∞
+- En impersonation, le JWT SYSTEM_ADMIN est modifié avec le rôle DIRECTOR, mais les champs subscription (`subscriptionStatus`, `trialEndsAt`, `currentPeriodEnd`) restent `null`
+- Le subscription guard (SP-440) interprète `null` comme "pas d'abonnement" → redirige vers billing
+- L'impersonation guard bloque la route billing en mode impersonation → redirige vers dashboard
+
+**Solution (ANO-028)** :
+
+```typescript
+// auth.config.ts — Avant le subscription guard (étape 8)
+let isImpersonating = false
+try {
+  const impCookie = request.cookies.get(IMPERSONATION_COOKIE_NAME)
+  if (impCookie?.value) {
+    const parsed: unknown = JSON.parse(impCookie.value)
+    if (typeof parsed === 'object' && parsed !== null && 'originalAdminId' in parsed) {
+      isImpersonating = true
+    }
+  }
+} catch { /* Cookie invalide */ }
+
+if (!isImpersonating) {
+  const subscriptionCheck = checkSubscriptionAccess({ ... })
+  if (!subscriptionCheck.allowed) {
+    return Response.redirect(billingUrl)
+  }
+}
+```
+
+**Symptôme 2** : Bannière impersonation invisible après démarrage. Le layout.tsx lit `session.user.isImpersonating` qui est `false`.
+
+**Investigation** :
+
+- `updateSession()` NextAuth v5 échoue avec `ClientFetchError: Failed to fetch`
+- Le JWT n'est jamais mis à jour avec `isImpersonating: true`
+- Le Server Component layout lit le JWT via `auth()` → `session.user.isImpersonating === false`
+- Le cookie `sp-impersonation` est bien posé côté serveur, mais n'est pas lu par le layout
+
+**Solution (ANO-029)** :
+
+```typescript
+// layout.tsx — Fallback cookie quand JWT non mis à jour
+if (session.user.isImpersonating) {
+  impersonationData = { /* ... depuis le JWT */ }
+} else {
+  // SP-456 : fallback cookie pour robustesse
+  try {
+    const cookieStore = await cookies()
+    const impCookie = cookieStore.get(IMPERSONATION_COOKIE_NAME)
+    if (impCookie?.value) {
+      const ctx = JSON.parse(decodeURIComponent(impCookie.value)) as ImpersonationContext
+      const isExpired = ctx.startedAt && Date.now() - ctx.startedAt > 3600 * 1000
+      if (ctx.originalAdminId && ctx.targetCompanyName && !isExpired) {
+        impersonationData = { isImpersonating: true, /* ... depuis le cookie */ }
+      }
+    }
+  } catch { /* Cookie invalide */ }
+}
+```
+
+**Apprentissage** : NextAuth v5 `updateSession()` peut échouer silencieusement (`ClientFetchError`), surtout lors de changements de rôle dynamiques. Pour les fonctionnalités critiques qui modifient le contexte de session, toujours prévoir un fallback (cookie, base de données) indépendant du JWT. En tests E2E, `page.request.delete()` (Playwright API context) est plus fiable que `page.evaluate(fetch)` quand la page est en état instable.
+
 ---
 
 ## Stack de tests
@@ -472,6 +541,7 @@ Ce tableau recense chaque campagne de tests significative (mise en production, f
 
 | Date       | Sprint    | Version/Commit | Tests unitaires | Tests E2E  | Couverture | Statut  | Notes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | ---------- | --------- | -------------- | --------------- | ---------- | ---------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 19/02/2026 | Sprint 19 | SP-456         | 5770/5770 ✅    | 584/584 ✅ | ~86%       | ✅ PASS | 🆕 Impersonation E2E + unitaires. +10 tests unitaires API route (POST/DELETE), +9 tests E2E (parcours nominal, sécurité, cas limites, audit). POM ImpersonationPage. 2 corrections applicatives : bypass subscription guard impersonation (ANO-028) + fallback cookie layout bannière (ANO-029). Fix lint ESLint. Total : 6354 tests |
 | 18/02/2026 | Sprint 19 | SP-442→446, SP-463 | 5760/5760 ✅ | 575/575 ✅ | ~86%       | ✅ PASS | 🆕 Audit System (schema, service, injection, admin page, E2E) + User Activity page. +122 tests unitaires, +26 tests E2E. Migration Prisma add_audit_log. Total : 6335 tests |
 | 18/02/2026 | Sprint 19 | Consolidation  | 5638/5638 ✅    | 549/549 ✅   | ~86%       | ✅ PASS | 🔧 Consolidation E2E : 50→38 fichiers (suppression redondances, fusion suites similaires). Correction 38 tests command-palette sur tablets (data-testid desktop-search-button, Meta+k iPad). Alignement nightly : ajout job tests unitaires Vitest + 5 devices mobiles. Mise à jour commentaires CI/CD. Total : 6187 tests |
 | 15/02/2026 | Sprint 18 | Prod E2E       | 5638/5638 ✅    | 1018/1018 ✅ | ~86%       | ✅ PASS | 🔧 Migration E2E CI/nightly vers mode production (`npm run start`). Résolution définitive ANO-026 : CSP `upgrade-insecure-requests` conditionnel, env vars `AUTH_URL`/`AUTH_SECRET`/`AUTH_TRUST_HOST` pour NextAuth v5 sur HTTP localhost, étape `npm run build` ajoutée aux workflows. 5 fichiers modifiés. Total : 6656 tests |
@@ -582,6 +652,106 @@ Ce tableau recense chaque campagne de tests significative (mise en production, f
 | 09/12/2025 | Sprint 5  | SP-141         | 570/570 ✅      | 59/59 ✅   | ~85%       | ✅ PASS | SP-141 Tests E2E Auth. +18 tests Playwright login/register                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | 05/12/2025 | Sprint 4  | SP-126         | 474/474 ✅      | 12/12 ✅   | 83.83%     | ✅ PASS | SP-126 Tests unitaires UI. 6 catégories                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | 04/12/2025 | Sprint 4  | SP-125         | 15/15 ✅        | 12/12 ✅   | ~70%       | ✅ PASS | Setup initial. Vitest + RTL + Playwright + MSW                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+
+---
+
+## Détail des tests Sprint 19 - Impersonation Mode (SP-456) 🆕
+
+### SP-456 : Tests E2E Impersonation + Tests Unitaires API + Corrections applicatives (19 tests)
+
+**Objectif** : Tester le parcours complet du mode impersonation SYSTEM_ADMIN ("Voir espace client"), incluant le démarrage, la navigation en lecture seule, les restrictions de sécurité, les cas limites et l'audit trail. Découverte et correction de 2 bugs applicatifs pendant le développement des tests.
+
+| Suite de test                              | Tests unitaires | Tests E2E | Total  |
+| ------------------------------------------ | --------------- | --------- | ------ |
+| API POST /api/admin/impersonate            | 8               | —         | 8      |
+| API DELETE /api/admin/impersonate          | 2               | —         | 2      |
+| E2E Parcours nominal                       | —               | 2         | 2      |
+| E2E Restrictions sécurité                  | —               | 3         | 3      |
+| E2E Cas limites                            | —               | 3         | 3      |
+| E2E Audit trail                            | —               | 1         | 1      |
+| **Total**                                  | **10**          | **9**     | **19** |
+
+#### Fichiers créés
+
+| Fichier                                                    | Rôle                                          |
+| ---------------------------------------------------------- | --------------------------------------------- |
+| `src/app/api/admin/impersonate/__tests__/route.test.ts`    | 10 tests unitaires API POST + DELETE          |
+| `e2e/pages/impersonation.page.ts`                          | Page Object Model (POM) impersonation         |
+| `e2e/specs/impersonation/impersonation-flow.spec.ts`       | 9 tests E2E (4 suites)                        |
+
+#### Fichiers modifiés (corrections applicatives)
+
+| Fichier                    | Modification                                                                  |
+| -------------------------- | ----------------------------------------------------------------------------- |
+| `src/lib/auth.config.ts`   | Bypass subscription guard quand cookie `sp-impersonation` présent             |
+| `src/app/app/layout.tsx`   | Fallback lecture cookie pour bannière quand `updateSession()` NextAuth échoue |
+| `e2e/pages/index.ts`       | Barrel export ImpersonationPage                                               |
+
+#### Tests unitaires API (10 tests)
+
+**POST /api/admin/impersonate (8 tests)** :
+- 401 si non authentifié
+- 403 si rôle non SYSTEM_ADMIN (DIRECTOR)
+- 400 si body vide (ni targetUserId ni companyId)
+- 404 si aucun utilisateur actif dans la company
+- 400 si la cible est un SYSTEM_ADMIN (auto-impersonation bloquée)
+- 400 si la cible est désactivée (isActive: false)
+- 200 succès avec companyId → pose cookie + crée audit log start + retourne redirectTo
+- 200 succès avec targetUserId direct
+
+**DELETE /api/admin/impersonate (2 tests)** :
+- 400 si aucune impersonation active (cookie absent)
+- 200 succès → supprime cookie + crée audit log stop + retourne redirectTo `/app/admin/companies`
+
+**Pattern mocking** : `vi.hoisted()` pour auth, prisma, cookies, logAuditAction. Types `ImpersonateSuccessResponse` / `ImpersonateErrorResponse` pour éviter ESLint `no-unsafe-assignment`.
+
+#### Tests E2E (9 tests, 4 suites)
+
+**Parcours nominal (2 tests)** :
+- Démarre impersonation sur TechCorp → vérifie bannière orange visible avec nom entreprise → vérifie redirection dashboard lecture seule → stoppe impersonation → vérifie bannière disparue → retour `/app/admin/companies`
+- Vérifie que la bannière affiche "Mode support" avec le bon nom d'entreprise
+
+**Restrictions sécurité (3 tests)** :
+- Routes admin bloquées : `/app/admin/companies` → redirect `/app/dashboard` en mode impersonation
+- Route billing bloquée : `/app/dashboard/billing` → redirect `/app/dashboard` en mode impersonation
+- Isolation tenant : bannière affiche le nom de l'entreprise cible, pas l'email admin
+
+**Cas limites (3 tests)** :
+- Bannière persiste après rafraîchissement de page (cookie `sp-impersonation` persistant)
+- Suppression du cookie désactive le mode impersonation (stopImpersonation + navigation admin)
+- Impersonation d'un SYSTEM_ADMIN bloquée via API directe (status ≠ 200)
+
+**Audit trail (1 test)** :
+- Parcours complet génère POST start (capturé via `page.on('response')`, status 200) et DELETE stop (vérifié implicitement — `stopImpersonation()` throw si ≠ 200)
+
+#### Page Object Model (`ImpersonationPage`)
+
+**Locators** : `impersonation-banner`, `impersonation-banner-text`, `quit-impersonation-button`, heading Entreprises, indicateur chargement
+
+**`startImpersonation(companyName)`** :
+1. Navigue vers `/app/admin/companies` (waitUntil: domcontentloaded)
+2. Attend table + lignes de données + stabilisation React (500ms)
+3. Clique "Menu actions" de la ligne cible → attend menuitem "Voir espace client" (Radix portal)
+4. `Promise.all([waitForResponse POST, click])` — interception API
+5. Attend navigation vers dashboard + `reload()` (force layout à lire le cookie fallback)
+
+**`stopImpersonation()`** :
+1. `page.request.delete('/api/admin/impersonate')` (Playwright API context, pas page.evaluate)
+2. Suppression sélective cookies : `sp-impersonation`, `authjs.session-token`, `__Secure-authjs.session-token`, `authjs.csrf-token`
+3. Re-login admin via `loginAs(page, TEST_USERS.SYSTEM_ADMIN)`
+4. Navigation vers `/app/admin/companies`
+
+#### Corrections applicatives découvertes
+
+**Correction 1 — Subscription Guard Bypass (ANO-028)** :
+- **Symptôme** : `ERR_TOO_MANY_REDIRECTS` en mode impersonation
+- **Cause** : Le JWT SYSTEM_ADMIN n'a pas de données subscription → subscription guard redirige vers `/billing` → impersonation guard bloque `/billing` → redirect `/dashboard` → boucle ∞
+- **Fix** : Lecture du cookie `sp-impersonation` dans `auth.config.ts` avant le subscription guard. Si `originalAdminId` présent, skip la vérification subscription
+
+**Correction 2 — Layout Cookie Fallback** :
+- **Symptôme** : Bannière impersonation invisible après démarrage
+- **Cause** : `updateSession()` NextAuth v5 échoue avec `ClientFetchError: Failed to fetch` → JWT non mis à jour avec `isImpersonating: true`
+- **Fix** : Fallback lecture directe du cookie `sp-impersonation` dans le Server Component `layout.tsx` quand `session.user.isImpersonating` est false, avec vérification expiration (3600s) et validité (`originalAdminId` + `targetCompanyName`)
 
 ---
 
@@ -2094,6 +2264,8 @@ not-found.tsx (Server Component)
 | ANO-025 | 10/02/2026 | TooltipProvider obligatoire pour Radix Tooltip dans DataTable       | Mineure  | Wrapper `TooltipProvider` requis dans les tests de colonnes DataTable utilisant Radix Tooltip, sinon erreur runtime                                                                                 |
 | ANO-026 | 13/02/2026 | Tests nightly flaky : connection reset et timeouts CI               | Majeure  | Serveur `npm run dev` lent en CI GitHub Actions (3 workers parallèles). `net::ERR_CONNECTION_RESET` sur `page.goto('/login')`. Solution palliative (13/02) : retry 3x sur goto login, timeouts augmentés. **Résolution définitive (15/02)** : migration vers `npm run start` (mode production). 3 causes racines identifiées et corrigées : (1) cookies `secure: true` sur HTTP → `AUTH_URL=http://localhost:3000` désactive le préfixe `__Secure-`, (2) `trustHost` désactivé → `AUTH_TRUST_HOST=true`, (3) CSP `upgrade-insecure-requests` → rendu conditionnel selon protocole `AUTH_URL`. |
 | ANO-027 | 15/02/2026 | `ERR_TOO_MANY_REDIRECTS` en mode production sur HTTP localhost      | Majeure  | NextAuth v5 en `NODE_ENV=production` active cookies `__Secure-` (refusés sur HTTP), `trustHost=false` (rejette les requêtes localhost), et CSP `upgrade-insecure-requests` (force HTTP→HTTPS). Solution : env vars `AUTH_URL`, `AUTH_SECRET`, `AUTH_TRUST_HOST` + CSP conditionnel dans `next.config.ts`. |
+| ANO-028 | 19/02/2026 | Boucle redirect infinie en mode impersonation (`ERR_TOO_MANY_REDIRECTS`) | Majeure  | Le JWT SYSTEM_ADMIN n'a pas de données subscription (null). En impersonation, le subscription guard voit "pas d'abonnement" → redirige vers `/billing` → l'impersonation guard bloque `/billing` → redirect `/dashboard` → boucle ∞. Solution : bypass du subscription guard dans `auth.config.ts` quand le cookie `sp-impersonation` est présent avec `originalAdminId` valide. |
+| ANO-029 | 19/02/2026 | Bannière impersonation invisible après démarrage (NextAuth v5 updateSession) | Majeure  | `updateSession()` NextAuth v5 échoue avec `ClientFetchError: Failed to fetch` → le JWT n'est jamais mis à jour avec `isImpersonating: true` → `layout.tsx` lit `session.user.isImpersonating = false` → bannière non affichée. Solution : fallback lecture directe du cookie `sp-impersonation` dans le Server Component layout, avec vérification expiration 3600s et validité des champs. |
 
 ---
 
@@ -2160,8 +2332,9 @@ not-found.tsx (Server Component)
 | 13/02/2026 (Stabilisation) | 5638            | 1018      | 6656  | ~86%       | 🔧 +1 / Fixes E2E   |
 | 18/02/2026 (Consolidation) | 5638            | 549       | 6187  | ~86%       | 🔧 Consolidation 50→38 fichiers E2E, fix tablets, nightly complet |
 | 18/02/2026 (SP-442→446, SP-463) | 5760       | 575       | 6335  | ~86%       | 🆕 Audit System (schema, service, injection, logs, E2E) + User Activity page. +122 unitaires, +26 E2E |
+| 19/02/2026 (SP-456)             | 5770       | 584       | 6354  | ~86%       | 🆕 Impersonation E2E + unitaires. +10 unitaires (API route), +9 E2E (4 suites). 2 corrections applicatives (subscription guard bypass + layout cookie fallback). ANO-028/029 |
 
-**Graphique d'évolution** : De 27 tests (04/12) à 6335 tests (18/02) — Audit System + User Activity 🚀
+**Graphique d'évolution** : De 27 tests (04/12) à 6354 tests (19/02) — Impersonation Mode SP-456 🚀
 
 ---
 
@@ -2171,11 +2344,11 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
 
 | N°  | Compétence                                                          | Preuve                                                                                                                                                                                                                                                                                                                                                  |
 | --- | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | Tester les composants d'une application                             | 5760 tests unitaires documentés                                                                                                                                                                                                                                                                                                                         |
-| 2   | Contribuer à la qualité du code                                     | Couverture 86.35%, anomalies tracées                                                                                                                                                                                                                                                                                                                    |
+| 1   | Tester les composants d'une application                             | 5770 tests unitaires documentés                                                                                                                                                                                                                                                                                                                         |
+| 2   | Contribuer à la qualité du code                                     | Couverture ~86%, anomalies tracées (29 anomalies)                                                                                                                                                                                                                                                                                                       |
 | 3   | Documenter les procédures                                           | Procédure de recette formalisée                                                                                                                                                                                                                                                                                                                         |
 | 4   | Utiliser une méthodologie                                           | Approche structurée par sprints                                                                                                                                                                                                                                                                                                                         |
-| 5   | Développer des tests automatisés                                    | 6335 tests (5760 unitaires + 575 E2E, 39 fichiers)                                                                                                                                                                                                                                                                                                      |
+| 5   | Développer des tests automatisés                                    | 6354 tests (5770 unitaires + 584 E2E, 40 fichiers)                                                                                                                                                                                                                                                                                                      |
 | 6   | Sécuriser une application                                           | Tests RBAC (92 unitaires, 27 E2E), rate limiting, protection énumération                                                                                                                                                                                                                                                                                |
 | 7   | Concevoir une architecture logicielle                               | Pattern ServiceResult<T>, multi-tenant                                                                                                                                                                                                                                                                                                                  |
 | 8   | Développer des composants métier                                    | 4 dashboards par rôle                                                                                                                                                                                                                                                                                                                                   |
@@ -2247,6 +2420,7 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
 | 74  | Atteindre une couverture de test > 85% avec stratégie ciblée               | Identification composants 0% couverture via rapport coverage v8, création de 20 fichiers de tests ciblés (+387 tests), résolution anomalies MSW/Radix. Couverture 80.38% → 86.35% (SP-460) 🆕 |
 | 75  | Implémenter un journal d'audit complet avec protection anti-injection      | Modèle Prisma AuditLog (9 actions, 10 entités), service fire-and-forget, sanitization HTML/SQL/NoSQL/XSS, Server Actions RBAC paginées avec filtres, export CSV, page admin DataTable TanStack. 105 tests unitaires + 26 tests E2E (SP-442→446) 🆕 |
 | 76  | Implémenter une page d'activité utilisateur avec timeline relative         | Server Action getUserActivity avec isolation userId JWT, page `/app/profile/activity` timeline `Intl.RelativeTimeFormat('fr')`, navigation Header dropdown + ProfileActions. 17 tests unitaires (SP-463) 🆕 |
+| 77  | Tester un mode impersonation avec corrections applicatives découvertes     | 10 tests unitaires API route (POST/DELETE) + 9 tests E2E (parcours nominal, sécurité, cas limites, audit trail). Page Object Model ImpersonationPage. Découverte et correction de 2 bugs applicatifs : boucle redirect infinie subscription guard (ANO-028) + bannière invisible NextAuth v5 updateSession failure (ANO-029). Bypass middleware + fallback cookie Server Component (SP-456) 🆕 |
 
 ---
 
@@ -2314,6 +2488,7 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
 
 | Date       | Modification                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 19/02/2026 | 🆕 Sprint 19 — Impersonation E2E + Unit Tests (SP-456) : Tests mode impersonation SYSTEM_ADMIN "Voir espace client". **10 tests unitaires** API route (`route.test.ts`) : POST (8 tests — auth, RBAC, body vide, company sans user, cible SYSTEM_ADMIN, cible désactivée, succès companyId/targetUserId) + DELETE (2 tests — aucune impersonation active, succès). **9 tests E2E** (`impersonation-flow.spec.ts`, 4 suites) : parcours nominal start→navigate→stop (2), restrictions sécurité routes admin/billing/isolation tenant (3), cas limites persistence cookie/suppression/auto-impersonation bloquée (3), audit trail POST+DELETE (1). **Page Object Model** `ImpersonationPage` : startImpersonation (UI dropdown → API interception → reload fallback), stopImpersonation (API DELETE → clear cookies sélectif → re-login admin). **2 corrections applicatives** : (1) bypass subscription guard en impersonation dans `auth.config.ts` (ANO-028 boucle redirect ∞), (2) fallback cookie `sp-impersonation` dans `layout.tsx` pour bannière (ANO-029 updateSession NextAuth v5 ClientFetchError). Fix lint ESLint `no-unsafe-assignment` sur `response.json()`. Compétence CDA #77 ajoutée. Total : 6354 tests (5770 unitaires + 584 E2E, 40 fichiers) |
 | 18/02/2026 | 🆕 Sprint 19 — Audit System (SP-442→446) + User Activity (SP-463) : Migration Prisma `add_audit_log` (table AuditLog, enums AuditAction 9 valeurs + AuditEntityType 10 valeurs). Service `logAuditAction` fire-and-forget. Protection anti-injection (sanitization HTML/SQL/NoSQL/XSS). Page admin `/app/admin/logs` DataTable TanStack (filtres, pagination serveur, export CSV, modal détail). Page `/app/profile/activity` timeline relative française. +122 tests unitaires (audit-schema 30, audit.service 22, audit-injection 20, audit-logs 33, getUserActivity 17) + 26 tests E2E (audit-logs.spec.ts). Fix E2E exact:true filter + detail modal skip. Fix lint CI (prettier + ESLint). Total : 6335 tests (5760 unitaires + 575 E2E, 39 fichiers) |
 | 18/02/2026 | 🔧 Consolidation E2E 50→38 fichiers (suppression redondances, fusion error-pages/account-actions/billing). Correction 38 tests command-palette échouant sur tablets (data-testid desktop-search-button, Meta+k au lieu de Control+k). Alignement workflow nightly : ajout job tests unitaires Vitest (~5638), ajout 5 devices mobiles (iPhone SE, 14 Pro, Pixel 7, iPad Mini, iPad Pro 11"). Mise à jour commentaires CI/CD avec chiffres actuels. Total : 6187 tests (5638 unitaires + 549 E2E) |
 | 15/02/2026 | 🔧 Migration E2E CI/nightly vers mode production (ANO-027) : `playwright.ci.config.ts` et `playwright.nightly.config.ts` passent de `npm run dev` à `npm run start`. 3 causes racines `ERR_TOO_MANY_REDIRECTS` identifiées et corrigées : (1) `next.config.ts` CSP `upgrade-insecure-requests` rendu conditionnel via `isHttps` (basé sur `AUTH_URL`/`NEXTAUTH_URL`), (2) `ci.yml` et `nightly-e2e.yml` ajout env vars `AUTH_URL=http://localhost:3000`, `AUTH_SECRET`, `AUTH_TRUST_HOST=true` + étape `npm run build`, (3) timeout E2E CI augmenté 25→30 min. 5 fichiers modifiés. Gains : tests plus rapides, plus fiables (pas de Strict Mode double mount), représentatifs de la production |
@@ -2430,7 +2605,15 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
   - Page `/app/profile/activity` Server Component avec `UserActivityTimeline` (timeline relative française `Intl.RelativeTimeFormat`)
   - Navigation : lien "Mon activité" dans Header dropdown + bouton dans ProfileActions
   - **Tests** : 17 tests unitaires (getUserActivity) — auth, RBAC 4 rôles, isolation userId, pagination, filtre action, résultats vides, transformation, erreur DB
-  - **Bilan Sprint 19** : +122 tests unitaires, +26 tests E2E. Total : 6335 tests (5760 unitaires + 575 E2E, 39 fichiers)
+  - **Bilan Sprint 19 (phase 1)** : +122 tests unitaires, +26 tests E2E. Total : 6335 tests (5760 unitaires + 575 E2E, 39 fichiers)
+
+- SP-456 : Tests E2E Impersonation + Tests Unitaires API ✅ TERMINÉ
+  - **Tests unitaires** : 10 tests (`src/app/api/admin/impersonate/__tests__/route.test.ts`) — POST (401 auth, 403 RBAC, 400 body vide, 404 company vide, 400 cible SYSTEM_ADMIN, 400 cible désactivée, 200 succès companyId, 200 succès targetUserId) + DELETE (400 aucune impersonation, 200 succès)
+  - **Tests E2E** : 9 tests (`e2e/specs/impersonation/impersonation-flow.spec.ts`) — parcours nominal (2), restrictions sécurité (3), cas limites (3), audit trail (1)
+  - **Page Object** : `e2e/pages/impersonation.page.ts` — startImpersonation (UI dropdown Radix → API interception `Promise.all` → reload fallback cookie), stopImpersonation (`page.request.delete()` → clear cookies sélectif → re-login admin)
+  - **Correction applicative** : bypass subscription guard dans `auth.config.ts` quand cookie `sp-impersonation` présent (ANO-028)
+  - **Correction applicative** : fallback cookie dans `layout.tsx` quand `updateSession()` NextAuth v5 échoue (ANO-029)
+  - **Bilan Sprint 19 (phase 2)** : +10 tests unitaires, +9 tests E2E. Total : 6354 tests (5770 unitaires + 584 E2E, 40 fichiers)
 
 ### Sprint 18 - Nettoyage Final & Couverture 86% (SP-460) 🆕
 
