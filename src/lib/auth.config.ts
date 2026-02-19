@@ -336,24 +336,46 @@ export const authConfig: NextAuthConfig = {
       // S'applique aux routes /app/* pour les utilisateurs connectés
       // Les routes exemptées (billing, profile, settings) et SYSTEM_ADMIN
       // sont gérés dans checkSubscriptionAccess (function pure)
+      // SP-456 : Bypass en mode impersonation (le SYSTEM_ADMIN a un accès
+      // lecture seule, les données subscription JWT sont celles de l'admin
+      // pas de la company impersonnée → bloquerait à tort)
       if (isLoggedIn && isAppRoute) {
-        const subscriptionCheck = checkSubscriptionAccess({
-          role: (userRole as string) ?? '',
-          subscriptionStatus: auth?.user?.subscriptionStatus ?? null,
-          trialEndsAt: auth?.user?.trialEndsAt ?? null,
-          currentPeriodEnd: auth?.user?.currentPeriodEnd ?? null,
-          pathname,
-        })
-
-        if (!subscriptionCheck.allowed) {
-          const billingUrl = new URL('/app/dashboard/billing', nextUrl)
-          if (subscriptionCheck.redirectReason) {
-            billingUrl.searchParams.set(
-              'reason',
-              subscriptionCheck.redirectReason
-            )
+        let isImpersonating = false
+        try {
+          const impCookie = request.cookies.get(IMPERSONATION_COOKIE_NAME)
+          if (impCookie?.value) {
+            const parsed: unknown = JSON.parse(impCookie.value)
+            if (
+              typeof parsed === 'object' &&
+              parsed !== null &&
+              'originalAdminId' in parsed
+            ) {
+              isImpersonating = true
+            }
           }
-          return Response.redirect(billingUrl)
+        } catch {
+          // Cookie invalide — ne pas bypasser
+        }
+
+        if (!isImpersonating) {
+          const subscriptionCheck = checkSubscriptionAccess({
+            role: (userRole as string) ?? '',
+            subscriptionStatus: auth?.user?.subscriptionStatus ?? null,
+            trialEndsAt: auth?.user?.trialEndsAt ?? null,
+            currentPeriodEnd: auth?.user?.currentPeriodEnd ?? null,
+            pathname,
+          })
+
+          if (!subscriptionCheck.allowed) {
+            const billingUrl = new URL('/app/dashboard/billing', nextUrl)
+            if (subscriptionCheck.redirectReason) {
+              billingUrl.searchParams.set(
+                'reason',
+                subscriptionCheck.redirectReason
+              )
+            }
+            return Response.redirect(billingUrl)
+          }
         }
       }
 
