@@ -35,6 +35,7 @@ import type {
   ListActionResult,
   ListQueryParams,
 } from '@/types'
+import { assertNotImpersonating } from '@/lib/impersonation'
 
 // ============================================================================
 // Types
@@ -318,6 +319,9 @@ export async function createCompany(
   data: CreateCompanyInput
 ): Promise<CrudActionResult<CompanyDetail>> {
   return withRoleCheck('SYSTEM_ADMIN', async (user) => {
+    const impersonationBlock = await assertNotImpersonating()
+    if (impersonationBlock) return impersonationBlock
+
     // Validation Zod
     const validation = validateData(createCompanySchema, data)
     if (!validation.success) {
@@ -409,6 +413,9 @@ export async function updateCompany(
   data: UpdateCompanyInput
 ): Promise<CrudActionResult<CompanyDetail>> {
   return withRoleCheck('SYSTEM_ADMIN', async (user) => {
+    const impersonationBlock = await assertNotImpersonating()
+    if (impersonationBlock) return impersonationBlock
+
     // Validation Zod
     const validation = validateData(updateCompanySchema, data)
     if (!validation.success) {
@@ -511,6 +518,9 @@ export async function updateCompany(
 export async function deleteCompany(id: string): Promise<DeleteActionResult> {
   try {
     const authResult = await withRoleCheck('SYSTEM_ADMIN', async (user) => {
+      const impersonationBlock = await assertNotImpersonating()
+      if (impersonationBlock) return impersonationBlock
+
       // Vérifie que la Company existe
       const company = await prisma.company.findUnique({
         where: { id },
@@ -577,6 +587,9 @@ export async function toggleCompanyStatus(
   isActive: boolean
 ): Promise<CrudActionResult<CompanyDetail>> {
   return withRoleCheck('SYSTEM_ADMIN', async (user) => {
+    const impersonationBlock = await assertNotImpersonating()
+    if (impersonationBlock) return impersonationBlock
+
     const company = await prisma.company.update({
       where: { id },
       data: { isActive },

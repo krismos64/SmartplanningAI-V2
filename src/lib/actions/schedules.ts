@@ -33,6 +33,7 @@ import {
   MAX_TOTAL_SCHEDULES,
   type RecurrenceRule,
 } from '@/lib/utils/recurrence'
+import { assertNotImpersonating } from '@/lib/impersonation'
 
 // ============================================================================
 // Types
@@ -506,6 +507,9 @@ export async function createSchedule(
     return { success: false, error: authResult.error }
   }
 
+  const impersonationBlock = await assertNotImpersonating()
+  if (impersonationBlock) return impersonationBlock
+
   const user = authResult.user
 
   // Verifier le role (EMPLOYEE et SYSTEM_ADMIN ne peuvent pas creer)
@@ -700,6 +704,9 @@ export async function updateSchedule(
     return { success: false, error: authResult.error }
   }
 
+  const impersonationBlock = await assertNotImpersonating()
+  if (impersonationBlock) return impersonationBlock
+
   const user = authResult.user
 
   try {
@@ -807,6 +814,9 @@ export async function deleteSchedule(id: string): Promise<DeleteActionResult> {
     return { success: false, error: authResult.error }
   }
 
+  const impersonationBlock = await assertNotImpersonating()
+  if (impersonationBlock) return impersonationBlock
+
   const user = authResult.user
 
   try {
@@ -860,6 +870,9 @@ export async function deleteScheduleGroup(
   if (!authResult.success) {
     return { success: false, error: authResult.error }
   }
+
+  const impersonationBlock = await assertNotImpersonating()
+  if (impersonationBlock) return impersonationBlock
 
   const user = authResult.user
 
@@ -924,6 +937,9 @@ export async function duplicateSchedule(
   if (!authResult.success) {
     return { success: false, error: authResult.error }
   }
+
+  const impersonationBlock = await assertNotImpersonating()
+  if (impersonationBlock) return impersonationBlock
 
   const user = authResult.user
 
@@ -1068,6 +1084,9 @@ export async function updateScheduleStatus(
   if (!authResult.success) {
     return { success: false, error: authResult.error }
   }
+
+  const impersonationBlock = await assertNotImpersonating()
+  if (impersonationBlock) return impersonationBlock
 
   const user = authResult.user
 
@@ -1348,6 +1367,9 @@ export async function deleteRecurringSchedules(
     return { success: false, error: authResult.error }
   }
 
+  const impersonationBlock = await assertNotImpersonating()
+  if (impersonationBlock) return impersonationBlock
+
   const user = authResult.user
 
   try {
@@ -1507,6 +1529,9 @@ export async function updateRecurringSchedules(
   if (!authResult.success) {
     return { success: false, error: authResult.error }
   }
+
+  const impersonationBlock = await assertNotImpersonating()
+  if (impersonationBlock) return impersonationBlock
 
   const user = authResult.user
 

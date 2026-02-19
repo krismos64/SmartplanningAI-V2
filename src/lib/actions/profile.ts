@@ -15,6 +15,7 @@ import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { hashPassword, verifyPassword } from '@/lib/password'
 import { logAuditAction } from '@/lib/services/audit'
+import { assertNotImpersonating } from '@/lib/impersonation'
 import {
   editProfileSchema,
   type EditProfileInput,
@@ -200,6 +201,9 @@ export async function updateProfile(
       return { success: false, error: 'Non authentifié' }
     }
 
+    const impersonationBlock = await assertNotImpersonating()
+    if (impersonationBlock) return impersonationBlock
+
     // 2. Valider les données entrantes
     const validation = editProfileSchema.safeParse(input)
     if (!validation.success) {
@@ -312,6 +316,9 @@ export async function changePassword(
     if (!session?.user?.id) {
       return { success: false, error: 'Non authentifié' }
     }
+
+    const impersonationBlock = await assertNotImpersonating()
+    if (impersonationBlock) return impersonationBlock
 
     // 2. Valider les données entrantes (double validation)
     const validation = changePasswordSchema.safeParse(input)
@@ -428,6 +435,9 @@ export async function deleteAccount(
         error: 'Vous devez être connecté pour supprimer votre compte',
       }
     }
+
+    const impersonationBlock = await assertNotImpersonating()
+    if (impersonationBlock) return impersonationBlock
 
     // 2. Valider les données d'entrée
     const validation = deleteAccountSchema.safeParse(input)

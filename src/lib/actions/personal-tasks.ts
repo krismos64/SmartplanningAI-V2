@@ -14,6 +14,7 @@ import { prisma } from '@/lib/prisma'
 import type { PersonalTask } from '@prisma/client'
 import { auth } from '@/lib/auth'
 import { validateData, handlePrismaError } from './crud-helpers'
+import { assertNotImpersonating } from '@/lib/impersonation'
 import {
   personalTaskCreateSchema,
   personalTaskUpdateSchema,
@@ -115,6 +116,9 @@ export async function createPersonalTask(
   if (!authResult.success) return { success: false, error: authResult.error }
   const { userId } = authResult
 
+  const impersonationBlock = await assertNotImpersonating()
+  if (impersonationBlock) return impersonationBlock
+
   // Validation Zod
   const validation = validateData(personalTaskCreateSchema, input)
   if (!validation.success) {
@@ -165,6 +169,9 @@ export async function updatePersonalTask(
   const authResult = await getAuthenticatedUserId()
   if (!authResult.success) return { success: false, error: authResult.error }
   const { userId } = authResult
+
+  const impersonationBlock = await assertNotImpersonating()
+  if (impersonationBlock) return impersonationBlock
 
   // Validation Zod
   const validation = validateData(personalTaskUpdateSchema, input)
@@ -222,6 +229,9 @@ export async function deletePersonalTask(id: string): Promise<DeleteResult> {
   if (!authResult.success) return { success: false, error: authResult.error }
   const { userId } = authResult
 
+  const impersonationBlock = await assertNotImpersonating()
+  if (impersonationBlock) return impersonationBlock
+
   try {
     // Vérifier que la tâche existe et appartient à l'utilisateur
     const existing = await prisma.personalTask.findUnique({
@@ -261,6 +271,9 @@ export async function togglePersonalTask(
   const authResult = await getAuthenticatedUserId()
   if (!authResult.success) return { success: false, error: authResult.error }
   const { userId } = authResult
+
+  const impersonationBlock = await assertNotImpersonating()
+  if (impersonationBlock) return impersonationBlock
 
   try {
     // Vérifier que la tâche existe et appartient à l'utilisateur
@@ -339,6 +352,9 @@ export async function reorderPersonalTasks(
   const authResult = await getAuthenticatedUserId()
   if (!authResult.success) return { success: false, error: authResult.error }
   const { userId } = authResult
+
+  const impersonationBlock = await assertNotImpersonating()
+  if (impersonationBlock) return impersonationBlock
 
   // Validation Zod
   const validation = validateData(personalTaskReorderSchema, { orderedIds })

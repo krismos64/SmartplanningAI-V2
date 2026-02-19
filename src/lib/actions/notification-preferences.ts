@@ -24,6 +24,7 @@ import { parseUserPreferences } from '@/lib/utils/preferences'
 import type { CrudActionResult } from '@/types'
 import type { NotificationPreferences } from '@/types/preferences'
 import { DEFAULT_NOTIFICATION_PREFERENCES } from '@/types/preferences'
+import { assertNotImpersonating } from '@/lib/impersonation'
 
 // ============================================================================
 // SERVER ACTIONS
@@ -95,6 +96,9 @@ export async function updateNotificationPreferences(
     if (!session?.user?.id) {
       return { success: false, error: 'Non authentifié' }
     }
+
+    const impersonationBlock = await assertNotImpersonating()
+    if (impersonationBlock) return impersonationBlock
 
     // Validation Zod
     const validation = updateNotificationPreferencesSchema.safeParse(input)
@@ -179,6 +183,9 @@ export async function resetNotificationPreferences(): Promise<
     if (!session?.user?.id) {
       return { success: false, error: 'Non authentifié' }
     }
+
+    const impersonationBlock = await assertNotImpersonating()
+    if (impersonationBlock) return impersonationBlock
 
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },

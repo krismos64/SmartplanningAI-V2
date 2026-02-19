@@ -37,6 +37,7 @@ import type {
   BillingPortalResult,
   BillingData,
 } from '@/types/stripe'
+import { assertNotImpersonating } from '@/lib/impersonation'
 
 // ============================================================================
 // Constantes
@@ -63,6 +64,9 @@ export async function createCheckoutAction(
   const authResult = await checkPermission('DIRECTOR')
   if (!authResult.success) return authResult
   const user = authResult.data
+
+  const impersonationBlock = await assertNotImpersonating()
+  if (impersonationBlock) return impersonationBlock
 
   // 2. Vérifier companyId (SYSTEM_ADMIN n'a pas de company)
   if (!user.companyId) {
@@ -126,6 +130,9 @@ export async function createBillingPortalAction(
   if (!authResult.success) return authResult
   const user = authResult.data
 
+  const impersonationBlock = await assertNotImpersonating()
+  if (impersonationBlock) return impersonationBlock
+
   if (!user.companyId) {
     return { success: false, error: 'Aucune entreprise associée à ce compte' }
   }
@@ -182,6 +189,9 @@ export async function updateSubscriptionQuantityAction(
   if (!authResult.success) return authResult
   const user = authResult.data
 
+  const impersonationBlock = await assertNotImpersonating()
+  if (impersonationBlock) return impersonationBlock
+
   if (!user.companyId) {
     return { success: false, error: 'Aucune entreprise associée à ce compte' }
   }
@@ -234,6 +244,9 @@ export async function cancelSubscriptionAction(
   const authResult = await checkPermission('DIRECTOR')
   if (!authResult.success) return authResult
   const user = authResult.data
+
+  const impersonationBlock = await assertNotImpersonating()
+  if (impersonationBlock) return impersonationBlock
 
   if (!user.companyId) {
     return { success: false, error: 'Aucune entreprise associée à ce compte' }

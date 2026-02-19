@@ -24,6 +24,7 @@ import {
   handlePrismaError,
 } from './crud-helpers'
 import { logAuditAction } from '@/lib/services/audit'
+import { assertNotImpersonating } from '@/lib/impersonation'
 import {
   createTeamSchema,
   updateTeamSchema,
@@ -477,6 +478,9 @@ export async function createTeam(
     }
   }
 
+  const impersonationBlock = await assertNotImpersonating()
+  if (impersonationBlock) return impersonationBlock
+
   const user = authResult.user
 
   // Verifie les permissions d'ecriture
@@ -621,6 +625,9 @@ export async function updateTeam(
       error: authResult.error,
     }
   }
+
+  const impersonationBlock = await assertNotImpersonating()
+  if (impersonationBlock) return impersonationBlock
 
   const user = authResult.user
 
@@ -768,6 +775,9 @@ export async function deleteTeam(id: string): Promise<DeleteActionResult> {
     }
   }
 
+  const impersonationBlock = await assertNotImpersonating()
+  if (impersonationBlock) return impersonationBlock
+
   const user = authResult.user
 
   // Verifie les permissions d'ecriture
@@ -851,6 +861,9 @@ export async function assignManager(
       error: authResult.error,
     }
   }
+
+  const impersonationBlock = await assertNotImpersonating()
+  if (impersonationBlock) return impersonationBlock
 
   const user = authResult.user
 
@@ -987,6 +1000,9 @@ export async function addTeamMember(
       error: authResult.error,
     }
   }
+
+  const impersonationBlock = await assertNotImpersonating()
+  if (impersonationBlock) return impersonationBlock
 
   const user = authResult.user
 
@@ -1137,6 +1153,9 @@ export async function removeTeamMember(
       error: authResult.error,
     }
   }
+
+  const impersonationBlock = await assertNotImpersonating()
+  if (impersonationBlock) return impersonationBlock
 
   const user = authResult.user
 

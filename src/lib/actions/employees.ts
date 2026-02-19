@@ -40,6 +40,7 @@ import type {
 } from '@/types'
 import { logAuditAction } from '@/lib/services/audit'
 import { syncEmployeeCountToStripe } from '@/lib/services/stripe'
+import { assertNotImpersonating } from '@/lib/impersonation'
 
 // ============================================================================
 // Types internes
@@ -449,6 +450,9 @@ export async function createEmployee(
     }
   }
 
+  const impersonationBlock = await assertNotImpersonating()
+  if (impersonationBlock) return impersonationBlock
+
   const user = authResult.user
 
   try {
@@ -625,6 +629,9 @@ export async function updateEmployee(
     }
   }
 
+  const impersonationBlock = await assertNotImpersonating()
+  if (impersonationBlock) return impersonationBlock
+
   const user = authResult.user
 
   try {
@@ -772,6 +779,9 @@ export async function deleteEmployee(id: string): Promise<DeleteActionResult> {
     }
   }
 
+  const impersonationBlock = await assertNotImpersonating()
+  if (impersonationBlock) return impersonationBlock
+
   const user = authResult.user
 
   // MANAGER ne peut pas supprimer
@@ -862,6 +872,9 @@ export async function toggleEmployeeStatus(
       error: authResult.error,
     }
   }
+
+  const impersonationBlock = await assertNotImpersonating()
+  if (impersonationBlock) return impersonationBlock
 
   const user = authResult.user
 
@@ -1142,6 +1155,9 @@ export async function bulkDeleteEmployees(
       error: authResult.error,
     }
   }
+
+  const impersonationBlock = await assertNotImpersonating()
+  if (impersonationBlock) return impersonationBlock
 
   const user = authResult.user
 

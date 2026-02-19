@@ -23,6 +23,7 @@ import {
   canAccessCompanyEntity,
 } from './crud-helpers'
 import { logAuditAction } from '@/lib/services/audit'
+import { assertNotImpersonating } from '@/lib/impersonation'
 import {
   incidentNoteCreateSchema,
   incidentNoteUpdateSchema,
@@ -231,6 +232,9 @@ export async function createIncidentNote(
   const authResult = await getAuthenticatedUser(WRITE_ROLES)
   if (!authResult.success) return { success: false, error: authResult.error }
   const { user } = authResult
+
+  const impersonationBlock = await assertNotImpersonating()
+  if (impersonationBlock) return impersonationBlock
 
   // Validation Zod
   const validation = validateData(incidentNoteCreateSchema, input)
@@ -459,6 +463,9 @@ export async function updateIncidentNote(
   if (!authResult.success) return { success: false, error: authResult.error }
   const { user } = authResult
 
+  const impersonationBlock = await assertNotImpersonating()
+  if (impersonationBlock) return impersonationBlock
+
   // Validation Zod
   const validation = validateData(incidentNoteUpdateSchema, input)
   if (!validation.success) {
@@ -542,6 +549,9 @@ export async function deleteIncidentNote(
   const authResult = await getAuthenticatedUser(WRITE_ROLES)
   if (!authResult.success) return { success: false, error: authResult.error }
   const { user } = authResult
+
+  const impersonationBlock = await assertNotImpersonating()
+  if (impersonationBlock) return impersonationBlock
 
   try {
     // Récupérer la note existante

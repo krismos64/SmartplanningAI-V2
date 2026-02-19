@@ -27,6 +27,7 @@ import {
   type UpdateAvailabilityInput,
 } from '@/lib/validations/availability'
 import type { CrudActionResult, DeleteActionResult } from '@/types'
+import { assertNotImpersonating } from '@/lib/impersonation'
 
 // ============================================================================
 // Types
@@ -412,6 +413,9 @@ export async function createAvailability(
     return { success: false, error: authResult.error }
   }
 
+  const impersonationBlock = await assertNotImpersonating()
+  if (impersonationBlock) return impersonationBlock
+
   const user = authResult.user
 
   // SYSTEM_ADMIN ne peut pas créer
@@ -542,6 +546,9 @@ export async function updateAvailability(
     return { success: false, error: authResult.error }
   }
 
+  const impersonationBlock = await assertNotImpersonating()
+  if (impersonationBlock) return impersonationBlock
+
   const user = authResult.user
 
   try {
@@ -636,6 +643,9 @@ export async function deleteAvailability(
   if (!authResult.success) {
     return { success: false, error: authResult.error }
   }
+
+  const impersonationBlock = await assertNotImpersonating()
+  if (impersonationBlock) return impersonationBlock
 
   const user = authResult.user
 
