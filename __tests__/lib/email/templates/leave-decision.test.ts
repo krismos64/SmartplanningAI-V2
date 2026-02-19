@@ -5,19 +5,30 @@
  * @description Tests de l'envoi des emails de décision de congé
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+
+// Mock statique — évite le resetModules + doMock + import dynamique
+// qui causait des timeouts (résolution de @react-email à chaque test)
+const mockSendEmail = vi.fn()
+
+vi.mock('@/lib/email', () => ({
+  sendEmail: (...args: unknown[]) => mockSendEmail(...args),
+}))
+
+vi.mock('@/lib/email/config', () => ({
+  getBaseUrl: () => 'https://smartplanning.fr',
+}))
+
+// Import statique — résolu une seule fois
+import {
+  formatDateFr,
+  getLeaveTypeLabel,
+  sendLeaveApprovedEmail,
+  sendLeaveRejectedEmail,
+} from '@/lib/email/templates/leave-decision'
 
 describe('leave-decision', () => {
-  const originalEnv = process.env
-
   beforeEach(() => {
-    vi.resetModules()
-    process.env = { ...originalEnv }
-    process.env.NEXT_PUBLIC_APP_URL = 'https://smartplanning.fr'
-  })
-
-  afterEach(() => {
-    process.env = originalEnv
     vi.clearAllMocks()
   })
 
@@ -26,22 +37,14 @@ describe('leave-decision', () => {
   // ==========================================================================
 
   describe('formatDateFr', () => {
-    it('devrait formater une date en français', async () => {
-      const { formatDateFr } = await import(
-        '@/lib/email/templates/leave-decision'
-      )
-
+    it('devrait formater une date en français', () => {
       const date = new Date('2026-01-15')
       const result = formatDateFr(date)
 
       expect(result).toBe('15 janvier 2026')
     })
 
-    it('devrait formater une date avec mois différent', async () => {
-      const { formatDateFr } = await import(
-        '@/lib/email/templates/leave-decision'
-      )
-
+    it('devrait formater une date avec mois différent', () => {
       const date = new Date('2026-12-25')
       const result = formatDateFr(date)
 
@@ -54,27 +57,15 @@ describe('leave-decision', () => {
   // ==========================================================================
 
   describe('getLeaveTypeLabel', () => {
-    it('devrait traduire PAID_LEAVE en Congés payés', async () => {
-      const { getLeaveTypeLabel } = await import(
-        '@/lib/email/templates/leave-decision'
-      )
-
+    it('devrait traduire PAID_LEAVE en Congés payés', () => {
       expect(getLeaveTypeLabel('PAID_LEAVE')).toBe('Congés payés')
     })
 
-    it('devrait traduire RTT correctement', async () => {
-      const { getLeaveTypeLabel } = await import(
-        '@/lib/email/templates/leave-decision'
-      )
-
+    it('devrait traduire RTT correctement', () => {
       expect(getLeaveTypeLabel('RTT')).toBe('RTT')
     })
 
-    it('devrait traduire SICK_LEAVE en Arrêt maladie', async () => {
-      const { getLeaveTypeLabel } = await import(
-        '@/lib/email/templates/leave-decision'
-      )
-
+    it('devrait traduire SICK_LEAVE en Arrêt maladie', () => {
       expect(getLeaveTypeLabel('SICK_LEAVE')).toBe('Arrêt maladie')
     })
   })
@@ -85,22 +76,10 @@ describe('leave-decision', () => {
 
   describe('sendLeaveApprovedEmail', () => {
     it('devrait appeler sendEmail avec le bon destinataire et sujet', async () => {
-      const mockSendEmail = vi.fn().mockResolvedValue({
+      mockSendEmail.mockResolvedValue({
         success: true,
         messageId: 'msg-approved-123',
       })
-
-      vi.doMock('@/lib/email', () => ({
-        sendEmail: mockSendEmail,
-      }))
-
-      vi.doMock('@/lib/email/config', () => ({
-        getBaseUrl: () => 'https://smartplanning.fr',
-      }))
-
-      const { sendLeaveApprovedEmail } = await import(
-        '@/lib/email/templates/leave-decision'
-      )
 
       const result = await sendLeaveApprovedEmail({
         firstName: 'Marie',
@@ -122,22 +101,10 @@ describe('leave-decision', () => {
     })
 
     it('devrait utiliser le dashboardUrl par défaut si non fourni', async () => {
-      const mockSendEmail = vi.fn().mockResolvedValue({
+      mockSendEmail.mockResolvedValue({
         success: true,
         messageId: 'msg-456',
       })
-
-      vi.doMock('@/lib/email', () => ({
-        sendEmail: mockSendEmail,
-      }))
-
-      vi.doMock('@/lib/email/config', () => ({
-        getBaseUrl: () => 'https://smartplanning.fr',
-      }))
-
-      const { sendLeaveApprovedEmail } = await import(
-        '@/lib/email/templates/leave-decision'
-      )
 
       await sendLeaveApprovedEmail({
         firstName: 'Test',
@@ -157,22 +124,10 @@ describe('leave-decision', () => {
     })
 
     it('devrait retourner une erreur si sendEmail échoue', async () => {
-      const mockSendEmail = vi.fn().mockResolvedValue({
+      mockSendEmail.mockResolvedValue({
         success: false,
         error: 'SMTP connection failed',
       })
-
-      vi.doMock('@/lib/email', () => ({
-        sendEmail: mockSendEmail,
-      }))
-
-      vi.doMock('@/lib/email/config', () => ({
-        getBaseUrl: () => 'https://smartplanning.fr',
-      }))
-
-      const { sendLeaveApprovedEmail } = await import(
-        '@/lib/email/templates/leave-decision'
-      )
 
       const result = await sendLeaveApprovedEmail({
         firstName: 'Test',
@@ -187,21 +142,7 @@ describe('leave-decision', () => {
     })
 
     it('devrait gérer les exceptions de sendEmail', async () => {
-      const mockSendEmail = vi
-        .fn()
-        .mockRejectedValue(new Error('Network error'))
-
-      vi.doMock('@/lib/email', () => ({
-        sendEmail: mockSendEmail,
-      }))
-
-      vi.doMock('@/lib/email/config', () => ({
-        getBaseUrl: () => 'https://smartplanning.fr',
-      }))
-
-      const { sendLeaveApprovedEmail } = await import(
-        '@/lib/email/templates/leave-decision'
-      )
+      mockSendEmail.mockRejectedValue(new Error('Network error'))
 
       const result = await sendLeaveApprovedEmail({
         firstName: 'Test',
@@ -222,22 +163,10 @@ describe('leave-decision', () => {
 
   describe('sendLeaveRejectedEmail', () => {
     it('devrait appeler sendEmail avec le bon destinataire et sujet', async () => {
-      const mockSendEmail = vi.fn().mockResolvedValue({
+      mockSendEmail.mockResolvedValue({
         success: true,
         messageId: 'msg-rejected-789',
       })
-
-      vi.doMock('@/lib/email', () => ({
-        sendEmail: mockSendEmail,
-      }))
-
-      vi.doMock('@/lib/email/config', () => ({
-        getBaseUrl: () => 'https://smartplanning.fr',
-      }))
-
-      const { sendLeaveRejectedEmail } = await import(
-        '@/lib/email/templates/leave-decision'
-      )
 
       const result = await sendLeaveRejectedEmail({
         firstName: 'Paul',
@@ -260,22 +189,10 @@ describe('leave-decision', () => {
     })
 
     it('devrait inclure le motif de refus dans le HTML', async () => {
-      const mockSendEmail = vi.fn().mockResolvedValue({
+      mockSendEmail.mockResolvedValue({
         success: true,
         messageId: 'msg-123',
       })
-
-      vi.doMock('@/lib/email', () => ({
-        sendEmail: mockSendEmail,
-      }))
-
-      vi.doMock('@/lib/email/config', () => ({
-        getBaseUrl: () => 'https://smartplanning.fr',
-      }))
-
-      const { sendLeaveRejectedEmail } = await import(
-        '@/lib/email/templates/leave-decision'
-      )
 
       await sendLeaveRejectedEmail({
         firstName: 'Test',
@@ -294,22 +211,10 @@ describe('leave-decision', () => {
     })
 
     it('devrait retourner une erreur si sendEmail échoue', async () => {
-      const mockSendEmail = vi.fn().mockResolvedValue({
+      mockSendEmail.mockResolvedValue({
         success: false,
         error: 'SMTP timeout',
       })
-
-      vi.doMock('@/lib/email', () => ({
-        sendEmail: mockSendEmail,
-      }))
-
-      vi.doMock('@/lib/email/config', () => ({
-        getBaseUrl: () => 'https://smartplanning.fr',
-      }))
-
-      const { sendLeaveRejectedEmail } = await import(
-        '@/lib/email/templates/leave-decision'
-      )
 
       const result = await sendLeaveRejectedEmail({
         firstName: 'Test',
@@ -325,21 +230,7 @@ describe('leave-decision', () => {
     })
 
     it('devrait gérer les exceptions de sendEmail', async () => {
-      const mockSendEmail = vi
-        .fn()
-        .mockRejectedValue(new Error('Connection refused'))
-
-      vi.doMock('@/lib/email', () => ({
-        sendEmail: mockSendEmail,
-      }))
-
-      vi.doMock('@/lib/email/config', () => ({
-        getBaseUrl: () => 'https://smartplanning.fr',
-      }))
-
-      const { sendLeaveRejectedEmail } = await import(
-        '@/lib/email/templates/leave-decision'
-      )
+      mockSendEmail.mockRejectedValue(new Error('Connection refused'))
 
       const result = await sendLeaveRejectedEmail({
         firstName: 'Test',
