@@ -22,6 +22,7 @@ import {
   AUTH_API_PREFIX,
   MIDDLEWARE_EXCLUDED_ROUTES,
   ACCESS_DENIED_REDIRECT,
+  IMPERSONATION_COOKIE_NAME,
 } from '@/types/auth'
 import {
   hasRequiredRole,
@@ -239,9 +240,10 @@ export const authConfig: NextAuthConfig = {
      * @param request - Requête Next.js
      * @returns true si autorisé, Response pour rediriger
      *
-     * @ticket SP-108, SP-110, SP-440
+     * @ticket SP-108, SP-110, SP-440, SP-453
      */
-    authorized({ auth, request: { nextUrl } }) {
+    authorized({ auth, request }) {
+      const { nextUrl } = request
       const isLoggedIn = !!auth
       const pathname = nextUrl.pathname
       const userRole = auth?.user?.role
@@ -303,7 +305,31 @@ export const authConfig: NextAuthConfig = {
         }
       }
 
-      // 7. Subscription Guard (SP-440) : vérification abonnement actif
+      // 7. Impersonation Guard (SP-453) : bloquer /app/admin/* en impersonation
+      // Lecture Edge-compatible du cookie sp-impersonation via request.cookies
+      if (isLoggedIn && pathname.startsWith('/app/admin')) {
+        const impersonationCookie = request.cookies.get(
+          IMPERSONATION_COOKIE_NAME
+        )
+        if (impersonationCookie?.value) {
+          try {
+            const parsed: unknown = JSON.parse(impersonationCookie.value)
+            if (
+              typeof parsed === 'object' &&
+              parsed !== null &&
+              'originalAdminId' in parsed
+            ) {
+              return Response.redirect(
+                new URL('/app/dashboard', nextUrl)
+              )
+            }
+          } catch {
+            // Cookie invalide — ignorer
+          }
+        }
+      }
+
+      // 8. Subscription Guard (SP-440) : vérification abonnement actif
       // S'applique aux routes /app/* pour les utilisateurs connectés
       // Les routes exemptées (billing, profile, settings) et SYSTEM_ADMIN
       // sont gérés dans checkSubscriptionAccess (function pure)
