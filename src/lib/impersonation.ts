@@ -14,10 +14,7 @@
 import { cookies } from 'next/headers'
 
 import type { ImpersonationContext } from '@/types/auth'
-import {
-  IMPERSONATION_COOKIE_NAME,
-  IMPERSONATION_MAX_AGE,
-} from '@/types/auth'
+import { IMPERSONATION_COOKIE_NAME, IMPERSONATION_MAX_AGE } from '@/types/auth'
 
 // ============================================================================
 // Cookie Management

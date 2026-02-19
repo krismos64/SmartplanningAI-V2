@@ -47,7 +47,9 @@ import {
 // Fixtures
 // ============================================================================
 
-function createValidContext(overrides?: Partial<ImpersonationContext>): ImpersonationContext {
+function createValidContext(
+  overrides?: Partial<ImpersonationContext>
+): ImpersonationContext {
   return {
     originalAdminId: 'admin-123',
     targetUserId: 'user-456',
@@ -60,12 +62,13 @@ function createValidContext(overrides?: Partial<ImpersonationContext>): Imperson
   }
 }
 
-function createRequestWithCookie(
-  cookieValue: string | null
-): Request {
+function createRequestWithCookie(cookieValue: string | null): Request {
   const headers = new Headers()
   if (cookieValue !== null) {
-    headers.set('cookie', `${IMPERSONATION_COOKIE_NAME}=${encodeURIComponent(cookieValue)}`)
+    headers.set(
+      'cookie',
+      `${IMPERSONATION_COOKIE_NAME}=${encodeURIComponent(cookieValue)}`
+    )
   }
   return new Request('http://localhost:3000', { headers })
 }
@@ -230,7 +233,7 @@ describe('impersonation', () => {
   // --------------------------------------------------------------------------
 
   describe('assertNotImpersonating', () => {
-    it('ne lance pas d\'erreur si pas d\'impersonation active', async () => {
+    it("ne lance pas d'erreur si pas d'impersonation active", async () => {
       mockGet.mockReturnValue(null)
       await expect(assertNotImpersonating()).resolves.toBeUndefined()
     })
@@ -244,7 +247,7 @@ describe('impersonation', () => {
       )
     })
 
-    it('ne lance pas d\'erreur si le cookie est expiré', async () => {
+    it("ne lance pas d'erreur si le cookie est expiré", async () => {
       const expiredContext = createValidContext({
         startedAt: Date.now() - (IMPERSONATION_MAX_AGE + 1) * 1000,
       })

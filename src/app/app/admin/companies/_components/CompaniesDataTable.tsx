@@ -145,12 +145,12 @@ export function CompaniesDataTable() {
           })
 
           if (!response.ok) {
-            const errorData: { error?: string } = await response.json()
+            const errorData = (await response.json()) as { error?: string }
             console.error('Erreur impersonation:', errorData.error)
             return
           }
 
-          const result: {
+          const result = (await response.json()) as {
             success: boolean
             redirectTo: string
             impersonation: {
@@ -162,7 +162,7 @@ export function CompaniesDataTable() {
               impersonatedUserEmail: string
               impersonatedCompanyName: string
             }
-          } = await response.json()
+          }
 
           if (result.success) {
             // Forcer NextAuth à relire le JWT enrichi
@@ -189,7 +189,13 @@ export function CompaniesDataTable() {
         onToggleStatus: handleToggleStatus,
         onImpersonate: handleImpersonate,
       }),
-    [handleView, handleEdit, handleDelete, handleToggleStatus, handleImpersonate]
+    [
+      handleView,
+      handleEdit,
+      handleDelete,
+      handleToggleStatus,
+      handleImpersonate,
+    ]
   )
 
   // Configuration TanStack Table

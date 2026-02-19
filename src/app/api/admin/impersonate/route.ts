@@ -51,10 +51,7 @@ export async function POST(request: Request): Promise<NextResponse> {
   try {
     body = await request.json()
   } catch {
-    return NextResponse.json(
-      { error: 'Body JSON invalide' },
-      { status: 400 }
-    )
+    return NextResponse.json({ error: 'Body JSON invalide' }, { status: 400 })
   }
 
   const validation = startImpersonationSchema.safeParse(body)
