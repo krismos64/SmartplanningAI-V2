@@ -283,7 +283,7 @@ describe('SP-454 : impersonation guard sur les Server Actions', () => {
     const result = await createIncidentNote({
       title: 'Test',
       content: 'Test content',
-      date: new Date().toISOString(),
+      date: new Date(),
       visibility: 'DIRECTOR_ONLY',
       subjectId: 'employee-001',
     })
@@ -302,7 +302,8 @@ describe('SP-454 : impersonation guard sur les Server Actions', () => {
     activateImpersonation()
 
     const result = await updateProfile({
-      name: 'New Name',
+      firstName: 'New',
+      lastName: 'Name',
     })
 
     expect(result.success).toBe(false)
@@ -320,10 +321,11 @@ describe('SP-454 : impersonation guard sur les Server Actions', () => {
 
     const result = await createAvailability({
       employeeId: 'employee-001',
-      date: new Date().toISOString(),
-      startTime: '09:00',
-      endTime: '17:00',
-      isAvailable: false,
+      companyId: 'company-001',
+      startDate: new Date(),
+      endDate: new Date(),
+      type: 'UNAVAILABLE',
+      isRecurring: false,
     })
 
     expect(result.success).toBe(false)
@@ -347,8 +349,7 @@ describe('SP-454 : impersonation guard sur les Server Actions', () => {
     } as never)
 
     const result = await updateCompanySettings({
-      weekStartsOn: 1,
-      defaultWeeklyHours: 35,
+      name: 'TestCorp Updated',
     })
 
     expect(result.success).toBe(false)
@@ -365,7 +366,7 @@ describe('SP-454 : impersonation guard sur les Server Actions', () => {
     activateImpersonation()
 
     const result = await updateNotificationPreferences({
-      categories: [],
+      email: { planning: true },
     })
 
     expect(result.success).toBe(false)
