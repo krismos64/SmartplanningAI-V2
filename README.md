@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 18 février 2026 (Audit System SP-442→446 + User Activity SP-463, 5760 tests unitaires + 575 E2E)
+- **Dernière mise à jour** : 19 février 2026 (Impersonation E2E + Unit Tests SP-456, 5770 tests unitaires + 584 E2E)
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -81,6 +81,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Company Settings** (SP-435) : Page paramètres entreprise `/app/settings/company` pour DIRECTOR et SYSTEM_ADMIN. Configuration du nom et adresse de l'entreprise, jours travaillés (7 checkboxes + 3 presets Lun-Ven, Lun-Sam, Tous), horaires de travail (ouverture/fermeture), pause déjeuner (toggle + horaires). Types TypeScript (DayOfWeek, CompanySettings, LunchBreakSettings), validations Zod avec cross-field validation, Server Actions (getCompanySettings, updateCompanySettings, resetCompanySettings) avec RBAC strict. Architecture optimistic UI avec rollback. Stockage Prisma (Company.workingDays, Company.workingHoursStart/End, Company.defaultOpeningHours JSON pour lunch break). 19 tests unitaires + 21 tests E2E. Badge "Bientôt" retiré de section Entreprise
 - **Audit System** (SP-442, SP-443, SP-444, SP-445, SP-446) : Journal d'audit complet avec modèle Prisma AuditLog (9 actions, 10 types d'entités), service `logAuditAction` fire-and-forget, Server Actions RBAC (`getAuditLogs` paginé avec filtres, `exportAuditLogsCsv`), page admin `/app/admin/logs` avec DataTable TanStack, filtres action/entité/utilisateur/date, export CSV, modal détail JSON. Protection anti-injection (sanitization HTML/SQL/NoSQL). 122 tests unitaires + 26 tests E2E
 - **User Activity Page** (SP-463) : Page activité utilisateur `/app/profile/activity` avec timeline relative française (`Intl.RelativeTimeFormat`). Server Action `getUserActivity` filtrant par userId JWT avec isolation RBAC. Accès depuis Header dropdown "Mon activité" et ProfileActions. 17 tests unitaires
+- **Impersonation Mode** (SP-453, SP-454, SP-456) : Mode support SYSTEM_ADMIN "Voir espace client" avec cookie `sp-impersonation` (HttpOnly, TTL 3600s). API REST `/api/admin/impersonate` (POST start, DELETE stop), bannière orange avec nom entreprise et bouton quitter, impersonation guard middleware (blocage routes admin/billing), subscription guard bypass en mode impersonation (évite boucle redirect infinie), fallback cookie dans layout.tsx (résilience updateSession NextAuth v5), audit trail start/stop. Page Object Model Playwright (ImpersonationPage). 10 tests unitaires + 9 tests E2E
 
 ### MVP (Phases 1-4)
 
@@ -455,6 +456,41 @@ Middleware de vérification d'abonnement actif dans le Edge Runtime Next.js 15. 
   - `src/lib/auth.ts` : `authorize()` enrichi avec données subscription Prisma
 
 - **Tests** : 31 tests unitaires couvrant la matrice complète (bypass SYSTEM_ADMIN, routes exemptées, ACTIVE, TRIAL valide/expiré, PAST_DUE grâce/dépassé, CANCELED, EXPIRED, INCOMPLETE, null, statut inconnu, tous les rôles)
+
+### Mode Impersonation — Tests & Corrections (SP-456 - 19 février 2026)
+
+Tests E2E Playwright + tests unitaires Vitest pour le mode impersonation SYSTEM_ADMIN ("Voir espace client"). Inclut 2 corrections applicatives découvertes pendant le développement des tests.
+
+- **Tests unitaires API** (10 tests) :
+  - POST `/api/admin/impersonate` : 401 non authentifié, 403 non SYSTEM_ADMIN, 400 body vide, 404 aucun utilisateur actif, 400 cible SYSTEM_ADMIN, 400 cible désactivée, succès avec companyId (cookie + audit log), succès avec targetUserId
+  - DELETE `/api/admin/impersonate` : 400 aucune impersonation active, succès (supprime cookie + audit log stop)
+  - Mocks : `vi.hoisted()` pour auth, prisma, cookies, logAuditAction
+
+- **Tests E2E** (9 tests, 4 suites) :
+  - **Parcours nominal** (2) : start → bannière visible → dashboard lecture seule → stop → bannière disparue → retour admin ; bannière affiche "Mode support" + nom entreprise
+  - **Restrictions sécurité** (3) : routes admin bloquées (redirect), route billing bloquée, bannière affiche bon tenant (isolation)
+  - **Cas limites** (3) : bannière persiste après reload (cookie persistant), suppression cookie désactive impersonation, auto-impersonation SYSTEM_ADMIN bloquée
+  - **Audit trail** (1) : POST start capturé via page.on('response'), DELETE stop vérifié implicitement
+
+- **Page Object Model** (`e2e/pages/impersonation.page.ts`) :
+  - `startImpersonation(companyName)` : navigation → table → dropdown "Menu actions" → menuitem "Voir espace client" → interception API POST via `Promise.all([waitForResponse, click])` → navigation dashboard → reload (fallback cookie)
+  - `stopImpersonation()` : `page.request.delete()` API → suppression sélective cookies (sp-impersonation, authjs.session-token, csrf-token) → re-login admin → navigation companies
+
+- **Correction 1 — Subscription Guard Bypass** (`src/lib/auth.config.ts`) :
+  - **Problème** : boucle de redirection infinie (`ERR_TOO_MANY_REDIRECTS`) — en impersonation le JWT SYSTEM_ADMIN n'a pas de données subscription → subscription guard redirige vers `/billing` → impersonation guard bloque `/billing` → redirect `/dashboard` → boucle ∞
+  - **Fix** : lecture du cookie `sp-impersonation` avant le subscription guard — si `originalAdminId` présent, skip la vérification subscription
+
+- **Correction 2 — Layout Cookie Fallback** (`src/app/app/layout.tsx`) :
+  - **Problème** : `updateSession()` NextAuth v5 échoue avec `ClientFetchError: Failed to fetch` → JWT non mis à jour avec `isImpersonating: true` → bannière invisible
+  - **Fix** : fallback lecture directe du cookie `sp-impersonation` dans le Server Component layout quand `session.user.isImpersonating` est false, avec vérification expiration (3600s) et validité
+
+- **Fichiers** :
+  - `e2e/pages/impersonation.page.ts` (nouveau) : Page Object Model
+  - `e2e/pages/index.ts` (modifié) : barrel export
+  - `e2e/specs/impersonation/impersonation-flow.spec.ts` (nouveau) : 9 tests E2E
+  - `src/app/api/admin/impersonate/__tests__/route.test.ts` (nouveau) : 10 tests unitaires
+  - `src/lib/auth.config.ts` (modifié) : bypass subscription guard en impersonation
+  - `src/app/app/layout.tsx` (modifié) : fallback cookie bannière impersonation
 
 ### Modèle EmailLog & Service (SP-368 - 10 février 2026)
 
@@ -2456,11 +2492,11 @@ Toutes les pages publiques sont optimisées pour les LLMs (ChatGPT, Claude, Perp
 - **E2E** : Playwright (configuré)
 - **Coverage** : v8 provider
 
-### Couverture actuelle (18 février 2026 - SP-463)
+### Couverture actuelle (19 février 2026 - SP-456)
 
 | Catégorie                              | Coverage   | Tests    |
 | -------------------------------------- | ---------- | -------- |
-| **Global**                             | **~86%**   | **5760** |
+| **Global**                             | **~86%**   | **5770** |
 | loading                                | 100%     | 152      |
 | modals                                 | 100%     | 52       |
 | cards                                  | 77.09%   | 88       |
@@ -2587,6 +2623,7 @@ Toutes les pages publiques sont optimisées pour les LLMs (ChatGPT, Claude, Perp
 | audit-injection (SP-444)         | 100%     | 20       |
 | audit-logs actions (SP-445)      | 100%     | 33       |
 | getUserActivity (SP-463)         | 100%     | 17       |
+| impersonate route (SP-456)       | 100%     | 10       |
 
 ### Tests E2E
 
@@ -2630,9 +2667,10 @@ Toutes les pages publiques sont optimisées pour les LLMs (ChatGPT, Claude, Perp
 | **Billing Alerts (SP-373)**         | 8       | ✅                                |
 | **Billing Subscription (SP-373)**   | 7       | ✅                                |
 | **Audit Logs (SP-446)**            | 26      | ✅ (23 pass + 3 skip)            |
-| **Total E2E (39 fichiers)**         | **~575** | ✅                               |
+| **Impersonation (SP-456)**         | 9       | ✅                                |
+| **Total E2E (40 fichiers)**         | **~584** | ✅                               |
 
-**Note** : Tests desktop exécutés sur Chromium uniquement. Tests mobiles exécutés sur 5 devices (iPhone SE, iPhone 14 Pro, Pixel 7, iPad Mini, iPad Pro 11") via Chromium avec émulation mobile (WebKit supprimé car bug HTTPS upgrade sur localhost). Consolidation 50→38 fichiers le 18/02/2026 (suppression redondances, fusion suites similaires). Ajout audit-logs.spec.ts le 18/02/2026 (39 fichiers).
+**Note** : Tests desktop exécutés sur Chromium uniquement. Tests mobiles exécutés sur 5 devices (iPhone SE, iPhone 14 Pro, Pixel 7, iPad Mini, iPad Pro 11") via Chromium avec émulation mobile (WebKit supprimé car bug HTTPS upgrade sur localhost). Consolidation 50→38 fichiers le 18/02/2026 (suppression redondances, fusion suites similaires). Ajout audit-logs.spec.ts le 18/02/2026 (39 fichiers). Ajout impersonation-flow.spec.ts le 19/02/2026 (40 fichiers).
 
 ### Composants testés
 
@@ -2709,6 +2747,11 @@ Toutes les pages publiques sont optimisées pour les LLMs (ChatGPT, Claude, Perp
 #### Subscription Guard (SP-440)
 
 - checkSubscriptionAccess (31 tests) : bypass SYSTEM_ADMIN (2), routes exemptées billing/profile/settings (5), statut ACTIVE (1), TRIAL valide/expiré/null (4), PAST_DUE grâce 7j/dépassé/null (5), CANCELED (2), EXPIRED (2), INCOMPLETE (2), null (2), statut inconnu (2), tous les rôles non-admin (3), constante PAST_DUE_GRACE_DAYS (1). Fonction pure, 0 mock, 4ms d'exécution.
+
+#### Impersonation API Route (SP-456)
+
+- POST /api/admin/impersonate (8 tests) : 401 non authentifié, 403 non SYSTEM_ADMIN, 400 body vide, 404 aucun utilisateur actif dans company, 400 cible SYSTEM_ADMIN, 400 cible désactivée, succès avec companyId (cookie + audit log), succès avec targetUserId direct
+- DELETE /api/admin/impersonate (2 tests) : 400 aucune impersonation active, succès (supprime cookie + crée audit log stop)
 
 #### Dashboard Employee (5 composants - SP-145)
 
