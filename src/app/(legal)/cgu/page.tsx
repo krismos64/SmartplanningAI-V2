@@ -61,15 +61,20 @@ const tableOfContents: TableOfContentsItem[] = [
     title: 'Article 8 - Données personnelles',
     level: 1,
   },
-  { id: 'responsabilite', title: 'Article 9 - Responsabilité', level: 1 },
-  { id: 'resiliation', title: 'Article 10 - Résiliation', level: 1 },
   {
-    id: 'modification-cgu',
-    title: 'Article 11 - Modification des CGU',
+    id: 'acces-support',
+    title: 'Article 9 - Accès support technique',
     level: 1,
   },
-  { id: 'droit-applicable', title: 'Article 12 - Droit applicable', level: 1 },
-  { id: 'contact', title: 'Article 13 - Contact', level: 1 },
+  { id: 'responsabilite', title: 'Article 10 - Responsabilité', level: 1 },
+  { id: 'resiliation', title: 'Article 11 - Résiliation', level: 1 },
+  {
+    id: 'modification-cgu',
+    title: 'Article 12 - Modification des CGU',
+    level: 1,
+  },
+  { id: 'droit-applicable', title: 'Article 13 - Droit applicable', level: 1 },
+  { id: 'contact', title: 'Article 14 - Contact', level: 1 },
 ]
 
 export default function CGUPage() {
@@ -77,8 +82,8 @@ export default function CGUPage() {
     <LegalPageLayout
       title="Conditions Générales d'Utilisation"
       subtitle="Les présentes conditions générales régissent l'utilisation de la plateforme SmartPlanning. En utilisant notre service, vous acceptez ces conditions dans leur intégralité."
-      lastUpdated="15 janvier 2026"
-      version="1.0"
+      lastUpdated="19 février 2026"
+      version="1.1"
       icon={<FileText className="h-5 w-5" />}
       tableOfContents={tableOfContents}
     >
@@ -529,14 +534,84 @@ export default function CGUPage() {
 
       <LegalDivider />
 
-      {/* Article 9 - Responsabilité */}
+      {/* Article 9 - Accès support technique (SP-455 RGPD) */}
       <LegalSection
-        id="responsabilite"
-        title="Responsabilité"
+        id="acces-support"
+        title="Accès support technique"
         number="Article 9"
       >
         <LegalParagraph>
-          <strong>9.1 Responsabilité de l&apos;Éditeur</strong>
+          <strong>9.1 Mode support en lecture seule</strong>
+        </LegalParagraph>
+        <LegalParagraph>
+          Afin de fournir un support technique de qualité, l&apos;Éditeur se
+          réserve le droit d&apos;accéder à l&apos;espace du Client en mode
+          lecture seule, à la demande du Client ou lors du diagnostic d&apos;un
+          incident signalé. Cet accès est strictement encadré par les garanties
+          suivantes :
+        </LegalParagraph>
+        <LegalList
+          items={[
+            'L\u2019accès est limité à 1 heure maximum par session, au-delà de laquelle il expire automatiquement',
+            'Aucune modification, suppression ou création de données n\u2019est possible pendant cet accès (50 opérations de mutation sont bloquées côté serveur)',
+            'Chaque session d\u2019accès est systématiquement enregistrée dans un journal d\u2019audit horodaté, incluant l\u2019identité de l\u2019administrateur, l\u2019entreprise concernée, la date, l\u2019heure de début et la durée de la session',
+            'Les données de paiement et de facturation (informations bancaires, numéros de carte) ne sont jamais accessibles lors de ces sessions',
+            'Les mots de passe des Utilisateurs ne sont jamais exposés (stockage par hachage irréversible)',
+          ]}
+        />
+        <LegalParagraph>
+          <strong>9.2 Base légale</strong>
+        </LegalParagraph>
+        <LegalParagraph>
+          Ce traitement repose sur l&apos;intérêt légitime de l&apos;Éditeur au
+          sens de l&apos;Article 6.1.f du Règlement (UE) 2016/679 (RGPD), à
+          savoir le maintien de la qualité et de la continuité du service
+          souscrit par le Client.
+        </LegalParagraph>
+        <LegalParagraph>
+          <strong>9.3 Droits du Client</strong>
+        </LegalParagraph>
+        <LegalParagraph>
+          Conformément au RGPD, tout Client peut :
+        </LegalParagraph>
+        <LegalList
+          items={[
+            <span key="historique">
+              <strong>Demander l&apos;historique</strong> des sessions
+              d&apos;accès support ayant concerné son compte, en contactant :{' '}
+              <LegalLink href="mailto:contact@smartplanning.fr">
+                contact@smartplanning.fr
+              </LegalLink>
+            </span>,
+            <span key="opposition">
+              <strong>S&apos;opposer</strong> à ce traitement (Article 21 RGPD).
+              Dans ce cas, l&apos;Éditeur ne sera plus en mesure de fournir un
+              support technique de niveau 2 (diagnostic en conditions réelles).
+              Cette limitation sera notifiée au Client par écrit.
+            </span>,
+          ]}
+        />
+        <LegalParagraph>
+          <strong>9.4 Conservation des données d&apos;audit</strong>
+        </LegalParagraph>
+        <LegalParagraph>
+          Les entrées du journal d&apos;audit relatives aux sessions
+          d&apos;accès support sont conservées 12 mois à compter de la date de
+          la session, conformément à la politique de rétention des logs de
+          SmartPlanning.
+        </LegalParagraph>
+      </LegalSection>
+
+      <LegalDivider />
+
+      {/* Article 10 - Responsabilité */}
+      <LegalSection
+        id="responsabilite"
+        title="Responsabilité"
+        number="Article 10"
+      >
+        <LegalParagraph>
+          <strong>10.1 Responsabilité de l&apos;Éditeur</strong>
         </LegalParagraph>
         <LegalParagraph>
           L&apos;Éditeur s&apos;engage à mettre en œuvre tous les moyens
@@ -556,7 +631,7 @@ export default function CGUPage() {
           ]}
         />
         <LegalParagraph>
-          <strong>9.2 Responsabilité de l&apos;Utilisateur</strong>
+          <strong>10.2 Responsabilité de l&apos;Utilisateur</strong>
         </LegalParagraph>
         <LegalParagraph>
           L&apos;Utilisateur est seul responsable de l&apos;utilisation
@@ -565,7 +640,7 @@ export default function CGUPage() {
           utilisation du Service.
         </LegalParagraph>
         <LegalParagraph>
-          <strong>9.3 Force majeure</strong>
+          <strong>10.3 Force majeure</strong>
         </LegalParagraph>
         <LegalParagraph>
           L&apos;Éditeur ne pourra être tenu responsable de tout retard ou
@@ -577,10 +652,10 @@ export default function CGUPage() {
 
       <LegalDivider />
 
-      {/* Article 10 - Résiliation */}
-      <LegalSection id="resiliation" title="Résiliation" number="Article 10">
+      {/* Article 11 - Résiliation */}
+      <LegalSection id="resiliation" title="Résiliation" number="Article 11">
         <LegalParagraph>
-          <strong>10.1 Résiliation par l&apos;Utilisateur</strong>
+          <strong>11.1 Résiliation par l&apos;Utilisateur</strong>
         </LegalParagraph>
         <LegalParagraph>
           L&apos;Utilisateur peut résilier son Compte à tout moment, depuis les
@@ -588,7 +663,7 @@ export default function CGUPage() {
           prendra effet à la fin de la période d&apos;abonnement en cours.
         </LegalParagraph>
         <LegalParagraph>
-          <strong>10.2 Résiliation par l&apos;Éditeur</strong>
+          <strong>11.2 Résiliation par l&apos;Éditeur</strong>
         </LegalParagraph>
         <LegalParagraph>
           L&apos;Éditeur se réserve le droit de suspendre ou résilier le Compte
@@ -604,7 +679,7 @@ export default function CGUPage() {
           ]}
         />
         <LegalParagraph>
-          <strong>10.3 Conséquences de la résiliation</strong>
+          <strong>11.3 Conséquences de la résiliation</strong>
         </LegalParagraph>
         <LegalParagraph>
           En cas de résiliation, l&apos;Utilisateur perd l&apos;accès à son
@@ -615,11 +690,11 @@ export default function CGUPage() {
 
       <LegalDivider />
 
-      {/* Article 11 - Modification des CGU */}
+      {/* Article 12 - Modification des CGU */}
       <LegalSection
         id="modification-cgu"
         title="Modification des CGU"
-        number="Article 11"
+        number="Article 12"
       >
         <LegalParagraph>
           L&apos;Éditeur se réserve le droit de modifier les présentes CGU à
@@ -631,17 +706,17 @@ export default function CGUPage() {
           L&apos;utilisation continue du Service après l&apos;entrée en vigueur
           des nouvelles CGU vaut acceptation de celles-ci. En cas de désaccord,
           l&apos;Utilisateur pourra résilier son Compte conformément à
-          l&apos;Article 10.
+          l&apos;Article 11.
         </LegalParagraph>
       </LegalSection>
 
       <LegalDivider />
 
-      {/* Article 12 - Droit applicable et juridiction */}
+      {/* Article 13 - Droit applicable et juridiction */}
       <LegalSection
         id="droit-applicable"
         title="Droit applicable et juridiction"
-        number="Article 12"
+        number="Article 13"
       >
         <LegalParagraph>
           Les présentes CGU sont soumises au droit français.
@@ -662,8 +737,8 @@ export default function CGUPage() {
 
       <LegalDivider />
 
-      {/* Article 13 - Contact */}
-      <LegalSection id="contact" title="Contact" number="Article 13">
+      {/* Article 14 - Contact */}
+      <LegalSection id="contact" title="Contact" number="Article 14">
         <LegalParagraph>
           Pour toute question relative aux présentes CGU ou à l&apos;utilisation
           du Service, l&apos;Utilisateur peut contacter l&apos;Éditeur :
@@ -690,8 +765,8 @@ export default function CGUPage() {
       {/* Acceptation */}
       <LegalAcceptanceBox
         message="En utilisant SmartPlanning, vous reconnaissez avoir lu, compris et accepté les présentes Conditions Générales d'Utilisation dans leur intégralité."
-        lastUpdated="15 janvier 2026"
-        version="1.0"
+        lastUpdated="19 février 2026"
+        version="1.1"
       />
     </LegalPageLayout>
   )
