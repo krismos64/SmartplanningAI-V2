@@ -15,11 +15,10 @@ import { StructuredData } from './StructuredData'
 const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://smartplanning.fr'
 
 export const metadata: Metadata = {
-  title:
-    'SmartPlanning — Logiciel de gestion de planning pour entreprises',
+  title: 'SmartPlanning — Logiciel de gestion de planning pour entreprises',
 
   description:
-    "Simplifiez la gestion des plannings de votre equipe. Solution SaaS francaise pour TPE et PME. Essai gratuit 21 jours, a partir de 2,90\u00a0\u20ac/employe/mois.",
+    'Simplifiez la gestion des plannings de votre equipe. Solution SaaS francaise pour TPE et PME. Essai gratuit 21 jours, a partir de 2,90\u00a0\u20ac/employe/mois.',
 
   keywords: [
     'logiciel gestion planning entreprise',
@@ -56,7 +55,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'SmartPlanning — Gestion de planning simplifiee pour entreprises',
     description:
-      "Gerez les plannings de votre equipe en quelques clics. Solution SaaS francaise, essai gratuit 21 jours.",
+      'Gerez les plannings de votre equipe en quelques clics. Solution SaaS francaise, essai gratuit 21 jours.',
     type: 'website',
     url: baseUrl,
     siteName: 'SmartPlanning',
@@ -76,7 +75,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'SmartPlanning — Gestion de planning pour entreprises',
     description:
-      "Solution SaaS francaise de gestion des plannings. Essai gratuit 21 jours.",
+      'Solution SaaS francaise de gestion des plannings. Essai gratuit 21 jours.',
     creator: '@smartplanning',
   },
 
