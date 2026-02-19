@@ -2,6 +2,7 @@
 
 import { Suspense } from 'react'
 import { usePathname } from 'next/navigation'
+import { SessionProvider } from 'next-auth/react'
 
 import { SidebarProvider } from '@/components/ui/sidebar'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -159,18 +160,20 @@ export function DashboardLayout({
   const pathname = usePathname()
 
   return (
-    <KeyboardShortcutsProvider>
-      <NotificationsProvider>
-        <DashboardLayoutContent
-          user={user}
-          pathname={pathname}
-          sidebarVariant={sidebarVariant}
-          subscriptionData={subscriptionData}
-          impersonationData={impersonationData}
-        >
-          {children}
-        </DashboardLayoutContent>
-      </NotificationsProvider>
-    </KeyboardShortcutsProvider>
+    <SessionProvider>
+      <KeyboardShortcutsProvider>
+        <NotificationsProvider>
+          <DashboardLayoutContent
+            user={user}
+            pathname={pathname}
+            sidebarVariant={sidebarVariant}
+            subscriptionData={subscriptionData}
+            impersonationData={impersonationData}
+          >
+            {children}
+          </DashboardLayoutContent>
+        </NotificationsProvider>
+      </KeyboardShortcutsProvider>
+    </SessionProvider>
   )
 }

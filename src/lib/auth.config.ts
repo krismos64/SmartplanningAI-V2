@@ -113,9 +113,11 @@ export const authConfig: NextAuthConfig = {
           token.impersonatedUserId = session.impersonatedUserId as string
           token.impersonatedCompanyId = session.impersonatedCompanyId as string
           token.impersonatedUserEmail = session.impersonatedUserEmail as string
-          token.impersonatedCompanyName = session.impersonatedCompanyName as string
+          token.impersonatedCompanyName =
+            session.impersonatedCompanyName as string
           // Override le rôle et companyId pour que le RBAC fonctionne
-          token.role = session.impersonatedRole as import('@prisma/client').UserRole
+          token.role =
+            session.impersonatedRole as import('@prisma/client').UserRole
           token.companyId = session.impersonatedCompanyId as string
         } else {
           // Arrêt impersonation : restaurer la session admin
@@ -308,24 +310,22 @@ export const authConfig: NextAuthConfig = {
       // 7. Impersonation Guard (SP-453) : bloquer /app/admin/* en impersonation
       // Lecture Edge-compatible du cookie sp-impersonation via request.cookies
       if (isLoggedIn && pathname.startsWith('/app/admin')) {
-        const impersonationCookie = request.cookies.get(
-          IMPERSONATION_COOKIE_NAME
-        )
-        if (impersonationCookie?.value) {
-          try {
+        try {
+          const impersonationCookie = request.cookies.get(
+            IMPERSONATION_COOKIE_NAME
+          )
+          if (impersonationCookie?.value) {
             const parsed: unknown = JSON.parse(impersonationCookie.value)
             if (
               typeof parsed === 'object' &&
               parsed !== null &&
               'originalAdminId' in parsed
             ) {
-              return Response.redirect(
-                new URL('/app/dashboard', nextUrl)
-              )
+              return Response.redirect(new URL('/app/dashboard', nextUrl))
             }
-          } catch {
-            // Cookie invalide — ignorer
           }
+        } catch {
+          // Cookie invalide ou erreur de lecture — ignorer
         }
       }
 
