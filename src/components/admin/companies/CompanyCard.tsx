@@ -4,7 +4,7 @@
  * @description Affichage compact d'une entreprise avec toutes les informations
  * essentielles et menu d'actions. Utilisé dans la vue mobile de CompaniesDataTable.
  *
- * @ticket SP-462
+ * @ticket SP-462, SP-447
  */
 
 'use client'
@@ -20,6 +20,7 @@ import {
   Power,
   PowerOff,
   Shield,
+  UserCheck,
 } from 'lucide-react'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
@@ -53,6 +54,8 @@ interface CompanyCardProps {
   onEdit?: () => void
   onDelete?: () => void
   onToggleStatus?: () => void
+  /** SP-447 : Impersonation */
+  onImpersonate?: () => void
 }
 
 // ============================================================================
@@ -89,6 +92,7 @@ export function CompanyCard({
   onEdit,
   onDelete,
   onToggleStatus,
+  onImpersonate,
 }: CompanyCardProps) {
   return (
     <Card
@@ -156,6 +160,15 @@ export function CompanyCard({
                         </>
                       )}
                     </DropdownMenuItem>
+                  )}
+                  {onImpersonate && company.isActive && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={onImpersonate}>
+                        <UserCheck className="mr-2 h-4 w-4" />
+                        Voir espace client
+                      </DropdownMenuItem>
+                    </>
                   )}
                   {onDelete && (
                     <>

@@ -4,7 +4,7 @@
  * @description Configuration des colonnes TanStack Table pour affichage CRUD Companies.
  * Inclut badges colorés, actions, tri et formatage dates.
  *
- * @ticket SP-151
+ * @ticket SP-151, SP-447
  * @see Context7 - TanStack Table column definitions
  */
 
@@ -22,6 +22,7 @@ import {
   Trash2,
   Power,
   PowerOff,
+  UserCheck,
 } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
@@ -57,6 +58,8 @@ export interface CompanyActionsProps {
   onEdit?: (company: CompanyWithCounts) => void
   onDelete?: (company: CompanyWithCounts) => void
   onToggleStatus?: (company: CompanyWithCounts) => void
+  /** SP-447 : Impersonation — voir l'espace client */
+  onImpersonate?: (company: CompanyWithCounts) => void
 }
 
 // ============================================================================
@@ -102,7 +105,7 @@ const statusBadgeVariants: Record<
 export function createCompanyColumns(
   actions: CompanyActionsProps = {}
 ): ColumnDef<CompanyWithCounts>[] {
-  const { onView, onEdit, onDelete, onToggleStatus } = actions
+  const { onView, onEdit, onDelete, onToggleStatus, onImpersonate } = actions
 
   return [
     // Checkbox de sélection
@@ -306,6 +309,16 @@ export function createCompanyColumns(
                     </>
                   )}
                 </DropdownMenuItem>
+              )}
+
+              {onImpersonate && company.isActive && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => onImpersonate(company)}>
+                    <UserCheck className="mr-2 h-4 w-4" />
+                    Voir espace client
+                  </DropdownMenuItem>
+                </>
               )}
 
               {onDelete && (
