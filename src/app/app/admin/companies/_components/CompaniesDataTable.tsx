@@ -5,13 +5,14 @@
  * avec TanStack Table, pagination serveur, filtres et actions CRUD.
  * Vue responsive : Table desktop (md+) / Cards mobile (<md).
  *
- * @ticket SP-151, SP-462
+ * @ticket SP-151, SP-462, SP-447
  */
 
 'use client'
 
 import { useCallback, useMemo, useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import {
   useReactTable,
   getCoreRowModel,
@@ -50,11 +51,13 @@ import type { CompanyFilters as CompanyFiltersType } from '@/lib/validations/com
 
 export function CompaniesDataTable() {
   const router = useRouter()
+  const { update: updateSession } = useSession()
 
   // État local
   const [data, setData] = useState<CompanyWithCounts[]>([])
   const [totalCount, setTotalCount] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
+  const [, setIsImpersonating] = useState(false)
   const [filters, setFilters] = useState<CompanyFiltersType>({})
   const [deleteCompany, setDeleteCompany] = useState<CompanyWithCounts | null>(
     null
@@ -129,6 +132,53 @@ export function CompaniesDataTable() {
     [fetchData]
   )
 
+  // SP-447 : Impersonation — voir l'espace client
+  const handleImpersonate = useCallback(
+    (company: CompanyWithCounts) => {
+      void (async () => {
+        setIsImpersonating(true)
+        try {
+          const response = await fetch('/api/admin/impersonate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ companyId: company.id }),
+          })
+
+          if (!response.ok) {
+            const errorData: { error?: string } = await response.json()
+            console.error('Erreur impersonation:', errorData.error)
+            return
+          }
+
+          const result: {
+            success: boolean
+            redirectTo: string
+            impersonation: {
+              isImpersonating: boolean
+              originalAdminId: string
+              impersonatedUserId: string
+              impersonatedCompanyId: string
+              impersonatedRole: string
+              impersonatedUserEmail: string
+              impersonatedCompanyName: string
+            }
+          } = await response.json()
+
+          if (result.success) {
+            // Forcer NextAuth à relire le JWT enrichi
+            await updateSession(result.impersonation)
+            router.push(result.redirectTo)
+          }
+        } catch (error) {
+          console.error('Erreur impersonation:', error)
+        } finally {
+          setIsImpersonating(false)
+        }
+      })()
+    },
+    [router, updateSession]
+  )
+
   // Colonnes avec actions
   const columns = useMemo(
     () =>
@@ -137,8 +187,9 @@ export function CompaniesDataTable() {
         onEdit: handleEdit,
         onDelete: handleDelete,
         onToggleStatus: handleToggleStatus,
+        onImpersonate: handleImpersonate,
       }),
-    [handleView, handleEdit, handleDelete, handleToggleStatus]
+    [handleView, handleEdit, handleDelete, handleToggleStatus, handleImpersonate]
   )
 
   // Configuration TanStack Table
@@ -277,6 +328,7 @@ export function CompaniesDataTable() {
                 onEdit={() => handleEdit(company)}
                 onDelete={() => handleDelete(company)}
                 onToggleStatus={() => handleToggleStatus(company)}
+                onImpersonate={() => handleImpersonate(company)}
               />
             ))
           ) : (
