@@ -12,7 +12,7 @@
  *
  * @see https://authjs.dev/guides/edge-compatibility
  * @see https://authjs.dev/guides/role-based-access-control
- * @ticket SP-108, SP-110, SP-440
+ * @ticket SP-108, SP-110, SP-440, SP-447
  */
 
 import type { NextAuthConfig } from 'next-auth'
@@ -96,19 +96,53 @@ export const authConfig: NextAuthConfig = {
         token.currentPeriodEnd = user.currentPeriodEnd ?? null
         token.subscriptionCheckedAt = Date.now()
       }
+
       // Mise à jour de la session (ex: après upload d'avatar)
       if (trigger === 'update' && session?.image !== undefined) {
         token.image = session.image
       }
 
+      // SP-447 : Mise à jour impersonation via session.update()
+      // Appelé après POST/DELETE /api/admin/impersonate côté client
+      if (trigger === 'update' && session?.isImpersonating !== undefined) {
+        if (session.isImpersonating === true) {
+          // Démarrage impersonation : override role et companyId
+          token.isImpersonating = true
+          token.originalAdminId = session.originalAdminId as string
+          token.impersonatedUserId = session.impersonatedUserId as string
+          token.impersonatedCompanyId = session.impersonatedCompanyId as string
+          token.impersonatedUserEmail = session.impersonatedUserEmail as string
+          token.impersonatedCompanyName = session.impersonatedCompanyName as string
+          // Override le rôle et companyId pour que le RBAC fonctionne
+          token.role = session.impersonatedRole as import('@prisma/client').UserRole
+          token.companyId = session.impersonatedCompanyId as string
+        } else {
+          // Arrêt impersonation : restaurer la session admin
+          token.isImpersonating = undefined
+          token.role = 'SYSTEM_ADMIN' as import('@prisma/client').UserRole
+          token.companyId = null
+          token.originalAdminId = undefined
+          token.impersonatedUserId = undefined
+          token.impersonatedCompanyId = undefined
+          token.impersonatedUserEmail = undefined
+          token.impersonatedCompanyName = undefined
+        }
+      }
+
+      // SP-447 : Si impersonation active, override companyId/role à chaque refresh
+      if (token.isImpersonating && token.impersonatedCompanyId) {
+        token.companyId = token.impersonatedCompanyId as string
+      }
+
       // SP-440 : Rafraîchissement périodique des données subscription
-      // Ce code s'exécute côté serveur (Server Components via auth()).
-      // En Edge Runtime, l'import dynamique de Prisma échoue silencieusement.
+      // Bloqué si impersonation active (SP-447) : ne pas re-fetcher
+      // pour l'admin, on garde les données de la company impersonnée
       const SUBSCRIPTION_CHECK_INTERVAL = 5 * 60 * 1000 // 5 minutes
       const checkedAt = token.subscriptionCheckedAt as number | null
       if (
         token.companyId &&
         token.role !== 'SYSTEM_ADMIN' &&
+        !token.isImpersonating &&
         (!checkedAt || Date.now() - checkedAt > SUBSCRIPTION_CHECK_INTERVAL)
       ) {
         try {
@@ -164,6 +198,23 @@ export const authConfig: NextAuthConfig = {
           | null
         session.user.trialEndsAt = token.trialEndsAt as string | null
         session.user.currentPeriodEnd = token.currentPeriodEnd as string | null
+        // SP-447 : données impersonation exposées dans la session
+        session.user.isImpersonating = token.isImpersonating ?? false
+        session.user.originalAdminId = token.originalAdminId as
+          | string
+          | undefined
+        session.user.impersonatedUserId = token.impersonatedUserId as
+          | string
+          | undefined
+        session.user.impersonatedCompanyId = token.impersonatedCompanyId as
+          | string
+          | undefined
+        session.user.impersonatedUserEmail = token.impersonatedUserEmail as
+          | string
+          | undefined
+        session.user.impersonatedCompanyName = token.impersonatedCompanyName as
+          | string
+          | undefined
       }
       return session
     },
