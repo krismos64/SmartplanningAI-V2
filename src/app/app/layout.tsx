@@ -62,8 +62,22 @@ export default async function AppLayout({
     currentPeriodEnd: session.user.currentPeriodEnd ?? null,
   }
 
+  // SP-453 : données impersonation pour la bannière
+  const impersonationData = session.user.isImpersonating
+    ? {
+        isImpersonating: true,
+        impersonatedCompanyName:
+          session.user.impersonatedCompanyName ?? 'Entreprise',
+        impersonatedUserEmail: session.user.impersonatedUserEmail ?? '',
+      }
+    : undefined
+
   return (
-    <DashboardLayout user={user} subscriptionData={subscriptionData}>
+    <DashboardLayout
+      user={user}
+      subscriptionData={subscriptionData}
+      impersonationData={impersonationData}
+    >
       {children}
     </DashboardLayout>
   )
