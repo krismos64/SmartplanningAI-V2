@@ -63,6 +63,24 @@ vi.mock('@/lib/services/audit/audit.service', () => ({
 import { POST, DELETE } from '@/app/api/admin/impersonate/route'
 
 // ============================================================================
+// Types pour les reponses API (evite les unsafe-any ESLint)
+// ============================================================================
+
+interface ImpersonateSuccessResponse {
+  success: boolean
+  redirectTo: string
+  impersonation: {
+    isImpersonating: boolean
+    impersonatedCompanyName: string
+    impersonatedUserId: string
+  }
+}
+
+interface ImpersonateErrorResponse {
+  error: string
+}
+
+// ============================================================================
 // Helpers
 // ============================================================================
 
@@ -161,7 +179,7 @@ describe('API /api/admin/impersonate', () => {
       const response = await POST(request)
 
       expect(response.status).toBe(400)
-      const data = await response.json()
+      const data = (await response.json()) as ImpersonateErrorResponse
       expect(data.error).toContain('SYSTEM_ADMIN')
     })
 
@@ -176,7 +194,7 @@ describe('API /api/admin/impersonate', () => {
       const response = await POST(request)
 
       expect(response.status).toBe(400)
-      const data = await response.json()
+      const data = (await response.json()) as ImpersonateErrorResponse
       expect(data.error).toContain('désactivé')
     })
 
@@ -192,7 +210,7 @@ describe('API /api/admin/impersonate', () => {
       const response = await POST(request)
 
       expect(response.status).toBe(200)
-      const data = await response.json()
+      const data = (await response.json()) as ImpersonateSuccessResponse
 
       expect(data.success).toBe(true)
       expect(data.redirectTo).toBe('/app/dashboard')
@@ -209,6 +227,7 @@ describe('API /api/admin/impersonate', () => {
           action: 'IMPERSONATE',
           entityType: 'USER',
           entityId: 'user-001',
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           details: expect.objectContaining({
             event: 'start',
             targetUserId: 'user-001',
@@ -226,7 +245,7 @@ describe('API /api/admin/impersonate', () => {
       const response = await POST(request)
 
       expect(response.status).toBe(200)
-      const data = await response.json()
+      const data = (await response.json()) as ImpersonateSuccessResponse
       expect(data.success).toBe(true)
       expect(data.impersonation.impersonatedUserId).toBe('user-001')
     })
@@ -243,7 +262,7 @@ describe('API /api/admin/impersonate', () => {
       const response = await DELETE()
 
       expect(response.status).toBe(400)
-      const data = await response.json()
+      const data = (await response.json()) as ImpersonateErrorResponse
       expect(data.error).toContain('Aucune impersonation active')
     })
 
@@ -264,7 +283,7 @@ describe('API /api/admin/impersonate', () => {
       const response = await DELETE()
 
       expect(response.status).toBe(200)
-      const data = await response.json()
+      const data = (await response.json()) as ImpersonateSuccessResponse
       expect(data.success).toBe(true)
       expect(data.redirectTo).toBe('/app/admin/companies')
 
@@ -278,6 +297,7 @@ describe('API /api/admin/impersonate', () => {
           entityType: 'USER',
           entityId: 'user-001',
           userId: 'admin-001',
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           details: expect.objectContaining({
             event: 'stop',
             targetUserId: 'user-001',
