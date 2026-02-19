@@ -340,6 +340,7 @@ describe('SP-454 : impersonation guard sur les Server Actions', () => {
     activateImpersonation()
 
     // Mock user lookup pour passer le checkAccess avant le guard
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     vi.mocked(prisma.user.findUnique).mockResolvedValue({
       id: 'user-001',
       companyId: 'company-001',
