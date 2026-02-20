@@ -15,6 +15,7 @@
  */
 
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
@@ -28,10 +29,7 @@ vi.mock('@/lib/prisma', () => ({
   },
 }))
 
-import {
-  calculateMrrFromSubscriptions,
-  getCurrentMrr,
-} from '../mrr.service'
+import { calculateMrrFromSubscriptions, getCurrentMrr } from '../mrr.service'
 import type { MrrSubscription } from '../mrr.service'
 
 // ============================================================================
@@ -47,7 +45,12 @@ describe('calculateMrrFromSubscriptions', () => {
   // 2. Plan FREE
   it('retourne 0 pour un plan FREE', () => {
     const subs: MrrSubscription[] = [
-      { plan: 'FREE', quantity: 10, pricePerEmployee: 290, billingInterval: null },
+      {
+        plan: 'FREE',
+        quantity: 10,
+        pricePerEmployee: 290,
+        billingInterval: null,
+      },
     ]
     expect(calculateMrrFromSubscriptions(subs)).toBe(0)
   })
@@ -55,7 +58,12 @@ describe('calculateMrrFromSubscriptions', () => {
   // 3. PER_SEAT mensuel — 5 employes a 290 centimes → 14.5€
   it('calcule correctement un PER_SEAT mensuel', () => {
     const subs: MrrSubscription[] = [
-      { plan: 'PER_SEAT', quantity: 5, pricePerEmployee: 290, billingInterval: 'month' },
+      {
+        plan: 'PER_SEAT',
+        quantity: 5,
+        pricePerEmployee: 290,
+        billingInterval: 'month',
+      },
     ]
     expect(calculateMrrFromSubscriptions(subs)).toBe(14.5)
   })
@@ -63,7 +71,12 @@ describe('calculateMrrFromSubscriptions', () => {
   // 4. PER_SEAT annuel — 5 employes a 3480 centimes/an → 14.5€/mois
   it('divise par 12 pour un PER_SEAT annuel', () => {
     const subs: MrrSubscription[] = [
-      { plan: 'PER_SEAT', quantity: 5, pricePerEmployee: 3480, billingInterval: 'year' },
+      {
+        plan: 'PER_SEAT',
+        quantity: 5,
+        pricePerEmployee: 3480,
+        billingInterval: 'year',
+      },
     ]
     // (5 * 3480) / 12 / 100 = 17400 / 12 / 100 = 1450 / 100 = 14.5
     expect(calculateMrrFromSubscriptions(subs)).toBe(14.5)
@@ -72,8 +85,18 @@ describe('calculateMrrFromSubscriptions', () => {
   // 5. Mix FREE + PER_SEAT → seul PER_SEAT compte
   it('ignore les plans FREE dans un mix', () => {
     const subs: MrrSubscription[] = [
-      { plan: 'FREE', quantity: 3, pricePerEmployee: 290, billingInterval: null },
-      { plan: 'PER_SEAT', quantity: 10, pricePerEmployee: 290, billingInterval: 'month' },
+      {
+        plan: 'FREE',
+        quantity: 3,
+        pricePerEmployee: 290,
+        billingInterval: null,
+      },
+      {
+        plan: 'PER_SEAT',
+        quantity: 10,
+        pricePerEmployee: 290,
+        billingInterval: 'month',
+      },
     ]
     // Seul PER_SEAT : (10 * 290) / 100 = 29€
     expect(calculateMrrFromSubscriptions(subs)).toBe(29)
@@ -82,7 +105,12 @@ describe('calculateMrrFromSubscriptions', () => {
   // 6. billingInterval null → traite comme mensuel
   it('traite billingInterval null comme mensuel', () => {
     const subs: MrrSubscription[] = [
-      { plan: 'PER_SEAT', quantity: 5, pricePerEmployee: 290, billingInterval: null },
+      {
+        plan: 'PER_SEAT',
+        quantity: 5,
+        pricePerEmployee: 290,
+        billingInterval: null,
+      },
     ]
     // (5 * 290) / 100 = 14.5€
     expect(calculateMrrFromSubscriptions(subs)).toBe(14.5)
@@ -91,9 +119,24 @@ describe('calculateMrrFromSubscriptions', () => {
   // 7. Sommation de plusieurs PER_SEAT
   it('additionne correctement plusieurs abonnements PER_SEAT', () => {
     const subs: MrrSubscription[] = [
-      { plan: 'PER_SEAT', quantity: 5, pricePerEmployee: 290, billingInterval: 'month' },
-      { plan: 'PER_SEAT', quantity: 10, pricePerEmployee: 290, billingInterval: 'month' },
-      { plan: 'PER_SEAT', quantity: 3, pricePerEmployee: 290, billingInterval: 'year' },
+      {
+        plan: 'PER_SEAT',
+        quantity: 5,
+        pricePerEmployee: 290,
+        billingInterval: 'month',
+      },
+      {
+        plan: 'PER_SEAT',
+        quantity: 10,
+        pricePerEmployee: 290,
+        billingInterval: 'month',
+      },
+      {
+        plan: 'PER_SEAT',
+        quantity: 3,
+        pricePerEmployee: 290,
+        billingInterval: 'year',
+      },
     ]
     // Sub 1 : (5 * 290) / 100 = 14.5
     // Sub 2 : (10 * 290) / 100 = 29
@@ -114,8 +157,18 @@ describe('getCurrentMrr', () => {
   // 8. getCurrentMrr retourne le total via Prisma
   it('retourne le MRR total depuis les abonnements ACTIVE', async () => {
     mockFindMany.mockResolvedValue([
-      { plan: 'PER_SEAT', quantity: 5, pricePerEmployee: 290, billingInterval: 'month' },
-      { plan: 'PER_SEAT', quantity: 10, pricePerEmployee: 290, billingInterval: 'month' },
+      {
+        plan: 'PER_SEAT',
+        quantity: 5,
+        pricePerEmployee: 290,
+        billingInterval: 'month',
+      },
+      {
+        plan: 'PER_SEAT',
+        quantity: 10,
+        pricePerEmployee: 290,
+        billingInterval: 'month',
+      },
     ])
 
     const mrr = await getCurrentMrr()
