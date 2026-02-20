@@ -27,6 +27,7 @@ import {
   CompanyGrowthChart,
   TopActionsChart,
   SubscriptionPieChart,
+  RefreshButton,
 } from '@/components/admin/monitoring'
 import { Skeleton } from '@/components/ui/skeleton'
 
@@ -122,6 +123,7 @@ async function MonitoringContent() {
             status={health.status}
             latency={health.metrics.latency}
           />
+          <RefreshButton />
           <span className="text-xs text-muted-foreground">
             {new Date(timestamp).toLocaleTimeString('fr-FR')}
           </span>
