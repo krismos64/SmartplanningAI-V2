@@ -88,6 +88,9 @@ services:
       # Cron (emails trial)
       CRON_SECRET: ${CRON_SECRET}
 
+      # Health check protection (SP-470)
+      HEALTH_API_KEY: ${HEALTH_API_KEY}
+
       # Mode production
       NODE_ENV: production
     networks:
@@ -99,8 +102,13 @@ services:
         condition: service_healthy
     # 📚 CDA : Healthcheck = vérification périodique que l'app répond
     # Si elle échoue 3x, Docker peut redémarrer le conteneur
+    # SP-470 : Passe le header Authorization: Bearer pour GET /api/health
     healthcheck:
-      test: ['CMD', 'node', '-e', "require('http').get('http://localhost:3000/api/health', (r) => process.exit(r.statusCode === 200 ? 0 : 1))"]
+      test:
+        - 'CMD'
+        - 'node'
+        - '-e'
+        - "var h=require('http');h.get('http://localhost:3000/api/health',{headers:{'Authorization':'Bearer '+(process.env.HEALTH_API_KEY||'')}},function(r){process.exit(r.statusCode===200?0:1)}).on('error',function(){process.exit(1)})"
       interval: 30s
       timeout: 10s
       retries: 3

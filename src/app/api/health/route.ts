@@ -71,15 +71,37 @@ export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
 /**
+ * Vérifie la clé API du health check
+ *
+ * Pattern identique à CRON_SECRET (src/app/api/cron/trial-emails/route.ts)
+ * Si HEALTH_API_KEY absent de l'env → refuser (fail secure)
+ *
+ * @param request - Requête entrante avec header Authorization
+ * @returns true si le token Bearer correspond à HEALTH_API_KEY
+ *
+ * @ticket SP-470
+ */
+function isAuthorized(request: NextRequest): boolean {
+  if (!process.env.HEALTH_API_KEY) return false
+
+  const authHeader = request.headers.get('authorization')
+  const token = authHeader?.replace('Bearer ', '')
+  return token === process.env.HEALTH_API_KEY
+}
+
+/**
  * GET /api/health
  *
  * Retourne l'état de santé de la base de données
+ * Protégé par HEALTH_API_KEY (header Authorization: Bearer)
  *
  * QUERY PARAMETERS :
  * - quick (boolean) : Si true, effectue un check rapide (connexion uniquement)
  * - format (string) : 'json' (défaut) ou 'text' pour format lisible
  *
  * RÉPONSES :
+ *
+ * 401 Unauthorized - Clé API manquante ou invalide
  *
  * 200 OK - Database healthy :
  * ```json
@@ -102,8 +124,21 @@ export const revalidate = 0
  * ```
  *
  * ✅ Source Context7 : Next.js API Routes Best Practices
+ *
+ * @ticket SP-470
  */
 export async function GET(request: NextRequest): Promise<NextResponse> {
+  // Protection par clé API — même pattern que CRON_SECRET (SP-470)
+  if (!isAuthorized(request)) {
+    return NextResponse.json(
+      {
+        error: 'Unauthorized',
+        message: 'Header Authorization: Bearer <HEALTH_API_KEY> requis',
+      },
+      { status: 401 }
+    )
+  }
+
   try {
     // Parser les query parameters
     const searchParams = request.nextUrl.searchParams
@@ -237,9 +272,10 @@ export async function OPTIONS(): Promise<NextResponse> {
   return new NextResponse(null, {
     status: 204, // No Content
     headers: {
-      'Access-Control-Allow-Origin': '*', // À restreindre en production
-      'Access-Control-Allow-Methods': 'GET, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
+      'Access-Control-Allow-Origin':
+        process.env.NEXTAUTH_URL ?? 'https://smartplanning.fr',
+      'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
       'Access-Control-Max-Age': '86400', // 24h
     },
   })
@@ -254,7 +290,14 @@ export async function OPTIONS(): Promise<NextResponse> {
  * - Économie de bandwidth
  * - Checks load balancer optimisés
  *
+ * IMPORTANT : HEAD reste public (pas d'auth) car :
+ * - Utilisé par les load balancers haute fréquence
+ * - Ne retourne aucune donnée sensible (juste status code + X-Health-Status)
+ * - Les load balancers ne supportent pas toujours les headers custom
+ *
  * ✅ Source Context7 : RESTful API Best Practices
+ *
+ * @ticket SP-470
  */
 export async function HEAD(): Promise<NextResponse> {
   try {

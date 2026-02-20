@@ -198,10 +198,12 @@ jobs:
           # Downtime réduit à ~5-10s (temps de recréation du conteneur)
 
           echo "⏳ Attente du healthcheck..."
+          # SP-470 : Charger HEALTH_API_KEY depuis .env pour le healthcheck authentifié
+          HEALTH_KEY=$(grep -oP 'HEALTH_API_KEY=\K.*' .env 2>/dev/null || echo "")
           RETRIES=0
           MAX_RETRIES=30
           until [ $RETRIES -ge $MAX_RETRIES ]; do
-            HEALTH_RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/api/health 2>/dev/null || echo "000")
+            HEALTH_RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer $HEALTH_KEY" http://localhost:3000/api/health 2>/dev/null || echo "000")
             if [ "$HEALTH_RESPONSE" = "200" ]; then
               echo "✅ Application déployée avec succès ! (healthcheck OK en ~$((RETRIES * 5))s)"
               break
