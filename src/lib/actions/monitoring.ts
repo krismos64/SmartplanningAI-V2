@@ -6,7 +6,7 @@
  * Collecte les données de santé et métriques de la plateforme.
  * Réservé au SYSTEM_ADMIN.
  *
- * @ticket SP-464
+ * @ticket SP-464, SP-465
  */
 
 import { checkPermission } from './crud-utils'
@@ -14,6 +14,7 @@ import { checkDatabaseHealth } from '@/lib/db-health'
 import { getAdminQuickStats } from '@/lib/services/dashboard/admin-stats.service'
 import { prisma } from '@/lib/prisma'
 import type { HealthCheckResult } from '@/lib/db-health'
+import type { SubscriptionStatus } from '@prisma/client'
 import type { CrudActionResult } from '@/types'
 
 /**
@@ -90,6 +91,158 @@ export async function getMonitoringSnapshot(): Promise<
         error instanceof Error
           ? error.message
           : 'Erreur lors de la récupération du snapshot monitoring',
+    }
+  }
+}
+
+// ============================================================================
+// Chart Data — SP-465
+// ============================================================================
+
+/**
+ * Point d'activité quotidien (audit logs)
+ */
+export interface DailyActivityPoint {
+  date: string
+  count: number
+}
+
+/**
+ * Distribution des abonnements par statut (pour PieChart)
+ */
+export interface SubscriptionDistributionItem {
+  status: SubscriptionStatus
+  count: number
+}
+
+/**
+ * Action la plus fréquente (pour BarChart)
+ */
+export interface TopActionItem {
+  action: string
+  count: number
+}
+
+/**
+ * Données graphiques pour le monitoring
+ */
+export interface MonitoringChartData {
+  auditActivity: DailyActivityPoint[]
+  subscriptionDistribution: SubscriptionDistributionItem[]
+  topActions: TopActionItem[]
+  companyGrowth: DailyActivityPoint[]
+}
+
+/**
+ * Génère un tableau de N jours consécutifs avec count=0
+ */
+function generateEmptyDays(days: number): Map<string, number> {
+  const map = new Map<string, number>()
+  const now = new Date()
+  for (let i = days - 1; i >= 0; i--) {
+    const d = new Date(now)
+    d.setDate(d.getDate() - i)
+    const key = d.toISOString().split('T')[0] ?? ''
+    map.set(key, 0)
+  }
+  return map
+}
+
+/**
+ * Récupère les données graphiques pour le monitoring
+ *
+ * Vérifie RBAC SYSTEM_ADMIN avant toute requête.
+ * Agrège : activité audit 7j, distribution abonnements, top actions, croissance entreprises 30j.
+ */
+export async function getMonitoringChartData(): Promise<
+  CrudActionResult<MonitoringChartData>
+> {
+  const authResult = await checkPermission('SYSTEM_ADMIN')
+  if (!authResult.success) return authResult
+
+  try {
+    const now = new Date()
+    const sevenDaysAgo = new Date(now)
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6)
+    sevenDaysAgo.setHours(0, 0, 0, 0)
+
+    const thirtyDaysAgo = new Date(now)
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 29)
+    thirtyDaysAgo.setHours(0, 0, 0, 0)
+
+    const [auditLogs, subscriptionGroups, topActionsRaw, companies] =
+      await Promise.all([
+        prisma.auditLog.findMany({
+          where: { createdAt: { gte: sevenDaysAgo } },
+          select: { createdAt: true },
+        }),
+        prisma.subscription.groupBy({
+          by: ['status'],
+          _count: true,
+        }),
+        prisma.auditLog.groupBy({
+          by: ['action'],
+          where: { createdAt: { gte: sevenDaysAgo } },
+          _count: { action: true },
+          orderBy: { _count: { action: 'desc' } },
+          take: 5,
+        }),
+        prisma.company.findMany({
+          where: { createdAt: { gte: thirtyDaysAgo } },
+          select: { createdAt: true },
+        }),
+      ])
+
+    // auditActivity : agréger par jour (7 entrées)
+    const activityMap = generateEmptyDays(7)
+    for (const log of auditLogs) {
+      const key = log.createdAt.toISOString().split('T')[0] ?? ''
+      activityMap.set(key, (activityMap.get(key) ?? 0) + 1)
+    }
+    const auditActivity: DailyActivityPoint[] = Array.from(
+      activityMap.entries()
+    ).map(([date, count]) => ({ date, count }))
+
+    // subscriptionDistribution
+    const subscriptionDistribution: SubscriptionDistributionItem[] =
+      subscriptionGroups.map((item) => ({
+        status: item.status,
+        count: item._count,
+      }))
+
+    // topActions
+    const topActions: TopActionItem[] = topActionsRaw.map((item) => ({
+      action: item.action,
+      count: item._count.action,
+    }))
+
+    // companyGrowth : agréger par jour (30 entrées)
+    const growthMap = generateEmptyDays(30)
+    for (const company of companies) {
+      const key = company.createdAt.toISOString().split('T')[0] ?? ''
+      growthMap.set(key, (growthMap.get(key) ?? 0) + 1)
+    }
+    const companyGrowth: DailyActivityPoint[] = Array.from(
+      growthMap.entries()
+    ).map(([date, count]) => ({ date, count }))
+
+    return {
+      success: true,
+      data: {
+        auditActivity,
+        subscriptionDistribution,
+        topActions,
+        companyGrowth,
+      },
+    }
+  } catch (error) {
+    console.error('[getMonitoringChartData] Error:', error)
+    return {
+      success: false,
+      error:
+        error instanceof Error
+          ? error.message
+          : 'Erreur lors de la récupération des données graphiques monitoring',
     }
   }
 }

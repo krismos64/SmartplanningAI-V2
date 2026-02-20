@@ -2,24 +2,31 @@
  * Page Monitoring - Dashboard surveillance système
  *
  * Server Component avec Suspense boundaries.
- * Affiche : statut DB, KPIs SaaS, répartition abonnements.
+ * Affiche : statut DB, KPIs SaaS, répartition abonnements, graphiques.
  * Double protection RBAC : middleware (/app/admin) + hasRequiredRole.
  *
- * @ticket SP-464
+ * @ticket SP-464, SP-465
  */
 import { Suspense } from 'react'
 import type { Metadata } from 'next'
 import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { hasRequiredRole } from '@/lib/permissions'
-import { Activity } from 'lucide-react'
+import { Activity, TrendingUp } from 'lucide-react'
 
-import { getMonitoringSnapshot } from '@/lib/actions/monitoring'
+import {
+  getMonitoringSnapshot,
+  getMonitoringChartData,
+} from '@/lib/actions/monitoring'
 import {
   HealthStatusBadge,
   DatabaseHealthPanel,
   MonitoringKpisGrid,
   SubscriptionBreakdownPanel,
+  ActivityChart,
+  CompanyGrowthChart,
+  TopActionsChart,
+  SubscriptionPieChart,
 } from '@/components/admin/monitoring'
 import { Skeleton } from '@/components/ui/skeleton'
 
@@ -55,6 +62,14 @@ function MonitoringSkeleton() {
         <Skeleton className="h-64 rounded-lg" />
         <Skeleton className="h-64 rounded-lg" />
       </div>
+      {/* Charts skeleton */}
+      <Skeleton className="h-6 w-48" />
+      <div className="grid gap-6 md:grid-cols-2">
+        <Skeleton className="h-80 rounded-lg" />
+        <Skeleton className="h-80 rounded-lg" />
+        <Skeleton className="h-80 rounded-lg" />
+        <Skeleton className="h-80 rounded-lg" />
+      </div>
     </div>
   )
 }
@@ -74,7 +89,10 @@ function ErrorState({ message }: { message: string }) {
 }
 
 async function MonitoringContent() {
-  const result = await getMonitoringSnapshot()
+  const [result, chartResult] = await Promise.all([
+    getMonitoringSnapshot(),
+    getMonitoringChartData(),
+  ])
 
   if (!result.success) {
     return <ErrorState message={result.error} />
@@ -123,6 +141,25 @@ async function MonitoringContent() {
         <DatabaseHealthPanel health={health} />
         <SubscriptionBreakdownPanel breakdown={subscriptionBreakdown} />
       </div>
+
+      {/* Section Graphiques — SP-465 */}
+      {chartResult.success && chartResult.data && (
+        <>
+          <div className="flex items-center gap-2 border-t pt-6">
+            <TrendingUp className="h-5 w-5 text-primary" aria-hidden="true" />
+            <h2 className="text-lg font-semibold">Activité & Tendances</h2>
+          </div>
+
+          <div className="grid gap-6 md:grid-cols-2">
+            <ActivityChart data={chartResult.data.auditActivity} />
+            <CompanyGrowthChart data={chartResult.data.companyGrowth} />
+            <TopActionsChart data={chartResult.data.topActions} />
+            <SubscriptionPieChart
+              data={chartResult.data.subscriptionDistribution}
+            />
+          </div>
+        </>
+      )}
     </div>
   )
 }
