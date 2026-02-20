@@ -57,7 +57,7 @@ export class SchedulesPage {
 
     // Header
     this.title = page.getByTestId('schedules-title')
-    this.newShiftButton = page.getByTestId('new-shift-button')
+    this.newShiftButton = page.getByTestId('new-shift-button').first()
     this.exportButton = page.getByTestId('export-button')
 
     // Navigation

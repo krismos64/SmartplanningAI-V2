@@ -112,9 +112,7 @@ export class CompanyFormPage {
     this.isActiveSwitch = page.getByRole('switch', { name: /actif/i })
 
     // Actions
-    this.submitButton = page.getByRole('button', {
-      name: /créer|creer|enregistrer|sauvegarder|modifier/i,
-    })
+    this.submitButton = page.getByTestId('company-form-submit')
     this.cancelButton = page.getByRole('button', { name: /annuler/i })
 
     // Messages

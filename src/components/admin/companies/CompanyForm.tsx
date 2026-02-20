@@ -432,6 +432,7 @@ export function CompanyForm({
           <Button
             type="submit"
             disabled={isPending || isImpersonating}
+            data-testid="company-form-submit"
             title={
               isImpersonating ? 'Non disponible en mode support' : undefined
             }

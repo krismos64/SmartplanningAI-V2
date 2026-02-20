@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 19 février 2026 (Impersonation E2E + Unit Tests SP-456, 5770 tests unitaires + 584 E2E)
+- **Dernière mise à jour** : 20 février 2026 (Monitoring MVP + Charts SP-464/SP-465, 5822 tests unitaires + 584 E2E)
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -82,6 +82,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Audit System** (SP-442, SP-443, SP-444, SP-445, SP-446) : Journal d'audit complet avec modèle Prisma AuditLog (9 actions, 10 types d'entités), service `logAuditAction` fire-and-forget, Server Actions RBAC (`getAuditLogs` paginé avec filtres, `exportAuditLogsCsv`), page admin `/app/admin/logs` avec DataTable TanStack, filtres action/entité/utilisateur/date, export CSV, modal détail JSON. Protection anti-injection (sanitization HTML/SQL/NoSQL). 122 tests unitaires + 26 tests E2E
 - **User Activity Page** (SP-463) : Page activité utilisateur `/app/profile/activity` avec timeline relative française (`Intl.RelativeTimeFormat`). Server Action `getUserActivity` filtrant par userId JWT avec isolation RBAC. Accès depuis Header dropdown "Mon activité" et ProfileActions. 17 tests unitaires
 - **Impersonation Mode** (SP-453, SP-454, SP-456) : Mode support SYSTEM_ADMIN "Voir espace client" avec cookie `sp-impersonation` (HttpOnly, TTL 3600s). API REST `/api/admin/impersonate` (POST start, DELETE stop), bannière orange avec nom entreprise et bouton quitter, impersonation guard middleware (blocage routes admin/billing), subscription guard bypass en mode impersonation (évite boucle redirect infinie), fallback cookie dans layout.tsx (résilience updateSession NextAuth v5), audit trail start/stop. Page Object Model Playwright (ImpersonationPage). 10 tests unitaires + 9 tests E2E
+- **Monitoring System** (SP-464, SP-465) : Page monitoring admin `/app/admin/monitoring` avec Suspense + skeleton loading. **SP-464 MVP** : Server Action `getMonitoringSnapshot` RBAC SYSTEM_ADMIN (health check DB, quick stats SaaS, répartition abonnements), 8 composants (HealthStatusBadge, DatabaseHealthPanel avec ProgressBar pool, MonitoringKpisGrid 4 KPIs glass cards, SubscriptionBreakdownPanel badges colorés par statut), service `checkDatabaseHealth` (4 checks : connexion, latence, pool, migrations), 30 tests unitaires. **SP-465 Charts** : Server Action `getMonitoringChartData` (auditActivity 7j, subscriptionDistribution, topActions top 5, companyGrowth 30j), 4 composants Recharts (ActivityChart AreaChartWidget, SubscriptionPieChart donut avec STATUS_COLORS sémantiques, TopActionsChart BarChartWidget horizontal avec ACTION_LABELS FR, CompanyGrowthChart AreaChartWidget), helper `generateEmptyDays` pour zero-fill, 22 tests unitaires. Total : 52 tests unitaires
 
 ### MVP (Phases 1-4)
 
@@ -2434,11 +2435,14 @@ function CTAButton() {
 
 📚 **Documentation complète** : [`/docs/analytics.md`](/docs/analytics.md)
 
-### Monitoring (à venir)
+### Monitoring Admin (SP-464, SP-465)
 
-- Sentry pour les erreurs
-- LogRocket pour le comportement utilisateur
-- Lighthouse CI pour les performances
+- Page `/app/admin/monitoring` SYSTEM_ADMIN avec Suspense + skeleton loading
+- **Health Check DB** : Service `checkDatabaseHealth` (connexion, latence, pool Prisma, migrations Prisma)
+- **KPIs SaaS** : Entreprises, utilisateurs, MRR, churn (via `getAdminQuickStats`)
+- **Répartition abonnements** : Badges colorés par statut (ACTIVE, TRIAL, PAST_DUE, CANCELED, EXPIRED)
+- **Graphiques Recharts** (SP-465) : Activité audit 7 jours (AreaChart), distribution abonnements (PieChart donut), top 5 actions audit (BarChart horizontal), croissance entreprises 30 jours (AreaChart)
+- 52 tests unitaires (30 MVP + 22 charts)
 
 ## SEO (SP-462)
 
@@ -2492,11 +2496,11 @@ Toutes les pages publiques sont optimisées pour les LLMs (ChatGPT, Claude, Perp
 - **E2E** : Playwright (configuré)
 - **Coverage** : v8 provider
 
-### Couverture actuelle (19 février 2026 - SP-456)
+### Couverture actuelle (20 février 2026 - SP-465)
 
 | Catégorie                              | Coverage   | Tests    |
 | -------------------------------------- | ---------- | -------- |
-| **Global**                             | **~86%**   | **5770** |
+| **Global**                             | **~86%**   | **5822** |
 | loading                                | 100%     | 152      |
 | modals                                 | 100%     | 52       |
 | cards                                  | 77.09%   | 88       |
@@ -2624,6 +2628,17 @@ Toutes les pages publiques sont optimisées pour les LLMs (ChatGPT, Claude, Perp
 | audit-logs actions (SP-445)      | 100%     | 33       |
 | getUserActivity (SP-463)         | 100%     | 17       |
 | impersonate route (SP-456)       | 100%     | 10       |
+| monitoring action (SP-464)       | 100%     | 10       |
+| db-health service (SP-464)       | 100%     | 8        |
+| HealthStatusBadge (SP-464)       | 100%     | 5        |
+| DatabaseHealthPanel (SP-464)     | 100%     | 12       |
+| MonitoringKpisGrid (SP-464)      | 100%     | 4        |
+| SubscriptionBreakdownPanel (SP-464) | 100%  | 4        |
+| monitoring-chart action (SP-465) | 100%     | 10       |
+| ActivityChart (SP-465)           | 100%     | 4        |
+| SubscriptionPieChart (SP-465)    | 100%     | 4        |
+| TopActionsChart (SP-465)         | 100%     | 4        |
+| CompanyGrowthChart (SP-465)      | 100%     | 4        |
 
 ### Tests E2E
 
@@ -2668,7 +2683,7 @@ Toutes les pages publiques sont optimisées pour les LLMs (ChatGPT, Claude, Perp
 | **Billing Subscription (SP-373)**   | 7       | ✅                                |
 | **Audit Logs (SP-446)**            | 26      | ✅ (23 pass + 3 skip)            |
 | **Impersonation (SP-456)**         | 9       | ✅                                |
-| **Total E2E (40 fichiers)**         | **~584** | ✅                               |
+| **Total E2E (40 fichiers)**         | **~584** | ✅                                |
 
 **Note** : Tests desktop exécutés sur Chromium uniquement. Tests mobiles exécutés sur 5 devices (iPhone SE, iPhone 14 Pro, Pixel 7, iPad Mini, iPad Pro 11") via Chromium avec émulation mobile (WebKit supprimé car bug HTTPS upgrade sur localhost). Consolidation 50→38 fichiers le 18/02/2026 (suppression redondances, fusion suites similaires). Ajout audit-logs.spec.ts le 18/02/2026 (39 fichiers). Ajout impersonation-flow.spec.ts le 19/02/2026 (40 fichiers).
 

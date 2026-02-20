@@ -83,10 +83,14 @@ export class ProfilePage {
 
     // Actions Card
     this.actionsCard = page.locator('text=Actions').locator('..')
-    this.editProfileButton = page.getByTestId('action-edit-profile')
-    this.changePasswordButton = page.getByTestId('action-change-password')
-    this.exportDataButton = page.getByTestId('action-export-data')
-    this.deleteAccountButton = page.getByTestId('action-delete-account')
+    this.editProfileButton = page.getByTestId('action-edit-profile').first()
+    this.changePasswordButton = page
+      .getByTestId('action-change-password')
+      .first()
+    this.exportDataButton = page.getByTestId('action-export-data').first()
+    this.deleteAccountButton = page
+      .getByTestId('action-delete-account')
+      .first()
   }
 
   async goto() {
