@@ -15,6 +15,7 @@
  */
 
 import { prisma } from '@/lib/prisma'
+import { calculateMrrFromSubscriptions } from '@/lib/services/mrr.service'
 import type { AdminStatsResult, ServiceResult } from './types'
 import {
   calculateTrend,
@@ -167,7 +168,7 @@ async function getMRR(): Promise<AdminStatsResult['mrr']> {
     },
   })
 
-  const currentMRR = calculateMRRFromSubscriptions(currentSubscriptions)
+  const currentMRR = calculateMrrFromSubscriptions(currentSubscriptions)
 
   // Abonnements a la fin de la periode precedente (approximation)
   const previousSubscriptions = await prisma.subscription.findMany({
@@ -183,42 +184,13 @@ async function getMRR(): Promise<AdminStatsResult['mrr']> {
     },
   })
 
-  const previousMRR = calculateMRRFromSubscriptions(previousSubscriptions)
+  const previousMRR = calculateMrrFromSubscriptions(previousSubscriptions)
 
   return {
     current: currentMRR,
     previous: previousMRR,
     trend: calculateTrend(currentMRR, previousMRR),
   }
-}
-
-/**
- * Calcule le MRR a partir d'une liste d'abonnements (modèle per-seat)
- * MRR = somme(quantity × pricePerEmployee) pour les PER_SEAT actifs
- * Retourne le montant en euros (centimes → euros)
- */
-function calculateMRRFromSubscriptions(
-  subscriptions: Array<{
-    plan: string
-    quantity: number
-    pricePerEmployee: number
-    billingInterval: string | null
-  }>
-): number {
-  return subscriptions.reduce((total, sub) => {
-    // FREE = pas de revenu
-    if (sub.plan === 'FREE') return total
-
-    // Calcul per-seat en centimes puis conversion euros
-    let monthlyPriceCents = sub.quantity * sub.pricePerEmployee
-
-    // Si facturation annuelle, diviser par 12
-    if (sub.billingInterval === 'year') {
-      monthlyPriceCents = monthlyPriceCents / 12
-    }
-
-    return total + monthlyPriceCents / 100
-  }, 0)
 }
 
 /**
@@ -295,10 +267,11 @@ async function getRevenueByPlan(): Promise<AdminStatsResult['revenueByPlan']> {
       plan: true,
       quantity: true,
       pricePerEmployee: true,
+      billingInterval: true,
     },
   })
 
-  // Calculer le revenue par plan
+  // Calculer le revenue par plan (MRR mensuel via service partagé)
   const revenueMap: Record<string, { revenue: number; count: number }> = {}
 
   activeSubscriptions.forEach((sub) => {
@@ -307,8 +280,14 @@ async function getRevenueByPlan(): Promise<AdminStatsResult['revenueByPlan']> {
       revenueMap[label] = { revenue: 0, count: 0 }
     }
     revenueMap[label].count++
-    // Revenue en euros (centimes → euros)
-    revenueMap[label].revenue += (sub.quantity * sub.pricePerEmployee) / 100
+    revenueMap[label].revenue += calculateMrrFromSubscriptions([
+      {
+        plan: sub.plan,
+        quantity: sub.quantity,
+        pricePerEmployee: sub.pricePerEmployee,
+        billingInterval: sub.billingInterval ?? null,
+      },
+    ])
   })
 
   // Construire le résultat avec tous les plans
