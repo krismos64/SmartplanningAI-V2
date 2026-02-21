@@ -36,8 +36,9 @@ export class AppearancePage {
   constructor(page: Page) {
     this.page = page
 
-    // Page containers
-    this.appearancePage = page.getByTestId('appearance-page')
+    // Page containers — scoped to #main-content to avoid strict mode violation
+    // when React renders duplicate testids during hydration
+    this.appearancePage = page.locator('#main-content').getByTestId('appearance-page')
     this.loadingState = page.getByTestId('appearance-loading')
 
     // Theme selector

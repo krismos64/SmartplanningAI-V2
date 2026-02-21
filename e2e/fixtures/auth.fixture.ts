@@ -93,8 +93,12 @@ export async function loginAs(page: Page, user: TestUser): Promise<void> {
   }
   await page.waitForLoadState('domcontentloaded')
 
+  // Attendre que le champ email soit visible (hydration React peut etre lente en CI)
+  const emailField = page.getByPlaceholder('vous@entreprise.com')
+  await emailField.waitFor({ state: 'visible', timeout: 20000 })
+
   // Remplir le formulaire
-  await page.getByPlaceholder('vous@entreprise.com').fill(user.email)
+  await emailField.fill(user.email)
   await page.getByPlaceholder('••••••••').fill(user.password)
 
   // Soumettre

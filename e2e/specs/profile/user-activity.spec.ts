@@ -44,7 +44,7 @@ test.describe('User Activity — Affichage', () => {
     // Soit la timeline avec des entrees, soit "Aucune activite recente"
     const timeline = directorPage.locator('main')
     const hasEntries = await timeline
-      .getByText(/connexion|création|modification|suppression/i)
+      .getByText(/connexion|créé|modifié|supprimé|déconnexion|export|changement/i)
       .first()
       .isVisible()
       .catch(() => false)
