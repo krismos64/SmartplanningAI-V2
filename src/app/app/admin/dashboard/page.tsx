@@ -18,6 +18,7 @@ import { AdminSignupsChart } from './_components/AdminSignupsChart'
 import { AdminPlansChart } from './_components/AdminPlansChart'
 import { AdminRecentCompanies } from './_components/AdminRecentCompanies'
 import { AdminQuickActions } from './_components/AdminQuickActions'
+import { TrialsAtRiskWidget } from './_components/TrialsAtRiskWidget'
 import { PersonalTasksWidget } from '@/components/dashboard'
 import { getPersonalTasksForWidget } from '@/lib/actions/personal-tasks'
 
@@ -108,6 +109,9 @@ export default async function AdminDashboardPage() {
         <AdminMrrChart companiesGrowth={stats.companiesGrowth} />
         <AdminSignupsChart companiesGrowth={stats.companiesGrowth} />
       </div>
+
+      {/* Widget Trials at risk (SP-473) */}
+      <TrialsAtRiskWidget />
 
       {/* Charts plans + dernières entreprises */}
       <div className="grid gap-6 md:grid-cols-2">

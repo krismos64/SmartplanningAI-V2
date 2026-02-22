@@ -12,6 +12,7 @@ export { AdminSignupsChart } from './AdminSignupsChart'
 export { AdminPlansChart } from './AdminPlansChart'
 export { AdminRecentCompanies } from './AdminRecentCompanies'
 export { AdminQuickActions } from './AdminQuickActions'
+export { TrialsAtRiskWidget } from './TrialsAtRiskWidget'
 
 // Types
 export type { AdminWelcomeProps } from './AdminWelcome'
