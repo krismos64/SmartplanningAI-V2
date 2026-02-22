@@ -93,6 +93,13 @@ const menuItems: MenuItem[] = [
     roles: ['SYSTEM_ADMIN'],
   },
   {
+    id: 'admin-users',
+    label: 'Utilisateurs',
+    icon: Users,
+    href: '/app/admin/users',
+    roles: ['SYSTEM_ADMIN'],
+  },
+  {
     id: 'monitoring',
     label: 'Monitoring',
     icon: Activity,
