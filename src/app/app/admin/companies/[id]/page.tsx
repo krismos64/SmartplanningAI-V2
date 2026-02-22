@@ -16,6 +16,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { CompanyForm } from '@/components/admin/companies'
+import { ContactModal } from './_components/ContactModal'
 import { getCompany } from '@/lib/actions/companies'
 import {
   subscriptionPlanLabels,
@@ -128,6 +129,11 @@ export default async function EditCompanyPage({
           <p className="text-2xl font-bold">{company._count.employees}</p>
           <p className="text-xs text-muted-foreground">Employés</p>
         </div>
+      </div>
+
+      {/* Contact admin (SP-474) */}
+      <div className="flex justify-end">
+        <ContactModal companyId={company.id} companyName={company.name} />
       </div>
 
       {/* Formulaire */}
