@@ -40,10 +40,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 
-import {
-  getAllUsersAdmin,
-  type AdminUserRow,
-} from '@/lib/actions/admin-users'
+import { getAllUsersAdmin, type AdminUserRow } from '@/lib/actions/admin-users'
 
 // ============================================================================
 // Constants
@@ -63,7 +60,13 @@ type RoleFilter = (typeof ROLE_OPTIONS)[number]['value']
 
 const ROLE_BADGE_VARIANT: Record<
   string,
-  'default' | 'secondary' | 'destructive' | 'outline' | 'success' | 'warning' | 'info'
+  | 'default'
+  | 'secondary'
+  | 'destructive'
+  | 'outline'
+  | 'success'
+  | 'warning'
+  | 'info'
 > = {
   SYSTEM_ADMIN: 'destructive',
   DIRECTOR: 'default',
@@ -93,7 +96,9 @@ function exportCsv(users: AdminUserRow[]) {
     new Date(u.createdAt).toISOString().split('T')[0],
   ])
   const csv = [headers, ...rows]
-    .map((r) => r.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+    .map((r) =>
+      r.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(',')
+    )
     .join('\n')
   const blob = new Blob([`\uFEFF${csv}`], {
     type: 'text/csv;charset=utf-8;',
@@ -133,7 +138,7 @@ export function UsersDataTable() {
           page: p,
           pageSize: PAGE_SIZE,
           search: s || undefined,
-          role: role === 'ALL' ? undefined : (role as Exclude<RoleFilter, 'ALL'>),
+          role: role === 'ALL' ? undefined : role,
         })
         setUsers(result.users)
         setTotal(result.total)
@@ -147,7 +152,7 @@ export function UsersDataTable() {
 
   // Initial load
   useEffect(() => {
-    fetchUsers(1, '', 'ALL')
+    void fetchUsers(1, '', 'ALL')
   }, [fetchUsers])
 
   // --------------------------------------------------
@@ -158,7 +163,7 @@ export function UsersDataTable() {
     if (debounceRef.current) clearTimeout(debounceRef.current)
     debounceRef.current = setTimeout(() => {
       setPage(1)
-      fetchUsers(1, value, roleFilter)
+      void fetchUsers(1, value, roleFilter)
     }, 300)
   }
 
@@ -166,21 +171,21 @@ export function UsersDataTable() {
     const role = value as RoleFilter
     setRoleFilter(role)
     setPage(1)
-    fetchUsers(1, search, role)
+    void fetchUsers(1, search, role)
   }
 
   const handlePrev = () => {
     if (page <= 1) return
     const newPage = page - 1
     setPage(newPage)
-    fetchUsers(newPage, search, roleFilter)
+    void fetchUsers(newPage, search, roleFilter)
   }
 
   const handleNext = () => {
     if (page >= totalPages) return
     const newPage = page + 1
     setPage(newPage)
-    fetchUsers(newPage, search, roleFilter)
+    void fetchUsers(newPage, search, roleFilter)
   }
 
   // --------------------------------------------------
@@ -200,9 +205,7 @@ export function UsersDataTable() {
             <Users className="h-6 w-6 text-primary" aria-hidden="true" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">
-              Utilisateurs
-            </h1>
+            <h1 className="text-2xl font-bold tracking-tight">Utilisateurs</h1>
             <p className="text-sm text-muted-foreground">
               {total} utilisateur{total > 1 ? 's' : ''} sur la plateforme
             </p>
@@ -232,7 +235,10 @@ export function UsersDataTable() {
           />
         </div>
         <Select value={roleFilter} onValueChange={handleRoleChange}>
-          <SelectTrigger className="w-full sm:w-48" data-testid="users-role-filter">
+          <SelectTrigger
+            className="w-full sm:w-48"
+            data-testid="users-role-filter"
+          >
             <SelectValue placeholder="Filtrer par rôle" />
           </SelectTrigger>
           <SelectContent>
@@ -262,7 +268,7 @@ export function UsersDataTable() {
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-8">
+                <TableCell colSpan={7} className="py-8 text-center">
                   <div className="flex items-center justify-center gap-2 text-muted-foreground">
                     <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
                     Chargement...
@@ -271,7 +277,10 @@ export function UsersDataTable() {
               </TableRow>
             ) : users.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                <TableCell
+                  colSpan={7}
+                  className="py-8 text-center text-muted-foreground"
+                >
                   Aucun utilisateur trouvé
                 </TableCell>
               </TableRow>
@@ -283,7 +292,9 @@ export function UsersDataTable() {
                   </TableCell>
                   <TableCell>{user.email}</TableCell>
                   <TableCell>
-                    <Badge variant={ROLE_BADGE_VARIANT[user.role] ?? 'secondary'}>
+                    <Badge
+                      variant={ROLE_BADGE_VARIANT[user.role] ?? 'secondary'}
+                    >
                       {ROLE_LABELS[user.role] ?? user.role}
                     </Badge>
                   </TableCell>
@@ -305,17 +316,19 @@ export function UsersDataTable() {
                   </TableCell>
                   <TableCell>
                     {user.isActive ? (
-                      <Badge variant="success" size="sm">Actif</Badge>
+                      <Badge variant="success" size="sm">
+                        Actif
+                      </Badge>
                     ) : (
-                      <Badge variant="destructive" size="sm">Inactif</Badge>
+                      <Badge variant="destructive" size="sm">
+                        Inactif
+                      </Badge>
                     )}
                   </TableCell>
                   <TableCell className="text-right">
                     {user.companyId && (
                       <Button asChild variant="ghost" size="sm">
-                        <Link href="/app/admin/companies">
-                          Voir entreprise
-                        </Link>
+                        <Link href="/app/admin/companies">Voir entreprise</Link>
                       </Button>
                     )}
                   </TableCell>
@@ -330,7 +343,8 @@ export function UsersDataTable() {
       {totalPages > 1 && (
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
-            Page {page} sur {totalPages} ({total} résultat{total > 1 ? 's' : ''})
+            Page {page} sur {totalPages} ({total} résultat
+            {total > 1 ? 's' : ''})
           </p>
           <div className="flex gap-2">
             <Button
