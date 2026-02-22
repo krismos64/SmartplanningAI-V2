@@ -93,18 +93,20 @@ describe('UsersDataTable (SP-472)', () => {
   })
 
   // 2. Après chargement — affiche les utilisateurs
+  // Note: table desktop + cards mobile sont dans le DOM (jsdom ignore CSS media queries)
+  // donc on utilise getAllByText pour les éléments dupliqués
   it('affiche les utilisateurs après chargement', async () => {
     render(<UsersDataTable />)
 
     await waitFor(() => {
-      expect(screen.getByText('Alice Martin')).toBeInTheDocument()
+      expect(screen.getAllByText('Alice Martin').length).toBeGreaterThan(0)
     })
 
-    expect(screen.getByText('alice@acme.com')).toBeInTheDocument()
-    expect(screen.getByText('Bob Dupont')).toBeInTheDocument()
-    expect(screen.getByText('Acme Corp')).toBeInTheDocument()
-    expect(screen.getByText('Actif')).toBeInTheDocument()
-    expect(screen.getByText('Inactif')).toBeInTheDocument()
+    expect(screen.getAllByText('alice@acme.com').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('Bob Dupont').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('Acme Corp').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('Actif').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('Inactif').length).toBeGreaterThan(0)
   })
 
   // 3. Recherche avec debounce
@@ -113,7 +115,7 @@ describe('UsersDataTable (SP-472)', () => {
 
     // Attendre le chargement initial
     await waitFor(() => {
-      expect(screen.getByText('Alice Martin')).toBeInTheDocument()
+      expect(screen.getAllByText('Alice Martin').length).toBeGreaterThan(0)
     })
 
     // Reset pour compter uniquement les appels suivants
@@ -157,7 +159,7 @@ describe('UsersDataTable (SP-472)', () => {
     render(<UsersDataTable />)
 
     await waitFor(() => {
-      expect(screen.getByText('Alice Martin')).toBeInTheDocument()
+      expect(screen.getAllByText('Alice Martin').length).toBeGreaterThan(0)
     })
 
     const exportButton = screen.getByRole('button', { name: /export csv/i })
