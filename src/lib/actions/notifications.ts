@@ -732,6 +732,64 @@ export async function createSystemNotification(
 }
 
 // ============================================================================
+// Admin Notification Factory (SP-476)
+// ============================================================================
+
+export interface AdminNotificationParams {
+  title: string
+  message: string
+  type: NotificationType
+  priority?: NotificationPriority
+  actionUrl?: string
+}
+
+/**
+ * Cree une notification pour tous les SYSTEM_ADMIN actifs.
+ * Utilise en fire-and-forget depuis les triggers (inscription,
+ * paiement echoue, trial expire, impersonation).
+ *
+ * @ticket SP-476
+ */
+export async function createAdminNotification(
+  params: AdminNotificationParams
+): Promise<void> {
+  const { getSystemAdminUserIds } = await import(
+    '@/lib/services/admin-notification.service'
+  )
+  const adminIds = await getSystemAdminUserIds()
+  if (adminIds.length === 0) return
+
+  const now = new Date()
+
+  await prisma.notification.createMany({
+    data: adminIds.map((userId) => ({
+      title: params.title,
+      message: params.message,
+      type: params.type,
+      priority: params.priority ?? 'MEDIUM',
+      actionUrl: params.actionUrl ?? null,
+      userId,
+      companyId: null,
+    })),
+  })
+
+  // Recuperer les notifications creees pour emettre via SSE
+  const created = await prisma.notification.findMany({
+    where: {
+      userId: { in: adminIds },
+      title: params.title,
+      type: params.type,
+      createdAt: { gte: now },
+    },
+  })
+
+  // Emettre via SSE a chaque admin connecte
+  for (const notif of created) {
+    emitNotification(notif.userId, notif)
+  }
+}
+
+// ============================================================================
 // CRUD Operations
 // ============================================================================
 
