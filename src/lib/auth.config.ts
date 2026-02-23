@@ -115,15 +115,19 @@ export const authConfig: NextAuthConfig = {
           token.impersonatedUserEmail = session.impersonatedUserEmail as string
           token.impersonatedCompanyName =
             session.impersonatedCompanyName as string
-          // Override le rôle et companyId pour que le RBAC fonctionne
+          // Override rôle, companyId et userId pour que le RBAC et les pages fonctionnent
           token.role =
             session.impersonatedRole as import('@prisma/client').UserRole
           token.companyId = session.impersonatedCompanyId as string
+          token.originalId = token.id
+          token.id = session.impersonatedUserId as string
         } else {
           // Arrêt impersonation : restaurer la session admin
           token.isImpersonating = undefined
           token.role = 'SYSTEM_ADMIN' as import('@prisma/client').UserRole
           token.companyId = null
+          token.id = (token.originalId as string) ?? token.id
+          token.originalId = undefined
           token.originalAdminId = undefined
           token.impersonatedUserId = undefined
           token.impersonatedCompanyId = undefined
@@ -132,9 +136,10 @@ export const authConfig: NextAuthConfig = {
         }
       }
 
-      // SP-447 : Si impersonation active, override companyId/role à chaque refresh
+      // SP-447 : Si impersonation active, override companyId/role/id à chaque refresh
       if (token.isImpersonating && token.impersonatedCompanyId) {
         token.companyId = token.impersonatedCompanyId as string
+        token.id = token.impersonatedUserId as string
       }
 
       // SP-440 : Rafraîchissement périodique des données subscription

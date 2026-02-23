@@ -189,6 +189,18 @@ describe('impersonation', () => {
       const result = await getImpersonationContextFromHeaders()
       expect(result).toBeNull()
     })
+
+    it('retourne le contexte si le cookie est URL-encoded', async () => {
+      const context = createValidContext()
+      mockGet.mockReturnValue({
+        value: encodeURIComponent(JSON.stringify(context)),
+      })
+      const result = await getImpersonationContextFromHeaders()
+
+      expect(result).not.toBeNull()
+      expect(result?.originalAdminId).toBe('admin-123')
+      expect(result?.targetCompanyName).toBe('TechCorp')
+    })
   })
 
   // --------------------------------------------------------------------------

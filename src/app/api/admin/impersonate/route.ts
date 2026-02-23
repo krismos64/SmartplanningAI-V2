@@ -12,17 +12,18 @@
  */
 
 import { NextResponse } from 'next/server'
+import { cookies } from 'next/headers'
 import { z } from 'zod'
 
 import { requireRole } from '@/lib/api-auth'
 import { prisma } from '@/lib/prisma'
 import { logAuditAction } from '@/lib/services/audit'
-import {
-  startImpersonation,
-  stopImpersonation,
-  getImpersonationContextFromHeaders,
-} from '@/lib/impersonation'
+import { getImpersonationContextFromHeaders } from '@/lib/impersonation'
 import type { ImpersonationContext } from '@/types/auth'
+import {
+  IMPERSONATION_COOKIE_NAME,
+  IMPERSONATION_MAX_AGE,
+} from '@/types/auth'
 
 // ============================================================================
 // Validation
@@ -167,8 +168,28 @@ export async function POST(request: Request): Promise<NextResponse> {
     startedAt: Date.now(),
   }
 
-  // 8. Poser le cookie
-  await startImpersonation(context)
+  // 8. Construire la réponse avec le cookie posé directement dessus
+  const response = NextResponse.json({
+    success: true,
+    redirectTo: '/app/dashboard',
+    impersonation: {
+      isImpersonating: true,
+      originalAdminId: session.user.id,
+      impersonatedUserId: targetUser.id,
+      impersonatedCompanyId: targetUser.companyId,
+      impersonatedRole: targetUser.role,
+      impersonatedUserEmail: targetUser.email,
+      impersonatedCompanyName: targetUser.company.name,
+    },
+  })
+
+  response.cookies.set(IMPERSONATION_COOKIE_NAME, JSON.stringify(context), {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: '/',
+    maxAge: IMPERSONATION_MAX_AGE,
+  })
 
   // 9. Audit log (fire-and-forget)
   logAuditAction({
@@ -187,20 +208,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     },
   }).catch(console.error)
 
-  // 10. Retourner les données pour session.update() côté client
-  return NextResponse.json({
-    success: true,
-    redirectTo: '/app/dashboard',
-    impersonation: {
-      isImpersonating: true,
-      originalAdminId: session.user.id,
-      impersonatedUserId: targetUser.id,
-      impersonatedCompanyId: targetUser.companyId,
-      impersonatedRole: targetUser.role,
-      impersonatedUserEmail: targetUser.email,
-      impersonatedCompanyName: targetUser.company.name,
-    },
-  })
+  return response
 }
 
 // ============================================================================
@@ -212,14 +220,24 @@ export async function DELETE(): Promise<NextResponse> {
   const context = await getImpersonationContextFromHeaders()
 
   if (!context) {
-    return NextResponse.json(
-      { error: 'Aucune impersonation active' },
-      { status: 400 }
-    )
+    // Fallback : même sans contexte valide, on supprime le cookie au cas où
+    // et on redirige vers l'admin (évite le blocage utilisateur)
+    const response = NextResponse.json({
+      success: true,
+      redirectTo: '/app/admin/companies',
+      warning: 'Aucune impersonation active, cookie nettoyé',
+    })
+    response.cookies.delete(IMPERSONATION_COOKIE_NAME)
+    return response
   }
 
-  // 2. Supprimer le cookie
-  await stopImpersonation()
+  // 2. Construire la réponse avec suppression du cookie
+  const response = NextResponse.json({
+    success: true,
+    redirectTo: '/app/admin/companies',
+  })
+
+  response.cookies.delete(IMPERSONATION_COOKIE_NAME)
 
   // 3. Audit log (fire-and-forget)
   const duration = Math.round((Date.now() - context.startedAt) / 1000)
@@ -237,9 +255,5 @@ export async function DELETE(): Promise<NextResponse> {
     },
   }).catch(console.error)
 
-  // 4. Retourner les données pour session.update() côté client
-  return NextResponse.json({
-    success: true,
-    redirectTo: '/app/admin/companies',
-  })
+  return response
 }

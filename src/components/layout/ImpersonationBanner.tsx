@@ -66,6 +66,7 @@ export function ImpersonationBanner({
       })
 
       router.push('/app/admin/companies')
+      router.refresh()
     } catch {
       toast.error('Erreur', {
         description: 'Une erreur inattendue est survenue',

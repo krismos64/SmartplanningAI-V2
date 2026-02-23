@@ -69,6 +69,7 @@ import { POST, DELETE } from '@/app/api/admin/impersonate/route'
 interface ImpersonateSuccessResponse {
   success: boolean
   redirectTo: string
+  warning?: string
   impersonation: {
     isImpersonating: boolean
     impersonatedCompanyName: string
@@ -198,7 +199,7 @@ describe('API /api/admin/impersonate', () => {
       expect(data.error).toContain('désactivé')
     })
 
-    it('demarre impersonation avec companyId, pose le cookie et cree audit log', async () => {
+    it('demarre impersonation avec companyId, pose le cookie sur la response et cree audit log', async () => {
       mockSession('SYSTEM_ADMIN')
       mocks.prisma.user.findFirst.mockResolvedValue({
         id: 'user-001',
@@ -218,8 +219,12 @@ describe('API /api/admin/impersonate', () => {
       expect(data.impersonation.impersonatedCompanyName).toBe('TechCorp')
       expect(data.impersonation.impersonatedUserId).toBe('user-001')
 
-      // Cookie pose
-      expect(mocks.cookieSet).toHaveBeenCalledOnce()
+      // Cookie posé via response.cookies.set()
+      const setCookie = response.headers.get('set-cookie')
+      expect(setCookie).toBeTruthy()
+      expect(setCookie).toContain('sp-impersonation')
+      expect(setCookie).toContain('HttpOnly')
+      expect(setCookie).toContain('Path=/')
 
       // Audit log cree (fire-and-forget)
       expect(mocks.logAuditAction).toHaveBeenCalledWith(
@@ -256,14 +261,20 @@ describe('API /api/admin/impersonate', () => {
   // --------------------------------------------------------------------------
 
   describe('DELETE - arreter impersonation', () => {
-    it('retourne 400 si aucune impersonation active', async () => {
+    it('retourne 200 avec warning si aucune impersonation active (nettoyage gracieux)', async () => {
       mocks.cookieGet.mockReturnValue(null)
 
       const response = await DELETE()
 
-      expect(response.status).toBe(400)
-      const data = (await response.json()) as ImpersonateErrorResponse
-      expect(data.error).toContain('Aucune impersonation active')
+      expect(response.status).toBe(200)
+      const data = (await response.json()) as ImpersonateSuccessResponse
+      expect(data.success).toBe(true)
+      expect(data.warning).toContain('cookie nettoyé')
+      expect(data.redirectTo).toBe('/app/admin/companies')
+
+      // Cookie supprimé par sécurité
+      const setCookie = response.headers.get('set-cookie')
+      expect(setCookie).toContain('sp-impersonation')
     })
 
     it('arrete impersonation, supprime cookie et cree audit log stop', async () => {
@@ -287,8 +298,9 @@ describe('API /api/admin/impersonate', () => {
       expect(data.success).toBe(true)
       expect(data.redirectTo).toBe('/app/admin/companies')
 
-      // Cookie supprime
-      expect(mocks.cookieDelete).toHaveBeenCalledOnce()
+      // Cookie supprimé via response.cookies.delete()
+      const setCookie = response.headers.get('set-cookie')
+      expect(setCookie).toContain('sp-impersonation')
 
       // Audit log stop cree
       expect(mocks.logAuditAction).toHaveBeenCalledWith(

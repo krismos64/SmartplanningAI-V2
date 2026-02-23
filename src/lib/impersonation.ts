@@ -142,7 +142,9 @@ function parseCookieHeader(header: string): Record<string, string> {
  */
 function parseImpersonationCookie(value: string): ImpersonationContext | null {
   try {
-    const parsed: unknown = JSON.parse(value)
+    // Next.js peut URL-encoder la valeur du cookie JSON
+    const decoded = value.startsWith('%7B') ? decodeURIComponent(value) : value
+    const parsed: unknown = JSON.parse(decoded)
     if (!isValidImpersonationContext(parsed)) return null
 
     // Vérifier l'expiration côté applicatif
