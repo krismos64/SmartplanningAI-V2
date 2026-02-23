@@ -14,13 +14,18 @@ import type { RecurrenceRule } from '@/lib/utils/recurrence'
 // Données de test
 // ============================================================================
 
+// Utiliser des dates toujours dans le futur pour éviter
+// les échecs de validation "date de fin dans le passé"
+const futureDate = new Date()
+futureDate.setMonth(futureDate.getMonth() + 1)
+
 const defaultProps = {
   value: null as RecurrenceRule | null,
   onChange: vi.fn(),
   isEnabled: false,
   onEnabledChange: vi.fn(),
-  startDate: new Date('2026-01-26'),
-  endDate: new Date('2026-01-26'),
+  startDate: futureDate,
+  endDate: futureDate,
   employeeCount: 1,
   disabled: false,
 }
