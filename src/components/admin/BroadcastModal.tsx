@@ -13,7 +13,13 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Radio, Send, Loader2, CheckCircle2, AlertTriangle } from 'lucide-react'
+import {
+  Radio,
+  Send,
+  Loader2,
+  CheckCircle2,
+  AlertTriangle,
+} from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -28,13 +34,6 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { useToast } from '@/components/toast/use-toast'
 import {
   sendAdminBroadcast,
@@ -93,6 +92,7 @@ export function BroadcastModal() {
     },
   })
 
+  const categoryValue = watch('category')
   const messageValue = watch('message')
   const messageLength = messageValue?.length ?? 0
 
@@ -127,16 +127,7 @@ export function BroadcastModal() {
         </Button>
       </DialogTrigger>
 
-      <DialogContent
-        className="sm:max-w-lg"
-        onPointerDownOutside={(e) => {
-          // Empêcher la fermeture du Dialog quand on clique dans le Select dropdown
-          const target = e.target as HTMLElement
-          if (target.closest('[data-radix-select-content]')) {
-            e.preventDefault()
-          }
-        }}
-      >
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Diffusion générale</DialogTitle>
           <DialogDescription>
@@ -197,31 +188,34 @@ export function BroadcastModal() {
             className="space-y-4"
             data-testid="broadcast-form"
           >
-            {/* Catégorie */}
+            {/* Catégorie — boutons toggle (évite les problèmes Select/Dialog) */}
             <div className="space-y-2">
-              <Label htmlFor="broadcast-category">Catégorie</Label>
-              <Select
-                defaultValue="important_info"
-                onValueChange={(v) =>
-                  setValue('category', v as FormValues['category'], {
-                    shouldValidate: true,
-                  })
-                }
+              <Label>Catégorie</Label>
+              <div
+                className="grid grid-cols-2 gap-2"
+                data-testid="broadcast-category"
               >
-                <SelectTrigger
-                  id="broadcast-category"
-                  data-testid="broadcast-category"
-                >
-                  <SelectValue placeholder="Choisir une catégorie" />
-                </SelectTrigger>
-                <SelectContent>
-                  {CATEGORY_OPTIONS.map((opt) => (
-                    <SelectItem key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                {CATEGORY_OPTIONS.map((opt) => (
+                  <Button
+                    key={opt.value}
+                    type="button"
+                    variant={
+                      categoryValue === opt.value ? 'default' : 'outline'
+                    }
+                    size="sm"
+                    onClick={() =>
+                      setValue(
+                        'category',
+                        opt.value as FormValues['category'],
+                        { shouldValidate: true }
+                      )
+                    }
+                    className="justify-start"
+                  >
+                    {opt.label}
+                  </Button>
+                ))}
+              </div>
             </div>
 
             {/* Sujet */}
