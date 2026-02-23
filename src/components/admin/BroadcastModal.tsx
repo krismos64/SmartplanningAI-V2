@@ -13,13 +13,7 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import {
-  Radio,
-  Send,
-  Loader2,
-  CheckCircle2,
-  AlertTriangle,
-} from 'lucide-react'
+import { Radio, Send, Loader2, CheckCircle2, AlertTriangle } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -209,11 +203,9 @@ export function BroadcastModal() {
                     }
                     size="sm"
                     onClick={() =>
-                      setValue(
-                        'category',
-                        opt.value as FormValues['category'],
-                        { shouldValidate: true }
-                      )
+                      setValue('category', opt.value, {
+                        shouldValidate: true,
+                      })
                     }
                     className="justify-start"
                   >

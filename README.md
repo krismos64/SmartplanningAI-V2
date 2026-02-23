@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 20 février 2026 (Monitoring MVP + Charts SP-464/SP-465, 5822 tests unitaires + 584 E2E)
+- **Dernière mise à jour** : 23 février 2026 (Admin SYSTEM_ADMIN améliorations SP-469 à SP-477, 5914 tests unitaires + 584 E2E)
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -82,6 +82,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Audit System** (SP-442, SP-443, SP-444, SP-445, SP-446) : Journal d'audit complet avec modèle Prisma AuditLog (9 actions, 10 types d'entités), service `logAuditAction` fire-and-forget, Server Actions RBAC (`getAuditLogs` paginé avec filtres, `exportAuditLogsCsv`), page admin `/app/admin/logs` avec DataTable TanStack, filtres action/entité/utilisateur/date, export CSV, modal détail JSON. Protection anti-injection (sanitization HTML/SQL/NoSQL). 122 tests unitaires + 26 tests E2E
 - **User Activity Page** (SP-463) : Page activité utilisateur `/app/profile/activity` avec timeline relative française (`Intl.RelativeTimeFormat`). Server Action `getUserActivity` filtrant par userId JWT avec isolation RBAC. Accès depuis Header dropdown "Mon activité" et ProfileActions. 17 tests unitaires
 - **Impersonation Mode** (SP-453, SP-454, SP-456) : Mode support SYSTEM_ADMIN "Voir espace client" avec cookie `sp-impersonation` (HttpOnly, TTL 3600s). API REST `/api/admin/impersonate` (POST start, DELETE stop), bannière orange avec nom entreprise et bouton quitter, impersonation guard middleware (blocage routes admin/billing), subscription guard bypass en mode impersonation (évite boucle redirect infinie), fallback cookie dans layout.tsx (résilience updateSession NextAuth v5), audit trail start/stop. Page Object Model Playwright (ImpersonationPage). 10 tests unitaires + 9 tests E2E
+- **Admin SYSTEM_ADMIN Améliorations** (SP-469 à SP-477) : Service MRR unifié (source de vérité unique), sécurisation endpoint /api/health (3 niveaux d'accès, OWASP A05), bouton rafraîchir monitoring (router.refresh + useTransition), page utilisateurs cross-entreprises avec export CSV (jointure cross-tenant contrôlée), widget essais à risque (classification urgence 3 niveaux, MRR potentiel), email contact admin vers entreprise (template React Email, EmailLog), statistiques globales avec export PDF (7 indicateurs Promise.all, @react-pdf/renderer), notifications SSE temps réel SYSTEM_ADMIN (4 types, fire-and-forget), broadcast email global (Promise.allSettled batch/10, 4 catégories). 75 tests unitaires
 - **Monitoring System** (SP-464, SP-465) : Page monitoring admin `/app/admin/monitoring` avec Suspense + skeleton loading. **SP-464 MVP** : Server Action `getMonitoringSnapshot` RBAC SYSTEM_ADMIN (health check DB, quick stats SaaS, répartition abonnements), 8 composants (HealthStatusBadge, DatabaseHealthPanel avec ProgressBar pool, MonitoringKpisGrid 4 KPIs glass cards, SubscriptionBreakdownPanel badges colorés par statut), service `checkDatabaseHealth` (4 checks : connexion, latence, pool, migrations), 30 tests unitaires. **SP-465 Charts** : Server Action `getMonitoringChartData` (auditActivity 7j, subscriptionDistribution, topActions top 5, companyGrowth 30j), 4 composants Recharts (ActivityChart AreaChartWidget, SubscriptionPieChart donut avec STATUS_COLORS sémantiques, TopActionsChart BarChartWidget horizontal avec ACTION_LABELS FR, CompanyGrowthChart AreaChartWidget), helper `generateEmptyDays` pour zero-fill, 22 tests unitaires. Total : 52 tests unitaires
 
 ### MVP (Phases 1-4)
@@ -2444,6 +2445,28 @@ function CTAButton() {
 - **Graphiques Recharts** (SP-465) : Activité audit 7 jours (AreaChart), distribution abonnements (PieChart donut), top 5 actions audit (BarChart horizontal), croissance entreprises 30 jours (AreaChart)
 - 52 tests unitaires (30 MVP + 22 charts)
 
+### Améliorations Espace SYSTEM_ADMIN (SP-468 Epic - 20-23 février 2026)
+
+9 tickets d'amélioration de l'espace admin pour la supervision SaaS :
+
+- **SP-469 — Service MRR unifié** : Service partagé `mrr.service.ts` comme source de vérité unique pour le calcul du MRR (Monthly Recurring Revenue). Corrige l'incohérence entre Dashboard et Stats (deux implémentations divergentes). Filtre `company.isActive: true`, gestion `null` défensive, arrondi 2 décimales. 9 tests unitaires
+
+- **SP-470 — Sécurisation /api/health** : Durcissement de l'endpoint healthcheck exposé. Suppression CORS `*`, restriction au domaine production. 3 niveaux d'accès : basic (Docker healthcheck, sans auth), standard (SYSTEM_ADMIN, métriques fonctionnelles), full (SYSTEM_ADMIN, versions runtime et pool DB). Principe de moindre privilège (OWASP A05:2021). 6 tests unitaires
+
+- **SP-471 — Bouton Rafraîchir monitoring** : Composant `RefreshButton` générique utilisant `router.refresh()` (Next.js 15) pour invalider le cache des Server Components sans rechargement de page. `useTransition` pour feedback visuel (spinner + désactivation), horodatage dernière mise à jour avec `aria-live="polite"`. 4 tests unitaires
+
+- **SP-472 — Page Utilisateurs cross-entreprises** : Page admin `/app/admin/users` avec tableau TanStack Table de tous les utilisateurs de toutes les entreprises. Jointure cross-tenant contrôlée (exception documentée au principe d'isolation multi-tenant, strictement SYSTEM_ADMIN). Filtres combinables (recherche, rôle, entreprise, statut). Export CSV client-side avec BOM UTF-8 pour compatibilité Excel FR. Double protection RBAC (middleware + Server Action). 9 tests unitaires
+
+- **SP-473 — Widget « Essais à risque »** : Widget dashboard admin affichant les entreprises dont l'essai expire dans les 7 prochains jours, classées par urgence (critical 0-1j rouge, warning 2-3j orange, moderate 4-7j jaune). Calcul `potentialMrr` (employeeCount × 2,90€) pour priorisation commerciale. `Math.ceil` pour arrondi vers le haut des jours restants. 10 tests unitaires
+
+- **SP-474 — Email contact admin → entreprise** : Modale de contact depuis la page Companies pour envoyer un email professionnel aux DIRECTOR d'une entreprise. Template React Email `AdminContactEmail` partagé, envoi Nodemailer, traçabilité `EmailLog` par destinataire. Catégories : information, facturation, technique, autre. 9 tests unitaires
+
+- **SP-475 — Statistiques globales + export PDF** : Page admin `/app/admin/stats` avec 7 indicateurs SaaS parallèles (`Promise.all`) : MRR, croissance entreprises 12 mois, répartition abonnements, top 10 actions audit, DAU/MAU, taux de conversion essai→payant. Export PDF via `@react-pdf/renderer` côté serveur. Réutilisation `calculatePlatformMrr()` (SP-469). 12 tests unitaires
+
+- **SP-476 — Notifications SSE temps réel SYSTEM_ADMIN** : Extension du système SSE existant pour 4 types de notifications admin : `NEW_COMPANY_REGISTERED` (inscription), `SUBSCRIPTION_PAST_DUE` (paiement échoué), `SUBSCRIPTION_CANCELED` (résiliation), `TRIAL_EXPIRED` (fin d'essai). Factory `createAdminNotification()` avec pattern fire-and-forget. Migration Prisma `Notification.companyId` optionnel. 7 tests unitaires
+
+- **SP-477 — Broadcast email global** : Diffusion d'emails à tous les DIRECTOR actifs des entreprises ACTIVE/TRIAL. Server Action `sendAdminBroadcast()` avec batch de 10 via `Promise.allSettled` (résilient aux échecs partiels). Modale `BroadcastModal` avec 4 catégories (maintenance, mise à jour produit, information importante, offre commerciale). `EmailLog` par destinataire (SENT/FAILED). 9 tests unitaires
+
 ## SEO (SP-462)
 
 ### Optimisations automatiques
@@ -2496,11 +2519,11 @@ Toutes les pages publiques sont optimisées pour les LLMs (ChatGPT, Claude, Perp
 - **E2E** : Playwright (configuré)
 - **Coverage** : v8 provider
 
-### Couverture actuelle (20 février 2026 - SP-465)
+### Couverture actuelle (23 février 2026 - SP-477)
 
 | Catégorie                              | Coverage   | Tests    |
 | -------------------------------------- | ---------- | -------- |
-| **Global**                             | **~86%**   | **5822** |
+| **Global**                             | **~86%**   | **5914** |
 | loading                                | 100%     | 152      |
 | modals                                 | 100%     | 52       |
 | cards                                  | 77.09%   | 88       |
@@ -2639,6 +2662,15 @@ Toutes les pages publiques sont optimisées pour les LLMs (ChatGPT, Claude, Perp
 | SubscriptionPieChart (SP-465)    | 100%     | 4        |
 | TopActionsChart (SP-465)         | 100%     | 4        |
 | CompanyGrowthChart (SP-465)      | 100%     | 4        |
+| mrr.service (SP-469)             | 100%     | 9        |
+| health endpoint (SP-470)         | 100%     | 6        |
+| RefreshButton (SP-471)           | 100%     | 4        |
+| admin users page (SP-472)        | 100%     | 9        |
+| trials at risk (SP-473)          | 100%     | 10       |
+| admin contact email (SP-474)     | 100%     | 9        |
+| admin stats + PDF (SP-475)       | 100%     | 12       |
+| admin notifications (SP-476)     | 100%     | 7        |
+| admin broadcast (SP-477)         | 100%     | 9        |
 
 ### Tests E2E
 

@@ -14,7 +14,7 @@ Ce document trace l'historique complet des tests réalisés sur SmartPlanning. I
 | Pipeline CI/CD       | GitHub Actions                                         |
 | Responsable          | Christophe Mostefaoui                                  |
 | Date de création     | 4 décembre 2025                                        |
-| Dernière mise à jour | 20 février 2026 (Monitoring MVP + Charts SP-464/SP-465, 5822 unitaires + 584 E2E) |
+| Dernière mise à jour | 23 février 2026 (Admin améliorations SP-469 à SP-477, 5914 unitaires + 584 E2E) |
 
 ---
 
@@ -34,7 +34,7 @@ Dans le cadre du diplôme **CDA (Concepteur Développeur d'Applications)**, ce c
 | Métrique              | Objectif  | Atteint  |
 | --------------------- | --------- | -------- |
 | Couverture globale    | ≥ 70%     | ✅ 86.35% |
-| Tests unitaires       | ≥ 500     | ✅ 5822   |
+| Tests unitaires       | ≥ 500     | ✅ 5914   |
 | Tests E2E             | ≥ 50      | ✅ 584 (40 fichiers)   |
 | Score Lighthouse A11y | ≥ 90%     | ✅ 95%   |
 | Anomalies critiques   | 0 en prod | ✅ 0     |
@@ -2423,6 +2423,15 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
 | 77  | Tester un mode impersonation avec corrections applicatives découvertes     | 10 tests unitaires API route (POST/DELETE) + 9 tests E2E (parcours nominal, sécurité, cas limites, audit trail). Page Object Model ImpersonationPage. Découverte et correction de 2 bugs applicatifs : boucle redirect infinie subscription guard (ANO-028) + bannière invisible NextAuth v5 updateSession failure (ANO-029). Bypass middleware + fallback cookie Server Component (SP-456) 🆕 |
 | 78  | Implémenter un dashboard monitoring système avec health check DB           | Page `/app/admin/monitoring` RBAC SYSTEM_ADMIN, Suspense + skeleton. Service `checkDatabaseHealth` (4 checks : connexion, latence, pool Prisma, migrations). Server Action `getMonitoringSnapshot` (health, quick stats SaaS, répartition abonnements). 8 composants UI (HealthStatusBadge, DatabaseHealthPanel, MonitoringKpisGrid, SubscriptionBreakdownPanel). 30 tests unitaires (SP-464) 🆕 |
 | 79  | Implémenter des graphiques de monitoring avec données agrégées             | Server Action `getMonitoringChartData` RBAC SYSTEM_ADMIN avec Promise.all 4 requêtes Prisma parallèles. Helper `generateEmptyDays` zero-fill. 4 composants Recharts (ActivityChart AreaChart 7j, SubscriptionPieChart donut sémantique, TopActionsChart BarChart horizontal, CompanyGrowthChart AreaChart 30j). Agrégation JS par jour (findMany + Map). 22 tests unitaires (SP-465) 🆕 |
+| 80  | Unifier le calcul MRR dans un service partagé                             | Service `mrr.service.ts` comme source de vérité unique. Corrige incohérence Dashboard/Stats (deux implémentations divergentes). Filtre `company.isActive`, gestion null défensive, arrondi 2 décimales `Math.round(total*100)/100`. 9 tests unitaires (SP-469) 🆕 |
+| 81  | Sécuriser l'endpoint /api/health                                          | 3 niveaux d'accès (basic sans auth, standard SYSTEM_ADMIN, full SYSTEM_ADMIN). Suppression CORS `*`, restriction domaine production. Principe moindre privilège OWASP A05:2021. 6 tests unitaires (SP-470) 🆕 |
+| 82  | Ajouter un bouton de rafraîchissement monitoring                          | Composant `RefreshButton` générique, `router.refresh()` Next.js 15 + `useTransition` React 19 pour feedback visuel. Horodatage avec `aria-live="polite"`. 4 tests unitaires (SP-471) 🆕 |
+| 83  | Créer une page utilisateurs cross-entreprises avec export CSV             | Page admin `/app/admin/users` TanStack Table cross-tenant (exception documentée SYSTEM_ADMIN). Filtres combinables (recherche, rôle, entreprise, statut). Export CSV client-side BOM UTF-8 Excel FR. Double RBAC (middleware + Server Action). 9 tests unitaires (SP-472) 🆕 |
+| 84  | Implémenter un widget « Essais à risque » avec classification urgence     | Widget dashboard admin, essais expirant ≤7 jours, 3 niveaux urgence (critical 0-1j, warning 2-3j, moderate 4-7j). Calcul `potentialMrr` (employeeCount × 2,90€). `Math.ceil` arrondi jours. Tri par urgence décroissante. 10 tests unitaires (SP-473) 🆕 |
+| 85  | Implémenter un email de contact admin vers une entreprise                 | Modale contact depuis Companies, template React Email `AdminContactEmail` partagé, envoi Nodemailer aux DIRECTOR, traçabilité `EmailLog`. 4 catégories (information, facturation, technique, autre). 9 tests unitaires (SP-474) 🆕 |
+| 86  | Créer une page statistiques globales avec export PDF                      | Page `/app/admin/stats`, 7 indicateurs SaaS `Promise.all` (MRR, croissance 12 mois, répartition abonnements, top 10 actions, DAU/MAU, conversion essai→payant). Export PDF `@react-pdf/renderer` côté serveur. Protection division par zéro. 12 tests unitaires (SP-475) 🆕 |
+| 87  | Étendre les notifications SSE au SYSTEM_ADMIN                             | 4 types : `NEW_COMPANY_REGISTERED`, `SUBSCRIPTION_PAST_DUE`, `SUBSCRIPTION_CANCELED`, `TRIAL_EXPIRED`. Factory `createAdminNotification()` fire-and-forget. Migration `Notification.companyId` optionnel. 7 tests unitaires (SP-476) 🆕 |
+| 88  | Implémenter un broadcast email global aux entreprises actives             | `sendAdminBroadcast()` vers DIRECTOR actifs entreprises ACTIVE/TRIAL. Batch/10 `Promise.allSettled` (résilient échecs partiels). `BroadcastModal` 4 catégories. `EmailLog` par destinataire (SENT/FAILED). 9 tests unitaires (SP-477) 🆕 |
 
 ---
 
@@ -2445,6 +2454,11 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
    - Journal d'audit admin `/app/admin/logs` (filtres, pagination, export CSV, modal détail) 🆕
    - Activité utilisateur `/app/profile/activity` (timeline, accès depuis Header et ProfileActions) 🆕
    - Monitoring admin `/app/admin/monitoring` (health check DB, KPIs SaaS, répartition abonnements, 4 graphiques Recharts) 🆕
+   - Page utilisateurs admin `/app/admin/users` (filtres combinables, export CSV) 🆕
+   - Statistiques admin `/app/admin/stats` (7 indicateurs SaaS, export PDF) 🆕
+   - Broadcast email global (modale BroadcastModal, 4 catégories, résultat envoi) 🆕
+   - Email contact admin vers entreprise (modale ContactModal depuis Companies) 🆕
+   - Widget essais à risque (classification urgence, MRR potentiel) 🆕
    - API /api/contact (test avec curl/Postman)
    - Error Boundary (test /test-error pour déclencher erreur)
    - Page 404 (test URL inexistante, navigation de secours)

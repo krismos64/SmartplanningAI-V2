@@ -197,7 +197,7 @@ const BATCH_SIZE = 10
 
 /**
  * Envoie un email broadcast à tous les DIRECTOR actifs
- * des entreprises avec abonnement ACTIVE ou TRIALING.
+ * des entreprises avec abonnement ACTIVE ou TRIAL.
  *
  * @ticket SP-477
  */
