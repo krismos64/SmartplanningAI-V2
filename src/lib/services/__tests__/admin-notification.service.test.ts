@@ -5,6 +5,9 @@
  * @ticket SP-476
  */
 
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 // ============================================================================
@@ -16,7 +19,8 @@ const mockFindMany = vi.fn()
 vi.mock('@/lib/prisma', () => ({
   prisma: {
     user: {
-      findMany: (...args: unknown[]) => mockFindMany(...args),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      findMany: (...args: any[]) => mockFindMany(...args),
     },
   },
 }))
@@ -37,10 +41,7 @@ describe('getSystemAdminUserIds', () => {
   })
 
   it('retourne les IDs des SYSTEM_ADMIN actifs', async () => {
-    mockFindMany.mockResolvedValue([
-      { id: 'admin-001' },
-      { id: 'admin-002' },
-    ])
+    mockFindMany.mockResolvedValue([{ id: 'admin-001' }, { id: 'admin-002' }])
 
     const ids = await getSystemAdminUserIds()
 

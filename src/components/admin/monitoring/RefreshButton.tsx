@@ -19,9 +19,7 @@ interface RefreshButtonProps {
   label?: string
 }
 
-export function RefreshButton({
-  label = 'Rafraîchir',
-}: RefreshButtonProps) {
+export function RefreshButton({ label = 'Rafraîchir' }: RefreshButtonProps) {
   const router = useRouter()
   const [isRefreshing, setIsRefreshing] = useState(false)
 

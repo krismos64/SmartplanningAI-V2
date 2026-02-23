@@ -12,6 +12,10 @@
  */
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
@@ -29,7 +33,7 @@ vi.mock('@/lib/auth', () => ({
 
 const mockGetSystemAdminUserIds = vi.fn()
 vi.mock('@/lib/services/admin-notification.service', () => ({
-  getSystemAdminUserIds: () => mockGetSystemAdminUserIds(),
+  getSystemAdminUserIds: (...args: any[]) => mockGetSystemAdminUserIds(...args),
 }))
 
 const mockCreateMany = vi.fn()
@@ -38,15 +42,15 @@ const mockFindMany = vi.fn()
 vi.mock('@/lib/prisma', () => ({
   prisma: {
     notification: {
-      createMany: (...args: unknown[]) => mockCreateMany(...args),
-      findMany: (...args: unknown[]) => mockFindMany(...args),
+      createMany: (...args: any[]) => mockCreateMany(...args),
+      findMany: (...args: any[]) => mockFindMany(...args),
     },
   },
 }))
 
 const mockEmitNotification = vi.fn()
 vi.mock('@/lib/notifications', () => ({
-  emitNotification: (...args: unknown[]) => mockEmitNotification(...args),
+  emitNotification: (...args: any[]) => mockEmitNotification(...args),
 }))
 
 // ============================================================================
@@ -64,7 +68,7 @@ const ADMIN_IDS = ['admin-001', 'admin-002']
 const MOCK_NOTIFICATION = {
   id: 'notif-001',
   title: 'Nouvelle entreprise inscrite',
-  message: 'Acme Corp vient de s\'inscrire',
+  message: "Acme Corp vient de s'inscrire",
   type: 'INFO',
   priority: 'MEDIUM',
   userId: 'admin-001',
@@ -96,19 +100,19 @@ describe('createAdminNotification', () => {
   it('cree des notifications pour chaque SYSTEM_ADMIN', async () => {
     await createAdminNotification({
       title: 'Nouvelle entreprise inscrite',
-      message: 'Acme Corp vient de s\'inscrire',
+      message: "Acme Corp vient de s'inscrire",
       type: 'INFO' as any,
       actionUrl: '/app/admin/logs',
     })
 
     expect(mockCreateMany).toHaveBeenCalledTimes(1)
-    const callArgs = mockCreateMany.mock.calls[0]![0] as any
-    expect(callArgs.data).toHaveLength(2)
-    expect(callArgs.data[0].userId).toBe('admin-001')
-    expect(callArgs.data[1].userId).toBe('admin-002')
-    expect(callArgs.data[0].title).toBe('Nouvelle entreprise inscrite')
-    expect(callArgs.data[0].type).toBe('INFO')
-    expect(callArgs.data[0].companyId).toBeNull()
+    const callData = mockCreateMany.mock.calls[0][0].data
+    expect(callData).toHaveLength(2)
+    expect(callData[0].userId).toBe('admin-001')
+    expect(callData[1].userId).toBe('admin-002')
+    expect(callData[0].title).toBe('Nouvelle entreprise inscrite')
+    expect(callData[0].type).toBe('INFO')
+    expect(callData[0].companyId).toBeNull()
   })
 
   it('emet via SSE a chaque admin', async () => {
@@ -149,8 +153,8 @@ describe('createAdminNotification', () => {
       type: 'WARNING' as any,
     })
 
-    const callArgs = mockCreateMany.mock.calls[0]![0] as any
-    expect(callArgs.data[0].priority).toBe('MEDIUM')
+    const callData = mockCreateMany.mock.calls[0][0].data
+    expect(callData[0].priority).toBe('MEDIUM')
   })
 
   it('accepte une priority custom', async () => {
@@ -161,8 +165,8 @@ describe('createAdminNotification', () => {
       priority: 'HIGH' as any,
     })
 
-    const callArgs = mockCreateMany.mock.calls[0]![0] as any
-    expect(callArgs.data[0].priority).toBe('HIGH')
+    const callData = mockCreateMany.mock.calls[0][0].data
+    expect(callData[0].priority).toBe('HIGH')
   })
 
   it('gere actionUrl null par defaut', async () => {
@@ -172,8 +176,8 @@ describe('createAdminNotification', () => {
       type: 'SYSTEM' as any,
     })
 
-    const callArgs = mockCreateMany.mock.calls[0]![0] as any
-    expect(callArgs.data[0].actionUrl).toBeNull()
+    const callData = mockCreateMany.mock.calls[0][0].data
+    expect(callData[0].actionUrl).toBeNull()
   })
 
   it('passe actionUrl quand fourni', async () => {
@@ -184,8 +188,8 @@ describe('createAdminNotification', () => {
       actionUrl: '/app/admin/logs',
     })
 
-    const callArgs = mockCreateMany.mock.calls[0]![0] as any
-    expect(callArgs.data[0].actionUrl).toBe('/app/admin/logs')
+    const callData = mockCreateMany.mock.calls[0][0].data
+    expect(callData[0].actionUrl).toBe('/app/admin/logs')
   })
 
   it('propage les erreurs Prisma', async () => {
