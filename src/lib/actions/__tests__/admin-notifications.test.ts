@@ -106,7 +106,7 @@ describe('createAdminNotification', () => {
     })
 
     expect(mockCreateMany).toHaveBeenCalledTimes(1)
-    const callData = mockCreateMany.mock.calls[0][0].data
+    const callData = mockCreateMany.mock.calls[0]![0].data
     expect(callData).toHaveLength(2)
     expect(callData[0].userId).toBe('admin-001')
     expect(callData[1].userId).toBe('admin-002')
@@ -153,7 +153,7 @@ describe('createAdminNotification', () => {
       type: 'WARNING' as any,
     })
 
-    const callData = mockCreateMany.mock.calls[0][0].data
+    const callData = mockCreateMany.mock.calls[0]![0].data
     expect(callData[0].priority).toBe('MEDIUM')
   })
 
@@ -165,7 +165,7 @@ describe('createAdminNotification', () => {
       priority: 'HIGH' as any,
     })
 
-    const callData = mockCreateMany.mock.calls[0][0].data
+    const callData = mockCreateMany.mock.calls[0]![0].data
     expect(callData[0].priority).toBe('HIGH')
   })
 
@@ -176,7 +176,7 @@ describe('createAdminNotification', () => {
       type: 'SYSTEM' as any,
     })
 
-    const callData = mockCreateMany.mock.calls[0][0].data
+    const callData = mockCreateMany.mock.calls[0]![0].data
     expect(callData[0].actionUrl).toBeNull()
   })
 
@@ -188,7 +188,7 @@ describe('createAdminNotification', () => {
       actionUrl: '/app/admin/logs',
     })
 
-    const callData = mockCreateMany.mock.calls[0][0].data
+    const callData = mockCreateMany.mock.calls[0]![0].data
     expect(callData[0].actionUrl).toBe('/app/admin/logs')
   })
 
