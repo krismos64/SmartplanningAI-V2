@@ -37,32 +37,37 @@ import { Textarea } from '@/components/ui/textarea'
 import { useToast } from '@/components/toast/use-toast'
 import {
   sendAdminBroadcast,
-  BROADCAST_CATEGORY_LABELS,
   type BroadcastInput,
   type BroadcastResult,
-  type BroadcastCategory,
 } from '@/lib/actions/admin-contact'
 
 // ============================================================================
-// Types
+// Types & constantes (côté client — ne pas importer depuis 'use server')
 // ============================================================================
 
 type FormValues = BroadcastInput
 
+const BROADCAST_CATEGORIES = [
+  'maintenance',
+  'product_update',
+  'important_info',
+  'commercial',
+] as const
+
+type BroadcastCategory = (typeof BROADCAST_CATEGORIES)[number]
+
 const formSchema = z.object({
   subject: z.string().min(5, 'Minimum 5 caractères').max(150),
   message: z.string().min(20, 'Minimum 20 caractères').max(5000),
-  category: z.enum([
-    'maintenance',
-    'product_update',
-    'important_info',
-    'commercial',
-  ]),
+  category: z.enum(BROADCAST_CATEGORIES),
 })
 
-const CATEGORY_OPTIONS = (
-  Object.entries(BROADCAST_CATEGORY_LABELS) as [BroadcastCategory, string][]
-).map(([value, label]) => ({ value, label }))
+const CATEGORY_OPTIONS: { value: BroadcastCategory; label: string }[] = [
+  { value: 'maintenance', label: 'Maintenance' },
+  { value: 'product_update', label: 'Mise à jour produit' },
+  { value: 'important_info', label: 'Information importante' },
+  { value: 'commercial', label: 'Offre commerciale' },
+]
 
 const MESSAGE_MAX = 5000
 
