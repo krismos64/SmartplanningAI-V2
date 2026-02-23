@@ -15,6 +15,7 @@ import {
   Building,
   Activity,
   AlertCircle,
+  BarChart3,
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react'
@@ -104,6 +105,13 @@ const menuItems: MenuItem[] = [
     label: 'Monitoring',
     icon: Activity,
     href: '/app/admin/monitoring',
+    roles: ['SYSTEM_ADMIN'],
+  },
+  {
+    id: 'stats',
+    label: 'Statistiques',
+    icon: BarChart3,
+    href: '/app/admin/stats',
     roles: ['SYSTEM_ADMIN'],
   },
   {
