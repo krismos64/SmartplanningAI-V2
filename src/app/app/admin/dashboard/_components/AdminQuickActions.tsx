@@ -14,6 +14,7 @@ import { fadeSlideUpVariants, useReducedMotion } from '@/lib/animations'
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { BroadcastModal } from '@/components/admin/BroadcastModal'
 import { cn } from '@/lib/utils'
 
 export interface AdminQuickActionsProps {
@@ -133,6 +134,9 @@ export function AdminQuickActions({
               </span>
             </Link>
           </Button>
+
+          {/* Diffusion générale (SP-477) */}
+          <BroadcastModal />
 
           {/* Parametres plateforme */}
           <Button variant="outline" asChild>
