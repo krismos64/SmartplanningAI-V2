@@ -127,7 +127,16 @@ export function BroadcastModal() {
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent
+        className="sm:max-w-lg"
+        onPointerDownOutside={(e) => {
+          // Empêcher la fermeture du Dialog quand on clique dans le Select dropdown
+          const target = e.target as HTMLElement
+          if (target.closest('[data-radix-select-content]')) {
+            e.preventDefault()
+          }
+        }}
+      >
         <DialogHeader>
           <DialogTitle>Diffusion générale</DialogTitle>
           <DialogDescription>
