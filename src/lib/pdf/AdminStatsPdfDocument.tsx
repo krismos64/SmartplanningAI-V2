@@ -52,7 +52,9 @@ export function AdminStatsPdfDocument({
       <Page size="A4" style={s.page}>
         {/* Header */}
         <View style={s.header}>
-          <Text style={s.headerTitle}>SmartPlanning - Statistiques globales</Text>
+          <Text style={s.headerTitle}>
+            SmartPlanning - Statistiques globales
+          </Text>
           <Text style={s.headerDate}>
             {format(generatedAt, "d MMMM yyyy 'a' HH:mm", { locale: fr })}
           </Text>
@@ -86,7 +88,9 @@ export function AdminStatsPdfDocument({
           <View style={s.kpiRow}>
             <View style={s.kpiCard}>
               <Text style={s.kpiLabel}>MRR</Text>
-              <Text style={s.kpiValue}>{formatCurrency(stats.mrr.current)}</Text>
+              <Text style={s.kpiValue}>
+                {formatCurrency(stats.mrr.current)}
+              </Text>
               <Text style={s.kpiTrend}>{formatTrend(stats.mrr.trend)}</Text>
             </View>
             <View style={s.kpiCard}>
@@ -150,9 +154,7 @@ export function AdminStatsPdfDocument({
         </View>
 
         {/* Footer */}
-        <Text style={s.footer}>
-          SmartPlanning SaaS - Rapport confidentiel
-        </Text>
+        <Text style={s.footer}>SmartPlanning SaaS - Rapport confidentiel</Text>
 
         {/* Page number */}
         <Text

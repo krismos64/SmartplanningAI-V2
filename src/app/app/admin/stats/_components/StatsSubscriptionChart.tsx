@@ -68,9 +68,7 @@ export function StatsSubscriptionChart({
             <div className="space-y-2">
               {subscriptionStatusDistribution.map((item) => {
                 const pct =
-                  totalSubs > 0
-                    ? Math.round((item.count / totalSubs) * 100)
-                    : 0
+                  totalSubs > 0 ? Math.round((item.count / totalSubs) * 100) : 0
                 return (
                   <div
                     key={item.status}
@@ -81,8 +79,7 @@ export function StatsSubscriptionChart({
                         className="h-3 w-3 rounded-full"
                         style={{
                           backgroundColor:
-                            STATUS_COLORS[item.status] ||
-                            'hsl(var(--chart-5))',
+                            STATUS_COLORS[item.status] || 'hsl(var(--chart-5))',
                         }}
                       />
                       <span>{item.status}</span>

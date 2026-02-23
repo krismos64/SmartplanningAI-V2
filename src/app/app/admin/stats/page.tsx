@@ -43,10 +43,7 @@ function StatsSkeleton() {
       {/* KPI grid skeleton */}
       <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
         {Array.from({ length: 6 }).map((_, i) => (
-          <div
-            key={i}
-            className="h-28 animate-pulse rounded-lg bg-muted"
-          />
+          <div key={i} className="h-28 animate-pulse rounded-lg bg-muted" />
         ))}
       </div>
       {/* Charts skeleton */}
