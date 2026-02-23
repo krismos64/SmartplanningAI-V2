@@ -9,8 +9,14 @@
  * @ticket SP-148
  */
 
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
+
+// Mock BroadcastModal to avoid pulling 'use server' dependencies (next-auth)
+vi.mock('@/components/admin/BroadcastModal', () => ({
+  BroadcastModal: () => <button>Diffusion générale</button>,
+}))
+
 import { AdminQuickActions } from '@/app/app/admin/dashboard/_components/AdminQuickActions'
 
 describe('AdminQuickActions', () => {

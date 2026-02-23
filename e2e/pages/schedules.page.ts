@@ -69,7 +69,7 @@ export class SchedulesPage {
 
     // Filtres et options
     this.filtersButton = page.getByTestId('filters-button')
-    this.availabilityToggle = page.getByTestId('availability-toggle')
+    this.availabilityToggle = page.getByTestId('availability-toggle').first()
 
     // Stats
     this.statsTotal = page.getByTestId('stats-total')
