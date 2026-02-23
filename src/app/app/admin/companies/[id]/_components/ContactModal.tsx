@@ -9,6 +9,7 @@
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
 import { Mail, Send, Loader2 } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
@@ -33,7 +34,6 @@ import {
 } from '@/components/ui/select'
 import { useToast } from '@/components/toast/use-toast'
 import {
-  AdminMessageSchema,
   sendAdminMessageToCompany,
   type AdminMessageInput,
 } from '@/lib/actions/admin-contact'
@@ -49,7 +49,12 @@ interface ContactModalProps {
 
 type FormValues = Omit<AdminMessageInput, 'companyId'>
 
-const formSchema = AdminMessageSchema.omit({ companyId: true })
+// Schema défini côté client (AdminMessageSchema est un objet Zod non sérialisable depuis 'use server')
+const formSchema = z.object({
+  subject: z.string().min(3).max(150),
+  message: z.string().min(10).max(2000),
+  category: z.enum(['information', 'facturation', 'technique', 'autre']),
+})
 
 const CATEGORY_OPTIONS = [
   { value: 'information', label: 'Information' },
