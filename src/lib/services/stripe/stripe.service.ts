@@ -616,6 +616,20 @@ async function handleSubscriptionUpdated(
     },
   })
 
+  // Fire-and-forget : notification SYSTEM_ADMIN si abonnement expiré (SP-476)
+  if (internalStatus === 'EXPIRED') {
+    import('@/lib/actions/notifications')
+      .then(({ createAdminNotification }) =>
+        createAdminNotification({
+          title: 'Abonnement expiré',
+          message: `L'abonnement de l'entreprise #${companyId} a expiré`,
+          type: 'WARNING',
+          actionUrl: '/app/admin/logs',
+        })
+      )
+      .catch(console.error)
+  }
+
   return {
     success: true,
     data: {
@@ -847,6 +861,19 @@ async function handleInvoicePaymentFailed(
       data: { status: 'PAST_DUE' },
     })
   })
+
+  // Fire-and-forget : notification SYSTEM_ADMIN paiement échoué (SP-476)
+  import('@/lib/actions/notifications')
+    .then(({ createAdminNotification }) =>
+      createAdminNotification({
+        title: 'Paiement échoué',
+        message: `Paiement échoué pour l'entreprise #${dbSub.companyId} (${formatAmountEuros(amountDue)})`,
+        type: 'WARNING',
+        priority: 'HIGH',
+        actionUrl: '/app/admin/logs',
+      })
+    )
+    .catch(console.error)
 
   // Fire-and-forget : email d'échec de paiement (SP-370)
   if (subscriptionId) {

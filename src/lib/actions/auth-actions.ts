@@ -220,6 +220,18 @@ export async function registerAction(
       details: { email: email.toLowerCase(), role: 'DIRECTOR' },
     }).catch(console.error)
 
+    // 7. Notification SYSTEM_ADMIN : nouvelle inscription (fire-and-forget, SP-476)
+    import('@/lib/actions/notifications')
+      .then(({ createAdminNotification }) =>
+        createAdminNotification({
+          title: 'Nouvelle entreprise inscrite',
+          message: `${companyName.trim()} vient de s'inscrire (${email.toLowerCase()})`,
+          type: 'INFO',
+          actionUrl: '/app/admin/logs',
+        })
+      )
+      .catch(console.error)
+
     // 8. Envoyer l'email de bienvenue (non bloquant)
     // L'échec de l'envoi ne doit PAS bloquer l'inscription
     try {

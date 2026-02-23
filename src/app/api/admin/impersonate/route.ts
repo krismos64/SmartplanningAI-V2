@@ -19,10 +19,7 @@ import { prisma } from '@/lib/prisma'
 import { logAuditAction } from '@/lib/services/audit'
 import { getImpersonationContextFromHeaders } from '@/lib/impersonation'
 import type { ImpersonationContext } from '@/types/auth'
-import {
-  IMPERSONATION_COOKIE_NAME,
-  IMPERSONATION_MAX_AGE,
-} from '@/types/auth'
+import { IMPERSONATION_COOKIE_NAME, IMPERSONATION_MAX_AGE } from '@/types/auth'
 
 // ============================================================================
 // Validation
@@ -206,6 +203,18 @@ export async function POST(request: Request): Promise<NextResponse> {
       targetCompanyName: targetUser.company.name,
     },
   }).catch(console.error)
+
+  // 10. Notification SYSTEM_ADMIN : impersonation démarrée (fire-and-forget, SP-476)
+  import('@/lib/actions/notifications')
+    .then(({ createAdminNotification }) =>
+      createAdminNotification({
+        title: 'Impersonation démarrée',
+        message: `${session.user.email} a démarré une impersonation de ${targetUser.email} (${targetUser.company?.name ?? 'N/A'})`,
+        type: 'SYSTEM',
+        actionUrl: '/app/admin/logs',
+      })
+    )
+    .catch(console.error)
 
   return response
 }
