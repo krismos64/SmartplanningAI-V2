@@ -134,6 +134,8 @@ export class AppearancePage {
    * Sélectionne un format de date
    */
   async selectDateFormat(format: 'DD/MM/YYYY' | 'MM/DD/YYYY' | 'YYYY-MM-DD') {
+    // Attendre que le select soit enabled (isPending = false apres Server Action)
+    await expect(this.dateFormatSelect).toBeEnabled({ timeout: 10000 })
     await this.dateFormatSelect.click()
     await this.page.getByTestId(`date-format-option-${format}`).click()
   }
@@ -156,6 +158,8 @@ export class AppearancePage {
    * Sélectionne un format d'heure
    */
   async selectTimeFormat(format: '24h' | '12h') {
+    // Attendre que le select soit enabled (isPending = false apres Server Action)
+    await expect(this.timeFormatSelect).toBeEnabled({ timeout: 10000 })
     await this.timeFormatSelect.click()
     await this.page.getByTestId(`time-format-option-${format}`).click()
   }

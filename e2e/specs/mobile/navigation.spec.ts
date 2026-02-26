@@ -129,21 +129,13 @@ test.describe('Mobile Navigation', () => {
         await overlay.click({ position: { x: 300, y: 200 }, force: true })
       }
 
-      // Wait for animation and verify drawer is closed
-      await directorPage.waitForTimeout(500)
-
-      // If overlay click didn't work, use close button as fallback
+      // Attendre la fermeture du drawer (animation exit Framer Motion)
+      // Ne pas utiliser de fallback close button car il peut etre en cours
+      // de suppression du DOM par AnimatePresence, causant "element not stable"
       const drawerPanel = directorPage.locator(
         '[data-testid="swipeable-drawer-panel"]'
       )
-      if (await drawerPanel.isVisible()) {
-        const closeButton = directorPage.locator(
-          '[data-testid="swipeable-drawer-close"]'
-        )
-        await closeButton.click()
-      }
-
-      await waitForDrawerClosed(directorPage)
+      await expect(drawerPanel).not.toBeVisible({ timeout: 10000 })
     })
   })
 

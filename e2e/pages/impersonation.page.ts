@@ -154,10 +154,16 @@ export class ImpersonationPage {
       name: 'authjs.csrf-token',
     })
 
-    // 4. Re-login admin pour obtenir un JWT SYSTEM_ADMIN propre
+    // 4. Naviguer vers /login avant loginAs pour eviter les redirections
+    // middleware en cascade (CI lent: la page peut rester sur un dashboard
+    // invalide apres clearCookies, provoquant un timeout sur loginAs)
+    await this.page.goto('/login', { waitUntil: 'domcontentloaded' })
+    await this.page.waitForLoadState('networkidle')
+
+    // 5. Re-login admin pour obtenir un JWT SYSTEM_ADMIN propre
     await loginAs(this.page, TEST_USERS.SYSTEM_ADMIN)
 
-    // 5. Naviguer vers /app/admin/companies
+    // 6. Naviguer vers /app/admin/companies
     await this.page.goto('/app/admin/companies', {
       waitUntil: 'domcontentloaded',
     })
