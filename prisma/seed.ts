@@ -14,6 +14,7 @@ import {
   NotificationType,
 } from '@prisma/client'
 import * as bcrypt from 'bcryptjs'
+import Stripe from 'stripe'
 import {
   TECHCORP_TEAMS,
   SHIFT_PATTERNS,
@@ -195,100 +196,297 @@ async function main() {
   console.log('✅ 3 organisations créées\n')
 
   // ============================================================================
-  // 2. ABONNEMENTS STRIPE
+  // 2. ABONNEMENTS STRIPE (vrais clients Stripe Test)
   // ============================================================================
   console.log('💳 Création des abonnements Stripe...')
 
-  const techcorpSub = await prisma.subscription.create({
-    data: {
-      companyId: techcorp.id,
-      stripeCustomerId: `cus_techcorp_${Date.now()}`,
-      stripeSubscriptionId: `sub_techcorp_${Date.now()}`,
-      stripePriceId: 'price_per_seat',
-      plan: SubscriptionPlan.PER_SEAT,
-      quantity: 110,
-      pricePerEmployee: 290,
-      planPrice: 31900, // 110 × 290
-      currency: 'EUR',
-      billingInterval: 'month',
-      status: SubscriptionStatus.ACTIVE,
-      currentPeriodStart: new Date('2026-02-01'),
-      currentPeriodEnd: new Date('2026-03-01'),
-      cancelAtPeriodEnd: false,
-    },
-  })
+  const STRIPE_PRICE_ID = process.env.STRIPE_PRICE_ID!
+  let useRealStripe = false
+  let stripe: Stripe | null = null
 
-  const designstudioSub = await prisma.subscription.create({
-    data: {
-      companyId: designstudio.id,
-      stripeCustomerId: `cus_designstudio_${Date.now()}`,
-      stripeSubscriptionId: `sub_designstudio_${Date.now()}`,
-      stripePriceId: 'price_per_seat',
-      plan: SubscriptionPlan.PER_SEAT,
-      quantity: 6,
-      pricePerEmployee: 290,
-      planPrice: 1740,
-      currency: 'EUR',
-      billingInterval: 'month',
-      status: SubscriptionStatus.ACTIVE,
-      currentPeriodStart: new Date('2026-02-01'),
-      currentPeriodEnd: new Date('2026-03-01'),
-      cancelAtPeriodEnd: false,
-    },
-  })
+  // Initialiser Stripe si la clé est disponible
+  if (process.env.STRIPE_SECRET_KEY) {
+    try {
+      stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
+      // Test rapide de connexion
+      await stripe.customers.list({ limit: 1 })
+      useRealStripe = true
+      console.log('  ✅ Connexion Stripe OK — création de vrais clients test')
+    } catch (err) {
+      console.warn('  ⚠️ Stripe indisponible, fallback sur faux IDs:', (err as Error).message)
+      stripe = null
+    }
+  } else {
+    console.warn('  ⚠️ STRIPE_SECRET_KEY non défini, fallback sur faux IDs')
+  }
 
-  const startupincSub = await prisma.subscription.create({
-    data: {
-      companyId: startupinc.id,
-      stripeCustomerId: `cus_startupinc_${Date.now()}`,
-      plan: SubscriptionPlan.FREE,
-      quantity: 4,
-      pricePerEmployee: 290,
-      planPrice: 0,
-      currency: 'EUR',
-      billingInterval: 'month',
-      status: SubscriptionStatus.TRIAL,
-      currentPeriodStart: new Date('2026-01-01'),
-      currentPeriodEnd: new Date('2026-06-30'),
-    },
-  })
+  // Cleanup : supprimer les anciens clients seed
+  if (useRealStripe && stripe) {
+    console.log('  🧹 Nettoyage des anciens clients seed Stripe...')
+    let hasMore = true
+    let startingAfter: string | undefined
+    let deletedCount = 0
+    while (hasMore) {
+      const listParams: Stripe.CustomerListParams = { limit: 100 }
+      if (startingAfter) listParams.starting_after = startingAfter
+      const customers = await stripe.customers.list(listParams)
+      for (const cust of customers.data) {
+        if (cust.metadata?.source === 'smartplanning-seed') {
+          // Annuler les subscriptions avant de supprimer le customer
+          const subs = await stripe.subscriptions.list({ customer: cust.id, status: 'active' })
+          for (const sub of subs.data) {
+            await stripe.subscriptions.cancel(sub.id)
+          }
+          await stripe.customers.del(cust.id)
+          deletedCount++
+        }
+      }
+      hasMore = customers.has_more
+      if (customers.data.length > 0) {
+        startingAfter = customers.data[customers.data.length - 1]!.id
+      }
+    }
+    if (deletedCount > 0) console.log(`  🗑️  ${deletedCount} ancien(s) client(s) seed supprimé(s)`)
+  }
 
-  console.log('✅ 3 abonnements créés\n')
+  // Helper : créer un client Stripe avec abonnement
+  async function createStripeCustomerWithSub(
+    stripeInstance: Stripe,
+    params: { email: string; name: string; quantity: number }
+  ) {
+    // 1. Créer le customer
+    const customer = await stripeInstance.customers.create({
+      email: params.email,
+      name: params.name,
+      metadata: { source: 'smartplanning-seed' },
+    })
 
-  // ============================================================================
-  // 3. PAIEMENTS
-  // ============================================================================
-  console.log('💰 Création des paiements...')
+    // 2. Créer et attacher un payment method (tok_visa)
+    const pm = await stripeInstance.paymentMethods.create({
+      type: 'card',
+      card: { token: 'tok_visa' },
+    })
+    await stripeInstance.paymentMethods.attach(pm.id, { customer: customer.id })
+    await stripeInstance.customers.update(customer.id, {
+      invoice_settings: { default_payment_method: pm.id },
+    })
 
-  await prisma.payment.create({
-    data: {
-      companyId: techcorp.id,
-      subscriptionId: techcorpSub.id,
-      stripePaymentId: `pi_techcorp_${Date.now()}`,
-      stripeInvoiceId: `in_techcorp_${Date.now()}`,
-      amount: 31900,
-      currency: 'EUR',
-      status: PaymentStatus.SUCCEEDED,
-      paymentMethod: 'card',
-      paidAt: new Date('2026-02-01T10:00:00Z'),
-    },
-  })
+    // 3. Créer la subscription
+    const subscription = await stripeInstance.subscriptions.create({
+      customer: customer.id,
+      items: [{ price: STRIPE_PRICE_ID, quantity: params.quantity }],
+      default_payment_method: pm.id,
+    })
 
-  await prisma.payment.create({
-    data: {
-      companyId: designstudio.id,
-      subscriptionId: designstudioSub.id,
-      stripePaymentId: `pi_designstudio_${Date.now()}`,
-      stripeInvoiceId: `in_designstudio_${Date.now()}`,
-      amount: 1740,
-      currency: 'EUR',
-      status: PaymentStatus.SUCCEEDED,
-      paymentMethod: 'sepa_debit',
-      paidAt: new Date('2026-02-01T11:00:00Z'),
-    },
-  })
+    // 4. Extraire les dates de période depuis les items (Stripe SDK v20+)
+    const subItem = subscription.items.data[0]
+    const periodStart = subItem?.current_period_start ?? subscription.created
+    const periodEnd = subItem?.current_period_end ?? subscription.created
 
-  console.log('✅ 2 paiements créés\n')
+    // 5. Récupérer la facture
+    const invoices = await stripeInstance.invoices.list({
+      customer: customer.id,
+      limit: 1,
+    })
+    const invoice = invoices.data[0] ?? null
+
+    return { customer, subscription, invoice, periodStart, periodEnd }
+  }
+
+  let techcorpSub: Awaited<ReturnType<typeof prisma.subscription.create>>
+  let designstudioSub: Awaited<ReturnType<typeof prisma.subscription.create>>
+  let startupincSub: Awaited<ReturnType<typeof prisma.subscription.create>>
+
+  if (useRealStripe && stripe) {
+    // ===== TECHCORP (PER_SEAT, 110 employés) =====
+    console.log('  📦 TechCorp — création client + abonnement Stripe...')
+    const tc = await createStripeCustomerWithSub(stripe, {
+      email: 'john.doe@techcorp.com', name: 'TechCorp', quantity: 110,
+    })
+    techcorpSub = await prisma.subscription.create({
+      data: {
+        companyId: techcorp.id,
+        stripeCustomerId: tc.customer.id,
+        stripeSubscriptionId: tc.subscription.id,
+        stripePriceId: STRIPE_PRICE_ID,
+        plan: SubscriptionPlan.PER_SEAT,
+        quantity: 110,
+        pricePerEmployee: 290,
+        planPrice: 31900,
+        currency: 'EUR',
+        billingInterval: 'month',
+        status: SubscriptionStatus.ACTIVE,
+        currentPeriodStart: new Date(tc.periodStart * 1000),
+        currentPeriodEnd: new Date(tc.periodEnd * 1000),
+        cancelAtPeriodEnd: false,
+      },
+    })
+    // Payment TechCorp
+    await prisma.payment.create({
+      data: {
+        companyId: techcorp.id,
+        subscriptionId: techcorpSub.id,
+        stripePaymentId: tc.invoice?.payment_intent as string ?? `pi_techcorp_${Date.now()}`,
+        stripeInvoiceId: tc.invoice?.id ?? null,
+        amount: tc.invoice?.amount_paid ?? 31900,
+        currency: 'EUR',
+        status: PaymentStatus.SUCCEEDED,
+        paymentMethod: 'card',
+        paidAt: new Date(),
+        metadata: tc.invoice?.hosted_invoice_url ? { invoiceUrl: tc.invoice.hosted_invoice_url } : undefined,
+      },
+    })
+
+    // ===== DESIGNSTUDIO (PER_SEAT, 6 employés) =====
+    console.log('  📦 DesignStudio — création client + abonnement Stripe...')
+    const ds = await createStripeCustomerWithSub(stripe, {
+      email: 'emma.jones@designstudio.com', name: 'DesignStudio', quantity: 6,
+    })
+    designstudioSub = await prisma.subscription.create({
+      data: {
+        companyId: designstudio.id,
+        stripeCustomerId: ds.customer.id,
+        stripeSubscriptionId: ds.subscription.id,
+        stripePriceId: STRIPE_PRICE_ID,
+        plan: SubscriptionPlan.PER_SEAT,
+        quantity: 6,
+        pricePerEmployee: 290,
+        planPrice: 1740,
+        currency: 'EUR',
+        billingInterval: 'month',
+        status: SubscriptionStatus.ACTIVE,
+        currentPeriodStart: new Date(ds.periodStart * 1000),
+        currentPeriodEnd: new Date(ds.periodEnd * 1000),
+        cancelAtPeriodEnd: false,
+      },
+    })
+    // Payment DesignStudio
+    await prisma.payment.create({
+      data: {
+        companyId: designstudio.id,
+        subscriptionId: designstudioSub.id,
+        stripePaymentId: ds.invoice?.payment_intent as string ?? `pi_designstudio_${Date.now()}`,
+        stripeInvoiceId: ds.invoice?.id ?? null,
+        amount: ds.invoice?.amount_paid ?? 1740,
+        currency: 'EUR',
+        status: PaymentStatus.SUCCEEDED,
+        paymentMethod: 'card',
+        paidAt: new Date(),
+        metadata: ds.invoice?.hosted_invoice_url ? { invoiceUrl: ds.invoice.hosted_invoice_url } : undefined,
+      },
+    })
+
+    // ===== STARTUPINC (TRIAL, pas de carte) =====
+    console.log('  📦 StartupInc — création client Stripe (trial, sans carte)...')
+    const startupCustomer = await stripe.customers.create({
+      email: 'oliver.green@startupinc.com',
+      name: 'StartupInc',
+      metadata: { source: 'smartplanning-seed' },
+    })
+    startupincSub = await prisma.subscription.create({
+      data: {
+        companyId: startupinc.id,
+        stripeCustomerId: startupCustomer.id,
+        plan: SubscriptionPlan.FREE,
+        quantity: 4,
+        pricePerEmployee: 290,
+        planPrice: 0,
+        currency: 'EUR',
+        billingInterval: 'month',
+        status: SubscriptionStatus.TRIAL,
+        currentPeriodStart: new Date('2026-01-01'),
+        currentPeriodEnd: new Date('2026-06-30'),
+      },
+    })
+
+    console.log('✅ 3 abonnements Stripe réels créés\n')
+    console.log('💰 2 paiements réels créés\n')
+  } else {
+    // ===== FALLBACK : faux IDs (Stripe indisponible) =====
+    techcorpSub = await prisma.subscription.create({
+      data: {
+        companyId: techcorp.id,
+        stripeCustomerId: `cus_techcorp_${Date.now()}`,
+        stripeSubscriptionId: `sub_techcorp_${Date.now()}`,
+        stripePriceId: 'price_per_seat',
+        plan: SubscriptionPlan.PER_SEAT,
+        quantity: 110,
+        pricePerEmployee: 290,
+        planPrice: 31900,
+        currency: 'EUR',
+        billingInterval: 'month',
+        status: SubscriptionStatus.ACTIVE,
+        currentPeriodStart: new Date('2026-02-01'),
+        currentPeriodEnd: new Date('2026-03-01'),
+        cancelAtPeriodEnd: false,
+      },
+    })
+    designstudioSub = await prisma.subscription.create({
+      data: {
+        companyId: designstudio.id,
+        stripeCustomerId: `cus_designstudio_${Date.now()}`,
+        stripeSubscriptionId: `sub_designstudio_${Date.now()}`,
+        stripePriceId: 'price_per_seat',
+        plan: SubscriptionPlan.PER_SEAT,
+        quantity: 6,
+        pricePerEmployee: 290,
+        planPrice: 1740,
+        currency: 'EUR',
+        billingInterval: 'month',
+        status: SubscriptionStatus.ACTIVE,
+        currentPeriodStart: new Date('2026-02-01'),
+        currentPeriodEnd: new Date('2026-03-01'),
+        cancelAtPeriodEnd: false,
+      },
+    })
+    startupincSub = await prisma.subscription.create({
+      data: {
+        companyId: startupinc.id,
+        stripeCustomerId: `cus_startupinc_${Date.now()}`,
+        plan: SubscriptionPlan.FREE,
+        quantity: 4,
+        pricePerEmployee: 290,
+        planPrice: 0,
+        currency: 'EUR',
+        billingInterval: 'month',
+        status: SubscriptionStatus.TRIAL,
+        currentPeriodStart: new Date('2026-01-01'),
+        currentPeriodEnd: new Date('2026-06-30'),
+      },
+    })
+
+    console.log('✅ 3 abonnements créés (faux IDs)\n')
+
+    // Fallback payments
+    await prisma.payment.create({
+      data: {
+        companyId: techcorp.id,
+        subscriptionId: techcorpSub.id,
+        stripePaymentId: `pi_techcorp_${Date.now()}`,
+        stripeInvoiceId: `in_techcorp_${Date.now()}`,
+        amount: 31900,
+        currency: 'EUR',
+        status: PaymentStatus.SUCCEEDED,
+        paymentMethod: 'card',
+        paidAt: new Date('2026-02-01T10:00:00Z'),
+      },
+    })
+    await prisma.payment.create({
+      data: {
+        companyId: designstudio.id,
+        subscriptionId: designstudioSub.id,
+        stripePaymentId: `pi_designstudio_${Date.now()}`,
+        stripeInvoiceId: `in_designstudio_${Date.now()}`,
+        amount: 1740,
+        currency: 'EUR',
+        status: PaymentStatus.SUCCEEDED,
+        paymentMethod: 'sepa_debit',
+        paidAt: new Date('2026-02-01T11:00:00Z'),
+      },
+    })
+
+    console.log('💰 2 paiements créés (faux IDs)\n')
+  }
 
   // ============================================================================
   // 4. ÉQUIPES TECHCORP (12 équipes grande distribution)
