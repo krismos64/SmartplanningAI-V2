@@ -14,19 +14,116 @@ import {
   NotificationType,
 } from '@prisma/client'
 import * as bcrypt from 'bcryptjs'
+import {
+  TECHCORP_TEAMS,
+  SHIFT_PATTERNS,
+  LEAVE_REQUESTS,
+  INCIDENTS,
+  PERSONAL_TASKS,
+  NOTIFICATIONS,
+} from './seed-data'
 
 const prisma = new PrismaClient()
 
-async function main() {
-  console.log(
-    '🌱 Début du seeding de la base de données SmartPlanning v2.0...\n'
-  )
+// ============================================================================
+// HELPERS
+// ============================================================================
 
-  // Hash du mot de passe pour tous les utilisateurs
+interface EmployeeRecord {
+  userId: string
+  employeeId: string
+  firstName: string
+  lastName: string
+  teamIndex: number
+  isManager: boolean
+}
+
+async function createUserWithEmployee(
+  data: {
+    email: string
+    name: string
+    password: string
+    role: UserRole
+    companyId: string
+    firstName: string
+    lastName: string
+    jobTitle: string
+    weeklyHours: number
+    hireDate: Date
+    teamId: string
+    department: string
+  }
+) {
+  const user = await prisma.user.create({
+    data: {
+      email: data.email,
+      name: data.name,
+      password: data.password,
+      emailVerified: new Date(),
+      role: data.role,
+      companyId: data.companyId,
+      isActive: true,
+      isEmailVerified: true,
+      employee: {
+        create: {
+          firstName: data.firstName,
+          lastName: data.lastName,
+          jobTitle: data.jobTitle,
+          department: data.department,
+          hireDate: data.hireDate,
+          weeklyHours: data.weeklyHours,
+          companyId: data.companyId,
+          teamId: data.teamId,
+        },
+      },
+    },
+    include: { employee: true },
+  })
+  return user
+}
+
+function generateEmail(firstName: string, lastName: string): string {
+  const clean = (s: string) =>
+    s.toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z]/g, '')
+  return `${clean(firstName)}.${clean(lastName)}@techcorp.com`
+}
+
+function getShiftForDay(
+  dayOfWeek: number,
+  weeklyHours: number,
+  empIndex: number
+): { start: string; end: string } | null {
+  // Dimanche (0) = pas de travail, Samedi (6) = travail
+  if (dayOfWeek === 0) return null
+
+  // Déterminer le nombre de jours travaillés par semaine
+  const daysPerWeek = weeklyHours >= 35 ? 6 : 5
+  // Les 30h travaillent du lun au ven (pas samedi)
+  if (weeklyHours <= 30 && dayOfWeek === 6) return null
+
+  const shifts = [SHIFT_PATTERNS.matin, SHIFT_PATTERNS.journee, SHIFT_PATTERNS.apresMidi, SHIFT_PATTERNS.miJournee]
+  // Rotation basée sur l'index employé + jour pour varier
+  const shiftIdx = (empIndex + dayOfWeek) % shifts.length
+  return shifts[shiftIdx]!
+}
+
+function createDateUTC(dateStr: string, time: string): Date {
+  return new Date(`${dateStr}T${time}:00Z`)
+}
+
+// ============================================================================
+// MAIN
+// ============================================================================
+
+async function main() {
+  console.log('🌱 Début du seeding SmartPlanning v2.0 — Grande Distribution...\n')
+
   const hashedPassword = await bcrypt.hash('Password123!', 10)
 
   // ============================================================================
-  // 1. CRÉER LES ORGANISATIONS
+  // 1. ORGANISATIONS
   // ============================================================================
   console.log('🏢 Création des organisations...')
 
@@ -35,18 +132,19 @@ async function main() {
       name: 'TechCorp',
       slug: 'techcorp',
       email: 'contact@techcorp.com',
-      phone: '+33 1 23 45 67 89',
-      address: '123 Avenue des Champs-Élysées, 75008 Paris',
-      workingHoursStart: '08:00',
-      workingHoursEnd: '18:00',
-      workingDays: ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY'],
+      phone: '+33 4 72 00 00 00',
+      address: 'Centre Commercial Les Halles, 45 Rue du Commerce, 69003 Lyon',
+      workingHoursStart: '06:00',
+      workingHoursEnd: '21:00',
+      workingDays: ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'],
       timezone: 'Europe/Paris',
       defaultOpeningHours: {
-        MONDAY: { start: '08:00', end: '18:00', break: '12:00-14:00' },
-        TUESDAY: { start: '08:00', end: '18:00', break: '12:00-14:00' },
-        WEDNESDAY: { start: '08:00', end: '18:00', break: '12:00-14:00' },
-        THURSDAY: { start: '08:00', end: '18:00', break: '12:00-14:00' },
-        FRIDAY: { start: '08:00', end: '17:00', break: '12:00-14:00' },
+        MONDAY: { start: '06:00', end: '21:00', break: '12:00-14:00' },
+        TUESDAY: { start: '06:00', end: '21:00', break: '12:00-14:00' },
+        WEDNESDAY: { start: '06:00', end: '21:00', break: '12:00-14:00' },
+        THURSDAY: { start: '06:00', end: '21:00', break: '12:00-14:00' },
+        FRIDAY: { start: '06:00', end: '21:00', break: '12:00-14:00' },
+        SATURDAY: { start: '06:00', end: '21:00', break: '12:00-14:00' },
       },
     },
   })
@@ -97,7 +195,7 @@ async function main() {
   console.log('✅ 3 organisations créées\n')
 
   // ============================================================================
-  // 2. CRÉER LES ABONNEMENTS STRIPE
+  // 2. ABONNEMENTS STRIPE
   // ============================================================================
   console.log('💳 Création des abonnements Stripe...')
 
@@ -108,14 +206,14 @@ async function main() {
       stripeSubscriptionId: `sub_techcorp_${Date.now()}`,
       stripePriceId: 'price_per_seat',
       plan: SubscriptionPlan.PER_SEAT,
-      quantity: 16, // 16 employés TechCorp
-      pricePerEmployee: 290, // 2,90€ en centimes
-      planPrice: 4640, // 16 × 290 = 4640 centimes = 46,40€
+      quantity: 110,
+      pricePerEmployee: 290,
+      planPrice: 31900, // 110 × 290
       currency: 'EUR',
       billingInterval: 'month',
       status: SubscriptionStatus.ACTIVE,
-      currentPeriodStart: new Date('2025-11-01'),
-      currentPeriodEnd: new Date('2025-12-01'),
+      currentPeriodStart: new Date('2026-02-01'),
+      currentPeriodEnd: new Date('2026-03-01'),
       cancelAtPeriodEnd: false,
     },
   })
@@ -127,14 +225,14 @@ async function main() {
       stripeSubscriptionId: `sub_designstudio_${Date.now()}`,
       stripePriceId: 'price_per_seat',
       plan: SubscriptionPlan.PER_SEAT,
-      quantity: 6, // 6 employés DesignStudio
-      pricePerEmployee: 290, // 2,90€ en centimes
-      planPrice: 1740, // 6 × 290 = 1740 centimes = 17,40€
+      quantity: 6,
+      pricePerEmployee: 290,
+      planPrice: 1740,
       currency: 'EUR',
       billingInterval: 'month',
       status: SubscriptionStatus.ACTIVE,
-      currentPeriodStart: new Date('2025-11-01'),
-      currentPeriodEnd: new Date('2025-12-01'),
+      currentPeriodStart: new Date('2026-02-01'),
+      currentPeriodEnd: new Date('2026-03-01'),
       cancelAtPeriodEnd: false,
     },
   })
@@ -144,23 +242,21 @@ async function main() {
       companyId: startupinc.id,
       stripeCustomerId: `cus_startupinc_${Date.now()}`,
       plan: SubscriptionPlan.FREE,
-      quantity: 4, // 4 employés StartupInc (en essai gratuit)
+      quantity: 4,
       pricePerEmployee: 290,
-      planPrice: 0, // FREE = pas de facturation
+      planPrice: 0,
       currency: 'EUR',
       billingInterval: 'month',
       status: SubscriptionStatus.TRIAL,
-      currentPeriodStart: new Date('2025-11-01'),
-      currentPeriodEnd: new Date('2025-12-31'),
+      currentPeriodStart: new Date('2026-01-01'),
+      currentPeriodEnd: new Date('2026-06-30'),
     },
   })
 
-  console.log(
-    `✅ 3 abonnements créés: ${techcorpSub.plan}, ${designstudioSub.plan}, ${startupincSub.plan}\n`
-  )
+  console.log('✅ 3 abonnements créés\n')
 
   // ============================================================================
-  // 3. CRÉER LES PAIEMENTS
+  // 3. PAIEMENTS
   // ============================================================================
   console.log('💰 Création des paiements...')
 
@@ -170,11 +266,11 @@ async function main() {
       subscriptionId: techcorpSub.id,
       stripePaymentId: `pi_techcorp_${Date.now()}`,
       stripeInvoiceId: `in_techcorp_${Date.now()}`,
-      amount: 4640, // 46,40€ en centimes (16 employés × 2,90€)
+      amount: 31900,
       currency: 'EUR',
       status: PaymentStatus.SUCCEEDED,
       paymentMethod: 'card',
-      paidAt: new Date('2025-11-01T10:00:00Z'),
+      paidAt: new Date('2026-02-01T10:00:00Z'),
     },
   })
 
@@ -184,84 +280,53 @@ async function main() {
       subscriptionId: designstudioSub.id,
       stripePaymentId: `pi_designstudio_${Date.now()}`,
       stripeInvoiceId: `in_designstudio_${Date.now()}`,
-      amount: 1740, // 17,40€ en centimes (6 employés × 2,90€)
+      amount: 1740,
       currency: 'EUR',
       status: PaymentStatus.SUCCEEDED,
       paymentMethod: 'sepa_debit',
-      paidAt: new Date('2025-11-01T11:00:00Z'),
+      paidAt: new Date('2026-02-01T11:00:00Z'),
     },
   })
 
   console.log('✅ 2 paiements créés\n')
 
   // ============================================================================
-  // 4. CRÉER LES ÉQUIPES
+  // 4. ÉQUIPES TECHCORP (12 équipes grande distribution)
   // ============================================================================
-  console.log('👥 Création des équipes...')
+  console.log('👥 Création des 12 équipes TechCorp...')
 
-  const engineering = await prisma.team.create({
-    data: {
-      name: 'Engineering',
-      description: 'Équipe de développement logiciel',
-      color: '#3B82F6',
-      companyId: techcorp.id,
-    },
-  })
+  const teamIds: string[] = []
+  for (const teamDef of TECHCORP_TEAMS) {
+    const team = await prisma.team.create({
+      data: {
+        name: teamDef.name,
+        description: `Rayon ${teamDef.name}`,
+        color: teamDef.color,
+        companyId: techcorp.id,
+      },
+    })
+    teamIds.push(team.id)
+  }
 
-  const product = await prisma.team.create({
-    data: {
-      name: 'Product',
-      description: 'Équipe produit et product management',
-      color: '#8B5CF6',
-      companyId: techcorp.id,
-    },
-  })
-
-  const design = await prisma.team.create({
-    data: {
-      name: 'Design',
-      description: 'Équipe design UI/UX',
-      color: '#EC4899',
-      companyId: techcorp.id,
-    },
-  })
-
+  // DesignStudio & StartupInc teams
   const designers = await prisma.team.create({
-    data: {
-      name: 'Designers',
-      description: 'Équipe des designers créatifs',
-      color: '#F59E0B',
-      companyId: designstudio.id,
-    },
+    data: { name: 'Designers', description: 'Équipe des designers créatifs', color: '#F59E0B', companyId: designstudio.id },
   })
-
-  const admin = await prisma.team.create({
-    data: {
-      name: 'Admin',
-      description: 'Équipe administrative',
-      color: '#10B981',
-      companyId: designstudio.id,
-    },
+  const adminTeam = await prisma.team.create({
+    data: { name: 'Admin', description: 'Équipe administrative', color: '#10B981', companyId: designstudio.id },
   })
-
   const coreTeam = await prisma.team.create({
-    data: {
-      name: 'Core Team',
-      description: 'Équipe principale startup',
-      color: '#EF4444',
-      companyId: startupinc.id,
-    },
+    data: { name: 'Core Team', description: 'Équipe principale startup', color: '#EF4444', companyId: startupinc.id },
   })
 
-  console.log('✅ 6 équipes créées\n')
+  console.log('✅ 15 équipes créées\n')
 
   // ============================================================================
-  // 5. CRÉER LES UTILISATEURS ET EMPLOYÉS
+  // 5. UTILISATEURS & EMPLOYÉS
   // ============================================================================
-  console.log('👤 Création des utilisateurs et employés...')
+  console.log('👤 Création des utilisateurs TechCorp...')
 
-  // ========== SYSTEM ADMIN (Super Admin global) ==========
-  // Utilisateur requis pour les tests E2E RBAC
+  // SYSTEM ADMIN
   const systemAdmin = await prisma.user.create({
     data: {
       email: 'admin@smartplanning.io',
@@ -269,1806 +334,564 @@ async function main() {
       password: hashedPassword,
       emailVerified: new Date(),
       role: UserRole.SYSTEM_ADMIN,
-      companyId: null, // System Admin n'appartient pas à une entreprise
+      companyId: null,
       isActive: true,
       isEmailVerified: true,
     },
   })
-  console.log('   ✅ System Admin créé: admin@smartplanning.io')
 
-  // ========== TECHCORP (10 users) ==========
+  // DIRECTOR — John Doe (E2E)
+  const johnDoe = await createUserWithEmployee({
+    email: 'john.doe@techcorp.com',
+    name: 'John Doe',
+    password: hashedPassword,
+    role: UserRole.DIRECTOR,
+    companyId: techcorp.id,
+    firstName: 'John',
+    lastName: 'Doe',
+    jobTitle: 'Directeur de magasin',
+    department: 'Direction',
+    weeklyHours: 39,
+    hireDate: new Date('2018-01-15'),
+    teamId: teamIds[0]!,
+  })
 
-  // DIRECTOR TechCorp
-  const johnDoe = await prisma.user.create({
-    data: {
-      email: 'john.doe@techcorp.com',
-      name: 'John Doe',
-      password: hashedPassword,
-      emailVerified: new Date(),
-      role: UserRole.DIRECTOR,
-      companyId: techcorp.id,
-      isActive: true,
-      isEmailVerified: true,
-      employee: {
-        create: {
-          firstName: 'John',
-          lastName: 'Doe',
-          jobTitle: 'CEO & Director',
-          department: 'Management',
-          phone: '+33 6 11 11 11 11',
-          hireDate: new Date('2020-01-01'),
-          weeklyHours: 40.0,
+  // Tracking all employees for leave balances, schedules, etc.
+  const allTechcorpEmployees: EmployeeRecord[] = []
+
+  // Pour chaque équipe, créer manager + employés
+  for (let tIdx = 0; tIdx < TECHCORP_TEAMS.length; tIdx++) {
+    const teamDef = TECHCORP_TEAMS[tIdx]!
+    const teamId = teamIds[tIdx]!
+
+    // MANAGER
+    let managerUser
+    if (teamDef.manager.email === 'jane.smith@techcorp.com') {
+      // E2E user Jane Smith
+      managerUser = await createUserWithEmployee({
+        email: 'jane.smith@techcorp.com',
+        name: 'Jane Smith',
+        password: hashedPassword,
+        role: UserRole.MANAGER,
+        companyId: techcorp.id,
+        firstName: 'Jane',
+        lastName: 'Smith',
+        jobTitle: teamDef.manager.jobTitle,
+        department: teamDef.name,
+        weeklyHours: 39,
+        hireDate: new Date('2019-03-01'),
+        teamId,
+      })
+    } else {
+      managerUser = await createUserWithEmployee({
+        email: generateEmail(teamDef.manager.firstName, teamDef.manager.lastName),
+        name: `${teamDef.manager.firstName} ${teamDef.manager.lastName}`,
+        password: hashedPassword,
+        role: UserRole.MANAGER,
+        companyId: techcorp.id,
+        firstName: teamDef.manager.firstName,
+        lastName: teamDef.manager.lastName,
+        jobTitle: teamDef.manager.jobTitle,
+        department: teamDef.name,
+        weeklyHours: 39,
+        hireDate: new Date('2019-01-15'),
+        teamId,
+      })
+    }
+
+    // Set team manager
+    await prisma.team.update({
+      where: { id: teamId },
+      data: { managerId: managerUser.employee!.id },
+    })
+
+    allTechcorpEmployees.push({
+      userId: managerUser.id,
+      employeeId: managerUser.employee!.id,
+      firstName: teamDef.manager.firstName,
+      lastName: teamDef.manager.lastName,
+      teamIndex: tIdx,
+      isManager: true,
+    })
+
+    // EMPLOYEES
+    for (let eIdx = 0; eIdx < teamDef.employees.length; eIdx++) {
+      const empDef = teamDef.employees[eIdx]!
+
+      let empUser
+      // Bob Wilson = E2E user (team 0, first employee = index 0)
+      if (tIdx === 0 && eIdx === 0 && empDef.firstName === 'Bob' && empDef.lastName === 'Wilson') {
+        empUser = await createUserWithEmployee({
+          email: 'bob.wilson@techcorp.com',
+          name: 'Bob Wilson',
+          password: hashedPassword,
+          role: UserRole.EMPLOYEE,
           companyId: techcorp.id,
-          teamId: engineering.id,
-          skills: ['Leadership', 'Strategy', 'Management'],
-        },
-      },
-    },
-    include: { employee: true },
-  })
-
-  // MANAGER Engineering
-  const janeSmith = await prisma.user.create({
-    data: {
-      email: 'jane.smith@techcorp.com',
-      name: 'Jane Smith',
-      password: hashedPassword,
-      emailVerified: new Date(),
-      role: UserRole.MANAGER,
-      companyId: techcorp.id,
-      isActive: true,
-      isEmailVerified: true,
-      employee: {
-        create: {
-          firstName: 'Jane',
-          lastName: 'Smith',
-          jobTitle: 'Engineering Manager',
-          department: 'Engineering',
-          phone: '+33 6 22 22 22 22',
-          hireDate: new Date('2021-03-15'),
-          weeklyHours: 35.0,
-          companyId: techcorp.id,
-          teamId: engineering.id,
-          skills: ['JavaScript', 'TypeScript', 'React', 'Leadership'],
-        },
-      },
-    },
-    include: { employee: true },
-  })
-
-  // Mettre à jour l'équipe Engineering avec le manager
-  await prisma.team.update({
-    where: { id: engineering.id },
-    data: { managerId: janeSmith.employee!.id },
-  })
-
-  // EMPLOYEES Engineering (3)
-  const bobWilson = await prisma.user.create({
-    data: {
-      email: 'bob.wilson@techcorp.com',
-      name: 'Bob Wilson',
-      password: hashedPassword,
-      emailVerified: new Date(),
-      role: UserRole.EMPLOYEE,
-      companyId: techcorp.id,
-      isActive: true,
-      isEmailVerified: true,
-      employee: {
-        create: {
           firstName: 'Bob',
           lastName: 'Wilson',
-          jobTitle: 'Senior Developer',
-          department: 'Engineering',
-          phone: '+33 6 33 33 33 33',
-          hireDate: new Date('2022-01-10'),
-          weeklyHours: 35.0,
+          jobTitle: empDef.jobTitle,
+          department: teamDef.name,
+          weeklyHours: empDef.weeklyHours,
+          hireDate: new Date(empDef.hireDate),
+          teamId,
+        })
+      } else {
+        empUser = await createUserWithEmployee({
+          email: generateEmail(empDef.firstName, empDef.lastName),
+          name: `${empDef.firstName} ${empDef.lastName}`,
+          password: hashedPassword,
+          role: UserRole.EMPLOYEE,
           companyId: techcorp.id,
-          teamId: engineering.id,
-          skills: ['React', 'Node.js', 'PostgreSQL'],
-        },
-      },
-    },
-    include: { employee: true },
-  })
+          firstName: empDef.firstName,
+          lastName: empDef.lastName,
+          jobTitle: empDef.jobTitle,
+          department: teamDef.name,
+          weeklyHours: empDef.weeklyHours,
+          hireDate: new Date(empDef.hireDate),
+          teamId,
+        })
+      }
 
-  const evaGarcia = await prisma.user.create({
-    data: {
-      email: 'eva.garcia@techcorp.com',
-      name: 'Eva Garcia',
-      password: hashedPassword,
-      emailVerified: new Date(),
-      role: UserRole.EMPLOYEE,
-      companyId: techcorp.id,
-      isActive: true,
-      isEmailVerified: true,
-      employee: {
-        create: {
-          firstName: 'Eva',
-          lastName: 'Garcia',
-          jobTitle: 'Full Stack Developer',
-          department: 'Engineering',
-          phone: '+33 6 44 44 44 44',
-          hireDate: new Date('2022-06-01'),
-          weeklyHours: 35.0,
-          companyId: techcorp.id,
-          teamId: engineering.id,
-          skills: ['TypeScript', 'Next.js', 'MongoDB'],
-        },
-      },
-    },
-    include: { employee: true },
-  })
+      allTechcorpEmployees.push({
+        userId: empUser.id,
+        employeeId: empUser.employee!.id,
+        firstName: empDef.firstName,
+        lastName: empDef.lastName,
+        teamIndex: tIdx,
+        isManager: false,
+      })
+    }
+  }
 
-  const henryLopez = await prisma.user.create({
-    data: {
-      email: 'henry.lopez@techcorp.com',
-      name: 'Henry Lopez',
-      password: hashedPassword,
-      emailVerified: new Date(),
-      role: UserRole.EMPLOYEE,
-      companyId: techcorp.id,
-      isActive: true,
-      isEmailVerified: true,
-      employee: {
-        create: {
-          firstName: 'Henry',
-          lastName: 'Lopez',
-          jobTitle: 'Junior Developer',
-          department: 'Engineering',
-          phone: '+33 6 55 55 55 55',
-          hireDate: new Date('2024-09-01'),
-          weeklyHours: 35.0,
-          companyId: techcorp.id,
-          teamId: engineering.id,
-          skills: ['JavaScript', 'React', 'Git'],
-        },
-      },
-    },
-    include: { employee: true },
-  })
-
-  // MANAGER Product
-  const aliceBrown = await prisma.user.create({
-    data: {
-      email: 'alice.brown@techcorp.com',
-      name: 'Alice Brown',
-      password: hashedPassword,
-      emailVerified: new Date(),
-      role: UserRole.MANAGER,
-      companyId: techcorp.id,
-      isActive: true,
-      isEmailVerified: true,
-      employee: {
-        create: {
-          firstName: 'Alice',
-          lastName: 'Brown',
-          jobTitle: 'Product Manager',
-          department: 'Product',
-          phone: '+33 6 66 66 66 66',
-          hireDate: new Date('2021-06-01'),
-          weeklyHours: 35.0,
-          companyId: techcorp.id,
-          teamId: product.id,
-          skills: ['Product Management', 'Agile', 'User Research'],
-        },
-      },
-    },
-    include: { employee: true },
-  })
-
-  // Mettre à jour l'équipe Product avec le manager
-  await prisma.team.update({
-    where: { id: product.id },
-    data: { managerId: aliceBrown.employee!.id },
-  })
-
-  // EMPLOYEES Product (2)
-  const charlieDavis = await prisma.user.create({
-    data: {
-      email: 'charlie.davis@techcorp.com',
-      name: 'Charlie Davis',
-      password: hashedPassword,
-      emailVerified: new Date(),
-      role: UserRole.EMPLOYEE,
-      companyId: techcorp.id,
-      isActive: true,
-      isEmailVerified: true,
-      employee: {
-        create: {
-          firstName: 'Charlie',
-          lastName: 'Davis',
-          jobTitle: 'Product Owner',
-          department: 'Product',
-          phone: '+33 6 77 77 77 77',
-          hireDate: new Date('2022-03-01'),
-          weeklyHours: 35.0,
-          companyId: techcorp.id,
-          teamId: product.id,
-          skills: ['Scrum', 'Jira', 'Stakeholder Management'],
-        },
-      },
-    },
-    include: { employee: true },
-  })
-
-  const davidMiller = await prisma.user.create({
-    data: {
-      email: 'david.miller@techcorp.com',
-      name: 'David Miller',
-      password: hashedPassword,
-      emailVerified: new Date(),
-      role: UserRole.EMPLOYEE,
-      companyId: techcorp.id,
-      isActive: true,
-      isEmailVerified: true,
-      employee: {
-        create: {
-          firstName: 'David',
-          lastName: 'Miller',
-          jobTitle: 'Product Analyst',
-          department: 'Product',
-          phone: '+33 6 88 88 88 88',
-          hireDate: new Date('2023-01-15'),
-          weeklyHours: 35.0,
-          companyId: techcorp.id,
-          teamId: product.id,
-          skills: ['Analytics', 'SQL', 'Data Visualization'],
-        },
-      },
-    },
-    include: { employee: true },
-  })
-
-  // MANAGER Design
-  const frankMartinez = await prisma.user.create({
-    data: {
-      email: 'frank.martinez@techcorp.com',
-      name: 'Frank Martinez',
-      password: hashedPassword,
-      emailVerified: new Date(),
-      role: UserRole.MANAGER,
-      companyId: techcorp.id,
-      isActive: true,
-      isEmailVerified: true,
-      employee: {
-        create: {
-          firstName: 'Frank',
-          lastName: 'Martinez',
-          jobTitle: 'Design Lead',
-          department: 'Design',
-          phone: '+33 6 99 99 99 99',
-          hireDate: new Date('2021-09-01'),
-          weeklyHours: 35.0,
-          companyId: techcorp.id,
-          teamId: design.id,
-          skills: ['Figma', 'UI/UX', 'Design Systems'],
-        },
-      },
-    },
-    include: { employee: true },
-  })
-
-  // Mettre à jour l'équipe Design avec le manager
-  await prisma.team.update({
-    where: { id: design.id },
-    data: { managerId: frankMartinez.employee!.id },
-  })
-
-  // EMPLOYEE Design (1)
-  const graceRodriguez = await prisma.user.create({
-    data: {
-      email: 'grace.rodriguez@techcorp.com',
-      name: 'Grace Rodriguez',
-      password: hashedPassword,
-      emailVerified: new Date(),
-      role: UserRole.EMPLOYEE,
-      companyId: techcorp.id,
-      isActive: true,
-      isEmailVerified: true,
-      employee: {
-        create: {
-          firstName: 'Grace',
-          lastName: 'Rodriguez',
-          jobTitle: 'UI Designer',
-          department: 'Design',
-          phone: '+33 6 10 10 10 10',
-          hireDate: new Date('2023-05-01'),
-          weeklyHours: 35.0,
-          companyId: techcorp.id,
-          teamId: design.id,
-          skills: ['Figma', 'Adobe XD', 'Illustration'],
-        },
-      },
-    },
-    include: { employee: true },
-  })
-
-  // EMPLOYEES Engineering supplémentaires (3) — pour activer la pagination E2E
-  const lucasNguyen = await prisma.user.create({
-    data: {
-      email: 'lucas.nguyen@techcorp.com',
-      name: 'Lucas Nguyen',
-      password: hashedPassword,
-      emailVerified: new Date(),
-      role: UserRole.EMPLOYEE,
-      companyId: techcorp.id,
-      isActive: true,
-      isEmailVerified: true,
-      employee: {
-        create: {
-          firstName: 'Lucas',
-          lastName: 'Nguyen',
-          jobTitle: 'Backend Developer',
-          department: 'Engineering',
-          phone: '+33 6 31 31 31 31',
-          hireDate: new Date('2024-01-15'),
-          weeklyHours: 35.0,
-          companyId: techcorp.id,
-          teamId: engineering.id,
-          skills: ['Go', 'PostgreSQL', 'Docker'],
-        },
-      },
-    },
-    include: { employee: true },
-  })
-
-  const chloePerez = await prisma.user.create({
-    data: {
-      email: 'chloe.perez@techcorp.com',
-      name: 'Chloe Perez',
-      password: hashedPassword,
-      emailVerified: new Date(),
-      role: UserRole.EMPLOYEE,
-      companyId: techcorp.id,
-      isActive: true,
-      isEmailVerified: true,
-      employee: {
-        create: {
-          firstName: 'Chloe',
-          lastName: 'Perez',
-          jobTitle: 'QA Engineer',
-          department: 'Engineering',
-          phone: '+33 6 42 42 42 42',
-          hireDate: new Date('2024-03-01'),
-          weeklyHours: 35.0,
-          companyId: techcorp.id,
-          teamId: engineering.id,
-          skills: ['Playwright', 'Cypress', 'Jest'],
-        },
-      },
-    },
-    include: { employee: true },
-  })
-
-  const maximeRoux = await prisma.user.create({
-    data: {
-      email: 'maxime.roux@techcorp.com',
-      name: 'Maxime Roux',
-      password: hashedPassword,
-      emailVerified: new Date(),
-      role: UserRole.EMPLOYEE,
-      companyId: techcorp.id,
-      isActive: true,
-      isEmailVerified: true,
-      employee: {
-        create: {
-          firstName: 'Maxime',
-          lastName: 'Roux',
-          jobTitle: 'DevOps Engineer',
-          department: 'Engineering',
-          phone: '+33 6 53 53 53 53',
-          hireDate: new Date('2024-05-01'),
-          weeklyHours: 35.0,
-          companyId: techcorp.id,
-          teamId: engineering.id,
-          skills: ['Kubernetes', 'Terraform', 'CI/CD'],
-        },
-      },
-    },
-    include: { employee: true },
-  })
-
-  // EMPLOYEES Product supplémentaires (2) — pour activer la pagination E2E
-  const sarahDubois = await prisma.user.create({
-    data: {
-      email: 'sarah.dubois@techcorp.com',
-      name: 'Sarah Dubois',
-      password: hashedPassword,
-      emailVerified: new Date(),
-      role: UserRole.EMPLOYEE,
-      companyId: techcorp.id,
-      isActive: true,
-      isEmailVerified: true,
-      employee: {
-        create: {
-          firstName: 'Sarah',
-          lastName: 'Dubois',
-          jobTitle: 'UX Researcher',
-          department: 'Product',
-          phone: '+33 6 64 64 64 64',
-          hireDate: new Date('2024-06-01'),
-          weeklyHours: 35.0,
-          companyId: techcorp.id,
-          teamId: product.id,
-          skills: ['User Research', 'Figma', 'Accessibility'],
-        },
-      },
-    },
-    include: { employee: true },
-  })
-
-  const thomasBernard = await prisma.user.create({
-    data: {
-      email: 'thomas.bernard@techcorp.com',
-      name: 'Thomas Bernard',
-      password: hashedPassword,
-      emailVerified: new Date(),
-      role: UserRole.EMPLOYEE,
-      companyId: techcorp.id,
-      isActive: true,
-      isEmailVerified: true,
-      employee: {
-        create: {
-          firstName: 'Thomas',
-          lastName: 'Bernard',
-          jobTitle: 'Technical Writer',
-          department: 'Product',
-          phone: '+33 6 75 75 75 75',
-          hireDate: new Date('2024-07-01'),
-          weeklyHours: 35.0,
-          companyId: techcorp.id,
-          teamId: product.id,
-          skills: ['Documentation', 'Markdown', 'API Docs'],
-        },
-      },
-    },
-    include: { employee: true },
-  })
-
-  // EMPLOYEE Design supplémentaire (1) — pour activer la pagination E2E
-  const julieMoreau = await prisma.user.create({
-    data: {
-      email: 'julie.moreau@techcorp.com',
-      name: 'Julie Moreau',
-      password: hashedPassword,
-      emailVerified: new Date(),
-      role: UserRole.EMPLOYEE,
-      companyId: techcorp.id,
-      isActive: true,
-      isEmailVerified: true,
-      employee: {
-        create: {
-          firstName: 'Julie',
-          lastName: 'Moreau',
-          jobTitle: 'Motion Designer',
-          department: 'Design',
-          phone: '+33 6 86 86 86 86',
-          hireDate: new Date('2024-08-01'),
-          weeklyHours: 35.0,
-          companyId: techcorp.id,
-          teamId: design.id,
-          skills: ['After Effects', 'Lottie', 'Animation'],
-        },
-      },
-    },
-    include: { employee: true },
-  })
+  console.log(`✅ ${allTechcorpEmployees.length + 1} utilisateurs TechCorp créés (1 directeur + ${allTechcorpEmployees.length} managers/employés)`)
 
   // ========== DESIGNSTUDIO (6 users) ==========
-
-  // DIRECTOR DesignStudio
-  const emmaJones = await prisma.user.create({
-    data: {
-      email: 'emma.jones@designstudio.com',
-      name: 'Emma Jones',
-      password: hashedPassword,
-      emailVerified: new Date(),
-      role: UserRole.DIRECTOR,
-      companyId: designstudio.id,
-      isActive: true,
-      isEmailVerified: true,
-      employee: {
-        create: {
-          firstName: 'Emma',
-          lastName: 'Jones',
-          jobTitle: 'Creative Director',
-          department: 'Management',
-          phone: '+33 6 21 21 21 21',
-          hireDate: new Date('2019-06-01'),
-          weeklyHours: 37.0,
-          companyId: designstudio.id,
-          teamId: designers.id,
-          skills: ['Creative Direction', 'Branding', 'Strategy'],
-        },
-      },
-    },
-    include: { employee: true },
+  const emmaJones = await createUserWithEmployee({
+    email: 'emma.jones@designstudio.com', name: 'Emma Jones', password: hashedPassword,
+    role: UserRole.DIRECTOR, companyId: designstudio.id,
+    firstName: 'Emma', lastName: 'Jones', jobTitle: 'Creative Director',
+    department: 'Management', weeklyHours: 37, hireDate: new Date('2019-06-01'), teamId: designers.id,
   })
 
-  // MANAGER Designers
-  const liamWhite = await prisma.user.create({
-    data: {
-      email: 'liam.white@designstudio.com',
-      name: 'Liam White',
-      password: hashedPassword,
-      emailVerified: new Date(),
-      role: UserRole.MANAGER,
-      companyId: designstudio.id,
-      isActive: true,
-      isEmailVerified: true,
-      employee: {
-        create: {
-          firstName: 'Liam',
-          lastName: 'White',
-          jobTitle: 'Senior Designer',
-          department: 'Design',
-          phone: '+33 6 32 32 32 32',
-          hireDate: new Date('2020-03-01'),
-          weeklyHours: 35.0,
-          companyId: designstudio.id,
-          teamId: designers.id,
-          skills: ['Graphic Design', 'Motion Design', 'Art Direction'],
-        },
-      },
-    },
-    include: { employee: true },
+  const liamWhite = await createUserWithEmployee({
+    email: 'liam.white@designstudio.com', name: 'Liam White', password: hashedPassword,
+    role: UserRole.MANAGER, companyId: designstudio.id,
+    firstName: 'Liam', lastName: 'White', jobTitle: 'Senior Designer',
+    department: 'Design', weeklyHours: 35, hireDate: new Date('2020-03-01'), teamId: designers.id,
+  })
+  await prisma.team.update({ where: { id: designers.id }, data: { managerId: liamWhite.employee!.id } })
+
+  const oliviaMartin = await createUserWithEmployee({
+    email: 'olivia.martin@designstudio.com', name: 'Olivia Martin', password: hashedPassword,
+    role: UserRole.EMPLOYEE, companyId: designstudio.id,
+    firstName: 'Olivia', lastName: 'Martin', jobTitle: 'Graphic Designer',
+    department: 'Design', weeklyHours: 35, hireDate: new Date('2021-09-01'), teamId: designers.id,
+  })
+  const noahThompson = await createUserWithEmployee({
+    email: 'noah.thompson@designstudio.com', name: 'Noah Thompson', password: hashedPassword,
+    role: UserRole.EMPLOYEE, companyId: designstudio.id,
+    firstName: 'Noah', lastName: 'Thompson', jobTitle: 'Web Designer',
+    department: 'Design', weeklyHours: 35, hireDate: new Date('2022-02-01'), teamId: designers.id,
   })
 
-  // Mettre à jour l'équipe Designers avec le manager
-  await prisma.team.update({
-    where: { id: designers.id },
-    data: { managerId: liamWhite.employee!.id },
+  const avaAnderson = await createUserWithEmployee({
+    email: 'ava.anderson@designstudio.com', name: 'Ava Anderson', password: hashedPassword,
+    role: UserRole.MANAGER, companyId: designstudio.id,
+    firstName: 'Ava', lastName: 'Anderson', jobTitle: 'Office Manager',
+    department: 'Administration', weeklyHours: 35, hireDate: new Date('2020-08-01'), teamId: adminTeam.id,
   })
+  await prisma.team.update({ where: { id: adminTeam.id }, data: { managerId: avaAnderson.employee!.id } })
 
-  // EMPLOYEES Designers (2)
-  const oliviaMartin = await prisma.user.create({
-    data: {
-      email: 'olivia.martin@designstudio.com',
-      name: 'Olivia Martin',
-      password: hashedPassword,
-      emailVerified: new Date(),
-      role: UserRole.EMPLOYEE,
-      companyId: designstudio.id,
-      isActive: true,
-      isEmailVerified: true,
-      employee: {
-        create: {
-          firstName: 'Olivia',
-          lastName: 'Martin',
-          jobTitle: 'Graphic Designer',
-          department: 'Design',
-          phone: '+33 6 43 43 43 43',
-          hireDate: new Date('2021-09-01'),
-          weeklyHours: 35.0,
-          companyId: designstudio.id,
-          teamId: designers.id,
-          skills: ['Photoshop', 'Illustrator', 'Print Design'],
-        },
-      },
-    },
-    include: { employee: true },
-  })
-
-  const noahThompson = await prisma.user.create({
-    data: {
-      email: 'noah.thompson@designstudio.com',
-      name: 'Noah Thompson',
-      password: hashedPassword,
-      emailVerified: new Date(),
-      role: UserRole.EMPLOYEE,
-      companyId: designstudio.id,
-      isActive: true,
-      isEmailVerified: true,
-      employee: {
-        create: {
-          firstName: 'Noah',
-          lastName: 'Thompson',
-          jobTitle: 'Web Designer',
-          department: 'Design',
-          phone: '+33 6 54 54 54 54',
-          hireDate: new Date('2022-02-01'),
-          weeklyHours: 35.0,
-          companyId: designstudio.id,
-          teamId: designers.id,
-          skills: ['Webflow', 'CSS', 'Responsive Design'],
-        },
-      },
-    },
-    include: { employee: true },
-  })
-
-  // MANAGER Admin
-  const avaAnderson = await prisma.user.create({
-    data: {
-      email: 'ava.anderson@designstudio.com',
-      name: 'Ava Anderson',
-      password: hashedPassword,
-      emailVerified: new Date(),
-      role: UserRole.MANAGER,
-      companyId: designstudio.id,
-      isActive: true,
-      isEmailVerified: true,
-      employee: {
-        create: {
-          firstName: 'Ava',
-          lastName: 'Anderson',
-          jobTitle: 'Office Manager',
-          department: 'Administration',
-          phone: '+33 6 65 65 65 65',
-          hireDate: new Date('2020-08-01'),
-          weeklyHours: 35.0,
-          companyId: designstudio.id,
-          teamId: admin.id,
-          skills: ['Administration', 'HR', 'Communication'],
-        },
-      },
-    },
-    include: { employee: true },
-  })
-
-  // Mettre à jour l'équipe Admin avec le manager
-  await prisma.team.update({
-    where: { id: admin.id },
-    data: { managerId: avaAnderson.employee!.id },
-  })
-
-  // EMPLOYEE Admin (1)
-  const williamTaylor = await prisma.user.create({
-    data: {
-      email: 'william.taylor@designstudio.com',
-      name: 'William Taylor',
-      password: hashedPassword,
-      emailVerified: new Date(),
-      role: UserRole.EMPLOYEE,
-      companyId: designstudio.id,
-      isActive: true,
-      isEmailVerified: true,
-      employee: {
-        create: {
-          firstName: 'William',
-          lastName: 'Taylor',
-          jobTitle: 'Administrative Assistant',
-          department: 'Administration',
-          phone: '+33 6 76 76 76 76',
-          hireDate: new Date('2023-03-01'),
-          weeklyHours: 35.0,
-          companyId: designstudio.id,
-          teamId: admin.id,
-          skills: ['Office Suite', 'Planning', 'Customer Service'],
-        },
-      },
-    },
-    include: { employee: true },
+  const williamTaylor = await createUserWithEmployee({
+    email: 'william.taylor@designstudio.com', name: 'William Taylor', password: hashedPassword,
+    role: UserRole.EMPLOYEE, companyId: designstudio.id,
+    firstName: 'William', lastName: 'Taylor', jobTitle: 'Administrative Assistant',
+    department: 'Administration', weeklyHours: 35, hireDate: new Date('2023-03-01'), teamId: adminTeam.id,
   })
 
   // ========== STARTUPINC (4 users) ==========
+  const oliverGreen = await createUserWithEmployee({
+    email: 'oliver.green@startupinc.com', name: 'Oliver Green', password: hashedPassword,
+    role: UserRole.DIRECTOR, companyId: startupinc.id,
+    firstName: 'Oliver', lastName: 'Green', jobTitle: 'Founder & CEO',
+    department: 'Management', weeklyHours: 45, hireDate: new Date('2024-01-01'), teamId: coreTeam.id,
+  })
+  const jamesWalker = await createUserWithEmployee({
+    email: 'james.walker@startupinc.com', name: 'James Walker', password: hashedPassword,
+    role: UserRole.MANAGER, companyId: startupinc.id,
+    firstName: 'James', lastName: 'Walker', jobTitle: 'CTO',
+    department: 'Engineering', weeklyHours: 40, hireDate: new Date('2024-02-01'), teamId: coreTeam.id,
+  })
+  await prisma.team.update({ where: { id: coreTeam.id }, data: { managerId: jamesWalker.employee!.id } })
 
-  // DIRECTOR StartupInc
-  const oliverGreen = await prisma.user.create({
-    data: {
-      email: 'oliver.green@startupinc.com',
-      name: 'Oliver Green',
-      password: hashedPassword,
-      emailVerified: new Date(),
-      role: UserRole.DIRECTOR,
-      companyId: startupinc.id,
-      isActive: true,
-      isEmailVerified: true,
-      employee: {
-        create: {
-          firstName: 'Oliver',
-          lastName: 'Green',
-          jobTitle: 'Founder & CEO',
-          department: 'Management',
-          phone: '+33 6 87 87 87 87',
-          hireDate: new Date('2024-01-01'),
-          weeklyHours: 45.0,
-          companyId: startupinc.id,
-          teamId: coreTeam.id,
-          skills: ['Entrepreneurship', 'Vision', 'Fundraising'],
-        },
-      },
-    },
-    include: { employee: true },
+  const sophiaClark = await createUserWithEmployee({
+    email: 'sophia.clark@startupinc.com', name: 'Sophia Clark', password: hashedPassword,
+    role: UserRole.EMPLOYEE, companyId: startupinc.id,
+    firstName: 'Sophia', lastName: 'Clark', jobTitle: 'Full Stack Developer',
+    department: 'Engineering', weeklyHours: 35, hireDate: new Date('2024-03-01'), teamId: coreTeam.id,
+  })
+  const isabellaHall = await createUserWithEmployee({
+    email: 'isabella.hall@startupinc.com', name: 'Isabella Hall', password: hashedPassword,
+    role: UserRole.EMPLOYEE, companyId: startupinc.id,
+    firstName: 'Isabella', lastName: 'Hall', jobTitle: 'Product Designer',
+    department: 'Design', weeklyHours: 35, hireDate: new Date('2024-04-01'), teamId: coreTeam.id,
   })
 
-  // MANAGER Core Team
-  const jamesWalker = await prisma.user.create({
-    data: {
-      email: 'james.walker@startupinc.com',
-      name: 'James Walker',
-      password: hashedPassword,
-      emailVerified: new Date(),
-      role: UserRole.MANAGER,
-      companyId: startupinc.id,
-      isActive: true,
-      isEmailVerified: true,
-      employee: {
-        create: {
-          firstName: 'James',
-          lastName: 'Walker',
-          jobTitle: 'CTO',
-          department: 'Engineering',
-          phone: '+33 6 98 98 98 98',
-          hireDate: new Date('2024-02-01'),
-          weeklyHours: 40.0,
-          companyId: startupinc.id,
-          teamId: coreTeam.id,
-          skills: ['Full Stack', 'Architecture', 'DevOps'],
-        },
-      },
-    },
-    include: { employee: true },
-  })
-
-  // Mettre à jour l'équipe Core Team avec le manager
-  await prisma.team.update({
-    where: { id: coreTeam.id },
-    data: { managerId: jamesWalker.employee!.id },
-  })
-
-  // EMPLOYEES Core Team (2)
-  const sophiaClark = await prisma.user.create({
-    data: {
-      email: 'sophia.clark@startupinc.com',
-      name: 'Sophia Clark',
-      password: hashedPassword,
-      emailVerified: new Date(),
-      role: UserRole.EMPLOYEE,
-      companyId: startupinc.id,
-      isActive: true,
-      isEmailVerified: true,
-      employee: {
-        create: {
-          firstName: 'Sophia',
-          lastName: 'Clark',
-          jobTitle: 'Full Stack Developer',
-          department: 'Engineering',
-          phone: '+33 6 19 19 19 19',
-          hireDate: new Date('2024-03-01'),
-          weeklyHours: 35.0,
-          companyId: startupinc.id,
-          teamId: coreTeam.id,
-          skills: ['React', 'Python', 'AWS'],
-        },
-      },
-    },
-    include: { employee: true },
-  })
-
-  const isabellaHall = await prisma.user.create({
-    data: {
-      email: 'isabella.hall@startupinc.com',
-      name: 'Isabella Hall',
-      password: hashedPassword,
-      emailVerified: new Date(),
-      role: UserRole.EMPLOYEE,
-      companyId: startupinc.id,
-      isActive: true,
-      isEmailVerified: true,
-      employee: {
-        create: {
-          firstName: 'Isabella',
-          lastName: 'Hall',
-          jobTitle: 'Product Designer',
-          department: 'Design',
-          phone: '+33 6 29 29 29 29',
-          hireDate: new Date('2024-04-01'),
-          weeklyHours: 35.0,
-          companyId: startupinc.id,
-          teamId: coreTeam.id,
-          skills: ['Figma', 'User Research', 'Prototyping'],
-        },
-      },
-    },
-    include: { employee: true },
-  })
-
-  console.log('✅ 26 utilisateurs et employés créés')
-  console.log('   - 3 DIRECTOR (1 par organisation)')
-  console.log('   - 6 MANAGER')
-  console.log('   - 17 EMPLOYEE (dont 6 supplémentaires TechCorp pour pagination E2E)')
-  console.log('   - 1 SYSTEM_ADMIN (admin@smartplanning.io)\n')
+  console.log('✅ DesignStudio (6) + StartupInc (4) créés\n')
 
   // ============================================================================
-  // 6. CRÉER LES PLANNINGS (SCHEDULES)
+  // 6. PLANNINGS TECHCORP — 2 semaines (3-8 mars + 10-15 mars 2026)
   // ============================================================================
-  console.log('📅 Création des plannings...')
+  console.log('📅 Création des plannings TechCorp (2 semaines)...')
 
-  // TechCorp - Engineering (5 schedules)
-  const schedule1 = await prisma.schedule.create({
-    data: {
-      title: 'Development Sprint',
-      startDate: new Date('2025-11-04T08:00:00Z'),
-      endDate: new Date('2025-11-04T17:00:00Z'),
-      startTime: '08:00',
-      endTime: '17:00',
-      type: ScheduleType.WORK,
-      status: ScheduleStatus.CONFIRMED,
-      employeeId: bobWilson.employee!.id,
-      teamId: engineering.id,
-      companyId: techcorp.id,
-      createdById: janeSmith.id,
-      location: 'Bureau Paris',
-      color: '#3B82F6',
-    },
-  })
+  const week1Dates = ['2026-03-03', '2026-03-04', '2026-03-05', '2026-03-06', '2026-03-07', '2026-03-08'] // Lun-Sam
+  const week2Dates = ['2026-03-10', '2026-03-11', '2026-03-12', '2026-03-13', '2026-03-14', '2026-03-15']
+  const allDates = [...week1Dates, ...week2Dates]
 
-  await prisma.schedule.create({
-    data: {
-      title: 'Code Review Session',
-      startDate: new Date('2025-11-05T09:00:00Z'),
-      endDate: new Date('2025-11-05T11:00:00Z'),
-      startTime: '09:00',
-      endTime: '11:00',
-      type: ScheduleType.MEETING,
-      status: ScheduleStatus.CONFIRMED,
-      employeeId: evaGarcia.employee!.id,
-      teamId: engineering.id,
-      companyId: techcorp.id,
-      createdById: janeSmith.id,
-      location: 'Salle de réunion A',
-      color: '#8B5CF6',
-    },
-  })
+  let scheduleCount = 0
 
-  await prisma.schedule.create({
-    data: {
-      title: 'Remote Work Day',
-      startDate: new Date('2025-11-06T08:00:00Z'),
-      endDate: new Date('2025-11-06T17:00:00Z'),
-      startTime: '08:00',
-      endTime: '17:00',
-      type: ScheduleType.REMOTE,
-      status: ScheduleStatus.CONFIRMED,
-      employeeId: henryLopez.employee!.id,
-      teamId: engineering.id,
-      companyId: techcorp.id,
-      createdById: janeSmith.id,
-      location: 'Télétravail',
-      color: '#10B981',
-    },
-  })
+  for (const emp of allTechcorpEmployees) {
+    const teamDef = TECHCORP_TEAMS[emp.teamIndex]!
+    const empDef = emp.isManager ? teamDef.manager : teamDef.employees.find((_, i) => {
+      const nonManagerEmps = allTechcorpEmployees.filter(e => e.teamIndex === emp.teamIndex && !e.isManager)
+      return nonManagerEmps.indexOf(emp) === i
+    })
 
-  await prisma.schedule.create({
-    data: {
-      title: 'Team Building',
-      startDate: new Date('2025-11-07T14:00:00Z'),
-      endDate: new Date('2025-11-07T18:00:00Z'),
-      startTime: '14:00',
-      endTime: '18:00',
-      type: ScheduleType.TRAINING,
-      status: ScheduleStatus.CONFIRMED,
-      employeeId: janeSmith.employee!.id,
-      teamId: engineering.id,
-      companyId: techcorp.id,
-      createdById: johnDoe.id,
-      location: 'Offsite',
-      color: '#F59E0B',
-    },
-  })
+    // Trouver l'index de cet employé dans son équipe pour varier les shifts
+    const teamEmps = allTechcorpEmployees.filter(e => e.teamIndex === emp.teamIndex)
+    const empIdxInTeam = teamEmps.indexOf(emp)
 
-  await prisma.schedule.create({
-    data: {
-      title: 'On-Call Duty',
-      startDate: new Date('2025-11-08T21:00:00Z'),
-      endDate: new Date('2025-11-09T05:00:00Z'),
-      startTime: '21:00',
-      endTime: '05:00',
-      type: ScheduleType.ON_CALL,
-      status: ScheduleStatus.CONFIRMED,
-      employeeId: bobWilson.employee!.id,
-      teamId: engineering.id,
-      companyId: techcorp.id,
-      createdById: janeSmith.id,
-      location: 'Astreinte',
-      color: '#EF4444',
-    },
-  })
+    const weeklyHours = emp.isManager ? 39 : (teamDef.employees[
+      allTechcorpEmployees.filter(e => e.teamIndex === emp.teamIndex && !e.isManager).indexOf(emp)
+    ]?.weeklyHours ?? 35)
 
-  // TechCorp - Product (3 schedules)
-  await prisma.schedule.create({
-    data: {
-      title: 'Product Strategy Meeting',
-      startDate: new Date('2025-11-04T10:00:00Z'),
-      endDate: new Date('2025-11-04T12:00:00Z'),
-      startTime: '10:00',
-      endTime: '12:00',
-      type: ScheduleType.MEETING,
-      status: ScheduleStatus.CONFIRMED,
-      employeeId: aliceBrown.employee!.id,
-      teamId: product.id,
-      companyId: techcorp.id,
-      createdById: johnDoe.id,
-      location: 'Salle de réunion B',
-      color: '#8B5CF6',
-    },
-  })
+    // Quelques TRAINING (1 par semaine pour quelques employés)
+    const hasTraining = empIdxInTeam === 1 && emp.teamIndex < 6
 
-  await prisma.schedule.create({
-    data: {
-      title: 'User Research',
-      startDate: new Date('2025-11-05T08:00:00Z'),
-      endDate: new Date('2025-11-05T17:00:00Z'),
-      startTime: '08:00',
-      endTime: '17:00',
-      type: ScheduleType.WORK,
-      status: ScheduleStatus.CONFIRMED,
-      employeeId: charlieDavis.employee!.id,
-      teamId: product.id,
-      companyId: techcorp.id,
-      createdById: aliceBrown.id,
-      location: 'Bureau Paris',
-      color: '#3B82F6',
-    },
-  })
+    for (const dateStr of allDates) {
+      const date = new Date(dateStr)
+      const dayOfWeek = date.getDay() // 0=Sun, 1=Mon, ..., 6=Sat
 
-  await prisma.schedule.create({
-    data: {
-      title: 'Data Analysis',
-      startDate: new Date('2025-11-06T08:00:00Z'),
-      endDate: new Date('2025-11-06T17:00:00Z'),
-      startTime: '08:00',
-      endTime: '17:00',
-      type: ScheduleType.WORK,
-      status: ScheduleStatus.CONFIRMED,
-      employeeId: davidMiller.employee!.id,
-      teamId: product.id,
-      companyId: techcorp.id,
-      createdById: aliceBrown.id,
-      location: 'Bureau Paris',
-      color: '#3B82F6',
-    },
-  })
+      const shift = getShiftForDay(dayOfWeek, weeklyHours, empIdxInTeam)
+      if (!shift) continue
 
-  // TechCorp - Design (2 schedules)
-  await prisma.schedule.create({
-    data: {
-      title: 'Design System Workshop',
-      startDate: new Date('2025-11-04T09:00:00Z'),
-      endDate: new Date('2025-11-04T17:00:00Z'),
-      startTime: '09:00',
-      endTime: '17:00',
-      type: ScheduleType.TRAINING,
-      status: ScheduleStatus.CONFIRMED,
-      employeeId: frankMartinez.employee!.id,
-      teamId: design.id,
-      companyId: techcorp.id,
-      createdById: johnDoe.id,
-      location: 'Bureau Paris',
-      color: '#F59E0B',
-    },
-  })
+      let schedType = ScheduleType.WORK
+      // 1 TRAINING par semaine pour certains
+      if (hasTraining && (dateStr === '2026-03-04' || dateStr === '2026-03-11')) {
+        schedType = ScheduleType.TRAINING
+      }
 
-  await prisma.schedule.create({
-    data: {
-      title: 'UI Design',
-      startDate: new Date('2025-11-05T08:00:00Z'),
-      endDate: new Date('2025-11-05T17:00:00Z'),
-      startTime: '08:00',
-      endTime: '17:00',
-      type: ScheduleType.WORK,
-      status: ScheduleStatus.CONFIRMED,
-      employeeId: graceRodriguez.employee!.id,
-      teamId: design.id,
-      companyId: techcorp.id,
-      createdById: frankMartinez.id,
-      location: 'Bureau Paris',
-      color: '#EC4899',
-    },
-  })
+      await prisma.schedule.create({
+        data: {
+          title: schedType === ScheduleType.TRAINING ? 'Formation' : teamDef.name,
+          startDate: createDateUTC(dateStr, shift.start),
+          endDate: createDateUTC(dateStr, shift.end),
+          startTime: shift.start,
+          endTime: shift.end,
+          type: schedType,
+          status: ScheduleStatus.CONFIRMED,
+          employeeId: emp.employeeId,
+          teamId: teamIds[emp.teamIndex]!,
+          companyId: techcorp.id,
+          createdById: johnDoe.id,
+          color: teamDef.color,
+        },
+      })
+      scheduleCount++
+    }
+  }
 
-  // DesignStudio - Designers (3 schedules)
-  await prisma.schedule.create({
-    data: {
-      title: 'Client Presentation',
-      startDate: new Date('2025-11-04T14:00:00Z'),
-      endDate: new Date('2025-11-04T16:00:00Z'),
-      startTime: '14:00',
-      endTime: '16:00',
-      type: ScheduleType.MEETING,
-      status: ScheduleStatus.CONFIRMED,
-      employeeId: liamWhite.employee!.id,
-      teamId: designers.id,
-      companyId: designstudio.id,
-      createdById: emmaJones.id,
-      location: 'Salle de réunion principale',
-      color: '#8B5CF6',
-    },
-  })
+  // Quelques plannings DesignStudio & StartupInc
+  for (const dateStr of ['2026-03-03', '2026-03-04', '2026-03-05']) {
+    await prisma.schedule.create({
+      data: {
+        title: 'Design Session', startDate: createDateUTC(dateStr, '09:00'), endDate: createDateUTC(dateStr, '17:00'),
+        startTime: '09:00', endTime: '17:00', type: ScheduleType.WORK, status: ScheduleStatus.CONFIRMED,
+        employeeId: liamWhite.employee!.id, teamId: designers.id, companyId: designstudio.id,
+        createdById: emmaJones.id, color: '#F59E0B',
+      },
+    })
+    await prisma.schedule.create({
+      data: {
+        title: 'Development', startDate: createDateUTC(dateStr, '10:00'), endDate: createDateUTC(dateStr, '19:00'),
+        startTime: '10:00', endTime: '19:00', type: ScheduleType.WORK, status: ScheduleStatus.CONFIRMED,
+        employeeId: sophiaClark.employee!.id, teamId: coreTeam.id, companyId: startupinc.id,
+        createdById: jamesWalker.id, color: '#3B82F6',
+      },
+    })
+  }
 
-  await prisma.schedule.create({
-    data: {
-      title: 'Creative Brainstorming',
-      startDate: new Date('2025-11-05T09:00:00Z'),
-      endDate: new Date('2025-11-05T17:00:00Z'),
-      startTime: '09:00',
-      endTime: '17:00',
-      type: ScheduleType.WORK,
-      status: ScheduleStatus.CONFIRMED,
-      employeeId: oliviaMartin.employee!.id,
-      teamId: designers.id,
-      companyId: designstudio.id,
-      createdById: liamWhite.id,
-      location: 'Bureau Paris',
-      color: '#F59E0B',
-    },
-  })
-
-  await prisma.schedule.create({
-    data: {
-      title: 'Web Design Project',
-      startDate: new Date('2025-11-06T09:00:00Z'),
-      endDate: new Date('2025-11-06T16:00:00Z'),
-      startTime: '09:00',
-      endTime: '16:00',
-      type: ScheduleType.WORK,
-      status: ScheduleStatus.CONFIRMED,
-      employeeId: noahThompson.employee!.id,
-      teamId: designers.id,
-      companyId: designstudio.id,
-      createdById: liamWhite.id,
-      location: 'Bureau Paris',
-      color: '#3B82F6',
-    },
-  })
-
-  // StartupInc - Core Team (2 schedules)
-  await prisma.schedule.create({
-    data: {
-      title: 'Product Development',
-      startDate: new Date('2025-11-04T10:00:00Z'),
-      endDate: new Date('2025-11-04T19:00:00Z'),
-      startTime: '10:00',
-      endTime: '19:00',
-      type: ScheduleType.WORK,
-      status: ScheduleStatus.CONFIRMED,
-      employeeId: sophiaClark.employee!.id,
-      teamId: coreTeam.id,
-      companyId: startupinc.id,
-      createdById: jamesWalker.id,
-      location: 'Bureau Paris',
-      color: '#3B82F6',
-    },
-  })
-
-  await prisma.schedule.create({
-    data: {
-      title: 'Design Sprint',
-      startDate: new Date('2025-11-05T10:00:00Z'),
-      endDate: new Date('2025-11-05T18:00:00Z'),
-      startTime: '10:00',
-      endTime: '18:00',
-      type: ScheduleType.WORK,
-      status: ScheduleStatus.CONFIRMED,
-      employeeId: isabellaHall.employee!.id,
-      teamId: coreTeam.id,
-      companyId: startupinc.id,
-      createdById: jamesWalker.id,
-      location: 'Bureau Paris',
-      color: '#EC4899',
-    },
-  })
-
-  console.log('✅ 15 plannings créés\n')
+  console.log(`✅ ${scheduleCount + 6} plannings créés\n`)
 
   // ============================================================================
-  // 7. CRÉER LES DEMANDES DE CONGÉS
+  // 7. CONGÉS
   // ============================================================================
-  console.log('🏖️  Création des demandes de congés...')
+  console.log('🏖️  Création des congés...')
 
-  // APPROVED
+  // Helper to resolve employee from leave def
+  function resolveEmployee(leaveDef: typeof LEAVE_REQUESTS[0]) {
+    const teamEmps = allTechcorpEmployees.filter(e => e.teamIndex === leaveDef.teamIndex)
+    const managers = teamEmps.filter(e => e.isManager)
+    const employees = teamEmps.filter(e => !e.isManager)
+
+    if (leaveDef.employeeIndex === -1) return managers[0]!
+    return employees[leaveDef.employeeIndex]!
+  }
+
+  function resolveManager(teamIndex: number) {
+    return allTechcorpEmployees.find(e => e.teamIndex === teamIndex && e.isManager)!
+  }
+
+  const leaveTypeMap = {
+    PAID_LEAVE: LeaveType.PAID_LEAVE,
+    SICK_LEAVE: LeaveType.SICK_LEAVE,
+    RTT: LeaveType.RTT,
+    FAMILY_EVENT: LeaveType.FAMILY_EVENT,
+    OTHER: LeaveType.OTHER,
+  }
+  const leaveStatusMap = {
+    APPROVED: LeaveRequestStatus.APPROVED,
+    PENDING: LeaveRequestStatus.PENDING,
+    REJECTED: LeaveRequestStatus.REJECTED,
+  }
+
+  for (const lr of LEAVE_REQUESTS) {
+    const emp = resolveEmployee(lr)
+    const manager = resolveManager(lr.teamIndex)
+
+    await prisma.leaveRequest.create({
+      data: {
+        startDate: new Date(lr.startDate),
+        endDate: new Date(lr.endDate),
+        days: lr.days,
+        type: leaveTypeMap[lr.type]!,
+        status: leaveStatusMap[lr.status]!,
+        reason: lr.reason,
+        employeeId: emp.employeeId,
+        companyId: techcorp.id,
+        ...(lr.status === 'APPROVED' ? {
+          reviewedById: manager.userId,
+          reviewedAt: new Date('2026-02-25T10:00:00Z'),
+          reviewComment: lr.reviewComment,
+        } : {}),
+      },
+    })
+  }
+
+  // Quelques congés DesignStudio/StartupInc
   await prisma.leaveRequest.create({
     data: {
-      startDate: new Date('2025-12-20'),
-      endDate: new Date('2025-12-27'),
-      days: 6,
-      type: LeaveType.PAID_LEAVE,
-      status: LeaveRequestStatus.APPROVED,
-      reason: 'Vacances de Noël en famille',
-      employeeId: aliceBrown.employee!.id,
-      companyId: techcorp.id,
-      reviewedById: johnDoe.id,
-      reviewedAt: new Date('2025-11-01T14:00:00Z'),
-      reviewComment: 'Approuvé. Bonnes vacances !',
+      startDate: new Date('2026-03-09'), endDate: new Date('2026-03-13'), days: 5,
+      type: LeaveType.PAID_LEAVE, status: LeaveRequestStatus.PENDING,
+      reason: 'Vacances printemps',
+      employeeId: oliviaMartin.employee!.id, companyId: designstudio.id,
     },
   })
-
   await prisma.leaveRequest.create({
     data: {
-      startDate: new Date('2025-11-15'),
-      endDate: new Date('2025-11-16'),
-      days: 2,
-      type: LeaveType.SICK_LEAVE,
-      status: LeaveRequestStatus.APPROVED,
-      reason: 'Grippe',
-      employeeId: bobWilson.employee!.id,
-      companyId: techcorp.id,
-      reviewedById: janeSmith.id,
-      reviewedAt: new Date('2025-11-14T09:00:00Z'),
-      reviewComment: 'Approuvé. Rétablissement rapide.',
-    },
-  })
-
-  await prisma.leaveRequest.create({
-    data: {
-      startDate: new Date('2025-12-01'),
-      endDate: new Date('2025-12-03'),
-      days: 3,
-      type: LeaveType.RTT,
-      status: LeaveRequestStatus.APPROVED,
-      reason: "RTT de fin d'année",
-      employeeId: evaGarcia.employee!.id,
-      companyId: techcorp.id,
-      reviewedById: janeSmith.id,
-      reviewedAt: new Date('2025-11-02T10:00:00Z'),
-      reviewComment: 'Approuvé.',
-    },
-  })
-
-  // PENDING
-  await prisma.leaveRequest.create({
-    data: {
-      startDate: new Date('2025-11-25'),
-      endDate: new Date('2025-11-26'),
-      days: 2,
-      type: LeaveType.UNPAID_LEAVE,
-      status: LeaveRequestStatus.PENDING,
-      reason: 'Rendez-vous personnel',
-      employeeId: oliviaMartin.employee!.id,
-      companyId: designstudio.id,
-    },
-  })
-
-  await prisma.leaveRequest.create({
-    data: {
-      startDate: new Date('2025-12-15'),
-      endDate: new Date('2025-12-17'),
-      days: 3,
-      type: LeaveType.PAID_LEAVE,
-      status: LeaveRequestStatus.PENDING,
-      reason: "Préparation fêtes de fin d'année",
-      employeeId: henryLopez.employee!.id,
-      companyId: techcorp.id,
-    },
-  })
-
-  await prisma.leaveRequest.create({
-    data: {
-      startDate: new Date('2025-11-20'),
-      endDate: new Date('2025-11-20'),
-      days: 1,
-      type: LeaveType.OTHER,
-      status: LeaveRequestStatus.PENDING,
+      startDate: new Date('2026-03-06'), endDate: new Date('2026-03-06'), days: 1,
+      type: LeaveType.OTHER, status: LeaveRequestStatus.PENDING,
       reason: 'Déménagement',
-      employeeId: sophiaClark.employee!.id,
-      companyId: startupinc.id,
+      employeeId: sophiaClark.employee!.id, companyId: startupinc.id,
     },
   })
 
-  // REJECTED
-  await prisma.leaveRequest.create({
-    data: {
-      startDate: new Date('2025-11-10'),
-      endDate: new Date('2025-11-12'),
-      days: 3,
-      type: LeaveType.PAID_LEAVE,
-      status: LeaveRequestStatus.REJECTED,
-      reason: 'Congés dernière minute',
-      employeeId: charlieDavis.employee!.id,
-      companyId: techcorp.id,
-      reviewedById: aliceBrown.id,
-      reviewedAt: new Date('2025-11-03T11:00:00Z'),
-      reviewComment: 'Refusé - délai trop court et période critique projet.',
-    },
-  })
-
-  await prisma.leaveRequest.create({
-    data: {
-      startDate: new Date('2025-11-18'),
-      endDate: new Date('2025-11-22'),
-      days: 5,
-      type: LeaveType.PAID_LEAVE,
-      status: LeaveRequestStatus.REJECTED,
-      reason: 'Vacances',
-      employeeId: noahThompson.employee!.id,
-      companyId: designstudio.id,
-      reviewedById: liamWhite.id,
-      reviewedAt: new Date('2025-11-02T15:00:00Z'),
-      reviewComment: 'Refusé - deadline client importante cette semaine.',
-    },
-  })
-
-  console.log('✅ 8 demandes de congés créées\n')
+  console.log(`✅ ${LEAVE_REQUESTS.length + 2} congés créés\n`)
 
   // ============================================================================
-  // 8. CRÉER LES NOTIFICATIONS
+  // 8. INCIDENTS
+  // ============================================================================
+  console.log('📝 Création des notes d\'incidents...')
+
+  const visibilityMap = {
+    DIRECTOR_ONLY: 'DIRECTOR_ONLY' as const,
+    MANAGER_DIRECTOR: 'MANAGER_DIRECTOR' as const,
+    ALL: 'ALL' as const,
+  }
+
+  for (const inc of INCIDENTS) {
+    const emp = (() => {
+      const teamEmps = allTechcorpEmployees.filter(e => e.teamIndex === inc.teamIndex && !e.isManager)
+      return teamEmps[inc.employeeIndex]!
+    })()
+
+    const author = inc.authorIsDirector
+      ? johnDoe
+      : resolveManager(inc.authorTeamIndex === -1 ? inc.teamIndex : inc.authorTeamIndex)
+
+    await prisma.incidentNote.create({
+      data: {
+        title: inc.title,
+        content: inc.content,
+        date: new Date(inc.date),
+        visibility: visibilityMap[inc.visibility]!,
+        subjectId: emp.employeeId,
+        authorId: inc.authorIsDirector ? johnDoe.id : author.userId,
+        companyId: techcorp.id,
+      },
+    })
+  }
+
+  console.log(`✅ ${INCIDENTS.length} incidents créés\n`)
+
+  // ============================================================================
+  // 9. NOTES PERSONNELLES
+  // ============================================================================
+  console.log('📋 Création des notes personnelles...')
+
+  for (const task of PERSONAL_TASKS) {
+    let userId: string
+
+    if (task.userType === 'director') {
+      userId = johnDoe.id
+    } else if (task.userType === 'manager') {
+      userId = resolveManager(task.teamIndex!).userId
+    } else {
+      const teamEmps = allTechcorpEmployees.filter(e => e.teamIndex === task.teamIndex! && !e.isManager)
+      userId = teamEmps[task.employeeIndex!]!.userId
+    }
+
+    await prisma.personalTask.create({
+      data: {
+        title: task.title,
+        description: task.description ?? null,
+        dueDate: task.dueDate ? new Date(task.dueDate) : null,
+        completed: task.completed,
+        order: task.order,
+        userId,
+      },
+    })
+  }
+
+  console.log(`✅ ${PERSONAL_TASKS.length} notes personnelles créées\n`)
+
+  // ============================================================================
+  // 10. SOLDES DE CONGÉS
+  // ============================================================================
+  console.log('💰 Création des soldes de congés...')
+
+  // TechCorp employees + John Doe
+  const allTechcorpForBalance = [
+    { employeeId: johnDoe.employee!.id, companyId: techcorp.id },
+    ...allTechcorpEmployees.map(e => ({ employeeId: e.employeeId, companyId: techcorp.id })),
+  ]
+
+  for (let i = 0; i < allTechcorpForBalance.length; i++) {
+    const { employeeId, companyId } = allTechcorpForBalance[i]!
+    const paidLeaveUsed = (i * 3) % 13 // 0 to 12, varies
+    const rttUsed = (i * 2) % 7 // 0 to 6, varies
+
+    await prisma.leaveBalance.upsert({
+      where: { employeeId_year: { employeeId, year: 2026 } },
+      update: { paidLeaveUsed, rttUsed },
+      create: {
+        employeeId, companyId, year: 2026,
+        paidLeaveTotal: 25, paidLeaveUsed, rttTotal: 10, rttUsed,
+      },
+    })
+  }
+
+  // DesignStudio + StartupInc
+  const otherEmployees = [
+    { emp: emmaJones.employee!, co: designstudio },
+    { emp: liamWhite.employee!, co: designstudio },
+    { emp: oliviaMartin.employee!, co: designstudio },
+    { emp: noahThompson.employee!, co: designstudio },
+    { emp: avaAnderson.employee!, co: designstudio },
+    { emp: williamTaylor.employee!, co: designstudio },
+    { emp: oliverGreen.employee!, co: startupinc },
+    { emp: jamesWalker.employee!, co: startupinc },
+    { emp: sophiaClark.employee!, co: startupinc },
+    { emp: isabellaHall.employee!, co: startupinc },
+  ]
+
+  for (let i = 0; i < otherEmployees.length; i++) {
+    const { emp, co } = otherEmployees[i]!
+    await prisma.leaveBalance.upsert({
+      where: { employeeId_year: { employeeId: emp.id, year: 2026 } },
+      update: {},
+      create: {
+        employeeId: emp.id, companyId: co.id, year: 2026,
+        paidLeaveTotal: 25, paidLeaveUsed: (i * 2) % 8, rttTotal: 10, rttUsed: i % 4,
+      },
+    })
+  }
+
+  const totalBalances = allTechcorpForBalance.length + otherEmployees.length
+  console.log(`✅ ${totalBalances} soldes de congés créés\n`)
+
+  // ============================================================================
+  // 11. NOTIFICATIONS
   // ============================================================================
   console.log('🔔 Création des notifications...')
 
-  // Notifications pour les demandes de congés approuvées
-  await prisma.notification.create({
-    data: {
-      title: 'Demande de congés approuvée',
-      message:
-        'Votre demande de congés du 20/12/2025 au 27/12/2025 a été approuvée par John Doe.',
-      type: NotificationType.SUCCESS,
-      userId: aliceBrown.id,
-      companyId: techcorp.id,
-      relatedType: 'LeaveRequest',
-      isRead: true,
-      readAt: new Date('2025-11-01T15:00:00Z'),
-      createdAt: new Date('2025-11-01T14:05:00Z'),
-    },
-  })
+  const notifTypeMap: Record<string, NotificationType> = {
+    PLANNING: NotificationType.PLANNING,
+    LEAVE: NotificationType.LEAVE,
+    INCIDENT: NotificationType.INCIDENT,
+    INFO: NotificationType.INFO,
+    SUCCESS: NotificationType.SUCCESS,
+    WARNING: NotificationType.WARNING,
+    SYSTEM: NotificationType.SYSTEM,
+  }
 
-  await prisma.notification.create({
-    data: {
-      title: 'Demande de congés approuvée',
-      message:
-        'Votre demande de congés maladie du 15/11/2025 au 16/11/2025 a été approuvée.',
-      type: NotificationType.SUCCESS,
-      userId: bobWilson.id,
-      companyId: techcorp.id,
-      relatedType: 'LeaveRequest',
-      isRead: true,
-      readAt: new Date('2025-11-14T10:00:00Z'),
-      createdAt: new Date('2025-11-14T09:05:00Z'),
-    },
-  })
+  for (const notif of NOTIFICATIONS) {
+    let userId: string
+    let companyId: string = techcorp.id
 
-  // Notifications pour les demandes rejetées
-  await prisma.notification.create({
-    data: {
-      title: 'Demande de congés refusée',
-      message:
-        'Votre demande de congés du 10/11/2025 au 12/11/2025 a été refusée. Raison: délai trop court et période critique projet.',
-      type: NotificationType.WARNING,
-      userId: charlieDavis.id,
-      companyId: techcorp.id,
-      relatedType: 'LeaveRequest',
-      isRead: false,
-      createdAt: new Date('2025-11-03T11:05:00Z'),
-    },
-  })
+    if (notif.userType === 'director') {
+      userId = johnDoe.id
+    } else if (notif.userType === 'manager') {
+      userId = resolveManager(notif.teamIndex!).userId
+    } else {
+      const teamEmps = allTechcorpEmployees.filter(e => e.teamIndex === notif.teamIndex! && !e.isManager)
+      userId = teamEmps[notif.employeeIndex!]!.userId
+    }
 
-  // Notifications plannings
-  await prisma.notification.create({
-    data: {
-      title: 'Nouveau planning assigné',
-      message:
-        'Vous avez été assigné au planning "Development Sprint" le 04/11/2025.',
-      type: NotificationType.INFO,
-      userId: bobWilson.id,
-      companyId: techcorp.id,
-      relatedType: 'Schedule',
-      relatedId: schedule1.id,
-      isRead: false,
-      createdAt: new Date('2025-11-03T15:00:00Z'),
-    },
-  })
+    await prisma.notification.create({
+      data: {
+        title: notif.title,
+        message: notif.message,
+        type: notifTypeMap[notif.type]!,
+        userId,
+        companyId,
+        isRead: notif.isRead,
+        readAt: notif.isRead ? new Date(notif.createdAt) : null,
+        createdAt: new Date(notif.createdAt),
+      },
+    })
+  }
 
-  await prisma.notification.create({
-    data: {
-      title: 'Rappel planning',
-      message: 'Rappel: Planning "Code Review Session" demain à 9h00.',
-      type: NotificationType.INFO,
-      userId: evaGarcia.id,
-      companyId: techcorp.id,
-      relatedType: 'Schedule',
-      isRead: false,
-      createdAt: new Date('2025-11-04T18:00:00Z'),
-    },
-  })
-
-  await prisma.notification.create({
-    data: {
-      title: 'Astreinte programmée',
-      message: "Vous êtes d'astreinte le 08/11/2025 de 21h00 à 05h00.",
-      type: NotificationType.WARNING,
-      userId: bobWilson.id,
-      companyId: techcorp.id,
-      relatedType: 'Schedule',
-      isRead: true,
-      readAt: new Date('2025-11-02T11:00:00Z'),
-      createdAt: new Date('2025-11-02T10:00:00Z'),
-    },
-  })
-
-  // Notifications système
-  await prisma.notification.create({
-    data: {
-      title: 'Bienvenue sur SmartPlanning',
-      message:
-        'Bienvenue ! Découvrez toutes les fonctionnalités de SmartPlanning.',
-      type: NotificationType.INFO,
-      userId: henryLopez.id,
-      companyId: techcorp.id,
-      isRead: false,
-      createdAt: new Date('2024-09-01T09:00:00Z'),
-    },
-  })
-
-  await prisma.notification.create({
-    data: {
-      title: 'Mise à jour du système',
-      message:
-        'Une nouvelle version de SmartPlanning est disponible avec des améliorations de performance.',
-      type: NotificationType.SYSTEM,
-      userId: johnDoe.id,
-      companyId: techcorp.id,
-      isRead: true,
-      readAt: new Date('2025-11-01T10:00:00Z'),
-      createdAt: new Date('2025-11-01T08:00:00Z'),
-    },
-  })
-
-  // Notifications équipe
-  await prisma.notification.create({
-    data: {
-      title: "Nouveau membre dans l'équipe",
-      message: "Henry Lopez a rejoint l'équipe Engineering.",
-      type: NotificationType.SUCCESS,
-      userId: janeSmith.id,
-      companyId: techcorp.id,
-      isRead: true,
-      readAt: new Date('2024-09-01T11:00:00Z'),
-      createdAt: new Date('2024-09-01T09:30:00Z'),
-    },
-  })
-
-  await prisma.notification.create({
-    data: {
-      title: "Réunion d'équipe",
-      message: "Réunion d'équipe Product Strategy prévue demain à 10h00.",
-      type: NotificationType.INFO,
-      userId: charlieDavis.id,
-      companyId: techcorp.id,
-      isRead: false,
-      createdAt: new Date('2025-11-03T16:00:00Z'),
-    },
-  })
-
-  // DesignStudio notifications
-  await prisma.notification.create({
-    data: {
-      title: 'Client meeting confirmé',
-      message: 'La présentation client du 04/11/2025 à 14h00 est confirmée.',
-      type: NotificationType.SUCCESS,
-      userId: liamWhite.id,
-      companyId: designstudio.id,
-      isRead: true,
-      readAt: new Date('2025-11-03T12:00:00Z'),
-      createdAt: new Date('2025-11-03T11:00:00Z'),
-    },
-  })
-
-  await prisma.notification.create({
-    data: {
-      title: 'Feedback client reçu',
-      message: 'Le client a partagé ses retours sur le dernier projet.',
-      type: NotificationType.INFO,
-      userId: oliviaMartin.id,
-      companyId: designstudio.id,
-      isRead: false,
-      createdAt: new Date('2025-11-04T10:00:00Z'),
-    },
-  })
-
-  // StartupInc notifications
-  await prisma.notification.create({
-    data: {
-      title: 'Sprint planning',
-      message: 'Sprint planning prévu pour demain matin à 10h00.',
-      type: NotificationType.INFO,
-      userId: sophiaClark.id,
-      companyId: startupinc.id,
-      isRead: false,
-      createdAt: new Date('2025-11-03T17:00:00Z'),
-    },
-  })
-
-  await prisma.notification.create({
-    data: {
-      title: 'Investisseur meeting',
-      message: 'Pitch investisseur prévu le 15/11/2025.',
-      type: NotificationType.WARNING,
-      userId: oliverGreen.id,
-      companyId: startupinc.id,
-      isRead: true,
-      readAt: new Date('2025-11-02T14:00:00Z'),
-      createdAt: new Date('2025-11-02T13:00:00Z'),
-    },
-  })
-
-  await prisma.notification.create({
-    data: {
-      title: 'Nouvelle feature déployée',
-      message:
-        'La nouvelle fonctionnalité a été déployée avec succès en production.',
-      type: NotificationType.SUCCESS,
-      userId: jamesWalker.id,
-      companyId: startupinc.id,
-      isRead: true,
-      readAt: new Date('2025-11-03T09:00:00Z'),
-      createdAt: new Date('2025-11-03T08:00:00Z'),
-    },
-  })
-
-  console.log('✅ 15 notifications créées\n')
+  console.log(`✅ ${NOTIFICATIONS.length} notifications créées\n`)
 
   // ============================================================================
-  // 9. CRÉER LES SOLDES DE CONGÉS (SP-408)
-  // ============================================================================
-  console.log('💰 Création des soldes de congés (LeaveBalance)...')
-
-  // Tous les employés avec leurs IDs (via include employee)
-  const allEmployeesForBalance = [
-    { employee: johnDoe.employee!, company: techcorp },
-    { employee: janeSmith.employee!, company: techcorp },
-    { employee: bobWilson.employee!, company: techcorp },
-    { employee: evaGarcia.employee!, company: techcorp },
-    { employee: henryLopez.employee!, company: techcorp },
-    { employee: aliceBrown.employee!, company: techcorp },
-    { employee: charlieDavis.employee!, company: techcorp },
-    { employee: davidMiller.employee!, company: techcorp },
-    { employee: frankMartinez.employee!, company: techcorp },
-    { employee: graceRodriguez.employee!, company: techcorp },
-    { employee: lucasNguyen.employee!, company: techcorp },
-    { employee: chloePerez.employee!, company: techcorp },
-    { employee: maximeRoux.employee!, company: techcorp },
-    { employee: sarahDubois.employee!, company: techcorp },
-    { employee: thomasBernard.employee!, company: techcorp },
-    { employee: julieMoreau.employee!, company: techcorp },
-    { employee: emmaJones.employee!, company: designstudio },
-    { employee: liamWhite.employee!, company: designstudio },
-    { employee: oliviaMartin.employee!, company: designstudio },
-    { employee: noahThompson.employee!, company: designstudio },
-    { employee: avaAnderson.employee!, company: designstudio },
-    { employee: williamTaylor.employee!, company: designstudio },
-    { employee: oliverGreen.employee!, company: startupinc },
-    { employee: jamesWalker.employee!, company: startupinc },
-    { employee: sophiaClark.employee!, company: startupinc },
-    { employee: isabellaHall.employee!, company: startupinc },
-  ]
-
-  // Soldes variés pour rendre le seed réaliste
-  const balanceVariants = [
-    { paidLeaveTotal: 25, paidLeaveUsed: 6, rttTotal: 10, rttUsed: 3 },
-    { paidLeaveTotal: 25, paidLeaveUsed: 0, rttTotal: 10, rttUsed: 0 },
-    { paidLeaveTotal: 25, paidLeaveUsed: 2, rttTotal: 10, rttUsed: 1 },
-    { paidLeaveTotal: 25, paidLeaveUsed: 12, rttTotal: 10, rttUsed: 5 },
-    { paidLeaveTotal: 25, paidLeaveUsed: 3, rttTotal: 8, rttUsed: 2 },
-    { paidLeaveTotal: 25, paidLeaveUsed: 8, rttTotal: 10, rttUsed: 4 },
-    { paidLeaveTotal: 25, paidLeaveUsed: 3, rttTotal: 10, rttUsed: 0 },
-    { paidLeaveTotal: 25, paidLeaveUsed: 5, rttTotal: 10, rttUsed: 3 },
-    { paidLeaveTotal: 25, paidLeaveUsed: 0, rttTotal: 10, rttUsed: 0 },
-    { paidLeaveTotal: 25, paidLeaveUsed: 10, rttTotal: 10, rttUsed: 6 },
-    { paidLeaveTotal: 25, paidLeaveUsed: 1, rttTotal: 10, rttUsed: 1 },
-    { paidLeaveTotal: 25, paidLeaveUsed: 4, rttTotal: 10, rttUsed: 2 },
-    { paidLeaveTotal: 25, paidLeaveUsed: 7, rttTotal: 10, rttUsed: 4 },
-    { paidLeaveTotal: 25, paidLeaveUsed: 2, rttTotal: 8, rttUsed: 0 },
-    { paidLeaveTotal: 25, paidLeaveUsed: 6, rttTotal: 10, rttUsed: 3 },
-    { paidLeaveTotal: 25, paidLeaveUsed: 3, rttTotal: 10, rttUsed: 1 },
-    { paidLeaveTotal: 25, paidLeaveUsed: 4, rttTotal: 8, rttUsed: 2 },
-    { paidLeaveTotal: 25, paidLeaveUsed: 7, rttTotal: 10, rttUsed: 3 },
-    { paidLeaveTotal: 25, paidLeaveUsed: 2, rttTotal: 10, rttUsed: 1 },
-    { paidLeaveTotal: 25, paidLeaveUsed: 5, rttTotal: 10, rttUsed: 0 },
-    { paidLeaveTotal: 25, paidLeaveUsed: 0, rttTotal: 8, rttUsed: 0 },
-    { paidLeaveTotal: 25, paidLeaveUsed: 1, rttTotal: 10, rttUsed: 0 },
-    { paidLeaveTotal: 30, paidLeaveUsed: 5, rttTotal: 0, rttUsed: 0 },
-    { paidLeaveTotal: 25, paidLeaveUsed: 0, rttTotal: 10, rttUsed: 2 },
-    { paidLeaveTotal: 25, paidLeaveUsed: 1, rttTotal: 10, rttUsed: 0 },
-    { paidLeaveTotal: 25, paidLeaveUsed: 0, rttTotal: 10, rttUsed: 0 },
-  ]
-
-  for (let i = 0; i < allEmployeesForBalance.length; i++) {
-    const { employee, company } = allEmployeesForBalance[i]!
-    const variant = balanceVariants[i]!
-    await prisma.leaveBalance.upsert({
-      where: {
-        employeeId_year: { employeeId: employee.id, year: 2026 },
-      },
-      update: variant,
-      create: {
-        employeeId: employee.id,
-        companyId: company.id,
-        year: 2026,
-        ...variant,
-      },
-    })
-  }
-
-  console.log(
-    `✅ ${allEmployeesForBalance.length} soldes de congés créés (année 2026)\n`
-  )
-
-  // ============================================================================
-  // 10. DEMANDES DE CONGÉS SUPPLÉMENTAIRES (SP-408)
-  // ============================================================================
-  console.log('🏖️  Création des demandes de congés supplémentaires...')
-
-  // CANCELLED (2 demandes)
-  try {
-    await prisma.leaveRequest.create({
-      data: {
-        startDate: new Date('2026-01-15'),
-        endDate: new Date('2026-01-16'),
-        days: 2,
-        type: LeaveType.PAID_LEAVE,
-        status: LeaveRequestStatus.CANCELLED,
-        reason: 'Plans annulés',
-        employeeId: davidMiller.employee!.id,
-        companyId: techcorp.id,
-      },
-    })
-  } catch {
-    /* skip if already exists */
-  }
-
-  try {
-    await prisma.leaveRequest.create({
-      data: {
-        startDate: new Date('2026-02-10'),
-        endDate: new Date('2026-02-10'),
-        days: 1,
-        type: LeaveType.RTT,
-        status: LeaveRequestStatus.CANCELLED,
-        reason: 'Réunion client ajoutée',
-        employeeId: graceRodriguez.employee!.id,
-        companyId: techcorp.id,
-      },
-    })
-  } catch {
-    /* skip if already exists */
-  }
-
-  // halfDay demandes (2 demandes)
-  try {
-    await prisma.leaveRequest.create({
-      data: {
-        startDate: new Date('2026-03-05'),
-        endDate: new Date('2026-03-05'),
-        days: 0.5,
-        type: LeaveType.PAID_LEAVE,
-        status: LeaveRequestStatus.APPROVED,
-        reason: 'Rendez-vous médical',
-        halfDay: true,
-        halfDayPeriod: 'AM',
-        employeeId: bobWilson.employee!.id,
-        companyId: techcorp.id,
-        reviewedById: janeSmith.id,
-        reviewedAt: new Date('2026-02-28T10:00:00Z'),
-        reviewComment: 'Approuvé.',
-      },
-    })
-  } catch {
-    /* skip if already exists */
-  }
-
-  try {
-    await prisma.leaveRequest.create({
-      data: {
-        startDate: new Date('2026-03-12'),
-        endDate: new Date('2026-03-12'),
-        days: 0.5,
-        type: LeaveType.RTT,
-        status: LeaveRequestStatus.PENDING,
-        reason: 'Démarche administrative',
-        halfDay: true,
-        halfDayPeriod: 'PM',
-        employeeId: oliviaMartin.employee!.id,
-        companyId: designstudio.id,
-      },
-    })
-  } catch {
-    /* skip if already exists */
-  }
-
-  // FAMILY_EVENT demande
-  try {
-    await prisma.leaveRequest.create({
-      data: {
-        startDate: new Date('2026-04-01'),
-        endDate: new Date('2026-04-02'),
-        days: 2,
-        type: LeaveType.FAMILY_EVENT,
-        status: LeaveRequestStatus.PENDING,
-        reason: 'Mariage frère',
-        employeeId: evaGarcia.employee!.id,
-        companyId: techcorp.id,
-      },
-    })
-  } catch {
-    /* skip if already exists */
-  }
-
-  // PARENTAL_LEAVE demande
-  try {
-    await prisma.leaveRequest.create({
-      data: {
-        startDate: new Date('2026-05-01'),
-        endDate: new Date('2026-05-30'),
-        days: 22,
-        type: LeaveType.PARENTAL_LEAVE,
-        status: LeaveRequestStatus.APPROVED,
-        reason: 'Congé parental',
-        employeeId: williamTaylor.employee!.id,
-        companyId: designstudio.id,
-        reviewedById: avaAnderson.id,
-        reviewedAt: new Date('2026-04-15T09:00:00Z'),
-        reviewComment: 'Approuvé. Félicitations !',
-      },
-    })
-  } catch {
-    /* skip if already exists */
-  }
-
-  console.log('✅ 6 demandes de congés supplémentaires créées\n')
-
-  // ============================================================================
-  // RÉSUMÉ FINAL
+  // RÉSUMÉ
   // ============================================================================
   console.log('🎉 Seeding terminé avec succès !\n')
   console.log('═══════════════════════════════════════════════════════════════')
-  console.log('📊 RÉCAPITULATIF DES DONNÉES CRÉÉES')
-  console.log(
-    '═══════════════════════════════════════════════════════════════\n'
-  )
+  console.log('📊 RÉCAPITULATIF')
+  console.log('═══════════════════════════════════════════════════════════════\n')
+  console.log('🏢 ORGANISATIONS : TechCorp (grande distribution), DesignStudio, StartupInc')
+  console.log(`👥 ÉQUIPES : 12 TechCorp + 2 DesignStudio + 1 StartupInc = 15`)
+  console.log(`👤 UTILISATEURS : ~${allTechcorpEmployees.length + 1} TechCorp + 6 DesignStudio + 4 StartupInc + 1 Admin`)
+  console.log(`📅 PLANNINGS : ${scheduleCount + 6} créneaux (2 semaines mars 2026)`)
+  console.log(`🏖️  CONGÉS : ${LEAVE_REQUESTS.length + 2}`)
+  console.log(`📝 INCIDENTS : ${INCIDENTS.length}`)
+  console.log(`📋 NOTES PERSO : ${PERSONAL_TASKS.length}`)
+  console.log(`💰 SOLDES : ${totalBalances}`)
+  console.log(`🔔 NOTIFICATIONS : ${NOTIFICATIONS.length}\n`)
 
-  console.log('🏢 ORGANISATIONS (3) :')
-  console.log('   • TechCorp (PER_SEAT, 16 employés, 46,40€/mois)')
-  console.log('   • DesignStudio (PER_SEAT, 6 employés, 17,40€/mois)')
-  console.log('   • StartupInc (FREE/TRIAL, 4 employés)\n')
-
-  console.log('👥 ÉQUIPES (6) :')
-  console.log('   TechCorp :')
-  console.log('   • Engineering (Manager: Jane Smith)')
-  console.log('   • Product (Manager: Alice Brown)')
-  console.log('   • Design (Manager: Frank Martinez)')
-  console.log('   DesignStudio :')
-  console.log('   • Designers (Manager: Liam White)')
-  console.log('   • Admin (Manager: Ava Anderson)')
-  console.log('   StartupInc :')
-  console.log('   • Core Team (Manager: James Walker)\n')
-
-  console.log('👤 UTILISATEURS & EMPLOYÉS (26) :')
-  console.log('   Rôles :')
-  console.log('   • 3 DIRECTOR (1 par organisation)')
-  console.log('   • 6 MANAGER')
-  console.log('   • 17 EMPLOYEE (16 TechCorp pour pagination E2E)')
-  console.log('   • 1 SYSTEM_ADMIN (admin@smartplanning.io)\n')
-
-  console.log('💳 ABONNEMENTS & PAIEMENTS :')
-  console.log('   • 3 abonnements Stripe créés')
-  console.log('   • 2 paiements enregistrés\n')
-
-  console.log('📅 PLANNINGS (15) :')
-  console.log('   • TechCorp: 10 plannings (Engineering, Product, Design)')
-  console.log('   • DesignStudio: 3 plannings (Designers)')
-  console.log('   • StartupInc: 2 plannings (Core Team)\n')
-
-  console.log('🏖️  DEMANDES DE CONGÉS (14) :')
-  console.log('   • 5 APPROVED (Alice, Bob x2, Eva, William)')
-  console.log('   • 5 PENDING (Olivia x2, Henry, Sophia, Eva)')
-  console.log('   • 2 REJECTED (Charlie, Noah)')
-  console.log('   • 2 CANCELLED (David, Grace)')
-  console.log('   • 2 avec halfDay (Bob AM, Olivia PM)\n')
-
-  console.log('💰 SOLDES DE CONGÉS (26) :')
-  console.log('   • 1 LeaveBalance par employé (année 2026)')
-  console.log('   • Soldes variés (CP 0-12 utilisés, RTT 0-6 utilisés)\n')
-
-  console.log('🔔 NOTIFICATIONS (15) :')
-  console.log('   • 8 READ')
-  console.log('   • 7 UNREAD\n')
-
-  console.log('═══════════════════════════════════════════════════════════════')
-  console.log('✅ BASE DE DONNÉES PRÊTE POUR LE DÉVELOPPEMENT !')
-  console.log(
-    '═══════════════════════════════════════════════════════════════\n'
-  )
-
-  console.log('🔐 COMPTES DE TEST (mot de passe: Password123!) :\n')
-  console.log(
-    '╔═══════════════════════════════════════════════════════════════╗'
-  )
-  console.log(
-    '║                          TECHCORP                              ║'
-  )
-  console.log(
-    '╠═══════════════════════════════════════════════════════════════╣'
-  )
-  console.log(
-    '║ 📧 john.doe@techcorp.com       | 👔 DIRECTOR                  ║'
-  )
-  console.log(
-    '║ 📧 jane.smith@techcorp.com     | 👨‍💼 MANAGER (Engineering)     ║'
-  )
-  console.log(
-    '║ 📧 alice.brown@techcorp.com    | 👨‍💼 MANAGER (Product)         ║'
-  )
-  console.log(
-    '║ 📧 frank.martinez@techcorp.com | 👨‍💼 MANAGER (Design)          ║'
-  )
-  console.log(
-    '║ 📧 bob.wilson@techcorp.com     | 👤 EMPLOYEE (Engineering)    ║'
-  )
-  console.log(
-    '╚═══════════════════════════════════════════════════════════════╝\n'
-  )
-
-  console.log(
-    '╔═══════════════════════════════════════════════════════════════╗'
-  )
-  console.log(
-    '║                       DESIGNSTUDIO                             ║'
-  )
-  console.log(
-    '╠═══════════════════════════════════════════════════════════════╣'
-  )
-  console.log(
-    '║ 📧 emma.jones@designstudio.com   | 👔 DIRECTOR                ║'
-  )
-  console.log(
-    '║ 📧 liam.white@designstudio.com   | 👨‍💼 MANAGER (Designers)     ║'
-  )
-  console.log(
-    '║ 📧 ava.anderson@designstudio.com | 👨‍💼 MANAGER (Admin)         ║'
-  )
-  console.log(
-    '║ 📧 olivia.martin@designstudio.com| 👤 EMPLOYEE (Designers)    ║'
-  )
-  console.log(
-    '╚═══════════════════════════════════════════════════════════════╝\n'
-  )
-
-  console.log(
-    '╔═══════════════════════════════════════════════════════════════╗'
-  )
-  console.log(
-    '║                        STARTUPINC                              ║'
-  )
-  console.log(
-    '╠═══════════════════════════════════════════════════════════════╣'
-  )
-  console.log(
-    '║ 📧 oliver.green@startupinc.com  | 👔 DIRECTOR                 ║'
-  )
-  console.log(
-    '║ 📧 james.walker@startupinc.com  | 👨‍💼 MANAGER (Core Team)      ║'
-  )
-  console.log(
-    '║ 📧 sophia.clark@startupinc.com  | 👤 EMPLOYEE (Core Team)     ║'
-  )
-  console.log(
-    '╚═══════════════════════════════════════════════════════════════╝\n'
-  )
-
-  console.log('🎯 PROCHAINES ÉTAPES :')
-  console.log('   1. Vérifier les données dans DBeaver ou Prisma Studio')
-  console.log("   2. Commencer le développement de l'architecture Next.js")
-  console.log('   3. Configurer NextAuth v5 avec les utilisateurs créés')
-  console.log(
-    '   4. Développer les interfaces (dashboards, planning, congés)\n'
-  )
-
-  console.log('💡 COMMANDES UTILES :')
-  console.log('   • npx prisma studio    → Visualiser les données')
-  console.log('   • npm run db:seed      → Réexécuter le seed')
-  console.log('   • npx prisma db push   → Synchroniser le schéma\n')
+  console.log('🔐 COMPTES DE TEST (mot de passe: Password123!) :')
+  console.log('  📧 john.doe@techcorp.com     → DIRECTOR (Directeur magasin)')
+  console.log('  📧 jane.smith@techcorp.com   → MANAGER (Responsable Bazar)')
+  console.log('  📧 bob.wilson@techcorp.com   → EMPLOYEE (Employé Bazar)')
+  console.log('  📧 admin@smartplanning.io    → SYSTEM_ADMIN\n')
 }
 
 main()
   .catch((e) => {
     console.error('\n❌ ERREUR PENDANT LE SEEDING:')
-    console.error(
-      '═══════════════════════════════════════════════════════════════'
-    )
     console.error(e)
-    console.error(
-      '═══════════════════════════════════════════════════════════════\n'
-    )
     process.exit(1)
   })
   .finally(async () => {

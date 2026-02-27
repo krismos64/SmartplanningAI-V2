@@ -66,20 +66,20 @@ export function DirectorTeamsChart({
         <PieChartWidget
           data={chartData}
           dataKey="value"
-          height={220}
+          height={250}
           isLoading={isLoading}
           emptyMessage="Aucune equipe configuree"
           innerRadius={50}
-          outerRadius={80}
-          showLegend
-          showLabels
+          outerRadius={100}
+          showLegend={false}
+          showLabels={false}
           colors={colors}
           title="Repartition des effectifs par equipe"
         />
 
         {/* Liste des equipes */}
         {!isEmpty && !isLoading && (
-          <div className="mt-4 space-y-2">
+          <div className="mt-4 max-h-64 space-y-2 overflow-y-auto">
             {teamStats.map((team, index) => (
               <div
                 key={team.name}
