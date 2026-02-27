@@ -1282,7 +1282,6 @@ export async function bulkDeleteEmployees(
 import {
   generateCsv,
   formatDateFr,
-  formatBooleanFr,
   type CsvColumn,
 } from '@/lib/csv'
 import type { CsvExportActionResult, EmployeeExportFilters } from '@/types'
@@ -1301,35 +1300,75 @@ interface EmployeeForCsvExport {
   weeklyHours: number
   isActive: boolean
   createdAt: Date
-  team: { name: string } | null
+  team: { name: string; manager: { firstName: string; lastName: string } | null } | null
+  user: { email: string; role: string } | null
+  leaveBalances: { paidLeaveTotal: number; paidLeaveUsed: number; rttTotal: number; rttUsed: number }[]
+}
+
+/**
+ * Calcule l'ancienneté en années et mois
+ */
+function formatAnciennete(hireDate: Date | null): string {
+  if (!hireDate) return ''
+  const now = new Date()
+  let years = now.getFullYear() - hireDate.getFullYear()
+  let months = now.getMonth() - hireDate.getMonth()
+  if (months < 0) {
+    years--
+    months += 12
+  }
+  if (years === 0) return `${months} mois`
+  if (months === 0) return `${years} an${years > 1 ? 's' : ''}`
+  return `${years} an${years > 1 ? 's' : ''} ${months} mois`
+}
+
+/**
+ * Formate le type de contrat selon les heures hebdomadaires
+ */
+function formatContrat(weeklyHours: number): string {
+  if (weeklyHours >= 35) return 'Temps plein'
+  return 'Temps partiel'
+}
+
+/**
+ * Formate le rôle en français
+ */
+function formatRoleFr(role: string | null | undefined): string {
+  const roles: Record<string, string> = {
+    DIRECTOR: 'Directeur',
+    MANAGER: 'Manager',
+    EMPLOYEE: 'Employé',
+    SYSTEM_ADMIN: 'Administrateur',
+  }
+  return roles[role ?? ''] ?? 'Employé'
 }
 
 /**
  * Colonnes pour l'export CSV des employés
  */
 const EMPLOYEE_CSV_COLUMNS: CsvColumn<EmployeeForCsvExport>[] = [
-  { key: 'firstName', header: 'Prénom' },
+  { key: (e) => e.team?.name ?? 'Sans équipe', header: 'Équipe' },
   { key: 'lastName', header: 'Nom' },
-  { key: 'email', header: 'Email' },
-  { key: 'phone', header: 'Téléphone' },
+  { key: 'firstName', header: 'Prénom' },
+  { key: (e) => formatRoleFr(e.user?.role), header: 'Rôle' },
   { key: 'jobTitle', header: 'Poste' },
-  { key: 'department', header: 'Département' },
-  { key: (e) => e.team?.name ?? '', header: 'Équipe' },
+  { key: (e) => formatContrat(e.weeklyHours), header: 'Contrat' },
+  { key: 'weeklyHours', header: 'H/sem' },
+  { key: (e) => e.email ?? e.user?.email ?? '', header: 'Email' },
+  { key: (e) => e.phone ? `="${e.phone}"` : '', header: 'Téléphone' },
   {
     key: 'hireDate',
-    header: 'Date embauche',
+    header: 'Embauche',
     format: (v) => formatDateFr(v as Date | null),
   },
-  { key: 'weeklyHours', header: 'Heures/semaine' },
   {
-    key: 'isActive',
-    header: 'Actif',
-    format: (v) => formatBooleanFr(v as boolean),
+    key: (e) => formatAnciennete(e.hireDate),
+    header: 'Ancienneté',
   },
   {
-    key: 'createdAt',
-    header: 'Date création',
-    format: (v) => formatDateFr(v as Date),
+    key: 'isActive',
+    header: 'Statut',
+    format: (v) => (v as boolean) ? 'Actif' : 'Inactif',
   },
 ]
 
@@ -1399,7 +1438,8 @@ export async function exportEmployeesCsv(
       where.isActive = filters.isActive
     }
 
-    // 4️⃣ Récupérer les données
+    // 4️⃣ Récupérer les données enrichies
+    const currentYear = new Date().getFullYear()
     const employees = await prisma.employee.findMany({
       where,
       select: {
@@ -1413,22 +1453,64 @@ export async function exportEmployeesCsv(
         weeklyHours: true,
         isActive: true,
         createdAt: true,
-        team: { select: { name: true } },
+        user: { select: { email: true, role: true } },
+        team: {
+          select: {
+            name: true,
+            manager: { select: { firstName: true, lastName: true } },
+          },
+        },
+        leaveBalances: {
+          where: { year: currentYear },
+          select: { paidLeaveTotal: true, paidLeaveUsed: true, rttTotal: true, rttUsed: true },
+          take: 1,
+        },
       },
-      orderBy: [{ lastName: 'asc' }, { firstName: 'asc' }],
-      take: 10000, // Limite de sécurité
+      orderBy: [{ team: { name: 'asc' } }, { lastName: 'asc' }, { firstName: 'asc' }],
+      take: 10000,
     })
 
-    // 5️⃣ Générer le CSV
+    // 5️⃣ Construire le nom de fichier selon les filtres
+    let companySlug = 'export'
+    if (user.companyId) {
+      const company = await prisma.company.findUnique({
+        where: { id: user.companyId },
+        select: { slug: true },
+      })
+      if (company) companySlug = company.slug
+    }
+
+    const filenameParts = ['employes', companySlug]
+
+    if (filters?.teamId) {
+      const teamName = employees[0]?.team?.name
+      if (teamName) {
+        const teamSlug = teamName
+          .toLowerCase()
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/^-|-$/g, '')
+        filenameParts.push(teamSlug)
+      }
+    }
+
+    if (filters?.isActive === true) {
+      filenameParts.push('actifs')
+    } else if (filters?.isActive === false) {
+      filenameParts.push('inactifs')
+    }
+
+    // 6️⃣ Générer le CSV
     const result = generateCsv(
       employees as EmployeeForCsvExport[],
       EMPLOYEE_CSV_COLUMNS,
       {
-        filename: 'employes-export',
+        filename: filenameParts.join('-'),
       }
     )
 
-    // 6️⃣ Log de traçabilité RGPD
+    // 7️⃣ Log de traçabilité RGPD
     console.warn(
       `[exportEmployeesCsv] User ${user.id} (${user.role}) exported ${employees.length} employees at ${new Date().toISOString()}`
     )
