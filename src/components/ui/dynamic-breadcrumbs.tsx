@@ -37,6 +37,7 @@ import { Skeleton } from '@/components/ui/skeleton'
  * Mapping des segments statiques vers leurs labels
  */
 const STATIC_LABELS: Record<string, string> = {
+  director: 'Directeur',
   'super-admin': 'Administration',
   organizations: 'Organisations',
   monitoring: 'Monitoring',
@@ -64,6 +65,7 @@ const STATIC_LABELS: Record<string, string> = {
   edit: 'Modifier',
   create: 'Créer',
   details: 'Détails',
+  billing: 'Facturation',
 }
 
 /**
