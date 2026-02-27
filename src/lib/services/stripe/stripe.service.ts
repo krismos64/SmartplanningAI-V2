@@ -31,6 +31,7 @@ import {
   sendPaymentFailedEmail,
   sendSubscriptionCanceledEmail,
 } from '@/lib/email/templates/billing'
+import { sendEmail } from '@/lib/email/send'
 import type { ServiceResult } from '@/lib/services/dashboard/types'
 import type {
   CreateCheckoutSessionInput,
@@ -308,7 +309,7 @@ export async function cancelSubscription(
     // Récupérer la subscription en DB
     const dbSub = await prisma.subscription.findFirst({
       where: { stripeSubscriptionId: subscriptionId },
-      select: { id: true },
+      select: { id: true, companyId: true },
     })
 
     if (!dbSub) {
@@ -337,6 +338,53 @@ export async function cancelSubscription(
         },
       })
     }
+
+    // Fire-and-forget : notifier les SYSTEM_ADMIN (notification + email)
+    getCompanyDirector(dbSub.companyId)
+      .then((director) => {
+        const companyName =
+          director?.companyName ??
+          `Entreprise #${dbSub.companyId.slice(0, 8)}`
+
+        // Notification in-app admin
+        import('@/lib/actions/notifications')
+          .then(({ createAdminNotification }) =>
+            createAdminNotification({
+              title: 'Abonnement annulé',
+              message: `${companyName} a résilié son abonnement`,
+              type: 'WARNING',
+              priority: 'HIGH',
+              actionUrl: '/app/admin/companies',
+            })
+          )
+          .catch(console.error)
+
+        // Email aux admins
+        import('@/lib/services/admin-notification.service')
+          .then(({ getSystemAdminUserIds }) =>
+            getSystemAdminUserIds().then((adminIds) => {
+              if (adminIds.length === 0) return
+              return prisma.user
+                .findMany({
+                  where: { id: { in: adminIds } },
+                  select: { email: true },
+                })
+                .then((admins) =>
+                  Promise.allSettled(
+                    admins.map((admin) =>
+                      sendEmail({
+                        to: admin.email,
+                        subject: `[SmartPlanning] Résiliation — ${companyName}`,
+                        html: `<p>Bonjour,</p><p>L'entreprise <strong>${companyName}</strong> vient de résilier son abonnement SmartPlanning.</p><p>Connectez-vous au panel admin pour plus de détails.</p><p>— SmartPlanning</p>`,
+                      })
+                    )
+                  )
+                )
+            })
+          )
+          .catch(console.error)
+      })
+      .catch(console.error)
 
     return { success: true }
   } catch (error) {
