@@ -97,7 +97,7 @@ function mockSession(role: string, userId = 'admin-001') {
   mocks.auth.mockResolvedValue({
     user: {
       id: userId,
-      email: 'admin@smartplanning.io',
+      email: 'contact@smartplanning.fr',
       role,
       companyId: null,
     },

@@ -153,7 +153,7 @@ Connectez-vous successivement avec :
 Le seed crée un compte `SYSTEM_ADMIN` pour les tests E2E RBAC :
 
 ```
-Email: admin@smartplanning.io
+Email: contact@smartplanning.fr
 Password: Password123!
 → Super admin global, n'appartient à aucune entreprise (companyId: null)
 ```

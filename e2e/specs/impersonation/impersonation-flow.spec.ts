@@ -120,7 +120,7 @@ test.describe('Impersonation - restrictions securite', () => {
 
     // Le nom du SYSTEM_ADMIN ne doit pas etre dans la banniere
     await expect(impersonation.bannerText).not.toContainText(
-      'admin@smartplanning.io'
+      'contact@smartplanning.fr'
     )
 
     await impersonation.stopImpersonation()

@@ -62,7 +62,7 @@ export const TEST_USERS: Record<string, TestUser> = {
     displayName: 'John Doe',
   },
   SYSTEM_ADMIN: {
-    email: 'admin@smartplanning.io',
+    email: 'contact@smartplanning.fr',
     password: 'Password123!',
     role: 'SYSTEM_ADMIN',
     expectedDashboard: '/app/admin/dashboard',

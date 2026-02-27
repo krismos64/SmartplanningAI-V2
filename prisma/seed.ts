@@ -527,7 +527,7 @@ async function main() {
   // SYSTEM ADMIN
   const systemAdmin = await prisma.user.create({
     data: {
-      email: 'admin@smartplanning.io',
+      email: 'contact@smartplanning.fr',
       name: 'Super Admin',
       password: hashedPassword,
       emailVerified: new Date(),
@@ -1083,7 +1083,7 @@ async function main() {
   console.log('  📧 john.doe@techcorp.com     → DIRECTOR (Directeur magasin)')
   console.log('  📧 jane.smith@techcorp.com   → MANAGER (Responsable Bazar)')
   console.log('  📧 bob.wilson@techcorp.com   → EMPLOYEE (Employé Bazar)')
-  console.log('  📧 admin@smartplanning.io    → SYSTEM_ADMIN\n')
+  console.log('  📧 contact@smartplanning.fr    → SYSTEM_ADMIN\n')
 }
 
 main()
