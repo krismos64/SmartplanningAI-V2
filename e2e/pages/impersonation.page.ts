@@ -157,8 +157,24 @@ export class ImpersonationPage {
     // 4. Naviguer vers /login avant loginAs pour eviter les redirections
     // middleware en cascade (CI lent: la page peut rester sur un dashboard
     // invalide apres clearCookies, provoquant un timeout sur loginAs)
-    await this.page.goto('/login', { waitUntil: 'domcontentloaded' })
-    await this.page.waitForLoadState('networkidle')
+    // Retry navigation car clearCookies peut provoquer net::ERR_ABORTED en CI
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        await this.page.goto('/login', {
+          waitUntil: 'domcontentloaded',
+          timeout: 30000,
+        })
+        break
+      } catch {
+        if (attempt === 2) throw new Error('Failed to navigate to /login after 3 attempts')
+        await this.page.waitForTimeout(2000)
+      }
+    }
+
+    // Attendre que le formulaire de login soit pret (plus fiable que networkidle)
+    await this.page
+      .getByPlaceholder('vous@entreprise.com')
+      .waitFor({ state: 'visible', timeout: 20000 })
 
     // 5. Re-login admin pour obtenir un JWT SYSTEM_ADMIN propre
     await loginAs(this.page, TEST_USERS.SYSTEM_ADMIN)
