@@ -443,6 +443,7 @@ describe('Stripe Service', () => {
     it('annule immédiatement si cancelImmediately=true', async () => {
       prismaMock.subscription.findFirst.mockResolvedValue({
         id: 'db-sub-1',
+        companyId: 'company-1',
       } as never)
       mockStripe.subscriptions.cancel.mockResolvedValue({})
       prismaMock.subscription.update.mockResolvedValue({} as never)
@@ -467,6 +468,7 @@ describe('Stripe Service', () => {
     it('schedule annulation en fin de période par défaut', async () => {
       prismaMock.subscription.findFirst.mockResolvedValue({
         id: 'db-sub-1',
+        companyId: 'company-1',
       } as never)
       mockStripe.subscriptions.update.mockResolvedValue({})
       prismaMock.subscription.update.mockResolvedValue({} as never)
