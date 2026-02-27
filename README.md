@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 23 février 2026 (Admin SYSTEM_ADMIN améliorations SP-469 à SP-477, 5914 tests unitaires + 584 E2E)
+- **Dernière mise à jour** : 27 février 2026 (Notifications résiliation admin + email directeur, seed Stripe réel, améliorations billing/director/CSV)
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -67,7 +67,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Charts Recharts** (SP-143) : AreaChartWidget, BarChartWidget, PieChartWidget avec tooltips Shadcn et dark mode
 - **Dashboard Services Prisma** (SP-144) : Services data layer par rôle (Employee, Manager, Director, Admin) avec architecture multi-tenant
 - **Dashboard Employee** (SP-145) : Page dashboard complète avec Server Components, redirection par rôle, 5 composants métier (Welcome, Stats, Schedule, LeaveBalance, QuickActions)
-- **Dashboard Director** (SP-147) : Page dashboard directeur avec Server Components, RBAC, 6 composants métier (Welcome, Stats, TeamsChart, TrendsChart, PendingLeaves, QuickActions)
+- **Dashboard Director** (SP-147) : Page dashboard directeur avec Server Components, RBAC, 5 composants métier (Welcome, Stats 3 KPIs, TeamsChart, PendingLeaves, QuickActions), liens corrigés vers routes /app/
 - **Dashboard Manager** (SP-316) : Page dashboard manager avec Server Components, RBAC, 5 composants métier (ManagerWelcome, ManagerStats, ManagerTeamChart, ManagerPendingLeaves, ManagerQuickActions)
 - **Dashboard Super Admin** (SP-148) : Page dashboard admin SaaS avec Server Components, protection SYSTEM_ADMIN, 7 composants (Welcome, Stats, MrrChart, SignupsChart, PlansChart, RecentCompanies, QuickActions)
 - **Animations Dashboards** (SP-431) : Animations Framer Motion sur 15 composants (4 dashboards), variants fadeSlideUp/stagger, support prefers-reduced-motion
@@ -98,7 +98,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - Gestion des indisponibilités avec overlay calendrier
 - Récurrence des shifts (quotidien, hebdomadaire, bi-hebdomadaire, mensuel)
 - Export PDF/Excel/CSV des plannings (avec filtres actifs et compteur heures)
-- Export CSV employés et congés avec RBAC
+- Export CSV employés enrichi (équipe, rôle, ancienneté, contrat, tri par équipe, nom fichier dynamique) et congés avec RBAC
 - Suppression en masse employés avec cascade sécurisée
 - Nom d'entreprise dynamique dans le layout
 - Demandes de congés avec workflow validation
@@ -250,7 +250,7 @@ Migration complète du modèle d'abonnement multi-plans vers un modèle per-seat
   - Migration PostgreSQL : `SubscriptionPlan` simplifié (FREE, PER_SEAT), `SubscriptionStatus` enrichi (+INCOMPLETE pour 3D Secure Stripe)
   - Modèle `Subscription` avec relation 1:1 Company (plan, status, quantity, pricePerEmployee en centimes)
   - Modèle `Payment` pour historique paiements Stripe
-  - Seed data mis à jour (2 plans au lieu de 4, statuts réalistes)
+  - Seed data mis à jour (2 plans au lieu de 4, statuts réalistes, vrais clients Stripe Test avec fallback faux IDs si Stripe indisponible, cleanup automatique des anciens clients seed via metadata)
   - Validations Zod (company.ts) : labels FR, couleurs, descriptions pour 2 plans + 6 statuts
   - Service `admin-stats` : calcul MRR basé sur quantity × pricePerEmployee depuis table Subscription
   - Actions companies : types `CompanySubscription`, `CompanyWithCounts`, `CompanyDetail` avec relation subscription dans tous les selects Prisma
@@ -271,7 +271,7 @@ Service Stripe complet pour la gestion des abonnements per-seat et le traitement
 - **Service Stripe** (`src/lib/services/stripe/stripe.service.ts`) :
   - `createCheckoutSession` : Création session Checkout avec customer Stripe, prix per-seat, metadata SmartPlanning
   - `updateSubscriptionQuantity` : Mise à jour quantité sièges (ajout/retrait employés)
-  - `cancelSubscription` : Annulation immédiate ou à fin de période
+  - `cancelSubscription` : Annulation immédiate ou à fin de période, email confirmation au directeur (template pro `SubscriptionCanceledEmail`), notification in-app + email aux SYSTEM_ADMIN (fire-and-forget)
   - `createBillingPortalSession` : Accès au portail de facturation client
   - `handleWebhookEvent` : Dispatcher d'événements webhook (8 événements gérés)
   - 5 handlers internes : checkout completed, subscription updated/deleted, invoice paid/failed
@@ -327,7 +327,7 @@ Page dashboard facturation complète avec 3 sous-composants, accessible aux DIRE
   - `BillingPageContent` : Orchestrateur Client Component, gestion des Server Actions (portail Stripe, annulation), AlertDialog confirmation, gestion erreurs
   - `SubscriptionStatus` : Statut abonnement avec 6 badges (TRIAL, ACTIVE, PAST_DUE, CANCELED, EXPIRED, INCOMPLETE), countdown essai gratuit, alerte annulation programmée, EmptyState si pas d'abonnement
   - `UsageIndicator` : Jauge utilisation sièges (ProgressBar colorée : vert <80%, orange 80-99%, rouge ≥100%), prix unitaire/total, info prorata tooltip
-  - `InvoiceHistory` : Historique 5 dernières factures (Table avec badges statut Payé/Échoué/En attente, liens factures Stripe externes, EmptyState)
+  - `InvoiceHistory` : Historique 5 dernières factures (Table avec badges statut Payé/Échoué/En attente, liens invoiceUrl Stripe directes, EmptyState)
   - `index.ts` : Barrel export composants + types
 
 - **Navigation** :
@@ -543,9 +543,15 @@ Automatisation des emails billing via cron job et intégration webhooks Stripe :
 
 - **Webhooks Stripe enrichis** (`/api/webhooks/stripe`) :
   - `checkout.session.completed` → `SubscriptionConfirmedEmail`
-  - `invoice.payment_failed` → `PaymentFailedEmail`
+  - `invoice.payment_failed` → `PaymentFailedEmail` + notification in-app SYSTEM_ADMIN
   - `customer.subscription.deleted` → `SubscriptionCanceledEmail`
   - `invoice.paid` → `InvoiceEmail` avec détails facture
+
+- **Notifications résiliation** (`cancelSubscription`) :
+  - Email pro au directeur : template `SubscriptionCanceledEmail` (logo, date fin accès, CTA réabonnement)
+  - Notification in-app SYSTEM_ADMIN : type WARNING, priorité HIGH
+  - Email aux admins : `[SmartPlanning] Résiliation — {companyName}`
+  - Pattern fire-and-forget identique aux webhooks
 
 - **Service d'envoi** (`src/lib/services/stripe/subscription-sync.service.ts`) :
   - `sendBillingEmail()` : Envoi fire-and-forget avec logging EmailLog
