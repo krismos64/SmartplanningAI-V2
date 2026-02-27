@@ -1,16 +1,12 @@
 /**
  * DirectorStats - Grille de statistiques Director
  *
- * Affiche les 6 KPIs principaux de l'entreprise via StatsGrid :
+ * Affiche les 3 KPIs principaux de l'entreprise :
  * - Employes actifs
  * - Equipes
  * - Conges en attente
- * - Heures planifiees (mois)
- * - Taux de presence
- * - Absences 7 jours
  *
  * @ticket SP-147
- * @ticket SP-317 - Ajout heures planifiees et absences 7j
  * @ticket SP-431 - Animations Framer Motion
  */
 'use client'
@@ -25,9 +21,6 @@ import {
   Users,
   Building,
   Clock,
-  Calendar,
-  TrendingUp,
-  UserMinus,
 } from 'lucide-react'
 import { StatCard } from '@/components/dashboard'
 import type { StatCardProps } from '@/types/dashboard'
@@ -44,7 +37,7 @@ export interface DirectorStatsProps {
 }
 
 /**
- * Composant grille de statistiques Director (6 KPIs)
+ * Composant grille de statistiques Director (3 KPIs)
  *
  * @example
  * <DirectorStats stats={directorStatsResult} />
@@ -54,7 +47,6 @@ export function DirectorStats({
   isLoading = false,
   className,
 }: DirectorStatsProps) {
-  // Construction des StatCards (6 KPIs) avec variants Cyber Glass 3D
   const statCards: StatCardProps[] = [
     {
       title: 'Employes actifs',
@@ -80,39 +72,14 @@ export function DirectorStats({
           : 'Aucune demande',
       variant: stats.pendingLeaveRequests > 0 ? 'warning' : 'success',
     },
-    {
-      title: 'Heures planifiees',
-      value: stats.plannedHoursThisMonth,
-      unit: 'h',
-      icon: Calendar,
-      description: 'Ce mois',
-      variant: 'info',
-    },
-    {
-      title: 'Taux de presence',
-      value: stats.averageAttendanceRate,
-      unit: '%',
-      icon: TrendingUp,
-      description: 'Moyenne entreprise',
-      variant: 'success',
-    },
-    {
-      title: 'Absences 7j',
-      value: stats.absencesLast7Days,
-      icon: UserMinus,
-      description:
-        stats.absencesLast7Days > 0 ? 'Derniers 7 jours' : 'Aucune absence',
-      variant: stats.absencesLast7Days > 0 ? 'danger' : 'success',
-    },
   ]
 
   const shouldReduceMotion = useReducedMotion()
 
-  // Version sans animation pour reduced motion ou loading
   if (shouldReduceMotion || isLoading) {
     return (
       <div
-        className={cn('grid grid-cols-2 gap-4 md:grid-cols-3', className)}
+        className={cn('grid grid-cols-1 gap-4 sm:grid-cols-3', className)}
         role="region"
         aria-label="Statistiques entreprise"
       >
@@ -128,7 +95,7 @@ export function DirectorStats({
       variants={staggerContainer}
       initial="hidden"
       animate="visible"
-      className={cn('grid grid-cols-2 gap-4 md:grid-cols-3', className)}
+      className={cn('grid grid-cols-1 gap-4 sm:grid-cols-3', className)}
       role="region"
       aria-label="Statistiques entreprise"
     >

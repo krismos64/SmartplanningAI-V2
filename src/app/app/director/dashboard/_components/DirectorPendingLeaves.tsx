@@ -163,7 +163,7 @@ export function DirectorPendingLeaves({
             {totalPending > 5 && (
               <div className="mt-4">
                 <Button asChild variant="outline" className="w-full">
-                  <Link href="/leaves/pending">
+                  <Link href="/app/dashboard/leaves">
                     Voir toutes les demandes ({totalPending})
                   </Link>
                 </Button>
