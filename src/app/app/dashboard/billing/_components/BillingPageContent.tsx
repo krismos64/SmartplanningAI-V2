@@ -142,7 +142,7 @@ export function BillingPageContent({
     try {
       const result = await createBillingPortalAction({})
       if (result.success) {
-        window.location.href = result.data.url
+        window.open(result.data.url, '_blank', 'noopener,noreferrer')
       } else {
         setActionError(result.error ?? 'Erreur lors de la redirection')
       }
@@ -159,7 +159,7 @@ export function BillingPageContent({
     try {
       const result = await createBillingPortalAction({})
       if (result.success) {
-        window.location.href = result.data.url
+        window.open(result.data.url, '_blank', 'noopener,noreferrer')
       } else {
         setActionError(result.error ?? 'Erreur lors de la redirection')
       }

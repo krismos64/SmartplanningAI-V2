@@ -22,7 +22,6 @@ import {
   Card,
   CardHeader,
   CardTitle,
-  CardDescription,
   CardContent,
   CardFooter,
 } from '@/components/ui/card'
@@ -119,11 +118,6 @@ const STATUS_CONFIG: Record<
   },
 }
 
-const PLAN_LABELS: Record<string, string> = {
-  PER_SEAT: 'Per-Seat',
-  FREE: 'Gratuit',
-}
-
 // =============================================================================
 // HELPERS
 // =============================================================================
@@ -214,9 +208,6 @@ export function SubscriptionStatus({
             </div>
             <div>
               <CardTitle className="text-lg">Abonnement</CardTitle>
-              <CardDescription>
-                Plan {PLAN_LABELS[subscription.plan] ?? subscription.plan}
-              </CardDescription>
             </div>
           </div>
           <Badge variant={statusConfig.variant} icon={statusConfig.icon}>

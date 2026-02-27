@@ -89,6 +89,7 @@ export interface BillingData {
     createdAt: Date
     stripeInvoiceId: string | null
     paymentMethod: string | null
+    invoiceUrl: string | null
   }[]
   employeeCount: number
   monthlyAmount: number

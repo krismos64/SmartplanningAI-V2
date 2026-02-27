@@ -45,6 +45,7 @@ export interface SerializedPayment {
   createdAt: string
   stripeInvoiceId: string | null
   paymentMethod: string | null
+  invoiceUrl: string | null
 }
 
 export interface InvoiceHistoryProps {
@@ -170,9 +171,9 @@ export function InvoiceHistory({
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
-                        {payment.stripeInvoiceId ? (
+                        {payment.invoiceUrl ? (
                           <a
-                            href={`https://dashboard.stripe.com/invoices/${payment.stripeInvoiceId}`}
+                            href={payment.invoiceUrl}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="inline-flex items-center gap-1 text-xs text-primary hover:underline"

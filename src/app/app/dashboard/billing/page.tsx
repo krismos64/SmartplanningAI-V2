@@ -11,6 +11,7 @@ import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { hasRequiredRole } from '@/lib/permissions'
 import { getBillingDataAction } from '@/lib/actions/stripe'
+import type { BillingData } from '@/types/stripe'
 import { BillingPageContent } from './_components'
 import type { SerializedBillingData } from './_components'
 
@@ -55,34 +56,7 @@ function ErrorState({ message }: { message: string }) {
  * Sérialise les dates d'un objet BillingData pour le transfert Server → Client.
  * Les Date natives ne sont pas sérialisables par React entre Server et Client Components.
  */
-function serializeBillingData(data: {
-  subscription: {
-    plan: string
-    status: string
-    quantity: number
-    pricePerEmployee: number
-    planPrice: number
-    currentPeriodStart: Date | null
-    currentPeriodEnd: Date | null
-    cancelAtPeriodEnd: boolean
-    canceledAt: Date | null
-    createdAt: Date
-    stripeCustomerId: string
-  } | null
-  payments: {
-    id: string
-    amount: number
-    currency: string
-    status: string
-    paidAt: Date | null
-    createdAt: Date
-    stripeInvoiceId: string | null
-    paymentMethod: string | null
-  }[]
-  employeeCount: number
-  monthlyAmount: number
-  trialEndsAt: Date | null
-}): SerializedBillingData {
+function serializeBillingData(data: BillingData): SerializedBillingData {
   return {
     subscription: data.subscription
       ? {
@@ -110,6 +84,7 @@ function serializeBillingData(data: {
       createdAt: p.createdAt.toISOString(),
       stripeInvoiceId: p.stripeInvoiceId,
       paymentMethod: p.paymentMethod,
+      invoiceUrl: p.invoiceUrl,
     })),
     employeeCount: data.employeeCount,
     monthlyAmount: data.monthlyAmount,

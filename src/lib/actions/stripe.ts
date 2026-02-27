@@ -335,16 +335,20 @@ export async function getBillingDataAction(): Promise<
               stripeCustomerId: subscription.stripeCustomerId,
             }
           : null,
-        payments: payments.map((p) => ({
-          id: p.id,
-          amount: p.amount,
-          currency: p.currency,
-          status: p.status,
-          paidAt: p.paidAt,
-          createdAt: p.createdAt,
-          stripeInvoiceId: p.stripeInvoiceId ?? null,
-          paymentMethod: p.paymentMethod ?? null,
-        })),
+        payments: payments.map((p) => {
+          const meta = p.metadata as Record<string, unknown> | null
+          return {
+            id: p.id,
+            amount: p.amount,
+            currency: p.currency,
+            status: p.status,
+            paidAt: p.paidAt,
+            createdAt: p.createdAt,
+            stripeInvoiceId: p.stripeInvoiceId ?? null,
+            paymentMethod: p.paymentMethod ?? null,
+            invoiceUrl: (typeof meta?.invoiceUrl === 'string' ? meta.invoiceUrl : null),
+          }
+        }),
         employeeCount,
         monthlyAmount: subscription
           ? (subscription.quantity * subscription.pricePerEmployee) / 100
