@@ -252,7 +252,7 @@ describe('DirectorPendingLeaves', () => {
       const link = screen.getByRole('link', {
         name: /Voir toutes les demandes/,
       })
-      expect(link).toHaveAttribute('href', '/leaves/pending')
+      expect(link).toHaveAttribute('href', '/app/dashboard/leaves')
     })
   })
 

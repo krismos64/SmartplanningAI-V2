@@ -14,6 +14,9 @@ vi.mock('@/lib/prisma', () => ({
       findUnique: vi.fn(),
       findMany: vi.fn(),
     },
+    company: {
+      findUnique: vi.fn(),
+    },
   },
 }))
 
@@ -41,7 +44,9 @@ describe('exportEmployeesCsv', () => {
     weeklyHours: 35,
     isActive: true,
     createdAt: new Date('2024-01-01'),
-    team: { name: 'Team Alpha' },
+    team: { name: 'Team Alpha', manager: { firstName: 'Jean', lastName: 'Martin' } },
+    user: { email: 'marie@example.com', role: 'EMPLOYEE' },
+    leaveBalances: [{ paidLeaveTotal: 25, paidLeaveUsed: 5, rttTotal: 10, rttUsed: 2 }],
   }
 
   beforeEach(() => {
@@ -96,6 +101,7 @@ describe('exportEmployeesCsv', () => {
       } as never)
 
       mockPrisma.employee.findMany.mockResolvedValue([mockEmployee] as never)
+      mockPrisma.company.findUnique.mockResolvedValue({ slug: 'techcorp' } as never)
 
       await exportEmployeesCsv()
 
@@ -117,6 +123,7 @@ describe('exportEmployeesCsv', () => {
       } as never)
 
       mockPrisma.employee.findMany.mockResolvedValue([mockEmployee] as never)
+      mockPrisma.company.findUnique.mockResolvedValue({ slug: 'techcorp' } as never)
 
       await exportEmployeesCsv()
 
@@ -151,6 +158,7 @@ describe('exportEmployeesCsv', () => {
       } as never)
 
       mockPrisma.employee.findMany.mockResolvedValue([mockEmployee] as never)
+      mockPrisma.company.findUnique.mockResolvedValue(null as never)
 
       await exportEmployeesCsv()
 
@@ -171,6 +179,7 @@ describe('exportEmployeesCsv', () => {
         user: { id: 'user-1', role: 'DIRECTOR', companyId: 'company-1' },
       } as never)
       mockPrisma.employee.findMany.mockResolvedValue([mockEmployee] as never)
+      mockPrisma.company.findUnique.mockResolvedValue({ slug: 'techcorp' } as never)
     })
 
     it('retourne un fichier CSV valide', async () => {
@@ -178,21 +187,23 @@ describe('exportEmployeesCsv', () => {
 
       expect(result.success).toBe(true)
       expect(result.data?.mimeType).toBe('text/csv;charset=utf-8')
-      expect(result.data?.filename).toMatch(/^employes-export-.*\.csv$/)
+      expect(result.data?.filename).toMatch(/^employes-techcorp-.*\.csv$/)
     })
 
     it('contient les en-têtes français', async () => {
       const result = await exportEmployeesCsv()
 
-      expect(result.data?.data).toContain('Prénom')
+      expect(result.data?.data).toContain('Équipe')
       expect(result.data?.data).toContain('Nom')
+      expect(result.data?.data).toContain('Prénom')
+      expect(result.data?.data).toContain('Rôle')
+      expect(result.data?.data).toContain('Poste')
+      expect(result.data?.data).toContain('Contrat')
+      expect(result.data?.data).toContain('H/sem')
       expect(result.data?.data).toContain('Email')
       expect(result.data?.data).toContain('Téléphone')
-      expect(result.data?.data).toContain('Poste')
-      expect(result.data?.data).toContain('Département')
-      expect(result.data?.data).toContain('Équipe')
-      expect(result.data?.data).toContain('Heures/semaine')
-      expect(result.data?.data).toContain('Actif')
+      expect(result.data?.data).toContain('Embauche')
+      expect(result.data?.data).toContain('Statut')
     })
 
     it('contient les données des employés', async () => {
@@ -210,10 +221,10 @@ describe('exportEmployeesCsv', () => {
       expect(result.data?.data).toContain('15/03/2023')
     })
 
-    it('formate les booléens en Oui/Non', async () => {
+    it('formate les booléens en Actif/Inactif', async () => {
       const result = await exportEmployeesCsv()
 
-      expect(result.data?.data).toContain('Oui')
+      expect(result.data?.data).toContain('Actif')
     })
 
     it('inclut le BOM UTF-8', async () => {
@@ -238,6 +249,7 @@ describe('exportEmployeesCsv', () => {
         user: { id: 'user-1', role: 'DIRECTOR', companyId: 'company-1' },
       } as never)
       mockPrisma.employee.findMany.mockResolvedValue([mockEmployee] as never)
+      mockPrisma.company.findUnique.mockResolvedValue({ slug: 'techcorp' } as never)
     })
 
     it('applique le filtre par équipe', async () => {
@@ -293,6 +305,7 @@ describe('exportEmployeesCsv', () => {
         user: { id: 'user-1', role: 'DIRECTOR', companyId: 'company-1' },
       } as never)
       mockPrisma.employee.findMany.mockResolvedValue([mockEmployee] as never)
+      mockPrisma.company.findUnique.mockResolvedValue({ slug: 'techcorp' } as never)
     })
 
     it('limite à 10000 résultats', async () => {
@@ -305,12 +318,12 @@ describe('exportEmployeesCsv', () => {
       )
     })
 
-    it('trie par nom puis prénom', async () => {
+    it('trie par équipe puis nom puis prénom', async () => {
       await exportEmployeesCsv()
 
       expect(mockPrisma.employee.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
-          orderBy: [{ lastName: 'asc' }, { firstName: 'asc' }],
+          orderBy: [{ team: { name: 'asc' } }, { lastName: 'asc' }, { firstName: 'asc' }],
         })
       )
     })

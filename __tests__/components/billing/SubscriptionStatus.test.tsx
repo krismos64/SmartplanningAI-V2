@@ -239,9 +239,9 @@ describe('SubscriptionStatus', () => {
       expect(screen.getByTestId('billing-period')).toBeInTheDocument()
     })
 
-    it('affiche le label du plan Per-Seat', () => {
+    it('affiche le titre Abonnement', () => {
       render(<SubscriptionStatus {...defaultProps} />)
-      expect(screen.getByText(/Per-Seat/)).toBeInTheDocument()
+      expect(screen.getByText('Abonnement')).toBeInTheDocument()
     })
   })
 })

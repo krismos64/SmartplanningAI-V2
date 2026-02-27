@@ -135,12 +135,9 @@ describe('BillingPageContent', () => {
   })
 
   describe('Action Gérer', () => {
-    it('appelle createBillingPortalAction et redirige', async () => {
-      const originalLocation = window.location
-      Object.defineProperty(window, 'location', {
-        writable: true,
-        value: { ...originalLocation, href: '' },
-      })
+    it('appelle createBillingPortalAction et ouvre dans un nouvel onglet', async () => {
+      const mockOpen = vi.fn()
+      vi.stubGlobal('open', mockOpen)
 
       mockCreateBillingPortalAction.mockResolvedValue({
         success: true,
@@ -155,15 +152,14 @@ describe('BillingPageContent', () => {
       })
 
       await waitFor(() => {
-        expect(window.location.href).toBe(
-          'https://billing.stripe.com/session/test'
+        expect(mockOpen).toHaveBeenCalledWith(
+          'https://billing.stripe.com/session/test',
+          '_blank',
+          'noopener,noreferrer'
         )
       })
 
-      Object.defineProperty(window, 'location', {
-        writable: true,
-        value: originalLocation,
-      })
+      vi.unstubAllGlobals()
     })
 
     it('affiche une erreur si l\'action échoue', async () => {

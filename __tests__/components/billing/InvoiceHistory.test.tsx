@@ -39,6 +39,7 @@ const mockPaymentSucceeded: SerializedPayment = {
   createdAt: '2026-02-01T09:00:00.000Z',
   stripeInvoiceId: 'in_test_abc123',
   paymentMethod: 'card',
+  invoiceUrl: 'https://invoice.stripe.com/i/acct_test/inv_test_abc123',
 }
 
 const mockPaymentFailed: SerializedPayment = {
@@ -50,6 +51,7 @@ const mockPaymentFailed: SerializedPayment = {
   createdAt: '2026-01-15T09:00:00.000Z',
   stripeInvoiceId: null,
   paymentMethod: 'card',
+  invoiceUrl: null,
 }
 
 const mockPaymentPending: SerializedPayment = {
@@ -61,6 +63,7 @@ const mockPaymentPending: SerializedPayment = {
   createdAt: '2026-02-05T09:00:00.000Z',
   stripeInvoiceId: null,
   paymentMethod: null,
+  invoiceUrl: null,
 }
 
 const mockPayments = [mockPaymentSucceeded, mockPaymentFailed, mockPaymentPending]
@@ -118,13 +121,13 @@ describe('InvoiceHistory', () => {
   })
 
   describe('Liens facture Stripe', () => {
-    it('affiche le lien "Voir" si stripeInvoiceId existe', () => {
+    it('affiche le lien "Voir" si invoiceUrl existe', () => {
       render(<InvoiceHistory {...defaultProps} />)
       const link = screen.getByTestId('invoice-link-pay_001')
       expect(link).toBeInTheDocument()
       expect(link).toHaveAttribute(
         'href',
-        'https://dashboard.stripe.com/invoices/in_test_abc123'
+        'https://invoice.stripe.com/i/acct_test/inv_test_abc123'
       )
       expect(link).toHaveAttribute('target', '_blank')
     })

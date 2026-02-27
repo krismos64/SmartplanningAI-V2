@@ -2,7 +2,7 @@
  * Tests unitaires pour DirectorStats
  *
  * Teste le composant de statistiques avec :
- * - Affichage des 6 StatCards
+ * - Affichage des 3 StatCards (KPIs simplifiés)
  * - Descriptions correctes
  * - Etat de chargement
  *
@@ -62,15 +62,12 @@ describe('DirectorStats', () => {
   // ==========================================================================
 
   describe('rendu des StatCards', () => {
-    it('devrait afficher les 6 titres de statistiques', () => {
+    it('devrait afficher les 3 titres de statistiques', () => {
       render(<DirectorStats stats={mockStats} />)
 
       expect(screen.getByText('Employes actifs')).toBeInTheDocument()
       expect(screen.getByText('Equipes')).toBeInTheDocument()
       expect(screen.getByText('Conges en attente')).toBeInTheDocument()
-      expect(screen.getByText('Heures planifiees')).toBeInTheDocument()
-      expect(screen.getByText('Taux de presence')).toBeInTheDocument()
-      expect(screen.getByText('Absences 7j')).toBeInTheDocument()
     })
 
     it('devrait afficher le nombre total d employes', () => {
@@ -91,10 +88,10 @@ describe('DirectorStats', () => {
       expect(screen.getByText('8')).toBeInTheDocument()
     })
 
-    it('devrait afficher le taux de presence avec unite', () => {
+    it('devrait afficher le nombre de conges en attente', () => {
       render(<DirectorStats stats={mockStats} />)
 
-      expect(screen.getByText('87%')).toBeInTheDocument()
+      expect(screen.getByText('8')).toBeInTheDocument()
     })
   })
 
@@ -129,10 +126,10 @@ describe('DirectorStats', () => {
       expect(screen.getByText('Aucune demande')).toBeInTheDocument()
     })
 
-    it('devrait afficher Moyenne entreprise pour taux presence', () => {
+    it('devrait afficher Departements actifs pour equipes', () => {
       render(<DirectorStats stats={mockStats} />)
 
-      expect(screen.getByText('Moyenne entreprise')).toBeInTheDocument()
+      expect(screen.getByText('Departements actifs')).toBeInTheDocument()
     })
   })
 
@@ -201,12 +198,12 @@ describe('DirectorStats', () => {
       expect(screen.getAllByText('0').length).toBeGreaterThanOrEqual(1)
     })
 
-    it('devrait gerer un taux de presence de 100%', () => {
-      const stats = { ...mockStats, averageAttendanceRate: 100 }
+    it('devrait gerer un grand nombre de conges en attente', () => {
+      const stats = { ...mockStats, pendingLeaveRequests: 99 }
 
       render(<DirectorStats stats={stats} />)
 
-      expect(screen.getByText('100%')).toBeInTheDocument()
+      expect(screen.getByText('99')).toBeInTheDocument()
     })
 
     it('devrait gerer un grand nombre d employes', () => {

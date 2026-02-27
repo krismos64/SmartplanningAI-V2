@@ -57,28 +57,28 @@ describe('DirectorQuickActions', () => {
       render(<DirectorQuickActions />)
 
       const link = screen.getByRole('link', { name: /Gerer les equipes/ })
-      expect(link).toHaveAttribute('href', '/teams')
+      expect(link).toHaveAttribute('href', '/app/director/teams')
     })
 
     it('devrait avoir le bon lien pour tous les employes', () => {
       render(<DirectorQuickActions />)
 
       const link = screen.getByRole('link', { name: /Tous les employes/ })
-      expect(link).toHaveAttribute('href', '/employees')
+      expect(link).toHaveAttribute('href', '/app/dashboard/employees')
     })
 
     it('devrait avoir le bon lien pour conges en attente', () => {
       render(<DirectorQuickActions />)
 
       const link = screen.getByRole('link', { name: /Conges en attente/ })
-      expect(link).toHaveAttribute('href', '/leaves/pending')
+      expect(link).toHaveAttribute('href', '/app/dashboard/leaves')
     })
 
     it('devrait avoir le bon lien pour parametres', () => {
       render(<DirectorQuickActions />)
 
       const link = screen.getByRole('link', { name: /Parametres/ })
-      expect(link).toHaveAttribute('href', '/settings/company')
+      expect(link).toHaveAttribute('href', '/app/settings/company')
     })
   })
 
