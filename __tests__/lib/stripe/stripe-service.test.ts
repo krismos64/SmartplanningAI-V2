@@ -444,6 +444,8 @@ describe('Stripe Service', () => {
       prismaMock.subscription.findFirst.mockResolvedValue({
         id: 'db-sub-1',
         companyId: 'company-1',
+        stripeSubscriptionId: 'sub_test',
+        currentPeriodEnd: new Date('2026-03-01'),
       } as never)
       mockStripe.subscriptions.cancel.mockResolvedValue({})
       prismaMock.subscription.update.mockResolvedValue({} as never)
@@ -469,6 +471,8 @@ describe('Stripe Service', () => {
       prismaMock.subscription.findFirst.mockResolvedValue({
         id: 'db-sub-1',
         companyId: 'company-1',
+        stripeSubscriptionId: 'sub_test',
+        currentPeriodEnd: new Date('2026-03-01'),
       } as never)
       mockStripe.subscriptions.update.mockResolvedValue({})
       prismaMock.subscription.update.mockResolvedValue({} as never)

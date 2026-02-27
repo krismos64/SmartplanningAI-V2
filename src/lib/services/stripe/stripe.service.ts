@@ -309,7 +309,12 @@ export async function cancelSubscription(
     // Récupérer la subscription en DB
     const dbSub = await prisma.subscription.findFirst({
       where: { stripeSubscriptionId: subscriptionId },
-      select: { id: true, companyId: true },
+      select: {
+        id: true,
+        companyId: true,
+        stripeSubscriptionId: true,
+        currentPeriodEnd: true,
+      },
     })
 
     if (!dbSub) {
@@ -339,12 +344,38 @@ export async function cancelSubscription(
       })
     }
 
-    // Fire-and-forget : notifier les SYSTEM_ADMIN (notification + email)
+    // Fire-and-forget : notifier les SYSTEM_ADMIN + email directeur
+    const endDate = dbSub.currentPeriodEnd
+      ? dbSub.currentPeriodEnd.toLocaleDateString('fr-FR', {
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric',
+        })
+      : new Date().toLocaleDateString('fr-FR', {
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric',
+        })
+
     getCompanyDirector(dbSub.companyId)
       .then((director) => {
         const companyName =
           director?.companyName ??
           `Entreprise #${dbSub.companyId.slice(0, 8)}`
+
+        // Email de confirmation au directeur (template pro avec logo)
+        if (director) {
+          sendSubscriptionCanceledEmail({
+            companyId: dbSub.companyId,
+            subscriptionId: dbSub.stripeSubscriptionId ?? subscriptionId,
+            recipientEmail: director.email,
+            firstName: director.firstName,
+            companyName: director.companyName,
+            endDate,
+          }).catch((err) =>
+            console.error('[CancelSub] Email director failed:', err)
+          )
+        }
 
         // Notification in-app admin
         import('@/lib/actions/notifications')
