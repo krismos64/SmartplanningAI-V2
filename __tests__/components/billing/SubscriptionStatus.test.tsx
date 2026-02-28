@@ -118,7 +118,7 @@ describe('SubscriptionStatus', () => {
           trialEndsAt={futureDate.toISOString()}
         />
       )
-      expect(screen.getByTestId('trial-alert')).toBeInTheDocument()
+      expect(screen.getByTestId('trial-subscribed-alert')).toBeInTheDocument()
       expect(screen.getByText(/jour/)).toBeInTheDocument()
     })
 
