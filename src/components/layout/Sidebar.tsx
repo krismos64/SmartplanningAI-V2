@@ -127,13 +127,6 @@ const menuItems: MenuItem[] = [
     roles: ['DIRECTOR'],
   },
   {
-    id: 'billing',
-    label: 'Facturation',
-    icon: CreditCard,
-    href: '/app/dashboard/billing',
-    roles: ['DIRECTOR'],
-  },
-  {
     id: 'schedules',
     label: 'Plannings',
     icon: Calendar,
@@ -160,6 +153,13 @@ const menuItems: MenuItem[] = [
     icon: AlertCircle,
     href: '/app/dashboard/incidents',
     roles: ['DIRECTOR', 'MANAGER', 'EMPLOYEE'],
+  },
+  {
+    id: 'billing',
+    label: 'Facturation',
+    icon: CreditCard,
+    href: '/app/dashboard/billing',
+    roles: ['DIRECTOR'],
   },
   {
     id: 'settings',
