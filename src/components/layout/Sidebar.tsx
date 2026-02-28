@@ -16,8 +16,6 @@ import {
   Activity,
   AlertCircle,
   BarChart3,
-  ChevronLeft,
-  ChevronRight,
 } from 'lucide-react'
 
 import {
@@ -28,15 +26,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  useSidebar,
 } from '@/components/ui/sidebar'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip'
-import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 
 type UserRole = 'SYSTEM_ADMIN' | 'DIRECTOR' | 'MANAGER' | 'EMPLOYEE'
@@ -198,9 +188,6 @@ const variantClasses: Record<SidebarVariant, string> = {
 
 export function Sidebar({ user, variant = 'neon' }: SidebarProps) {
   const pathname = usePathname()
-  const { state, toggleSidebar } = useSidebar()
-  const isCollapsed = state === 'collapsed'
-
   const filteredMenuItems = getMenuItemsByRole(user.role)
   const userInitials = user.name
     .split(' ')
@@ -215,38 +202,19 @@ export function Sidebar({ user, variant = 'neon' }: SidebarProps) {
     <SidebarPrimitive className={sidebarClassName}>
       {/* Header */}
       <SidebarHeader className="border-b border-white/[0.06] p-4">
-        <div className="flex items-center justify-between">
-          {!isCollapsed && (
-            <motion.div
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -10 }}
-              transition={{ duration: 0.2 }}
-              className="flex flex-col"
-            >
-              <span className="sidebar-neon-title text-lg">
-                {user.companyName || 'SmartPlanning'}
-              </span>
-              <span className="text-xs text-slate-400">
-                {getRoleLabel(user.role)}
-              </span>
-            </motion.div>
-          )}
-          {/* WCAG 2.5.5: 44px minimum touch target */}
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={toggleSidebar}
-            className={`h-11 min-h-[44px] w-11 min-w-[44px] touch-manipulation text-slate-400 hover:bg-white/[0.06] hover:text-white ${isCollapsed ? 'mx-auto' : ''}`}
-            data-testid="sidebar-toggle-button"
-          >
-            {isCollapsed ? (
-              <ChevronRight className="h-4 w-4" />
-            ) : (
-              <ChevronLeft className="h-4 w-4" />
-            )}
-          </Button>
-        </div>
+        <motion.div
+          initial={{ opacity: 0, x: -10 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.2 }}
+          className="flex flex-col"
+        >
+          <span className="sidebar-neon-title text-lg">
+            {user.companyName || 'SmartPlanning'}
+          </span>
+          <span className="text-xs text-slate-400">
+            {getRoleLabel(user.role)}
+          </span>
+        </motion.div>
       </SidebarHeader>
 
       {/* Content */}
@@ -257,7 +225,7 @@ export function Sidebar({ user, variant = 'neon' }: SidebarProps) {
             const isActive =
               pathname === item.href || pathname.startsWith(`${item.href}/`)
 
-            const menuButton = (
+            return (
               <SidebarMenuItem key={item.id}>
                 <SidebarMenuButton asChild isActive={isActive}>
                   <Link href={item.href}>
@@ -273,65 +241,44 @@ export function Sidebar({ user, variant = 'neon' }: SidebarProps) {
                       >
                         <Icon className="h-5 w-5" />
                       </motion.div>
-                      {!isCollapsed && (
-                        <motion.span
-                          className="text-sm font-medium"
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: index * 0.05 }}
-                        >
-                          {item.label}
-                        </motion.span>
-                      )}
+                      <motion.span
+                        className="text-sm font-medium"
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.05 }}
+                      >
+                        {item.label}
+                      </motion.span>
                     </div>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             )
-
-            // Show tooltip only when collapsed
-            if (isCollapsed) {
-              return (
-                <TooltipProvider key={item.id} delayDuration={0}>
-                  <Tooltip>
-                    <TooltipTrigger asChild>{menuButton}</TooltipTrigger>
-                    <TooltipContent side="right">{item.label}</TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              )
-            }
-
-            return menuButton
           })}
         </SidebarMenu>
       </SidebarContent>
 
       {/* Footer */}
       <SidebarFooter className="border-t border-white/[0.06] p-4">
-        <div
-          className={`flex items-center gap-3 ${isCollapsed ? 'justify-center' : ''}`}
-        >
+        <div className="flex items-center gap-3">
           <Avatar className="sp-avatar-neon h-8 w-8 rounded-full">
             <AvatarFallback className="bg-transparent text-xs text-blue-300">
               {userInitials}
             </AvatarFallback>
           </Avatar>
-          {!isCollapsed && (
-            <motion.div
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -10 }}
-              transition={{ duration: 0.2 }}
-              className="flex flex-col overflow-hidden"
-            >
-              <span className="truncate text-sm font-medium text-slate-200">
-                {user.name}
-              </span>
-              <span className="truncate text-xs text-slate-400">
-                {user.email}
-              </span>
-            </motion.div>
-          )}
+          <motion.div
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.2 }}
+            className="flex flex-col overflow-hidden"
+          >
+            <span className="truncate text-sm font-medium text-slate-200">
+              {user.name}
+            </span>
+            <span className="truncate text-xs text-slate-400">
+              {user.email}
+            </span>
+          </motion.div>
         </div>
       </SidebarFooter>
     </SidebarPrimitive>
