@@ -16,6 +16,7 @@ import { ArrowLeft, UserPlus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { EmployeeForm } from '@/components/admin/employees'
 import { getTeamsForSelect } from '@/lib/actions/employees'
+import { prisma } from '@/lib/prisma'
 
 export const metadata: Metadata = {
   title: 'Nouvel employe | SmartPlanning',
@@ -47,6 +48,38 @@ export default async function NewEmployeePage() {
     // Pour l'instant, rediriger vers la liste
     // Hors scope CDA — ajout select entreprise post-soutenance
     redirect('/app/dashboard/employees')
+  }
+
+  // Pour le DIRECTOR : récupérer les infos billing pour l'avertissement prorata
+  let billingInfo: {
+    employeeCount: number
+    monthlyAmount: number
+    hasActiveSubscription: boolean
+  } | undefined
+
+  if (role === 'DIRECTOR' && companyId) {
+    const [subscription, employeeCount] = await Promise.all([
+      prisma.subscription.findUnique({
+        where: { companyId },
+        select: { status: true, quantity: true, pricePerEmployee: true },
+      }),
+      prisma.employee.count({
+        where: { companyId, isActive: true },
+      }),
+    ])
+
+    const hasActiveSubscription =
+      !!subscription &&
+      ['ACTIVE', 'PAST_DUE'].includes(subscription.status)
+
+    if (hasActiveSubscription && subscription) {
+      billingInfo = {
+        employeeCount,
+        monthlyAmount:
+          (subscription.quantity * subscription.pricePerEmployee) / 100,
+        hasActiveSubscription: true,
+      }
+    }
   }
 
   return (
@@ -82,6 +115,7 @@ export default async function NewEmployeePage() {
           companyId={companyId}
           teams={teams}
           userRole={role as 'SYSTEM_ADMIN' | 'DIRECTOR' | 'MANAGER'}
+          billingInfo={billingInfo}
         />
       </div>
     </div>

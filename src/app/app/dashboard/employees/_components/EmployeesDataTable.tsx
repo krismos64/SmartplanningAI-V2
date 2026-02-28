@@ -22,6 +22,16 @@ import {
 import { Plus, Users, RefreshCw, Trash2 } from 'lucide-react'
 import Link from 'next/link'
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { useIsImpersonating } from '@/hooks'
 import { Button } from '@/components/ui/button'
 import {
@@ -79,6 +89,8 @@ export function EmployeesDataTable({ userRole }: EmployeesDataTableProps) {
   const [teams, setTeams] = useState<{ id: string; name: string }[]>([])
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false)
+  const [toggleEmployee, setToggleEmployee] =
+    useState<EmployeeWithCounts | null>(null)
 
   // Pagination TanStack
   const [pagination, setPagination] = useState<PaginationState>({
@@ -152,6 +164,12 @@ export function EmployeesDataTable({ userRole }: EmployeesDataTableProps) {
 
   const handleToggleStatus = useCallback(
     (employee: EmployeeWithCounts) => {
+      // DIRECTOR : dialog de confirmation avec mention prorata
+      if (userRole === 'DIRECTOR') {
+        setToggleEmployee(employee)
+        return
+      }
+      // Autres rôles : toggle direct
       void (async () => {
         try {
           await toggleEmployeeStatus(employee.id, !employee.isActive)
@@ -161,8 +179,22 @@ export function EmployeesDataTable({ userRole }: EmployeesDataTableProps) {
         }
       })()
     },
-    [fetchData]
+    [fetchData, userRole]
   )
+
+  const confirmToggleStatus = useCallback(() => {
+    if (!toggleEmployee) return
+    const emp = toggleEmployee
+    setToggleEmployee(null)
+    void (async () => {
+      try {
+        await toggleEmployeeStatus(emp.id, !emp.isActive)
+        await fetchData()
+      } catch (error) {
+        console.error('Erreur toggle status:', error)
+      }
+    })()
+  }, [toggleEmployee, fetchData])
 
   // MANAGER ne peut pas supprimer, seulement desactiver
   const canDelete = userRole !== 'MANAGER'
@@ -418,8 +450,60 @@ export function EmployeesDataTable({ userRole }: EmployeesDataTableProps) {
         employee={deleteEmployee}
         open={!!deleteEmployee}
         onOpenChange={(open) => !open && setDeleteEmployee(null)}
+        userRole={userRole}
         onSuccess={() => void fetchData()}
       />
+
+      {/* Dialog confirmation toggle status — DIRECTOR uniquement */}
+      <AlertDialog
+        open={!!toggleEmployee}
+        onOpenChange={(open) => !open && setToggleEmployee(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {toggleEmployee?.isActive
+                ? "Desactiver l'employe ?"
+                : "Reactiver l'employe ?"}
+            </AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-3 text-sm text-muted-foreground">
+                <p>
+                  {toggleEmployee?.isActive ? (
+                    <>
+                      <span className="font-semibold text-foreground">
+                        {toggleEmployee?.firstName} {toggleEmployee?.lastName}
+                      </span>{' '}
+                      ne sera plus inclus dans les plannings.
+                    </>
+                  ) : (
+                    <>
+                      <span className="font-semibold text-foreground">
+                        {toggleEmployee?.firstName} {toggleEmployee?.lastName}
+                      </span>{' '}
+                      sera de nouveau actif dans les plannings.
+                    </>
+                  )}
+                </p>
+                <div className="rounded-md bg-blue-500/10 p-3 text-sm text-blue-700 dark:text-blue-300">
+                  {toggleEmployee?.isActive
+                    ? 'La facturation sera ajustee au prorata \u2014 un credit sera applique sur votre prochaine facture.'
+                    : 'Cet employe sera facture 2,90 \u20ac/mois au prorata des jours restants ce mois-ci.'}
+                </div>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmToggleStatus}
+              data-testid="confirm-toggle-status-btn"
+            >
+              {toggleEmployee?.isActive ? 'Desactiver' : 'Reactiver'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Dialog suppression en masse */}
       <BulkDeleteDialog

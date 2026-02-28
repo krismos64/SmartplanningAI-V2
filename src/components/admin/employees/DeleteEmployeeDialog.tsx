@@ -38,6 +38,8 @@ interface DeleteEmployeeDialogProps {
   open: boolean
   /** Callback de fermeture */
   onOpenChange: (open: boolean) => void
+  /** Role de l'utilisateur connecte (pour afficher info prorata) */
+  userRole?: 'SYSTEM_ADMIN' | 'DIRECTOR' | 'MANAGER'
   /** Callback apres suppression reussie */
   onSuccess?: () => void
 }
@@ -50,6 +52,7 @@ export function DeleteEmployeeDialog({
   employee,
   open,
   onOpenChange,
+  userRole,
   onSuccess,
 }: DeleteEmployeeDialogProps) {
   const isImpersonating = useIsImpersonating()
@@ -125,6 +128,13 @@ export function DeleteEmployeeDialog({
               <p className="text-sm text-muted-foreground">
                 Cette action est irreversible.
               </p>
+
+              {userRole === 'DIRECTOR' && employee.isActive && (
+                <div className="rounded-md bg-blue-500/10 p-3 text-sm text-blue-700 dark:text-blue-300">
+                  La facturation sera ajustee au prorata &mdash; un credit
+                  sera applique sur votre prochaine facture.
+                </div>
+              )}
             </div>
           </AlertDialogDescription>
         </AlertDialogHeader>

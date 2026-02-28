@@ -11,7 +11,7 @@
 
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useRouter } from 'next/navigation'
@@ -24,8 +24,19 @@ import {
   Users,
   Calendar,
   Clock,
+  Info,
 } from 'lucide-react'
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import {
   Form,
@@ -70,6 +81,12 @@ interface EmployeeFormProps {
   teams?: TeamOption[]
   /** Role de l'utilisateur connecte */
   userRole?: 'SYSTEM_ADMIN' | 'DIRECTOR' | 'MANAGER'
+  /** Infos facturation pour avertissement prorata (DIRECTOR uniquement) */
+  billingInfo?: {
+    employeeCount: number
+    monthlyAmount: number
+    hasActiveSubscription: boolean
+  }
   /** Callback apres succes */
   onSuccess?: () => void
   /** Callback apres annulation */
@@ -109,12 +126,31 @@ export function EmployeeForm({
   companyId,
   teams = [],
   userRole = 'DIRECTOR',
+  billingInfo,
   onSuccess,
   onCancel,
 }: EmployeeFormProps) {
   const router = useRouter()
   const isImpersonating = useIsImpersonating()
   const isEditing = !!employee
+  const [showBillingConfirm, setShowBillingConfirm] = useState(false)
+  const [pendingData, setPendingData] = useState<EmployeeFormValues | null>(null)
+
+  // Calculs prorata pour le DIRECTOR
+  const PRICE_PER_EMPLOYEE = 2.9
+  const showBillingWarning =
+    !isEditing && billingInfo?.hasActiveSubscription && userRole === 'DIRECTOR'
+
+  const daysInMonth = new Date(
+    new Date().getFullYear(),
+    new Date().getMonth() + 1,
+    0
+  ).getDate()
+  const daysRemaining = daysInMonth - new Date().getDate()
+  const prorataEstimate = +(PRICE_PER_EMPLOYEE * (daysRemaining / daysInMonth)).toFixed(2)
+  const newMonthlyAmount = billingInfo
+    ? +(billingInfo.monthlyAmount + PRICE_PER_EMPLOYEE).toFixed(2)
+    : 0
 
   // Hook mutation pour create
   const createMutation = useCrudMutation(createEmployee, {
@@ -178,9 +214,8 @@ export function EmployeeForm({
     }
   }, [isEditing, userRole, teams, form])
 
-  // Soumission du formulaire
-  const onSubmit = (data: EmployeeFormValues) => {
-    // Nettoyer les champs vides
+  // Exécute la création/mise à jour avec les données nettoyées
+  const executeSubmit = (data: EmployeeFormValues) => {
     const cleanedData = {
       firstName: data.firstName,
       lastName: data.lastName,
@@ -200,6 +235,25 @@ export function EmployeeForm({
     }
   }
 
+  // Soumission du formulaire — avec confirmation billing pour le DIRECTOR
+  const onSubmit = (data: EmployeeFormValues) => {
+    if (showBillingWarning) {
+      setPendingData(data)
+      setShowBillingConfirm(true)
+    } else {
+      executeSubmit(data)
+    }
+  }
+
+  // Confirmation du dialog billing
+  const handleBillingConfirm = () => {
+    if (pendingData) {
+      executeSubmit(pendingData)
+      setPendingData(null)
+    }
+    setShowBillingConfirm(false)
+  }
+
   // Pour MANAGER: l'equipe est obligatoire
   const isTeamRequired = userRole === 'MANAGER'
 
@@ -209,6 +263,43 @@ export function EmployeeForm({
         onSubmit={(e) => void form.handleSubmit(onSubmit)(e)}
         className="space-y-8"
       >
+        {/* Bandeau info facturation — DIRECTOR uniquement en création */}
+        {showBillingWarning && (
+          <div
+            className="flex gap-3 rounded-lg border border-blue-500/30 bg-blue-500/10 p-4"
+            role="status"
+            data-testid="billing-info-banner"
+          >
+            <Info className="mt-0.5 h-5 w-5 shrink-0 text-blue-600 dark:text-blue-400" />
+            <div className="text-sm">
+              <p className="font-medium text-blue-700 dark:text-blue-300">
+                Impact facturation
+              </p>
+              <p className="mt-1 text-blue-600/90 dark:text-blue-400/90">
+                Chaque employe actif coute{' '}
+                <strong>2,90&nbsp;&euro;/mois</strong>.
+                L&apos;ajout sera facture au prorata des jours restants
+                ce mois-ci (environ{' '}
+                <strong>
+                  {prorataEstimate.toFixed(2).replace('.', ',')}&nbsp;&euro;
+                </strong>
+                ).
+              </p>
+              <p className="mt-1 text-blue-600/80 dark:text-blue-400/80">
+                Votre facture mensuelle passera de{' '}
+                <strong>
+                  {billingInfo!.monthlyAmount.toFixed(2).replace('.', ',')}&nbsp;&euro;
+                </strong>{' '}
+                a{' '}
+                <strong>
+                  {newMonthlyAmount.toFixed(2).replace('.', ',')}&nbsp;&euro;
+                </strong>{' '}
+                ({billingInfo!.employeeCount + 1} employes).
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Informations personnelles */}
         <Card>
           <CardHeader>
@@ -478,6 +569,55 @@ export function EmployeeForm({
           </Button>
         </div>
       </form>
+
+      {/* Dialog de confirmation facturation — DIRECTOR uniquement */}
+      {showBillingWarning && (
+        <AlertDialog open={showBillingConfirm} onOpenChange={setShowBillingConfirm}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Confirmer la creation</AlertDialogTitle>
+              <AlertDialogDescription asChild>
+                <div className="space-y-3 text-sm text-muted-foreground">
+                  <p>
+                    Cet employe sera facture{' '}
+                    <span className="font-semibold text-foreground">
+                      2,90&nbsp;&euro;/mois
+                    </span>{' '}
+                    sur l&apos;abonnement de votre entreprise.
+                  </p>
+                  <div className="rounded-md bg-muted p-3">
+                    <p>
+                      Prorata ce mois :{' '}
+                      <span className="font-semibold">
+                        ~{prorataEstimate.toFixed(2).replace('.', ',')}&nbsp;&euro;
+                      </span>{' '}
+                      ({daysRemaining} jour{daysRemaining > 1 ? 's' : ''} restant
+                      {daysRemaining > 1 ? 's' : ''})
+                    </p>
+                    <p className="mt-1">
+                      Nouvelle facture mensuelle :{' '}
+                      <span className="font-semibold">
+                        {newMonthlyAmount.toFixed(2).replace('.', ',')}&nbsp;&euro;
+                      </span>{' '}
+                      ({billingInfo!.employeeCount + 1} employes)
+                    </p>
+                  </div>
+                </div>
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={isPending}>Annuler</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleBillingConfirm}
+                disabled={isPending}
+                data-testid="confirm-create-employee-btn"
+              >
+                {isPending ? 'Creation...' : 'Confirmer la creation'}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      )}
     </Form>
   )
 }
