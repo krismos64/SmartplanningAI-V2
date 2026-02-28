@@ -32,16 +32,17 @@ const icons: Record<IncidentNoteVisibility, typeof ShieldAlert> = {
 }
 
 const colorClasses: Record<IncidentNoteVisibility, string> = {
-  DIRECTOR_ONLY: 'border-red-200 bg-red-50 data-[state=checked]:border-red-500',
+  DIRECTOR_ONLY:
+    'border-red-200 bg-red-50 data-[state=checked]:border-red-500 dark:border-red-800 dark:bg-red-950/40 dark:data-[state=checked]:border-red-500',
   MANAGER_DIRECTOR:
-    'border-amber-200 bg-amber-50 data-[state=checked]:border-amber-500',
-  ALL: 'border-green-200 bg-green-50 data-[state=checked]:border-green-500',
+    'border-amber-200 bg-amber-50 data-[state=checked]:border-amber-500 dark:border-amber-800 dark:bg-amber-950/40 dark:data-[state=checked]:border-amber-500',
+  ALL: 'border-green-200 bg-green-50 data-[state=checked]:border-green-500 dark:border-green-800 dark:bg-green-950/40 dark:data-[state=checked]:border-green-500',
 }
 
 const iconColors: Record<IncidentNoteVisibility, string> = {
-  DIRECTOR_ONLY: 'text-red-600',
-  MANAGER_DIRECTOR: 'text-amber-600',
-  ALL: 'text-green-600',
+  DIRECTOR_ONLY: 'text-red-600 dark:text-red-400',
+  MANAGER_DIRECTOR: 'text-amber-600 dark:text-amber-400',
+  ALL: 'text-green-600 dark:text-green-400',
 }
 
 export function VisibilityRadioGroup({

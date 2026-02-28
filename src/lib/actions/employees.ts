@@ -1076,11 +1076,7 @@ export async function getEmployeesForSelect(): Promise<
         break
 
       case 'MANAGER':
-        where.teams = {
-          some: {
-            teamId: { in: user.managedTeamIds },
-          },
-        }
+        where.teamId = { in: user.managedTeamIds }
         break
     }
 
