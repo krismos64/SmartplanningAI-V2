@@ -104,14 +104,18 @@ export class CompanySettingsPage {
   async waitForPageLoad() {
     // Attendre que le loading disparaisse si présent
     await expect(this.loadingState).not.toBeVisible({ timeout: 15000 }).catch(() => {})
-    // Use .first() to avoid strict mode violation when DashboardLayout Suspense causes brief DOM duplication
+    // Attendre que le composant soit visible
     await expect(this.companySettingsPage.first()).toBeVisible({ timeout: 15000 })
+    // Attendre que le DOM se stabilise (DashboardLayout Suspense peut dupliquer
+    // brievement le contenu, causant des strict mode violations sur les locators)
+    await expect(this.companySettingsPage).toHaveCount(1, { timeout: 10000 })
   }
 
   async waitForLoadingComplete() {
     // Wait for loading state to disappear if present
     await expect(this.loadingState).not.toBeVisible({ timeout: 10000 })
     await expect(this.companySettingsPage.first()).toBeVisible()
+    await expect(this.companySettingsPage).toHaveCount(1, { timeout: 10000 })
   }
 
   async goBack() {

@@ -154,29 +154,39 @@ export class ImpersonationPage {
       name: 'authjs.csrf-token',
     })
 
-    // 4. Naviguer vers /login avant loginAs pour eviter les redirections
-    // middleware en cascade (CI lent: la page peut rester sur un dashboard
-    // invalide apres clearCookies, provoquant un timeout sur loginAs)
-    // Retry navigation car clearCookies peut provoquer net::ERR_ABORTED en CI
+    // 4. Naviguer vers /login avec retry robuste
+    // Apres clearCookies, le middleware peut rediriger en boucle ou la page
+    // peut mettre longtemps a s'hydrater en CI nightly.
+    // On retry la navigation complete (goto + waitFor placeholder) jusqu'a
+    // ce que le formulaire de login soit visible.
+    const emailPlaceholder = this.page.getByPlaceholder('vous@entreprise.com')
     for (let attempt = 0; attempt < 3; attempt++) {
       try {
         await this.page.goto('/login', {
           waitUntil: 'domcontentloaded',
           timeout: 30000,
         })
+        await emailPlaceholder.waitFor({ state: 'visible', timeout: 20000 })
         break
       } catch {
-        if (attempt === 2) throw new Error('Failed to navigate to /login after 3 attempts')
-        await this.page.waitForTimeout(2000)
+        if (attempt === 2) {
+          // Dernier recours: recharger completement le contexte browser
+          await this.page.goto('about:blank')
+          await this.page.waitForTimeout(1000)
+          await this.page.goto('/login', {
+            waitUntil: 'domcontentloaded',
+            timeout: 30000,
+          })
+          await emailPlaceholder.waitFor({ state: 'visible', timeout: 30000 })
+        } else {
+          await this.page.waitForTimeout(3000)
+        }
       }
     }
 
-    // Attendre que le formulaire de login soit pret (plus fiable que networkidle)
-    await this.page
-      .getByPlaceholder('vous@entreprise.com')
-      .waitFor({ state: 'visible', timeout: 20000 })
-
     // 5. Re-login admin pour obtenir un JWT SYSTEM_ADMIN propre
+    // loginAs fait goto('/login') en interne, mais on est deja sur /login
+    // avec le formulaire visible, donc le goto interne sera un no-op rapide
     await loginAs(this.page, TEST_USERS.SYSTEM_ADMIN)
 
     // 6. Naviguer vers /app/admin/companies

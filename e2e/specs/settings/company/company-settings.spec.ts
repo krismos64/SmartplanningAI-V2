@@ -179,20 +179,28 @@ test.describe('Company Settings Page', () => {
       await companySettings.goto()
       await companySettings.waitForPageLoad()
 
-      // First save Mon-Sat so the saved state differs from Mon-Fri
-      await companySettings.selectPresetMonSat()
-      await directorPage.waitForTimeout(300)
-      await companySettings.clickSave()
-      await companySettings.expectSuccessToast()
+      // S'assurer que l'etat sauvegarde est Mon-Sat pour que Mon-Fri le rende dirty
+      const saturdayAlreadyChecked = await companySettings.getDayCheckbox('SATURDAY').isChecked()
+      if (!saturdayAlreadyChecked) {
+        // L'etat sauvegarde n'est pas Mon-Sat, on le force
+        await companySettings.selectPresetMonSat()
+        await expect(companySettings.getDayCheckbox('SATURDAY')).toBeChecked({ timeout: 5000 })
+        // Verifier que le save button est enabled avant de cliquer
+        await companySettings.expectSaveButtonEnabled()
+        await companySettings.clickSave()
+        await companySettings.expectSuccessToast()
+        await expect(directorPage.locator('[data-sonner-toast]').first()).not.toBeVisible({ timeout: 10000 }).catch(() => {})
+        await directorPage.reload()
+        await directorPage.waitForLoadState('domcontentloaded')
+        await companySettings.waitForPageLoad()
+      }
 
-      // Reload to ensure saved state is Mon-Sat
-      await directorPage.reload()
-      await directorPage.waitForLoadState('domcontentloaded')
-      await companySettings.waitForPageLoad()
+      // L'etat sauvegarde est Mon-Sat, verifier
+      await expect(companySettings.getDayCheckbox('SATURDAY')).toBeChecked({ timeout: 5000 })
 
-      // Now select Mon-Fri which will differ from saved Mon-Sat
+      // Selectionner Mon-Fri (differe de l'etat sauvegarde Mon-Sat)
       await companySettings.selectPresetMonFri()
-      await directorPage.waitForTimeout(300)
+      await expect(companySettings.getDayCheckbox('SATURDAY')).not.toBeChecked({ timeout: 5000 })
 
       await companySettings.expectWorkingDays([
         'MONDAY',
@@ -215,8 +223,23 @@ test.describe('Company Settings Page', () => {
       await companySettings.goto()
       await companySettings.waitForPageLoad()
 
+      // S'assurer que l'etat initial est Mon-Fri (sauvegarder si necessaire)
+      const saturdayChecked = await companySettings.getDayCheckbox('SATURDAY').isChecked()
+      if (saturdayChecked) {
+        // L'etat sauvegarde est deja Mon-Sat, sauvegarder Mon-Fri d'abord
+        await companySettings.selectPresetMonFri()
+        await expect(companySettings.getDayCheckbox('SATURDAY')).not.toBeChecked({ timeout: 5000 })
+        await companySettings.clickSave()
+        await companySettings.expectSuccessToast()
+        await expect(directorPage.locator('[data-sonner-toast]').first()).not.toBeVisible({ timeout: 10000 }).catch(() => {})
+        await directorPage.reload()
+        await directorPage.waitForLoadState('domcontentloaded')
+        await companySettings.waitForPageLoad()
+      }
+
       await companySettings.selectPresetMonSat()
-      await directorPage.waitForTimeout(300)
+      // Attendre que SATURDAY soit cochee (preuve que le preset a ete applique)
+      await expect(companySettings.getDayCheckbox('SATURDAY')).toBeChecked({ timeout: 5000 })
 
       await companySettings.expectWorkingDays([
         'MONDAY',
