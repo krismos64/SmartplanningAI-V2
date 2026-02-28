@@ -38,6 +38,7 @@ import type {
   BillingData,
 } from '@/types/stripe'
 import { assertNotImpersonating } from '@/lib/impersonation'
+import { stripe } from '@/lib/stripe'
 
 // ============================================================================
 // Constantes
@@ -282,7 +283,7 @@ export async function cancelSubscriptionAction(
 /**
  * Récupère les données de facturation pour le dashboard billing.
  *
- * Retourne la subscription, les 5 derniers paiements, le nombre
+ * Retourne la subscription, les 20 derniers paiements, le nombre
  * d'employés actifs et le montant mensuel calculé.
  */
 export async function getBillingDataAction(): Promise<
@@ -306,7 +307,7 @@ export async function getBillingDataAction(): Promise<
       prisma.payment.findMany({
         where: { companyId: user.companyId },
         orderBy: { createdAt: 'desc' },
-        take: 5,
+        take: 20,
       }),
       prisma.employee.count({
         where: { companyId: user.companyId, isActive: true },
@@ -317,7 +318,31 @@ export async function getBillingDataAction(): Promise<
       }),
     ])
 
-    // 3. Formater et retourner
+    // 3. Récupérer le moyen de paiement par défaut via Stripe API
+    let paymentMethodInfo: BillingData['paymentMethod'] = null
+    if (subscription?.stripeCustomerId) {
+      try {
+        const customer = await stripe.customers.retrieve(
+          subscription.stripeCustomerId,
+          { expand: ['invoice_settings.default_payment_method'] }
+        )
+        if (!customer.deleted) {
+          const pm = customer.invoice_settings?.default_payment_method
+          if (pm && typeof pm === 'object' && 'card' in pm && pm.card) {
+            paymentMethodInfo = {
+              brand: pm.card.brand ?? 'card',
+              last4: pm.card.last4 ?? '****',
+              expMonth: pm.card.exp_month,
+              expYear: pm.card.exp_year,
+            }
+          }
+        }
+      } catch {
+        // Non-bloquant : on continue sans le payment method
+      }
+    }
+
+    // 4. Formater et retourner
     return {
       success: true,
       data: {
@@ -355,6 +380,7 @@ export async function getBillingDataAction(): Promise<
           ? (subscription.quantity * subscription.pricePerEmployee) / 100
           : 0,
         trialEndsAt: company?.trialEndsAt ?? null,
+        paymentMethod: paymentMethodInfo,
       },
     }
   } catch (error) {

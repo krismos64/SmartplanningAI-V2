@@ -89,6 +89,7 @@ function serializeBillingData(data: BillingData): SerializedBillingData {
     employeeCount: data.employeeCount,
     monthlyAmount: data.monthlyAmount,
     trialEndsAt: data.trialEndsAt?.toISOString() ?? null,
+    paymentMethod: data.paymentMethod,
   }
 }
 

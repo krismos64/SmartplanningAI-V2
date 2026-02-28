@@ -43,6 +43,12 @@ export interface SerializedBillingData {
   employeeCount: number
   monthlyAmount: number
   trialEndsAt: string | null
+  paymentMethod: {
+    brand: string
+    last4: string
+    expMonth: number
+    expYear: number
+  } | null
 }
 
 export interface BillingPageContentProps {
@@ -231,6 +237,7 @@ export function BillingPageContent({
           subscription={billingData.subscription}
           trialEndsAt={billingData.trialEndsAt}
           monthlyAmount={billingData.monthlyAmount}
+          paymentMethod={billingData.paymentMethod}
           onSubscribe={() => void handleSubscribe()}
           isSubscribeLoading={isSubscribeLoading}
           onManageSubscription={() => void handleManageSubscription()}
@@ -257,15 +264,62 @@ export function BillingPageContent({
         </div>
       )}
 
+      {/* FAQ Facturation */}
+      <div className="mt-6" data-testid="billing-faq">
+        <h2 className="mb-4 text-lg font-semibold">Questions fréquentes</h2>
+        <div className="grid gap-3 md:grid-cols-2">
+          <div className="rounded-lg border bg-card p-4">
+            <h3 className="mb-1 text-sm font-medium">Comment fonctionne le renouvellement ?</h3>
+            <p className="text-xs text-muted-foreground">
+              Votre abonnement est renouvelé automatiquement chaque mois.
+              Vous pouvez annuler à tout moment depuis cette page — l&apos;accès
+              reste actif jusqu&apos;à la fin de la période en cours.
+            </p>
+          </div>
+          <div className="rounded-lg border bg-card p-4">
+            <h3 className="mb-1 text-sm font-medium">Qu&apos;est-ce que le prorata ?</h3>
+            <p className="text-xs text-muted-foreground">
+              Quand vous ajoutez ou retirez un employé en cours de mois,
+              le montant est recalculé automatiquement au prorata des jours
+              restants. Aucune action de votre part.
+            </p>
+          </div>
+          <div className="rounded-lg border bg-card p-4">
+            <h3 className="mb-1 text-sm font-medium">Comment annuler mon abonnement ?</h3>
+            <p className="text-xs text-muted-foreground">
+              Cliquez sur &quot;Annuler&quot; ci-dessus. Votre accès reste actif
+              jusqu&apos;à la fin du mois payé. Vos données sont conservées 3 ans
+              et vous pouvez vous réabonner à tout moment.
+            </p>
+          </div>
+          <div className="rounded-lg border bg-card p-4">
+            <h3 className="mb-1 text-sm font-medium">Quels moyens de paiement acceptez-vous ?</h3>
+            <p className="text-xs text-muted-foreground">
+              Carte bancaire (Visa, Mastercard, American Express) et prélèvement
+              SEPA. Gérez votre moyen de paiement via &quot;Gérer mon abonnement&quot;.
+            </p>
+          </div>
+        </div>
+      </div>
+
       {/* Dialog de confirmation d'annulation */}
       <AlertDialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Annuler l&apos;abonnement ?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Votre abonnement restera actif jusqu&apos;à la fin de la période
-              de facturation en cours. Après cette date, vous perdrez
-              l&apos;accès aux fonctionnalités premium.
+            <AlertDialogDescription asChild>
+              <div className="space-y-2 text-sm text-muted-foreground">
+                <p>
+                  Votre abonnement restera actif jusqu&apos;à la fin de la période
+                  de facturation en cours. Après cette date, vous perdrez
+                  l&apos;accès aux fonctionnalités premium.
+                </p>
+                <p>
+                  Vos données seront conservées 3 ans conformément au RGPD,
+                  puis supprimées. Vous pouvez vous réabonner à tout moment
+                  pour retrouver l&apos;accès à votre espace.
+                </p>
+              </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

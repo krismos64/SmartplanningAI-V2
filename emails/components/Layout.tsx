@@ -28,6 +28,8 @@ export interface LayoutProps {
   showHeader?: boolean
   /** Afficher le footer (défaut: true) */
   showFooter?: boolean
+  /** Afficher le lien de désinscription dans le footer */
+  showUnsubscribe?: boolean
 }
 
 /**
@@ -45,6 +47,7 @@ export function Layout({
   children,
   showHeader = true,
   showFooter = true,
+  showUnsubscribe = false,
 }: LayoutProps) {
   return (
     <Html lang="fr">
@@ -101,7 +104,7 @@ export function Layout({
                     </tbody>
                   </table>
 
-                  {showFooter && <Footer />}
+                  {showFooter && <Footer showUnsubscribe={showUnsubscribe} />}
                 </Container>
               </td>
             </tr>

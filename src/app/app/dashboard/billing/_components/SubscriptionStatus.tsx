@@ -58,6 +58,13 @@ export interface SubscriptionStatusProps {
   trialEndsAt: string | null
   /** Montant mensuel calculé en euros */
   monthlyAmount: number
+  /** Moyen de paiement par défaut (depuis Stripe Customer) */
+  paymentMethod: {
+    brand: string
+    last4: string
+    expMonth: number
+    expYear: number
+  } | null
   /** Callback pour créer un checkout Stripe (nouvel abonnement) */
   onSubscribe: () => void
   /** État de chargement du bouton "S'abonner" */
@@ -122,6 +129,19 @@ const STATUS_CONFIG: Record<
 // HELPERS
 // =============================================================================
 
+function formatCardBrand(brand: string): string {
+  const brands: Record<string, string> = {
+    visa: 'Visa',
+    mastercard: 'Mastercard',
+    amex: 'American Express',
+    discover: 'Discover',
+    jcb: 'JCB',
+    diners: 'Diners Club',
+    unionpay: 'UnionPay',
+  }
+  return brands[brand.toLowerCase()] ?? brand.charAt(0).toUpperCase() + brand.slice(1)
+}
+
 function formatDate(isoString: string | null): string {
   if (!isoString) return '—'
   return new Intl.DateTimeFormat('fr-FR', {
@@ -155,6 +175,7 @@ export function SubscriptionStatus({
   subscription,
   trialEndsAt,
   monthlyAmount,
+  paymentMethod = null,
   onSubscribe,
   isSubscribeLoading = false,
   onManageSubscription,
@@ -204,7 +225,8 @@ export function SubscriptionStatus({
                   </li>
                 </ul>
                 <p className="mt-3 text-xs text-emerald-600/80 dark:text-emerald-400/70">
-                  Fin de l&apos;essai : {formatDate(trialEndsAt)}
+                  Fin de l&apos;essai : {formatDate(trialEndsAt)}.
+                  En cas de souscription, l&apos;abonnement sera renouvelé automatiquement chaque mois sauf annulation.
                 </p>
               </div>
               <div className="flex justify-center">
@@ -283,6 +305,7 @@ export function SubscriptionStatus({
                   <strong>{formatCurrency(monthlyAmount)}</strong> sera prélevé après
                   le {formatDate(trialEndsAt)}.
                   Aucun paiement avant cette date.
+                  L&apos;abonnement sera ensuite renouvelé automatiquement chaque mois sauf annulation.
                 </p>
               </div>
             </div>
@@ -370,6 +393,23 @@ export function SubscriptionStatus({
           >
             Annulé le {formatDate(subscription.canceledAt)}
           </p>
+        )}
+
+        {/* Moyen de paiement */}
+        {paymentMethod && (
+          <div
+            className="flex items-center gap-2 text-sm text-muted-foreground"
+            data-testid="payment-method-info"
+          >
+            <CreditCard className="h-4 w-4" aria-hidden="true" />
+            <span>
+              {formatCardBrand(paymentMethod.brand)} se terminant par{' '}
+              <strong>{paymentMethod.last4}</strong>
+              <span className="ml-1 text-xs">
+                (exp. {String(paymentMethod.expMonth).padStart(2, '0')}/{paymentMethod.expYear})
+              </span>
+            </span>
+          </div>
         )}
       </CardContent>
 

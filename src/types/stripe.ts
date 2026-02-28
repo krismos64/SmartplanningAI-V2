@@ -95,4 +95,11 @@ export interface BillingData {
   employeeCount: number
   monthlyAmount: number
   trialEndsAt: Date | null
+  /** Moyen de paiement par défaut (depuis Stripe Customer) */
+  paymentMethod: {
+    brand: string
+    last4: string
+    expMonth: number
+    expYear: number
+  } | null
 }

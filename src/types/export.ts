@@ -275,6 +275,52 @@ export interface ExportIncidentNote {
 }
 
 // ============================================================================
+// FACTURATION (DIRECTOR uniquement)
+// ============================================================================
+
+/**
+ * Abonnement exporté
+ */
+export interface ExportSubscription {
+  /** Plan d'abonnement */
+  plan: string
+  /** Statut */
+  status: string
+  /** Nombre de sièges */
+  quantity: number
+  /** Prix par employé (centimes) */
+  pricePerEmployee: number
+  /** Début de la période en cours */
+  currentPeriodStart: string | null
+  /** Fin de la période en cours */
+  currentPeriodEnd: string | null
+  /** Annulation programmée */
+  cancelAtPeriodEnd: boolean
+  /** Date d'annulation */
+  canceledAt: string | null
+  /** Date de création */
+  createdAt: string
+}
+
+/**
+ * Paiement exporté
+ */
+export interface ExportPayment {
+  /** Montant (centimes) */
+  amount: number
+  /** Devise */
+  currency: string
+  /** Statut */
+  status: string
+  /** Date de paiement */
+  paidAt: string | null
+  /** Date de création */
+  createdAt: string
+  /** Moyen de paiement */
+  paymentMethod: string | null
+}
+
+// ============================================================================
 // EXPORT COMPLET
 // ============================================================================
 
@@ -303,4 +349,8 @@ export interface UserDataExport {
   notifications: ExportNotification[]
   /** Notes d'incident rédigées (en tant qu'auteur) */
   incidentNotesAuthored: ExportIncidentNote[]
+  /** Abonnement (DIRECTOR uniquement) */
+  subscription?: ExportSubscription | null
+  /** Historique des paiements (DIRECTOR uniquement) */
+  payments?: ExportPayment[]
 }

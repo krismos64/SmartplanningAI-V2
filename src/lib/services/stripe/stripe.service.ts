@@ -845,6 +845,10 @@ async function handleInvoicePaid(
 
   const amountPaid = invoice.amount_paid ?? 0
 
+  // Stocker l'URL de facture Stripe dans les metadata pour l'affichage dans InvoiceHistory
+  const invoiceUrl = invoice.hosted_invoice_url ?? null
+  const paymentMetadata = invoiceUrl ? { invoiceUrl } : undefined
+
   await prisma.payment.upsert({
     where: { stripePaymentId: paymentIntentId },
     create: {
@@ -856,11 +860,13 @@ async function handleInvoicePaid(
       currency: (invoice.currency ?? 'eur').toUpperCase(),
       status: 'SUCCEEDED',
       paidAt: new Date(),
+      metadata: paymentMetadata,
     },
     update: {
       status: 'SUCCEEDED',
       paidAt: new Date(),
       amount: amountPaid,
+      metadata: paymentMetadata,
     },
   })
 
@@ -869,6 +875,15 @@ async function handleInvoicePaid(
     getCompanyDirector(dbSub.companyId)
       .then((director) => {
         if (!director) return
+        // Calculer la prochaine date de facturation à partir de period_end
+        const nextBillingDate = invoice.period_end
+          ? new Intl.DateTimeFormat('fr-FR', {
+              day: 'numeric',
+              month: 'long',
+              year: 'numeric',
+            }).format(new Date(invoice.period_end * 1000))
+          : undefined
+
         sendPaymentConfirmedEmail({
           companyId: dbSub.companyId,
           subscriptionId: subscriptionId,
@@ -879,6 +894,7 @@ async function handleInvoicePaid(
           employeeCount:
             Math.round(amountPaid / STRIPE_PRICING.UNIT_AMOUNT_CENTS) || 1,
           invoiceUrl: invoice.hosted_invoice_url ?? undefined,
+          nextBillingDate,
         }).catch((err) =>
           console.error('[Webhook] Email PaymentConfirmed failed:', err)
         )

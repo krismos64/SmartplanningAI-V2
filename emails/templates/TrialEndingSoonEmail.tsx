@@ -48,7 +48,7 @@ export function TrialEndingSoonEmail({
   const isLastDay = daysRemaining <= 1
 
   return (
-    <Layout preview={getTrialSubject(daysRemaining)}>
+    <Layout preview={getTrialSubject(daysRemaining)} showUnsubscribe>
       <Text style={presetStyles.heading1}>
         {isLastDay
           ? 'Dernier jour d\u2019essai !'

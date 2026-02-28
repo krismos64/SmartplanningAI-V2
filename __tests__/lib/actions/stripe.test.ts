@@ -41,6 +41,16 @@ vi.mock('next/cache', () => ({
   revalidatePath: mockRevalidatePath,
 }))
 
+const mockStripeCustomersRetrieve = vi.hoisted(() => vi.fn())
+
+vi.mock('@/lib/stripe', () => ({
+  stripe: {
+    customers: {
+      retrieve: mockStripeCustomersRetrieve,
+    },
+  },
+}))
+
 // Import après les mocks
 import {
   createCheckoutAction,
@@ -127,6 +137,12 @@ const mockPayment = {
 
 beforeEach(() => {
   vi.clearAllMocks()
+  // Par défaut, le retrieve customer retourne un customer sans payment method
+  mockStripeCustomersRetrieve.mockResolvedValue({
+    id: 'cus_test123',
+    deleted: false,
+    invoice_settings: { default_payment_method: null },
+  })
 })
 
 // ============================================================================

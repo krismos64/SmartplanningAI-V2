@@ -766,6 +766,48 @@ export async function exportUserData(): Promise<
       }
     }
 
+    // 3b. Données billing (DIRECTOR uniquement)
+    let subscription = null
+    let payments: { amount: number; currency: string; status: string; paidAt: Date | null; createdAt: Date; paymentMethod: string | null }[] = []
+    if (user.role === 'DIRECTOR') {
+      const userWithCompany = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { companyId: true },
+      })
+      if (userWithCompany?.companyId) {
+        const [sub, pay] = await Promise.all([
+          prisma.subscription.findUnique({
+            where: { companyId: userWithCompany.companyId },
+            select: {
+              plan: true,
+              status: true,
+              quantity: true,
+              pricePerEmployee: true,
+              currentPeriodStart: true,
+              currentPeriodEnd: true,
+              cancelAtPeriodEnd: true,
+              canceledAt: true,
+              createdAt: true,
+            },
+          }),
+          prisma.payment.findMany({
+            where: { companyId: userWithCompany.companyId },
+            select: {
+              amount: true,
+              currency: true,
+              status: true,
+              paidAt: true,
+              createdAt: true,
+              paymentMethod: true,
+            },
+            orderBy: { createdAt: 'desc' },
+          }),
+        ])
+        subscription = sub
+        payments = pay
+      }
+    }
+
     // 4. Formater les données pour l'export
     const exportData: UserDataExport = {
       exportInfo: {
@@ -783,6 +825,29 @@ export async function exportUserData(): Promise<
       personalTasks: personalTasks.map(formatPersonalTask),
       notifications: notifications.map(formatNotification),
       incidentNotesAuthored: incidentNotesAuthored.map(formatIncidentNote),
+      ...(user.role === 'DIRECTOR' && {
+        subscription: subscription
+          ? {
+              plan: subscription.plan,
+              status: subscription.status,
+              quantity: subscription.quantity,
+              pricePerEmployee: subscription.pricePerEmployee,
+              currentPeriodStart: subscription.currentPeriodStart?.toISOString() ?? null,
+              currentPeriodEnd: subscription.currentPeriodEnd?.toISOString() ?? null,
+              cancelAtPeriodEnd: subscription.cancelAtPeriodEnd,
+              canceledAt: subscription.canceledAt?.toISOString() ?? null,
+              createdAt: subscription.createdAt.toISOString(),
+            }
+          : null,
+        payments: payments.map((p) => ({
+          amount: p.amount,
+          currency: p.currency,
+          status: p.status,
+          paidAt: p.paidAt?.toISOString() ?? null,
+          createdAt: p.createdAt.toISOString(),
+          paymentMethod: p.paymentMethod ?? null,
+        })),
+      }),
     }
 
     // 5. Générer le JSON avec indentation pour lisibilité

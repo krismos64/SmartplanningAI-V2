@@ -49,7 +49,7 @@ export interface SerializedPayment {
 }
 
 export interface InvoiceHistoryProps {
-  /** Liste des paiements (max 5, triés par date desc) */
+  /** Liste des paiements (max 20, triés par date desc) */
   payments: SerializedPayment[]
   /** Callback pour ouvrir le portail Stripe */
   onOpenPortal: () => void
@@ -201,7 +201,7 @@ export function InvoiceHistory({
       </CardContent>
 
       {payments.length > 0 && (
-        <CardFooter>
+        <CardFooter className="flex-col gap-3">
           <Button
             variant="outline"
             onClick={onOpenPortal}
@@ -214,6 +214,9 @@ export function InvoiceHistory({
             )}
             Voir tout l&apos;historique
           </Button>
+          <p className="text-center text-[11px] text-muted-foreground/70">
+            TVA non applicable, article 293B du CGI
+          </p>
         </CardFooter>
       )}
     </Card>

@@ -12,12 +12,6 @@
 import { Users, Receipt, Info } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { ProgressBar } from '@/components/ui/progress-bar'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip'
 import { motion, fadeSlideUpVariants, useReducedMotion } from '@/lib/animations'
 import { cn } from '@/lib/utils'
 
@@ -139,25 +133,24 @@ export function UsageIndicator({
         </div>
 
         {/* Info prorata */}
-        <TooltipProvider>
-          <div className="flex items-start gap-2 rounded-lg bg-muted/30 p-3 text-xs text-muted-foreground">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Info
-                  className="mt-0.5 h-3.5 w-3.5 shrink-0 cursor-help"
-                  aria-hidden="true"
-                />
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Le prorata est calculé automatiquement par Stripe</p>
-              </TooltipContent>
-            </Tooltip>
+        <div className="space-y-1 rounded-lg bg-muted/30 p-3 text-xs text-muted-foreground">
+          <div className="flex items-start gap-2">
+            <Info
+              className="mt-0.5 h-3.5 w-3.5 shrink-0"
+              aria-hidden="true"
+            />
             <p data-testid="prorata-info">
-              Chaque employé ajouté ou retiré ajuste automatiquement votre
-              facture au prorata.
+              <strong className="text-foreground">Facturation au prorata :</strong>{' '}
+              lorsque vous ajoutez ou retirez un employé en cours de mois,
+              le montant est ajusté automatiquement. Vous ne payez que les jours
+              réellement utilisés pour chaque siège.
             </p>
           </div>
-        </TooltipProvider>
+          <p className="ml-5.5 pl-0.5">
+            Exemple : un employé ajouté le 15 du mois = environ{' '}
+            {formatCurrency(pricePerEmployeeEur / 2)} pour le mois en cours.
+          </p>
+        </div>
       </CardContent>
     </Card>
   )
