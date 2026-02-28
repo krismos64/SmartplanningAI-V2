@@ -7,8 +7,6 @@ import {
   SubscriptionPlan,
   SubscriptionStatus,
   PaymentStatus,
-  ScheduleType,
-  ScheduleStatus,
   LeaveType,
   LeaveRequestStatus,
   NotificationType,
@@ -17,7 +15,6 @@ import * as bcrypt from 'bcryptjs'
 import Stripe from 'stripe'
 import {
   TECHCORP_TEAMS,
-  SHIFT_PATTERNS,
   LEAVE_REQUESTS,
   INCIDENTS,
   PERSONAL_TASKS,
@@ -51,8 +48,10 @@ async function createUserWithEmployee(
     jobTitle: string
     weeklyHours: number
     hireDate: Date
-    teamId: string
+    teamId?: string
     department: string
+    phone?: string
+    image?: string
   }
 ) {
   const user = await prisma.user.create({
@@ -65,6 +64,7 @@ async function createUserWithEmployee(
       companyId: data.companyId,
       isActive: true,
       isEmailVerified: true,
+      image: data.image ?? null,
       employee: {
         create: {
           firstName: data.firstName,
@@ -74,7 +74,8 @@ async function createUserWithEmployee(
           hireDate: data.hireDate,
           weeklyHours: data.weeklyHours,
           companyId: data.companyId,
-          teamId: data.teamId,
+          teamId: data.teamId ?? null,
+          phone: data.phone ?? null,
         },
       },
     },
@@ -91,28 +92,15 @@ function generateEmail(firstName: string, lastName: string): string {
   return `${clean(firstName)}.${clean(lastName)}@techcorp.com`
 }
 
-function getShiftForDay(
-  dayOfWeek: number,
-  weeklyHours: number,
-  empIndex: number
-): { start: string; end: string } | null {
-  // Dimanche (0) = pas de travail, Samedi (6) = travail
-  if (dayOfWeek === 0) return null
-
-  // Déterminer le nombre de jours travaillés par semaine
-  const daysPerWeek = weeklyHours >= 35 ? 6 : 5
-  // Les 30h travaillent du lun au ven (pas samedi)
-  if (weeklyHours <= 30 && dayOfWeek === 6) return null
-
-  const shifts = [SHIFT_PATTERNS.matin, SHIFT_PATTERNS.journee, SHIFT_PATTERNS.apresMidi, SHIFT_PATTERNS.miJournee]
-  // Rotation basée sur l'index employé + jour pour varier
-  const shiftIdx = (empIndex + dayOfWeek) % shifts.length
-  return shifts[shiftIdx]!
+// Génère une URL d'avatar avec un vrai visage fictif via i.pravatar.cc
+// Le paramètre ?u= rend l'image déterministe par email
+function generateAvatarUrl(firstName: string, lastName: string): string {
+  const clean = (s: string) =>
+    s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z]/g, '')
+  const email = `${clean(firstName)}.${clean(lastName)}@techcorp.com`
+  return `https://i.pravatar.cc/200?u=${email}`
 }
 
-function createDateUTC(dateStr: string, time: string): Date {
-  return new Date(`${dateStr}T${time}:00Z`)
-}
 
 // ============================================================================
 // MAIN
@@ -551,7 +539,8 @@ async function main() {
     department: 'Direction',
     weeklyHours: 39,
     hireDate: new Date('2018-01-15'),
-    teamId: teamIds[0]!,
+    phone: '+33 6 01 02 03 04',
+    image: generateAvatarUrl('John', 'Doe'),
   })
 
   // Tracking all employees for leave balances, schedules, etc.
@@ -579,6 +568,8 @@ async function main() {
         weeklyHours: 39,
         hireDate: new Date('2019-03-01'),
         teamId,
+        phone: teamDef.manager.phone,
+        image: generateAvatarUrl('Jane', 'Smith'),
       })
     } else {
       managerUser = await createUserWithEmployee({
@@ -594,6 +585,8 @@ async function main() {
         weeklyHours: 39,
         hireDate: new Date('2019-01-15'),
         teamId,
+        phone: teamDef.manager.phone,
+        image: generateAvatarUrl(teamDef.manager.firstName, teamDef.manager.lastName),
       })
     }
 
@@ -632,6 +625,8 @@ async function main() {
           weeklyHours: empDef.weeklyHours,
           hireDate: new Date(empDef.hireDate),
           teamId,
+          phone: empDef.phone,
+          image: generateAvatarUrl('Bob', 'Wilson'),
         })
       } else {
         empUser = await createUserWithEmployee({
@@ -647,6 +642,8 @@ async function main() {
           weeklyHours: empDef.weeklyHours,
           hireDate: new Date(empDef.hireDate),
           teamId,
+          phone: empDef.phone,
+          image: generateAvatarUrl(empDef.firstName, empDef.lastName),
         })
       }
 
@@ -737,89 +734,8 @@ async function main() {
 
   console.log('✅ DesignStudio (6) + StartupInc (4) créés\n')
 
-  // ============================================================================
-  // 6. PLANNINGS TECHCORP — 2 semaines (3-8 mars + 10-15 mars 2026)
-  // ============================================================================
-  console.log('📅 Création des plannings TechCorp (2 semaines)...')
-
-  const week1Dates = ['2026-03-03', '2026-03-04', '2026-03-05', '2026-03-06', '2026-03-07', '2026-03-08'] // Lun-Sam
-  const week2Dates = ['2026-03-10', '2026-03-11', '2026-03-12', '2026-03-13', '2026-03-14', '2026-03-15']
-  const allDates = [...week1Dates, ...week2Dates]
-
-  let scheduleCount = 0
-
-  for (const emp of allTechcorpEmployees) {
-    const teamDef = TECHCORP_TEAMS[emp.teamIndex]!
-    const empDef = emp.isManager ? teamDef.manager : teamDef.employees.find((_, i) => {
-      const nonManagerEmps = allTechcorpEmployees.filter(e => e.teamIndex === emp.teamIndex && !e.isManager)
-      return nonManagerEmps.indexOf(emp) === i
-    })
-
-    // Trouver l'index de cet employé dans son équipe pour varier les shifts
-    const teamEmps = allTechcorpEmployees.filter(e => e.teamIndex === emp.teamIndex)
-    const empIdxInTeam = teamEmps.indexOf(emp)
-
-    const weeklyHours = emp.isManager ? 39 : (teamDef.employees[
-      allTechcorpEmployees.filter(e => e.teamIndex === emp.teamIndex && !e.isManager).indexOf(emp)
-    ]?.weeklyHours ?? 35)
-
-    // Quelques TRAINING (1 par semaine pour quelques employés)
-    const hasTraining = empIdxInTeam === 1 && emp.teamIndex < 6
-
-    for (const dateStr of allDates) {
-      const date = new Date(dateStr)
-      const dayOfWeek = date.getDay() // 0=Sun, 1=Mon, ..., 6=Sat
-
-      const shift = getShiftForDay(dayOfWeek, weeklyHours, empIdxInTeam)
-      if (!shift) continue
-
-      let schedType = ScheduleType.WORK
-      // 1 TRAINING par semaine pour certains
-      if (hasTraining && (dateStr === '2026-03-04' || dateStr === '2026-03-11')) {
-        schedType = ScheduleType.TRAINING
-      }
-
-      await prisma.schedule.create({
-        data: {
-          title: schedType === ScheduleType.TRAINING ? 'Formation' : teamDef.name,
-          startDate: createDateUTC(dateStr, shift.start),
-          endDate: createDateUTC(dateStr, shift.end),
-          startTime: shift.start,
-          endTime: shift.end,
-          type: schedType,
-          status: ScheduleStatus.CONFIRMED,
-          employeeId: emp.employeeId,
-          teamId: teamIds[emp.teamIndex]!,
-          companyId: techcorp.id,
-          createdById: johnDoe.id,
-          color: teamDef.color,
-        },
-      })
-      scheduleCount++
-    }
-  }
-
-  // Quelques plannings DesignStudio & StartupInc
-  for (const dateStr of ['2026-03-03', '2026-03-04', '2026-03-05']) {
-    await prisma.schedule.create({
-      data: {
-        title: 'Design Session', startDate: createDateUTC(dateStr, '09:00'), endDate: createDateUTC(dateStr, '17:00'),
-        startTime: '09:00', endTime: '17:00', type: ScheduleType.WORK, status: ScheduleStatus.CONFIRMED,
-        employeeId: liamWhite.employee!.id, teamId: designers.id, companyId: designstudio.id,
-        createdById: emmaJones.id, color: '#F59E0B',
-      },
-    })
-    await prisma.schedule.create({
-      data: {
-        title: 'Development', startDate: createDateUTC(dateStr, '10:00'), endDate: createDateUTC(dateStr, '19:00'),
-        startTime: '10:00', endTime: '19:00', type: ScheduleType.WORK, status: ScheduleStatus.CONFIRMED,
-        employeeId: sophiaClark.employee!.id, teamId: coreTeam.id, companyId: startupinc.id,
-        createdById: jamesWalker.id, color: '#3B82F6',
-      },
-    })
-  }
-
-  console.log(`✅ ${scheduleCount + 6} plannings créés\n`)
+  // Section plannings supprimée — les plannings seront créés via l'interface
+  console.log('📅 Aucun planning pré-créé (création via l\'interface)\n')
 
   // ============================================================================
   // 7. CONGÉS
@@ -1072,7 +988,7 @@ async function main() {
   console.log('🏢 ORGANISATIONS : TechCorp (grande distribution), DesignStudio, StartupInc')
   console.log(`👥 ÉQUIPES : 12 TechCorp + 2 DesignStudio + 1 StartupInc = 15`)
   console.log(`👤 UTILISATEURS : ~${allTechcorpEmployees.length + 1} TechCorp + 6 DesignStudio + 4 StartupInc + 1 Admin`)
-  console.log(`📅 PLANNINGS : ${scheduleCount + 6} créneaux (2 semaines mars 2026)`)
+  console.log('📅 PLANNINGS : aucun (création via l\'interface)')
   console.log(`🏖️  CONGÉS : ${LEAVE_REQUESTS.length + 2}`)
   console.log(`📝 INCIDENTS : ${INCIDENTS.length}`)
   console.log(`📋 NOTES PERSO : ${PERSONAL_TASKS.length}`)

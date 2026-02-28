@@ -1,7 +1,7 @@
 # Données de Test - SmartPlanning V2
 
 > **Usage** : Comptes de démonstration pour tests et soutenance CDA
-> **Dernière mise à jour** : 27 février 2026
+> **Dernière mise à jour** : 28 février 2026
 
 ---
 
@@ -45,9 +45,11 @@ Password: Password123!
 
 ### Direction
 
-| Email                 | Rôle     | Poste              |
-| --------------------- | -------- | ------------------ |
-| john.doe@techcorp.com | DIRECTOR | Directeur magasin  |
+| Email                 | Rôle     | Poste              | Téléphone          | Équipe | Photo   |
+| --------------------- | -------- | ------------------ | ------------------ | ------ | ------- |
+| john.doe@techcorp.com | DIRECTOR | Directeur magasin  | +33 6 01 02 03 04  | Aucune | ✅ Avatar |
+
+> Le directeur n'appartient à aucune équipe : il supervise l'ensemble du magasin.
 
 ### 12 équipes (12 managers + 97 employés)
 
@@ -67,6 +69,13 @@ Password: Password123!
 | Comptabilité            | François Leroy     | 5        | 6     |
 
 **Postes typiques** : Employé libre-service, Caissier/ère, Vendeur/euse, Boulanger/ère, Pâtissier/ère, Cariste, Réceptionnaire, Comptable, Secrétaire, Chargé RH, Technicien SAV, Hôtesse d'accueil
+
+### Données employés enrichies
+
+Tous les utilisateurs TechCorp disposent de :
+
+- **Numéro de téléphone** : format français `+33 6 XX XX XX XX` (unique par employé)
+- **Photo de profil** : avatar fictif via [i.pravatar.cc](https://i.pravatar.cc) (visage réaliste, déterministe par email)
 
 ---
 
@@ -107,7 +116,8 @@ Password: Password123!
 ```
 Email: john.doe@techcorp.com
 Password: Password123!
-→ Accès total TechCorp (110 employés, 12 équipes, plannings, congés, facturation)
+→ Accès total TechCorp (110 employés, 12 équipes, congés, facturation)
+→ N'appartient à aucune équipe (supervise tout le magasin)
 ```
 
 ### Test des rôles MANAGER
@@ -115,7 +125,7 @@ Password: Password123!
 ```
 Email: jane.smith@techcorp.com
 Password: Password123!
-→ Responsable rayon Bazar (8 employés, plannings équipe, approbation congés)
+→ Responsable rayon Bazar (8 employés, approbation congés)
 ```
 
 ### Test des rôles EMPLOYEE
@@ -133,7 +143,7 @@ Connectez-vous successivement avec :
 - `john.doe@techcorp.com` (TechCorp — 110 employés)
 - `emma.jones@designstudio.com` (DesignStudio — 6 employés)
 
-→ Vérifiez que chaque directeur ne voit que les données de **son** organisation.
+> Vérifiez que chaque directeur ne voit que les données de **son** organisation.
 
 ### Test SYSTEM_ADMIN
 
@@ -177,23 +187,35 @@ Password: Password123!
 
 ### Plannings
 
-- Créneaux typiques grande distribution : Matin (06h–14h), Journée (09h–17h), Après-midi (14h–21h)
-- Shifts variés par rayon avec récurrence hebdomadaire
+Aucun planning n'est pré-créé par le seed. Les plannings sont destinés à être créés via l'interface utilisateur lors de la démonstration.
 
-### Demandes de congés
+### Demandes de congés (26)
 
-- Approuvées, en attente, rejetées, annulées
-- Types variés : CP, RTT, maladie, sans solde, parental, événement familial
-- Inclut des demi-journées (AM/PM)
+- **15 approuvées** : CP (8), Maladie (4), RTT (3)
+- **6 en attente** : CP (3), RTT (1), Formation (1), Événement familial (1)
+- **3 formations** : sécurité incendie, accueil client, CACES
+- **2 événements familiaux** : naissance, mariage
 
-### Soldes de congés
+### Incidents (16)
+
+- Retards, absences, erreurs de caisse, conflits, casse matériel
+- Visibilité variée : DIRECTOR_ONLY, MANAGER_DIRECTOR, ALL
+- 2 notes positives du directeur (comportement exemplaire, excellence produit)
+
+### Notes personnelles (24)
+
+- Directeur : 5 notes (bilan, entretiens, négociation, réunion, commande)
+- Managers : 10 notes (plannings, inventaires, formations, maintenance)
+- Employés : 9 notes (congés, formations, attestations, CV)
+
+### Soldes de congés (120)
 
 - 1 LeaveBalance par employé (année 2026)
-- Soldes variés (CP 0-12 utilisés, RTT 0-6 utilisés)
+- Soldes variés (CP 0-12 utilisés sur 25, RTT 0-6 utilisés sur 10)
 
-### Notifications
+### Notifications (31)
 
-- Types : SUCCESS, INFO, WARNING, SYSTEM
+- Types : PLANNING (7), LEAVE (5), INCIDENT (2), INFO (7), SUCCESS (4), WARNING (5), SYSTEM (1)
 - Mix lues / non lues
 
 ---
