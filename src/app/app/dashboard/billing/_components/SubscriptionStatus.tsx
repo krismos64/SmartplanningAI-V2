@@ -139,7 +139,10 @@ function formatCardBrand(brand: string): string {
     diners: 'Diners Club',
     unionpay: 'UnionPay',
   }
-  return brands[brand.toLowerCase()] ?? brand.charAt(0).toUpperCase() + brand.slice(1)
+  return (
+    brands[brand.toLowerCase()] ??
+    brand.charAt(0).toUpperCase() + brand.slice(1)
+  )
 }
 
 function formatDate(isoString: string | null): string {
@@ -201,32 +204,69 @@ export function SubscriptionStatus({
             <div className="space-y-4">
               <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-5 dark:border-emerald-800 dark:bg-emerald-950/40">
                 <div className="mb-3 flex items-center gap-2">
-                  <Clock className="h-5 w-5 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
+                  <Clock
+                    className="h-5 w-5 text-emerald-600 dark:text-emerald-400"
+                    aria-hidden="true"
+                  />
                   <h3 className="text-lg font-semibold text-emerald-800 dark:text-emerald-300">
-                    Essai gratuit — {trialDaysNoSub} jour{trialDaysNoSub > 1 ? 's' : ''} restant{trialDaysNoSub > 1 ? 's' : ''}
+                    Essai gratuit — {trialDaysNoSub} jour
+                    {trialDaysNoSub > 1 ? 's' : ''} restant
+                    {trialDaysNoSub > 1 ? 's' : ''}
                   </h3>
                 </div>
                 <ul className="space-y-2 text-sm text-emerald-700 dark:text-emerald-300/90">
                   <li className="flex items-start gap-2">
-                    <span className="mt-0.5 text-emerald-500" aria-hidden="true">✓</span>
-                    <span>21 jours d&apos;essai gratuit, <strong>sans carte bancaire</strong></span>
+                    <span
+                      className="mt-0.5 text-emerald-500"
+                      aria-hidden="true"
+                    >
+                      ✓
+                    </span>
+                    <span>
+                      21 jours d&apos;essai gratuit,{' '}
+                      <strong>sans carte bancaire</strong>
+                    </span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="mt-0.5 text-emerald-500" aria-hidden="true">✓</span>
+                    <span
+                      className="mt-0.5 text-emerald-500"
+                      aria-hidden="true"
+                    >
+                      ✓
+                    </span>
                     <span>Accès complet à toutes les fonctionnalités</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="mt-0.5 text-emerald-500" aria-hidden="true">✓</span>
-                    <span><strong>Sans engagement</strong> — aucune mauvaise surprise</span>
+                    <span
+                      className="mt-0.5 text-emerald-500"
+                      aria-hidden="true"
+                    >
+                      ✓
+                    </span>
+                    <span>
+                      <strong>Sans engagement</strong> — aucune mauvaise
+                      surprise
+                    </span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="mt-0.5 text-emerald-500" aria-hidden="true">✓</span>
-                    <span>Si vous vous abonnez maintenant, <strong>le paiement ne débutera qu&apos;à la fin de l&apos;essai</strong></span>
+                    <span
+                      className="mt-0.5 text-emerald-500"
+                      aria-hidden="true"
+                    >
+                      ✓
+                    </span>
+                    <span>
+                      Si vous vous abonnez maintenant,{' '}
+                      <strong>
+                        le paiement ne débutera qu&apos;à la fin de l&apos;essai
+                      </strong>
+                    </span>
                   </li>
                 </ul>
                 <p className="mt-3 text-xs text-emerald-600/80 dark:text-emerald-400/70">
-                  Fin de l&apos;essai : {formatDate(trialEndsAt)}.
-                  En cas de souscription, l&apos;abonnement sera renouvelé automatiquement chaque mois sauf annulation.
+                  Fin de l&apos;essai : {formatDate(trialEndsAt)}. En cas de
+                  souscription, l&apos;abonnement sera renouvelé automatiquement
+                  chaque mois sauf annulation.
                 </p>
               </div>
               <div className="flex justify-center">
@@ -236,8 +276,12 @@ export function SubscriptionStatus({
                   size="lg"
                   data-testid="subscribe-btn"
                 >
-                  {isSubscribeLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  {isSubscribeLoading ? 'Redirection...' : "S'abonner maintenant"}
+                  {isSubscribeLoading && (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  )}
+                  {isSubscribeLoading
+                    ? 'Redirection...'
+                    : "S'abonner maintenant"}
                 </Button>
               </div>
             </div>
@@ -288,40 +332,47 @@ export function SubscriptionStatus({
 
       <CardContent className="space-y-4">
         {/* Abonné pendant le trial — encart rassurant */}
-        {subscription.status === 'TRIAL' && trialDays !== null && trialDays > 0 && (
-          <div
-            className="rounded-lg border border-emerald-200 bg-emerald-50 p-4 dark:border-emerald-800 dark:bg-emerald-950/40"
-            data-testid="trial-subscribed-alert"
-          >
-            <div className="flex items-start gap-3">
-              <Clock className="mt-0.5 h-5 w-5 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
-              <div>
-                <p className="font-semibold text-emerald-800 dark:text-emerald-300">
-                  Vous êtes abonné — essai gratuit en cours
-                </p>
-                <p className="mt-1 text-sm text-emerald-700 dark:text-emerald-300/90">
-                  Il vous reste {trialDays} jour{trialDays > 1 ? 's' : ''} d&apos;essai gratuit.
-                  Votre premier paiement de{' '}
-                  <strong>{formatCurrency(monthlyAmount)}</strong> sera prélevé après
-                  le {formatDate(trialEndsAt)}.
-                  Aucun paiement avant cette date.
-                  L&apos;abonnement sera ensuite renouvelé automatiquement chaque mois sauf annulation.
-                </p>
+        {subscription.status === 'TRIAL' &&
+          trialDays !== null &&
+          trialDays > 0 && (
+            <div
+              className="rounded-lg border border-emerald-200 bg-emerald-50 p-4 dark:border-emerald-800 dark:bg-emerald-950/40"
+              data-testid="trial-subscribed-alert"
+            >
+              <div className="flex items-start gap-3">
+                <Clock
+                  className="mt-0.5 h-5 w-5 text-emerald-600 dark:text-emerald-400"
+                  aria-hidden="true"
+                />
+                <div>
+                  <p className="font-semibold text-emerald-800 dark:text-emerald-300">
+                    Vous êtes abonné — essai gratuit en cours
+                  </p>
+                  <p className="mt-1 text-sm text-emerald-700 dark:text-emerald-300/90">
+                    Il vous reste {trialDays} jour{trialDays > 1 ? 's' : ''}{' '}
+                    d&apos;essai gratuit. Votre premier paiement de{' '}
+                    <strong>{formatCurrency(monthlyAmount)}</strong> sera
+                    prélevé après le {formatDate(trialEndsAt)}. Aucun paiement
+                    avant cette date. L&apos;abonnement sera ensuite renouvelé
+                    automatiquement chaque mois sauf annulation.
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
         {/* Trial expiré mais subscription TRIAL encore active */}
-        {subscription.status === 'TRIAL' && trialDays !== null && trialDays <= 0 && (
-          <Alert data-testid="trial-alert">
-            <Clock className="h-4 w-4" />
-            <AlertTitle>Période d&apos;essai</AlertTitle>
-            <AlertDescription>
-              Votre période d&apos;essai est terminée.
-            </AlertDescription>
-          </Alert>
-        )}
+        {subscription.status === 'TRIAL' &&
+          trialDays !== null &&
+          trialDays <= 0 && (
+            <Alert data-testid="trial-alert">
+              <Clock className="h-4 w-4" />
+              <AlertTitle>Période d&apos;essai</AlertTitle>
+              <AlertDescription>
+                Votre période d&apos;essai est terminée.
+              </AlertDescription>
+            </Alert>
+          )}
 
         {/* Annulation programmée */}
         {subscription.cancelAtPeriodEnd && (
@@ -380,7 +431,9 @@ export function SubscriptionStatus({
                 {formatDate(subscription.currentPeriodEnd)}
               </p>
               <p className="mt-0.5 text-xs text-blue-600/80 dark:text-blue-400/70">
-                {subscription.quantity} employé{subscription.quantity > 1 ? 's' : ''} × {formatCurrency(pricePerEmployee)} / mois
+                {subscription.quantity} employé
+                {subscription.quantity > 1 ? 's' : ''} ×{' '}
+                {formatCurrency(pricePerEmployee)} / mois
               </p>
             </div>
           )}
@@ -406,7 +459,8 @@ export function SubscriptionStatus({
               {formatCardBrand(paymentMethod.brand)} se terminant par{' '}
               <strong>{paymentMethod.last4}</strong>
               <span className="ml-1 text-xs">
-                (exp. {String(paymentMethod.expMonth).padStart(2, '0')}/{paymentMethod.expYear})
+                (exp. {String(paymentMethod.expMonth).padStart(2, '0')}/
+                {paymentMethod.expYear})
               </span>
             </span>
           </div>

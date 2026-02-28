@@ -374,8 +374,7 @@ export async function cancelSubscription(
     getCompanyDirector(dbSub.companyId)
       .then((director) => {
         const companyName =
-          director?.companyName ??
-          `Entreprise #${dbSub.companyId.slice(0, 8)}`
+          director?.companyName ?? `Entreprise #${dbSub.companyId.slice(0, 8)}`
 
         // Email de confirmation au directeur (template pro avec logo)
         if (director) {

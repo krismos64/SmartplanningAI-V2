@@ -40,7 +40,10 @@ export function DirectorQuickActions({
         <div className="flex flex-wrap gap-3">
           {/* Gerer les equipes */}
           <Button asChild variant="default">
-            <Link href="/app/director/teams" className="flex items-center gap-2">
+            <Link
+              href="/app/director/teams"
+              className="flex items-center gap-2"
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
@@ -67,7 +70,10 @@ export function DirectorQuickActions({
 
           {/* Voir tous les employes */}
           <Button asChild variant="outline">
-            <Link href="/app/dashboard/employees" className="flex items-center gap-2">
+            <Link
+              href="/app/dashboard/employees"
+              className="flex items-center gap-2"
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
@@ -90,7 +96,10 @@ export function DirectorQuickActions({
 
           {/* Conges en attente */}
           <Button asChild variant="outline" className="relative">
-            <Link href="/app/dashboard/leaves" className="flex items-center gap-2">
+            <Link
+              href="/app/dashboard/leaves"
+              className="flex items-center gap-2"
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
@@ -116,7 +125,10 @@ export function DirectorQuickActions({
 
           {/* Parametres entreprise */}
           <Button asChild variant="outline">
-            <Link href="/app/settings/company" className="flex items-center gap-2">
+            <Link
+              href="/app/settings/company"
+              className="flex items-center gap-2"
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"

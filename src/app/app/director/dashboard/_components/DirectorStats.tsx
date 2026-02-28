@@ -17,11 +17,7 @@ import {
   staggerItem,
   useReducedMotion,
 } from '@/lib/animations'
-import {
-  Users,
-  Building,
-  Clock,
-} from 'lucide-react'
+import { Users, Building, Clock } from 'lucide-react'
 import { StatCard } from '@/components/dashboard'
 import type { StatCardProps } from '@/types/dashboard'
 import type { DirectorStatsResult } from '@/lib/services/dashboard/types'

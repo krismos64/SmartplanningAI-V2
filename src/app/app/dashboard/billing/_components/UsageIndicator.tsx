@@ -135,14 +135,13 @@ export function UsageIndicator({
         {/* Info prorata */}
         <div className="space-y-1 rounded-lg bg-muted/30 p-3 text-xs text-muted-foreground">
           <div className="flex items-start gap-2">
-            <Info
-              className="mt-0.5 h-3.5 w-3.5 shrink-0"
-              aria-hidden="true"
-            />
+            <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
             <p data-testid="prorata-info">
-              <strong className="text-foreground">Facturation au prorata :</strong>{' '}
-              lorsque vous ajoutez ou retirez un employé en cours de mois,
-              le montant est ajusté automatiquement. Vous ne payez que les jours
+              <strong className="text-foreground">
+                Facturation au prorata :
+              </strong>{' '}
+              lorsque vous ajoutez ou retirez un employé en cours de mois, le
+              montant est ajusté automatiquement. Vous ne payez que les jours
               réellement utilisés pour chaque siège.
             </p>
           </div>

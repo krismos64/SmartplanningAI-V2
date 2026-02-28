@@ -134,7 +134,9 @@ export function EmployeeForm({
   const isImpersonating = useIsImpersonating()
   const isEditing = !!employee
   const [showBillingConfirm, setShowBillingConfirm] = useState(false)
-  const [pendingData, setPendingData] = useState<EmployeeFormValues | null>(null)
+  const [pendingData, setPendingData] = useState<EmployeeFormValues | null>(
+    null
+  )
 
   // Calculs prorata pour le DIRECTOR
   const PRICE_PER_EMPLOYEE = 2.9
@@ -147,7 +149,10 @@ export function EmployeeForm({
     0
   ).getDate()
   const daysRemaining = daysInMonth - new Date().getDate()
-  const prorataEstimate = +(PRICE_PER_EMPLOYEE * (daysRemaining / daysInMonth)).toFixed(2)
+  const prorataEstimate = +(
+    PRICE_PER_EMPLOYEE *
+    (daysRemaining / daysInMonth)
+  ).toFixed(2)
   const newMonthlyAmount = billingInfo
     ? +(billingInfo.monthlyAmount + PRICE_PER_EMPLOYEE).toFixed(2)
     : 0
@@ -277,9 +282,8 @@ export function EmployeeForm({
               </p>
               <p className="mt-1 text-blue-600/90 dark:text-blue-400/90">
                 Chaque employé actif coûte{' '}
-                <strong>2,90&nbsp;&euro;/mois</strong>.
-                L&apos;ajout sera facture au prorata des jours restants
-                ce mois-ci (environ{' '}
+                <strong>2,90&nbsp;&euro;/mois</strong>. L&apos;ajout sera
+                facture au prorata des jours restants ce mois-ci (environ{' '}
                 <strong>
                   {prorataEstimate.toFixed(2).replace('.', ',')}&nbsp;&euro;
                 </strong>
@@ -288,13 +292,14 @@ export function EmployeeForm({
               <p className="mt-1 text-blue-600/80 dark:text-blue-400/80">
                 Votre facture mensuelle passera de{' '}
                 <strong>
-                  {billingInfo!.monthlyAmount.toFixed(2).replace('.', ',')}&nbsp;&euro;
+                  {billingInfo.monthlyAmount.toFixed(2).replace('.', ',')}
+                  &nbsp;&euro;
                 </strong>{' '}
                 a{' '}
                 <strong>
                   {newMonthlyAmount.toFixed(2).replace('.', ',')}&nbsp;&euro;
                 </strong>{' '}
-                ({billingInfo!.employeeCount + 1} employés).
+                ({billingInfo.employeeCount + 1} employés).
               </p>
             </div>
           </div>
@@ -572,7 +577,10 @@ export function EmployeeForm({
 
       {/* Dialog de confirmation facturation — DIRECTOR uniquement */}
       {showBillingWarning && (
-        <AlertDialog open={showBillingConfirm} onOpenChange={setShowBillingConfirm}>
+        <AlertDialog
+          open={showBillingConfirm}
+          onOpenChange={setShowBillingConfirm}
+        >
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>Confirmer la création</AlertDialogTitle>
@@ -589,24 +597,29 @@ export function EmployeeForm({
                     <p>
                       Prorata ce mois :{' '}
                       <span className="font-semibold">
-                        ~{prorataEstimate.toFixed(2).replace('.', ',')}&nbsp;&euro;
+                        ~{prorataEstimate.toFixed(2).replace('.', ',')}
+                        &nbsp;&euro;
                       </span>{' '}
-                      ({daysRemaining} jour{daysRemaining > 1 ? 's' : ''} restant
+                      ({daysRemaining} jour{daysRemaining > 1 ? 's' : ''}{' '}
+                      restant
                       {daysRemaining > 1 ? 's' : ''})
                     </p>
                     <p className="mt-1">
                       Nouvelle facture mensuelle :{' '}
                       <span className="font-semibold">
-                        {newMonthlyAmount.toFixed(2).replace('.', ',')}&nbsp;&euro;
+                        {newMonthlyAmount.toFixed(2).replace('.', ',')}
+                        &nbsp;&euro;
                       </span>{' '}
-                      ({billingInfo!.employeeCount + 1} employés)
+                      ({billingInfo.employeeCount + 1} employés)
                     </p>
                   </div>
                 </div>
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel disabled={isPending}>Annuler</AlertDialogCancel>
+              <AlertDialogCancel disabled={isPending}>
+                Annuler
+              </AlertDialogCancel>
               <AlertDialogAction
                 onClick={handleBillingConfirm}
                 disabled={isPending}

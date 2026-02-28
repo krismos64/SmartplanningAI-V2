@@ -51,11 +51,13 @@ export default async function NewEmployeePage() {
   }
 
   // Pour le DIRECTOR : récupérer les infos billing pour l'avertissement prorata
-  let billingInfo: {
-    employeeCount: number
-    monthlyAmount: number
-    hasActiveSubscription: boolean
-  } | undefined
+  let billingInfo:
+    | {
+        employeeCount: number
+        monthlyAmount: number
+        hasActiveSubscription: boolean
+      }
+    | undefined
 
   if (role === 'DIRECTOR' && companyId) {
     const [subscription, employeeCount] = await Promise.all([
@@ -69,8 +71,7 @@ export default async function NewEmployeePage() {
     ])
 
     const hasActiveSubscription =
-      !!subscription &&
-      ['ACTIVE', 'PAST_DUE'].includes(subscription.status)
+      !!subscription && ['ACTIVE', 'PAST_DUE'].includes(subscription.status)
 
     if (hasActiveSubscription && subscription) {
       billingInfo = {

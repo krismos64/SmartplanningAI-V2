@@ -372,7 +372,8 @@ export async function getBillingDataAction(): Promise<
             createdAt: p.createdAt,
             stripeInvoiceId: p.stripeInvoiceId ?? null,
             paymentMethod: p.paymentMethod ?? null,
-            invoiceUrl: (typeof meta?.invoiceUrl === 'string' ? meta.invoiceUrl : null),
+            invoiceUrl:
+              typeof meta?.invoiceUrl === 'string' ? meta.invoiceUrl : null,
           }
         }),
         employeeCount,

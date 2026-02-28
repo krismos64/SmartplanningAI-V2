@@ -131,8 +131,8 @@ export function DeleteEmployeeDialog({
 
               {userRole === 'DIRECTOR' && employee.isActive && (
                 <div className="rounded-md bg-blue-500/10 p-3 text-sm text-blue-700 dark:text-blue-300">
-                  La facturation sera ajustée au prorata &mdash; un crédit
-                  sera appliqué sur votre prochaine facture.
+                  La facturation sera ajustée au prorata &mdash; un crédit sera
+                  appliqué sur votre prochaine facture.
                 </div>
               )}
             </div>

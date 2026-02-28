@@ -768,7 +768,14 @@ export async function exportUserData(): Promise<
 
     // 3b. Données billing (DIRECTOR uniquement)
     let subscription = null
-    let payments: { amount: number; currency: string; status: string; paidAt: Date | null; createdAt: Date; paymentMethod: string | null }[] = []
+    let payments: {
+      amount: number
+      currency: string
+      status: string
+      paidAt: Date | null
+      createdAt: Date
+      paymentMethod: string | null
+    }[] = []
     if (user.role === 'DIRECTOR') {
       const userWithCompany = await prisma.user.findUnique({
         where: { id: userId },
@@ -832,8 +839,10 @@ export async function exportUserData(): Promise<
               status: subscription.status,
               quantity: subscription.quantity,
               pricePerEmployee: subscription.pricePerEmployee,
-              currentPeriodStart: subscription.currentPeriodStart?.toISOString() ?? null,
-              currentPeriodEnd: subscription.currentPeriodEnd?.toISOString() ?? null,
+              currentPeriodStart:
+                subscription.currentPeriodStart?.toISOString() ?? null,
+              currentPeriodEnd:
+                subscription.currentPeriodEnd?.toISOString() ?? null,
               cancelAtPeriodEnd: subscription.cancelAtPeriodEnd,
               canceledAt: subscription.canceledAt?.toISOString() ?? null,
               createdAt: subscription.createdAt.toISOString(),

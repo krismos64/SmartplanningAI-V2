@@ -94,10 +94,14 @@ function IncidentNoteCardComponent({
             <span className="flex items-center gap-1.5">
               <Avatar size="xs">
                 {note.subject.user?.image && (
-                  <AvatarImage src={note.subject.user.image} alt={subjectName} />
+                  <AvatarImage
+                    src={note.subject.user.image}
+                    alt={subjectName}
+                  />
                 )}
                 <AvatarFallback>
-                  {note.subject.firstName.charAt(0)}{note.subject.lastName.charAt(0)}
+                  {note.subject.firstName.charAt(0)}
+                  {note.subject.lastName.charAt(0)}
                 </AvatarFallback>
               </Avatar>
               {subjectName}

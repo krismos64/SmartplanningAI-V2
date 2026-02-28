@@ -1275,11 +1275,7 @@ export async function bulkDeleteEmployees(
 // EXPORT CSV - Export des employés au format CSV (SP-333)
 // ============================================================================
 
-import {
-  generateCsv,
-  formatDateFr,
-  type CsvColumn,
-} from '@/lib/csv'
+import { generateCsv, formatDateFr, type CsvColumn } from '@/lib/csv'
 import type { CsvExportActionResult, EmployeeExportFilters } from '@/types'
 
 /**
@@ -1296,9 +1292,17 @@ interface EmployeeForCsvExport {
   weeklyHours: number
   isActive: boolean
   createdAt: Date
-  team: { name: string; manager: { firstName: string; lastName: string } | null } | null
+  team: {
+    name: string
+    manager: { firstName: string; lastName: string } | null
+  } | null
   user: { email: string; role: string } | null
-  leaveBalances: { paidLeaveTotal: number; paidLeaveUsed: number; rttTotal: number; rttUsed: number }[]
+  leaveBalances: {
+    paidLeaveTotal: number
+    paidLeaveUsed: number
+    rttTotal: number
+    rttUsed: number
+  }[]
 }
 
 /**
@@ -1351,7 +1355,7 @@ const EMPLOYEE_CSV_COLUMNS: CsvColumn<EmployeeForCsvExport>[] = [
   { key: (e) => formatContrat(e.weeklyHours), header: 'Contrat' },
   { key: 'weeklyHours', header: 'H/sem' },
   { key: (e) => e.email ?? e.user?.email ?? '', header: 'Email' },
-  { key: (e) => e.phone ? `="${e.phone}"` : '', header: 'Téléphone' },
+  { key: (e) => (e.phone ? `="${e.phone}"` : ''), header: 'Téléphone' },
   {
     key: 'hireDate',
     header: 'Embauche',
@@ -1364,7 +1368,7 @@ const EMPLOYEE_CSV_COLUMNS: CsvColumn<EmployeeForCsvExport>[] = [
   {
     key: 'isActive',
     header: 'Statut',
-    format: (v) => (v as boolean) ? 'Actif' : 'Inactif',
+    format: (v) => ((v as boolean) ? 'Actif' : 'Inactif'),
   },
 ]
 
@@ -1458,11 +1462,20 @@ export async function exportEmployeesCsv(
         },
         leaveBalances: {
           where: { year: currentYear },
-          select: { paidLeaveTotal: true, paidLeaveUsed: true, rttTotal: true, rttUsed: true },
+          select: {
+            paidLeaveTotal: true,
+            paidLeaveUsed: true,
+            rttTotal: true,
+            rttUsed: true,
+          },
           take: 1,
         },
       },
-      orderBy: [{ team: { name: 'asc' } }, { lastName: 'asc' }, { firstName: 'asc' }],
+      orderBy: [
+        { team: { name: 'asc' } },
+        { lastName: 'asc' },
+        { firstName: 'asc' },
+      ],
       take: 10000,
     })
 
