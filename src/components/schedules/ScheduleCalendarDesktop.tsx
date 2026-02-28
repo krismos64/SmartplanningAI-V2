@@ -729,7 +729,8 @@ export function ScheduleCalendarDesktop({
         end: isRest
           ? Temporal.PlainDate.from(endDateStr)
           : Temporal.ZonedDateTime.from(
-              `${endDateStr}T${endHour}:${endMin}:00[Europe/Paris]`
+              // Utiliser startDateStr pour éviter les événements multi-jours en bandeau
+              `${startDateStr}T${endHour}:${endMin}:00[Europe/Paris]`
             ),
         calendarId: getCalendarId(schedule.type, schedule.status),
       }
