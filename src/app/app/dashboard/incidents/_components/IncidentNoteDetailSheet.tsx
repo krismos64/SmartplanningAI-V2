@@ -9,13 +9,14 @@
 
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
-import { User, Calendar, Pencil, UserCircle } from 'lucide-react'
+import { Calendar, Pencil, UserCircle } from 'lucide-react'
 
 import { useMediaQuery } from '@/hooks/use-media-query'
 import type { UserRole } from '@/lib/navigation/menu-items'
 import type { IncidentNoteWithRelations } from '@/lib/actions/incident-notes'
 
 import { Button } from '@/components/ui/button'
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import {
   Dialog,
   DialogContent,
@@ -67,7 +68,14 @@ export function IncidentNoteDetailSheet({
       {/* Metadata */}
       <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
         <div className="flex items-center gap-2">
-          <User className="h-4 w-4" aria-hidden="true" />
+          <Avatar size="sm">
+            {note.subject.user?.image && (
+              <AvatarImage src={note.subject.user.image} alt={subjectName} />
+            )}
+            <AvatarFallback>
+              {note.subject.firstName.charAt(0)}{note.subject.lastName.charAt(0)}
+            </AvatarFallback>
+          </Avatar>
           <span>
             <strong>Concerné :</strong> {subjectName}
           </span>

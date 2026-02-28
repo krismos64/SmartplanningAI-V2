@@ -27,6 +27,7 @@ const mockNote: IncidentNoteWithRelations = {
     lastName: 'Dupont',
     teamId: 'team-1',
     team: { id: 'team-1', name: 'Équipe A' },
+    user: { image: null },
   },
   author: {
     id: 'user-1',

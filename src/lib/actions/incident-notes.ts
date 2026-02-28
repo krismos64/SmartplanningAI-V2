@@ -66,6 +66,7 @@ const INCIDENT_NOTE_INCLUDE = {
       lastName: true,
       teamId: true,
       team: { select: { id: true, name: true } },
+      user: { select: { image: true } },
     },
   },
   author: {

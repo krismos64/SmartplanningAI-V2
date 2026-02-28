@@ -10,11 +10,12 @@
 import { memo, useState } from 'react'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
-import { Eye, Pencil, Trash2, User, Calendar } from 'lucide-react'
+import { Eye, Pencil, Trash2, Calendar } from 'lucide-react'
 
 import { useIsImpersonating } from '@/hooks'
 import { cn } from '@/lib/utils'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import {
   AlertDialog,
@@ -90,8 +91,15 @@ function IncidentNoteCardComponent({
 
           {/* Metadata */}
           <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-            <span className="flex items-center gap-1">
-              <User className="h-3 w-3" aria-hidden="true" />
+            <span className="flex items-center gap-1.5">
+              <Avatar size="xs">
+                {note.subject.user?.image && (
+                  <AvatarImage src={note.subject.user.image} alt={subjectName} />
+                )}
+                <AvatarFallback>
+                  {note.subject.firstName.charAt(0)}{note.subject.lastName.charAt(0)}
+                </AvatarFallback>
+              </Avatar>
               {subjectName}
             </span>
             <span className="flex items-center gap-1">
