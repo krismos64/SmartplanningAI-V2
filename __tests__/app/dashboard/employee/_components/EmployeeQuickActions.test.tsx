@@ -33,7 +33,7 @@ describe('EmployeeQuickActions', () => {
     it("devrait afficher les 3 boutons d'actions", () => {
       render(<EmployeeQuickActions pendingRequests={0} />)
 
-      expect(screen.getByText('Demander un conge')).toBeInTheDocument()
+      expect(screen.getByText('Demander un congé')).toBeInTheDocument()
       expect(screen.getByText('Voir mon planning')).toBeInTheDocument()
       expect(screen.getByText('Mes demandes')).toBeInTheDocument()
     })
@@ -44,10 +44,10 @@ describe('EmployeeQuickActions', () => {
   // ==========================================================================
 
   describe('liens de navigation', () => {
-    it('devrait avoir le bon lien pour "Demander un conge"', () => {
+    it('devrait avoir le bon lien pour "Demander un congé"', () => {
       render(<EmployeeQuickActions pendingRequests={0} />)
 
-      const link = screen.getByRole('link', { name: /Demander un conge/ })
+      const link = screen.getByRole('link', { name: /Demander un congé/ })
       expect(link).toHaveAttribute('href', '/leaves/new')
     })
 
@@ -148,10 +148,10 @@ describe('EmployeeQuickActions', () => {
   // ==========================================================================
 
   describe('styles des boutons', () => {
-    it('devrait avoir un bouton principal pour "Demander un conge"', () => {
+    it('devrait avoir un bouton principal pour "Demander un congé"', () => {
       render(<EmployeeQuickActions pendingRequests={0} />)
 
-      const button = screen.getByRole('link', { name: /Demander un conge/ })
+      const button = screen.getByRole('link', { name: /Demander un congé/ })
       // Le bouton utilise variant="default" qui applique des styles primaires
       expect(button).toBeInTheDocument()
     })
@@ -238,7 +238,7 @@ describe('EmployeeQuickActions', () => {
       render(<EmployeeQuickActions pendingRequests={0} />)
 
       expect(
-        screen.getByRole('link', { name: /Demander un conge/ })
+        screen.getByRole('link', { name: /Demander un congé/ })
       ).toBeInTheDocument()
       expect(
         screen.getByRole('link', { name: /Voir mon planning/ })

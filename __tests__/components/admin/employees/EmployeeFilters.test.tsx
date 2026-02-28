@@ -45,7 +45,7 @@ describe('EmployeeFilters', () => {
         />
       )
       expect(
-        screen.getByPlaceholderText('Rechercher un employe...')
+        screen.getByPlaceholderText('Rechercher un employé...')
       ).toBeInTheDocument()
     })
 
@@ -69,7 +69,7 @@ describe('EmployeeFilters', () => {
         />
       )
       expect(
-        screen.queryByText('Toutes equipes')
+        screen.queryByText('Toutes les équipes')
       ).not.toBeInTheDocument()
     })
 
@@ -81,7 +81,7 @@ describe('EmployeeFilters', () => {
           teams={mockTeams}
         />
       )
-      expect(screen.getByText('Toutes equipes')).toBeInTheDocument()
+      expect(screen.getByText('Toutes les équipes')).toBeInTheDocument()
     })
 
     it('n affiche pas le filtre entreprise par défaut', () => {
@@ -124,12 +124,12 @@ describe('EmployeeFilters', () => {
       )
 
       await user.type(
-        screen.getByPlaceholderText('Rechercher un employe...'),
+        screen.getByPlaceholderText('Rechercher un employé...'),
         'Jean'
       )
 
       expect(
-        screen.getByPlaceholderText('Rechercher un employe...')
+        screen.getByPlaceholderText('Rechercher un employé...')
       ).toHaveValue('Jean')
     })
 
@@ -143,7 +143,7 @@ describe('EmployeeFilters', () => {
       )
 
       fireEvent.change(
-        screen.getByPlaceholderText('Rechercher un employe...'),
+        screen.getByPlaceholderText('Rechercher un employé...'),
         { target: { value: 'Jean' } }
       )
 
@@ -170,7 +170,7 @@ describe('EmployeeFilters', () => {
       )
 
       fireEvent.change(
-        screen.getByPlaceholderText('Rechercher un employe...'),
+        screen.getByPlaceholderText('Rechercher un employé...'),
         { target: { value: '' } }
       )
 
@@ -193,7 +193,7 @@ describe('EmployeeFilters', () => {
         />
       )
       expect(
-        screen.queryByText('Reinitialiser')
+        screen.queryByText('Réinitialiser')
       ).not.toBeInTheDocument()
     })
 
@@ -204,7 +204,7 @@ describe('EmployeeFilters', () => {
           onFiltersChange={vi.fn()}
         />
       )
-      expect(screen.getByText('Reinitialiser')).toBeInTheDocument()
+      expect(screen.getByText('Réinitialiser')).toBeInTheDocument()
     })
 
     it('affiche le bouton avec des filtres actifs (teamId)', () => {
@@ -215,7 +215,7 @@ describe('EmployeeFilters', () => {
           teams={mockTeams}
         />
       )
-      expect(screen.getByText('Reinitialiser')).toBeInTheDocument()
+      expect(screen.getByText('Réinitialiser')).toBeInTheDocument()
     })
 
     it('affiche le bouton avec des filtres actifs (isActive)', () => {
@@ -225,7 +225,7 @@ describe('EmployeeFilters', () => {
           onFiltersChange={vi.fn()}
         />
       )
-      expect(screen.getByText('Reinitialiser')).toBeInTheDocument()
+      expect(screen.getByText('Réinitialiser')).toBeInTheDocument()
     })
 
     it('réinitialise les filtres au clic', () => {
@@ -238,7 +238,7 @@ describe('EmployeeFilters', () => {
         />
       )
 
-      fireEvent.click(screen.getByText('Reinitialiser'))
+      fireEvent.click(screen.getByText('Réinitialiser'))
 
       expect(onFiltersChange).toHaveBeenCalledWith({})
     })
@@ -254,7 +254,7 @@ describe('EmployeeFilters', () => {
           teams={mockTeams}
         />
       )
-      expect(screen.getByText('Reinitialiser').closest('button')).toBeDisabled()
+      expect(screen.getByText('Réinitialiser').closest('button')).toBeDisabled()
     })
   })
 
@@ -268,7 +268,7 @@ describe('EmployeeFilters', () => {
       )
 
       expect(
-        screen.getByPlaceholderText('Rechercher un employe...')
+        screen.getByPlaceholderText('Rechercher un employé...')
       ).toHaveValue('initial')
 
       rerender(
@@ -279,7 +279,7 @@ describe('EmployeeFilters', () => {
       )
 
       expect(
-        screen.getByPlaceholderText('Rechercher un employe...')
+        screen.getByPlaceholderText('Rechercher un employé...')
       ).toHaveValue('updated')
     })
   })

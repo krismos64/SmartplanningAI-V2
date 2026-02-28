@@ -33,12 +33,12 @@ const mockStats: DirectorStatsResult = {
   pendingLeaveRequests: 8,
   averageAttendanceRate: 87,
   teamStats: [
-    { name: 'Equipe A', employees: 15, hoursWorked: 600, leaveRate: 10 },
-    { name: 'Equipe B', employees: 12, hoursWorked: 480, leaveRate: 15 },
-    { name: 'Equipe C', employees: 18, hoursWorked: 720, leaveRate: 5 },
+    { name: 'Équipe A', employees: 15, hoursWorked: 600, leaveRate: 10 },
+    { name: 'Équipe B', employees: 12, hoursWorked: 480, leaveRate: 15 },
+    { name: 'Équipe C', employees: 18, hoursWorked: 720, leaveRate: 5 },
   ],
   leaveTypeDistribution: [
-    { type: 'Conges payes', count: 30 },
+    { type: 'Congés payés', count: 30 },
     { type: 'RTT', count: 15 },
     { type: 'Maladie', count: 8 },
   ],
@@ -65,9 +65,9 @@ describe('DirectorStats', () => {
     it('devrait afficher les 3 titres de statistiques', () => {
       render(<DirectorStats stats={mockStats} />)
 
-      expect(screen.getByText('Employes actifs')).toBeInTheDocument()
-      expect(screen.getByText('Equipes')).toBeInTheDocument()
-      expect(screen.getByText('Conges en attente')).toBeInTheDocument()
+      expect(screen.getByText('Employés actifs')).toBeInTheDocument()
+      expect(screen.getByText('Équipes')).toBeInTheDocument()
+      expect(screen.getByText('Congés en attente')).toBeInTheDocument()
     })
 
     it('devrait afficher le nombre total d employes', () => {
@@ -76,19 +76,19 @@ describe('DirectorStats', () => {
       expect(screen.getByText('45')).toBeInTheDocument()
     })
 
-    it('devrait afficher le nombre d equipes', () => {
+    it('devrait afficher le nombre d équipes', () => {
       render(<DirectorStats stats={mockStats} />)
 
       expect(screen.getByText('5')).toBeInTheDocument()
     })
 
-    it('devrait afficher le nombre de conges en attente', () => {
+    it('devrait afficher le nombre de congés en attente', () => {
       render(<DirectorStats stats={mockStats} />)
 
       expect(screen.getByText('8')).toBeInTheDocument()
     })
 
-    it('devrait afficher le nombre de conges en attente', () => {
+    it('devrait afficher le nombre de congés en attente', () => {
       render(<DirectorStats stats={mockStats} />)
 
       expect(screen.getByText('8')).toBeInTheDocument()
@@ -106,19 +106,19 @@ describe('DirectorStats', () => {
       expect(screen.getByText('Total entreprise')).toBeInTheDocument()
     })
 
-    it('devrait afficher Departements actifs pour equipes', () => {
+    it('devrait afficher Départements actifs pour équipes', () => {
       render(<DirectorStats stats={mockStats} />)
 
-      expect(screen.getByText('Departements actifs')).toBeInTheDocument()
+      expect(screen.getByText('Départements actifs')).toBeInTheDocument()
     })
 
-    it('devrait afficher A valider par les managers si conges en attente', () => {
+    it('devrait afficher À valider par les managers si congés en attente', () => {
       render(<DirectorStats stats={mockStats} />)
 
-      expect(screen.getByText('A valider par les managers')).toBeInTheDocument()
+      expect(screen.getByText('À valider par les managers')).toBeInTheDocument()
     })
 
-    it('devrait afficher Aucune demande si 0 conges en attente', () => {
+    it('devrait afficher Aucune demande si 0 congés en attente', () => {
       const stats = { ...mockStats, pendingLeaveRequests: 0 }
 
       render(<DirectorStats stats={stats} />)
@@ -126,10 +126,10 @@ describe('DirectorStats', () => {
       expect(screen.getByText('Aucune demande')).toBeInTheDocument()
     })
 
-    it('devrait afficher Departements actifs pour equipes', () => {
+    it('devrait afficher Départements actifs pour équipes', () => {
       render(<DirectorStats stats={mockStats} />)
 
-      expect(screen.getByText('Departements actifs')).toBeInTheDocument()
+      expect(screen.getByText('Départements actifs')).toBeInTheDocument()
     })
   })
 
@@ -190,7 +190,7 @@ describe('DirectorStats', () => {
       expect(screen.getAllByText('0').length).toBeGreaterThanOrEqual(1)
     })
 
-    it('devrait gerer 0 equipes', () => {
+    it('devrait gerer 0 équipes', () => {
       const stats = { ...mockStats, totalTeams: 0 }
 
       render(<DirectorStats stats={stats} />)
@@ -198,7 +198,7 @@ describe('DirectorStats', () => {
       expect(screen.getAllByText('0').length).toBeGreaterThanOrEqual(1)
     })
 
-    it('devrait gerer un grand nombre de conges en attente', () => {
+    it('devrait gerer un grand nombre de congés en attente', () => {
       const stats = { ...mockStats, pendingLeaveRequests: 99 }
 
       render(<DirectorStats stats={stats} />)

@@ -49,26 +49,26 @@ export function DirectorStats({
 }: DirectorStatsProps) {
   const statCards: StatCardProps[] = [
     {
-      title: 'Employes actifs',
+      title: 'Employés actifs',
       value: stats.totalEmployees,
       icon: Users,
       description: 'Total entreprise',
       variant: 'primary',
     },
     {
-      title: 'Equipes',
+      title: 'Équipes',
       value: stats.totalTeams,
       icon: Building,
-      description: 'Departements actifs',
+      description: 'Départements actifs',
       variant: 'accent',
     },
     {
-      title: 'Conges en attente',
+      title: 'Congés en attente',
       value: stats.pendingLeaveRequests,
       icon: Clock,
       description:
         stats.pendingLeaveRequests > 0
-          ? 'A valider par les managers'
+          ? 'À valider par les managers'
           : 'Aucune demande',
       variant: stats.pendingLeaveRequests > 0 ? 'warning' : 'success',
     },

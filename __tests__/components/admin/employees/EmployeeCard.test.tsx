@@ -167,7 +167,7 @@ describe('EmployeeCard', () => {
       render(<EmployeeCard {...defaultProps} />)
       expect(
         screen.getByRole('checkbox', {
-          name: 'Selectionner Jean Dupont',
+          name: 'Sélectionner Jean Dupont',
         })
       ).toBeInTheDocument()
     })
@@ -201,13 +201,13 @@ describe('EmployeeCard', () => {
       expect(screen.getByText('Menu actions')).toBeInTheDocument()
     })
 
-    it('affiche Voir details quand onView est fourni', async () => {
+    it('affiche Voir détails quand onView est fourni', async () => {
       const user = userEvent.setup()
       render(
         <EmployeeCard {...defaultProps} onView={vi.fn()} />
       )
       await user.click(screen.getByText('Menu actions'))
-      expect(screen.getByText('Voir details')).toBeInTheDocument()
+      expect(screen.getByText('Voir détails')).toBeInTheDocument()
     })
 
     it('affiche Modifier quand onEdit est fourni', async () => {
@@ -219,13 +219,13 @@ describe('EmployeeCard', () => {
       expect(screen.getByText('Modifier')).toBeInTheDocument()
     })
 
-    it('affiche Desactiver pour un employé actif', async () => {
+    it('affiche Désactiver pour un employé actif', async () => {
       const user = userEvent.setup()
       render(
         <EmployeeCard {...defaultProps} onToggleStatus={vi.fn()} />
       )
       await user.click(screen.getByText('Menu actions'))
-      expect(screen.getByText('Desactiver')).toBeInTheDocument()
+      expect(screen.getByText('Désactiver')).toBeInTheDocument()
     })
 
     it('affiche Activer pour un employé inactif', async () => {
@@ -279,7 +279,7 @@ describe('EmployeeCard', () => {
         />
       )
       await user.click(screen.getByText('Menu actions'))
-      await user.click(screen.getByText('Voir details'))
+      await user.click(screen.getByText('Voir détails'))
       expect(onView).toHaveBeenCalled()
     })
   })

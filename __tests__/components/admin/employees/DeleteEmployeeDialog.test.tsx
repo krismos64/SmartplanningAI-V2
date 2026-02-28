@@ -102,7 +102,7 @@ describe('DeleteEmployeeDialog', () => {
           onOpenChange={vi.fn()}
         />
       )
-      expect(screen.getByText("Supprimer l'employe")).toBeInTheDocument()
+      expect(screen.getByText("Supprimer l'employé")).toBeInTheDocument()
     })
 
     it('affiche le nom de l employé', () => {
@@ -125,7 +125,7 @@ describe('DeleteEmployeeDialog', () => {
         />
       )
       expect(
-        screen.getByText('Cette action est irreversible.')
+        screen.getByText('Cette action est irréversible.')
       ).toBeInTheDocument()
     })
 
@@ -165,10 +165,10 @@ describe('DeleteEmployeeDialog', () => {
         />
       )
       expect(
-        screen.getByText(/Attention : Cet employe a des donnees liees/)
+        screen.getByText(/Attention : Cet employé a des données liées/)
       ).toBeInTheDocument()
       expect(screen.getByText('3 plannings')).toBeInTheDocument()
-      expect(screen.getByText('5 demandes de conge')).toBeInTheDocument()
+      expect(screen.getByText('5 demandes de congé')).toBeInTheDocument()
     })
 
     it('désactive le bouton Supprimer quand l employé a des plannings', () => {
@@ -192,7 +192,7 @@ describe('DeleteEmployeeDialog', () => {
         />
       )
       expect(
-        screen.getByText(/Desactivez l'employe plutot/)
+        screen.getByText(/Désactivez l'employé plutôt/)
       ).toBeInTheDocument()
     })
   })
@@ -266,7 +266,7 @@ describe('DeleteEmployeeDialog', () => {
       expect(screen.getByText('1 planning')).toBeInTheDocument()
     })
 
-    it('affiche "1 demande de conge" au singulier', () => {
+    it('affiche "1 demande de congé" au singulier', () => {
       const employee = {
         ...mockEmployee,
         _count: { schedules: 0, leaveRequests: 1 },
@@ -278,7 +278,7 @@ describe('DeleteEmployeeDialog', () => {
           onOpenChange={vi.fn()}
         />
       )
-      expect(screen.getByText(/1 demande de conge/)).toBeInTheDocument()
+      expect(screen.getByText(/1 demande de congé/)).toBeInTheDocument()
     })
   })
 })

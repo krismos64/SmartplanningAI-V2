@@ -57,7 +57,7 @@ describe('EmployeeLeaveBalance', () => {
     it('devrait afficher le titre', () => {
       render(<EmployeeLeaveBalance leaveBalance={mockLeaveBalance} />)
 
-      expect(screen.getByText('Solde de conges')).toBeInTheDocument()
+      expect(screen.getByText('Solde de congés')).toBeInTheDocument()
     })
 
     it('devrait afficher le graphique', () => {
@@ -115,7 +115,7 @@ describe('EmployeeLeaveBalance', () => {
     it('devrait afficher les labels', () => {
       render(<EmployeeLeaveBalance leaveBalance={mockLeaveBalance} />)
 
-      expect(screen.getByText('Utilises')).toBeInTheDocument()
+      expect(screen.getByText('Utilisés')).toBeInTheDocument()
       expect(screen.getByText('Restants')).toBeInTheDocument()
       expect(screen.getByText('Total')).toBeInTheDocument()
     })
@@ -136,7 +136,7 @@ describe('EmployeeLeaveBalance', () => {
     it('devrait afficher le pourcentage utilise', () => {
       render(<EmployeeLeaveBalance leaveBalance={mockLeaveBalance} />)
 
-      expect(screen.getByText('40% utilises')).toBeInTheDocument()
+      expect(screen.getByText('40% utilisés')).toBeInTheDocument()
     })
 
     it('devrait avoir la barre avec la bonne largeur', () => {
@@ -168,7 +168,7 @@ describe('EmployeeLeaveBalance', () => {
       const data = JSON.parse(chartData.textContent || '[]')
 
       expect(data).toHaveLength(2)
-      expect(data[0]).toEqual({ name: 'Utilises', value: 10 })
+      expect(data[0]).toEqual({ name: 'Utilisés', value: 10 })
       expect(data[1]).toEqual({ name: 'Restants', value: 15 })
     })
   })
@@ -243,7 +243,7 @@ describe('EmployeeLeaveBalance', () => {
       render(<EmployeeLeaveBalance leaveBalance={balance} />)
 
       expect(screen.getByText('0% restants')).toBeInTheDocument()
-      expect(screen.getByText('100% utilises')).toBeInTheDocument()
+      expect(screen.getByText('100% utilisés')).toBeInTheDocument()
     })
 
     it("devrait afficher 100% restants quand rien n'est utilise", () => {
@@ -252,7 +252,7 @@ describe('EmployeeLeaveBalance', () => {
       render(<EmployeeLeaveBalance leaveBalance={balance} />)
 
       expect(screen.getByText('100% restants')).toBeInTheDocument()
-      expect(screen.getByText('0% utilises')).toBeInTheDocument()
+      expect(screen.getByText('0% utilisés')).toBeInTheDocument()
     })
   })
 })

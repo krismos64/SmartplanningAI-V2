@@ -142,7 +142,7 @@ export function EmployeeFilters({
       <div className="relative max-w-sm flex-1">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
-          placeholder="Rechercher un employe..."
+          placeholder="Rechercher un employé..."
           value={searchValue}
           onChange={(e) => handleSearchChange(e.target.value)}
           className="pl-10"
@@ -182,10 +182,10 @@ export function EmployeeFilters({
             disabled={disabled}
           >
             <SelectTrigger className="w-[140px]">
-              <SelectValue placeholder="Equipe" />
+              <SelectValue placeholder="Équipe" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Toutes equipes</SelectItem>
+              <SelectItem value="all">Toutes les équipes</SelectItem>
               {teams.map((team) => (
                 <SelectItem key={team.id} value={team.id}>
                   {team.name}
@@ -223,7 +223,7 @@ export function EmployeeFilters({
             className="h-9 px-2"
           >
             <X className="mr-1 h-4 w-4" />
-            Reinitialiser
+            Réinitialiser
           </Button>
         )}
       </div>

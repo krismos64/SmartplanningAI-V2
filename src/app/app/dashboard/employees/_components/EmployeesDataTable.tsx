@@ -246,7 +246,7 @@ export function EmployeesDataTable({ userRole }: EmployeesDataTableProps) {
             <div>
               <h1 className="text-2xl font-bold tracking-tight">Employes</h1>
               <p className="text-sm text-muted-foreground">
-                {totalCount} employe{totalCount > 1 ? 's' : ''} au total
+                {totalCount} employé{totalCount > 1 ? 's' : ''} au total
               </p>
             </div>
           </div>
@@ -273,13 +273,13 @@ export function EmployeesDataTable({ userRole }: EmployeesDataTableProps) {
             {isImpersonating ? (
               <Button disabled title="Non disponible en mode support">
                 <Plus className="mr-2 h-4 w-4" />
-                Nouvel employe
+                Nouvel employé
               </Button>
             ) : (
               <Button asChild>
                 <Link href="/app/dashboard/employees/new">
                   <Plus className="mr-2 h-4 w-4" />
-                  Nouvel employe
+                  Nouvel employé
                 </Link>
               </Button>
             )}
@@ -299,8 +299,8 @@ export function EmployeesDataTable({ userRole }: EmployeesDataTableProps) {
         {canDelete && Object.keys(rowSelection).length > 0 && (
           <div className="flex items-center justify-between rounded-md border border-destructive/30 bg-destructive/5 px-4 py-2">
             <span className="text-sm font-medium">
-              {Object.keys(rowSelection).length} employe
-              {Object.keys(rowSelection).length > 1 ? 's' : ''} selectionne
+              {Object.keys(rowSelection).length} employé
+              {Object.keys(rowSelection).length > 1 ? 's' : ''} sélectionné
               {Object.keys(rowSelection).length > 1 ? 's' : ''}
             </span>
             <Button
@@ -372,7 +372,7 @@ export function EmployeesDataTable({ userRole }: EmployeesDataTableProps) {
                     colSpan={columns.length}
                     className="h-24 text-center"
                   >
-                    Aucun employe trouve.
+                    Aucun employé trouvé.
                   </TableCell>
                 </TableRow>
               )}
@@ -413,7 +413,7 @@ export function EmployeesDataTable({ userRole }: EmployeesDataTableProps) {
             ))
           ) : (
             <p className="py-12 text-center text-muted-foreground">
-              Aucun employe trouve.
+              Aucun employé trouvé.
             </p>
           )}
         </div>
@@ -431,7 +431,7 @@ export function EmployeesDataTable({ userRole }: EmployeesDataTableProps) {
               onClick={() => table.previousPage()}
               disabled={!table.getCanPreviousPage() || isLoading}
             >
-              Precedent
+              Précédent
             </Button>
             <Button
               variant="outline"
@@ -463,8 +463,8 @@ export function EmployeesDataTable({ userRole }: EmployeesDataTableProps) {
           <AlertDialogHeader>
             <AlertDialogTitle>
               {toggleEmployee?.isActive
-                ? "Desactiver l'employe ?"
-                : "Reactiver l'employe ?"}
+                ? "Désactiver l'employé ?"
+                : "Réactiver l'employé ?"}
             </AlertDialogTitle>
             <AlertDialogDescription asChild>
               <div className="space-y-3 text-sm text-muted-foreground">
@@ -487,8 +487,8 @@ export function EmployeesDataTable({ userRole }: EmployeesDataTableProps) {
                 </p>
                 <div className="rounded-md bg-blue-500/10 p-3 text-sm text-blue-700 dark:text-blue-300">
                   {toggleEmployee?.isActive
-                    ? 'La facturation sera ajustee au prorata \u2014 un credit sera applique sur votre prochaine facture.'
-                    : 'Cet employe sera facture 2,90 \u20ac/mois au prorata des jours restants ce mois-ci.'}
+                    ? 'La facturation sera ajustée au prorata \u2014 un crédit sera appliqué sur votre prochaine facture.'
+                    : 'Cet employé sera facturé 2,90 \u20ac/mois au prorata des jours restants ce mois-ci.'}
                 </div>
               </div>
             </AlertDialogDescription>
@@ -499,7 +499,7 @@ export function EmployeesDataTable({ userRole }: EmployeesDataTableProps) {
               onClick={confirmToggleStatus}
               data-testid="confirm-toggle-status-btn"
             >
-              {toggleEmployee?.isActive ? 'Desactiver' : 'Reactiver'}
+              {toggleEmployee?.isActive ? 'Désactiver' : 'Réactiver'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

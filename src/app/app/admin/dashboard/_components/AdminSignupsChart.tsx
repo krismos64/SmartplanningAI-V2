@@ -94,7 +94,7 @@ export function AdminSignupsChart({
           />
         ) : (
           <div className="flex h-[200px] items-center justify-center text-sm text-muted-foreground">
-            Aucune donnee disponible
+            Aucune donnée disponible
           </div>
         )}
       </CardContent>

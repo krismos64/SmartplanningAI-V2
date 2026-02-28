@@ -58,7 +58,7 @@ const URGENCY_CONFIG = {
 // ============================================================================
 
 function formatDaysRemaining(days: number): string {
-  if (days <= 0) return "Expire aujourd'hui"
+  if (days <= 0) return "Expiré aujourd'hui"
   if (days === 1) return '1 jour restant'
   return `${days} jours restants`
 }

@@ -45,7 +45,7 @@ describe('DirectorTrendsChart', () => {
     it('devrait afficher le titre', () => {
       render(<DirectorTrendsChart employeeGrowth={mockEmployeeGrowth} />)
 
-      expect(screen.getByText('Evolution des effectifs')).toBeInTheDocument()
+      expect(screen.getByText('Évolution des effectifs')).toBeInTheDocument()
     })
 
     it('devrait afficher la periode', () => {

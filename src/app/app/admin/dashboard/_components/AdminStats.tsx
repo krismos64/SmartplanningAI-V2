@@ -141,7 +141,7 @@ export function AdminStats({
       unit: '%',
       icon: TrendingDown,
       description:
-        stats.churnRate > 5 ? 'Attention requise' : 'Retention saine',
+        stats.churnRate > 5 ? 'Attention requise' : 'Rétention saine',
       variant: stats.churnRate > 5 ? 'danger' : 'success',
     },
   ]

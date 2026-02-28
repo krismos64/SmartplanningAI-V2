@@ -200,27 +200,27 @@ describe('createEmployeeColumns', () => {
   describe('Headers', () => {
     it('affiche les headers des colonnes', () => {
       render(<ColumnsTestTable data={[mockEmployee]} />)
-      expect(screen.getByText('Employe')).toBeInTheDocument()
+      expect(screen.getByText('Employé')).toBeInTheDocument()
       expect(screen.getByText('Email')).toBeInTheDocument()
-      expect(screen.getByText('Equipe')).toBeInTheDocument()
-      expect(screen.getByText('Telephone')).toBeInTheDocument()
+      expect(screen.getByText('Équipe')).toBeInTheDocument()
+      expect(screen.getByText('Téléphone')).toBeInTheDocument()
       expect(screen.getByText('Heures/sem')).toBeInTheDocument()
-      expect(screen.getByText('Embauche')).toBeInTheDocument()
+      expect(screen.getByText('Embauché')).toBeInTheDocument()
       expect(screen.getByText('Statut')).toBeInTheDocument()
       expect(screen.getByText('Actions')).toBeInTheDocument()
     })
 
-    it('affiche la checkbox globale "Tout selectionner"', () => {
+    it('affiche la checkbox globale "Tout sélectionner"', () => {
       render(<ColumnsTestTable data={[mockEmployee]} />)
       expect(
-        screen.getByRole('checkbox', { name: 'Tout selectionner' })
+        screen.getByRole('checkbox', { name: 'Tout sélectionner' })
       ).toBeInTheDocument()
     })
 
     it('affiche la checkbox de ligne', () => {
       render(<ColumnsTestTable data={[mockEmployee]} />)
       expect(
-        screen.getByRole('checkbox', { name: 'Selectionner la ligne' })
+        screen.getByRole('checkbox', { name: 'Sélectionner la ligne' })
       ).toBeInTheDocument()
     })
   })

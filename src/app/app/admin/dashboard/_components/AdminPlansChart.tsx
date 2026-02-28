@@ -94,7 +94,7 @@ export function AdminPlansChart({
     <Card className={cn(className)}>
       <CardHeader className="pb-2">
         <CardTitle className="text-base font-medium">
-          Repartition des plans
+          Répartition des plans
         </CardTitle>
         <p className="text-sm text-muted-foreground">
           {totalSubscriptions} abonnements - {formatCurrency(totalRevenue)}/mois

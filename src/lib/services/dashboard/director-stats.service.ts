@@ -46,7 +46,7 @@ export async function getDirectorStats(
     if (!hasAccess) {
       return {
         success: false,
-        error: 'Acces non autorise a cette entreprise',
+        error: 'Accès non autorisé à cette entreprise',
       }
     }
 
@@ -400,7 +400,7 @@ export async function getDirectorEmployeeCountOnly(
   try {
     const hasAccess = await verifyCompanyAccess(userId, companyId)
     if (!hasAccess) {
-      return { success: false, error: 'Acces non autorise' }
+      return { success: false, error: 'Accès non autorisé' }
     }
 
     const count = await getTotalEmployees(companyId)
@@ -423,7 +423,7 @@ export async function getDirectorPendingRequestsOnly(
   try {
     const hasAccess = await verifyCompanyAccess(userId, companyId)
     if (!hasAccess) {
-      return { success: false, error: 'Acces non autorise' }
+      return { success: false, error: 'Accès non autorisé' }
     }
 
     const count = await getPendingLeaveRequestsCount(companyId)
@@ -447,7 +447,7 @@ export async function getDirectorTeamDetails(
   try {
     const hasAccess = await verifyCompanyAccess(userId, companyId)
     if (!hasAccess) {
-      return { success: false, error: 'Acces non autorise' }
+      return { success: false, error: 'Accès non autorisé' }
     }
 
     // Verifier que l'equipe appartient a l'entreprise
@@ -457,7 +457,7 @@ export async function getDirectorTeamDetails(
     })
 
     if (team?.companyId !== companyId) {
-      return { success: false, error: 'Equipe non trouvee' }
+      return { success: false, error: 'Équipe non trouvée' }
     }
 
     const dateRange = getDefaultDateRange()

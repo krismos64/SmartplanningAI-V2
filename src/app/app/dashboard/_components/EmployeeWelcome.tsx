@@ -39,7 +39,7 @@ function getGreeting(): string {
     return 'Bonjour'
   }
   if (hour >= 12 && hour < 18) {
-    return 'Bon apres-midi'
+    return 'Bon après-midi'
   }
   return 'Bonsoir'
 }
@@ -169,7 +169,7 @@ export function EmployeeWelcome({
             </div>
             <div>
               <p className="text-sm font-medium text-muted-foreground">
-                Aucun shift programme
+                Aucun shift programmé
               </p>
             </div>
           </div>

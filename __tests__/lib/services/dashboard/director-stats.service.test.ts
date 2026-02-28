@@ -66,7 +66,7 @@ describe('director-stats.service', () => {
       })
 
       expect(result.success).toBe(false)
-      expect(result.error).toContain('Acces non autorise')
+      expect(result.error).toContain('Accès non autorisé')
     })
 
     it('devrait retourner les stats completes pour un director valide', async () => {
@@ -90,7 +90,7 @@ describe('director-stats.service', () => {
       // Mock total employes
       prismaMock.employee.count.mockResolvedValue(25)
 
-      // Mock total equipes
+      // Mock total équipes
       prismaMock.team.count.mockResolvedValue(5)
 
       // Mock demandes en attente
@@ -99,7 +99,7 @@ describe('director-stats.service', () => {
       // Mock employes en conge
       prismaMock.leaveRequest.findMany.mockResolvedValue([])
 
-      // Mock equipes
+      // Mock équipes
       prismaMock.team.findMany.mockResolvedValue([
         {
           id: 'team-1',
@@ -246,7 +246,7 @@ describe('director-stats.service', () => {
       const result = await getDirectorEmployeeCountOnly('user-1', 'company-1')
 
       expect(result.success).toBe(false)
-      expect(result.error).toContain('Acces non autorise')
+      expect(result.error).toContain('Accès non autorisé')
     })
 
     it("devrait retourner le nombre d'employes", async () => {
@@ -286,7 +286,7 @@ describe('director-stats.service', () => {
       const result = await getDirectorPendingRequestsOnly('user-1', 'company-1')
 
       expect(result.success).toBe(false)
-      expect(result.error).toContain('Acces non autorise')
+      expect(result.error).toContain('Accès non autorisé')
     })
 
     it('devrait retourner le nombre de demandes en attente', async () => {
@@ -355,7 +355,7 @@ describe('director-stats.service', () => {
       )
 
       expect(result.success).toBe(false)
-      expect(result.error).toContain('Acces non autorise')
+      expect(result.error).toContain('Accès non autorisé')
     })
 
     it('devrait retourner une erreur si equipe non trouvee', async () => {
@@ -384,7 +384,7 @@ describe('director-stats.service', () => {
       )
 
       expect(result.success).toBe(false)
-      expect(result.error).toContain('Equipe non trouvee')
+      expect(result.error).toContain('Équipe non trouvée')
     })
 
     it("devrait retourner une erreur si equipe n'appartient pas a l'entreprise", async () => {
@@ -422,7 +422,7 @@ describe('director-stats.service', () => {
       )
 
       expect(result.success).toBe(false)
-      expect(result.error).toContain('Equipe non trouvee')
+      expect(result.error).toContain('Équipe non trouvée')
     })
   })
 
@@ -431,7 +431,7 @@ describe('director-stats.service', () => {
   // ==========================================================================
 
   describe('plannedHoursThisMonth', () => {
-    it('devrait calculer les heures planifiees du mois', async () => {
+    it('devrait calculer les heures planifiées du mois', async () => {
       prismaMock.user.findUnique.mockResolvedValue({
         id: 'user-1',
         role: 'DIRECTOR',
@@ -456,7 +456,7 @@ describe('director-stats.service', () => {
       prismaMock.employee.findMany.mockResolvedValue([])
       prismaMock.leaveRequest.groupBy.mockResolvedValue([])
 
-      // Mock des schedules avec des heures planifiees
+      // Mock des schedules avec des heures planifiées
       // 3 creneaux de 8h chacun = 24h
       prismaMock.schedule.findMany.mockResolvedValue([
         { startTime: '09:00', endTime: '17:00' },

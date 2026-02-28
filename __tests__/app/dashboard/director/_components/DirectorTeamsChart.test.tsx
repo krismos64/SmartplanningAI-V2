@@ -1,9 +1,9 @@
 /**
  * Tests unitaires pour DirectorTeamsChart
  *
- * Teste le composant de graphique equipes avec :
+ * Teste le composant de graphique équipes avec :
  * - Titre et sous-titre
- * - Liste des equipes
+ * - Liste des équipes
  * - Etat vide
  * - Calcul des pourcentages
  *
@@ -25,9 +25,9 @@ vi.mock('@/components/charts', () => ({
 
 // Mock des donnees de test
 const mockTeamStats: DirectorStatsResult['teamStats'] = [
-  { name: 'Equipe A', employees: 15, hoursWorked: 600, leaveRate: 10 },
-  { name: 'Equipe B', employees: 12, hoursWorked: 480, leaveRate: 15 },
-  { name: 'Equipe C', employees: 18, hoursWorked: 720, leaveRate: 5 },
+  { name: 'Équipe A', employees: 15, hoursWorked: 600, leaveRate: 10 },
+  { name: 'Équipe B', employees: 12, hoursWorked: 480, leaveRate: 15 },
+  { name: 'Équipe C', employees: 18, hoursWorked: 720, leaveRate: 5 },
 ]
 
 describe('DirectorTeamsChart', () => {
@@ -43,38 +43,38 @@ describe('DirectorTeamsChart', () => {
     it('devrait afficher le titre', () => {
       render(<DirectorTeamsChart teamStats={mockTeamStats} />)
 
-      expect(screen.getByText('Repartition par equipe')).toBeInTheDocument()
+      expect(screen.getByText('Répartition par équipe')).toBeInTheDocument()
     })
 
     it('devrait afficher le total employes', () => {
       render(<DirectorTeamsChart teamStats={mockTeamStats} />)
 
       // 15 + 12 + 18 = 45
-      expect(screen.getByText('45 employes au total')).toBeInTheDocument()
+      expect(screen.getByText('45 employés au total')).toBeInTheDocument()
     })
 
     it('devrait afficher employe (singulier) si total = 1', () => {
       const stats = [
-        { name: 'Equipe A', employees: 1, hoursWorked: 40, leaveRate: 0 },
+        { name: 'Équipe A', employees: 1, hoursWorked: 40, leaveRate: 0 },
       ]
 
       render(<DirectorTeamsChart teamStats={stats} />)
 
-      expect(screen.getByText('1 employe au total')).toBeInTheDocument()
+      expect(screen.getByText('1 employé au total')).toBeInTheDocument()
     })
   })
 
   // ==========================================================================
-  // Liste des equipes
+  // Liste des équipes
   // ==========================================================================
 
-  describe('liste des equipes', () => {
-    it('devrait afficher les noms des equipes', () => {
+  describe('liste des équipes', () => {
+    it('devrait afficher les noms des équipes', () => {
       render(<DirectorTeamsChart teamStats={mockTeamStats} />)
 
-      expect(screen.getByText('Equipe A')).toBeInTheDocument()
-      expect(screen.getByText('Equipe B')).toBeInTheDocument()
-      expect(screen.getByText('Equipe C')).toBeInTheDocument()
+      expect(screen.getByText('Équipe A')).toBeInTheDocument()
+      expect(screen.getByText('Équipe B')).toBeInTheDocument()
+      expect(screen.getByText('Équipe C')).toBeInTheDocument()
     })
 
     it('devrait afficher le nombre d employes par equipe', () => {
@@ -93,25 +93,25 @@ describe('DirectorTeamsChart', () => {
   describe('calcul des pourcentages', () => {
     it('devrait calculer les pourcentages correctement', () => {
       const stats = [
-        { name: 'Equipe A', employees: 50, hoursWorked: 0, leaveRate: 0 },
-        { name: 'Equipe B', employees: 50, hoursWorked: 0, leaveRate: 0 },
+        { name: 'Équipe A', employees: 50, hoursWorked: 0, leaveRate: 0 },
+        { name: 'Équipe B', employees: 50, hoursWorked: 0, leaveRate: 0 },
       ]
 
       render(<DirectorTeamsChart teamStats={stats} />)
 
-      // Multiple elements avec le meme texte (2 equipes a 50%)
+      // Multiple elements avec le meme texte (2 équipes a 50%)
       expect(screen.getAllByText('50 (50%)').length).toBe(2)
     })
 
     it('devrait gerer un total de 0 employes', () => {
       const stats = [
-        { name: 'Equipe A', employees: 0, hoursWorked: 0, leaveRate: 0 },
-        { name: 'Equipe B', employees: 0, hoursWorked: 0, leaveRate: 0 },
+        { name: 'Équipe A', employees: 0, hoursWorked: 0, leaveRate: 0 },
+        { name: 'Équipe B', employees: 0, hoursWorked: 0, leaveRate: 0 },
       ]
 
       render(<DirectorTeamsChart teamStats={stats} />)
 
-      // Multiple elements avec le meme texte (2 equipes a 0%)
+      // Multiple elements avec le meme texte (2 équipes a 0%)
       expect(screen.getAllByText('0 (0%)').length).toBe(2)
     })
   })
@@ -127,10 +127,10 @@ describe('DirectorTeamsChart', () => {
       expect(screen.getByTestId('pie-chart')).toBeInTheDocument()
     })
 
-    it('devrait afficher 0 employes au total si liste vide', () => {
+    it('devrait afficher 0 employés au total si liste vide', () => {
       render(<DirectorTeamsChart teamStats={[]} />)
 
-      expect(screen.getByText('0 employe au total')).toBeInTheDocument()
+      expect(screen.getByText('0 employé au total')).toBeInTheDocument()
     })
   })
 
@@ -148,7 +148,7 @@ describe('DirectorTeamsChart', () => {
     it('ne devrait pas afficher la liste en chargement', () => {
       render(<DirectorTeamsChart teamStats={mockTeamStats} isLoading={true} />)
 
-      expect(screen.queryByText('Equipe A')).not.toBeInTheDocument()
+      expect(screen.queryByText('Équipe A')).not.toBeInTheDocument()
     })
   })
 

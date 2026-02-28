@@ -84,7 +84,7 @@ export function EmployeeStats({
   // Construction des StatCards avec variants Cyber Glass 3D
   const statCards: StatCardProps[] = [
     {
-      title: 'Heures travaillees',
+      title: 'Heures travaillées',
       value: formatHours(stats.hoursWorked.current),
       icon: Clock,
       trend: formatTrend(stats.hoursWorked),
@@ -92,18 +92,18 @@ export function EmployeeStats({
       variant: 'primary',
     },
     {
-      title: 'Shifts a venir',
+      title: 'Shifts à venir',
       value: stats.upcomingShifts,
       icon: Calendar,
-      description: 'Planifies',
+      description: 'Planifiés',
       variant: 'info',
     },
     {
-      title: 'Solde conges',
+      title: 'Solde congés',
       value: stats.leaveBalance.remaining,
       icon: Plane,
       unit: ' jours',
-      description: `${stats.leaveBalance.used}/${stats.leaveBalance.total} utilises`,
+      description: `${stats.leaveBalance.used}/${stats.leaveBalance.total} utilisés`,
       variant: 'success',
     },
     {
@@ -124,7 +124,7 @@ export function EmployeeStats({
       <div
         className={cn('grid grid-cols-2 gap-4 md:grid-cols-4', className)}
         role="region"
-        aria-label="Statistiques employee"
+        aria-label="Statistiques employé"
       >
         {statCards.map((stat, index) => (
           <StatCard key={index} {...stat} isLoading={isLoading} />
@@ -140,7 +140,7 @@ export function EmployeeStats({
       animate="visible"
       className={cn('grid grid-cols-2 gap-4 md:grid-cols-4', className)}
       role="region"
-      aria-label="Statistiques employee"
+      aria-label="Statistiques employé"
     >
       {statCards.map((stat, index) => (
         <motion.div key={index} variants={staggerItem}>

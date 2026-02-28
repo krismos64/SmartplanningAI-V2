@@ -26,7 +26,7 @@ export const webSiteSchema = {
   name: 'SmartPlanning',
   url: baseUrl,
   description:
-    'Logiciel SaaS francais de gestion de plannings pour TPE et PME.',
+    'Logiciel SaaS français de gestion de plannings pour TPE et PME.',
   inLanguage: 'fr-FR',
   publisher: { '@id': `${baseUrl}/#organization` },
 }
@@ -38,7 +38,7 @@ export const organizationSchema = {
   name: 'SmartPlanning',
   alternateName: 'Smart Planning',
   description:
-    'SmartPlanning est un logiciel SaaS francais de gestion de planning pour entreprises. Solution moderne et intuitive pour TPE, PME et grandes entreprises.',
+    'SmartPlanning est un logiciel SaaS français de gestion de planning pour entreprises. Solution moderne et intuitive pour TPE, PME et grandes entreprises.',
   url: baseUrl,
   logo: {
     '@type': 'ImageObject',
@@ -66,7 +66,7 @@ export const softwareAppSchema = {
   applicationSubCategory: 'Workforce Management Software',
   operatingSystem: 'Web Browser',
   description:
-    'Logiciel SaaS de gestion de plannings pour TPE et PME francaises.',
+    'Logiciel SaaS de gestion de plannings pour TPE et PME françaises.',
   offers: {
     '@type': 'Offer',
     price: String(PRICING.PRICE_PER_EMPLOYEE),
@@ -75,7 +75,7 @@ export const softwareAppSchema = {
       '@type': 'UnitPriceSpecification',
       price: String(PRICING.PRICE_PER_EMPLOYEE),
       priceCurrency: PRICING.CURRENCY,
-      unitText: 'employe par mois',
+      unitText: 'employé par mois',
       referenceQuantity: {
         '@type': 'QuantitativeValue',
         value: '1',

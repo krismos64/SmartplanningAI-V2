@@ -56,10 +56,10 @@ export function DirectorTeamsChart({
     <Card className={cn('overflow-hidden', className)}>
       <CardHeader className="pb-2">
         <CardTitle className="text-base font-medium">
-          Repartition par equipe
+          Répartition par équipe
         </CardTitle>
         <p className="text-sm text-muted-foreground">
-          {totalEmployees} employe{totalEmployees > 1 ? 's' : ''} au total
+          {totalEmployees} employé{totalEmployees > 1 ? 's' : ''} au total
         </p>
       </CardHeader>
       <CardContent>
@@ -68,13 +68,13 @@ export function DirectorTeamsChart({
           dataKey="value"
           height={250}
           isLoading={isLoading}
-          emptyMessage="Aucune equipe configuree"
+          emptyMessage="Aucune équipe configurée"
           innerRadius={50}
           outerRadius={100}
           showLegend={false}
           showLabels={false}
           colors={colors}
-          title="Repartition des effectifs par equipe"
+          title="Répartition des effectifs par équipe"
         />
 
         {/* Liste des equipes */}

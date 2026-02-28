@@ -48,7 +48,7 @@ describe('AdminPlansChart', () => {
         />
       )
 
-      expect(screen.getByText('Repartition des plans')).toBeInTheDocument()
+      expect(screen.getByText('Répartition des plans')).toBeInTheDocument()
     })
 
     it('devrait rendre le total des abonnements', () => {

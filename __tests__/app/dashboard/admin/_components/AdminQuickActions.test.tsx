@@ -136,16 +136,16 @@ describe('AdminQuickActions', () => {
   })
 
   // ==========================================================================
-  // Bouton Parametres
+  // Bouton Paramètres
   // ==========================================================================
 
-  describe('bouton Parametres', () => {
-    it('devrait rendre le bouton Parametres', () => {
+  describe('bouton Paramètres', () => {
+    it('devrait rendre le bouton Paramètres', () => {
       render(
         <AdminQuickActions totalCompanies={150} activeSubscriptions={120} />
       )
 
-      expect(screen.getByText('Parametres')).toBeInTheDocument()
+      expect(screen.getByText('Paramètres')).toBeInTheDocument()
     })
 
     it('devrait avoir le bon lien', () => {
@@ -153,7 +153,7 @@ describe('AdminQuickActions', () => {
         <AdminQuickActions totalCompanies={150} activeSubscriptions={120} />
       )
 
-      const link = screen.getByRole('link', { name: /parametres/i })
+      const link = screen.getByRole('link', { name: /paramètres/i })
       expect(link).toHaveAttribute('href', '/admin/settings')
     })
 
@@ -162,8 +162,8 @@ describe('AdminQuickActions', () => {
         <AdminQuickActions totalCompanies={150} activeSubscriptions={120} />
       )
 
-      // Le bouton Parametres n'a pas de badge
-      const parametresLink = screen.getByRole('link', { name: /parametres/i })
+      // Le bouton Paramètres n'a pas de badge
+      const parametresLink = screen.getByRole('link', { name: /paramètres/i })
       const badge = parametresLink.querySelector('.rounded-full')
       expect(badge).toBeNull()
     })

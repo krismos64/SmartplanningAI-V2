@@ -86,17 +86,17 @@ export const metadata: Metadata = {
     template: '%s | SmartPlanning',
   },
   description:
-    "Solution SaaS de gestion des plannings d'entreprise. Automatisez vos plannings, gerez vos equipes et optimisez votre organisation. Essai gratuit 21 jours.",
+    "Solution SaaS de gestion des plannings d'entreprise. Automatisez vos plannings, gérez vos équipes et optimisez votre organisation. Essai gratuit 21 jours.",
   keywords: [
     'logiciel gestion planning entreprise',
-    'outil planning equipe en ligne',
-    'SaaS planning francais',
+    'outil planning équipe en ligne',
+    'SaaS planning français',
     'planning TPE PME',
-    'gestion conges en ligne',
+    'gestion congés en ligne',
     'alternative planning Excel',
-    'logiciel RH francais',
-    'planning employes en ligne',
-    'gestion horaires equipe',
+    'logiciel RH français',
+    'planning employés en ligne',
+    'gestion horaires équipe',
     'solution planning cloud',
   ],
   authors: [
@@ -112,7 +112,7 @@ export const metadata: Metadata = {
     url: 'https://smartplanning.fr',
     title: 'SmartPlanning - Gestion intelligente des plannings',
     description:
-      "Solution SaaS de gestion des plannings d'entreprise. Automatisez vos plannings, gerez vos equipes et optimisez votre organisation. Essai gratuit 21 jours.",
+      "Solution SaaS de gestion des plannings d'entreprise. Automatisez vos plannings, gérez vos équipes et optimisez votre organisation. Essai gratuit 21 jours.",
     siteName: 'SmartPlanning',
     images: [
       {
@@ -138,7 +138,7 @@ export const metadata: Metadata = {
     site: '@smartplanning',
     title: 'SmartPlanning - Gestion intelligente des plannings',
     description:
-      "Solution SaaS de gestion des plannings d'entreprise. Automatisez vos plannings, gerez vos equipes et optimisez votre organisation. Essai gratuit 21 jours.",
+      "Solution SaaS de gestion des plannings d'entreprise. Automatisez vos plannings, gérez vos équipes et optimisez votre organisation. Essai gratuit 21 jours.",
     images: [
       {
         url: '/twitter-image.png',

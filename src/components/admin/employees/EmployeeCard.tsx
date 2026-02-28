@@ -62,7 +62,7 @@ export function EmployeeCard({
           <Checkbox
             checked={selected}
             onCheckedChange={(v) => onSelectChange(!!v)}
-            aria-label={`Selectionner ${employee.firstName} ${employee.lastName}`}
+            aria-label={`Sélectionner ${employee.firstName} ${employee.lastName}`}
             className="mt-1"
           />
 
@@ -104,7 +104,7 @@ export function EmployeeCard({
                     {onView && (
                       <DropdownMenuItem onClick={onView}>
                         <Eye className="mr-2 h-4 w-4" />
-                        Voir details
+                        Voir détails
                       </DropdownMenuItem>
                     )}
                     {onEdit && (
@@ -118,7 +118,7 @@ export function EmployeeCard({
                         {employee.isActive ? (
                           <>
                             <PowerOff className="mr-2 h-4 w-4" />
-                            Desactiver
+                            Désactiver
                           </>
                         ) : (
                           <>

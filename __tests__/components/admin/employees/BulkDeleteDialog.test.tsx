@@ -51,7 +51,7 @@ describe('BulkDeleteDialog', () => {
     it('affiche le titre avec le nombre d employés', () => {
       render(<BulkDeleteDialog {...defaultProps} />)
       expect(
-        screen.getByText('Supprimer 3 employes')
+        screen.getByText('Supprimer 3 employés')
       ).toBeInTheDocument()
     })
 
@@ -60,20 +60,20 @@ describe('BulkDeleteDialog', () => {
         <BulkDeleteDialog {...defaultProps} selectedCount={1} selectedIds={['id-1']} />
       )
       expect(
-        screen.getByText('Supprimer 1 employe')
+        screen.getByText('Supprimer 1 employé')
       ).toBeInTheDocument()
     })
 
     it('affiche le nombre d employés dans la description', () => {
       render(<BulkDeleteDialog {...defaultProps} />)
-      expect(screen.getByText('3 employes')).toBeInTheDocument()
+      expect(screen.getByText('3 employés')).toBeInTheDocument()
     })
 
     it('affiche l avertissement sur les données cascade', () => {
       render(<BulkDeleteDialog {...defaultProps} />)
       expect(
         screen.getByText(
-          /Les plannings et demandes de conge associes seront egalement supprimes/
+          /Les plannings et demandes de congé associés seront également/
         )
       ).toBeInTheDocument()
     })
@@ -81,7 +81,7 @@ describe('BulkDeleteDialog', () => {
     it('affiche le message d action irréversible', () => {
       render(<BulkDeleteDialog {...defaultProps} />)
       expect(
-        screen.getByText('Cette action est irreversible.')
+        screen.getByText('Cette action est irréversible.')
       ).toBeInTheDocument()
     })
 

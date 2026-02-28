@@ -21,7 +21,7 @@ const mockPendingLeaves: PendingLeaveItem[] = [
   {
     id: '1',
     employeeName: 'Jean Dupont',
-    teamName: 'Equipe A',
+    teamName: 'Équipe A',
     startDate: new Date('2025-06-15'),
     endDate: new Date('2025-06-20'),
     type: 'PAID_LEAVE',
@@ -29,7 +29,7 @@ const mockPendingLeaves: PendingLeaveItem[] = [
   {
     id: '2',
     employeeName: 'Marie Martin',
-    teamName: 'Equipe B',
+    teamName: 'Équipe B',
     startDate: new Date('2025-06-18'),
     endDate: new Date('2025-06-18'),
     type: 'RTT',
@@ -37,7 +37,7 @@ const mockPendingLeaves: PendingLeaveItem[] = [
   {
     id: '3',
     employeeName: 'Pierre Durand',
-    teamName: 'Equipe C',
+    teamName: 'Équipe C',
     startDate: new Date('2025-06-22'),
     endDate: new Date('2025-06-25'),
     type: 'SICK_LEAVE',
@@ -62,7 +62,7 @@ describe('DirectorPendingLeaves', () => {
         />
       )
 
-      expect(screen.getByText('Conges en attente')).toBeInTheDocument()
+      expect(screen.getByText('Congés en attente')).toBeInTheDocument()
     })
 
     it('devrait afficher le nombre de demandes (singulier)', () => {
@@ -128,7 +128,7 @@ describe('DirectorPendingLeaves', () => {
       expect(screen.getByText('Pierre Durand')).toBeInTheDocument()
     })
 
-    it('devrait afficher les equipes et types', () => {
+    it('devrait afficher les équipes et types', () => {
       render(
         <DirectorPendingLeaves
           pendingLeaves={mockPendingLeaves}
@@ -136,8 +136,8 @@ describe('DirectorPendingLeaves', () => {
         />
       )
 
-      expect(screen.getByText(/Equipe A/)).toBeInTheDocument()
-      expect(screen.getByText(/Conges payes/)).toBeInTheDocument()
+      expect(screen.getByText(/Équipe A/)).toBeInTheDocument()
+      expect(screen.getByText(/Congés payés/)).toBeInTheDocument()
     })
 
     it('devrait afficher les types de conges traduits', () => {
@@ -198,7 +198,7 @@ describe('DirectorPendingLeaves', () => {
       render(<DirectorPendingLeaves pendingLeaves={[]} totalPending={0} />)
 
       expect(
-        screen.getByText('Toutes les demandes ont ete traitees')
+        screen.getByText('Toutes les demandes ont été traitées')
       ).toBeInTheDocument()
     })
 

@@ -92,14 +92,14 @@ export function createEmployeeColumns(
             (table.getIsSomePageRowsSelected() && 'indeterminate')
           }
           onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-          aria-label="Tout selectionner"
+          aria-label="Tout sélectionner"
         />
       ),
       cell: ({ row }) => (
         <Checkbox
           checked={row.getIsSelected()}
           onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label="Selectionner la ligne"
+          aria-label="Sélectionner la ligne"
         />
       ),
       enableSorting: false,
@@ -109,7 +109,7 @@ export function createEmployeeColumns(
     // Nom complet de l'employe
     {
       accessorKey: 'lastName',
-      header: 'Employe',
+      header: 'Employé',
       cell: ({ row }) => {
         const employee = row.original
         return (
@@ -155,10 +155,10 @@ export function createEmployeeColumns(
       },
     },
 
-    // Equipe
+    // Équipe
     {
       accessorKey: 'team.name',
-      header: 'Equipe',
+      header: 'Équipe',
       cell: ({ row }) => {
         const team = row.original.team
         return (
@@ -172,10 +172,10 @@ export function createEmployeeColumns(
       },
     },
 
-    // Telephone
+    // Téléphone
     {
       accessorKey: 'phone',
-      header: 'Telephone',
+      header: 'Téléphone',
       cell: ({ row }) => {
         const phone = row.original.phone
         if (!phone) {
@@ -211,7 +211,7 @@ export function createEmployeeColumns(
     // Date d'embauche
     {
       accessorKey: 'hireDate',
-      header: 'Embauche',
+      header: 'Embauché',
       cell: ({ row }) => {
         const date = row.original.hireDate
         if (!date) {
@@ -293,7 +293,7 @@ export function createEmployeeColumns(
                   {employee.isActive ? (
                     <>
                       <PowerOff className="mr-2 h-4 w-4" />
-                      Desactiver
+                      Désactiver
                     </>
                   ) : (
                     <>

@@ -59,7 +59,7 @@ export function DeleteEmployeeDialog({
 
   // Hook mutation pour delete
   const deleteMutation = useDeleteMutation(deleteEmployee, {
-    successMessage: 'Employe supprime avec succes',
+    successMessage: 'Employé supprimé avec succès',
     onSuccess: () => {
       onOpenChange(false)
       onSuccess?.()
@@ -84,12 +84,12 @@ export function DeleteEmployeeDialog({
         <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center gap-2">
             <AlertTriangle className="h-5 w-5 text-destructive" />
-            Supprimer l&apos;employe
+            Supprimer l&apos;employé
           </AlertDialogTitle>
           <AlertDialogDescription asChild>
             <div className="space-y-3">
               <p>
-                Etes-vous sur de vouloir supprimer{' '}
+                Êtes-vous sûr de vouloir supprimer{' '}
                 <span className="font-semibold text-foreground">
                   {employee.firstName} {employee.lastName}
                 </span>{' '}
@@ -99,7 +99,7 @@ export function DeleteEmployeeDialog({
               {hasRelations && (
                 <div className="rounded-md bg-destructive/10 p-3 text-sm">
                   <p className="mb-2 font-medium text-destructive">
-                    Attention : Cet employe a des donnees liees
+                    Attention : Cet employé a des données liées
                   </p>
                   <ul className="list-inside list-disc space-y-1 text-muted-foreground">
                     {hasSchedules && (
@@ -114,25 +114,25 @@ export function DeleteEmployeeDialog({
                         {(employee._count?.leaveRequests ?? 0) > 1
                           ? 's'
                           : ''}{' '}
-                        de conge
+                        de congé
                       </li>
                     )}
                   </ul>
                   <p className="mt-2 text-xs">
-                    Conseil : Desactivez l&apos;employe plutot que de le
+                    Conseil : Désactivez l&apos;employé plutôt que de le
                     supprimer pour conserver l&apos;historique.
                   </p>
                 </div>
               )}
 
               <p className="text-sm text-muted-foreground">
-                Cette action est irreversible.
+                Cette action est irréversible.
               </p>
 
               {userRole === 'DIRECTOR' && employee.isActive && (
                 <div className="rounded-md bg-blue-500/10 p-3 text-sm text-blue-700 dark:text-blue-300">
-                  La facturation sera ajustee au prorata &mdash; un credit
-                  sera applique sur votre prochaine facture.
+                  La facturation sera ajustée au prorata &mdash; un crédit
+                  sera appliqué sur votre prochaine facture.
                 </div>
               )}
             </div>

@@ -70,13 +70,13 @@ describe('EmployeeStats', () => {
     it('devrait afficher les 4 titres de statistiques', () => {
       render(<EmployeeStats stats={mockStats} />)
 
-      expect(screen.getByText('Heures travaillees')).toBeInTheDocument()
-      expect(screen.getByText('Shifts a venir')).toBeInTheDocument()
-      expect(screen.getByText('Solde conges')).toBeInTheDocument()
+      expect(screen.getByText('Heures travaillées')).toBeInTheDocument()
+      expect(screen.getByText('Shifts à venir')).toBeInTheDocument()
+      expect(screen.getByText('Solde congés')).toBeInTheDocument()
       expect(screen.getByText('Demandes en attente')).toBeInTheDocument()
     })
 
-    it('devrait afficher les heures travaillees formatees', () => {
+    it('devrait afficher les heures travaillées formatees', () => {
       render(<EmployeeStats stats={mockStats} />)
 
       // 120.5h = 120h30
@@ -161,7 +161,7 @@ describe('EmployeeStats', () => {
 
       render(<EmployeeStats stats={stats} />)
 
-      expect(screen.getByText('Heures travaillees')).toBeInTheDocument()
+      expect(screen.getByText('Heures travaillées')).toBeInTheDocument()
     })
 
     it('devrait gerer une tendance negative', () => {
@@ -172,7 +172,7 @@ describe('EmployeeStats', () => {
 
       render(<EmployeeStats stats={stats} />)
 
-      expect(screen.getByText('Heures travaillees')).toBeInTheDocument()
+      expect(screen.getByText('Heures travaillées')).toBeInTheDocument()
     })
   })
 
@@ -190,7 +190,7 @@ describe('EmployeeStats', () => {
     it('devrait afficher les conges utilises/total', () => {
       render(<EmployeeStats stats={mockStats} />)
 
-      expect(screen.getByText('10/25 utilises')).toBeInTheDocument()
+      expect(screen.getByText('10/25 utilisés')).toBeInTheDocument()
     })
 
     it('devrait afficher "En cours de traitement" si demandes en attente', () => {
@@ -222,7 +222,7 @@ describe('EmployeeStats', () => {
     it('devrait avoir un aria-label', () => {
       render(<EmployeeStats stats={mockStats} />)
 
-      expect(screen.getByLabelText('Statistiques employee')).toBeInTheDocument()
+      expect(screen.getByLabelText('Statistiques employé')).toBeInTheDocument()
     })
   })
 

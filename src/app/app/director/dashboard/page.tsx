@@ -88,12 +88,12 @@ function NoCompanyAssigned() {
         </svg>
       </div>
       <div className="text-center">
-        <h2 className="text-lg font-semibold">Entreprise non configuree</h2>
+        <h2 className="text-lg font-semibold">Entreprise non configurée</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Votre compte n&apos;est pas associe a une entreprise.
+          Votre compte n&apos;est pas associé à une entreprise.
         </p>
         <p className="text-sm text-muted-foreground">
-          Contactez l&apos;administrateur pour configurer votre acces.
+          Contactez l&apos;administrateur pour configurer votre accès.
         </p>
       </div>
     </div>
@@ -173,7 +173,7 @@ export default async function DirectorDashboardPage() {
     (leave) => ({
       id: leave.id,
       employeeName: `${leave.employee.firstName} ${leave.employee.lastName}`,
-      teamName: leave.employee.team?.name ?? 'Sans equipe',
+      teamName: leave.employee.team?.name ?? 'Sans équipe',
       startDate: leave.startDate,
       endDate: leave.endDate,
       type: leave.type,

@@ -54,7 +54,7 @@ export function EmployeeQuickActions({
                 <path d="M12 5v14" />
                 <path d="M5 12h14" />
               </svg>
-              Demander un conge
+              Demander un congé
             </Link>
           </Button>
 

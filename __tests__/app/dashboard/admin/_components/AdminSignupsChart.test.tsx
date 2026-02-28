@@ -122,7 +122,7 @@ describe('AdminSignupsChart', () => {
     it('devrait afficher un message quand donnees vides', () => {
       render(<AdminSignupsChart companiesGrowth={[]} />)
 
-      expect(screen.getByText('Aucune donnee disponible')).toBeInTheDocument()
+      expect(screen.getByText('Aucune donnée disponible')).toBeInTheDocument()
     })
 
     it('ne devrait pas rendre le chart quand donnees vides', () => {

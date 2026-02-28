@@ -97,7 +97,7 @@ interface EmployeeFormProps {
 const employeeFormSchema = z.object({
   firstName: z
     .string()
-    .min(2, 'Le prenom doit contenir au moins 2 caracteres')
+    .min(2, 'Le prénom doit contenir au moins 2 caractères')
     .max(50),
   lastName: z
     .string()
@@ -154,7 +154,7 @@ export function EmployeeForm({
 
   // Hook mutation pour create
   const createMutation = useCrudMutation(createEmployee, {
-    successMessage: 'Employe cree avec succes',
+    successMessage: 'Employé créé avec succès',
     onSuccess: () => {
       onSuccess?.()
       router.push('/app/dashboard/employees')
@@ -164,7 +164,7 @@ export function EmployeeForm({
 
   // Hook mutation pour update
   const updateMutation = useCrudMutation(updateEmployee, {
-    successMessage: 'Employe modifie avec succes',
+    successMessage: 'Employé modifié avec succès',
     onSuccess: () => {
       onSuccess?.()
       router.push('/app/dashboard/employees')
@@ -276,7 +276,7 @@ export function EmployeeForm({
                 Impact facturation
               </p>
               <p className="mt-1 text-blue-600/90 dark:text-blue-400/90">
-                Chaque employe actif coute{' '}
+                Chaque employé actif coûte{' '}
                 <strong>2,90&nbsp;&euro;/mois</strong>.
                 L&apos;ajout sera facture au prorata des jours restants
                 ce mois-ci (environ{' '}
@@ -294,7 +294,7 @@ export function EmployeeForm({
                 <strong>
                   {newMonthlyAmount.toFixed(2).replace('.', ',')}&nbsp;&euro;
                 </strong>{' '}
-                ({billingInfo!.employeeCount + 1} employes).
+                ({billingInfo!.employeeCount + 1} employés).
               </p>
             </div>
           </div>
@@ -316,7 +316,7 @@ export function EmployeeForm({
                 name="firstName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Prenom *</FormLabel>
+                    <FormLabel>Prénom *</FormLabel>
                     <FormControl>
                       <Input
                         placeholder="Jean"
@@ -349,13 +349,13 @@ export function EmployeeForm({
               />
             </div>
 
-            {/* Telephone */}
+            {/* Téléphone */}
             <FormField
               control={form.control}
               name="phone"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Telephone</FormLabel>
+                  <FormLabel>Téléphone</FormLabel>
                   <FormControl>
                     <div className="relative">
                       <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -417,7 +417,7 @@ export function EmployeeForm({
               name="teamId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Equipe {isTeamRequired && '*'}</FormLabel>
+                  <FormLabel>Équipe {isTeamRequired && '*'}</FormLabel>
                   <FormControl>
                     <div className="relative">
                       <Users className="absolute left-3 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -430,7 +430,7 @@ export function EmployeeForm({
                         }
                       >
                         <SelectTrigger className="pl-10">
-                          <SelectValue placeholder="Selectionner une equipe" />
+                          <SelectValue placeholder="Sélectionner une équipe" />
                         </SelectTrigger>
                         <SelectContent>
                           {teams.map((team) => (
@@ -444,7 +444,7 @@ export function EmployeeForm({
                   </FormControl>
                   {isTeamRequired && (
                     <FormDescription>
-                      En tant que manager, l&apos;equipe est obligatoire
+                      En tant que manager, l&apos;équipe est obligatoire
                     </FormDescription>
                   )}
                   <FormMessage />
@@ -524,7 +524,7 @@ export function EmployeeForm({
               render={({ field }) => (
                 <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                   <div className="space-y-0.5">
-                    <FormLabel className="text-base">Employe actif</FormLabel>
+                    <FormLabel className="text-base">Employé actif</FormLabel>
                     <FormDescription>
                       Un employe inactif n&apos;apparait plus dans les plannings
                     </FormDescription>
@@ -562,10 +562,10 @@ export function EmployeeForm({
             {isPending
               ? isEditing
                 ? 'Modification...'
-                : 'Creation...'
+                : 'Création...'
               : isEditing
                 ? 'Modifier'
-                : "Creer l'employe"}
+                : "Créer l'employé"}
           </Button>
         </div>
       </form>
@@ -575,11 +575,11 @@ export function EmployeeForm({
         <AlertDialog open={showBillingConfirm} onOpenChange={setShowBillingConfirm}>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Confirmer la creation</AlertDialogTitle>
+              <AlertDialogTitle>Confirmer la création</AlertDialogTitle>
               <AlertDialogDescription asChild>
                 <div className="space-y-3 text-sm text-muted-foreground">
                   <p>
-                    Cet employe sera facture{' '}
+                    Cet employé sera facturé{' '}
                     <span className="font-semibold text-foreground">
                       2,90&nbsp;&euro;/mois
                     </span>{' '}
@@ -599,7 +599,7 @@ export function EmployeeForm({
                       <span className="font-semibold">
                         {newMonthlyAmount.toFixed(2).replace('.', ',')}&nbsp;&euro;
                       </span>{' '}
-                      ({billingInfo!.employeeCount + 1} employes)
+                      ({billingInfo!.employeeCount + 1} employés)
                     </p>
                   </div>
                 </div>
@@ -612,7 +612,7 @@ export function EmployeeForm({
                 disabled={isPending}
                 data-testid="confirm-create-employee-btn"
               >
-                {isPending ? 'Creation...' : 'Confirmer la creation'}
+                {isPending ? 'Création...' : 'Confirmer la création'}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

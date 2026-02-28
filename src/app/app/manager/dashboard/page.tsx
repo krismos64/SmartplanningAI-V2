@@ -83,12 +83,12 @@ function NoTeamAssigned() {
         </svg>
       </div>
       <div className="text-center">
-        <h2 className="text-lg font-semibold">Aucune equipe assignee</h2>
+        <h2 className="text-lg font-semibold">Aucune équipe assignée</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Vous n&apos;etes pas assigne a une equipe en tant que manager.
+          Vous n&apos;êtes pas assigné à une équipe en tant que manager.
         </p>
         <p className="text-sm text-muted-foreground">
-          Contactez votre administrateur pour configurer votre acces.
+          Contactez votre administrateur pour configurer votre accès.
         </p>
       </div>
     </div>

@@ -78,10 +78,10 @@ export function PricingSection() {
                     />
                     <div>
                       <p className="text-sm font-medium text-foreground">
-                        Equipe de plus de {LARGE_TEAM_THRESHOLD} employes ?
+                        Équipe de plus de {LARGE_TEAM_THRESHOLD} employés ?
                       </p>
                       <p className="mt-1 text-sm text-muted-foreground">
-                        Contactez-nous pour un accompagnement personnalise.
+                        Contactez-nous pour un accompagnement personnalisé.
                       </p>
                       <Link
                         href="/#contact"

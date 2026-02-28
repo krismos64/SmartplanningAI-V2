@@ -166,7 +166,7 @@ describe('EmployeeSchedule', () => {
       render(<EmployeeSchedule weeklySchedule={[]} />)
 
       expect(
-        screen.getByText('Aucun shift planifie cette semaine')
+        screen.getByText('Aucun shift planifié cette semaine')
       ).toBeInTheDocument()
     })
   })

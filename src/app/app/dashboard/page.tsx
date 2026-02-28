@@ -79,9 +79,9 @@ function NoEmployeeProfile() {
         </svg>
       </div>
       <div className="text-center">
-        <h2 className="text-lg font-semibold">Profil employe non configure</h2>
+        <h2 className="text-lg font-semibold">Profil employé non configuré</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Votre compte utilisateur n&apos;est pas lie a un profil employe.
+          Votre compte utilisateur n&apos;est pas lié à un profil employé.
         </p>
         <p className="text-sm text-muted-foreground">
           Contactez votre administrateur pour configurer votre profil.

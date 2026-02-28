@@ -18,18 +18,18 @@ export const metadata: Metadata = {
   title: 'SmartPlanning — Logiciel de gestion de planning pour entreprises',
 
   description:
-    'Simplifiez la gestion des plannings de votre equipe. Solution SaaS francaise pour TPE et PME. Essai gratuit 21 jours, a partir de 2,90\u00a0\u20ac/employe/mois.',
+    'Simplifiez la gestion des plannings de votre équipe. Solution SaaS française pour TPE et PME. Essai gratuit 21 jours, à partir de 2,90\u00a0\u20ac/employé/mois.',
 
   keywords: [
     'logiciel gestion planning entreprise',
-    'outil planning equipe en ligne',
-    'SaaS planning francais',
+    'outil planning équipe en ligne',
+    'SaaS planning français',
     'planning TPE PME',
-    'gestion conges en ligne',
+    'gestion congés en ligne',
     'alternative planning Excel',
-    'logiciel RH francais',
-    'planning employes en ligne',
-    'gestion horaires equipe',
+    'logiciel RH français',
+    'planning employés en ligne',
+    'gestion horaires équipe',
     'solution planning cloud',
   ],
 
@@ -53,9 +53,9 @@ export const metadata: Metadata = {
   },
 
   openGraph: {
-    title: 'SmartPlanning — Gestion de planning simplifiee pour entreprises',
+    title: 'SmartPlanning — Gestion de planning simplifiée pour entreprises',
     description:
-      'Gerez les plannings de votre equipe en quelques clics. Solution SaaS francaise, essai gratuit 21 jours.',
+      'Gérez les plannings de votre équipe en quelques clics. Solution SaaS française, essai gratuit 21 jours.',
     type: 'website',
     url: baseUrl,
     siteName: 'SmartPlanning',
@@ -75,7 +75,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'SmartPlanning — Gestion de planning pour entreprises',
     description:
-      'Solution SaaS francaise de gestion des plannings. Essai gratuit 21 jours.',
+      'Solution SaaS française de gestion des plannings. Essai gratuit 21 jours.',
     creator: '@smartplanning',
   },
 

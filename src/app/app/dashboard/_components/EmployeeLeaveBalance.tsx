@@ -33,7 +33,7 @@ export interface EmployeeLeaveBalanceProps {
  */
 function formatChartData(balance: LeaveBalance) {
   return [
-    { name: 'Utilises', value: balance.used },
+    { name: 'Utilisés', value: balance.used },
     { name: 'Restants', value: balance.remaining },
   ]
 }
@@ -68,7 +68,7 @@ export function EmployeeLeaveBalance({
   return (
     <Card className={cn('overflow-hidden', className)}>
       <CardHeader className="pb-2">
-        <CardTitle className="text-base font-medium">Solde de conges</CardTitle>
+        <CardTitle className="text-base font-medium">Solde de congés</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="relative">
@@ -82,8 +82,8 @@ export function EmployeeLeaveBalance({
             innerRadius={60}
             outerRadius={80}
             colors={chartColors}
-            emptyMessage="Aucune donnee de conges"
-            title="Repartition des conges"
+            emptyMessage="Aucune donnée de congés"
+            title="Répartition des congés"
           />
 
           {/* Label central */}
@@ -100,7 +100,7 @@ export function EmployeeLeaveBalance({
         {/* Resume textuel */}
         <div className="mt-4 grid grid-cols-3 gap-2 text-center text-sm">
           <div>
-            <p className="text-muted-foreground">Utilises</p>
+            <p className="text-muted-foreground">Utilisés</p>
             <p className="font-semibold">{leaveBalance.used} j</p>
           </div>
           <div>
@@ -119,7 +119,7 @@ export function EmployeeLeaveBalance({
         <div className="mt-4">
           <div className="mb-1 flex justify-between text-xs text-muted-foreground">
             <span>{percentRemaining}% restants</span>
-            <span>{100 - percentRemaining}% utilises</span>
+            <span>{100 - percentRemaining}% utilisés</span>
           </div>
           <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
             <div
@@ -129,7 +129,7 @@ export function EmployeeLeaveBalance({
               aria-valuenow={percentRemaining}
               aria-valuemin={0}
               aria-valuemax={100}
-              aria-label={`${percentRemaining}% de conges restants`}
+              aria-label={`${percentRemaining}% de congés restants`}
             />
           </div>
         </div>

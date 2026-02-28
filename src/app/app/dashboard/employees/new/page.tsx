@@ -19,8 +19,8 @@ import { getTeamsForSelect } from '@/lib/actions/employees'
 import { prisma } from '@/lib/prisma'
 
 export const metadata: Metadata = {
-  title: 'Nouvel employe | SmartPlanning',
-  description: 'Creer un nouvel employe',
+  title: 'Nouvel employé | SmartPlanning',
+  description: 'Créer un nouvel employé',
 }
 
 export default async function NewEmployeePage() {
@@ -99,10 +99,10 @@ export default async function NewEmployeePage() {
             </div>
             <div>
               <h1 className="text-2xl font-bold tracking-tight">
-                Nouvel employe
+                Nouvel employé
               </h1>
               <p className="text-sm text-muted-foreground">
-                Creer un nouveau profil employe
+                Créer un nouveau profil employé
               </p>
             </div>
           </div>

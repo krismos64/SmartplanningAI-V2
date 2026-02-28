@@ -109,8 +109,8 @@ export function PricingPageContent() {
                 className="mx-auto max-w-3xl text-lg leading-relaxed text-muted-foreground"
                 data-testid="pricing-hero-description"
               >
-                SmartPlanning coute 2,90&nbsp;&euro; HT par employe par mois.
-                Toutes les fonctionnalites sont incluses. Sans engagement. Essai
+                SmartPlanning coûte 2,90&nbsp;&euro; HT par employé par mois.
+                Toutes les fonctionnalités sont incluses. Sans engagement. Essai
                 gratuit {PRICING.TRIAL_DAYS} jours sans carte bancaire.
               </motion.p>
             </motion.div>
@@ -126,7 +126,7 @@ export function PricingPageContent() {
               title="Simulateur"
               titleHighlight="interactif"
               titleId="simulator-title"
-              description="Ajustez le nombre d'employes pour decouvrir votre tarif mensuel."
+              description="Ajustez le nombre d'employés pour découvrir votre tarif mensuel."
               marginBottom="mb-12"
             />
 
@@ -151,10 +151,10 @@ export function PricingPageContent() {
                       />
                       <div>
                         <p className="text-sm font-medium text-foreground">
-                          Equipe de plus de {LARGE_TEAM_THRESHOLD} employes ?
+                          Équipe de plus de {LARGE_TEAM_THRESHOLD} employés ?
                         </p>
                         <p className="mt-1 text-sm text-muted-foreground">
-                          Contactez-nous pour un accompagnement personnalise.
+                          Contactez-nous pour un accompagnement personnalisé.
                         </p>
                         <Link
                           href="/#contact"
@@ -187,7 +187,7 @@ export function PricingPageContent() {
               title="Ce qui est"
               titleHighlight="inclus"
               titleId="features-title"
-              description="Un seul tarif, toutes les fonctionnalites. Aucun supplement."
+              description="Un seul tarif, toutes les fonctionnalités. Aucun supplément."
               marginBottom="mb-12"
             />
 
@@ -202,7 +202,7 @@ export function PricingPageContent() {
                 <motion.ul
                   className="space-y-4"
                   role="list"
-                  aria-label="Fonctionnalites incluses"
+                  aria-label="Fonctionnalités incluses"
                 >
                   {INCLUDED_FEATURES.map((feature) => (
                     <motion.li

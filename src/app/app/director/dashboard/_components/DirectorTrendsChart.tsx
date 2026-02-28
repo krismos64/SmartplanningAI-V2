@@ -54,7 +54,7 @@ export function DirectorTrendsChart({
         <div className="flex items-center justify-between">
           <div>
             <CardTitle className="text-base font-medium">
-              Evolution des effectifs
+              Évolution des effectifs
             </CardTitle>
             <p className="text-sm text-muted-foreground">6 derniers mois</p>
           </div>

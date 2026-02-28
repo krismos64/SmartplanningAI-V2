@@ -40,7 +40,7 @@ describe('AdminMrrChart', () => {
     it('devrait rendre le titre', () => {
       render(<AdminMrrChart companiesGrowth={mockCompaniesGrowth} />)
 
-      expect(screen.getByText('Evolution des entreprises')).toBeInTheDocument()
+      expect(screen.getByText('Évolution des entreprises')).toBeInTheDocument()
     })
 
     it('devrait rendre le sous-titre', () => {
@@ -115,7 +115,7 @@ describe('AdminMrrChart', () => {
     it('devrait afficher un message quand donnees vides', () => {
       render(<AdminMrrChart companiesGrowth={[]} />)
 
-      expect(screen.getByText('Aucune donnee disponible')).toBeInTheDocument()
+      expect(screen.getByText('Aucune donnée disponible')).toBeInTheDocument()
     })
 
     it('ne devrait pas rendre le chart quand donnees vides', () => {

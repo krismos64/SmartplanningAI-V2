@@ -313,10 +313,10 @@ describe('AdminStats', () => {
   // ==========================================================================
 
   describe('description churn', () => {
-    it('devrait afficher Retention saine pour churn <= 5%', () => {
+    it('devrait afficher Rétention saine pour churn <= 5%', () => {
       render(<AdminStats stats={mockStats} />)
 
-      expect(screen.getByText('Retention saine')).toBeInTheDocument()
+      expect(screen.getByText('Rétention saine')).toBeInTheDocument()
     })
 
     it('devrait afficher Attention requise pour churn > 5%', () => {

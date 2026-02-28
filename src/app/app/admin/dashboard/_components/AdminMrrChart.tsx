@@ -64,7 +64,7 @@ export function AdminMrrChart({
         <div className="flex items-center justify-between">
           <div className="space-y-1">
             <CardTitle className="text-base font-medium">
-              Evolution des entreprises
+              Évolution des entreprises
             </CardTitle>
             <p className="text-sm text-muted-foreground">6 derniers mois</p>
           </div>
@@ -125,7 +125,7 @@ export function AdminMrrChart({
           />
         ) : (
           <div className="flex h-[200px] items-center justify-center text-sm text-muted-foreground">
-            Aucune donnee disponible
+            Aucune donnée disponible
           </div>
         )}
       </CardContent>

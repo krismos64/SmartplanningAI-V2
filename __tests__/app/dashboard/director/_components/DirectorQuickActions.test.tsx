@@ -28,16 +28,16 @@ describe('DirectorQuickActions', () => {
       render(<DirectorQuickActions />)
 
       expect(
-        screen.getByRole('link', { name: /Gerer les equipes/ })
+        screen.getByRole('link', { name: /Gérer les équipes/ })
       ).toBeInTheDocument()
       expect(
-        screen.getByRole('link', { name: /Tous les employes/ })
+        screen.getByRole('link', { name: /Tous les employés/ })
       ).toBeInTheDocument()
       expect(
-        screen.getByRole('link', { name: /Conges en attente/ })
+        screen.getByRole('link', { name: /Congés en attente/ })
       ).toBeInTheDocument()
       expect(
-        screen.getByRole('link', { name: /Parametres/ })
+        screen.getByRole('link', { name: /Paramètres/ })
       ).toBeInTheDocument()
     })
 
@@ -53,31 +53,31 @@ describe('DirectorQuickActions', () => {
   // ==========================================================================
 
   describe('liens corrects', () => {
-    it('devrait avoir le bon lien pour gerer les equipes', () => {
+    it('devrait avoir le bon lien pour gerer les équipes', () => {
       render(<DirectorQuickActions />)
 
-      const link = screen.getByRole('link', { name: /Gerer les equipes/ })
+      const link = screen.getByRole('link', { name: /Gérer les équipes/ })
       expect(link).toHaveAttribute('href', '/app/director/teams')
     })
 
     it('devrait avoir le bon lien pour tous les employes', () => {
       render(<DirectorQuickActions />)
 
-      const link = screen.getByRole('link', { name: /Tous les employes/ })
+      const link = screen.getByRole('link', { name: /Tous les employés/ })
       expect(link).toHaveAttribute('href', '/app/dashboard/employees')
     })
 
-    it('devrait avoir le bon lien pour conges en attente', () => {
+    it('devrait avoir le bon lien pour congés en attente', () => {
       render(<DirectorQuickActions />)
 
-      const link = screen.getByRole('link', { name: /Conges en attente/ })
+      const link = screen.getByRole('link', { name: /Congés en attente/ })
       expect(link).toHaveAttribute('href', '/app/dashboard/leaves')
     })
 
-    it('devrait avoir le bon lien pour parametres', () => {
+    it('devrait avoir le bon lien pour paramètres', () => {
       render(<DirectorQuickActions />)
 
-      const link = screen.getByRole('link', { name: /Parametres/ })
+      const link = screen.getByRole('link', { name: /Paramètres/ })
       expect(link).toHaveAttribute('href', '/app/settings/company')
     })
   })
@@ -87,7 +87,7 @@ describe('DirectorQuickActions', () => {
   // ==========================================================================
 
   describe('badge compteur', () => {
-    it('devrait afficher le badge si des conges en attente', () => {
+    it('devrait afficher le badge si des congés en attente', () => {
       render(<DirectorQuickActions pendingLeaves={5} />)
 
       // Le chiffre apparait dans le badge ET dans le message
@@ -122,19 +122,19 @@ describe('DirectorQuickActions', () => {
   // ==========================================================================
 
   describe('message informatif', () => {
-    it('devrait afficher le message si conges en attente (singulier)', () => {
+    it('devrait afficher le message si congés en attente (singulier)', () => {
       const { container } = render(<DirectorQuickActions pendingLeaves={1} />)
 
       expect(container.textContent).toContain(
-        'demande de conges en attente de validation'
+        'demande de congés en attente de validation'
       )
     })
 
-    it('devrait afficher le message si conges en attente (pluriel)', () => {
+    it('devrait afficher le message si congés en attente (pluriel)', () => {
       const { container } = render(<DirectorQuickActions pendingLeaves={5} />)
 
       expect(container.textContent).toContain(
-        'demandes de conges en attente de validation'
+        'demandes de congés en attente de validation'
       )
     })
 

@@ -44,7 +44,7 @@ describe('AdminWelcome', () => {
       expect(screen.getByText('Admin')).toBeInTheDocument()
     })
 
-    it('devrait afficher Bon apres-midi a 14h', () => {
+    it('devrait afficher Bon après-midi a 14h', () => {
       vi.useFakeTimers()
       vi.setSystemTime(new Date(2025, 5, 15, 14, 0, 0))
 
@@ -58,7 +58,7 @@ describe('AdminWelcome', () => {
         />
       )
 
-      expect(screen.getByText(/Bon apres-midi/)).toBeInTheDocument()
+      expect(screen.getByText(/Bon après-midi/)).toBeInTheDocument()
       expect(screen.getByText('Admin')).toBeInTheDocument()
     })
 

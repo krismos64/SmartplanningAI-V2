@@ -37,7 +37,7 @@ function getGreeting(): string {
     return 'Bonjour'
   }
   if (hour >= 12 && hour < 18) {
-    return 'Bon apres-midi'
+    return 'Bon après-midi'
   }
   return 'Bonsoir'
 }
@@ -185,7 +185,7 @@ export function DirectorWelcome({
                 )}
               >
                 {pendingLeaves > 0
-                  ? `${pendingLeaves} conge${pendingLeaves > 1 ? 's' : ''} en attente`
+                  ? `${pendingLeaves} congé${pendingLeaves > 1 ? 's' : ''} en attente`
                   : 'Aucune alerte'}
               </span>
             </div>

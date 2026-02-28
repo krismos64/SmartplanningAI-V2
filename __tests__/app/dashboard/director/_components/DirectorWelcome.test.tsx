@@ -44,7 +44,7 @@ describe('DirectorWelcome', () => {
       expect(screen.getByText('Marie')).toBeInTheDocument()
     })
 
-    it('devrait afficher Bon apres-midi a 14h', () => {
+    it('devrait afficher Bon après-midi a 14h', () => {
       vi.useFakeTimers()
       vi.setSystemTime(new Date(2025, 5, 15, 14, 0, 0))
 
@@ -57,7 +57,7 @@ describe('DirectorWelcome', () => {
         />
       )
 
-      expect(screen.getByText(/Bon apres-midi/)).toBeInTheDocument()
+      expect(screen.getByText(/Bon après-midi/)).toBeInTheDocument()
       expect(screen.getByText('Marie')).toBeInTheDocument()
     })
 
@@ -193,7 +193,7 @@ describe('DirectorWelcome', () => {
   // ==========================================================================
 
   describe('badge alertes conges', () => {
-    it('devrait afficher Aucune alerte si 0 conges en attente', () => {
+    it('devrait afficher Aucune alerte si 0 congés en attente', () => {
       vi.useFakeTimers()
       vi.setSystemTime(new Date(2025, 5, 15, 10, 0, 0))
 
@@ -209,7 +209,7 @@ describe('DirectorWelcome', () => {
       expect(screen.getByText('Aucune alerte')).toBeInTheDocument()
     })
 
-    it('devrait afficher 1 conge en attente (singulier)', () => {
+    it('devrait afficher 1 congé en attente (singulier)', () => {
       vi.useFakeTimers()
       vi.setSystemTime(new Date(2025, 5, 15, 10, 0, 0))
 
@@ -222,10 +222,10 @@ describe('DirectorWelcome', () => {
         />
       )
 
-      expect(screen.getByText('1 conge en attente')).toBeInTheDocument()
+      expect(screen.getByText('1 congé en attente')).toBeInTheDocument()
     })
 
-    it('devrait afficher X conges en attente (pluriel)', () => {
+    it('devrait afficher X congés en attente (pluriel)', () => {
       vi.useFakeTimers()
       vi.setSystemTime(new Date(2025, 5, 15, 10, 0, 0))
 
@@ -238,7 +238,7 @@ describe('DirectorWelcome', () => {
         />
       )
 
-      expect(screen.getByText('5 conges en attente')).toBeInTheDocument()
+      expect(screen.getByText('5 congés en attente')).toBeInTheDocument()
     })
   })
 

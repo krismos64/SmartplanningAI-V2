@@ -39,7 +39,7 @@ function getGreeting(): string {
     return 'Bonjour'
   }
   if (hour >= 12 && hour < 18) {
-    return 'Bon apres-midi'
+    return 'Bon après-midi'
   }
   return 'Bonsoir'
 }

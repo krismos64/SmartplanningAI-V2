@@ -54,7 +54,7 @@ export async function getEmployeeStats(
     if (!hasAccess) {
       return {
         success: false,
-        error: 'Acces non autorise a cet employe',
+        error: 'Accès non autorisé à cet employé',
       }
     }
 
@@ -307,7 +307,7 @@ export async function getEmployeeHoursOnly(
       companyId
     )
     if (!hasAccess) {
-      return { success: false, error: 'Acces non autorise' }
+      return { success: false, error: 'Accès non autorisé' }
     }
 
     const hoursWorked = await getHoursWorked(employeeId, getDefaultDateRange())
@@ -341,7 +341,7 @@ export async function getEmployeeLeaveBalanceOnly(
       companyId
     )
     if (!hasAccess) {
-      return { success: false, error: 'Acces non autorise' }
+      return { success: false, error: 'Accès non autorisé' }
     }
 
     const balance = await getLeaveBalance(employeeId)

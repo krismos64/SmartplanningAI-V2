@@ -60,7 +60,7 @@ function formatDateRange(startDate: Date, endDate: Date): string {
  * Labels francais pour les types de conges
  */
 const leaveTypeLabels: Record<string, string> = {
-  PAID_LEAVE: 'Conges payes',
+  PAID_LEAVE: 'Congés payés',
   SICK_LEAVE: 'Maladie',
   UNPAID_LEAVE: 'Sans solde',
   RTT: 'RTT',
@@ -91,7 +91,7 @@ export function DirectorPendingLeaves({
         <div className="flex items-center justify-between">
           <div>
             <CardTitle className="text-base font-medium">
-              Conges en attente
+              Congés en attente
             </CardTitle>
             <p className="text-sm text-muted-foreground">
               {totalPending > 0
@@ -132,7 +132,7 @@ export function DirectorPendingLeaves({
               </svg>
             </div>
             <p className="mt-2 text-sm text-muted-foreground">
-              Toutes les demandes ont ete traitees
+              Toutes les demandes ont été traitées
             </p>
           </div>
         ) : (

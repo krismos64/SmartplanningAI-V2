@@ -50,7 +50,7 @@ describe('employee-stats.service', () => {
       })
 
       expect(result.success).toBe(false)
-      expect(result.error).toContain('Acces non autorise')
+      expect(result.error).toContain('Accès non autorisé')
     })
 
     it('devrait retourner les stats completes pour un employe valide', async () => {
@@ -74,7 +74,7 @@ describe('employee-stats.service', () => {
         updatedAt: new Date(),
       })
 
-      // Mock heures travaillees
+      // Mock heures travaillées
       prismaMock.schedule.findMany.mockResolvedValue([
         {
           id: 's-1',
@@ -299,7 +299,7 @@ describe('employee-stats.service', () => {
       const result = await getEmployeeHoursOnly('emp-1', 'company-1')
 
       expect(result.success).toBe(false)
-      expect(result.error).toContain('Acces non autorise')
+      expect(result.error).toContain('Accès non autorisé')
     })
 
     it('devrait retourner uniquement les heures et tendance', async () => {
@@ -406,7 +406,7 @@ describe('employee-stats.service', () => {
       const result = await getEmployeeLeaveBalanceOnly('emp-1', 'company-1')
 
       expect(result.success).toBe(false)
-      expect(result.error).toContain('Acces non autorise')
+      expect(result.error).toContain('Accès non autorisé')
     })
 
     it('devrait retourner uniquement le solde', async () => {

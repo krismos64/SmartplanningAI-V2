@@ -19,9 +19,9 @@ export interface StatsSubscriptionChartProps {
 const STATUS_COLORS: Record<string, string> = {
   Actif: 'hsl(var(--chart-1))',
   Essai: 'hsl(var(--chart-3))',
-  Impaye: 'hsl(var(--chart-5))',
-  Annule: 'hsl(var(--chart-4))',
-  Expire: 'hsl(var(--muted-foreground))',
+  Impayé: 'hsl(var(--chart-5))',
+  Annulé: 'hsl(var(--chart-4))',
+  Expiré: 'hsl(var(--muted-foreground))',
   Incomplet: 'hsl(var(--chart-2))',
 }
 

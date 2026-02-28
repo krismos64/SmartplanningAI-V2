@@ -51,7 +51,7 @@ export async function getManagerStats(
     if (!isManager) {
       return {
         success: false,
-        error: 'Acces non autorise a cette equipe',
+        error: 'Accès non autorisé à cette équipe',
       }
     }
 
@@ -63,7 +63,7 @@ export async function getManagerStats(
     if (team?.companyId !== companyId) {
       return {
         success: false,
-        error: 'Equipe non trouvee dans cette entreprise',
+        error: 'Équipe non trouvée dans cette entreprise',
       }
     }
 
@@ -362,7 +362,7 @@ export async function getManagerPendingRequestsOnly(
   try {
     const isManager = await verifyManagerOfTeam(managerId, teamId)
     if (!isManager) {
-      return { success: false, error: 'Acces non autorise' }
+      return { success: false, error: 'Accès non autorisé' }
     }
 
     const count = await getPendingLeaveRequestsCount(teamId)
@@ -385,7 +385,7 @@ export async function getManagerTodayAbsencesOnly(
   try {
     const isManager = await verifyManagerOfTeam(managerId, teamId)
     if (!isManager) {
-      return { success: false, error: 'Acces non autorise' }
+      return { success: false, error: 'Accès non autorisé' }
     }
 
     const count = await getTodayAbsencesCount(teamId)

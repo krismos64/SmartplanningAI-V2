@@ -59,12 +59,12 @@ describe('EmployeeWelcome', () => {
       expect(screen.getByText(/Bonjour/)).toBeInTheDocument()
     })
 
-    it('devrait afficher "Bon apres-midi" l\'apres-midi (12h-18h)', () => {
+    it('devrait afficher "Bon après-midi" l\'apres-midi (12h-18h)', () => {
       vi.setSystemTime(new Date('2025-06-15T14:00:00'))
 
       render(<EmployeeWelcome userName="Jean" nextShift={null} />)
 
-      expect(screen.getByText(/Bon apres-midi/)).toBeInTheDocument()
+      expect(screen.getByText(/Bon après-midi/)).toBeInTheDocument()
     })
 
     it('devrait afficher "Bonsoir" le soir (18h-5h)', () => {
@@ -149,12 +149,12 @@ describe('EmployeeWelcome', () => {
       expect(elements.length).toBeGreaterThan(0)
     })
 
-    it('devrait afficher "Aucun shift programme" si pas de prochain shift', () => {
+    it('devrait afficher "Aucun shift programmé" si pas de prochain shift', () => {
       vi.setSystemTime(new Date('2025-06-15T10:00:00'))
 
       render(<EmployeeWelcome userName="Jean" nextShift={null} />)
 
-      expect(screen.getByText(/Aucun shift programme/)).toBeInTheDocument()
+      expect(screen.getByText(/Aucun shift programmé/)).toBeInTheDocument()
     })
   })
 

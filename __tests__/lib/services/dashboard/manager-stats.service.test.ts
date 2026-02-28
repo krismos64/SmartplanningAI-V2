@@ -60,7 +60,7 @@ describe('manager-stats.service', () => {
       })
 
       expect(result.success).toBe(false)
-      expect(result.error).toContain('Acces non autorise')
+      expect(result.error).toContain('Accès non autorisé')
     })
 
     it("devrait retourner une erreur si l'equipe n'appartient pas a l'entreprise", async () => {
@@ -93,7 +93,7 @@ describe('manager-stats.service', () => {
       })
 
       expect(result.success).toBe(false)
-      expect(result.error).toContain('Equipe non trouvee')
+      expect(result.error).toContain('Équipe non trouvée')
     })
 
     it('devrait retourner les stats completes pour un manager valide', async () => {
@@ -282,7 +282,7 @@ describe('manager-stats.service', () => {
       const result = await getManagerPendingRequestsOnly('emp-1', 'team-1')
 
       expect(result.success).toBe(false)
-      expect(result.error).toContain('Acces non autorise')
+      expect(result.error).toContain('Accès non autorisé')
     })
 
     it('devrait retourner le nombre de demandes en attente', async () => {
@@ -368,7 +368,7 @@ describe('manager-stats.service', () => {
       const result = await getManagerTodayAbsencesOnly('emp-1', 'team-1')
 
       expect(result.success).toBe(false)
-      expect(result.error).toContain('Acces non autorise')
+      expect(result.error).toContain('Accès non autorisé')
     })
 
     it("devrait retourner le nombre d'absences du jour", async () => {
@@ -490,7 +490,7 @@ describe('manager-stats.service', () => {
       })
 
       expect(result.success).toBe(false)
-      expect(result.error).toContain('Acces non autorise')
+      expect(result.error).toContain('Accès non autorisé')
     })
 
     it('devrait retourner les tendances des 4 dernieres semaines', async () => {
