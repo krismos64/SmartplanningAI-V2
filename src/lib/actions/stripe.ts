@@ -86,10 +86,10 @@ export async function createCheckoutAction(
     return { success: false, error: 'Email utilisateur introuvable' }
   }
 
-  // 5. Récupérer le nom de l'entreprise pour le customer Stripe
+  // 5. Récupérer le nom de l'entreprise et la date de fin de trial
   const company = await prisma.company.findUnique({
     where: { id: user.companyId },
-    select: { name: true },
+    select: { name: true, trialEndsAt: true },
   })
   if (!company) {
     return { success: false, error: 'Entreprise introuvable' }
@@ -101,6 +101,7 @@ export async function createCheckoutAction(
     email,
     companyName: company.name,
     quantity: validation.data.quantity,
+    trialEndsAt: company.trialEndsAt,
     successUrl: validation.data.successUrl,
     cancelUrl: validation.data.cancelUrl,
   })

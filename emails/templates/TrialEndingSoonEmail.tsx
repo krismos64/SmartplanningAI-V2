@@ -143,6 +143,17 @@ export function TrialEndingSoonEmail({
         </Button>
       </Section>
 
+      {!isLastDay && (
+        <Section style={reassuranceBoxStyle}>
+          <Text style={reassuranceTextStyle}>
+            En vous abonnant maintenant, vous ne serez facturé qu&apos;à la fin
+            de votre essai gratuit. Aucun paiement ne sera prélevé avant la fin
+            de vos {daysRemaining} jours restants. Sans carte bancaire requise
+            pour continuer l&apos;essai.
+          </Text>
+        </Section>
+      )}
+
       <Hr style={presetStyles.divider} />
 
       <Text style={supportStyle}>
@@ -254,6 +265,22 @@ const featureTextStyle: React.CSSProperties = {
 const ctaStyle: React.CSSProperties = {
   textAlign: 'center',
   margin: `${spacing.lg} 0`,
+}
+
+const reassuranceBoxStyle: React.CSSProperties = {
+  backgroundColor: '#f0fdf4',
+  border: '1px solid #bbf7d0',
+  borderRadius: '8px',
+  padding: spacing.md,
+  marginBottom: spacing.lg,
+  textAlign: 'center',
+}
+
+const reassuranceTextStyle: React.CSSProperties = {
+  fontSize: typography.fontSize.sm,
+  color: '#166534',
+  margin: 0,
+  lineHeight: typography.lineHeight.relaxed,
 }
 
 const supportStyle: React.CSSProperties = {

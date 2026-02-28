@@ -17,6 +17,7 @@ export interface CreateCheckoutSessionInput {
   email: string
   companyName: string
   quantity: number
+  trialEndsAt?: Date | null
   successUrl?: string
   cancelUrl?: string
 }

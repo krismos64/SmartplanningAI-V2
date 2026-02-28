@@ -50,14 +50,36 @@ export function WelcomeEmail({
 
       {/* Message d'introduction */}
       <Text style={presetStyles.paragraph}>
-        Votre compte a été créé avec succès. Vous faites maintenant partie de la
-        communauté SmartPlanning et pouvez accéder à tous nos outils de gestion
-        intelligente des équipes.
+        Nous sommes ravis de vous accueillir ! Votre compte est prêt et vous
+        pouvez dès maintenant explorer SmartPlanning avec votre équipe.
       </Text>
 
       <Text style={presetStyles.paragraph}>
         Votre adresse email de connexion : <strong>{email}</strong>
       </Text>
+
+      <Hr style={presetStyles.divider} />
+
+      {/* Section essai gratuit */}
+      <Section style={trialBoxStyle}>
+        <Text style={trialTitleStyle}>
+          Votre essai gratuit de 21 jours
+        </Text>
+        <Text style={trialTextStyle}>
+          Bonne nouvelle : vous bénéficiez de <strong>21 jours d&apos;essai gratuit</strong>,
+          sans carte bancaire et sans engagement. Profitez-en pour tester toutes
+          les fonctionnalités avec votre équipe.
+        </Text>
+        <Text style={trialTextStyle}>
+          Si vous décidez de vous abonner pendant votre essai, pas d&apos;inquiétude :
+          <strong> vous ne serez facturé qu&apos;à la fin de vos 21 jours gratuits</strong>.
+          Aucun paiement avant.
+        </Text>
+        <Text style={trialTextStyle}>
+          Et si SmartPlanning ne vous convient pas, votre compte se désactivera
+          simplement à la fin de l&apos;essai. Aucune mauvaise surprise.
+        </Text>
+      </Section>
 
       <Hr style={presetStyles.divider} />
 
@@ -187,6 +209,28 @@ const featureDescStyle: React.CSSProperties = {
   color: colors.text.secondary,
   margin: 0,
   lineHeight: typography.lineHeight.normal,
+}
+
+const trialBoxStyle: React.CSSProperties = {
+  backgroundColor: '#f0fdf4',
+  border: '1px solid #bbf7d0',
+  borderRadius: '8px',
+  padding: spacing.lg,
+  marginBottom: spacing.lg,
+}
+
+const trialTitleStyle: React.CSSProperties = {
+  fontSize: typography.fontSize.lg,
+  fontWeight: typography.fontWeight.semibold,
+  color: '#166534',
+  margin: `0 0 ${spacing.sm} 0`,
+}
+
+const trialTextStyle: React.CSSProperties = {
+  fontSize: typography.fontSize.sm,
+  color: colors.text.secondary,
+  margin: `0 0 ${spacing.sm} 0`,
+  lineHeight: typography.lineHeight.relaxed,
 }
 
 const ctaContainerStyle: React.CSSProperties = {

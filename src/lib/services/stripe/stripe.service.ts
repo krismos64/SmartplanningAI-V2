@@ -106,8 +106,15 @@ export async function createCheckoutSession(
   input: CreateCheckoutSessionInput
 ): Promise<ServiceResult<CheckoutSessionResult>> {
   try {
-    const { companyId, email, companyName, quantity, successUrl, cancelUrl } =
-      input
+    const {
+      companyId,
+      email,
+      companyName,
+      quantity,
+      trialEndsAt,
+      successUrl,
+      cancelUrl,
+    } = input
 
     // Validation quantité
     if (
@@ -182,7 +189,14 @@ export async function createCheckoutSession(
         },
       ],
       subscription_data: {
-        trial_period_days: STRIPE_PRICING.TRIAL_PERIOD_DAYS,
+        // Trial Stripe aligné sur le trial SmartPlanning restant
+        // - Pendant le trial : jours restants jusqu'à trialEndsAt
+        // - Après le trial expiré : facturation immédiate (pas de trial)
+        ...(trialEndsAt && trialEndsAt.getTime() > Date.now()
+          ? {
+              trial_end: Math.ceil(trialEndsAt.getTime() / 1000),
+            }
+          : {}),
         metadata: {
           [STRIPE_METADATA_KEYS.COMPANY_ID]: companyId,
         },
