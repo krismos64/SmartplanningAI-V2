@@ -240,7 +240,7 @@ export function PricingPageContent() {
         <section aria-labelledby="faq-title" className="py-16 lg:py-24">
           <div className="container-custom">
             <SectionHeader
-              badge="Questions frequentes"
+              badge="Questions fréquentes"
               color="blue"
               title="Vos questions sur les"
               titleHighlight="tarifs"
@@ -255,7 +255,7 @@ export function PricingPageContent() {
               viewport={{ once: true }}
               className="mx-auto max-w-3xl space-y-4"
               role="list"
-              aria-label="Questions frequentes sur les tarifs"
+              aria-label="Questions fréquentes sur les tarifs"
             >
               {PRICING_FAQS.map((faq, index) => (
                 <motion.div key={index} variants={fadeInUp} role="listitem">
@@ -281,7 +281,7 @@ export function PricingPageContent() {
               transition={{ duration: 0.6 }}
               className="relative overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-blue-500/10 via-cyan-500/10 to-purple-500/10 p-12 text-center lg:p-20"
               role="complementary"
-              aria-label="Appel a l'action pour essayer SmartPlanning"
+              aria-label="Appel à l'action pour essayer SmartPlanning"
             >
               <div
                 className="absolute inset-0 bg-gradient-to-r from-blue-500/5 via-transparent to-cyan-500/5"
@@ -293,7 +293,7 @@ export function PricingPageContent() {
                   id="cta-title"
                   className="mb-4 text-3xl font-bold sm:text-4xl lg:text-5xl"
                 >
-                  Pret a{' '}
+                  Prêt à{' '}
                   <span className={GRADIENT_TEXT_CLASSES}>simplifier</span> vos
                   plannings ?
                 </h2>
@@ -303,10 +303,10 @@ export function PricingPageContent() {
                 <Button size="lg" className={GRADIENT_BUTTON_CLASSES} asChild>
                   <Link
                     href="/register"
-                    aria-label="Demarrer l'essai gratuit de 21 jours sans carte bancaire"
+                    aria-label="Démarrer l'essai gratuit de 21 jours sans carte bancaire"
                     data-testid="cta-register"
                   >
-                    Demarrer l&apos;essai gratuit — {PRICING.TRIAL_DAYS} jours
+                    Démarrer l&apos;essai gratuit — {PRICING.TRIAL_DAYS} jours
                     sans carte bancaire
                     <ArrowRight className="ml-2 h-5 w-5" aria-hidden="true" />
                   </Link>

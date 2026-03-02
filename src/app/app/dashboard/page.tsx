@@ -22,7 +22,7 @@ import { getPersonalTasksForWidget } from '@/lib/actions/personal-tasks'
 export const metadata = {
   title: 'Mon Dashboard | SmartPlanning',
   description:
-    'Tableau de bord employe - consultez vos heures, conges et planning',
+    'Tableau de bord employé - consultez vos heures, congés et planning',
 }
 
 /**

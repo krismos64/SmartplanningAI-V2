@@ -40,7 +40,7 @@ export async function generateMetadata({
   const result = await getEmployee(id)
 
   if (!result.success || !result.data) {
-    return { title: 'Employe non trouve | SmartPlanning' }
+    return { title: 'Employé non trouvé | SmartPlanning' }
   }
 
   return {
