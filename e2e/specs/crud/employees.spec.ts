@@ -88,7 +88,7 @@ test.describe('CRUD Employees (DIRECTOR)', () => {
 
     await expect(
       directorPage.locator(
-        'text=/prenom.*requis|prenom.*caractere|obligatoire/i'
+        'text=/pr[eé]nom.*requis|pr[eé]nom.*caract[eè]re|obligatoire|minimum 2 caract/i'
       )
     ).toBeVisible()
   })
@@ -103,7 +103,7 @@ test.describe('CRUD Employees (DIRECTOR)', () => {
 
     await expect(
       directorPage.locator(
-        'text=/le nom.*requis|le nom.*caractere|obligatoire/i'
+        'text=/le nom.*requis|le nom.*caract[eè]re|obligatoire|minimum 2 caract/i'
       )
     ).toBeVisible()
   })
