@@ -13,9 +13,11 @@
 
 'use server'
 
+import crypto from 'crypto'
+
 import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/prisma'
-import { UserRole, type Prisma } from '@prisma/client'
+import { UserRole, NotificationType, type Prisma } from '@prisma/client'
 import { auth } from '@/lib/auth'
 import {
   validateData,
@@ -41,6 +43,10 @@ import type {
 import { logAuditAction } from '@/lib/services/audit'
 import { syncEmployeeCountToStripe } from '@/lib/services/stripe'
 import { assertNotImpersonating } from '@/lib/impersonation'
+import { hashPassword } from '@/lib/password'
+import { sendInvitationEmail } from '@/lib/email/templates/invitation'
+import { emitNotification } from '@/lib/notifications/emit-notification'
+import { resetPasswordSchema } from '@/lib/validations'
 
 // ============================================================================
 // Types internes
@@ -145,7 +151,7 @@ async function getAuthenticatedUser(): Promise<AccessCheckResult> {
     console.error('[getAuthenticatedUser] Error:', error)
     return {
       success: false,
-      error: 'Erreur de verification des permissions',
+      error: 'Erreur de vérification des permissions',
     }
   }
 }
@@ -524,58 +530,202 @@ export async function createEmployee(
         break
     }
 
-    // Creation en base
-    const employee = await prisma.employee.create({
-      data: {
-        firstName: validData.firstName,
-        lastName: validData.lastName,
-        jobTitle: validData.jobTitle || null,
-        department: validData.department || null,
-        phone: validData.phone || null,
-        hireDate: validData.hireDate ? new Date(validData.hireDate) : null,
-        weeklyHours: validData.weeklyHours ?? 35,
-        skills: validData.skills ?? [],
-        companyId: validData.companyId,
-        teamId: validData.teamId || null,
-        ...(validData.userId && { userId: validData.userId }),
-        isActive: validData.isActive ?? true,
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            image: true,
-          },
-        },
-        company: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-        team: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-        _count: {
-          select: {
-            schedules: true,
-            leaveRequests: true,
-          },
-        },
-      },
+    // RBAC role : un MANAGER ne peut creer que des EMPLOYEE
+    if (
+      user.role === 'MANAGER' &&
+      validData.email &&
+      validData.role &&
+      validData.role !== 'EMPLOYEE'
+    ) {
+      return {
+        success: false,
+        error: 'En tant que manager, vous ne pouvez inviter que des employés',
+        field: 'role',
+      }
+    }
+
+    // Si email fourni : verifier unicite avant creation
+    const normalizedEmail = validData.email?.trim().toLowerCase()
+    if (normalizedEmail) {
+      const existingUser = await prisma.user.findUnique({
+        where: { email: normalizedEmail },
+        select: { id: true },
+      })
+      if (existingUser) {
+        return {
+          success: false,
+          error: 'Cet email est déjà associé à un compte',
+          field: 'email',
+        }
+      }
+    }
+
+    // Recuperer le nom de l'entreprise pour l'email d'invitation
+    const company = await prisma.company.findUnique({
+      where: { id: validData.companyId },
+      select: { id: true, name: true },
     })
+
+    if (!company) {
+      return {
+        success: false,
+        error: 'Entreprise non trouvée',
+      }
+    }
+
+    // Determine le role du compte a creer
+    const inviteRole = validData.role || 'EMPLOYEE'
+    const roleAsUserRole =
+      inviteRole === 'DIRECTOR'
+        ? UserRole.DIRECTOR
+        : inviteRole === 'MANAGER'
+          ? UserRole.MANAGER
+          : UserRole.EMPLOYEE
+
+    // Creation en base (avec invitation si email fourni)
+    let employee: EmployeeWithCounts
+    let invitationToken: string | null = null
+
+    if (normalizedEmail) {
+      // Transaction atomique : Employee + User + VerificationToken
+      const placeholderPassword = await hashPassword(crypto.randomUUID())
+      const token = crypto.randomUUID()
+      const expires = new Date(Date.now() + 48 * 60 * 60 * 1000) // 48h
+
+      const result = await prisma.$transaction(async (tx) => {
+        // 1. Creer le User
+        const newUser = await tx.user.create({
+          data: {
+            email: normalizedEmail,
+            name: `${validData.firstName} ${validData.lastName}`,
+            password: placeholderPassword,
+            role: roleAsUserRole,
+            companyId: validData.companyId,
+            isActive: true,
+            isEmailVerified: false,
+          },
+        })
+
+        // 2. Creer l'Employee lie au User
+        const newEmployee = await tx.employee.create({
+          data: {
+            firstName: validData.firstName,
+            lastName: validData.lastName,
+            jobTitle: validData.jobTitle || null,
+            department: validData.department || null,
+            phone: validData.phone || null,
+            email: normalizedEmail,
+            hireDate: validData.hireDate ? new Date(validData.hireDate) : null,
+            weeklyHours: validData.weeklyHours ?? 35,
+            skills: validData.skills ?? [],
+            companyId: validData.companyId,
+            teamId: validData.teamId || null,
+            userId: newUser.id,
+            isActive: validData.isActive ?? true,
+          },
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                image: true,
+              },
+            },
+            company: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+            team: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+            _count: {
+              select: {
+                schedules: true,
+                leaveRequests: true,
+              },
+            },
+          },
+        })
+
+        // 3. Creer le VerificationToken (identifier = activate:{userId})
+        await tx.verificationToken.create({
+          data: {
+            identifier: `activate:${newUser.id}`,
+            token,
+            expires,
+          },
+        })
+
+        return newEmployee
+      })
+
+      employee = result
+      invitationToken = token
+    } else {
+      // Pas d'email : creation Employee seul (comportement existant)
+      employee = await prisma.employee.create({
+        data: {
+          firstName: validData.firstName,
+          lastName: validData.lastName,
+          jobTitle: validData.jobTitle || null,
+          department: validData.department || null,
+          phone: validData.phone || null,
+          hireDate: validData.hireDate ? new Date(validData.hireDate) : null,
+          weeklyHours: validData.weeklyHours ?? 35,
+          skills: validData.skills ?? [],
+          companyId: validData.companyId,
+          teamId: validData.teamId || null,
+          ...(validData.userId && { userId: validData.userId }),
+          isActive: validData.isActive ?? true,
+        },
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              image: true,
+            },
+          },
+          company: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+          team: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+          _count: {
+            select: {
+              schedules: true,
+              leaveRequests: true,
+            },
+          },
+        },
+      })
+    }
 
     // SP-439 : Sync Stripe quantity (fire-and-forget)
     syncEmployeeCountToStripe(validData.companyId).catch((err) => {
       console.error('[SP-439] Stripe sync failed after employee creation:', err)
     })
 
-    // SP-444 : Audit trail (fire-and-forget)
+    // Audit trail (fire-and-forget)
+    const roleLabels: Record<string, string> = {
+      EMPLOYEE: 'Employé',
+      MANAGER: 'Manager',
+      DIRECTOR: 'Directeur',
+    }
     logAuditAction({
       action: 'CREATE',
       entityType: 'EMPLOYEE',
@@ -586,8 +736,26 @@ export async function createEmployee(
         firstName: validData.firstName,
         lastName: validData.lastName,
         teamId: validData.teamId || null,
+        ...(normalizedEmail && {
+          invitation: true,
+          email: normalizedEmail,
+          role: inviteRole,
+        }),
       },
     }).catch(console.error)
+
+    // Envoi email d'invitation (fire-and-forget)
+    if (normalizedEmail && invitationToken) {
+      sendInvitationEmail({
+        firstName: validData.firstName,
+        email: normalizedEmail,
+        token: invitationToken,
+        companyName: company.name,
+        roleName: roleLabels[inviteRole] || 'Employé',
+      }).catch((err) => {
+        console.error('[createEmployee] Invitation email failed:', err)
+      })
+    }
 
     // Revalide le cache
     revalidatePath('/app/dashboard/employees')
@@ -1595,6 +1763,306 @@ export async function getTeamsForSelect(): Promise<
     return {
       success: false,
       error: prismaError.error,
+    }
+  }
+}
+
+// ============================================================================
+// ACTIVATE ACCOUNT - Activation du compte invite
+// ============================================================================
+
+/**
+ * Active un compte invite via token d'activation
+ *
+ * 1. Verifie le token et son expiration
+ * 2. Met a jour le mot de passe et isEmailVerified
+ * 3. Notifie les directeurs de l'entreprise (SSE)
+ * 4. Audit trail
+ */
+export async function activateAccount(data: {
+  token: string
+  password: string
+  confirmPassword: string
+}): Promise<CrudActionResult<{ email: string }>> {
+  try {
+    // 1. Validation Zod
+    const validationResult = resetPasswordSchema.safeParse(data)
+    if (!validationResult.success) {
+      const firstError = validationResult.error.errors[0]
+      return {
+        success: false,
+        error: firstError?.message ?? 'Données invalides',
+        field: firstError?.path[0]?.toString(),
+      }
+    }
+
+    const { token, password } = validationResult.data
+
+    // 2. Chercher le token en base
+    const verificationToken = await prisma.verificationToken.findUnique({
+      where: { token },
+    })
+
+    if (!verificationToken) {
+      return {
+        success: false,
+        error: "Ce lien d'activation est invalide ou a déjà été utilisé.",
+      }
+    }
+
+    // 3. Verifier que c'est un token d'activation
+    if (!verificationToken.identifier.startsWith('activate:')) {
+      return {
+        success: false,
+        error: "Ce lien n'est pas un lien d'activation de compte.",
+      }
+    }
+
+    // 4. Verifier l'expiration
+    if (verificationToken.expires < new Date()) {
+      return {
+        success: false,
+        error: 'TOKEN_EXPIRED',
+      }
+    }
+
+    // 5. Parser le userId depuis l'identifier
+    const userId = verificationToken.identifier.replace('activate:', '')
+
+    // 6. Chercher l'utilisateur
+    const targetUser = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        companyId: true,
+      },
+    })
+
+    if (!targetUser) {
+      return {
+        success: false,
+        error: 'Utilisateur introuvable.',
+      }
+    }
+
+    // 7. Hasher le mot de passe et activer le compte (transaction)
+    const hashedPassword = await hashPassword(password)
+
+    await prisma.$transaction([
+      prisma.user.update({
+        where: { id: userId },
+        data: {
+          password: hashedPassword,
+          isEmailVerified: true,
+          emailVerified: new Date(),
+        },
+      }),
+      prisma.verificationToken.delete({
+        where: { token },
+      }),
+    ])
+
+    // 8. Notifier les directeurs de l'entreprise (fire-and-forget)
+    if (targetUser.companyId) {
+      const roleLabels: Record<string, string> = {
+        EMPLOYEE: 'Employé',
+        MANAGER: 'Manager',
+        DIRECTOR: 'Directeur',
+        SYSTEM_ADMIN: 'Admin',
+      }
+      const roleName = roleLabels[targetUser.role] || targetUser.role
+
+      prisma.user
+        .findMany({
+          where: {
+            companyId: targetUser.companyId,
+            role: UserRole.DIRECTOR,
+            isActive: true,
+            id: { not: targetUser.id },
+          },
+          select: { id: true },
+        })
+        .then(async (directors) => {
+          for (const director of directors) {
+            try {
+              const notification = await prisma.notification.create({
+                data: {
+                  title: 'Compte activé',
+                  message: `${targetUser.name || targetUser.email} (${roleName}) a activé son compte`,
+                  type: NotificationType.SUCCESS,
+                  priority: 'LOW',
+                  relatedType: 'User',
+                  relatedId: targetUser.id,
+                  actionUrl: '/app/dashboard/employees',
+                  userId: director.id,
+                  companyId: targetUser.companyId!,
+                },
+              })
+              emitNotification(director.id, notification)
+            } catch (err) {
+              console.error(
+                '[activateAccount] Notification failed for director:',
+                director.id,
+                err
+              )
+            }
+          }
+        })
+        .catch(console.error)
+    }
+
+    // 9. Audit trail (fire-and-forget)
+    logAuditAction({
+      action: 'STATUS_CHANGE',
+      entityType: 'USER',
+      entityId: targetUser.id,
+      userId: targetUser.id,
+      companyId: targetUser.companyId ?? undefined,
+      details: {
+        action: 'ACTIVATE_ACCOUNT',
+        email: targetUser.email,
+        role: targetUser.role,
+      },
+    }).catch(console.error)
+
+    return {
+      success: true,
+      data: { email: targetUser.email },
+    }
+  } catch (error) {
+    console.error('[activateAccount] Error:', error)
+    return {
+      success: false,
+      error: 'Une erreur est survenue. Veuillez réessayer.',
+    }
+  }
+}
+
+// ============================================================================
+// RESEND INVITATION - Renvoyer l'email d'invitation
+// ============================================================================
+
+/**
+ * Renvoie un email d'invitation avec un nouveau token
+ *
+ * 1. Cherche le token (meme expire)
+ * 2. Identifie l'utilisateur associe
+ * 3. Genere un nouveau token (supprime l'ancien)
+ * 4. Renvoie l'email d'invitation
+ */
+export async function resendInvitation(data: {
+  token: string
+}): Promise<CrudActionResult<null>> {
+  try {
+    const { token } = data
+
+    if (!token) {
+      return {
+        success: false,
+        error: 'Token manquant.',
+      }
+    }
+
+    // 1. Chercher le token en base (meme expire)
+    const verificationToken = await prisma.verificationToken.findUnique({
+      where: { token },
+    })
+
+    if (!verificationToken) {
+      return {
+        success: false,
+        error: "Ce lien d'invitation est invalide ou a déjà été utilisé.",
+      }
+    }
+
+    // 2. Verifier que c'est un token d'activation
+    if (!verificationToken.identifier.startsWith('activate:')) {
+      return {
+        success: false,
+        error: "Ce lien n'est pas un lien d'invitation.",
+      }
+    }
+
+    // 3. Parser le userId
+    const userId = verificationToken.identifier.replace('activate:', '')
+
+    // 4. Chercher l'utilisateur et son entreprise
+    const targetUser = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        isEmailVerified: true,
+        company: {
+          select: { name: true },
+        },
+      },
+    })
+
+    if (!targetUser) {
+      return {
+        success: false,
+        error: 'Utilisateur introuvable.',
+      }
+    }
+
+    // Si deja active, pas besoin de renvoyer
+    if (targetUser.isEmailVerified) {
+      return {
+        success: false,
+        error: 'Ce compte est déjà activé.',
+      }
+    }
+
+    // 5. Supprimer l'ancien token et creer un nouveau
+    const newToken = crypto.randomUUID()
+    const expires = new Date(Date.now() + 48 * 60 * 60 * 1000) // 48h
+
+    await prisma.$transaction([
+      prisma.verificationToken.delete({
+        where: { token },
+      }),
+      prisma.verificationToken.create({
+        data: {
+          identifier: `activate:${userId}`,
+          token: newToken,
+          expires,
+        },
+      }),
+    ])
+
+    // 6. Renvoyer l'email d'invitation (fire-and-forget)
+    const roleLabels: Record<string, string> = {
+      EMPLOYEE: 'Employé',
+      MANAGER: 'Manager',
+      DIRECTOR: 'Directeur',
+    }
+    const firstName = targetUser.name?.split(' ')[0] || 'Utilisateur'
+
+    sendInvitationEmail({
+      firstName,
+      email: targetUser.email,
+      token: newToken,
+      companyName: targetUser.company?.name || 'SmartPlanning',
+      roleName: roleLabels[targetUser.role] || 'Employé',
+    }).catch((err) => {
+      console.error('[resendInvitation] Email failed:', err)
+    })
+
+    return {
+      success: true,
+      data: null,
+    }
+  } catch (error) {
+    console.error('[resendInvitation] Error:', error)
+    return {
+      success: false,
+      error: 'Une erreur est survenue. Veuillez réessayer.',
     }
   }
 }

@@ -4,6 +4,7 @@
  * @description Formulaire React Hook Form + Zod pour CRUD Employees.
  * Utilise les composants forms existants et hooks CRUD.
  * Adapte au RBAC : equipes filtrees selon le role.
+ * Inclut le systeme d'invitation avec selecteur de role et encarts pedagogiques.
  *
  * @ticket SP-152
  * @see Context7 - React Hook Form + Zod validation patterns
@@ -25,6 +26,10 @@ import {
   Calendar,
   Clock,
   Info,
+  Shield,
+  UserCog,
+  Crown,
+  AlertTriangle,
 } from 'lucide-react'
 
 import {
@@ -37,6 +42,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import {
   Form,
@@ -101,7 +107,7 @@ const employeeFormSchema = z.object({
     .max(50),
   lastName: z
     .string()
-    .min(2, 'Le nom doit contenir au moins 2 caracteres')
+    .min(2, 'Le nom doit contenir au moins 2 caractères')
     .max(50),
   phone: z.string().optional().or(z.literal('')),
   email: z
@@ -113,9 +119,32 @@ const employeeFormSchema = z.object({
   weeklyHours: z.number().min(1, 'Minimum 1h').max(60, 'Maximum 60h'),
   teamId: z.string().optional().or(z.literal('')),
   isActive: z.boolean(),
+  role: z.enum(['EMPLOYEE', 'MANAGER', 'DIRECTOR']).optional(),
 })
 
 type EmployeeFormValues = z.infer<typeof employeeFormSchema>
+
+// Labels et descriptions pour les roles
+const roleOptions = [
+  {
+    value: 'EMPLOYEE' as const,
+    label: 'Employé',
+    description: 'Accès à ses plannings, congés et profil',
+    icon: User,
+  },
+  {
+    value: 'MANAGER' as const,
+    label: 'Manager',
+    description: 'Accès employé + gestion de son équipe',
+    icon: UserCog,
+  },
+  {
+    value: 'DIRECTOR' as const,
+    label: 'Directeur',
+    description: "Accès complet à l'administration de l'entreprise",
+    icon: Crown,
+  },
+]
 
 // ============================================================================
 // Composant
@@ -194,6 +223,7 @@ export function EmployeeForm({
           weeklyHours: employee.weeklyHours,
           teamId: employee.teamId || '',
           isActive: employee.isActive,
+          role: 'EMPLOYEE',
         }
       : {
           firstName: '',
@@ -204,8 +234,22 @@ export function EmployeeForm({
           weeklyHours: 35,
           teamId: '',
           isActive: true,
+          role: 'EMPLOYEE',
         },
   })
+
+  // Watch email et firstName pour les encarts dynamiques
+  const watchedEmail = form.watch('email')
+  const watchedFirstName = form.watch('firstName')
+  const watchedRole = form.watch('role')
+  const hasEmail = !!watchedEmail && watchedEmail.length > 0
+
+  // Selecteur de role visible uniquement en creation + email rempli + pas MANAGER
+  const showRoleSelector = !isEditing && hasEmail && userRole !== 'MANAGER'
+
+  // Role label pour l'encart
+  const roleLabel =
+    roleOptions.find((r) => r.value === watchedRole)?.label || 'Employé'
 
   // Pour MANAGER: pre-selectionner une equipe s'il n'en a qu'une
   useEffect(() => {
@@ -219,7 +263,7 @@ export function EmployeeForm({
     }
   }, [isEditing, userRole, teams, form])
 
-  // Exécute la création/mise à jour avec les données nettoyées
+  // Execute la creation/mise a jour avec les donnees nettoyees
   const executeSubmit = (data: EmployeeFormValues) => {
     const cleanedData = {
       firstName: data.firstName,
@@ -231,10 +275,13 @@ export function EmployeeForm({
       email: data.email || undefined,
       hireDate: data.hireDate || undefined,
       teamId: data.teamId || undefined,
+      role: data.email ? data.role || 'EMPLOYEE' : ('EMPLOYEE' as const),
     }
 
     if (isEditing && employee) {
-      void updateMutation.mutate({ id: employee.id, ...cleanedData })
+      // En edition, ne pas passer le role
+      const { role: _role, ...updateData } = cleanedData
+      void updateMutation.mutate({ id: employee.id, ...updateData })
     } else {
       void createMutation.mutate({ companyId, ...cleanedData })
     }
@@ -268,7 +315,7 @@ export function EmployeeForm({
         onSubmit={(e) => void form.handleSubmit(onSubmit)(e)}
         className="space-y-8"
       >
-        {/* Bandeau info facturation — DIRECTOR uniquement en création */}
+        {/* Bandeau info facturation — DIRECTOR uniquement en creation */}
         {showBillingWarning && (
           <div
             className="flex gap-3 rounded-lg border border-blue-500/30 bg-blue-500/10 p-4"
@@ -283,7 +330,7 @@ export function EmployeeForm({
               <p className="mt-1 text-blue-600/90 dark:text-blue-400/90">
                 Chaque employé actif coûte{' '}
                 <strong>2,90&nbsp;&euro;/mois</strong>. L&apos;ajout sera
-                facture au prorata des jours restants ce mois-ci (environ{' '}
+                facturé au prorata des jours restants ce mois-ci (environ{' '}
                 <strong>
                   {prorataEstimate.toFixed(2).replace('.', ',')}&nbsp;&euro;
                 </strong>
@@ -354,7 +401,7 @@ export function EmployeeForm({
               />
             </div>
 
-            {/* Téléphone */}
+            {/* Telephone */}
             <FormField
               control={form.control}
               name="phone"
@@ -404,6 +451,88 @@ export function EmployeeForm({
                 </FormItem>
               )}
             />
+
+            {/* Selecteur de role — visible si email rempli + mode creation + pas MANAGER */}
+            {showRoleSelector && (
+              <FormField
+                control={form.control}
+                name="role"
+                render={({ field }) => (
+                  <FormItem data-testid="role-selector">
+                    <FormLabel>
+                      <span className="flex items-center gap-2">
+                        <Shield className="h-4 w-4" />
+                        Rôle du compte
+                      </span>
+                    </FormLabel>
+                    <FormControl>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value || 'EMPLOYEE'}
+                        disabled={isPending}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Sélectionner un rôle" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {roleOptions.map((option) => {
+                            const Icon = option.icon
+                            return (
+                              <SelectItem
+                                key={option.value}
+                                value={option.value}
+                              >
+                                <span className="flex items-center gap-2">
+                                  <Icon className="h-4 w-4" />
+                                  {option.label}
+                                </span>
+                              </SelectItem>
+                            )
+                          })}
+                        </SelectContent>
+                      </Select>
+                    </FormControl>
+                    <FormDescription>
+                      {roleOptions.find((r) => r.value === watchedRole)
+                        ?.description ||
+                        'Accès à ses plannings, congés et profil'}
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+
+            {/* Encarts pedagogiques — mode creation uniquement */}
+            {!isEditing && hasEmail && (
+              <Alert
+                className="border-blue-500/30 bg-blue-500/10"
+                data-testid="invitation-info-banner"
+              >
+                <Info className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                <AlertDescription className="text-sm text-blue-700 dark:text-blue-300">
+                  Un compte <strong>{roleLabel.toLowerCase()}</strong> sera
+                  automatiquement créé. {watchedFirstName || 'Cette personne'}{' '}
+                  recevra un email d&apos;activation à cette adresse pour
+                  choisir son mot de passe et accéder à SmartPlanning.
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {!isEditing && !hasEmail && (
+              <Alert
+                className="border-amber-500/30 bg-amber-500/10"
+                data-testid="no-email-warning-banner"
+              >
+                <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                <AlertDescription className="text-sm text-amber-700 dark:text-amber-300">
+                  Sans adresse email, {watchedFirstName || 'cet employé'}{' '}
+                  apparaîtra dans les plannings mais ne pourra pas se connecter
+                  à SmartPlanning. Il n&apos;aura pas accès à ses plannings en
+                  ligne, ses congés ou les notifications.
+                </AlertDescription>
+              </Alert>
+            )}
           </CardContent>
         </Card>
 
@@ -531,7 +660,7 @@ export function EmployeeForm({
                   <div className="space-y-0.5">
                     <FormLabel className="text-base">Employé actif</FormLabel>
                     <FormDescription>
-                      Un employe inactif n&apos;apparait plus dans les plannings
+                      Un employé inactif n&apos;apparaît plus dans les plannings
                     </FormDescription>
                   </div>
                   <FormControl>

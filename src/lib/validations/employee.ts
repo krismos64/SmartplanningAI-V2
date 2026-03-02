@@ -130,9 +130,15 @@ export const createEmployeeSchema = employeeBaseSchema.extend({
 
   /** Employe actif par defaut */
   isActive: z.boolean().default(true),
+
+  /** Role du compte a creer (optionnel, utilise uniquement si email fourni) */
+  role: z
+    .enum(['EMPLOYEE', 'MANAGER', 'DIRECTOR'])
+    .optional()
+    .default('EMPLOYEE'),
 })
 
-export type CreateEmployeeInput = z.infer<typeof createEmployeeSchema>
+export type CreateEmployeeInput = z.input<typeof createEmployeeSchema>
 
 // ============================================================================
 // Schema de modification Employee
