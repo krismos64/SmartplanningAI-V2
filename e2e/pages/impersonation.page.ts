@@ -14,6 +14,7 @@
 
 import { Page, Locator, expect } from '@playwright/test'
 import { loginAs, TEST_USERS } from '../fixtures/auth.fixture'
+import { setConsentCookie } from '../fixtures/consent.fixture'
 
 export class ImpersonationPage {
   readonly page: Page
@@ -133,7 +134,7 @@ export class ImpersonationPage {
    * l'admin pour obtenir un JWT SYSTEM_ADMIN propre.
    */
   async stopImpersonation(): Promise<void> {
-    // 1. Appeler l'API DELETE (supprime le cookie serveur + audit log)
+    // 1. Appeler l'API DELETE (supprime le cookie impersonation + audit log)
     const deleteResp = await this.page.request.delete(
       '/api/admin/impersonate'
     )
@@ -141,52 +142,42 @@ export class ImpersonationPage {
       throw new Error(`DELETE impersonation failed: ${deleteResp.status()}`)
     }
 
-    // 2. Supprimer le cookie impersonation du browser context
-    await this.page.context().clearCookies({ name: 'sp-impersonation' })
-
-    // 3. Supprimer le cookie de session NextAuth (JWT obsolete avec role DIRECTOR)
-    // On supprime uniquement les cookies auth, pas le consentement cookies
-    await this.page.context().clearCookies({ name: 'authjs.session-token' })
-    await this.page.context().clearCookies({
-      name: '__Secure-authjs.session-token',
-    })
-    await this.page.context().clearCookies({
-      name: 'authjs.csrf-token',
+    // 2. Signout NextAuth via page.request (invalide le JWT serveur)
+    // Le POST signout supprime le cookie de session dans la reponse HTTP.
+    const csrfResp = await this.page.request.get('/api/auth/csrf')
+    const { csrfToken } = await csrfResp.json()
+    await this.page.request.post('/api/auth/signout', {
+      form: { csrfToken },
     })
 
-    // 4. Naviguer vers /login avec retry robuste
-    // Apres clearCookies, le middleware peut rediriger en boucle ou la page
-    // peut mettre longtemps a s'hydrater en CI nightly.
-    // On retry la navigation complete (goto + waitFor placeholder) jusqu'a
-    // ce que le formulaire de login soit visible.
+    // 3. Supprimer TOUS les cookies du browser context
+    // Le signout API a invalide le JWT, mais le browser context peut garder
+    // d'anciens cookies. On supprime tout et re-ajoute le consentement.
+    await this.page.context().clearCookies()
+    await setConsentCookie(this.page.context())
+
+    // 4. Naviguer vers /login
+    // Le combo signout API + clearCookies garantit que le middleware
+    // ne trouvera aucune session valide et ne redirigera pas.
     const emailPlaceholder = this.page.getByPlaceholder('vous@entreprise.com')
     for (let attempt = 0; attempt < 3; attempt++) {
       try {
         await this.page.goto('/login', {
           waitUntil: 'domcontentloaded',
-          timeout: 30000,
+          timeout: 20000,
         })
-        await emailPlaceholder.waitFor({ state: 'visible', timeout: 20000 })
+        await emailPlaceholder.waitFor({ state: 'visible', timeout: 15000 })
         break
       } catch {
-        if (attempt === 2) {
-          // Dernier recours: recharger completement le contexte browser
-          await this.page.goto('about:blank')
-          await this.page.waitForTimeout(1000)
-          await this.page.goto('/login', {
-            waitUntil: 'domcontentloaded',
-            timeout: 30000,
-          })
-          await emailPlaceholder.waitFor({ state: 'visible', timeout: 30000 })
+        if (attempt < 2) {
+          await this.page.waitForTimeout(2000)
         } else {
-          await this.page.waitForTimeout(3000)
+          throw new Error('Impossible d\'atteindre la page /login apres signout')
         }
       }
     }
 
     // 5. Re-login admin pour obtenir un JWT SYSTEM_ADMIN propre
-    // loginAs fait goto('/login') en interne, mais on est deja sur /login
-    // avec le formulaire visible, donc le goto interne sera un no-op rapide
     await loginAs(this.page, TEST_USERS.SYSTEM_ADMIN)
 
     // 6. Naviguer vers /app/admin/companies

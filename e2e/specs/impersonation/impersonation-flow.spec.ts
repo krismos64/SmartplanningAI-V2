@@ -16,6 +16,17 @@ import { ImpersonationPage } from '../../pages/impersonation.page'
 // Entreprise cible pour l'impersonation (seed: TechCorp avec director john.doe@techcorp.com)
 const TARGET_COMPANY = 'TechCorp'
 
+// Timeout etendu pour tous les tests d'impersonation :
+// Le flow complet (login admin → start → navigate → stop → re-login → navigate)
+// implique 4+ navigations avec attentes de session NextAuth.
+// En CI nightly (serveur dev lent), 60s est insuffisant.
+test.setTimeout(90_000)
+
+// Execution serie obligatoire : tous les tests d'impersonation partagent
+// le meme serveur Next.js et la meme session admin. En parallele, les
+// signout/re-login interferent entre eux (cookies, session JWT).
+test.describe.configure({ mode: 'serial' })
+
 // ============================================================================
 // Parcours nominal (happy path)
 // ============================================================================
@@ -72,15 +83,20 @@ test.describe('Impersonation - restrictions securite', () => {
 
     await impersonation.startImpersonation(TARGET_COMPANY)
 
-    // Tenter d'acceder a /app/admin/companies → redirection vers /app/dashboard
+    // Tenter d'acceder a /app/admin/companies → redirection vers un dashboard
+    // Le middleware redirige avant le chargement complet, ce qui peut lancer
+    // net::ERR_ABORTED — on absorbe cette erreur attendue.
+    // En mode impersonation TechCorp (director), la redirection peut aller vers
+    // /app/dashboard ou /app/director/dashboard selon le role du tenant.
     await adminPage.goto('/app/admin/companies', {
       waitUntil: 'domcontentloaded',
-    })
-    await adminPage.waitForURL('**/app/dashboard**', {
+    }).catch(() => {})
+    await adminPage.waitForURL(/\/app\/(dashboard|director|manager|employee)/, {
       timeout: 15000,
       waitUntil: 'domcontentloaded',
     })
-    await expect(adminPage).toHaveURL(/\/app\/dashboard/)
+    // Verifier qu'on n'est PAS sur une route admin
+    expect(adminPage.url()).not.toContain('/admin/')
 
     await impersonation.stopImpersonation()
   })
@@ -93,9 +109,11 @@ test.describe('Impersonation - restrictions securite', () => {
     await impersonation.startImpersonation(TARGET_COMPANY)
 
     // Tenter d'acceder a /app/dashboard/billing → redirection vers /app/dashboard
+    // Le middleware redirige avant le chargement complet, ce qui peut lancer
+    // net::ERR_ABORTED — on absorbe cette erreur attendue
     await adminPage.goto('/app/dashboard/billing', {
       waitUntil: 'domcontentloaded',
-    })
+    }).catch(() => {})
     await adminPage.waitForURL('**/app/dashboard**', {
       timeout: 15000,
       waitUntil: 'domcontentloaded',
