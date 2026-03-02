@@ -192,7 +192,7 @@ export class EmployeeFormPage {
   async expectSuccess(): Promise<void> {
     await expect(
       this.page.locator(
-        'text=/employe.*cree|succes|enregistre/i, [data-sonner-toast]'
+        'text=/employ[eé].*cr[eé][eé]|succ[eè]s|enregistr[eé]/i, [data-sonner-toast]'
       )
     ).toBeVisible({ timeout: 10000 })
   }

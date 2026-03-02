@@ -58,7 +58,7 @@ export class TeamMembersPage {
     this.availableEmployeesList = page.locator(
       '[data-testid="available-employees"]'
     )
-    this.emptyMessage = page.locator('text=/aucun membre|equipe vide/i')
+    this.emptyMessage = page.locator('text=/aucun membre|[eé]quipe vide/i')
   }
 
   // ==========================================================================

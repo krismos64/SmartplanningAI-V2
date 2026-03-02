@@ -163,7 +163,7 @@ test.describe('Dashboard Employee - Tests E2E', () => {
       await dashboardPage.waitForLoad()
 
       // La section conges devrait etre presente
-      const leaveSection = employeePage.locator('text=/conges|solde|balance/i')
+      const leaveSection = employeePage.locator('text=/cong[eé]s|solde|balance/i')
       const isVisible = await leaveSection
         .first()
         .isVisible()

@@ -79,7 +79,7 @@ export class EmployeeListPage {
     this.table = page.locator('table')
     this.tableRows = page.locator('table tbody tr')
     this.emptyMessage = page.locator(
-      'text=/aucun employe|aucun collaborateur/i'
+      'text=/aucun employ[eé]|aucun collaborateur/i'
     )
     this.loadingIndicator = page.locator('text=Chargement...').first()
 

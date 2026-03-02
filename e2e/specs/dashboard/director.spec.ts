@@ -93,7 +93,7 @@ test.describe('Dashboard Director - Tests E2E', () => {
       await dashboardPage.goto()
       await dashboardPage.waitForLoad()
 
-      const employeesKpi = directorPage.locator('text=/employes|effectifs/i')
+      const employeesKpi = directorPage.locator('text=/employ[eé]s|effectifs/i')
       await expect(employeesKpi.first()).toBeVisible()
     })
 
@@ -104,7 +104,7 @@ test.describe('Dashboard Director - Tests E2E', () => {
       await dashboardPage.goto()
       await dashboardPage.waitForLoad()
 
-      const teamsKpi = directorPage.locator('text=/equipes/i')
+      const teamsKpi = directorPage.locator('text=/[eé]quipes/i')
       await expect(teamsKpi.first()).toBeVisible()
     })
 
@@ -115,7 +115,7 @@ test.describe('Dashboard Director - Tests E2E', () => {
       await dashboardPage.goto()
       await dashboardPage.waitForLoad()
 
-      const attendanceKpi = directorPage.locator('text=/presence|taux/i')
+      const attendanceKpi = directorPage.locator('text=/pr[eé]sence|taux/i')
       const isVisible = await attendanceKpi
         .first()
         .isVisible()
@@ -130,7 +130,7 @@ test.describe('Dashboard Director - Tests E2E', () => {
       await dashboardPage.goto()
       await dashboardPage.waitForLoad()
 
-      const leavesKpi = directorPage.locator('text=/conges|demandes/i')
+      const leavesKpi = directorPage.locator('text=/cong[eé]s|demandes/i')
       await expect(leavesKpi.first()).toBeVisible()
     })
 
@@ -161,7 +161,7 @@ test.describe('Dashboard Director - Tests E2E', () => {
       await dashboardPage.waitForLoad()
 
       const teamsChart = directorPage.locator(
-        'text=/repartition|equipes.*effectif/i'
+        'text=/r[eé]partition|[eé]quipes.*effectif/i'
       )
       const isVisible = await teamsChart
         .first()
@@ -201,7 +201,7 @@ test.describe('Dashboard Director - Tests E2E', () => {
       await dashboardPage.waitForLoad()
 
       const pendingSection = directorPage.locator(
-        'text=/conges en attente|demandes/i'
+        'text=/cong[eé]s en attente|demandes/i'
       )
       await expect(pendingSection.first()).toBeVisible()
     })

@@ -80,16 +80,16 @@ export class DashboardDirectorPage {
       .locator('..')
       .locator('..')
     this.pendingLeavesCard = page
-      .locator('text=/Conges en attente|demandes/i')
+      .locator('text=/Cong[eé]s en attente|demandes/i')
       .locator('..')
       .locator('..')
 
     // Charts
     this.teamsChartSection = page
-      .locator('text=/Repartition|equipes/i')
+      .locator('text=/R[eé]partition|[eé]quipes/i')
       .locator('..')
     this.trendsChartSection = page
-      .locator('text=/Evolution|effectifs/i')
+      .locator('text=/[EÉ]volution|effectifs/i')
       .locator('..')
 
     // Pending Leaves
@@ -198,7 +198,7 @@ export class DashboardDirectorPage {
    */
   async expectTeamsChartVisible(): Promise<void> {
     await expect(
-      this.page.locator('text=/Repartition.*equipes|equipes.*effectif/i')
+      this.page.locator('text=/R[eé]partition.*[eé]quipes|[eé]quipes.*effectif/i')
     ).toBeVisible()
   }
 
@@ -207,7 +207,7 @@ export class DashboardDirectorPage {
    */
   async expectTrendsChartVisible(): Promise<void> {
     await expect(
-      this.page.locator('text=/Evolution.*effectifs|tendances/i')
+      this.page.locator('text=/[EÉ]volution.*effectifs|tendances/i')
     ).toBeVisible()
   }
 
@@ -216,7 +216,7 @@ export class DashboardDirectorPage {
    */
   async expectPendingLeavesVisible(): Promise<void> {
     await expect(
-      this.page.locator('text=/Conges en attente|demandes.*conges/i')
+      this.page.locator('text=/Cong[eé]s en attente|demandes.*cong[eé]s/i')
     ).toBeVisible()
   }
 
@@ -286,7 +286,7 @@ export class DashboardDirectorPage {
    */
   async getPendingLeavesCount(): Promise<string | null> {
     const pendingText = this.page.locator(
-      'text=/\\d+.*demande|\\d+.*conge.*attente/i'
+      'text=/\\d+.*demande|\\d+.*cong[eé].*attente/i'
     )
     if (await pendingText.first().isVisible()) {
       return await pendingText.first().textContent()
@@ -299,7 +299,7 @@ export class DashboardDirectorPage {
    */
   async getAttendanceRate(): Promise<string | null> {
     const rateText = this.page.locator(
-      'text=/\\d+%.*presence|presence.*\\d+%/i'
+      'text=/\\d+%.*pr[eé]sence|pr[eé]sence.*\\d+%/i'
     )
     if (await rateText.first().isVisible()) {
       return await rateText.first().textContent()

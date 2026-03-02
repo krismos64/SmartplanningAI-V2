@@ -138,7 +138,7 @@ export class DashboardEmployeePage {
   async expectStatsVisible(): Promise<void> {
     // Au moins 4 stats cards
     const statsText = this.page.locator(
-      'text=/Heures cette semaine|Conges restants|Prochain shift|Demandes en attente/i'
+      'text=/Heures cette semaine|Cong[eé]s restants|Prochain shift|Demandes en attente/i'
     )
     await expect(statsText.first()).toBeVisible()
   }

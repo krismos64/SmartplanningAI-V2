@@ -141,7 +141,7 @@ export class TeamFormPage {
   async expectSuccess(): Promise<void> {
     await expect(
       this.page.locator(
-        'text=/equipe.*cree|succes|enregistre/i, [data-sonner-toast]'
+        'text=/[eé]quipe.*cr[eé][eé]|succ[eè]s|enregistr[eé]/i, [data-sonner-toast]'
       )
     ).toBeVisible({ timeout: 10000 })
   }
