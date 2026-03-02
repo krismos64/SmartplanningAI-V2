@@ -142,40 +142,31 @@ export class ImpersonationPage {
       throw new Error(`DELETE impersonation failed: ${deleteResp.status()}`)
     }
 
-    // 2. Signout NextAuth via page.request (invalide le JWT serveur)
-    // Le POST signout supprime le cookie de session dans la reponse HTTP.
-    const csrfResp = await this.page.request.get('/api/auth/csrf')
-    const { csrfToken } = await csrfResp.json()
-    await this.page.request.post('/api/auth/signout', {
-      form: { csrfToken },
-    })
-
-    // 3. Supprimer TOUS les cookies du browser context
-    // Le signout API a invalide le JWT, mais le browser context peut garder
-    // d'anciens cookies. On supprime tout et re-ajoute le consentement.
+    // 2. Supprimer TOUS les cookies du browser context AVANT le signout.
+    // clearCookies() supprime les HttpOnly cookies (JWT NextAuth inclus).
+    // C'est la seule methode fiable car :
+    // - page.request.post est un contexte API separe (cookies non propages au browser)
+    // - page.evaluate(fetch) avec redirect:'manual' ignore les Set-Cookie des 302
+    // - page.goto('/api/auth/signout') provoque une navigation impredictible
     await this.page.context().clearCookies()
     await setConsentCookie(this.page.context())
 
-    // 4. Naviguer vers /login
-    // Le combo signout API + clearCookies garantit que le middleware
-    // ne trouvera aucune session valide et ne redirigera pas.
-    const emailPlaceholder = this.page.getByPlaceholder('vous@entreprise.com')
-    for (let attempt = 0; attempt < 3; attempt++) {
-      try {
-        await this.page.goto('/login', {
-          waitUntil: 'domcontentloaded',
-          timeout: 20000,
-        })
-        await emailPlaceholder.waitFor({ state: 'visible', timeout: 15000 })
-        break
-      } catch {
-        if (attempt < 2) {
-          await this.page.waitForTimeout(2000)
-        } else {
-          throw new Error('Impossible d\'atteindre la page /login apres signout')
-        }
-      }
+    // 3. Verifier que tous les cookies auth sont bien supprimes
+    const remainingCookies = await this.page.context().cookies()
+    const authCookies = remainingCookies.filter(
+      (c) => c.name.includes('session') || c.name.includes('csrf') || c.name.includes('callback')
+    )
+    if (authCookies.length > 0) {
+      // Force une seconde suppression si des cookies persistent
+      await this.page.context().clearCookies()
+      await setConsentCookie(this.page.context())
     }
+
+    // 4. Naviguer directement vers /login — sans cookies JWT, le middleware
+    // laissera passer la requete. loginAs() gere deja le retry et attend
+    // le champ email visible.
+    // Note: On ne fait PAS un goto('/login') prealable car loginAs le fait deja,
+    // et un double goto cause des race conditions avec le middleware.
 
     // 5. Re-login admin pour obtenir un JWT SYSTEM_ADMIN propre
     await loginAs(this.page, TEST_USERS.SYSTEM_ADMIN)

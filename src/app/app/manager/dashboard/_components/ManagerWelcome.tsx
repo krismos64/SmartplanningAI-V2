@@ -79,7 +79,6 @@ export function ManagerWelcome({
         'glass-strong border-none bg-gradient-to-r from-blue-500/10 to-indigo-500/5',
         className
       )}
-      data-testid="manager-welcome"
     >
       <CardContent className="pt-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -175,11 +174,12 @@ export function ManagerWelcome({
   )
 
   if (shouldReduceMotion) {
-    return content
+    return <div data-testid="manager-welcome">{content}</div>
   }
 
   return (
     <motion.div
+      data-testid="manager-welcome"
       variants={fadeSlideUpVariants}
       initial="hidden"
       animate="visible"
