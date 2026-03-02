@@ -28,7 +28,7 @@ describe('StructuredData (Tarifs)', () => {
       const spec = softwareOfferSchema.offers.priceSpecification
       expect(spec['@type']).toBe('UnitPriceSpecification')
       expect(spec.price).toBe('2.9')
-      expect(spec.unitText).toBe('employe par mois')
+      expect(spec.unitText).toBe('employé par mois')
     })
 
     it('contient la liste des features', () => {

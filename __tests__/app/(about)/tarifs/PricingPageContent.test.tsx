@@ -108,18 +108,18 @@ describe('PricingPageContent', () => {
     it('affiche les 8 questions FAQ', () => {
       render(<PricingPageContent />)
       expect(
-        screen.getByText('Combien coute SmartPlanning ?')
+        screen.getByText('Combien coûte SmartPlanning ?')
       ).toBeInTheDocument()
       expect(
-        screen.getByText('Y a-t-il des frais caches ?')
+        screen.getByText('Y a-t-il des frais cachés ?')
       ).toBeInTheDocument()
     })
 
     it('ouvre une FAQ au clic', () => {
       render(<PricingPageContent />)
-      const question = screen.getByText('Combien coute SmartPlanning ?')
+      const question = screen.getByText('Combien coûte SmartPlanning ?')
       fireEvent.click(question.closest('[class*="cursor-pointer"]')!)
-      expect(screen.getByText(/sans frais caches/)).toBeInTheDocument()
+      expect(screen.getByText(/sans frais cachés/)).toBeInTheDocument()
     })
 
     it('ferme une FAQ ouverte au second clic', () => {
