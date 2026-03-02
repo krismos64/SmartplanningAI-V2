@@ -80,8 +80,8 @@ export function InvitationEmail({
 
       <Text style={presetStyles.paragraph}>
         Pour accéder à votre espace, activez votre compte en choisissant un mot
-        de passe. Votre adresse email de connexion sera{' '}
-        <strong>{email}</strong>.
+        de passe. Votre adresse email de connexion sera <strong>{email}</strong>
+        .
       </Text>
 
       <Hr style={presetStyles.divider} />
