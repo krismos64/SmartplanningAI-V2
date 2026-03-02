@@ -42,6 +42,23 @@ vi.mock('@/lib/services/stripe', () => ({
     mockSyncEmployeeCountToStripe(...args),
 }))
 
+// Mock des nouveaux imports du système d'invitation
+vi.mock('@/lib/password', () => ({
+  hashPassword: vi.fn().mockResolvedValue('hashed-placeholder'),
+}))
+vi.mock('@/lib/email/templates/invitation', () => ({
+  sendInvitationEmail: vi.fn().mockResolvedValue({ success: true }),
+}))
+vi.mock('@/lib/notifications/emit-notification', () => ({
+  emitNotification: vi.fn(),
+}))
+vi.mock('@/lib/impersonation', () => ({
+  assertNotImpersonating: vi.fn(),
+}))
+vi.mock('@/lib/services/audit', () => ({
+  logAuditAction: vi.fn().mockResolvedValue(undefined),
+}))
+
 // Import apres les mocks
 import {
   listEmployees,
@@ -65,6 +82,9 @@ const TEAM_ID = 'cltest000000000000team001'
 const TEAM_ID_2 = 'cltest000000000000team002'
 const EMP_ID = 'cltest0000000000000emp001'
 const USER_ID = 'cltest000000000000user001'
+
+// Fixture entreprise pour company.findUnique (requis par createEmployee)
+const mockCompany = { id: COMPANY_ID, name: 'Acme Corp' }
 
 const mockEmployee = {
   id: EMP_ID,
@@ -210,6 +230,10 @@ describe('RBAC - SYSTEM_ADMIN full access', () => {
   })
 
   it('should allow createEmployee in any company', async () => {
+    prismaMock.company.findUnique.mockResolvedValue({
+      id: COMPANY_ID_2,
+      name: 'Other Corp',
+    } as never)
     prismaMock.employee.create.mockResolvedValue(
       mockEmployeeWithRelations as never
     )
@@ -562,6 +586,7 @@ describe('createEmployee', () => {
   })
 
   it('should create an employee with valid data', async () => {
+    prismaMock.company.findUnique.mockResolvedValue(mockCompany as never)
     prismaMock.employee.create.mockResolvedValue(
       mockEmployeeWithRelations as never
     )
@@ -589,6 +614,7 @@ describe('createEmployee', () => {
   })
 
   it('should set default weeklyHours to 35', async () => {
+    prismaMock.company.findUnique.mockResolvedValue(mockCompany as never)
     prismaMock.employee.create.mockResolvedValue(
       mockEmployeeWithRelations as never
     )
@@ -792,6 +818,7 @@ describe('SP-439 - Stripe quantity sync', () => {
 
   it('appelle syncEmployeeCountToStripe après createEmployee', async () => {
     setMockUser('DIRECTOR', COMPANY_ID)
+    prismaMock.company.findUnique.mockResolvedValue(mockCompany as never)
     prismaMock.employee.create.mockResolvedValue(mockEmployeeWithRelations as never)
 
     await createEmployee({
@@ -850,6 +877,7 @@ describe('SP-439 - Stripe quantity sync', () => {
   it('ne crash PAS si syncEmployeeCountToStripe throw', async () => {
     setMockUser('DIRECTOR', COMPANY_ID)
     mockSyncEmployeeCountToStripe.mockRejectedValue(new Error('Stripe down'))
+    prismaMock.company.findUnique.mockResolvedValue(mockCompany as never)
     prismaMock.employee.create.mockResolvedValue(mockEmployeeWithRelations as never)
 
     // Ne doit PAS throw — fire-and-forget
