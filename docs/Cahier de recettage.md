@@ -14,7 +14,7 @@ Ce document trace l'historique complet des tests réalisés sur SmartPlanning. I
 | Pipeline CI/CD       | GitHub Actions                                         |
 | Responsable          | Christophe Mostefaoui                                  |
 | Date de création     | 4 décembre 2025                                        |
-| Dernière mise à jour | 27 février 2026 (Notifications résiliation, seed Stripe réel, améliorations billing/director/CSV, 5914 unitaires + 584 E2E) |
+| Dernière mise à jour | 2 mars 2026 (Audit billing RGPD/UX, i18n accents français, stabilisation E2E impersonation, enrichissement seed, 5914 unitaires + 584 E2E) |
 
 ---
 
@@ -496,6 +496,56 @@ if (!isImpersonating) {
 - Le cookie `sp-impersonation` est bien posé côté serveur, mais n'est pas lu par le layout
 
 **Solution (ANO-029)** :
+
+### Difficulté 7 : Tests E2E impersonation flaky en CI nightly (Sprint 20) 🆕
+
+**Contexte** : Sprint 20, stabilisation des tests E2E pour la soutenance CDA. Les 9 tests d'impersonation (SP-456) échouaient de manière intermittente en CI GitHub Actions nightly.
+
+**Symptôme** : Tests passent en local mais échouent aléatoirement en CI avec des erreurs variées : page blanche après `stopImpersonation()`, cookie consentement perdu, timeout sur `waitForURL`.
+
+**Investigation** :
+
+1. Le `stopImpersonation()` du Page Object effectuait un double `page.goto('/login')` créant des race conditions avec le middleware NextAuth
+2. La méthode `page.goto('about:blank')` crashait le browser context Playwright
+3. Après signout NextAuth, les cookies de session étaient supprimés mais le cookie consentement aussi, causant la réapparition de la bannière cookies qui bloquait les interactions
+4. Les 9 tests partageaient la même session admin mais pouvaient s'exécuter en parallèle, créant des conflits d'état
+
+**Solution (ANO-033)** :
+
+```typescript
+// AVANT : signout via navigation (race conditions)
+async stopImpersonation() {
+  await this.page.request.delete('/api/admin/impersonate')
+  await this.page.goto('/login')
+  await this.page.goto('/login') // double redirect flaky
+}
+
+// APRÈS : signout via API CSRF + mode série
+async stopImpersonation() {
+  // 1. Récupérer le CSRF token NextAuth
+  const csrfRes = await this.page.request.get('/api/auth/csrf')
+  const { csrfToken } = await csrfRes.json()
+
+  // 2. Signout via API (pas de navigation)
+  await this.page.request.post('/api/auth/signout', {
+    form: { csrfToken }
+  })
+
+  // 3. Injection forcée cookie consentement
+  await this.page.context().addCookies([{
+    name: 'cookie-consent',
+    value: JSON.stringify({ essential: true, analytics: false }),
+    domain: 'localhost', path: '/'
+  }])
+
+  // 4. Re-login propre
+  await this.loginAs(adminUser)
+}
+```
+
+**Configuration test** : `test.describe.configure({ mode: 'serial' })` — les 9 tests s'exécutent séquentiellement, partageant la même session admin. Timeout étendu à 90s pour CI nightly.
+
+**Apprentissage** : Dans les tests E2E impliquant des changements de session (impersonation, multi-rôles), préférer les API programmatiques (signout API + CSRF) plutôt que la navigation (goto). Le mode série est obligatoire quand les tests partagent un état de session. Toujours ré-injecter les cookies fonctionnels (consentement, preferences) après un signout complet.
 
 ```typescript
 // layout.tsx — Fallback cookie quand JWT non mis à jour
@@ -2267,6 +2317,10 @@ not-found.tsx (Server Component)
 | ANO-027 | 15/02/2026 | `ERR_TOO_MANY_REDIRECTS` en mode production sur HTTP localhost      | Majeure  | NextAuth v5 en `NODE_ENV=production` active cookies `__Secure-` (refusés sur HTTP), `trustHost=false` (rejette les requêtes localhost), et CSP `upgrade-insecure-requests` (force HTTP→HTTPS). Solution : env vars `AUTH_URL`, `AUTH_SECRET`, `AUTH_TRUST_HOST` + CSP conditionnel dans `next.config.ts`. |
 | ANO-028 | 19/02/2026 | Boucle redirect infinie en mode impersonation (`ERR_TOO_MANY_REDIRECTS`) | Majeure  | Le JWT SYSTEM_ADMIN n'a pas de données subscription (null). En impersonation, le subscription guard voit "pas d'abonnement" → redirige vers `/billing` → l'impersonation guard bloque `/billing` → redirect `/dashboard` → boucle ∞. Solution : bypass du subscription guard dans `auth.config.ts` quand le cookie `sp-impersonation` est présent avec `originalAdminId` valide. |
 | ANO-029 | 19/02/2026 | Bannière impersonation invisible après démarrage (NextAuth v5 updateSession) | Majeure  | `updateSession()` NextAuth v5 échoue avec `ClientFetchError: Failed to fetch` → le JWT n'est jamais mis à jour avec `isImpersonating: true` → `layout.tsx` lit `session.user.isImpersonating = false` → bannière non affichée. Solution : fallback lecture directe du cookie `sp-impersonation` dans le Server Component layout, avec vérification expiration 3600s et validité des champs. |
+| ANO-030 | 28/02/2026 | Accents français manquants dans toute l'application (i18n)                    | Majeure  | Labels et textes UI sans accents corrects (ex: "Resume" au lieu de "Résumé", "Equipe" au lieu de "Équipe") sur les pages tarifs, dashboards (admin, director, employee), employees, et services. Solution : audit i18n complet de l'application, correction de tous les accents dans les composants et les tests unitaires associés (32+ fichiers modifiés). |
+| ANO-031 | 28/02/2026 | Sidebar collapse toggle nécessitant un page refresh pour réouvrir             | Mineure  | Le bouton de collapse/expand de la sidebar ne fonctionnait pas correctement — une fois la sidebar réduite, il fallait rafraîchir la page pour la réouvrir. Solution : suppression du toggle collapse et navigation toujours étendue. |
+| ANO-032 | 28/02/2026 | Plannings à horaires affichés comme bannières all-day dans le calendrier      | Mineure  | Les créneaux avec horaires (WORK, MEETING, etc.) s'affichaient comme des événements "journée entière" dans Schedule-X au lieu d'être positionnés sur leur plage horaire. Solution : correction du mapping des événements pour distinguer les types isAllDay (REST) des types avec horaires. |
+| ANO-033 | 02/03/2026 | Tests E2E impersonation flaky en CI nightly (NextAuth signout + cookies)      | Majeure  | Tests impersonation échouaient de manière intermittente en CI GitHub Actions. 3 causes racines : (1) `stopImpersonation()` causait des race conditions avec le middleware NextAuth (double `goto('/login')`), (2) NextAuth signout ne propageait pas les cookies au browser context Playwright, (3) Cookie consentement perdu après signout. Solution : réécriture complète du flow signout avec API `POST /api/auth/signout` + CSRF token, mode série obligatoire (session admin partagée), timeout étendu à 90s pour CI, injection forcée du cookie consentement après signout. |
 
 ---
 
@@ -2335,8 +2389,9 @@ not-found.tsx (Server Component)
 | 18/02/2026 (SP-442→446, SP-463) | 5760       | 575       | 6335  | ~86%       | 🆕 Audit System (schema, service, injection, logs, E2E) + User Activity page. +122 unitaires, +26 E2E |
 | 19/02/2026 (SP-456)             | 5770       | 584       | 6354  | ~86%       | 🆕 Impersonation E2E + unitaires. +10 unitaires (API route), +9 E2E (4 suites). 2 corrections applicatives (subscription guard bypass + layout cookie fallback). ANO-028/029 |
 | 27/02/2026 (Améliorations)      | 5914       | 584       | 6498  | ~86%       | 🆕 Notifications résiliation admin + email directeur. Seed Stripe réel. TechCorp 110 employés. Dashboard Director 3 KPIs. CSV enrichi. InvoiceHistory invoiceUrl |
+| 02/03/2026 (Stabilisation)      | 5914       | 584       | 6498  | ~86%       | 🔧 Audit billing RGPD/UX, i18n accents français (32+ fichiers), fix impersonation E2E flaky (ANO-033), enrichissement seed, fix calendrier/sidebar/incidents |
 
-**Graphique d'évolution** : De 27 tests (04/12) à 6498 tests (27/02) — Notifications résiliation + seed Stripe réel 🚀
+**Graphique d'évolution** : De 27 tests (04/12) à 6498 tests (02/03) — Stabilisation finale pré-soutenance CDA 🚀
 
 ---
 
@@ -2347,10 +2402,10 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
 | N°  | Compétence                                                          | Preuve                                                                                                                                                                                                                                                                                                                                                  |
 | --- | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 1   | Tester les composants d'une application                             | 5914 tests unitaires documentés                                                                                                                                                                                                                                                                                                                         |
-| 2   | Contribuer à la qualité du code                                     | Couverture ~86%, anomalies tracées (29 anomalies)                                                                                                                                                                                                                                                                                                       |
+| 2   | Contribuer à la qualité du code                                     | Couverture ~86%, anomalies tracées (33 anomalies)                                                                                                                                                                                                                                                                                                       |
 | 3   | Documenter les procédures                                           | Procédure de recette formalisée                                                                                                                                                                                                                                                                                                                         |
 | 4   | Utiliser une méthodologie                                           | Approche structurée par sprints                                                                                                                                                                                                                                                                                                                         |
-| 5   | Développer des tests automatisés                                    | 6498 tests (5914 unitaires + 584 E2E, 40 fichiers)                                                                                                                                                                                                                                                                                                      |
+| 5   | Développer des tests automatisés                                    | 6498 tests (5914 unitaires + 584 E2E, 46 fichiers)                                                                                                                                                                                                                                                                                                      |
 | 6   | Sécuriser une application                                           | Tests RBAC (92 unitaires, 27 E2E), rate limiting, protection énumération                                                                                                                                                                                                                                                                                |
 | 7   | Concevoir une architecture logicielle                               | Pattern ServiceResult<T>, multi-tenant                                                                                                                                                                                                                                                                                                                  |
 | 8   | Développer des composants métier                                    | 4 dashboards par rôle                                                                                                                                                                                                                                                                                                                                   |
@@ -2435,6 +2490,9 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
 | 87  | Étendre les notifications SSE au SYSTEM_ADMIN                             | 4 types : `NEW_COMPANY_REGISTERED`, `SUBSCRIPTION_PAST_DUE`, `SUBSCRIPTION_CANCELED`, `TRIAL_EXPIRED`. Factory `createAdminNotification()` fire-and-forget. Migration `Notification.companyId` optionnel. 7 tests unitaires (SP-476) 🆕 |
 | 88  | Implémenter un broadcast email global aux entreprises actives             | `sendAdminBroadcast()` vers DIRECTOR actifs entreprises ACTIVE/TRIAL. Batch/10 `Promise.allSettled` (résilient échecs partiels). `BroadcastModal` 4 catégories. `EmailLog` par destinataire (SENT/FAILED). 9 tests unitaires (SP-477) 🆕 |
 | 89  | Notifier admin et directeur lors d'une résiliation d'abonnement           | `cancelSubscription` enrichi : notification in-app admin (`createAdminNotification` WARNING HIGH), email admin (tous les SYSTEM_ADMIN via `getSystemAdminUserIds`), email confirmation directeur (template pro `SubscriptionCanceledEmail` avec logo, CTA réabonnement, date fin). Pattern fire-and-forget `.catch(console.error)`. Import dynamique modules admin. Seed réel Stripe Test (vrais customers, subscriptions, payment methods) 🆕 |
+| 90  | Réaliser un audit complet de conformité RGPD sur une page de facturation  | Révision complète page `/app/dashboard/billing` : suppression données sensibles superflues, ajout alertes de réassurance, indicateur prochain paiement, alignement trial Stripe/SmartPlanning, amélioration templates email billing (SP-360 améliorations) 🆕 |
+| 91  | Implémenter une internationalisation cohérente français                   | Audit i18n complet : correction accents français manquants dans toute l'application (32+ fichiers composants + tests). Couverture : tarifs, dashboards (admin/director/employee), employees, services. Validation régex ajustée pour supporter les caractères accentués (ANO-030) 🆕 |
+| 92  | Stabiliser des tests E2E flaky dans un pipeline CI/CD nightly             | Diagnostic et résolution race conditions NextAuth v5 + Playwright + cookies impersonation. Réécriture Page Object `ImpersonationPage` avec signout API CSRF, mode série, timeout 90s CI, injection cookie consentement. Passage de tests intermittents à 100% fiabilité CI (ANO-033) 🆕 |
 
 ---
 
@@ -2488,6 +2546,10 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
    - Historique factures : vérifier lien invoiceUrl vers Stripe sur chaque facture 🆕
    - Portail Stripe : vérifier ouverture en nouvelle fenêtre (target=_blank) 🆕
    - Seed Stripe réel : `npm run db:reset` → vérifier vrais clients/abonnements dans Dashboard Stripe Test 🆕
+   - Incidents : avatar profil affiché à côté du nom du sujet, sélection employé fonctionnelle pour managers 🆕
+   - Prorata billing : avertissement visible lors d'ajout/suppression d'employé (page employees) 🆕
+   - CSV export employés : vérifier présence colonnes équipe, rôle, ancienneté, contrat 🆕
+   - Accents français : vérifier labels corrects sur pages tarifs, dashboards, employees (pas de "Resume", "Equipe" sans accent) 🆕
 
 ### Tests nightly (quotidiens)
 
@@ -2512,6 +2574,7 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
 
 | Date       | Modification                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 02/03/2026 | 🔧 Sprint 20 (suite) — Stabilisation pré-soutenance CDA. **Audit billing RGPD/UX** : révision complète page facturation, ajout trial info/alertes réassurance/indicateur prochain paiement, invoiceUrl Stripe directe, portal nouvelle fenêtre. **Avertissement prorata** directeur ajout/suppression employés. **Incidents** : avatar profil + fix employee select managers + dark mode. **i18n accents français** (ANO-030) : audit complet 32+ fichiers, correction accents manquants (tarifs, dashboards admin/director/employee, employees, services). **Corrections UX** : sidebar billing avant settings (ANO-031), fix calendrier timed→all-day (ANO-032), director dashboard 3 KPIs, breadcrumbs director/billing. **Stabilisation E2E impersonation** (ANO-033) : réécriture stopImpersonation avec API signout CSRF, mode série, timeout 90s CI, regex accents. **Seed enrichi** : téléphones, avatars, vrais clients Stripe Test, TechCorp magasin grande distribution. **CSV export** : colonnes équipe/rôle/ancienneté/contrat. **Notifications résiliation** admin + email directeur. 34 commits (11 feat, 18 fix, 5 docs). Total : 6498 tests (5914 unitaires + 584 E2E) |
 | 27/02/2026 | 🆕 Sprint 20 — Améliorations billing, seed, director. **Notifications résiliation** : `cancelSubscription` enrichi avec 3 fire-and-forget (notification in-app admin `createAdminNotification` WARNING HIGH, email SYSTEM_ADMIN via `getSystemAdminUserIds`, email directeur `SubscriptionCanceledEmail` template pro avec logo/CTA). Import dynamique modules admin. **Seed Stripe réel** : vrais customers, subscriptions, payment methods Stripe Test (`tok_visa`), cleanup metadata `source: smartplanning-seed`. TechCorp 110 employés, 12 équipes grande distribution. **Dashboard Director** : simplifié à 3 KPIs. **CSV export** enrichi (colonnes entreprise, département, contrat). **InvoiceHistory** : lien invoiceUrl Stripe. Portail Stripe en nouvelle fenêtre. Breadcrumbs director/billing. Email admin corrigé `contact@smartplanning.fr`. Total : 6498 tests (5914 unitaires + 584 E2E) |
 | 20/02/2026 | 🆕 Sprint 20 — Monitoring System (SP-464, SP-465) : Page admin `/app/admin/monitoring` RBAC SYSTEM_ADMIN avec Suspense + skeleton. **SP-464 MVP** : Service `checkDatabaseHealth` (4 checks : connexion, latence, pool Prisma, migrations). Server Action `getMonitoringSnapshot` (health, quick stats SaaS, répartition abonnements par statut). 8 composants UI (HealthStatusBadge sémantique ok/warn/error, DatabaseHealthPanel avec ProgressBar pool et métriques brutes, MonitoringKpisGrid 4 KPIs glass cards, SubscriptionBreakdownPanel badges colorés). +30 tests unitaires (monitoring-action 10, db-health 8, HealthStatusBadge 5, DatabaseHealthPanel 12, MonitoringKpisGrid 4, SubscriptionBreakdownPanel 4). **SP-465 Charts** : Server Action `getMonitoringChartData` (Promise.all 4 requêtes Prisma parallèles : auditActivity 7j, subscriptionDistribution groupBy, topActions top 5 desc, companyGrowth 30j). Helper `generateEmptyDays` zero-fill Map. 4 composants Recharts (ActivityChart AreaChartWidget, SubscriptionPieChart donut STATUS_COLORS sémantiques, TopActionsChart BarChartWidget horizontal ACTION_LABELS FR, CompanyGrowthChart AreaChartWidget success). +22 tests unitaires (monitoring-chart-action 10, ActivityChart 4, SubscriptionPieChart 4, TopActionsChart 4, CompanyGrowthChart 4). Barrel exports index.ts. Section "Activité & Tendances" avec grille 2×2. Compétences CDA #78-79 ajoutées. Total : 6406 tests (5822 unitaires + 584 E2E, 40 fichiers) |
 | 19/02/2026 | 🆕 Sprint 19 — Impersonation E2E + Unit Tests (SP-456) : Tests mode impersonation SYSTEM_ADMIN "Voir espace client". **10 tests unitaires** API route (`route.test.ts`) : POST (8 tests — auth, RBAC, body vide, company sans user, cible SYSTEM_ADMIN, cible désactivée, succès companyId/targetUserId) + DELETE (2 tests — aucune impersonation active, succès). **9 tests E2E** (`impersonation-flow.spec.ts`, 4 suites) : parcours nominal start→navigate→stop (2), restrictions sécurité routes admin/billing/isolation tenant (3), cas limites persistence cookie/suppression/auto-impersonation bloquée (3), audit trail POST+DELETE (1). **Page Object Model** `ImpersonationPage` : startImpersonation (UI dropdown → API interception → reload fallback), stopImpersonation (API DELETE → clear cookies sélectif → re-login admin). **2 corrections applicatives** : (1) bypass subscription guard en impersonation dans `auth.config.ts` (ANO-028 boucle redirect ∞), (2) fallback cookie `sp-impersonation` dans `layout.tsx` pour bannière (ANO-029 updateSession NextAuth v5 ClientFetchError). Fix lint ESLint `no-unsafe-assignment` sur `response.json()`. Compétence CDA #77 ajoutée. Total : 6354 tests (5770 unitaires + 584 E2E, 40 fichiers) |
@@ -2640,6 +2703,55 @@ Ce cahier de recettage démontre les compétences suivantes du référentiel CDA
   - **Correction applicative** : bypass subscription guard dans `auth.config.ts` quand cookie `sp-impersonation` présent (ANO-028)
   - **Correction applicative** : fallback cookie dans `layout.tsx` quand `updateSession()` NextAuth v5 échoue (ANO-029)
   - **Bilan Sprint 19 (phase 2)** : +10 tests unitaires, +9 tests E2E. Total : 6354 tests (5770 unitaires + 584 E2E, 40 fichiers)
+
+### Sprint 20 - Stabilisation Pré-Soutenance CDA (28 fév — 2 mars 2026) 🆕
+
+- **Audit complet page facturation** — RGPD, UX et emails ✅ TERMINÉ
+  - Révision complète de la page `/app/dashboard/billing` pour conformité RGPD
+  - Ajout informations d'essai, alertes de réassurance, indicateur prochain paiement
+  - Affichage `invoiceUrl` Stripe directe + ouverture Stripe Portal en nouvel onglet
+  - Alignement trial Stripe avec trial SmartPlanning + amélioration templates email
+
+- **Avertissement facturation prorata** pour le directeur ✅ TERMINÉ
+  - Alerte visible lors de l'ajout/suppression d'employés sur le coût prorata per-seat
+
+- **Enrichissement export CSV employés** ✅ TERMINÉ
+  - Colonnes ajoutées : équipe, rôle, ancienneté, type de contrat
+
+- **Incidents : avatar profil employé** ✅ TERMINÉ
+  - Affichage de l'avatar du profil à côté du nom du sujet
+  - Fix sélection employé pour managers + dark mode visibility cards
+
+- **Notifications résiliation admin** ✅ TERMINÉ
+  - Notification in-app + email au SYSTEM_ADMIN lors d'une résiliation d'abonnement
+  - Email professionnel de confirmation envoyé au directeur
+
+- **Correction i18n accents français** ✅ TERMINÉ (ANO-030)
+  - Audit complet de l'application : correction de tous les accents manquants
+  - 32+ fichiers de tests modifiés pour aligner les assertions
+  - Pages impactées : tarifs, dashboards (admin, director, employee), employees, services
+
+- **Enrichissement seed data** ✅ TERMINÉ
+  - Ajout téléphones et avatars profil aux employés
+  - Création de vrais clients Stripe Test lors du seed
+  - Reconfiguration TechCorp en magasin grande distribution (110 employés)
+  - Détachement director de l'équipe, suppression schedules
+
+- **Corrections UX** ✅ TERMINÉ
+  - Sidebar : lien billing repositionné avant settings (ANO-031 : suppression toggle collapse)
+  - Calendrier : fix affichage timed schedules comme all-day banners (ANO-032)
+  - Director dashboard : correction liens et simplification stats à 3 KPIs
+  - Breadcrumbs : ajout labels pour director et billing
+
+- **Stabilisation E2E impersonation** ✅ TERMINÉ (ANO-033)
+  - Réécriture complète du Page Object `impersonation.page.ts`
+  - Flow signout via API `POST /api/auth/signout` avec CSRF token
+  - Mode série obligatoire (session admin partagée entre tests)
+  - Timeout étendu à 90s pour CI nightly
+  - Injection forcée cookie consentement après signout
+  - Correction regex pour supporter les accents français dans les validations
+
+- **Bilan Sprint 20** : 34 commits (11 feat, 18 fix, 5 docs/test/lint). Stabilisation qualité et UX pré-soutenance CDA. Total : 6498 tests inchangé (5914 unitaires + 584 E2E)
 
 ### Sprint 18 - Nettoyage Final & Couverture 86% (SP-460) 🆕
 

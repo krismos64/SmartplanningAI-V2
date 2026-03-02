@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 27 février 2026 (Notifications résiliation admin + email directeur, seed Stripe réel, améliorations billing/director/CSV)
+- **Dernière mise à jour** : 2 mars 2026 (Système d'invitation employé/manager/directeur avec activation de compte, sélecteur de rôle, email d'invitation, notifications directeur)
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -57,7 +57,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 
 ### Composants UI production-ready
 
-- **Auth System** (SP-109) : LoginForm, RegisterForm avec React Hook Form + Zod, Server Actions, auto-login, création automatique Employee + LeaveBalance à l'inscription, champ téléphone optionnel
+- **Auth System** (SP-109) : LoginForm, RegisterForm avec React Hook Form + Zod, Server Actions, auto-login, création automatique Employee + LeaveBalance à l'inscription, champ téléphone optionnel + **Système d'invitation** : lors de la création d'un employé avec email, création automatique d'un compte User avec rôle choisi (EMPLOYEE/MANAGER/DIRECTOR), envoi d'email d'invitation avec token 48h, page `/activate-account` pour choix du mot de passe, notification SSE temps réel aux directeurs à l'activation, renvoi d'invitation si lien expiré, RBAC (MANAGER ne peut inviter que des EMPLOYEE)
 - **DataTable avancée** (SP-120) : Composant de tableau avec tri multi-colonnes, pagination, recherche fuzzy, sélection multi-rows, actions par ligne, responsive (table desktop / cards mobile)
 - **Form System** (SP-119) : 7 composants formulaire avec React Hook Form + Zod, 23 schémas de validation
 - **Toast System** (SP-122) : Notifications avec Sonner, hook useToast()
@@ -102,6 +102,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - Suppression en masse employés avec cascade sécurisée
 - Nom d'entreprise dynamique dans le layout
 - Demandes de congés avec workflow validation
+- Système d'invitation employé/manager/directeur avec activation de compte par email (token 48h)
 - Système de notifications temps réel
 - Analytics et rapports
 
@@ -1239,6 +1240,16 @@ Système complet d'envoi d'emails transactionnels avec React Email et Nodemailer
   - Protection contre l'énumération de comptes
   - 10 tests unitaires
 
+- **Email Invitation Employé/Manager/Directeur** ✅
+  - Template `InvitationEmail.tsx` personnalisé par rôle (avantages spécifiques Employé/Manager/Directeur)
+  - Fonction `sendInvitationEmail` avec lien `/activate-account?token=xxx` (48h)
+  - Page Server Component `/activate-account` avec metadata SEO
+  - `ActivateAccountForm` Client Component : React Hook Form + Zod, toggle visibilité, countdown redirection, gestion token expiré avec renvoi
+  - Server Actions : `activateAccount` (hash bcrypt, `emailVerified` + `isEmailVerified`, notification SSE directeurs), `resendInvitation` (nouveau token 48h)
+  - Sélecteur de rôle dans EmployeeForm (EMPLOYEE/MANAGER/DIRECTOR) avec encarts pédagogiques dynamiques
+  - RBAC : MANAGER ne peut inviter que des EMPLOYEE
+  - Audit trail : `INVITE_EMPLOYEE` + `ACTIVATE_ACCOUNT`
+
 - **SP-300 : Email Congé Validé/Refusé** ✅
   - Templates `LeaveApprovedEmail.tsx` et `LeaveRejectedEmail.tsx`
   - Types `LeaveType`, `LeaveEmailData`, `LeaveRejectedEmailData` dans `src/types/leave.ts`
@@ -1784,7 +1795,7 @@ Page d'accès refusé personnalisée avec animations Framer Motion et accessibil
 SmartplanningAI/
 ├── src/
 │   ├── app/              # Next.js 15 App Router
-│   │   ├── (auth)/       # Routes publiques (login, register)
+│   │   ├── (auth)/       # Routes publiques (login, register, activate-account)
 │   │   ├── (about)/      # Pages À propos et Tarifs
 │   │   │   ├── a-propos/         # Page principale + AboutContent + StructuredData
 │   │   │   ├── tarifs/           # Page tarifs + PricingPageContent + StructuredData (SP-359)
@@ -1820,7 +1831,7 @@ SmartplanningAI/
 │   │   │   ├── swipeable-drawer.tsx  # Drawer avec gestes Framer Motion
 │   │   │   ├── __tests__/            # 21 tests unitaires
 │   │   │   └── index.ts              # Barrel export
-│   │   ├── auth/         # LoginForm, RegisterForm (variant dark/light)
+│   │   ├── auth/         # LoginForm, RegisterForm, ActivateAccountForm (variant dark/light)
 │   │   ├── cards/        # UserCard, TeamCard, AvatarStack
 │   │   ├── error/        # ErrorBoundary, ErrorFallback (SP-304), NotFoundPage (SP-302), ServerErrorPage (SP-303), ForbiddenPage (SP-305)
 │   │   ├── charts/       # AreaChartWidget, BarChartWidget, PieChartWidget
@@ -1857,12 +1868,13 @@ SmartplanningAI/
 │   │   │   ├── auth-actions.ts      # Actions authentification (inscription)
 │   │   │   ├── password-actions.ts  # Actions reset password (SP-298)
 │   │   │   ├── verification-actions.ts # Actions vérification email (SP-299)
+│   │   │   ├── employees.ts       # CRUD employés + invitation + activateAccount + resendInvitation
 │   │   │   └── crud-utils.ts        # Utilitaires CRUD génériques (SP-150)
 │   │   ├── email/        # Système d'emails (Sprint 9)
 │   │   │   ├── index.ts          # Export principal
 │   │   │   ├── config.ts         # Configuration SMTP
 │   │   │   ├── send.ts           # Fonction sendEmail avec retry
-│   │   │   └── templates/        # Fonctions d'envoi par type
+│   │   │   └── templates/        # Fonctions d'envoi par type (invitation.ts, verification-email.ts, etc.)
 │   │   ├── services/     # Services métier
 │   │   │   ├── dashboard/  # Services stats par rôle (SP-144)
 │   │   │   └── stripe/     # Service abonnements & webhooks (SP-351)
