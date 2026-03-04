@@ -172,13 +172,12 @@ export default async function EmployeeDashboardPage() {
       {/* Charts en 2 colonnes */}
       <div className="grid gap-6 md:grid-cols-2">
         <EmployeeSchedule weeklySchedule={stats.weeklySchedule} />
-        <EmployeeLeaveBalance leaveBalance={stats.leaveBalance} />
+        {leaveBalanceResult.success && leaveBalanceResult.data ? (
+          <LeaveBalanceCard balance={leaveBalanceResult.data} />
+        ) : (
+          <EmployeeLeaveBalance leaveBalance={stats.leaveBalance} />
+        )}
       </div>
-
-      {/* Detail solde CP / RTT */}
-      {leaveBalanceResult.success && leaveBalanceResult.data && (
-        <LeaveBalanceCard balance={leaveBalanceResult.data} />
-      )}
 
       {/* Widget Taches Personnelles (SP-420) */}
       <PersonalTasksWidget
