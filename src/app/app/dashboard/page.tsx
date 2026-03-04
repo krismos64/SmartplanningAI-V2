@@ -18,6 +18,8 @@ import { EmployeeLeaveBalance } from './_components/EmployeeLeaveBalance'
 import { EmployeeQuickActions } from './_components/EmployeeQuickActions'
 import { PersonalTasksWidget } from '@/components/dashboard'
 import { getPersonalTasksForWidget } from '@/lib/actions/personal-tasks'
+import { getLeaveBalance } from '@/lib/actions/leaves'
+import { LeaveBalanceCard } from '@/components/leaves/LeaveBalanceCard'
 
 export const metadata = {
   title: 'Mon Dashboard | SmartPlanning',
@@ -142,8 +144,11 @@ export default async function EmployeeDashboardPage() {
 
   const stats = statsResult.data
 
-  // Recuperer les taches personnelles pour le widget (SP-420)
-  const tasksResult = await getPersonalTasksForWidget(5)
+  // Recuperer les taches personnelles et le solde de conges en parallele
+  const [tasksResult, leaveBalanceResult] = await Promise.all([
+    getPersonalTasksForWidget(5),
+    getLeaveBalance(),
+  ])
   const personalTasks = tasksResult.success ? tasksResult.data : []
 
   // Compter le total des taches non completees
@@ -169,6 +174,11 @@ export default async function EmployeeDashboardPage() {
         <EmployeeSchedule weeklySchedule={stats.weeklySchedule} />
         <EmployeeLeaveBalance leaveBalance={stats.leaveBalance} />
       </div>
+
+      {/* Detail solde CP / RTT */}
+      {leaveBalanceResult.success && leaveBalanceResult.data && (
+        <LeaveBalanceCard balance={leaveBalanceResult.data} />
+      )}
 
       {/* Widget Taches Personnelles (SP-420) */}
       <PersonalTasksWidget

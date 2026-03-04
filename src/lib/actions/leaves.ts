@@ -875,7 +875,11 @@ export async function updateLeaveBalance(
   year: number,
   input: unknown
 ): Promise<ActionResult<LeaveBalance>> {
-  const authResult = await getAuthenticatedUser(['DIRECTOR', 'SYSTEM_ADMIN'])
+  const authResult = await getAuthenticatedUser([
+    'DIRECTOR',
+    'SYSTEM_ADMIN',
+    'MANAGER',
+  ])
   if (!authResult.success) return { success: false, error: authResult.error }
   const { user } = authResult
 

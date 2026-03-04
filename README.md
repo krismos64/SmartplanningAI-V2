@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 2 mars 2026 (Système d'invitation employé/manager/directeur avec activation de compte, sélecteur de rôle, email d'invitation, notifications directeur)
+- **Dernière mise à jour** : 4 mars 2026 (Édition complète soldes congés : total + jours utilisés CP/RTT modifiables par DIRECTOR/MANAGER/SYSTEM_ADMIN)
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -66,7 +66,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Dashboard Components** (SP-142) : StatCard, TrendIndicator, StatsGrid avec types par rôle
 - **Charts Recharts** (SP-143) : AreaChartWidget, BarChartWidget, PieChartWidget avec tooltips Shadcn et dark mode
 - **Dashboard Services Prisma** (SP-144) : Services data layer par rôle (Employee, Manager, Director, Admin) avec architecture multi-tenant
-- **Dashboard Employee** (SP-145) : Page dashboard complète avec Server Components, redirection par rôle, 5 composants métier (Welcome, Stats, Schedule, LeaveBalance, QuickActions)
+- **Dashboard Employee** (SP-145) : Page dashboard complète avec Server Components, redirection par rôle, 5 composants métier (Welcome, Stats, Schedule, LeaveBalance donut, QuickActions) + LeaveBalanceCard détaillée CP/RTT avec progress bars
 - **Dashboard Director** (SP-147) : Page dashboard directeur avec Server Components, RBAC, 5 composants métier (Welcome, Stats 3 KPIs, TeamsChart, PendingLeaves, QuickActions), liens corrigés vers routes /app/
 - **Dashboard Manager** (SP-316) : Page dashboard manager avec Server Components, RBAC, 5 composants métier (ManagerWelcome, ManagerStats, ManagerTeamChart, ManagerPendingLeaves, ManagerQuickActions)
 - **Dashboard Super Admin** (SP-148) : Page dashboard admin SaaS avec Server Components, protection SYSTEM_ADMIN, 7 composants (Welcome, Stats, MrrChart, SignupsChart, PlansChart, RecentCompanies, QuickActions)
@@ -83,6 +83,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **User Activity Page** (SP-463) : Page activité utilisateur `/app/profile/activity` avec timeline relative française (`Intl.RelativeTimeFormat`). Server Action `getUserActivity` filtrant par userId JWT avec isolation RBAC. Accès depuis Header dropdown "Mon activité" et ProfileActions. 17 tests unitaires
 - **Impersonation Mode** (SP-453, SP-454, SP-456) : Mode support SYSTEM_ADMIN "Voir espace client" avec cookie `sp-impersonation` (HttpOnly, TTL 3600s). API REST `/api/admin/impersonate` (POST start, DELETE stop), bannière orange avec nom entreprise et bouton quitter, impersonation guard middleware (blocage routes admin/billing), subscription guard bypass en mode impersonation (évite boucle redirect infinie), fallback cookie dans layout.tsx (résilience updateSession NextAuth v5), audit trail start/stop. Page Object Model Playwright (ImpersonationPage). 10 tests unitaires + 9 tests E2E
 - **Admin SYSTEM_ADMIN Améliorations** (SP-469 à SP-477) : Service MRR unifié (source de vérité unique), sécurisation endpoint /api/health (3 niveaux d'accès, OWASP A05), bouton rafraîchir monitoring (router.refresh + useTransition), page utilisateurs cross-entreprises avec export CSV (jointure cross-tenant contrôlée), widget essais à risque (classification urgence 3 niveaux, MRR potentiel), email contact admin vers entreprise (template React Email, EmailLog), statistiques globales avec export PDF (7 indicateurs Promise.all, @react-pdf/renderer), notifications SSE temps réel SYSTEM_ADMIN (4 types, fire-and-forget), broadcast email global (Promise.allSettled batch/10, 4 catégories). 75 tests unitaires
+- **Solde congés fiche employé** : Affichage du solde CP/RTT (LeaveBalanceCard) sur la fiche détail employé `/app/dashboard/employees/[id]` avec édition par DIRECTOR, MANAGER et SYSTEM_ADMIN (LeaveBalanceEditDialog + router.refresh). Composant EmployeeLeaveBalanceSection (Client Component). Édition complète : total + jours utilisés (CP et RTT) pour correction d'erreurs d'automatisation ou humaines. Validation Zod (used ≤ total). 4 tests unitaires
 - **Monitoring System** (SP-464, SP-465) : Page monitoring admin `/app/admin/monitoring` avec Suspense + skeleton loading. **SP-464 MVP** : Server Action `getMonitoringSnapshot` RBAC SYSTEM_ADMIN (health check DB, quick stats SaaS, répartition abonnements), 8 composants (HealthStatusBadge, DatabaseHealthPanel avec ProgressBar pool, MonitoringKpisGrid 4 KPIs glass cards, SubscriptionBreakdownPanel badges colorés par statut), service `checkDatabaseHealth` (4 checks : connexion, latence, pool, migrations), 30 tests unitaires. **SP-465 Charts** : Server Action `getMonitoringChartData` (auditActivity 7j, subscriptionDistribution, topActions top 5, companyGrowth 30j), 4 composants Recharts (ActivityChart AreaChartWidget, SubscriptionPieChart donut avec STATUS_COLORS sémantiques, TopActionsChart BarChartWidget horizontal avec ACTION_LABELS FR, CompanyGrowthChart AreaChartWidget), helper `generateEmptyDays` pour zero-fill, 22 tests unitaires. Total : 52 tests unitaires
 
 ### MVP (Phases 1-4)
@@ -2258,7 +2259,7 @@ Voir `/docs/database-schema.md` pour le détail complet.
   - 8 composants React : LeaveTypeBadge, LeaveStatusBadge, LeaveConflictWarning, LeaveBalanceCard, LeaveBalanceEditDialog, LeaveRequestCard, LeaveRequestForm, LeaveReviewDialog
   - LeaveTypeBadge/LeaveStatusBadge : Badges avec icônes Lucide et couleurs par type/statut
   - LeaveBalanceCard : Carte CP/RTT avec ProgressBar et seuils couleur (success/warning/destructive)
-  - LeaveBalanceEditDialog : Dialog RHF + Zod pour modifier les soldes (Director)
+  - LeaveBalanceEditDialog : Dialog RHF + Zod pour modifier les soldes total + utilisés CP/RTT (DIRECTOR/MANAGER/SYSTEM_ADMIN)
   - LeaveRequestCard : Carte demande avec actions contextuelles par rôle (edit/cancel/review)
   - LeaveRequestForm : Formulaire complet avec Calendar range, demi-journée, détection conflits équipe
   - LeaveReviewDialog : Dialog approbation/refus avec commentaire obligatoire sur refus

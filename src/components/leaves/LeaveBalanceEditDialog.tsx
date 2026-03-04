@@ -48,7 +48,9 @@ export function LeaveBalanceEditDialog({
     resolver: zodResolver(updateLeaveBalanceSchema),
     defaultValues: {
       paidLeaveTotal: balance.paidLeaveTotal,
+      paidLeaveUsed: balance.paidLeaveUsed,
       rttTotal: balance.rttTotal,
+      rttUsed: balance.rttUsed,
     },
   })
 
@@ -102,9 +104,27 @@ export function LeaveBalanceEditDialog({
                 </FormItem>
               )}
             />
-            <div className="text-sm text-muted-foreground">
-              CP utilisés : {balance.paidLeaveUsed} jours
-            </div>
+            <FormField
+              control={form.control}
+              name="paidLeaveUsed"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Congés payés (utilisés)</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      step="0.5"
+                      data-testid="cp-used-input"
+                      {...field}
+                      onChange={(e) =>
+                        field.onChange(parseFloat(e.target.value) || 0)
+                      }
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <FormField
               control={form.control}
@@ -127,9 +147,27 @@ export function LeaveBalanceEditDialog({
                 </FormItem>
               )}
             />
-            <div className="text-sm text-muted-foreground">
-              RTT utilisés : {balance.rttUsed} jours
-            </div>
+            <FormField
+              control={form.control}
+              name="rttUsed"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>RTT (utilisés)</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      step="0.5"
+                      data-testid="rtt-used-input"
+                      {...field}
+                      onChange={(e) =>
+                        field.onChange(parseFloat(e.target.value) || 0)
+                      }
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <DialogFooter>
               <Button

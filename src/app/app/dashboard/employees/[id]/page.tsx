@@ -28,6 +28,8 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { getEmployee } from '@/lib/actions/employees'
+import { getLeaveBalance } from '@/lib/actions/leaves'
+import { EmployeeLeaveBalanceSection } from './_components/EmployeeLeaveBalanceSection'
 
 interface EmployeeDetailPageProps {
   params: Promise<{ id: string }>
@@ -65,14 +67,18 @@ export default async function EmployeeDetailPage({
     redirect('/app/dashboard')
   }
 
-  // Charger l'employe
-  const result = await getEmployee(id)
+  // Charger l'employe et son solde de conges en parallele
+  const [result, balanceResult] = await Promise.all([
+    getEmployee(id),
+    getLeaveBalance(id),
+  ])
 
   if (!result.success || !result.data) {
     notFound()
   }
 
   const employee = result.data
+  const canEditBalance = ['SYSTEM_ADMIN', 'DIRECTOR', 'MANAGER'].includes(role)
 
   return (
     <div className="space-y-6">
@@ -183,6 +189,14 @@ export default async function EmployeeDetailPage({
           </div>
         </CardContent>
       </Card>
+
+      {/* Solde de conges */}
+      {balanceResult.success && balanceResult.data && (
+        <EmployeeLeaveBalanceSection
+          balance={balanceResult.data}
+          canEdit={canEditBalance}
+        />
+      )}
     </div>
   )
 }
