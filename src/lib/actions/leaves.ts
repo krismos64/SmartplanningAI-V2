@@ -651,6 +651,9 @@ export async function cancelLeaveRequest(
         },
       }).catch(console.error)
 
+      // SSE : Notifier les managers de l'annulation (fire-and-forget)
+      notifyCancelledLeaveToManagers(leaveRequest.employeeId, id)
+
       revalidatePath(LEAVE_PATH)
       return { success: true, data: updated }
     }
@@ -670,6 +673,9 @@ export async function cancelLeaveRequest(
       companyId: leaveRequest.companyId,
       details: { from: leaveRequest.status, to: 'CANCELLED' },
     }).catch(console.error)
+
+    // SSE : Notifier les managers de l'annulation (fire-and-forget)
+    notifyCancelledLeaveToManagers(leaveRequest.employeeId, id)
 
     revalidatePath(LEAVE_PATH)
     return { success: true, data: updated }
@@ -1560,4 +1566,38 @@ export async function exportLeavesCsv(
     console.error('[exportLeavesCsv] Error:', error)
     return { success: false, error: "Erreur lors de l'export" }
   }
+}
+
+// ============================================================================
+// Helpers internes
+// ============================================================================
+
+/**
+ * Notifie les managers de l'équipe d'un employé qu'un congé a été annulé.
+ * Fire-and-forget : toute erreur est logguée sans bloquer le flux principal.
+ */
+function notifyCancelledLeaveToManagers(
+  employeeId: string,
+  leaveRequestId: string
+): void {
+  prisma.employee
+    .findUnique({
+      where: { id: employeeId },
+      select: {
+        team: {
+          select: {
+            manager: { select: { userId: true } },
+          },
+        },
+      },
+    })
+    .then((employee) => {
+      const managerUserId = employee?.team?.manager?.userId
+      if (managerUserId) {
+        createLeaveNotification(leaveRequestId, managerUserId, 'cancelled').catch(
+          console.error
+        )
+      }
+    })
+    .catch(console.error)
 }

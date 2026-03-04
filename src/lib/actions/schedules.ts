@@ -857,9 +857,10 @@ export async function deleteSchedule(id: string): Promise<DeleteActionResult> {
   const user = authResult.user
 
   try {
-    // Recuperer le schedule
+    // Recuperer le schedule avec le userId de l'employé
     const schedule = await prisma.schedule.findUnique({
       where: { id },
+      include: { employee: { select: { userId: true } } },
     })
 
     if (!schedule) {
@@ -884,6 +885,13 @@ export async function deleteSchedule(id: string): Promise<DeleteActionResult> {
       companyId: schedule.companyId,
       details: { employeeId: schedule.employeeId, type: schedule.type },
     }).catch(console.error)
+
+    // Notification SSE : planning supprimé (fire-and-forget)
+    if (schedule.employee?.userId) {
+      createPlanningNotification(id, schedule.employee.userId, 'deleted').catch(
+        console.error
+      )
+    }
 
     revalidatePath('/app/schedules')
     revalidatePath('/app/dashboard')
@@ -934,6 +942,20 @@ export async function deleteScheduleGroup(
       }
     }
 
+    // Collecter les employeeIds uniques et leurs scheduleIds pour les notifications
+    const employeeScheduleMap = new Map<string, string>()
+    for (const s of schedules) {
+      if (!employeeScheduleMap.has(s.employeeId)) {
+        employeeScheduleMap.set(s.employeeId, s.id)
+      }
+    }
+
+    // Récupérer les userIds des employés concernés
+    const employees = await prisma.employee.findMany({
+      where: { id: { in: [...employeeScheduleMap.keys()] } },
+      select: { id: true, userId: true },
+    })
+
     // Supprimer tous les schedules du groupe
     const result = await prisma.schedule.deleteMany({
       where: { scheduleGroupId },
@@ -947,6 +969,18 @@ export async function deleteScheduleGroup(
       companyId: schedules[0]?.companyId ?? undefined,
       details: { scheduleGroupId, deletedCount: result.count },
     }).catch(console.error)
+
+    // Notifications SSE : planning supprimé pour chaque employé (fire-and-forget)
+    for (const emp of employees) {
+      if (emp.userId) {
+        const scheduleId = employeeScheduleMap.get(emp.id)
+        if (scheduleId) {
+          createPlanningNotification(scheduleId, emp.userId, 'deleted').catch(
+            console.error
+          )
+        }
+      }
+    }
 
     revalidatePath('/app/schedules')
     revalidatePath('/app/dashboard')

@@ -615,6 +615,18 @@ async function handleCheckoutCompleted(
     })
     .catch((err) => console.error('[Webhook] Director lookup failed:', err))
 
+  // Fire-and-forget : notification SYSTEM_ADMIN nouvelle souscription (SP-476)
+  import('@/lib/actions/notifications')
+    .then(({ createAdminNotification }) =>
+      createAdminNotification({
+        title: 'Nouvelle souscription activée',
+        message: `Entreprise #${companyId.slice(0, 8)} — ${quantity} employé${quantity > 1 ? 's' : ''} (${formatAmountEuros(quantity * STRIPE_PRICING.UNIT_AMOUNT_CENTS)}/mois)`,
+        type: 'SUCCESS',
+        actionUrl: '/app/admin/companies',
+      })
+    )
+    .catch(console.error)
+
   return {
     success: true,
     data: {
@@ -788,6 +800,19 @@ async function handleSubscriptionDeleted(
     })
     .catch((err) => console.error('[Webhook] Director lookup failed:', err))
 
+  // Fire-and-forget : notification SYSTEM_ADMIN souscription supprimée (SP-476)
+  import('@/lib/actions/notifications')
+    .then(({ createAdminNotification }) =>
+      createAdminNotification({
+        title: 'Souscription annulée',
+        message: `La souscription de l'entreprise #${companyId.slice(0, 8)} a été supprimée par Stripe`,
+        type: 'WARNING',
+        priority: 'HIGH',
+        actionUrl: '/app/admin/companies',
+      })
+    )
+    .catch(console.error)
+
   return {
     success: true,
     data: {
@@ -900,6 +925,19 @@ async function handleInvoicePaid(
       })
       .catch((err) => console.error('[Webhook] Director lookup failed:', err))
   }
+
+  // Fire-and-forget : notification SYSTEM_ADMIN paiement reçu (SP-476)
+  import('@/lib/actions/notifications')
+    .then(({ createAdminNotification }) =>
+      createAdminNotification({
+        title: 'Paiement reçu',
+        message: `Paiement de ${formatAmountEuros(amountPaid)} reçu pour l'entreprise #${dbSub.companyId.slice(0, 8)}`,
+        type: 'SUCCESS',
+        priority: 'LOW',
+        actionUrl: '/app/admin/companies',
+      })
+    )
+    .catch(console.error)
 
   return {
     success: true,

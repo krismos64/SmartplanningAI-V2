@@ -32,6 +32,7 @@ import {
   type IncidentNoteUpdateInput,
   type IncidentNoteFilters,
 } from '@/lib/validations/incident-note'
+import { createIncidentNotification } from '@/lib/actions/notifications'
 import type { ListActionResult, ListQueryParams } from '@/types'
 
 // ============================================================================
@@ -299,6 +300,23 @@ export async function createIncidentNote(
       details: { subjectId: data.subjectId, visibility: data.visibility },
     }).catch(console.error)
 
+    // SSE : Notifier l'employé sujet si visibility=ALL et qu'il a un userId (fire-and-forget)
+    if (data.visibility === 'ALL') {
+      prisma.employee
+        .findUnique({
+          where: { id: data.subjectId },
+          select: { userId: true },
+        })
+        .then((emp) => {
+          if (emp?.userId) {
+            createIncidentNotification(note.id, emp.userId, 'created').catch(
+              console.error
+            )
+          }
+        })
+        .catch(console.error)
+    }
+
     revalidatePath(INCIDENT_PATH)
     return { success: true, data: note }
   } catch (error) {
@@ -530,6 +548,24 @@ export async function updateIncidentNote(
       companyId: existing.companyId,
       details: data as unknown as Prisma.InputJsonValue,
     }).catch(console.error)
+
+    // SSE : Notifier l'employé sujet de la modification (fire-and-forget)
+    // La note mise à jour inclut le sujet via INCIDENT_NOTE_INCLUDE
+    if (updated.subject?.id) {
+      prisma.employee
+        .findUnique({
+          where: { id: updated.subject.id },
+          select: { userId: true },
+        })
+        .then((emp) => {
+          if (emp?.userId) {
+            createIncidentNotification(id, emp.userId, 'updated').catch(
+              console.error
+            )
+          }
+        })
+        .catch(console.error)
+    }
 
     revalidatePath(INCIDENT_PATH)
     return { success: true, data: updated }

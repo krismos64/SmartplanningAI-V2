@@ -358,6 +358,11 @@ export async function createLeaveNotification(
         message: `Votre demande de congé ${dateRange} a été refusée.`,
         priority: 'HIGH',
       },
+      cancelled: {
+        title: 'Congé annulé',
+        message: `${employeeName} a annulé sa demande de congé ${dateRange}.`,
+        priority: 'MEDIUM',
+      },
     }
 
     const { title, message, priority } = actionMessages[action]

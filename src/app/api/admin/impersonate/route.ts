@@ -263,5 +263,18 @@ export async function DELETE(): Promise<NextResponse> {
     },
   }).catch(console.error)
 
+  // 4. Notification SYSTEM_ADMIN : impersonation arrêtée (fire-and-forget, SP-476)
+  const durationMin = Math.round(duration / 60)
+  import('@/lib/actions/notifications')
+    .then(({ createAdminNotification }) =>
+      createAdminNotification({
+        title: 'Impersonation arrêtée',
+        message: `Impersonation de ${context.targetEmail} (${context.targetCompanyName ?? 'N/A'}) terminée après ${durationMin} min`,
+        type: 'SYSTEM',
+        actionUrl: '/app/admin/logs',
+      })
+    )
+    .catch(console.error)
+
   return response
 }

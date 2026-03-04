@@ -74,6 +74,7 @@ export const leaveNotificationActionSchema = z.enum([
   'requested',
   'approved',
   'rejected',
+  'cancelled',
 ])
 export type LeaveNotificationAction = z.infer<
   typeof leaveNotificationActionSchema
