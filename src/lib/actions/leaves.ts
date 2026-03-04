@@ -49,6 +49,7 @@ import { sendLeaveRequestedEmail } from '@/lib/email/templates/leave-requested'
 import { assertNotImpersonating } from '@/lib/impersonation'
 import type { ListActionResult, ListQueryParams } from '@/types'
 import type { LeaveEmailData, LeaveRequestedEmailData } from '@/types'
+import { createLeaveNotification } from '@/lib/actions/notifications'
 
 // ============================================================================
 // Types
@@ -86,6 +87,7 @@ const LEAVE_REQUEST_INCLUDE = {
       lastName: true,
       email: true,
       teamId: true,
+      userId: true,
       user: {
         select: {
           image: true,
@@ -416,7 +418,32 @@ export async function createLeaveRequest(
       },
     })
 
-    // SP-415: Notifier les managers de la nouvelle demande (en background)
+    // SSE : Notifier les managers via notification in-app (fire-and-forget)
+    prisma.employee
+      .findMany({
+        where: {
+          managedTeams: employee.teamId
+            ? { some: { id: employee.teamId } }
+            : undefined,
+          isActive: true,
+          userId: { not: null },
+        },
+        select: { userId: true },
+      })
+      .then((managers) => {
+        for (const m of managers) {
+          if (m.userId) {
+            createLeaveNotification(
+              leaveRequest.id,
+              m.userId,
+              'requested'
+            ).catch(console.error)
+          }
+        }
+      })
+      .catch(console.error)
+
+    // SP-415: Notifier les managers de la nouvelle demande par email (en background)
     notifyManagersOfNewLeaveRequest(
       leaveRequest.id,
       employee,
@@ -771,6 +798,15 @@ export async function reviewLeaveRequest(
     } catch (emailError) {
       console.error('[reviewLeaveRequest] Email error:', emailError)
       // Ne pas bloquer l'action si l'email échoue
+    }
+
+    // SSE : Notifier l'employé de la décision (fire-and-forget)
+    if (leaveRequest.employee.userId) {
+      createLeaveNotification(
+        id,
+        leaveRequest.employee.userId,
+        data.status === LeaveRequestStatus.APPROVED ? 'approved' : 'rejected'
+      ).catch(console.error)
     }
 
     // SP-444 : Audit trail (fire-and-forget)

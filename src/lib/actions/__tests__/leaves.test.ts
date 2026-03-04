@@ -38,6 +38,7 @@ vi.mock('@/lib/prisma', () => ({
     },
     employee: {
       findUnique: vi.fn(),
+      findMany: vi.fn().mockResolvedValue([]),
       count: vi.fn(),
     },
     $transaction: vi.fn(),
@@ -55,6 +56,14 @@ vi.mock('next/cache', () => ({
 vi.mock('@/lib/email/templates/leave-decision', () => ({
   sendLeaveApprovedEmail: vi.fn().mockResolvedValue({ success: true }),
   sendLeaveRejectedEmail: vi.fn().mockResolvedValue({ success: true }),
+}))
+
+vi.mock('@/lib/email/templates/leave-requested', () => ({
+  sendLeaveRequestedEmail: vi.fn().mockResolvedValue({ success: true }),
+}))
+
+vi.mock('@/lib/actions/notifications', () => ({
+  createLeaveNotification: vi.fn().mockResolvedValue({ success: true }),
 }))
 
 import { prisma } from '@/lib/prisma'
@@ -151,6 +160,8 @@ function setupAuth(role: string, userId = USER_ID) {
 
 beforeEach(() => {
   vi.resetAllMocks()
+  // Default mock pour les notifications SSE (fire-and-forget .then() chain)
+  vi.mocked(prisma.employee.findMany).mockResolvedValue([])
 })
 
 // ─── getLeaveRequests ─────────────────────────────────────────────

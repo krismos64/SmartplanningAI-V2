@@ -26,6 +26,7 @@ import {
   type CreateScheduleInput,
   type UpdateScheduleInput,
 } from '@/lib/validations/schedule'
+import { createPlanningNotification } from '@/lib/actions/notifications'
 import type { CrudActionResult, DeleteActionResult } from '@/types'
 import {
   generateOccurrences,
@@ -645,6 +646,7 @@ export async function createSchedule(
                 id: true,
                 firstName: true,
                 lastName: true,
+                userId: true,
                 user: { select: { image: true } },
               },
             },
@@ -677,6 +679,26 @@ export async function createSchedule(
         },
       }).catch(console.error)
     }
+
+    // SSE : Notifier les employés du nouveau planning (fire-and-forget)
+    const notifyEmpIds = [...new Set(schedules.map((s) => s.employeeId))]
+    prisma.employee
+      .findMany({
+        where: { id: { in: notifyEmpIds }, userId: { not: null } },
+        select: { id: true, userId: true },
+      })
+      .then((employees) => {
+        const userIdMap = new Map(employees.map((e) => [e.id, e.userId]))
+        for (const s of schedules) {
+          const uid = userIdMap.get(s.employeeId)
+          if (uid) {
+            createPlanningNotification(s.id, uid, 'created').catch(
+              console.error
+            )
+          }
+        }
+      })
+      .catch(console.error)
 
     revalidatePath('/app/schedules')
     revalidatePath('/app/dashboard')
@@ -791,6 +813,21 @@ export async function updateSchedule(
         type: validated.type ?? existing.type,
       },
     }).catch(console.error)
+
+    // SSE : Notifier l'employé de la modification (fire-and-forget)
+    prisma.employee
+      .findUnique({
+        where: { id: updated.employeeId },
+        select: { userId: true },
+      })
+      .then((emp) => {
+        if (emp?.userId) {
+          createPlanningNotification(updated.id, emp.userId, 'updated').catch(
+            console.error
+          )
+        }
+      })
+      .catch(console.error)
 
     revalidatePath('/app/schedules')
     revalidatePath(`/app/schedules/${validated.id}`)
@@ -1038,6 +1075,7 @@ export async function duplicateSchedule(
                 id: true,
                 firstName: true,
                 lastName: true,
+                userId: true,
                 user: { select: { image: true } },
               },
             },
