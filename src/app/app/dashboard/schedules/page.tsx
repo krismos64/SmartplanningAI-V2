@@ -46,7 +46,7 @@ export default async function SchedulesPage() {
   const result = await getSchedules({
     startDate: startOfWeek,
     endDate: endOfWeek,
-    limit: 100,
+    limit: 500,
   })
 
   const schedules = result.success ? (result.data?.schedules ?? []) : []

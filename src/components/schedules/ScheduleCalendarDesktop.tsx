@@ -181,14 +181,14 @@ const calendars = {
   rest: {
     colorName: 'rest',
     lightColors: {
-      main: '#4b5563',
-      container: '#d1d5db',
-      onContainer: '#1f2937',
+      main: '#16a34a',
+      container: '#bbf7d0',
+      onContainer: '#14532d',
     },
     darkColors: {
-      main: '#9ca3af',
-      container: '#374151',
-      onContainer: '#e5e7eb',
+      main: '#4ade80',
+      container: '#14532d',
+      onContainer: '#dcfce7',
     },
   },
 }

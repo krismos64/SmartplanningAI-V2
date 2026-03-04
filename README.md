@@ -949,7 +949,7 @@ Panneau latéral affichant les heures planifiées vs contractuelles par employé
 Nouveau type de planning "Repos" pour les journées de repos complètes :
 
 - **Schema Prisma** : Ajout `REST` à l'enum `ScheduleType` (migration `20260127154930`)
-- **Validations** : Label "Repos", couleur `#6B7280` (gris)
+- **Validations** : Label "Repos", couleur `#16A34A` (vert)
 - **ShiftModal** : Masquage automatique des champs horaires, forçage 00:00-23:59, bannière "Journée entière (repos)"
 - **Calendrier Desktop** : Événement all-day via `Temporal.PlainDate` (au lieu de `ZonedDateTime`), emoji 🛌
 - **Calendrier Mobile** : Affiche "Journée entière" au lieu des horaires

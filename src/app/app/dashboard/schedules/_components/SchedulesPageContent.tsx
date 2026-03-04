@@ -235,7 +235,7 @@ export function SchedulesPageContent({
         const result = await getSchedules({
           startDate: start,
           endDate: end,
-          limit: 100,
+          limit: 500,
           ...filters,
         })
 

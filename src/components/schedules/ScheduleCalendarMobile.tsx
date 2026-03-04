@@ -80,9 +80,9 @@ const typeConfig = {
     label: 'Heures sup.',
   },
   REST: {
-    bg: 'bg-gray-50 dark:bg-gray-950',
-    border: 'border-l-gray-500',
-    text: 'text-gray-700 dark:text-gray-300',
+    bg: 'bg-green-50 dark:bg-green-950',
+    border: 'border-l-green-500',
+    text: 'text-green-700 dark:text-green-300',
     label: 'Repos',
   },
 } as const

@@ -336,7 +336,7 @@ export const scheduleFiltersSchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
 
   /** Limite par page */
-  limit: z.coerce.number().int().min(1).max(100).default(20),
+  limit: z.coerce.number().int().min(1).max(500).default(20),
 
   /** Champ de tri */
   sortBy: z
@@ -406,5 +406,5 @@ export const scheduleTypeColors: Record<ScheduleType, string> = {
   REMOTE: '#06B6D4', // Cyan
   ON_CALL: '#EF4444', // Red
   OVERTIME: '#F97316', // Orange
-  REST: '#6B7280', // Gray
+  REST: '#16A34A', // Green
 }

@@ -383,9 +383,9 @@ describe('scheduleFiltersSchema', () => {
     expect(result.success).toBe(true)
   })
 
-  it('rejette limit > 100', () => {
+  it('rejette limit > 500', () => {
     const result = scheduleFiltersSchema.safeParse({
-      limit: 101,
+      limit: 501,
     })
     expect(result.success).toBe(false)
   })
