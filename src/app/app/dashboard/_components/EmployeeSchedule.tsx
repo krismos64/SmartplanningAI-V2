@@ -94,7 +94,7 @@ export function EmployeeSchedule({
           showTooltip
           barSize={32}
           colors={[CHART_COLORS.primary[0]]}
-          emptyMessage="Aucun shift planifié cette semaine"
+          emptyMessage="Aucun planning prévu cette semaine"
           title="Planning hebdomadaire"
         />
       </CardContent>

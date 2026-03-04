@@ -100,7 +100,7 @@ describe('EmployeeWelcome', () => {
 
       render(<EmployeeWelcome userName="Jean" nextShift={nextShift} />)
 
-      expect(screen.getByText(/Prochain shift/)).toBeInTheDocument()
+      expect(screen.getByText(/Prochain planning/)).toBeInTheDocument()
       expect(screen.getByText(/09:00/)).toBeInTheDocument()
       expect(screen.getByText(/17:00/)).toBeInTheDocument()
     })
@@ -149,12 +149,12 @@ describe('EmployeeWelcome', () => {
       expect(elements.length).toBeGreaterThan(0)
     })
 
-    it('devrait afficher "Aucun shift programmé" si pas de prochain shift', () => {
+    it('devrait afficher "Aucun planning programmé" si pas de prochain shift', () => {
       vi.setSystemTime(new Date('2025-06-15T10:00:00'))
 
       render(<EmployeeWelcome userName="Jean" nextShift={null} />)
 
-      expect(screen.getByText(/Aucun shift programmé/)).toBeInTheDocument()
+      expect(screen.getByText(/Aucun planning programmé/)).toBeInTheDocument()
     })
   })
 

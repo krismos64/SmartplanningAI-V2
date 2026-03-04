@@ -138,7 +138,7 @@ export function EmployeeWelcome({
               </svg>
             </div>
             <div>
-              <p className="text-sm font-medium">Prochain shift</p>
+              <p className="text-sm font-medium">Prochain planning</p>
               <p className="text-sm text-muted-foreground">
                 {formatShiftDate(nextShift.date)} - {nextShift.startTime} a{' '}
                 {nextShift.endTime}
@@ -169,7 +169,7 @@ export function EmployeeWelcome({
             </div>
             <div>
               <p className="text-sm font-medium text-muted-foreground">
-                Aucun shift programmé
+                Aucun planning programmé
               </p>
             </div>
           </div>

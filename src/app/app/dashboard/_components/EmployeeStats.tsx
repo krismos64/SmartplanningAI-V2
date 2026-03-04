@@ -92,7 +92,7 @@ export function EmployeeStats({
       variant: 'primary',
     },
     {
-      title: 'Shifts à venir',
+      title: 'Plannings à venir',
       value: stats.upcomingShifts,
       icon: Calendar,
       description: 'Planifiés',

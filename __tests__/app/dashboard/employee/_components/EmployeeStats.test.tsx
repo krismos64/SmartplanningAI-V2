@@ -71,7 +71,7 @@ describe('EmployeeStats', () => {
       render(<EmployeeStats stats={mockStats} />)
 
       expect(screen.getByText('Heures travaillées')).toBeInTheDocument()
-      expect(screen.getByText('Shifts à venir')).toBeInTheDocument()
+      expect(screen.getByText('Plannings à venir')).toBeInTheDocument()
       expect(screen.getByText('Solde congés')).toBeInTheDocument()
       expect(screen.getByText('Demandes en attente')).toBeInTheDocument()
     })
