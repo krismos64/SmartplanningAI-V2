@@ -250,6 +250,7 @@ export function IncidentNotesPageContent({
           note={editingNote}
           onSubmit={handleFormSubmit}
           isSubmitting={isSubmitting}
+          userRole={userRole}
         />
       )}
 

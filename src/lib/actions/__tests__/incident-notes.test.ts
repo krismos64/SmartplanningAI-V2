@@ -269,7 +269,7 @@ describe('getIncidentNotes', () => {
     )
   })
 
-  it('MANAGER voit les notes MANAGER_DIRECTOR et ALL de son équipe', async () => {
+  it('MANAGER voit les notes MANAGER_ONLY, MANAGER_DIRECTOR et ALL de son équipe', async () => {
     setupAuth('MANAGER', MANAGER_USER_ID, [TEAM_ID])
     vi.mocked(prisma.incidentNote.findMany).mockResolvedValue([] as never)
     vi.mocked(prisma.incidentNote.count).mockResolvedValue(0 as never)
@@ -282,7 +282,7 @@ describe('getIncidentNotes', () => {
         where: expect.objectContaining({
           AND: expect.arrayContaining([
             expect.objectContaining({
-              visibility: { in: ['MANAGER_DIRECTOR', 'ALL'] },
+              visibility: { in: ['MANAGER_ONLY', 'MANAGER_DIRECTOR', 'ALL'] },
               subject: { teamId: { in: [TEAM_ID] } },
             }),
           ]),
@@ -291,7 +291,7 @@ describe('getIncidentNotes', () => {
     )
   })
 
-  it("DIRECTOR voit toutes les notes de l'entreprise", async () => {
+  it("DIRECTOR voit les notes de l'entreprise sauf MANAGER_ONLY", async () => {
     setupAuth('DIRECTOR', DIRECTOR_USER_ID)
     vi.mocked(prisma.incidentNote.findMany).mockResolvedValue([
       mockIncidentNote(),
@@ -305,7 +305,12 @@ describe('getIncidentNotes', () => {
       expect.objectContaining({
         where: expect.objectContaining({
           AND: expect.arrayContaining([
-            expect.objectContaining({ companyId: COMPANY_ID }),
+            expect.objectContaining({
+              companyId: COMPANY_ID,
+              visibility: {
+                in: ['DIRECTOR_ONLY', 'MANAGER_DIRECTOR', 'ALL'],
+              },
+            }),
           ]),
         }),
       })
@@ -401,6 +406,52 @@ describe('getIncidentNoteById', () => {
     if (!result.success) {
       expect(result.error).toContain('accès')
     }
+  })
+
+  it("refuse l'accès DIRECTOR sur MANAGER_ONLY", async () => {
+    setupAuth('DIRECTOR', DIRECTOR_USER_ID)
+
+    vi.mocked(prisma.employee.findUnique).mockResolvedValue({
+      id: 'clemployee_director',
+      managedTeams: [],
+    } as never)
+
+    vi.mocked(prisma.incidentNote.findUnique).mockResolvedValue(
+      mockIncidentNote({ visibility: 'MANAGER_ONLY' }) as never
+    )
+
+    const result = await getIncidentNoteById(NOTE_ID)
+
+    expect(result.success).toBe(false)
+    if (!result.success) {
+      expect(result.error).toContain('accès')
+    }
+  })
+
+  it("autorise l'accès MANAGER sur MANAGER_ONLY de son équipe", async () => {
+    setupAuth('MANAGER', MANAGER_USER_ID, [TEAM_ID])
+
+    vi.mocked(prisma.employee.findUnique).mockResolvedValue({
+      id: 'clemployee_manager',
+      managedTeams: [{ id: TEAM_ID }],
+    } as never)
+
+    vi.mocked(prisma.incidentNote.findUnique).mockResolvedValue(
+      mockIncidentNote({
+        visibility: 'MANAGER_ONLY',
+        subject: {
+          id: EMPLOYEE_ID,
+          firstName: 'Jean',
+          lastName: 'Dupont',
+          teamId: TEAM_ID,
+          team: { id: TEAM_ID, name: 'Équipe A' },
+        },
+      }) as never
+    )
+
+    const result = await getIncidentNoteById(NOTE_ID)
+
+    expect(result.success).toBe(true)
   })
 
   it("autorise l'accès si visibility OK (EMPLOYEE sur sa note ALL)", async () => {
@@ -621,7 +672,7 @@ describe('getIncidentNotesForEmployee', () => {
     )
   })
 
-  it('MANAGER voit MANAGER_DIRECTOR et ALL pour son équipe', async () => {
+  it('MANAGER voit MANAGER_ONLY, MANAGER_DIRECTOR et ALL pour son équipe', async () => {
     setupAuth('MANAGER', MANAGER_USER_ID, [TEAM_ID])
 
     vi.mocked(prisma.employee.findUnique)
@@ -632,6 +683,7 @@ describe('getIncidentNotesForEmployee', () => {
       .mockResolvedValueOnce(mockEmployee({ teamId: TEAM_ID }) as never)
 
     vi.mocked(prisma.incidentNote.findMany).mockResolvedValue([
+      mockIncidentNote({ visibility: 'MANAGER_ONLY' }),
       mockIncidentNote({ visibility: 'MANAGER_DIRECTOR' }),
       mockIncidentNote({ visibility: 'ALL' }),
     ] as never)
@@ -642,7 +694,7 @@ describe('getIncidentNotesForEmployee', () => {
     expect(prisma.incidentNote.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({
-          visibility: { in: ['MANAGER_DIRECTOR', 'ALL'] },
+          visibility: { in: ['MANAGER_ONLY', 'MANAGER_DIRECTOR', 'ALL'] },
         }),
       })
     )

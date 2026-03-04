@@ -13,6 +13,7 @@ import { z } from 'zod'
 
 export const INCIDENT_NOTE_VISIBILITY_VALUES = [
   'DIRECTOR_ONLY',
+  'MANAGER_ONLY',
   'MANAGER_DIRECTOR',
   'ALL',
 ] as const
@@ -85,6 +86,7 @@ export const INCIDENT_NOTE_VISIBILITY_LABELS: Record<
   string
 > = {
   DIRECTOR_ONLY: 'Directeur uniquement',
+  MANAGER_ONLY: 'Manager uniquement',
   MANAGER_DIRECTOR: 'Managers & Directeurs',
   ALL: 'Tous les rôles',
 }
@@ -96,6 +98,7 @@ export const INCIDENT_NOTE_VISIBILITY_DESCRIPTIONS: Record<
   string
 > = {
   DIRECTOR_ONLY: "Visible uniquement par les directeurs de l'entreprise",
+  MANAGER_ONLY: "Visible uniquement par les managers de l'équipe",
   MANAGER_DIRECTOR: 'Visible par les managers et directeurs',
   ALL: "Visible par tous les membres de l'entreprise",
 }
@@ -107,6 +110,7 @@ export const INCIDENT_NOTE_VISIBILITY_COLORS: Record<
   string
 > = {
   DIRECTOR_ONLY: 'bg-red-100 text-red-800',
+  MANAGER_ONLY: 'bg-blue-100 text-blue-800',
   MANAGER_DIRECTOR: 'bg-amber-100 text-amber-800',
   ALL: 'bg-green-100 text-green-800',
 }
@@ -118,6 +122,7 @@ export const INCIDENT_NOTE_VISIBILITY_ICONS: Record<
   string
 > = {
   DIRECTOR_ONLY: 'ShieldAlert',
+  MANAGER_ONLY: 'UserCheck',
   MANAGER_DIRECTOR: 'Users',
   ALL: 'Globe',
 }
@@ -130,3 +135,36 @@ export const incidentNoteVisibilityOptions =
     label: INCIDENT_NOTE_VISIBILITY_LABELS[value],
     description: INCIDENT_NOTE_VISIBILITY_DESCRIPTIONS[value],
   }))
+
+// ─── Options filtrées par rôle ──────────────────────────────────────
+
+const MANAGER_VISIBILITY_OPTIONS: IncidentNoteVisibility[] = [
+  'MANAGER_ONLY',
+  'MANAGER_DIRECTOR',
+  'ALL',
+]
+
+const DIRECTOR_VISIBILITY_OPTIONS: IncidentNoteVisibility[] = [
+  'DIRECTOR_ONLY',
+  'MANAGER_DIRECTOR',
+  'ALL',
+]
+
+export function getVisibilityOptionsForRole(role: string) {
+  const allowed =
+    role === 'MANAGER'
+      ? MANAGER_VISIBILITY_OPTIONS
+      : DIRECTOR_VISIBILITY_OPTIONS
+
+  return allowed.map((value) => ({
+    value,
+    label: INCIDENT_NOTE_VISIBILITY_LABELS[value],
+    description: INCIDENT_NOTE_VISIBILITY_DESCRIPTIONS[value],
+  }))
+}
+
+export function getDefaultVisibilityForRole(
+  role: string
+): IncidentNoteVisibility {
+  return role === 'MANAGER' ? 'MANAGER_ONLY' : 'DIRECTOR_ONLY'
+}

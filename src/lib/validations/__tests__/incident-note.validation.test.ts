@@ -18,6 +18,8 @@ import {
   INCIDENT_NOTE_VISIBILITY_COLORS,
   INCIDENT_NOTE_VISIBILITY_ICONS,
   incidentNoteVisibilityOptions,
+  getVisibilityOptionsForRole,
+  getDefaultVisibilityForRole,
 } from '../incident-note'
 
 // Génère un CUID valide pour les tests
@@ -122,7 +124,12 @@ describe('IncidentNote Validations', () => {
     })
 
     it('accepte toutes les visibilités valides', () => {
-      const visibilities = ['DIRECTOR_ONLY', 'MANAGER_DIRECTOR', 'ALL'] as const
+      const visibilities = [
+        'DIRECTOR_ONLY',
+        'MANAGER_ONLY',
+        'MANAGER_DIRECTOR',
+        'ALL',
+      ] as const
       for (const visibility of visibilities) {
         const result = incidentNoteCreateSchema.safeParse({
           ...validCreateInput,
@@ -274,6 +281,11 @@ describe('IncidentNote Validations', () => {
       expect(result.success).toBe(true)
     })
 
+    it('valide MANAGER_ONLY', () => {
+      const result = IncidentNoteVisibilitySchema.safeParse('MANAGER_ONLY')
+      expect(result.success).toBe(true)
+    })
+
     it('valide MANAGER_DIRECTOR', () => {
       const result = IncidentNoteVisibilitySchema.safeParse('MANAGER_DIRECTOR')
       expect(result.success).toBe(true)
@@ -297,6 +309,9 @@ describe('IncidentNote Validations', () => {
       expect(INCIDENT_NOTE_VISIBILITY_LABELS.DIRECTOR_ONLY).toBe(
         'Directeur uniquement'
       )
+      expect(INCIDENT_NOTE_VISIBILITY_LABELS.MANAGER_ONLY).toBe(
+        'Manager uniquement'
+      )
       expect(INCIDENT_NOTE_VISIBILITY_LABELS.MANAGER_DIRECTOR).toBe(
         'Managers & Directeurs'
       )
@@ -307,6 +322,9 @@ describe('IncidentNote Validations', () => {
       expect(INCIDENT_NOTE_VISIBILITY_DESCRIPTIONS.DIRECTOR_ONLY).toContain(
         'directeurs'
       )
+      expect(INCIDENT_NOTE_VISIBILITY_DESCRIPTIONS.MANAGER_ONLY).toContain(
+        'managers'
+      )
       expect(INCIDENT_NOTE_VISIBILITY_DESCRIPTIONS.MANAGER_DIRECTOR).toContain(
         'managers'
       )
@@ -315,6 +333,7 @@ describe('IncidentNote Validations', () => {
 
     it('contient les couleurs Tailwind pour toutes les visibilités', () => {
       expect(INCIDENT_NOTE_VISIBILITY_COLORS.DIRECTOR_ONLY).toContain('red')
+      expect(INCIDENT_NOTE_VISIBILITY_COLORS.MANAGER_ONLY).toContain('blue')
       expect(INCIDENT_NOTE_VISIBILITY_COLORS.MANAGER_DIRECTOR).toContain(
         'amber'
       )
@@ -323,6 +342,7 @@ describe('IncidentNote Validations', () => {
 
     it('contient les icônes Lucide pour toutes les visibilités', () => {
       expect(INCIDENT_NOTE_VISIBILITY_ICONS.DIRECTOR_ONLY).toBe('ShieldAlert')
+      expect(INCIDENT_NOTE_VISIBILITY_ICONS.MANAGER_ONLY).toBe('UserCheck')
       expect(INCIDENT_NOTE_VISIBILITY_ICONS.MANAGER_DIRECTOR).toBe('Users')
       expect(INCIDENT_NOTE_VISIBILITY_ICONS.ALL).toBe('Globe')
     })
@@ -331,8 +351,8 @@ describe('IncidentNote Validations', () => {
   // ─── Options pour select UI ─────────────────────────────────────
 
   describe('incidentNoteVisibilityOptions', () => {
-    it('contient 3 options', () => {
-      expect(incidentNoteVisibilityOptions).toHaveLength(3)
+    it('contient 4 options', () => {
+      expect(incidentNoteVisibilityOptions).toHaveLength(4)
     })
 
     it('chaque option a value, label et description', () => {
@@ -346,8 +366,49 @@ describe('IncidentNote Validations', () => {
     it('les valeurs correspondent aux enums', () => {
       const values = incidentNoteVisibilityOptions.map((o) => o.value)
       expect(values).toContain('DIRECTOR_ONLY')
+      expect(values).toContain('MANAGER_ONLY')
       expect(values).toContain('MANAGER_DIRECTOR')
       expect(values).toContain('ALL')
+    })
+  })
+
+  // ─── getVisibilityOptionsForRole ──────────────────────────────────
+
+  describe('getVisibilityOptionsForRole', () => {
+    it('retourne MANAGER_ONLY, MANAGER_DIRECTOR, ALL pour MANAGER', () => {
+      const options = getVisibilityOptionsForRole('MANAGER')
+      const values = options.map((o) => o.value)
+      expect(values).toEqual(['MANAGER_ONLY', 'MANAGER_DIRECTOR', 'ALL'])
+      expect(values).not.toContain('DIRECTOR_ONLY')
+    })
+
+    it('retourne DIRECTOR_ONLY, MANAGER_DIRECTOR, ALL pour DIRECTOR', () => {
+      const options = getVisibilityOptionsForRole('DIRECTOR')
+      const values = options.map((o) => o.value)
+      expect(values).toEqual(['DIRECTOR_ONLY', 'MANAGER_DIRECTOR', 'ALL'])
+      expect(values).not.toContain('MANAGER_ONLY')
+    })
+
+    it('retourne DIRECTOR_ONLY, MANAGER_DIRECTOR, ALL pour SYSTEM_ADMIN', () => {
+      const options = getVisibilityOptionsForRole('SYSTEM_ADMIN')
+      const values = options.map((o) => o.value)
+      expect(values).toEqual(['DIRECTOR_ONLY', 'MANAGER_DIRECTOR', 'ALL'])
+    })
+  })
+
+  // ─── getDefaultVisibilityForRole ──────────────────────────────────
+
+  describe('getDefaultVisibilityForRole', () => {
+    it('retourne MANAGER_ONLY pour MANAGER', () => {
+      expect(getDefaultVisibilityForRole('MANAGER')).toBe('MANAGER_ONLY')
+    })
+
+    it('retourne DIRECTOR_ONLY pour DIRECTOR', () => {
+      expect(getDefaultVisibilityForRole('DIRECTOR')).toBe('DIRECTOR_ONLY')
+    })
+
+    it('retourne DIRECTOR_ONLY pour SYSTEM_ADMIN', () => {
+      expect(getDefaultVisibilityForRole('SYSTEM_ADMIN')).toBe('DIRECTOR_ONLY')
     })
   })
 })

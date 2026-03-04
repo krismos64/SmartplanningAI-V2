@@ -3,8 +3,9 @@
  *
  * @description Actions avec RBAC selon la visibilité des notes.
  * - EMPLOYEE : Voit uniquement ses propres notes avec visibility=ALL
- * - MANAGER : Son équipe (MANAGER_DIRECTOR + ALL)
- * - DIRECTOR/ADMIN : Toutes les notes de l'entreprise
+ * - MANAGER : Son équipe (MANAGER_ONLY + MANAGER_DIRECTOR + ALL)
+ * - DIRECTOR : Son entreprise (DIRECTOR_ONLY + MANAGER_DIRECTOR + ALL)
+ * - SYSTEM_ADMIN : Toutes les notes
  *
  * @ticket SP-425
  */
@@ -164,15 +165,17 @@ function checkNoteAccess(
   // Vérifier l'isolation multi-tenant
   if (!canAccessCompanyEntity(user.companyId, note.companyId)) return false
 
-  // DIRECTOR : accès à toutes les notes de son entreprise
-  if (user.role === 'DIRECTOR') return true
+  // DIRECTOR : accès à tout sauf MANAGER_ONLY
+  if (user.role === 'DIRECTOR') {
+    return note.visibility !== 'MANAGER_ONLY'
+  }
 
   // MANAGER : selon visibilité
   if (user.role === 'MANAGER') {
     // DIRECTOR_ONLY : pas d'accès pour les managers
     if (note.visibility === 'DIRECTOR_ONLY') return false
 
-    // MANAGER_DIRECTOR ou ALL : vérifier que le sujet est dans son équipe
+    // MANAGER_ONLY, MANAGER_DIRECTOR ou ALL : vérifier que le sujet est dans son équipe
     const subjectTeamId = note.subject?.teamId
     if (!subjectTeamId || !user.managedTeamIds.includes(subjectTeamId)) {
       return false
@@ -201,12 +204,15 @@ function buildIncidentNoteRBACWhere(
       return {}
 
     case 'DIRECTOR':
-      return { companyId: user.companyId! }
+      return {
+        companyId: user.companyId!,
+        visibility: { in: ['DIRECTOR_ONLY', 'MANAGER_DIRECTOR', 'ALL'] },
+      }
 
     case 'MANAGER':
       return {
         companyId: user.companyId!,
-        visibility: { in: ['MANAGER_DIRECTOR', 'ALL'] },
+        visibility: { in: ['MANAGER_ONLY', 'MANAGER_DIRECTOR', 'ALL'] },
         subject: { teamId: { in: user.managedTeamIds } },
       }
 
@@ -681,6 +687,14 @@ export async function getIncidentNotesForEmployee(
 
     switch (user.role) {
       case 'SYSTEM_ADMIN':
+        visibilityFilter = [
+          'DIRECTOR_ONLY',
+          'MANAGER_ONLY',
+          'MANAGER_DIRECTOR',
+          'ALL',
+        ]
+        break
+
       case 'DIRECTOR':
         visibilityFilter = ['DIRECTOR_ONLY', 'MANAGER_DIRECTOR', 'ALL']
         break
@@ -696,7 +710,7 @@ export async function getIncidentNotesForEmployee(
             error: "Vous n'avez pas accès aux notes de cet employé",
           }
         }
-        visibilityFilter = ['MANAGER_DIRECTOR', 'ALL']
+        visibilityFilter = ['MANAGER_ONLY', 'MANAGER_DIRECTOR', 'ALL']
         break
 
       case 'EMPLOYEE':

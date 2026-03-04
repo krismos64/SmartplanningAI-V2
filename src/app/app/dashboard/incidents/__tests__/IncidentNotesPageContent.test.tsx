@@ -49,7 +49,7 @@ type MockNote = {
   title: string
   content: string
   date: Date
-  visibility: 'DIRECTOR_ONLY' | 'MANAGER_DIRECTOR' | 'ALL'
+  visibility: 'DIRECTOR_ONLY' | 'MANAGER_ONLY' | 'MANAGER_DIRECTOR' | 'ALL'
   subjectId: string
   authorId: string
   companyId: string

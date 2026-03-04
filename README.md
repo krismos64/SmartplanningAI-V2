@@ -2022,7 +2022,7 @@ npm run test:coverage    # Couverture de code
 13. **Subscription** : Abonnements per-seat par entreprise (plan, statut, quantity, pricePerEmployee) (SP-350)
 14. **Payment** : Historique des paiements Stripe (SP-350)
 
-### Enums (13 enums)
+### Enums (14 enums)
 
 1. **Role** : SYSTEM_ADMIN, DIRECTOR, MANAGER, EMPLOYEE
 2. **NotificationType** : INFO, SUCCESS, WARNING, ERROR, SYSTEM + PLANNING, LEAVE, TASK, INCIDENT (SP-321)
@@ -2037,6 +2037,7 @@ npm run test:coverage    # Couverture de code
 11. **ScheduleStatus** : DRAFT, CONFIRMED
 12. **SubscriptionPlan** : FREE, PER_SEAT (SP-350)
 13. **SubscriptionStatus** : TRIAL, ACTIVE, PAST_DUE, CANCELED, EXPIRED, INCOMPLETE (SP-350)
+14. **IncidentNoteVisibility** : DIRECTOR_ONLY, MANAGER_ONLY, MANAGER_DIRECTOR, ALL
 
 Voir `/docs/database-schema.md` pour le détail complet.
 

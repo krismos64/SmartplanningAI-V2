@@ -62,6 +62,7 @@ export const INCIDENT_NOTE_VISIBILITY_LABELS: Record<
   string
 > = {
   DIRECTOR_ONLY: 'Directeur uniquement',
+  MANAGER_ONLY: 'Manager uniquement',
   MANAGER_DIRECTOR: 'Managers & Directeurs',
   ALL: 'Tous les rôles',
 }
@@ -73,6 +74,7 @@ export const INCIDENT_NOTE_VISIBILITY_DESCRIPTIONS: Record<
   string
 > = {
   DIRECTOR_ONLY: "Visible uniquement par les directeurs de l'entreprise",
+  MANAGER_ONLY: "Visible uniquement par les managers de l'équipe",
   MANAGER_DIRECTOR: 'Visible par les managers et directeurs',
   ALL: "Visible par tous les membres de l'entreprise",
 }
@@ -84,6 +86,7 @@ export const INCIDENT_NOTE_VISIBILITY_ICONS: Record<
   string
 > = {
   DIRECTOR_ONLY: 'ShieldAlert',
+  MANAGER_ONLY: 'UserCheck',
   MANAGER_DIRECTOR: 'Users',
   ALL: 'Globe',
 }
@@ -95,6 +98,7 @@ export const INCIDENT_NOTE_VISIBILITY_COLORS: Record<
   string
 > = {
   DIRECTOR_ONLY: 'bg-red-100 text-red-800',
+  MANAGER_ONLY: 'bg-blue-100 text-blue-800',
   MANAGER_DIRECTOR: 'bg-amber-100 text-amber-800',
   ALL: 'bg-green-100 text-green-800',
 }

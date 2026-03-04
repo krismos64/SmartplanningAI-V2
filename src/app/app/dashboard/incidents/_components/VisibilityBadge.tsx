@@ -7,7 +7,7 @@
 
 'use client'
 
-import { ShieldAlert, Users, Globe } from 'lucide-react'
+import { ShieldAlert, UserCheck, Users, Globe } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import {
   Tooltip,
@@ -29,6 +29,7 @@ interface VisibilityBadgeProps {
 
 const icons = {
   DIRECTOR_ONLY: ShieldAlert,
+  MANAGER_ONLY: UserCheck,
   MANAGER_DIRECTOR: Users,
   ALL: Globe,
 }

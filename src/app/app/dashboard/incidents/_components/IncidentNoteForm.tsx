@@ -16,8 +16,9 @@ import { Loader2 } from 'lucide-react'
 import { z } from 'zod'
 import {
   type IncidentNoteCreateInput,
-  incidentNoteVisibilityOptions,
   IncidentNoteVisibilitySchema,
+  getVisibilityOptionsForRole,
+  getDefaultVisibilityForRole,
 } from '@/lib/validations/incident-note'
 import { getEmployeesForSelect } from '@/lib/actions/employees'
 import type { IncidentNoteWithRelations } from '@/lib/actions/incident-notes'
@@ -60,6 +61,7 @@ interface IncidentNoteFormProps {
   onSubmit: (data: IncidentNoteCreateInput) => Promise<void>
   isSubmitting: boolean
   onCancel: () => void
+  userRole: string
 }
 
 type EmployeeOption = {
@@ -73,9 +75,12 @@ export function IncidentNoteForm({
   onSubmit,
   isSubmitting,
   onCancel,
+  userRole,
 }: IncidentNoteFormProps) {
   const isImpersonating = useIsImpersonating()
   const isEditMode = !!note
+  const defaultVisibility = getDefaultVisibilityForRole(userRole)
+  const visibilityOptions = getVisibilityOptionsForRole(userRole)
   const [employees, setEmployees] = useState<EmployeeOption[]>([])
   const [loadingEmployees, setLoadingEmployees] = useState(true)
 
@@ -91,7 +96,7 @@ export function IncidentNoteForm({
       title: '',
       content: '',
       date: new Date(),
-      visibility: 'DIRECTOR_ONLY',
+      visibility: defaultVisibility,
       subjectId: '',
     },
   })
@@ -124,11 +129,11 @@ export function IncidentNoteForm({
         title: '',
         content: '',
         date: new Date(),
-        visibility: 'DIRECTOR_ONLY',
+        visibility: defaultVisibility,
         subjectId: '',
       })
     }
-  }, [note, reset])
+  }, [note, reset, defaultVisibility])
 
   const handleFormSubmit = handleSubmit(async (data) => {
     await onSubmit(data)
@@ -262,7 +267,7 @@ export function IncidentNoteForm({
             <VisibilityRadioGroup
               value={field.value}
               onChange={field.onChange}
-              options={incidentNoteVisibilityOptions}
+              options={visibilityOptions}
             />
           )}
         />

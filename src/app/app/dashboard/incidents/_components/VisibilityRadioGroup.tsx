@@ -7,7 +7,7 @@
 
 'use client'
 
-import { ShieldAlert, Users, Globe } from 'lucide-react'
+import { ShieldAlert, UserCheck, Users, Globe } from 'lucide-react'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
@@ -27,6 +27,7 @@ interface VisibilityRadioGroupProps {
 
 const icons: Record<IncidentNoteVisibility, typeof ShieldAlert> = {
   DIRECTOR_ONLY: ShieldAlert,
+  MANAGER_ONLY: UserCheck,
   MANAGER_DIRECTOR: Users,
   ALL: Globe,
 }
@@ -34,6 +35,8 @@ const icons: Record<IncidentNoteVisibility, typeof ShieldAlert> = {
 const colorClasses: Record<IncidentNoteVisibility, string> = {
   DIRECTOR_ONLY:
     'border-red-200 bg-red-50 data-[state=checked]:border-red-500 dark:border-red-800 dark:bg-red-950/40 dark:data-[state=checked]:border-red-500',
+  MANAGER_ONLY:
+    'border-blue-200 bg-blue-50 data-[state=checked]:border-blue-500 dark:border-blue-800 dark:bg-blue-950/40 dark:data-[state=checked]:border-blue-500',
   MANAGER_DIRECTOR:
     'border-amber-200 bg-amber-50 data-[state=checked]:border-amber-500 dark:border-amber-800 dark:bg-amber-950/40 dark:data-[state=checked]:border-amber-500',
   ALL: 'border-green-200 bg-green-50 data-[state=checked]:border-green-500 dark:border-green-800 dark:bg-green-950/40 dark:data-[state=checked]:border-green-500',
@@ -41,6 +44,7 @@ const colorClasses: Record<IncidentNoteVisibility, string> = {
 
 const iconColors: Record<IncidentNoteVisibility, string> = {
   DIRECTOR_ONLY: 'text-red-600 dark:text-red-400',
+  MANAGER_ONLY: 'text-blue-600 dark:text-blue-400',
   MANAGER_DIRECTOR: 'text-amber-600 dark:text-amber-400',
   ALL: 'text-green-600 dark:text-green-400',
 }

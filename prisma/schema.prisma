@@ -647,6 +647,7 @@ model IncidentNote {
 
 enum IncidentNoteVisibility {
   DIRECTOR_ONLY    // Visible uniquement par les directeurs
+  MANAGER_ONLY     // Visible uniquement par les managers de l'équipe
   MANAGER_DIRECTOR // Visible par managers + directeurs
   ALL              // Visible par tous (info générale)
 }

@@ -32,6 +32,7 @@ interface IncidentNoteSheetProps {
   note?: IncidentNoteWithRelations | null
   onSubmit: (data: IncidentNoteCreateInput) => Promise<void>
   isSubmitting: boolean
+  userRole: string
 }
 
 export function IncidentNoteSheet({
@@ -40,6 +41,7 @@ export function IncidentNoteSheet({
   note,
   onSubmit,
   isSubmitting,
+  userRole,
 }: IncidentNoteSheetProps) {
   const isDesktop = useMediaQuery('(min-width: 768px)')
   const isEditMode = !!note
@@ -52,6 +54,7 @@ export function IncidentNoteSheet({
       onSubmit={onSubmit}
       isSubmitting={isSubmitting}
       onCancel={() => onOpenChange(false)}
+      userRole={userRole}
     />
   )
 
