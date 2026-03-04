@@ -33,8 +33,8 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // RBAC: MANAGER et DIRECTOR uniquement
-    if (role !== 'MANAGER' && role !== 'DIRECTOR') {
+    // RBAC: MANAGER, DIRECTOR et EMPLOYEE
+    if (role !== 'MANAGER' && role !== 'DIRECTOR' && role !== 'EMPLOYEE') {
       return NextResponse.json({ error: 'Accès non autorisé' }, { status: 403 })
     }
 
@@ -89,14 +89,50 @@ export async function GET(request: NextRequest) {
       ]
     }
 
-    if (teamId) {
-      where.teamId = teamId
+    // EMPLOYEE: only CONFIRMED schedules from own team
+    if (role === 'EMPLOYEE') {
+      const employee = await prisma.employee.findUnique({
+        where: { userId: session.user.id },
+        select: { id: true, teamId: true },
+      })
+      if (!employee) {
+        return NextResponse.json(
+          { error: 'Employé non trouvé' },
+          { status: 403 }
+        )
+      }
+      where.status = 'CONFIRMED'
+      if (employee.teamId) {
+        where.OR = [
+          { employeeId: employee.id },
+          { employee: { teamId: employee.teamId } },
+        ]
+      } else {
+        where.employeeId = employee.id
+      }
     }
-    if (employeeId) {
-      where.employeeId = employeeId
-    }
-    if (status) {
-      where.status = status as ScheduleStatus
+
+    if (role !== 'EMPLOYEE') {
+      if (teamId) {
+        where.teamId = teamId
+      }
+      if (employeeId) {
+        where.employeeId = employeeId
+      }
+      if (status) {
+        where.status = status as ScheduleStatus
+      }
+    } else {
+      // EMPLOYEE: filtrer par employeeId dans le perimetre equipe
+      if (employeeId) {
+        const emp = await prisma.employee.findUnique({
+          where: { userId: session.user.id },
+          select: { teamId: true },
+        })
+        if (emp?.teamId) {
+          where.OR = [{ employeeId, employee: { teamId: emp.teamId } }]
+        }
+      }
     }
     if (type) {
       where.type = type as ScheduleType

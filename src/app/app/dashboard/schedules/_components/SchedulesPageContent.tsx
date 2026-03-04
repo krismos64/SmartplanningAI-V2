@@ -157,6 +157,7 @@ export function SchedulesPageContent({
 
   // Permissions RBAC
   const canCreate = userRole === 'DIRECTOR' || userRole === 'MANAGER'
+  const canExport = userRole !== 'SYSTEM_ADMIN'
 
   // Calcul des dates selon le mode de vue (stabilisé par timestamps)
   const dateRange = useMemo(() => {
@@ -457,7 +458,7 @@ export function SchedulesPageContent({
             {/* Contrôles de vue */}
             <div className="flex items-center gap-2">
               {/* Export PDF (SP-403) */}
-              {canCreate && (
+              {canExport && (
                 <ExportDropdown
                   startDate={dateRange.start}
                   endDate={dateRange.end}

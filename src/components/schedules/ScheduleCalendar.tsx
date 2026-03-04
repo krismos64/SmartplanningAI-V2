@@ -67,15 +67,15 @@ export function ScheduleCalendar(props: ScheduleCalendarProps) {
     setMounted(true)
   }, [])
 
-  // Clé de remount pour Schedule-X quand les schedules changent
-  // Schedule-X ne supporte pas la mise à jour dynamique des events via son API
+  // Clé de remount pour Schedule-X quand les schedules ou la vue changent
+  // Schedule-X ne supporte pas la mise à jour dynamique des events/view via son API
   const calendarKey = useMemo(
     () =>
-      props.schedules
+      `${props.viewMode}-${props.schedules
         .map((s) => s.id)
         .sort()
-        .join(','),
-    [props.schedules]
+        .join(',')}`,
+    [props.schedules, props.viewMode]
   )
 
   // Afficher skeleton pendant le montage

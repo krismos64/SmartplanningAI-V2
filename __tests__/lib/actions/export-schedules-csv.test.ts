@@ -68,20 +68,22 @@ describe('exportSchedulesCsv', () => {
   // RBAC
   // ============================================
   describe('RBAC', () => {
-    it("refuse l'accès aux EMPLOYEE", async () => {
+    it('EMPLOYEE peut exporter ses schedules CONFIRMED', async () => {
       mockAuth.mockResolvedValue({
         user: { id: 'user-1', role: 'EMPLOYEE', companyId: 'company-1' },
       } as never)
 
       mockPrisma.employee.findUnique.mockResolvedValue({
         id: 'emp-1',
+        teamId: 'team-1',
         managedTeams: [],
       } as never)
 
+      mockPrisma.schedule.findMany.mockResolvedValue([mockSchedule] as never)
+
       const result = await exportSchedulesCsv()
 
-      expect(result.success).toBe(false)
-      expect(result.error).toBe('Accès non autorisé')
+      expect(result.success).toBe(true)
     })
 
     it('DIRECTOR exporte son entreprise', async () => {

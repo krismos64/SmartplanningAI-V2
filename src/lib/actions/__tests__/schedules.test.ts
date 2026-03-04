@@ -65,6 +65,7 @@ const mockEmployee = (overrides = {}) => ({
   firstName: 'Jean',
   lastName: 'Dupont',
   companyId: 'clcompany0000000001',
+  teamId: 'clteam00000000000001',
   teams: [{ id: 'clteam00000000000001' }],
   managedTeams: [],
   ...overrides,
@@ -156,19 +157,115 @@ describe('schedules actions', () => {
       }
     })
 
-    it('filtre les schedules pour un EMPLOYEE', async () => {
+    it('filtre les schedules pour un EMPLOYEE avec equipe (OR propres + equipe)', async () => {
       vi.mocked(auth).mockResolvedValue(mockSession('EMPLOYEE') as never)
       vi.mocked(prisma.employee.findUnique).mockResolvedValue(
-        mockEmployee({ id: 'empId' }) as never
+        mockEmployee({ id: 'empId', teamId: 'clteam00000000000001' }) as never
       )
       vi.mocked(prisma.$transaction).mockResolvedValue([[], 0])
 
       const result = await getSchedules({})
 
       expect(result.success).toBe(true)
-      if (result.success) {
-        expect(result.data.schedules).toHaveLength(0)
-      }
+      // Verifie que findMany a ete appele avec le OR (propres + equipe)
+      const findManyCall = vi.mocked(prisma.schedule.findMany).mock
+        .calls[0]?.[0]
+      expect(findManyCall?.where).toMatchObject({
+        companyId: 'clcompany0000000001',
+        status: 'CONFIRMED',
+        OR: [
+          { employeeId: 'empId' },
+          { employee: { teamId: 'clteam00000000000001' } },
+        ],
+      })
+    })
+
+    it('EMPLOYEE sans equipe ne voit que ses propres schedules', async () => {
+      vi.mocked(auth).mockResolvedValue(mockSession('EMPLOYEE') as never)
+      vi.mocked(prisma.employee.findUnique).mockResolvedValue(
+        mockEmployee({ id: 'empId', teamId: null }) as never
+      )
+      vi.mocked(prisma.$transaction).mockResolvedValue([[], 0])
+
+      const result = await getSchedules({})
+
+      expect(result.success).toBe(true)
+      // Verifie que findMany a ete appele avec employeeId seul (pas de OR)
+      const findManyCall = vi.mocked(prisma.schedule.findMany).mock
+        .calls[0]?.[0]
+      expect(findManyCall?.where).toMatchObject({
+        companyId: 'clcompany0000000001',
+        status: 'CONFIRMED',
+        employeeId: 'empId',
+      })
+      expect(findManyCall?.where).not.toHaveProperty('OR')
+    })
+
+    it('EMPLOYEE ne peut pas ecraser le filtre RBAC via employeeId', async () => {
+      vi.mocked(auth).mockResolvedValue(mockSession('EMPLOYEE') as never)
+      vi.mocked(prisma.employee.findUnique).mockResolvedValue(
+        mockEmployee({ id: 'empId', teamId: 'clteam00000000000001' }) as never
+      )
+      vi.mocked(prisma.$transaction).mockResolvedValue([[], 0])
+
+      // Tente de passer un employeeId d'un autre employe (CUID valide)
+      const result = await getSchedules({
+        employeeId: 'clxxxxxxxxxxxxxxxxxx9',
+      })
+
+      expect(result.success).toBe(true)
+      // Le OR doit contenir la contrainte equipe pour l'employeeId filtre
+      const findManyCall = vi.mocked(prisma.schedule.findMany).mock
+        .calls[0]?.[0]
+      expect(findManyCall?.where).toMatchObject({
+        status: 'CONFIRMED',
+        OR: [
+          {
+            employeeId: 'clxxxxxxxxxxxxxxxxxx9',
+            employee: { teamId: 'clteam00000000000001' },
+          },
+        ],
+      })
+    })
+
+    it('EMPLOYEE avec equipe - le filtre type fonctionne', async () => {
+      vi.mocked(auth).mockResolvedValue(mockSession('EMPLOYEE') as never)
+      vi.mocked(prisma.employee.findUnique).mockResolvedValue(
+        mockEmployee({ id: 'empId', teamId: 'clteam00000000000001' }) as never
+      )
+      vi.mocked(prisma.$transaction).mockResolvedValue([[], 0])
+
+      const result = await getSchedules({ type: 'WORK' })
+
+      expect(result.success).toBe(true)
+      const findManyCall = vi.mocked(prisma.schedule.findMany).mock
+        .calls[0]?.[0]
+      expect(findManyCall?.where).toMatchObject({
+        status: 'CONFIRMED',
+        type: 'WORK',
+        OR: [
+          { employeeId: 'empId' },
+          { employee: { teamId: 'clteam00000000000001' } },
+        ],
+      })
+    })
+
+    it('EMPLOYEE ne peut pas ecraser status CONFIRMED', async () => {
+      vi.mocked(auth).mockResolvedValue(mockSession('EMPLOYEE') as never)
+      vi.mocked(prisma.employee.findUnique).mockResolvedValue(
+        mockEmployee({ id: 'empId', teamId: 'clteam00000000000001' }) as never
+      )
+      vi.mocked(prisma.$transaction).mockResolvedValue([[], 0])
+
+      const result = await getSchedules({ status: 'DRAFT' })
+
+      expect(result.success).toBe(true)
+      // Status doit rester CONFIRMED malgre le filtre DRAFT
+      const findManyCall = vi.mocked(prisma.schedule.findMany).mock
+        .calls[0]?.[0]
+      expect(findManyCall?.where).toMatchObject({
+        status: 'CONFIRMED',
+      })
     })
 
     it('filtre par type', async () => {

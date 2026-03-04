@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 4 mars 2026 (Édition complète soldes congés : total + jours utilisés CP/RTT modifiables par DIRECTOR/MANAGER/SYSTEM_ADMIN)
+- **Dernière mise à jour** : 4 mars 2026 (EMPLOYEE : visibilité planning équipe, filtres fonctionnels, exports PDF/Excel/CSV avec RBAC scope équipe)
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -92,13 +92,13 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - Gestion multi-tenant (isolation complète par entreprise)
 - Dashboard personnalisé par rôle avec KPIs
 - Gestion des employés et départements
-- Planning avec calendrier Schedule-X (vues jour/semaine/mois, responsive mobile, drag & drop)
+- Planning avec calendrier Schedule-X (vues jour/semaine/mois, responsive mobile, drag & drop, visibilité équipe EMPLOYEE)
 - Gestion des shifts et affectations (8 types dont REST)
 - Panneau heures hebdomadaires (planifié vs contrat, code couleur)
 - Détection de conflits horaires temps réel
 - Gestion des indisponibilités avec overlay calendrier
 - Récurrence des shifts (quotidien, hebdomadaire, bi-hebdomadaire, mensuel)
-- Export PDF/Excel/CSV des plannings (avec filtres actifs et compteur heures)
+- Export PDF/Excel/CSV des plannings (avec filtres actifs et compteur heures, accessible EMPLOYEE/MANAGER/DIRECTOR)
 - Export CSV employés enrichi (équipe, rôle, ancienneté, contrat, tri par équipe, nom fichier dynamique) et congés avec RBAC
 - Suppression en masse employés avec cascade sécurisée
 - Nom d'entreprise dynamique dans le layout
@@ -872,7 +872,7 @@ Export du planning en fichier .xlsx via `SheetJS (xlsx)` :
 
 - **API Route `GET /api/schedules/export/excel`** :
   - Authentification via `auth()` (NextAuth v5)
-  - RBAC : MANAGER et DIRECTOR uniquement
+  - RBAC : EMPLOYEE (CONFIRMED + scope équipe), MANAGER et DIRECTOR
   - Query params : startDate, endDate, teamId, employeeId, status, type, search
   - **Respect des filtres actifs** de la vue planning (équipe, employé, statut, type, recherche)
   - Isolation multi-tenant par `companyId`
@@ -899,7 +899,7 @@ Export du planning en PDF via `@react-pdf/renderer` :
 
 - **API Route `GET /api/schedules/export/pdf`** :
   - Authentification via `auth()` (NextAuth v5)
-  - RBAC : MANAGER et DIRECTOR uniquement
+  - RBAC : EMPLOYEE (CONFIRMED + scope équipe), MANAGER et DIRECTOR
   - Query params : startDate, endDate, teamId, employeeId, status, type, search, view (week|month)
   - **Respect des filtres actifs** de la vue planning (équipe, employé, statut, type, recherche)
   - Isolation multi-tenant par `companyId`

@@ -60,6 +60,7 @@ interface AuthenticatedUser {
   role: UserRole
   companyId: string | null
   employeeId: string | null
+  teamId: string | null
   managedTeamIds: string[]
 }
 
@@ -110,6 +111,7 @@ async function getAuthenticatedUser(): Promise<AccessCheckResult> {
 
     // Pour un MANAGER, on doit recuperer son employeeId et ses equipes gerees
     let employeeId: string | null = null
+    let teamId: string | null = null
     let managedTeamIds: string[] = []
 
     if (role === 'MANAGER') {
@@ -117,6 +119,7 @@ async function getAuthenticatedUser(): Promise<AccessCheckResult> {
         where: { userId },
         select: {
           id: true,
+          teamId: true,
           managedTeams: {
             select: { id: true },
           },
@@ -125,6 +128,7 @@ async function getAuthenticatedUser(): Promise<AccessCheckResult> {
 
       if (employee) {
         employeeId = employee.id
+        teamId = employee.teamId
         managedTeamIds = employee.managedTeams.map((t) => t.id)
       }
 
@@ -144,11 +148,74 @@ async function getAuthenticatedUser(): Promise<AccessCheckResult> {
         role,
         companyId,
         employeeId,
+        teamId,
         managedTeamIds,
       },
     }
   } catch (error) {
     console.error('[getAuthenticatedUser] Error:', error)
+    return {
+      success: false,
+      error: 'Erreur de vérification des permissions',
+    }
+  }
+}
+
+/**
+ * Authentification pour les fonctions select (dropdowns) qui acceptent aussi les EMPLOYEE.
+ * Un EMPLOYEE peut consulter la liste de son equipe pour les filtres planning.
+ */
+async function getAuthenticatedUserForSelect(): Promise<AccessCheckResult> {
+  try {
+    const session = await auth()
+
+    if (!session?.user?.id) {
+      return {
+        success: false,
+        error: 'Vous devez être connecté pour effectuer cette action',
+      }
+    }
+
+    const role = session.user.role
+    const userId = session.user.id
+    const companyId = session.user.companyId ?? null
+
+    let employeeId: string | null = null
+    let teamId: string | null = null
+    let managedTeamIds: string[] = []
+
+    if (role === 'MANAGER' || role === 'EMPLOYEE') {
+      const employee = await prisma.employee.findUnique({
+        where: { userId },
+        select: {
+          id: true,
+          teamId: true,
+          managedTeams: {
+            select: { id: true },
+          },
+        },
+      })
+
+      if (employee) {
+        employeeId = employee.id
+        teamId = employee.teamId
+        managedTeamIds = employee.managedTeams.map((t) => t.id)
+      }
+    }
+
+    return {
+      success: true,
+      user: {
+        id: userId,
+        role,
+        companyId,
+        employeeId,
+        teamId,
+        managedTeamIds,
+      },
+    }
+  } catch (error) {
+    console.error('[getAuthenticatedUserForSelect] Error:', error)
     return {
       success: false,
       error: 'Erreur de vérification des permissions',
@@ -1221,7 +1288,7 @@ export async function getEmployeesForSelect(): Promise<
     }[]
   >
 > {
-  const authResult = await getAuthenticatedUser()
+  const authResult = await getAuthenticatedUserForSelect()
 
   if (!authResult.success) {
     return {
@@ -1245,6 +1312,15 @@ export async function getEmployeesForSelect(): Promise<
 
       case 'MANAGER':
         where.teamId = { in: user.managedTeamIds }
+        break
+
+      case 'EMPLOYEE':
+        where.companyId = user.companyId
+        if (user.teamId) {
+          where.teamId = user.teamId
+        } else {
+          where.id = user.employeeId
+        }
         break
     }
 
@@ -1714,7 +1790,7 @@ export async function exportEmployeesCsv(
 export async function getTeamsForSelect(): Promise<
   CrudActionResult<{ id: string; name: string }[]>
 > {
-  const authResult = await getAuthenticatedUser()
+  const authResult = await getAuthenticatedUserForSelect()
 
   if (!authResult.success) {
     return {
@@ -1741,6 +1817,15 @@ export async function getTeamsForSelect(): Promise<
       case 'MANAGER':
         // Seulement ses equipes gerees
         where.id = { in: user.managedTeamIds }
+        break
+
+      case 'EMPLOYEE':
+        // Seulement l'equipe de l'employe
+        if (user.teamId) {
+          where.id = user.teamId
+        } else {
+          return { success: true, data: [] }
+        }
         break
     }
 

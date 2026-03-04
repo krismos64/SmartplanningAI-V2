@@ -136,6 +136,7 @@ interface AuthenticatedUser {
   role: UserRole
   companyId: string | null
   employeeId: string | null
+  teamId: string | null
   managedTeamIds: string[]
 }
 
@@ -171,11 +172,14 @@ async function getAuthenticatedUser(): Promise<AccessCheckResult> {
     let employeeId: string | null = null
     let managedTeamIds: string[] = []
 
-    // Recuperer l'employeeId si existe
+    // Recuperer l'employeeId et teamId si existe
+    let teamId: string | null = null
+
     const employee = await prisma.employee.findUnique({
       where: { userId },
       select: {
         id: true,
+        teamId: true,
         managedTeams: {
           select: { id: true },
         },
@@ -184,6 +188,7 @@ async function getAuthenticatedUser(): Promise<AccessCheckResult> {
 
     if (employee) {
       employeeId = employee.id
+      teamId = employee.teamId
       managedTeamIds = employee.managedTeams.map((t) => t.id)
     }
 
@@ -194,6 +199,7 @@ async function getAuthenticatedUser(): Promise<AccessCheckResult> {
         role,
         companyId,
         employeeId,
+        teamId,
         managedTeamIds,
       },
     }
@@ -283,11 +289,18 @@ function buildWhereClause(
     where.companyId = user.companyId
   }
 
-  // EMPLOYEE : uniquement ses schedules CONFIRMED
+  // EMPLOYEE : ses schedules + ceux de son equipe (CONFIRMED uniquement)
   if (user.role === 'EMPLOYEE') {
     if (user.employeeId) {
-      where.employeeId = user.employeeId
       where.status = 'CONFIRMED'
+      if (user.teamId) {
+        where.OR = [
+          { employeeId: user.employeeId },
+          { employee: { teamId: user.teamId } },
+        ]
+      } else {
+        where.employeeId = user.employeeId
+      }
     } else {
       return { id: 'impossible' }
     }
@@ -306,14 +319,31 @@ function buildWhereClause(
   }
 
   // Filtres additionnels
-  if (filters.employeeId) where.employeeId = filters.employeeId
-  if (filters.employeeIds?.length)
-    where.employeeId = { in: filters.employeeIds }
-  if (filters.teamId) where.teamId = filters.teamId
+  if (user.role === 'EMPLOYEE' && user.teamId) {
+    // EMPLOYEE avec equipe : filtrer dans le perimetre RBAC (equipe)
+    if (filters.employeeId) {
+      // Remplacer le OR large par un filtre sur cet employe + contrainte equipe
+      where.OR = [
+        {
+          employeeId: filters.employeeId,
+          employee: { teamId: user.teamId },
+        },
+      ]
+    }
+    // teamId et employeeIds ignores : l'EMPLOYEE ne peut voir que son equipe
+  } else {
+    if (filters.employeeId) where.employeeId = filters.employeeId
+    if (filters.employeeIds?.length)
+      where.employeeId = { in: filters.employeeIds }
+    if (filters.teamId) where.teamId = filters.teamId
+  }
   if (filters.type) where.type = filters.type
   if (filters.types?.length) where.type = { in: filters.types }
-  if (filters.status) where.status = filters.status
-  if (filters.statuses?.length) where.status = { in: filters.statuses }
+  // EMPLOYEE : toujours CONFIRMED, ne pas laisser ecraser par le filtre
+  if (user.role !== 'EMPLOYEE') {
+    if (filters.status) where.status = filters.status
+    if (filters.statuses?.length) where.status = { in: filters.statuses }
+  }
   if (filters.isRecurring !== undefined) where.isRecurring = filters.isRecurring
 
   // Filtre par periode
@@ -1871,11 +1901,6 @@ export async function exportSchedulesCsv(
 
     const user = authResult.user
 
-    // EMPLOYEE ne peut pas exporter (juste voir ses plannings)
-    if (user.role === 'EMPLOYEE') {
-      return { success: false, error: 'Accès non autorisé' }
-    }
-
     // 2️⃣ Construire la requête avec RBAC
     const where: Prisma.ScheduleWhereInput = {}
 
@@ -1900,6 +1925,29 @@ export async function exportSchedulesCsv(
         }
         where.employee = { teamId: { in: user.managedTeamIds } }
         break
+
+      case 'EMPLOYEE':
+        if (!user.companyId) {
+          return {
+            success: false,
+            error: 'Utilisateur sans entreprise associée',
+          }
+        }
+        where.companyId = user.companyId
+        where.status = 'CONFIRMED'
+        if (user.employeeId) {
+          if (user.teamId) {
+            where.OR = [
+              { employeeId: user.employeeId },
+              { employee: { teamId: user.teamId } },
+            ]
+          } else {
+            where.employeeId = user.employeeId
+          }
+        } else {
+          return { success: false, error: 'Employé non trouvé' }
+        }
+        break
     }
 
     // 3️⃣ Appliquer les filtres de période
@@ -1913,7 +1961,7 @@ export async function exportSchedulesCsv(
       }
     }
 
-    if (filters?.teamId) {
+    if (filters?.teamId && user.role !== 'EMPLOYEE') {
       // Pour MANAGER, vérifier que l'équipe est dans ses équipes gérées
       if (
         user.role === 'MANAGER' &&
@@ -1927,7 +1975,7 @@ export async function exportSchedulesCsv(
       }
     }
 
-    if (filters?.employeeId) {
+    if (filters?.employeeId && user.role !== 'EMPLOYEE') {
       where.employeeId = filters.employeeId
     }
 
