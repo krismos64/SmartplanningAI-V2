@@ -155,13 +155,13 @@ test.describe('Schedules - RBAC', () => {
     await expect(schedulesPage.exportButton).toBeVisible()
   })
 
-  test("n'affiche PAS le bouton Export pour EMPLOYEE", async ({
+  test('affiche le bouton Export pour EMPLOYEE', async ({
     employeePage,
   }) => {
     const schedulesPage = new SchedulesPage(employeePage)
     await schedulesPage.goto()
 
-    await expect(schedulesPage.exportButton).not.toBeVisible()
+    await expect(schedulesPage.exportButton).toBeVisible()
   })
 })
 
