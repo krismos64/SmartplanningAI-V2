@@ -13,7 +13,7 @@
  */
 
 import { Page, Locator, expect } from '@playwright/test'
-import { loginAs, TEST_USERS } from '../fixtures/auth.fixture'
+import { TEST_USERS } from '../fixtures/auth.fixture'
 import { setConsentCookie } from '../fixtures/consent.fixture'
 
 export class ImpersonationPage {
@@ -162,14 +162,34 @@ export class ImpersonationPage {
       await setConsentCookie(this.page.context())
     }
 
-    // 4. Naviguer directement vers /login — sans cookies JWT, le middleware
-    // laissera passer la requete. loginAs() gere deja le retry et attend
-    // le champ email visible.
-    // Note: On ne fait PAS un goto('/login') prealable car loginAs le fait deja,
-    // et un double goto cause des race conditions avec le middleware.
+    // 4. Naviguer vers /login et attendre que la page soit prete.
+    // En CI nightly, le serveur Next.js peut etre lent a servir la page
+    // apres clearCookies(). On fait un goto explicite avec retry pour
+    // s'assurer que la page de login est chargee avant loginAs().
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        await this.page.goto('/login', { timeout: 30000, waitUntil: 'domcontentloaded' })
+        break
+      } catch {
+        if (attempt === 2) throw new Error('Failed to navigate to /login after 3 attempts')
+        await this.page.waitForTimeout(2000)
+      }
+    }
 
-    // 5. Re-login admin pour obtenir un JWT SYSTEM_ADMIN propre
-    await loginAs(this.page, TEST_USERS.SYSTEM_ADMIN)
+    // Attendre que le champ email soit visible (hydration React lente en CI)
+    const emailField = this.page.getByPlaceholder('vous@entreprise.com')
+    await emailField.waitFor({ state: 'visible', timeout: 30000 })
+
+    // 5. Re-login admin directement (on est deja sur /login avec le champ visible,
+    // evite le double goto('/login') que ferait loginAs)
+    const admin = TEST_USERS.SYSTEM_ADMIN
+    await emailField.fill(admin.email)
+    await this.page.getByPlaceholder('••••••••').fill(admin.password)
+    await this.page.getByRole('button', { name: 'Se connecter' }).click()
+    await this.page.waitForURL(
+      /\/app\/(dashboard|director|manager|admin|employee|settings|billing)/,
+      { timeout: 60000 }
+    )
 
     // 6. Naviguer vers /app/admin/companies
     await this.page.goto('/app/admin/companies', {
