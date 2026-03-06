@@ -430,6 +430,55 @@ const availabilityTypeLabels: Record<AvailabilityType, string> = {
 }
 
 // ============================================================================
+// Custom time grid event avec avatar employé (vue jour/semaine)
+// ============================================================================
+
+function TimeGridEventWithAvatar({ calendarEvent }: { calendarEvent: Record<string, unknown> }) {
+  const title = (calendarEvent.title as string) ?? ''
+  const image = calendarEvent._employeeImage as string | null
+  const employeeName = (calendarEvent._employeeName as string) ?? ''
+  const scheduleTime = (calendarEvent._scheduleTime as string) ?? ''
+  const initials = employeeName
+    .split(' ')
+    .map((n: string) => n[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2)
+
+  return (
+    <div className="flex h-full items-start gap-2 overflow-hidden px-1.5 py-1">
+      {/* Avatar */}
+      {(image || employeeName) && (
+        <div className="mt-0.5 flex-shrink-0">
+          {image ? (
+            <img
+              src={image}
+              alt={employeeName}
+              className="h-7 w-7 rounded-full object-cover ring-1 ring-white/50"
+            />
+          ) : (
+            <div className="flex h-7 w-7 items-center justify-center rounded-full bg-white/20 text-[10px] font-bold ring-1 ring-white/30">
+              {initials}
+            </div>
+          )}
+        </div>
+      )}
+      {/* Contenu */}
+      <div className="min-w-0 flex-1">
+        <div className="truncate text-xs font-semibold leading-tight">
+          {title}
+        </div>
+        {scheduleTime && (
+          <div className="truncate text-[10px] leading-tight opacity-80">
+            {scheduleTime}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// ============================================================================
 // Composant principal
 // ============================================================================
 
@@ -733,6 +782,10 @@ export function ScheduleCalendarDesktop({
               `${startDateStr}T${endHour}:${endMin}:00[Europe/Paris]`
             ),
         calendarId: getCalendarId(schedule.type, schedule.status),
+        // Données custom pour le rendu avec avatar
+        _employeeImage: schedule.employee?.user?.image ?? null,
+        _employeeName: employeeName,
+        _scheduleTime: `${schedule.startTime} - ${schedule.endTime}`,
       }
     })
   }, [schedules])
@@ -995,7 +1048,12 @@ export function ScheduleCalendarDesktop({
 
       {/* Calendrier Schedule-X */}
       <div className="overflow-hidden rounded-lg border bg-card">
-        <ScheduleXCalendar calendarApp={calendar} />
+        <ScheduleXCalendar
+          calendarApp={calendar}
+          customComponents={{
+            timeGridEvent: TimeGridEventWithAvatar,
+          }}
+        />
       </div>
 
       {/* Info drag & drop + Légende */}
