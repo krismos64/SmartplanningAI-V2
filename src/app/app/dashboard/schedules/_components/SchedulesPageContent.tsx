@@ -73,7 +73,6 @@ type ViewMode = 'day' | 'week' | 'month'
 
 interface SchedulesPageContentProps {
   initialSchedules: ScheduleWithRelations[]
-  initialTotal: number
   userRole: 'SYSTEM_ADMIN' | 'DIRECTOR' | 'MANAGER' | 'EMPLOYEE'
   /** ID de l'entreprise pour création de créneaux */
   companyId: string
@@ -89,7 +88,6 @@ interface SchedulesPageContentProps {
 
 export function SchedulesPageContent({
   initialSchedules,
-  initialTotal,
   userRole,
   companyId,
   // Dates initiales disponibles pour usage futur si nécessaire
@@ -101,7 +99,6 @@ export function SchedulesPageContent({
   // États
   const [schedules, setSchedules] =
     useState<ScheduleWithRelations[]>(initialSchedules)
-  const [totalCount, setTotalCount] = useState(initialTotal)
   const [viewMode, setViewMode] = useState<ViewMode>('week')
   const [currentDate, setCurrentDate] = useState(new Date())
   const [isPending, startTransition] = useTransition()
@@ -242,7 +239,6 @@ export function SchedulesPageContent({
 
         if (result.success && result.data) {
           setSchedules(result.data.schedules)
-          setTotalCount(result.data.total)
         }
       })
     },
@@ -368,13 +364,6 @@ export function SchedulesPageContent({
     },
     [rangeStartTime, rangeEndTime, activeFilters, reloadSchedules]
   )
-
-  // Calculs pour les stats
-  const uniqueEmployees = new Set(schedules.map((s) => s.employeeId)).size
-  const confirmedCount = schedules.filter(
-    (s) => s.status === 'CONFIRMED'
-  ).length
-  const draftCount = schedules.filter((s) => s.status === 'DRAFT').length
 
   return (
     <div className="space-y-6" data-testid="schedules-page">
@@ -618,55 +607,6 @@ export function SchedulesPageContent({
         }}
       />
 
-      {/* Stats rapides — orbes 3D */}
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-        <Card
-          data-testid="stats-total"
-          className="sp-stat-orb sp-stat-orb--primary"
-        >
-          <CardContent className="pt-6">
-            <div className="sp-stat-value font-display text-3xl font-bold tracking-tight">
-              {totalCount}
-            </div>
-            <p className="text-sm text-muted-foreground">
-              Plannings cette période
-            </p>
-          </CardContent>
-        </Card>
-        <Card
-          data-testid="stats-employees"
-          className="sp-stat-orb sp-stat-orb--info"
-        >
-          <CardContent className="pt-6">
-            <div className="sp-stat-value font-display text-3xl font-bold tracking-tight">
-              {uniqueEmployees}
-            </div>
-            <p className="text-sm text-muted-foreground">Employés planifiés</p>
-          </CardContent>
-        </Card>
-        <Card
-          data-testid="stats-confirmed"
-          className="sp-stat-orb sp-stat-orb--success"
-        >
-          <CardContent className="pt-6">
-            <div className="sp-stat-value font-display text-3xl font-bold tracking-tight text-success">
-              {confirmedCount}
-            </div>
-            <p className="text-sm text-muted-foreground">Plannings confirmés</p>
-          </CardContent>
-        </Card>
-        <Card
-          data-testid="stats-draft"
-          className="sp-stat-orb sp-stat-orb--warning"
-        >
-          <CardContent className="pt-6">
-            <div className="sp-stat-value font-display text-3xl font-bold tracking-tight text-warning">
-              {draftCount}
-            </div>
-            <p className="text-sm text-muted-foreground">Brouillons</p>
-          </CardContent>
-        </Card>
-      </div>
     </div>
   )
 }

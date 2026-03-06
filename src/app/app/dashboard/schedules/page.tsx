@@ -50,13 +50,11 @@ export default async function SchedulesPage() {
   })
 
   const schedules = result.success ? (result.data?.schedules ?? []) : []
-  const totalCount = result.success ? (result.data?.total ?? 0) : 0
 
   return (
     <Suspense fallback={<SchedulesLoading />}>
       <SchedulesPageContent
         initialSchedules={schedules}
-        initialTotal={totalCount}
         userRole={userRole}
         companyId={companyId}
         initialStartDate={startOfWeek}
