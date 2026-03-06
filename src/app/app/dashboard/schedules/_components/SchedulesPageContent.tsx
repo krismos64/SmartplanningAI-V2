@@ -465,6 +465,7 @@ export function SchedulesPageContent({
                   endDate={dateRange.end}
                   viewMode={viewMode === 'day' ? 'week' : viewMode}
                   filters={activeFilters}
+                  allowedFormats={userRole === 'EMPLOYEE' ? ['pdf'] : undefined}
                 />
               )}
 

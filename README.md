@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 4 mars 2026 (EMPLOYEE : visibilité planning équipe, filtres fonctionnels, exports PDF/Excel/CSV avec RBAC scope équipe)
+- **Dernière mise à jour** : 6 mars 2026 (UX planning EMPLOYEE : vue détail au clic, avatars employés vue jour/semaine, export PDF uniquement, suppression stats cards inutiles, rationalisation tests)
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -92,13 +92,13 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - Gestion multi-tenant (isolation complète par entreprise)
 - Dashboard personnalisé par rôle avec KPIs
 - Gestion des employés et départements
-- Planning avec calendrier Schedule-X (vues jour/semaine/mois, responsive mobile, drag & drop, visibilité équipe EMPLOYEE)
+- Planning avec calendrier Schedule-X (vues jour/semaine/mois, responsive mobile, drag & drop, visibilité équipe EMPLOYEE, avatars employés en vue jour/semaine, détail horaires au clic pour EMPLOYEE)
 - Gestion des shifts et affectations (8 types dont REST)
 - Panneau heures hebdomadaires (planifié vs contrat, code couleur)
 - Détection de conflits horaires temps réel
 - Gestion des indisponibilités avec overlay calendrier
 - Récurrence des shifts (quotidien, hebdomadaire, bi-hebdomadaire, mensuel)
-- Export PDF/Excel/CSV des plannings (avec filtres actifs et compteur heures, accessible EMPLOYEE/MANAGER/DIRECTOR)
+- Export plannings : PDF pour tous les rôles (EMPLOYEE/MANAGER/DIRECTOR), Excel et CSV réservés aux MANAGER/DIRECTOR (filtres actifs et compteur heures)
 - Export CSV employés enrichi (équipe, rôle, ancienneté, contrat, tri par équipe, nom fichier dynamique) et congés avec RBAC
 - Suppression en masse employés avec cascade sécurisée
 - Nom d'entreprise dynamique dans le layout
@@ -2539,437 +2539,59 @@ Toutes les pages publiques sont optimisées pour les LLMs (ChatGPT, Claude, Perp
 - **E2E** : Playwright (configuré)
 - **Coverage** : v8 provider
 
-### Couverture actuelle (23 février 2026 - SP-477)
-
-| Catégorie                              | Coverage   | Tests    |
-| -------------------------------------- | ---------- | -------- |
-| **Global**                             | **~86%**   | **5914** |
-| loading                                | 100%     | 152      |
-| modals                                 | 100%     | 52       |
-| cards                                  | 77.09%   | 88       |
-| forms                                  | 76.65%   | 170      |
-| auth                                   | ~95%     | 34       |
-| permissions                            | 100%     | 62       |
-| dashboard components                   | 100%     | 57       |
-| charts                                 | 100%     | 88       |
-| dashboard services                     | 100%     | 119      |
-| dashboard employee                     | 100%     | 91       |
-| dashboard director                     | 100%     | 87       |
-| dashboard admin                        | 100%     | 115      |
-| cookies                                | 100%     | 83       |
-| analytics                              | 100%     | 13       |
-| emails (Sprint 9)                      | 100%     | 129      |
-| contact (SP-287/289)                   | 100%     | 95       |
-| error boundary                         | 100%     | 22       |
-| animations (SP-379)                    | 100%     | 102      |
-| design tokens                          | 100%     | 99       |
-| dark/light mode                        | 100%     | 30       |
-| loading states (SP-266)                | 100%     | 131      |
-| command palette (SP-264)               | 100%     | 55       |
-| navigation shortcuts (SP-264)          | 100%     | 15       |
-| keyboard shortcuts modal (SP-264)      | 100%     | 10       |
-| keyboard shortcuts provider (SP-264)   | 100%     | 10       |
-| recent pages store (SP-264 Phase 4)    | 100%     | 18       |
-| use-recent-pages hook (SP-264 Phase 4) | 100%     | 8        |
-| format-relative-time (SP-264 Phase 4)  | 100%     | 27       |
-| swipeable-drawer (SP-383)              | 100%     | 21       |
-| touchable-button (SP-385)              | 100%     | 31       |
-| command-palette-mobile (SP-386)        | 100%     | 32       |
-| data-table-pagination (SP-387)         | 100%     | 22       |
-| responsive-breadcrumb (SP-388)         | 100%     | 25       |
-| recurrence utils (SP-399)              | 100%     | 24       |
-| RecurrenceConfig (SP-399)              | 100%     | 12       |
-| schedules actions (SP-397/399)         | 100%     | 30       |
-| schedule validation (SP-393/399)       | 100%     | 47       |
-| availabilities actions (SP-401)        | 100%     | 22       |
-| AvailabilityCard (SP-401)              | 100%     | 18       |
-| AvailabilityModal (SP-401)             | 100%     | 14       |
-| useConflictDetection (SP-400)          | 100%     | 12       |
-| ConflictAlert (SP-400)                 | 100%     | 13       |
-| useCalendarAvailabilities (SP-402)     | 100%     | 10       |
-| AvailabilityBadge (SP-402)             | 100%     | 20       |
-| AvailabilityOverlay (SP-402)           | 100%     | 17       |
-| SchedulePdfDocument (SP-403)           | 100%     | 6        |
-| generateScheduleExcel (SP-404)         | 100%     | 7        |
-| WeeklyHoursPanel (SP-406)              | 100%     | -        |
-| ScheduleCalendarMobile (SP-396)        | 100%     | 18       |
-| leave validation schemas (SP-409)      | 100%     | 22       |
-| leave-utils (SP-409)                   | 100%     | 23       |
-| leaves actions (SP-410)                | 100%     | 48       |
-| LeaveTypeBadge (SP-411)                | 100%     | 4        |
-| LeaveStatusBadge (SP-411)              | 100%     | 4        |
-| LeaveConflictWarning (SP-411)          | 100%     | 4        |
-| LeaveBalanceCard (SP-411)              | 100%     | 6        |
-| LeaveRequestCard (SP-411)              | 100%     | 11       |
-| LeaveRequestForm (SP-411)              | 100%     | 15       |
-| LeaveReviewDialog (SP-411)             | 100%     | 6        |
-| LeaveStatsBar (SP-412)                 | 100%     | 6        |
-| LeaveFilters (SP-412)                  | 100%     | 10       |
-| LeaveCalendar (SP-412)                 | 100%     | 10       |
-| LeavesList (SP-412)                    | 100%     | 13       |
-| LeavesPageContent (SP-413)             | 100%     | 13       |
-| Sidebar leaves link (SP-413)           | 100%     | 5        |
-| LeaveDetailCard (SP-414)               | 100%     | 11       |
-| LeaveTimeline (SP-414)                 | 100%     | 9        |
-| LeaveDetailContent (SP-414)            | 100%     | 13       |
-| BalancesPageContent (SP-414)           | 100%     | 15       |
-| company-settings actions (SP-435)      | 100%     | 19       |
-| pricing config (SP-355)               | 100%     | 23       |
-| PricingSimulator (SP-355)             | 100%     | 20       |
-| PricingCard (SP-355)                  | 100%     | 12       |
-| PricingPageContent (SP-359)           | 100%     | 22       |
-| StructuredData tarifs (SP-359)        | 100%     | 12       |
-| stripe singleton (SP-349)            | 100%     | 9        |
-| stripe-config (SP-349)               | 100%     | 29       |
-| stripe validations (SP-349)          | 100%     | 28       |
-| company validations (SP-350)         | 100%     | 37       |
-| companies actions (SP-350)           | 100%     | 20       |
-| CompanyCard (SP-350)                 | 100%     | 25       |
-| CompanyForm (SP-350)                 | 100%     | -        |
-| company columns (SP-350)            | 100%     | 20       |
-| DeleteCompanyDialog (SP-350)        | 100%     | 10       |
-| AdminRecentCompanies (SP-350)       | 100%     | 18       |
-| admin-stats service (SP-350)        | 100%     | 39       |
-| stripe service (SP-351)            | 100%     | 40       |
-| webhook route (SP-351)             | 100%     | 10       |
-| stripe actions (SP-352)           | 100%     | 32       |
-| SubscriptionStatus (SP-360)       | 100%     | 16       |
-| UsageIndicator (SP-360)           | 100%     | 8        |
-| InvoiceHistory (SP-360)           | 100%     | 11       |
-| BillingPageContent (SP-360)       | 100%     | 6        |
-| subscription-guard (SP-440)       | 100%     | 31       |
-| subscription-banner (SP-441)      | 100%     | 44       |
-| SubscriptionBanner (SP-441)       | 100%     | 29       |
-| subscription-sync (SP-439)       | 100%     | 27       |
-| employees SP-439 (SP-439)        | 100%     | 6        |
-| email-log service (SP-368)       | 100%     | 16       |
-| billing email templates (SP-369) | 100%     | 27       |
-| cron trial + webhooks (SP-370)   | 100%     | 25       |
-| TeamCard (SP-460)                | 100%     | 14       |
-| TeamForm (SP-460)                | 100%     | 20       |
-| TeamMembersManager (SP-460)      | 100%     | 24       |
-| TeamsDataTable (SP-460)          | 100%     | 14       |
-| EmployeeCard (SP-460)            | 100%     | 18       |
-| EmployeeFilters (SP-460)         | 100%     | 18       |
-| DeleteEmployeeDialog (SP-460)    | 100%     | 16       |
-| BulkDeleteDialog (SP-460)        | 100%     | 20       |
-| columns employees (SP-460)       | 100%     | 16       |
-| ExportDropdown (SP-460)          | 100%     | 12       |
-| WeeklyHoursPanel (SP-460)        | 100%     | 16       |
-| AvailabilityPopover (SP-460)     | 100%     | 13       |
-| FormDatePicker (SP-460)          | 100%     | 20       |
-| AvatarUpload (SP-460)            | 100%     | 21       |
-| CookieConsentProvider (SP-460)   | 100%     | 16       |
-| LeavesListMobile (SP-460)        | 100%     | 10       |
-| ChartWidgets (SP-460)            | 100%     | 22       |
-| UmamiAnalyticsWrapper (SP-460)   | 100%     | 5        |
-| CompanyForm (SP-460)             | 100%     | 17       |
-| send-functions billing (SP-460)  | 100%     | 9        |
-| audit-schema (SP-442)            | 100%     | 30       |
-| audit.service (SP-443)           | 100%     | 22       |
-| audit-injection (SP-444)         | 100%     | 20       |
-| audit-logs actions (SP-445)      | 100%     | 33       |
-| getUserActivity (SP-463)         | 100%     | 17       |
-| impersonate route (SP-456)       | 100%     | 10       |
-| monitoring action (SP-464)       | 100%     | 10       |
-| db-health service (SP-464)       | 100%     | 8        |
-| HealthStatusBadge (SP-464)       | 100%     | 5        |
-| DatabaseHealthPanel (SP-464)     | 100%     | 12       |
-| MonitoringKpisGrid (SP-464)      | 100%     | 4        |
-| SubscriptionBreakdownPanel (SP-464) | 100%  | 4        |
-| monitoring-chart action (SP-465) | 100%     | 10       |
-| ActivityChart (SP-465)           | 100%     | 4        |
-| SubscriptionPieChart (SP-465)    | 100%     | 4        |
-| TopActionsChart (SP-465)         | 100%     | 4        |
-| CompanyGrowthChart (SP-465)      | 100%     | 4        |
-| mrr.service (SP-469)             | 100%     | 9        |
-| health endpoint (SP-470)         | 100%     | 6        |
-| RefreshButton (SP-471)           | 100%     | 4        |
-| admin users page (SP-472)        | 100%     | 9        |
-| trials at risk (SP-473)          | 100%     | 10       |
-| admin contact email (SP-474)     | 100%     | 9        |
-| admin stats + PDF (SP-475)       | 100%     | 12       |
-| admin notifications (SP-476)     | 100%     | 7        |
-| admin broadcast (SP-477)         | 100%     | 9        |
-
-### Tests E2E
-
-| Suite                               | Tests   | Status                            |
-| ----------------------------------- | ------- | --------------------------------- |
-| Auth (login/register)               | 20      | ✅                                |
-| Middleware RBAC                     | 26      | ✅                                |
-| Smoke tests                         | 4       | ✅                                |
-| **Dashboard Employee**              | 15      | ✅                                |
-| **Dashboard Manager**               | 23      | ✅                                |
-| **Dashboard Director**              | 22      | ✅                                |
-| **Dashboard Super Admin**           | 25      | ✅                                |
-| **RBAC Protection**                 | 21      | ✅                                |
-| **CRUD Companies**                  | 18      | ✅                                |
-| **CRUD Employees**                  | 18      | ✅                                |
-| **CRUD Teams**                      | 15      | ✅                                |
-| **Empty States**                    | 8       | ✅                                |
-| **Cookies RGPD**                    | 18      | ✅                                |
-| **Analytics Umami**                 | 8       | ✅                                |
-| **Error Pages** (404/500/boundary)  | 15      | ✅                                |
-| **Command Palette (SP-264)**        | 6       | ✅                                |
-| **Recent Pages (SP-264)**           | 6       | ✅                                |
-| **Keyboard Shortcuts (SP-264)**     | 6       | ✅                                |
-| **Mobile Navigation (SP-389)**      | 9       | ✅                                |
-| **Mobile Command Palette (SP-389)** | 15      | ✅                                |
-| **Mobile Breadcrumbs (SP-389)**     | 20      | ✅                                |
-| **Mobile Data Table (SP-389)**      | 15      | ✅                                |
-| **Mobile Touch Targets (SP-389)**   | 16      | ✅                                |
-| **Accessibility WCAG (SP-269)**     | 14      | ✅                                |
-| **Schedules (SP-406)**              | 16      | ✅                                |
-| **Leaves (SP-416)**                 | 21      | ✅                                |
-| **Personal Tasks (SP-421)**         | 20      | ✅                                |
-| **Profile (SP-270)**                | 15      | ✅                                |
-| **Edit Profile (SP-271)**           | 22      | ✅                                |
-| **Change Password (SP-273)**        | 9       | ✅                                |
-| **Account Actions** (delete/export) | 11      | ✅                                |
-| **Settings Hub (SP-274)**           | 20      | ✅                                |
-| **Appearance (SP-276)**             | 18      | ✅                                |
-| **Notification Preferences (SP-275)** | 14    | ✅                                |
-| **Company Settings (SP-435)**       | 21      | ✅                                |
-| **Billing Alerts (SP-373)**         | 8       | ✅                                |
-| **Billing Subscription (SP-373)**   | 7       | ✅                                |
-| **Audit Logs (SP-446)**            | 26      | ✅ (23 pass + 3 skip)            |
-| **Impersonation (SP-456)**         | 9       | ✅                                |
-| **Total E2E (40 fichiers)**         | **~584** | ✅                                |
-
-**Note** : Tests desktop exécutés sur Chromium uniquement. Tests mobiles exécutés sur 5 devices (iPhone SE, iPhone 14 Pro, Pixel 7, iPad Mini, iPad Pro 11") via Chromium avec émulation mobile (WebKit supprimé car bug HTTPS upgrade sur localhost). Consolidation 50→38 fichiers le 18/02/2026 (suppression redondances, fusion suites similaires). Ajout audit-logs.spec.ts le 18/02/2026 (39 fichiers). Ajout impersonation-flow.spec.ts le 19/02/2026 (40 fichiers).
-
-### Composants testés
-
-#### Auth (2 composants)
-
-- LoginForm (15 tests)
-- RegisterForm (19 tests)
-
-#### Permissions (1 module)
-
-- permissions.ts (62 tests) : `hasMinimumRole`, `canAccessRoute`, `getRoleDashboardPath`, `ROLE_HIERARCHY`
-
-#### Forms (6 composants)
-
-- FormField, FormInput, FormCheckbox
-- FormSelect, FormTextarea, FormRadioGroup
-
-#### Cards (3 composants)
-
-- UserCard, TeamCard, AvatarStack
-
-#### Loading (6 composants)
-
-- Spinner, LoadingOverlay
-- Skeleton, SkeletonCard, SkeletonTable, SkeletonText
-
-#### Modals (2 composants)
-
-- ConfirmDialog, FormDialog
-
-#### Dashboard (3 composants)
-
-- StatCard, TrendIndicator, StatsGrid
-
-#### Charts (4 composants)
-
-- ChartContainer (wrapper responsive avec loading/empty)
-- AreaChartWidget (graphiques d'aire avec gradients SVG)
-- BarChartWidget (barres verticales/horizontales, stacked)
-- PieChartWidget (pie/donut avec labels pourcentage)
-
-#### Dashboard Services (7 modules - SP-144)
-
-- types.ts (typage ServiceResult<T>, params, résultats)
-- base-stats.service.ts (utilitaires partagés : calculs, dates, vérifications multi-tenant)
-- employee-stats.service.ts (heures travaillées, solde congés, tendances)
-- manager-stats.service.ts (taille équipe, demandes en attente, couverture)
-- director-stats.service.ts (métriques entreprise, équipes, performance)
-- admin-stats.service.ts (KPIs plateforme : MRR, churn, entreprises)
-- index.ts (barrel export centralisé)
-
-#### Stripe Service (1 module + 1 route - SP-351)
-
-- stripe.service.ts (5 fonctions exportées + 5 handlers webhook internes, pattern ServiceResult<T>)
-- route.ts (POST /api/webhooks/stripe : signature HMAC, raw body, error handling)
-
-#### Billing Dashboard (4 composants - SP-360)
-
-- SubscriptionStatus (16 tests) : 6 badges statut, countdown essai, alerte annulation, EmptyState, callbacks
-- UsageIndicator (8 tests) : jauge sièges, prix unitaire/total, prorata, plafond 100%
-- InvoiceHistory (11 tests) : table factures, badges statut, liens Stripe, état vide
-- BillingPageContent (6 tests) : orchestrateur, gestion null, action portail Stripe
-
-#### Subscription Sync Employés → Stripe (SP-439)
-
-- subscription-sync.service.ts (27 tests) : skip no_subscription (1), skip no_stripe_subscription_id (1), skip statuts TRIAL/CANCELED/EXPIRED/INCOMPLETE (4), skip quantity_unchanged (2), skip no_stripe_item_id (1), sync success avec prorata (5), erreurs Stripe (StripeError, network, timeout, invalid_request, authentication) (5), erreurs Prisma (retrieve, update, count) (3), edge cases (quantity=0→1, 1 employé, 250 employés, Decimal pricePerEmployee) (4), logging structuré (1).
-- employees.test.ts SP-439 (6 tests) : sync appelé après createEmployee (1), deleteEmployee (1), toggleEmployeeStatus (1), bulkDeleteEmployees (1), fire-and-forget safety avec rejection (1), bon companyId transmis (1).
-
-#### Subscription Banner (SP-441)
-
-- getSubscriptionBannerConfig (44 tests) : bypass SYSTEM_ADMIN/ACTIVE/null/CANCELED/EXPIRED/INCOMPLETE/inconnu (7), TRIAL info 7-14j (9), TRIAL warning 4-6j (5), TRIAL urgent 1-3j (6), TRIAL cas limites expiré/null/20j (3), PAST_DUE grâce (10), rôles DIRECTOR/MANAGER/EMPLOYEE (3), constantes seuils (1). Fonction pure, 0 mock.
-- SubscriptionBanner composant (29 tests) : rendu conditionnel ACTIVE/SYSTEM_ADMIN/billing/info/warning/urgent/PAST_DUE (8), variants visuels info/warning/destructive (3), CTA labels et href (5), dismiss localStorage et palier (6), accessibilité role/aria-label/data-testid (5), messages trial/payment (2).
-
-#### Subscription Guard (SP-440)
-
-- checkSubscriptionAccess (31 tests) : bypass SYSTEM_ADMIN (2), routes exemptées billing/profile/settings (5), statut ACTIVE (1), TRIAL valide/expiré/null (4), PAST_DUE grâce 7j/dépassé/null (5), CANCELED (2), EXPIRED (2), INCOMPLETE (2), null (2), statut inconnu (2), tous les rôles non-admin (3), constante PAST_DUE_GRACE_DAYS (1). Fonction pure, 0 mock, 4ms d'exécution.
-
-#### Impersonation API Route (SP-456)
-
-- POST /api/admin/impersonate (8 tests) : 401 non authentifié, 403 non SYSTEM_ADMIN, 400 body vide, 404 aucun utilisateur actif dans company, 400 cible SYSTEM_ADMIN, 400 cible désactivée, succès avec companyId (cookie + audit log), succès avec targetUserId direct
-- DELETE /api/admin/impersonate (2 tests) : 400 aucune impersonation active, succès (supprime cookie + crée audit log stop)
-
-#### Dashboard Employee (5 composants - SP-145)
-
-- EmployeeWelcome (message bienvenue contextuel + prochain shift)
-- EmployeeStats (4 KPIs : heures, shifts, congés, demandes)
-- EmployeeSchedule (BarChartWidget heures hebdomadaires)
-- EmployeeLeaveBalance (PieChartWidget donut solde congés)
-- EmployeeQuickActions (boutons actions rapides avec badge)
-
-#### Dashboard Manager (5 composants - SP-316)
-
-- ManagerWelcome (message bienvenue contextuel + badges alertes conges/absences)
-- ManagerStats (4 KPIs : membres equipe, conges a valider, absents, heures equipe avec tendance)
-- ManagerTeamChart (BarChartWidget performance equipe heures travaillees)
-- ManagerPendingLeaves (liste demandes conges en attente avec actions approuver/refuser)
-- ManagerQuickActions (4 boutons actions rapides : equipe, planning, conges, incidents)
-
-#### CRUD Infrastructure (SP-150)
-
-- Types génériques : `CrudActionResult<T>`, `PaginatedResult<T>`, `ListQueryParams`, `FilterParams`
-- Types formulaires : `CompanyFormData`, `TeamFormData`, `UserFormData`
-- Schémas Zod Company : `createCompanySchema`, `updateCompanySchema`, `companyFiltersSchema`
-- Schémas Zod Team : `createTeamSchema`, `updateTeamSchema`, `teamMembersSchema`
-- Server Actions : `withRoleCheck`, `validateData`, `handlePrismaError`, `getPaginationParams`
-- Hooks React : `useCrudMutation`, `useDeleteMutation`, `useRefreshList`
-
-#### Dashboard Director (6 composants - SP-147)
-
-- DirectorWelcome (message bienvenue + indicateur santé entreprise + alertes)
-- DirectorStats (6 KPIs : employés, équipes, congés, heures, présence, absences)
-- DirectorTeamsChart (PieChartWidget répartition équipes avec légende)
-- DirectorTrendsChart (AreaChartWidget évolution effectifs 6 mois avec %)
-- DirectorPendingLeaves (liste congés en attente avec dates FR + bouton voir plus)
-- DirectorQuickActions (4 boutons actions rapides avec badge compteur)
-
-#### Dashboard Super Admin (7 composants - SP-148)
-
-- AdminWelcome (message bienvenue + indicateur santé plateforme MRR/churn)
-- AdminStats (6 KPIs SaaS : entreprises, utilisateurs, MRR, abonnements, conversion, churn)
-- AdminMrrChart (AreaChartWidget évolution entreprises avec % croissance)
-- AdminSignupsChart (BarChartWidget inscriptions mensuelles avec calcul deltas)
-- AdminPlansChart (PieChartWidget répartition plans avec légende détaillée)
-- AdminRecentCompanies (Server Component async Prisma - 5 dernières inscriptions)
-- AdminQuickActions (4 boutons actions rapides avec badges compteurs)
-
-#### Cookies RGPD (4 composants + 1 hook + 1 lib - SP-283)
-
-- CookieBanner (bannière consentement glassmorphism)
-- CookiePreferencesModal (modal choix granulaire avec switches)
-- CookieSettingsButton (bouton d'accès aux paramètres)
-- CookieConsentProvider (Context React pour état partagé)
-- useCookieConsent (hook standalone pour tests)
-- lib/cookies.ts (gestion cookie HTTP, préférences, types)
-
-#### Analytics Umami (1 composant + 1 hook - SP-345)
-
-- UmamiAnalytics (chargement conditionnel script basé sur consentement)
-- useUmamiTrack (hook pour tracking events custom avec vérification RGPD)
-
-#### Error Boundary (2 composants - SP-304)
-
-- ErrorBoundaryWrapper (wrapper react-error-boundary avec logging structuré)
-- ErrorFallback (UI de secours avec retry/home buttons, stack trace dev mode)
-- error.tsx (Next.js route segment error boundary)
-- global-error.tsx (Next.js root layout error boundary avec inline styles)
-
-#### Page 404 (2 composants - SP-302)
-
-- NotFoundPage (page 404 complète avec animations)
-- NotFoundIllustration (illustration animée avec icônes orbitantes)
-
-#### Page 500 (2 composants + utilitaire - SP-303)
-
-- ServerErrorPage (page 500 complète avec animations)
-- error-logger.ts (utilitaire de logging serveur structuré)
-
-#### Dark/Light Mode (3 composants - SP-265)
-
-- ThemeProvider (wrapper next-themes avec config SmartPlanning)
-- ThemeToggle (bouton cycle system → light → dark avec icônes animées)
-- ThemeDropdown (menu dropdown 3 options avec descriptions)
-
-#### Loading States avancés (2 composants + 2 hooks + 1 HOC - SP-266)
-
-- ProgressBar (barre horizontale : déterminé/indéterminé, 3 tailles, 5 couleurs, labels)
-- ProgressCircle (cercle SVG : déterminé/indéterminé, 3 tailles, 5 couleurs, centerLabel)
-- useLoading (gestion état chargement avec minDuration, callbacks, withLoading wrapper)
-- useProgressLoading (progression 0-100% avec increment, auto-completion)
-- withLoading HOC (injection props isLoading + méthodes)
-
-#### Command Palette (3 modules - SP-264)
-
-- useKeyboardShortcuts (hook raccourcis clavier avec modifiers et séquences)
-- CommandPalette (composant cmdk avec navigation, actions, thème, RBAC)
-- CommandPaletteProvider (context React pour état global + raccourci Cmd+K)
-
-#### Navigation Shortcuts & Keyboard Shortcuts Modal (3 modules - SP-264 Phase 3)
-
-- useNavigationShortcuts (hook séquences Vim-style : g h, g e, g t, g p, g l, g s, g c)
-- KeyboardShortcutsModal (modal Radix Dialog avec animations Framer Motion, détection OS)
-- KeyboardShortcutsProvider (context React pour modal raccourcis, touche `?`)
-
-#### Recent Pages (4 modules - SP-264 Phase 4)
-
-- recentPagesStore (store externe useSyncExternalStore, localStorage, FIFO 5 pages, déduplication)
-- useRecentPages (hook React avec addPage, clearHistory, isLoading)
-- formatRelativeTime (formatage temps relatif FR : "À l'instant", "Il y a X min", etc.)
-- PageTracker (composant invisible tracking automatique, RGPD compliant)
-
-#### Mobile Navigation (1 composant + 3 hooks - SP-383/SP-384)
-
-- SwipeableDrawer (drawer mobile avec gestes Framer Motion, swipe to close)
-- useBodyScrollLock (verrouillage scroll body avec compensation scrollbar)
-- usePrefersReducedMotion (détection prefers-reduced-motion)
-- useFocusTrap (focus trap basique pour accessibilité dialog)
-
-#### Mobile UI Components (4 composants - SP-268 Phase 3)
-
-- TouchableButton (boutons adaptatifs 44px sur mobile, mapping automatique des tailles)
-- CommandPalette mobile (layout full-screen, Visual Viewport API, safe-area insets iOS)
-- DataTablePagination responsive (layout vertical mobile, options réduites, labels compacts)
-- ResponsiveBreadcrumb (scroll horizontal snap, fade indicators, auto-scroll vers page courante)
-
-#### Accessibilité (1 composant - SP-269)
-
-- SkipLink (skip to main content, WCAG 2.4.1 Bypass Blocks, 14 tests unitaires)
-
-#### E2E Mobile Tests (SP-389 - 25 janvier 2026)
-
-Tests E2E Playwright pour appareils mobiles avec émulation multi-device :
-
-- **Configuration Playwright mobile** (`playwright.config.ts`) :
-  - iPhone SE (320x568) : petit écran, test contraintes espace
-  - iPhone 14 Pro (393x852) : écran moderne iOS
-  - Pixel 7 (412x915) : Android référence Chrome mobile
-  - iPad Mini (768x1024) : tablette petite
-  - iPad Pro 11" (834x1194) : tablette grande, layout quasi-desktop
-  - Note : Utilisation de Chromium au lieu de WebKit pour tous les projets mobiles (fix bug WebKit localhost HTTPS upgrade)
-
-- **Fixtures et utilitaires** :
-  - `e2e/fixtures/mobile.fixture.ts` : Fixture d'authentification mobile avec gestion orientation
-  - `e2e/utils/touch-gestures.ts` : Utilitaires gestes tactiles (tap, doubleTap, longPress, swipe, pinch, scroll)
-
-- **Tests mobiles** (`e2e/specs/mobile/`) :
-  - `navigation.spec.ts` : Navigation mobile (sidebar swipe, menu burger, footer)
-  - `command-palette.spec.ts` : Command palette en mode plein écran mobile
-  - `breadcrumbs.spec.ts` : Fil d'Ariane avec scroll horizontal snap
-  - `data-table.spec.ts` : Pagination responsive et layout cards
-  - `touch-targets.spec.ts` : Conformité WCAG 2.5.5 (zones tactiles 44px minimum)
-
-- **Documentation** : `/docs/e2e-mobile-tests.md`
+### Couverture actuelle (6 mars 2026 — après rationalisation)
+
+> **Rationalisation mars 2026** : Audit qualité complet des tests pour ne conserver que ceux qui valident la logique métier critique (RBAC, Zod, Server Actions, Stripe, workflows E2E, accessibilité). Suppression de ~208 fichiers de tests cosmétiques/triviaux (rendu pur, snapshots, smoke tests). Le taux de couverture n'est pas un objectif — seule la pertinence des tests compte.
+
+| Catégorie                          | Tests    |
+| ---------------------------------- | -------- |
+| **Total Vitest (164 fichiers)**    | **~2910** |
+| RBAC & permissions                 | 62       |
+| Validations Zod (schedules, leaves, stripe, company, audit) | ~185 |
+| Server Actions (schedules, leaves, availabilities, companies, audit, stripe) | ~195 |
+| Stripe (service, config, sync, webhooks, guard, banner) | ~275 |
+| Billing (composants, emails, cron) | ~120     |
+| Congés (composants, workflow, overlay) | ~180  |
+| Plannings (actions, récurrence, conflits, export) | ~90 |
+| Audit System (schema, service, injection, actions) | ~105 |
+| CRUD (companies, employees, teams composants) | ~280 |
+| Dashboard services & composants    | ~470     |
+| Auth (LoginForm, RegisterForm)     | 34       |
+| Monitoring (actions, health, composants) | ~52 |
+| Admin améliorations (MRR, health, users, broadcast...) | ~75 |
+| UI composants métier (forms, charts, cookies, settings...) | ~490 |
+
+### Tests E2E (13 fichiers critiques)
+
+| Suite                               | Tests   | Status |
+| ----------------------------------- | ------- | ------ |
+| **Auth (login/register)**           | 20      | ✅     |
+| **CRUD Companies**                  | 18      | ✅     |
+| **CRUD Employees**                  | 18      | ✅     |
+| **CRUD Teams**                      | 15      | ✅     |
+| **Schedules (SP-406)**              | 16      | ✅     |
+| **Leaves (SP-416)**                 | 21      | ✅     |
+| **Personal Tasks (SP-421)**         | 20      | ✅     |
+| **Billing Subscription (SP-373)**   | 7       | ✅     |
+| **Profile (SP-270)**                | 15      | ✅     |
+| **Edit Profile (SP-271)**           | 22      | ✅     |
+| **Accessibility WCAG (SP-269)**     | 14      | ✅     |
+| **Audit Logs (SP-446)**             | 26      | ✅     |
+| **Impersonation (SP-456)**          | 9       | ✅     |
+| **Total E2E (13 fichiers)**         | **~221** | ✅    |
+
+**Note** : Tests desktop exécutés sur Chromium uniquement. Rationalisation mars 2026 : de 40 fichiers (~584 tests) à 13 fichiers (~221 tests) en ne conservant que les workflows critiques (auth, CRUD, métier, billing, accessibilité, audit, impersonation).
+
+### Stratégie de test
+
+Les tests couvrent les éléments critiques de l'application uniquement :
+
+- **RBAC & permissions** : Matrice complète des 4 rôles, hiérarchie, accès routes
+- **Validations Zod** : Schémas de toutes les entités métier (schedules, leaves, stripe, company, audit)
+- **Server Actions** : Logique métier CRUD avec isolation multi-tenant, gestion d'erreurs Prisma
+- **Stripe** : Service complet (checkout, sync, cancel, webhooks), subscription guard, banner
+- **Composants métier** : Composants avec logique conditionnelle (RBAC, workflows congés, billing)
+- **E2E** : 13 workflows critiques couvrant auth, CRUD, plannings, congés, billing, audit, impersonation, accessibilité
 
 ### Accessibilité WCAG 2.1 (SP-269 - 25 janvier 2026)
 
@@ -3113,7 +2735,7 @@ Nightly → Tests unitaires + Build + Suite E2E complète desktop + 5 mobiles (2
 - **CI** (`.github/workflows/ci.yml`) : Lint, Type-check, Tests unitaires, Build, Tests E2E en mode production (PR/push main)
 - **CD** (`.github/workflows/cd.yml`) : Build image Docker, Push sur ghcr.io, Deploy via SSH
 - **Nightly** (`.github/workflows/nightly-e2e.yml`) : Tests unitaires Vitest + Suite E2E complète desktop + 5 devices mobiles en mode production (`npm run start`)
-- Tests unitaires sur tous les push (~5760 tests Vitest)
+- Tests unitaires sur tous les push (~2910 tests Vitest)
 - Tests E2E en mode production (`npm run build` + `npm run start`) pour des résultats représentatifs de la prod
 - Env vars CI : `AUTH_URL`, `AUTH_SECRET`, `AUTH_TRUST_HOST` pour NextAuth v5 sur HTTP localhost
 - Stabilisation E2E (SP-434) : Touch targets WCAG 2.5.5 (44px), command palette, mobile navigation

@@ -30,6 +30,8 @@ interface ExportDropdownProps {
   teamId?: string
   viewMode: 'week' | 'month'
   filters?: Record<string, unknown>
+  /** Formats d'export autorisés (par défaut tous) */
+  allowedFormats?: ('pdf' | 'excel' | 'csv')[]
 }
 
 type ExportFormat = 'pdf' | 'excel' | 'csv' | null
@@ -40,7 +42,11 @@ export function ExportDropdown({
   teamId,
   viewMode,
   filters = {},
+  allowedFormats,
 }: ExportDropdownProps) {
+  const showPdf = !allowedFormats || allowedFormats.includes('pdf')
+  const showExcel = !allowedFormats || allowedFormats.includes('excel')
+  const showCsv = !allowedFormats || allowedFormats.includes('csv')
   const [isExporting, setIsExporting] = useState<ExportFormat>(null)
   const { success, error: toastError } = useToast()
 
@@ -192,30 +198,36 @@ export function ExportDropdown({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem
-          data-testid="export-pdf"
-          onClick={() => void handleExportPdf()}
-          disabled={isLoading}
-        >
-          <FileText className="mr-2 h-4 w-4" />
-          Export PDF
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          data-testid="export-excel"
-          onClick={() => void handleExportExcel()}
-          disabled={isLoading}
-        >
-          <Table className="mr-2 h-4 w-4" />
-          Export Excel
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          data-testid="export-csv"
-          onClick={() => void handleExportCsv()}
-          disabled={isLoading}
-        >
-          <FileSpreadsheet className="mr-2 h-4 w-4" />
-          Export CSV
-        </DropdownMenuItem>
+        {showPdf && (
+          <DropdownMenuItem
+            data-testid="export-pdf"
+            onClick={() => void handleExportPdf()}
+            disabled={isLoading}
+          >
+            <FileText className="mr-2 h-4 w-4" />
+            Export PDF
+          </DropdownMenuItem>
+        )}
+        {showExcel && (
+          <DropdownMenuItem
+            data-testid="export-excel"
+            onClick={() => void handleExportExcel()}
+            disabled={isLoading}
+          >
+            <Table className="mr-2 h-4 w-4" />
+            Export Excel
+          </DropdownMenuItem>
+        )}
+        {showCsv && (
+          <DropdownMenuItem
+            data-testid="export-csv"
+            onClick={() => void handleExportCsv()}
+            disabled={isLoading}
+          >
+            <FileSpreadsheet className="mr-2 h-4 w-4" />
+            Export CSV
+          </DropdownMenuItem>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   )

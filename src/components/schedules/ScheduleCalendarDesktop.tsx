@@ -438,6 +438,7 @@ function TimeGridEventWithAvatar({ calendarEvent }: { calendarEvent: Record<stri
   const image = calendarEvent._employeeImage as string | null
   const employeeName = (calendarEvent._employeeName as string) ?? ''
   const scheduleTime = (calendarEvent._scheduleTime as string) ?? ''
+  const calendarId = (calendarEvent.calendarId as string) ?? 'work'
   const initials = employeeName
     .split(' ')
     .map((n: string) => n[0])
@@ -445,8 +446,21 @@ function TimeGridEventWithAvatar({ calendarEvent }: { calendarEvent: Record<stri
     .toUpperCase()
     .slice(0, 2)
 
+  // Récupérer les couleurs du calendrier (Schedule-X les supprime pour les custom components)
+  const cal = allCalendars[calendarId as keyof typeof allCalendars]
+  const backgroundColor = cal?.lightColors?.container ?? '#c7d9fc'
+  const textColor = cal?.lightColors?.onContainer ?? '#1e3a8a'
+  const borderColor = cal?.lightColors?.main ?? '#2563eb'
+
   return (
-    <div className="flex h-full items-start gap-2 overflow-hidden px-1.5 py-1">
+    <div
+      className="flex h-full items-start gap-2 overflow-hidden rounded-sm px-1.5 py-1"
+      style={{
+        backgroundColor,
+        color: textColor,
+        borderLeft: `4px solid ${borderColor}`,
+      }}
+    >
       {/* Avatar */}
       {(image || employeeName) && (
         <div className="mt-0.5 flex-shrink-0">
@@ -457,7 +471,10 @@ function TimeGridEventWithAvatar({ calendarEvent }: { calendarEvent: Record<stri
               className="h-7 w-7 rounded-full object-cover ring-1 ring-white/50"
             />
           ) : (
-            <div className="flex h-7 w-7 items-center justify-center rounded-full bg-white/20 text-[10px] font-bold ring-1 ring-white/30">
+            <div
+              className="flex h-7 w-7 items-center justify-center rounded-full text-[10px] font-bold ring-1 ring-white/30"
+              style={{ backgroundColor: `${borderColor}33` }}
+            >
               {initials}
             </div>
           )}
