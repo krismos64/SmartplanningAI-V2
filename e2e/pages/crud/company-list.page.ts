@@ -155,11 +155,9 @@ export class CompanyListPage {
    */
   async clickNewCompany(): Promise<void> {
     await expect(this.newCompanyButton).toBeVisible({ timeout: 15000 })
-    // Attendre la navigation cote client (Next.js router) apres le click
-    await Promise.all([
-      this.page.waitForURL(/\/app\/admin\/companies\/new/, { timeout: 15000 }),
-      this.newCompanyButton.click(),
-    ])
+    // Cliquer puis attendre la navigation (plus stable en CI que Promise.all)
+    await this.newCompanyButton.click()
+    await this.page.waitForURL(/\/app\/admin\/companies\/new/, { timeout: 30000 })
   }
 
   /**
