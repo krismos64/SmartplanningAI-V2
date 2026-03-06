@@ -27,6 +27,8 @@ interface SchedulesFiltersProps {
   onFiltersChange: (filters: Record<string, unknown>) => void
   teams?: { id: string; name: string }[]
   employees?: { id: string; firstName: string; lastName: string }[]
+  /** Masquer le filtre statut (ex: EMPLOYEE ne voit que les confirmés) */
+  showStatusFilter?: boolean
 }
 
 // ============================================================================
@@ -59,6 +61,7 @@ export function SchedulesFilters({
   onFiltersChange,
   teams = [],
   employees = [],
+  showStatusFilter = true,
 }: SchedulesFiltersProps) {
   const [search, setSearch] = useState('')
   const [status, setStatus] = useState<string>('all')
@@ -177,22 +180,24 @@ export function SchedulesFilters({
         </div>
       </div>
 
-      {/* Statut */}
-      <div className="w-[160px]">
-        <label className="mb-1.5 block text-sm font-medium">Statut</label>
-        <Select value={status} onValueChange={handleStatusChange}>
-          <SelectTrigger>
-            <SelectValue placeholder="Tous" />
-          </SelectTrigger>
-          <SelectContent>
-            {statusOptions.map((option) => (
-              <SelectItem key={option.value} value={option.value}>
-                {option.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      {/* Statut (masqué pour EMPLOYEE qui ne voit que les confirmés) */}
+      {showStatusFilter && (
+        <div className="w-[160px]">
+          <label className="mb-1.5 block text-sm font-medium">Statut</label>
+          <Select value={status} onValueChange={handleStatusChange}>
+            <SelectTrigger>
+              <SelectValue placeholder="Tous" />
+            </SelectTrigger>
+            <SelectContent>
+              {statusOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
 
       {/* Type */}
       <div className="w-[160px]">

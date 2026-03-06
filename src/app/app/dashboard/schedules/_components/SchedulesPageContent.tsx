@@ -517,6 +517,7 @@ export function SchedulesPageContent({
             onFiltersChange={handleFiltersChange}
             teams={teams}
             employees={employees}
+            showStatusFilter={userRole !== 'EMPLOYEE'}
           />
         </CardContent>
       </Card>
