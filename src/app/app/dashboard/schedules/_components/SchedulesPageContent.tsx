@@ -54,6 +54,14 @@ import {
 } from '@/components/ui/sheet'
 import { SchedulesFilters } from './SchedulesFilters'
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { scheduleTypeLabels } from '@/lib/validations/schedule'
+import type { ScheduleType } from '@prisma/client'
+import {
   format,
   addDays,
   addWeeks,
@@ -113,6 +121,10 @@ export function SchedulesPageContent({
   const [shiftModalMode, setShiftModalMode] = useState<'create' | 'edit'>(
     'create'
   )
+
+  // État pour le dialog de détail (lecture seule EMPLOYEE)
+  const [detailSchedule, setDetailSchedule] =
+    useState<ScheduleWithRelations | null>(null)
 
   // État pour les indisponibilités (SP-402)
   const [availabilities, setAvailabilities] = useState<
@@ -535,6 +547,8 @@ export function SchedulesPageContent({
                   setShiftModalMode('edit')
                   setSelectedSchedule(schedule)
                   setIsShiftModalOpen(true)
+                } else {
+                  setDetailSchedule(schedule)
                 }
               }}
               onScheduleUpdate={handleScheduleUpdate}
@@ -608,6 +622,95 @@ export function SchedulesPageContent({
         }}
       />
 
+      {/* Dialog détail planning (lecture seule pour EMPLOYEE) */}
+      <Dialog
+        open={!!detailSchedule}
+        onOpenChange={(open) => !open && setDetailSchedule(null)}
+      >
+        <DialogContent className="sm:max-w-[400px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <CalendarDays className="h-5 w-5 text-primary" />
+              Détail du planning
+            </DialogTitle>
+          </DialogHeader>
+          {detailSchedule && (
+            <div className="space-y-4">
+              {/* Employé */}
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">
+                  Employé
+                </p>
+                <p className="text-base font-semibold">
+                  {detailSchedule.employee.firstName}{' '}
+                  {detailSchedule.employee.lastName}
+                </p>
+              </div>
+
+              {/* Date */}
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">
+                  Date
+                </p>
+                <p className="text-base">
+                  {format(new Date(detailSchedule.startDate), 'EEEE d MMMM yyyy', { locale: fr })}
+                </p>
+              </div>
+
+              {/* Horaires */}
+              <div className="flex gap-6">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Début
+                  </p>
+                  <p className="text-lg font-semibold">
+                    {detailSchedule.startTime}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Fin
+                  </p>
+                  <p className="text-lg font-semibold">
+                    {detailSchedule.endTime}
+                  </p>
+                </div>
+              </div>
+
+              {/* Type */}
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">
+                  Type
+                </p>
+                <p className="text-base">
+                  {scheduleTypeLabels[detailSchedule.type as ScheduleType] ??
+                    detailSchedule.type}
+                </p>
+              </div>
+
+              {/* Titre (si présent) */}
+              {detailSchedule.title && (
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Titre
+                  </p>
+                  <p className="text-base">{detailSchedule.title}</p>
+                </div>
+              )}
+
+              {/* Lieu (si présent) */}
+              {detailSchedule.location && (
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Lieu
+                  </p>
+                  <p className="text-base">{detailSchedule.location}</p>
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
