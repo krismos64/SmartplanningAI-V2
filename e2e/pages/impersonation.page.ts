@@ -166,19 +166,29 @@ export class ImpersonationPage {
     // En CI nightly, le serveur Next.js peut etre lent a servir la page
     // apres clearCookies(). On fait un goto explicite avec retry pour
     // s'assurer que la page de login est chargee avant loginAs().
+    // Apres clearCookies(), le middleware peut rediriger vers /login ou
+    // servir la page directement — on attend que l'URL contienne /login.
     for (let attempt = 0; attempt < 3; attempt++) {
       try {
         await this.page.goto('/login', { timeout: 30000, waitUntil: 'domcontentloaded' })
+        // Verifier qu'on est bien sur /login (le middleware peut rediriger)
+        await this.page.waitForURL(/\/login/, { timeout: 10000 })
         break
       } catch {
         if (attempt === 2) throw new Error('Failed to navigate to /login after 3 attempts')
+        // Force un second clearCookies en cas de cookie residuel qui redirect
+        await this.page.context().clearCookies()
+        await setConsentCookie(this.page.context())
         await this.page.waitForTimeout(2000)
       }
     }
 
     // Attendre que le champ email soit visible (hydration React lente en CI)
+    // En CI nightly, React peut mettre du temps a s'hydrater apres clearCookies.
+    // On attend d'abord le load complet, puis le champ.
+    await this.page.waitForLoadState('load').catch(() => {})
     const emailField = this.page.getByPlaceholder('vous@entreprise.com')
-    await emailField.waitFor({ state: 'visible', timeout: 30000 })
+    await emailField.waitFor({ state: 'visible', timeout: 45000 })
 
     // 5. Re-login admin directement (on est deja sur /login avec le champ visible,
     // evite le double goto('/login') que ferait loginAs)

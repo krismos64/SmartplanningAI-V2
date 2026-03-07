@@ -50,7 +50,7 @@ export function HeroSection() {
           {/* Image - First on mobile, second on desktop */}
           <motion.div
             variants={scaleIn}
-            initial="hidden"
+            initial={false}
             animate="visible"
             className="relative flex items-center justify-center lg:order-2"
           >
@@ -81,7 +81,7 @@ export function HeroSection() {
           {/* Text Content - Second on mobile, first on desktop */}
           <motion.div
             variants={staggerContainer}
-            initial="hidden"
+            initial={false}
             animate="visible"
             className="text-center lg:order-1 lg:text-left"
           >
@@ -151,7 +151,7 @@ export function HeroSection() {
           {/* CTA Buttons - Mobile only (after text) */}
           <motion.div
             variants={fadeInUp}
-            initial="hidden"
+            initial={false}
             animate="visible"
             className="flex w-full flex-col gap-4 px-4 sm:hidden"
           >
@@ -178,7 +178,7 @@ export function HeroSection() {
 
         {/* Centered Logo at bottom of Hero */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.8, y: 30 }}
+          initial={false}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.6, ease: 'easeOut' }}
           className="mt-16 flex justify-center lg:mt-24"
