@@ -12,7 +12,7 @@ Plateforme SaaS moderne de gestion intelligente des plannings et équipes d'entr
 - **Date de démarrage** : 04/11/2025
 - **Préfixe Jira** : `SP`
 - **URL Production** : https://smartplanning.fr ✅
-- **Dernière mise à jour** : 6 mars 2026 (UX planning EMPLOYEE : vue détail au clic, avatars employés vue jour/semaine, export PDF uniquement, suppression stats cards inutiles, rationalisation tests)
+- **Dernière mise à jour** : 9 mars 2026 (audit architecture : 17 loading.tsx, 4 error boundaries, barrel exports, hooks kebab-case, rationalisation tests)
 - **Déploiement** : SP-158 Phase 4 complété - Nouveau VPS sécurisé avec déploiement automatisé ✅
 
 ## Stack technique
@@ -1886,16 +1886,16 @@ SmartplanningAI/
 │   │   ├── excel/        # generateScheduleExcel (SP-404)
 │   │   └── utils.ts      # Fonctions utilitaires
 │   ├── types/            # Types TypeScript globaux (+ crud.ts SP-150)
-│   ├── hooks/            # Custom React hooks
-│   │   ├── useCrudMutation.ts    # Hook mutations CRUD (SP-150)
-│   │   ├── useCookieConsent.ts   # Hook consentement cookies (SP-283)
-│   │   ├── useUmamiTrack.ts      # Hook tracking analytics (SP-345)
-│   │   ├── useContactForm.ts     # Hook machine d'état contact (SP-289)
-│   │   ├── use-loading.ts        # Hook état chargement (SP-266)
+│   ├── hooks/            # Custom React hooks (convention kebab-case)
+│   │   ├── use-crud-mutation.ts    # Hook mutations CRUD (SP-150)
+│   │   ├── use-cookie-consent.ts   # Hook consentement cookies (SP-283)
+│   │   ├── use-umami-track.ts      # Hook tracking analytics (SP-345)
+│   │   ├── use-contact-form.ts     # Hook machine d'état contact (SP-289)
+│   │   ├── use-loading.ts          # Hook état chargement (SP-266)
 │   │   ├── use-progress-loading.ts # Hook progression avec valeur (SP-266)
 │   │   ├── use-keyboard-shortcuts.ts # Hook raccourcis clavier (SP-264)
 │   │   ├── use-navigation-shortcuts.ts # Hook navigation Vim-style (SP-264)
-│   │   └── use-recent-pages.ts    # Hook pages récentes (SP-264 Phase 4)
+│   │   └── use-recent-pages.ts     # Hook pages récentes (SP-264 Phase 4)
 │   ├── providers/        # Context providers centralisés
 │   │   ├── index.ts              # Export centralisé
 │   │   └── keyboard-shortcuts-provider.tsx # Provider modal raccourcis (SP-264)
@@ -2539,59 +2539,63 @@ Toutes les pages publiques sont optimisées pour les LLMs (ChatGPT, Claude, Perp
 - **E2E** : Playwright (configuré)
 - **Coverage** : v8 provider
 
-### Couverture actuelle (6 mars 2026 — après rationalisation)
+### Couverture actuelle (9 mars 2026 — après rationalisation)
 
-> **Rationalisation mars 2026** : Audit qualité complet des tests pour ne conserver que ceux qui valident la logique métier critique (RBAC, Zod, Server Actions, Stripe, workflows E2E, accessibilité). Suppression de ~208 fichiers de tests cosmétiques/triviaux (rendu pur, snapshots, smoke tests). Le taux de couverture n'est pas un objectif — seule la pertinence des tests compte.
+> **Rationalisation mars 2026** : Deux passes d'audit qualité pour ne conserver que les tests validant la logique métier critique (RBAC, Zod, Server Actions, Stripe, workflows E2E). Suppression des tests cosmétiques (rendu pur, attributs SVG, props passthrough, structure DOM). Le taux de couverture n'est pas un objectif — seule la pertinence des tests compte. Chaque test restant est justifiable en soutenance CDA.
 
 | Catégorie                          | Tests    |
 | ---------------------------------- | -------- |
-| **Total Vitest (164 fichiers)**    | **~2910** |
+| **Total Vitest (156 fichiers)**    | **2 814** |
 | RBAC & permissions                 | 62       |
-| Validations Zod (schedules, leaves, stripe, company, audit) | ~185 |
-| Server Actions (schedules, leaves, availabilities, companies, audit, stripe) | ~195 |
-| Stripe (service, config, sync, webhooks, guard, banner) | ~275 |
+| Validations Zod (schedules, leaves, stripe, company, audit, availability, profile) | ~185 |
+| Server Actions (CRUD complet, exports, monitoring, broadcast) | ~540 |
+| Stripe (service, config, sync, webhooks, guard, banner, validations) | ~275 |
 | Billing (composants, emails, cron) | ~120     |
-| Congés (composants, workflow, overlay) | ~180  |
-| Plannings (actions, récurrence, conflits, export) | ~90 |
+| Congés (composants, workflow, overlay, soldes) | ~180  |
+| Plannings (actions, récurrence, conflits, export PDF/Excel) | ~90 |
 | Audit System (schema, service, injection, actions) | ~105 |
-| CRUD (companies, employees, teams composants) | ~280 |
-| Dashboard services & composants    | ~470     |
-| Auth (LoginForm, RegisterForm)     | 34       |
-| Monitoring (actions, health, composants) | ~52 |
-| Admin améliorations (MRR, health, users, broadcast...) | ~75 |
-| UI composants métier (forms, charts, cookies, settings...) | ~490 |
+| CRUD composants (companies, employees, teams) | ~280 |
+| Dashboard services (base, admin, director, manager, employee) | ~125 |
+| Auth (login, register, forgot/reset password, activate) | ~70 |
+| Monitoring (actions, health, charts) | ~28 |
+| Admin (MRR, health, users, broadcast, contact, trials) | ~45 |
+| Hooks (notifications, SSE, conflits, disponibilités, formulaires) | ~115 |
+| Composants métier (forms, settings, incidents, tâches, profil) | ~295 |
+
+| Répartition par priorité | Fichiers | Tests | Description |
+| --- | --- | --- | --- |
+| **A — CRITIQUE** | ~96 | ~1 822 | Logique métier, sécurité, RBAC, validation Zod, accès données, API routes |
+| **B — UTILE** | ~60 | ~992 | Composants UI complexes, hooks, interactions utilisateur, calculs |
+| **C — COSMÉTIQUE** | 0 | 0 | Tous supprimés |
 
 ### Tests E2E (13 fichiers critiques)
 
 | Suite                               | Tests   | Status |
 | ----------------------------------- | ------- | ------ |
 | **Auth (login/register)**           | 20      | ✅     |
+| **Auth (forgot/reset password)**    | 16      | ✅     |
 | **CRUD Companies**                  | 18      | ✅     |
 | **CRUD Employees**                  | 18      | ✅     |
-| **CRUD Teams**                      | 15      | ✅     |
-| **Schedules (SP-406)**              | 16      | ✅     |
-| **Leaves (SP-416)**                 | 21      | ✅     |
-| **Personal Tasks (SP-421)**         | 20      | ✅     |
+| **CRUD Teams**                      | 14      | ✅     |
+| **Leaves (create request)**         | 4       | ✅     |
+| **Leaves (review request)**         | 5       | ✅     |
 | **Billing Subscription (SP-373)**   | 7       | ✅     |
-| **Profile (SP-270)**                | 15      | ✅     |
-| **Edit Profile (SP-271)**           | 22      | ✅     |
-| **Accessibility WCAG (SP-269)**     | 14      | ✅     |
+| **Billing Alerts**                  | 8       | ✅     |
 | **Audit Logs (SP-446)**             | 26      | ✅     |
 | **Impersonation (SP-456)**          | 9       | ✅     |
-| **Total E2E (13 fichiers)**         | **~221** | ✅    |
+| **Cookies RGPD**                    | 18      | ✅     |
+| **Middleware RBAC**                  | 26      | ✅     |
+| **Total E2E (13 fichiers)**         | **189** | ✅     |
 
-**Note** : Tests desktop exécutés sur Chromium uniquement. Rationalisation mars 2026 : de 40 fichiers (~584 tests) à 13 fichiers (~221 tests) en ne conservant que les workflows critiques (auth, CRUD, métier, billing, accessibilité, audit, impersonation).
+**Note** : Tests desktop sur Chromium. Tous les tests E2E couvrent des workflows critiques : auth, CRUD, billing, congés, audit, impersonation, RGPD cookies, RBAC middleware.
 
 ### Stratégie de test
 
-Les tests couvrent les éléments critiques de l'application uniquement :
+Chaque test est justifiable en soutenance CDA — aucun test cosmétique (rendu pur, attributs statiques, props passthrough) :
 
-- **RBAC & permissions** : Matrice complète des 4 rôles, hiérarchie, accès routes
-- **Validations Zod** : Schémas de toutes les entités métier (schedules, leaves, stripe, company, audit)
-- **Server Actions** : Logique métier CRUD avec isolation multi-tenant, gestion d'erreurs Prisma
-- **Stripe** : Service complet (checkout, sync, cancel, webhooks), subscription guard, banner
-- **Composants métier** : Composants avec logique conditionnelle (RBAC, workflows congés, billing)
-- **E2E** : 13 workflows critiques couvrant auth, CRUD, plannings, congés, billing, audit, impersonation, accessibilité
+- **Catégorie A — CRITIQUE** (~1 822 tests) : RBAC & permissions, validations Zod, Server Actions avec isolation multi-tenant, Stripe (service, sync, webhooks, guard), API routes, sécurité (injection, rate limiting, impersonation guard)
+- **Catégorie B — UTILE** (~992 tests) : Composants UI avec logique conditionnelle (RBAC, workflows congés, billing), hooks métier (notifications SSE, détection conflits, disponibilités), interactions utilisateur (formulaires, modals, drag & drop)
+- **E2E** : 13 workflows critiques couvrant auth, CRUD, congés, billing, audit, impersonation, cookies RGPD, middleware RBAC
 
 ### Accessibilité WCAG 2.1 (SP-269 - 25 janvier 2026)
 
@@ -2735,7 +2739,7 @@ Nightly → Tests unitaires + Build + Suite E2E complète desktop + 5 mobiles (2
 - **CI** (`.github/workflows/ci.yml`) : Lint, Type-check, Tests unitaires, Build, Tests E2E en mode production (PR/push main)
 - **CD** (`.github/workflows/cd.yml`) : Build image Docker, Push sur ghcr.io, Deploy via SSH
 - **Nightly** (`.github/workflows/nightly-e2e.yml`) : Tests unitaires Vitest + Suite E2E complète desktop + 5 devices mobiles en mode production (`npm run start`)
-- Tests unitaires sur tous les push (~2910 tests Vitest)
+- Tests unitaires sur tous les push (2 814 tests Vitest)
 - Tests E2E en mode production (`npm run build` + `npm run start`) pour des résultats représentatifs de la prod
 - Env vars CI : `AUTH_URL`, `AUTH_SECRET`, `AUTH_TRUST_HOST` pour NextAuth v5 sur HTTP localhost
 - Stabilisation E2E (SP-434) : Touch targets WCAG 2.5.5 (44px), command palette, mobile navigation
