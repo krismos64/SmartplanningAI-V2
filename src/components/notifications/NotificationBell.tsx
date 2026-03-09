@@ -21,7 +21,7 @@ import {
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu'
 import { Skeleton } from '@/components/ui/skeleton'
-import { useNotificationsCount } from '@/hooks/useNotificationsCount'
+import { useNotificationsCount } from '@/hooks/use-notifications-count'
 import { NotificationList } from './NotificationList'
 import { cn } from '@/lib/utils'
 

@@ -42,7 +42,7 @@ export {
 } from './use-keyboard-shortcuts'
 
 // Impersonation hook (SP-454)
-export { useIsImpersonating } from './useIsImpersonating'
+export { useIsImpersonating } from './use-is-impersonating'
 
 // Breadcrumb resolver hooks (SP-264)
 export {

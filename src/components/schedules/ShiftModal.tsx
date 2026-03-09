@@ -77,7 +77,7 @@ import {
   MAX_TOTAL_SCHEDULES,
   calculateTotalSchedules,
 } from '@/lib/utils/recurrence'
-import { useConflictDetection } from '@/hooks/useConflictDetection'
+import { useConflictDetection } from '@/hooks/use-conflict-detection'
 import { useIsImpersonating } from '@/hooks'
 
 // ============================================================================

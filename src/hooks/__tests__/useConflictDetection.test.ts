@@ -7,7 +7,7 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
-import { useConflictDetection } from '../useConflictDetection'
+import { useConflictDetection } from '../use-conflict-detection'
 
 // ============================================================================
 // Mocks

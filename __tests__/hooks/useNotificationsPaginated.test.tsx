@@ -9,7 +9,7 @@ import { renderHook, waitFor, act } from '@testing-library/react'
 import { SWRConfig } from 'swr'
 import type { ReactNode } from 'react'
 
-import { useNotificationsPaginated } from '@/hooks/useNotificationsPaginated'
+import { useNotificationsPaginated } from '@/hooks/use-notifications-paginated'
 
 // Mock des actions
 vi.mock('@/lib/actions/notifications', () => ({

@@ -87,7 +87,7 @@ Le composant `<UmamiAnalytics />` est déjà intégré dans `layout.tsx`. Il gè
 Pour tracker des events custom :
 
 ```tsx
-import { useUmamiTrack } from '@/hooks/useUmamiTrack'
+import { useUmamiTrack } from '@/hooks/use-umami-track'
 
 function CTAButton() {
   const { track, isEnabled } = useUmamiTrack()

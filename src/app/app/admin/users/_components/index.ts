@@ -1,0 +1,1 @@
+export { UsersDataTable } from './UsersDataTable'

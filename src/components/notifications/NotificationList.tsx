@@ -11,7 +11,7 @@ import { CheckCheck } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { useNotifications } from '@/hooks/useNotifications'
+import { useNotifications } from '@/hooks/use-notifications'
 
 import { NotificationItem } from './NotificationItem'
 import { NotificationEmptyState } from './NotificationEmptyState'

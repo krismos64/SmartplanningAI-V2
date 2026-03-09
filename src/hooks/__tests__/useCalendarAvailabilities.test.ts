@@ -7,7 +7,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook, act, waitFor } from '@testing-library/react'
-import { useCalendarAvailabilities } from '../useCalendarAvailabilities'
+import { useCalendarAvailabilities } from '../use-calendar-availabilities'
 
 // ============================================================================
 // Mocks

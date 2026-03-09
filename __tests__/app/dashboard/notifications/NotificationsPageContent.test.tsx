@@ -8,7 +8,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 
 // Mock du hook
-vi.mock('@/hooks/useNotificationsPaginated', () => ({
+vi.mock('@/hooks/use-notifications-paginated', () => ({
   useNotificationsPaginated: vi.fn(),
 }))
 
@@ -55,7 +55,7 @@ vi.mock(
   })
 )
 
-import { useNotificationsPaginated } from '@/hooks/useNotificationsPaginated'
+import { useNotificationsPaginated } from '@/hooks/use-notifications-paginated'
 import { NotificationsPageContent } from '@/app/app/dashboard/notifications/_components/NotificationsPageContent'
 
 const mockHookReturn = {
