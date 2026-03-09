@@ -15,7 +15,7 @@ vi.mock('@/lib/actions/notifications', () => ({
 }))
 
 import { getUnreadCount } from '@/lib/actions/notifications'
-import { useNotificationsCount } from '@/hooks/useNotificationsCount'
+import { useNotificationsCount } from '@/hooks/use-notifications-count'
 
 const mockGetUnreadCount = vi.mocked(getUnreadCount)
 

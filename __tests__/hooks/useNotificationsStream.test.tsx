@@ -7,7 +7,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { renderHook, act, waitFor } from '@testing-library/react'
 
-import { useNotificationsStream } from '@/hooks/useNotificationsStream'
+import { useNotificationsStream } from '@/hooks/use-notifications-stream'
 
 // Mock EventSource
 class MockEventSource {

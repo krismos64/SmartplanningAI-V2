@@ -16,8 +16,8 @@ import {
 } from 'react'
 import { useRouter } from 'next/navigation'
 
-import { useNotificationsStream } from '@/hooks/useNotificationsStream'
-import { useNotificationsCount } from '@/hooks/useNotificationsCount'
+import { useNotificationsStream } from '@/hooks/use-notifications-stream'
+import { useNotificationsCount } from '@/hooks/use-notifications-count'
 import { showNotificationToast } from '@/components/notifications/NotificationToast'
 import type { NotificationListItem } from '@/types/notification'
 

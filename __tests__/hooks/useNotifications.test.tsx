@@ -9,7 +9,7 @@ import { renderHook, waitFor, act } from '@testing-library/react'
 import { SWRConfig } from 'swr'
 import type { ReactNode } from 'react'
 
-import { useNotifications } from '@/hooks/useNotifications'
+import { useNotifications } from '@/hooks/use-notifications'
 
 // Mock des actions
 vi.mock('@/lib/actions/notifications', () => ({

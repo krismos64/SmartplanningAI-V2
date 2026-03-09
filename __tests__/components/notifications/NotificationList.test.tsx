@@ -10,11 +10,11 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { NotificationList } from '@/components/notifications/NotificationList'
 
 // Mock du hook useNotifications
-vi.mock('@/hooks/useNotifications', () => ({
+vi.mock('@/hooks/use-notifications', () => ({
   useNotifications: vi.fn(),
 }))
 
-import { useNotifications } from '@/hooks/useNotifications'
+import { useNotifications } from '@/hooks/use-notifications'
 
 const mockNotifications = [
   {

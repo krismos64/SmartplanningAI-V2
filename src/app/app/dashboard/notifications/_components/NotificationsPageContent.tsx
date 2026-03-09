@@ -16,7 +16,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb'
-import { useNotificationsPaginated } from '@/hooks/useNotificationsPaginated'
+import { useNotificationsPaginated } from '@/hooks/use-notifications-paginated'
 import { NotificationEmptyState } from '@/components/notifications'
 
 import { NotificationsFilters } from './NotificationsFilters'

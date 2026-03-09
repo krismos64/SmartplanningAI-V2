@@ -2441,7 +2441,7 @@ SmartPlanning utilise **Umami** comme solution d'analytics privacy-friendly et R
 
 ```tsx
 // Exemple d'utilisation
-import { useUmamiTrack } from '@/hooks/useUmamiTrack'
+import { useUmamiTrack } from '@/hooks/use-umami-track'
 
 function CTAButton() {
   const { track } = useUmamiTrack()

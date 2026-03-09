@@ -10,7 +10,7 @@ import userEvent from '@testing-library/user-event'
 
 // Mock du hook useNotificationsCount
 const mockMutate = vi.fn()
-vi.mock('@/hooks/useNotificationsCount', () => ({
+vi.mock('@/hooks/use-notifications-count', () => ({
   useNotificationsCount: vi.fn(),
 }))
 
@@ -50,7 +50,7 @@ vi.mock('next/link', () => ({
   }) => <a href={href}>{children}</a>,
 }))
 
-import { useNotificationsCount } from '@/hooks/useNotificationsCount'
+import { useNotificationsCount } from '@/hooks/use-notifications-count'
 import { NotificationBell } from '@/components/notifications/NotificationBell'
 
 const mockUseNotificationsCount = vi.mocked(useNotificationsCount)
