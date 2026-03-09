@@ -48,7 +48,7 @@ export default function AuditLogsLoading() {
         </div>
       </div>
 
-      <span className="sr-only">Chargement des journaux d'audit...</span>
+      <span className="sr-only">Chargement des journaux d&apos;audit...</span>
     </div>
   )
 }

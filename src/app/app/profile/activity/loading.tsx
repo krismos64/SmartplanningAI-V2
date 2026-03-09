@@ -40,7 +40,7 @@ export default function ActivityLoading() {
         <Skeleton className="h-9 w-32" />
       </div>
 
-      <span className="sr-only">Chargement de l'historique d'activite...</span>
+      <span className="sr-only">Chargement de l&apos;historique d&apos;activite...</span>
     </div>
   )
 }

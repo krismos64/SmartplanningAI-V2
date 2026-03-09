@@ -35,7 +35,7 @@ export default function ExportLoading() {
         </div>
       </div>
 
-      <span className="sr-only">Chargement de la page d'export...</span>
+      <span className="sr-only">Chargement de la page d&apos;export...</span>
     </div>
   )
 }
