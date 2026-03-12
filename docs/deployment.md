@@ -1,6 +1,6 @@
 # Guide de Déploiement SmartPlanning V2
 
-**Dernière mise à jour** : 10 février 2026
+**Dernière mise à jour** : 12 mars 2026
 **Version** : 2.0.0
 **Environnement** : Production
 **URL** : https://smartplanning.fr
@@ -200,6 +200,11 @@ STRIPE_WEBHOOK_SECRET=whsec_...
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_live_...
 STRIPE_PRICE_ID=price_...
 NEXT_PUBLIC_APP_URL=https://smartplanning.fr
+
+# ----------------------------------------------
+# HEALTH CHECK (SP-470)
+# ----------------------------------------------
+HEALTH_API_KEY=<GENERER_AVEC_openssl_rand_base64_32>
 ```
 
 ### Correspondance des noms de variables
@@ -251,8 +256,8 @@ Les secrets suivants doivent être configurés dans GitHub (Settings → Secrets
 | Job        | Description                    | Condition                     |
 | ---------- | ------------------------------ | ----------------------------- |
 | `lint`     | ESLint + TypeScript            | Tous les push                 |
-| `test`     | Tests unitaires Vitest (~5281) | Tous les push                 |
-| `test-e2e` | Tests E2E Playwright (~1018)   | PR vers main OU push sur main |
+| `test`     | Tests unitaires Vitest (~2814) | Tous les push                 |
+| `test-e2e` | Tests E2E Playwright (~189)    | PR vers main OU push sur main |
 | `build`    | Build Next.js                  | Tous les push                 |
 
 ### CD Pipeline (`.github/workflows/cd.yml`)
@@ -304,7 +309,7 @@ docker compose up -d
 
 # Vérifier le status
 docker ps
-curl http://localhost:3000/api/health
+curl -H "Authorization: Bearer $HEALTH_API_KEY" http://localhost:3000/api/health
 ```
 
 ### Rollback vers une version précédente
@@ -340,8 +345,8 @@ docker compose logs -f
 # Status des conteneurs
 docker ps
 
-# Healthcheck
-curl https://smartplanning.fr/api/health
+# Healthcheck (nécessite le header Authorization - SP-470)
+curl -H "Authorization: Bearer $HEALTH_API_KEY" https://smartplanning.fr/api/health
 ```
 
 ### Base de données
@@ -453,7 +458,8 @@ docker pull ghcr.io/krismos64/smartplanningai-v2:latest
 | 2026-01-16 | 1.2     | Ajout Umami Analytics                         |
 | 2026-01-19 | 2.0     | Configuration SMTP + refonte documentation    |
 | 2026-02-04 | 2.1     | Ajout Cloudinary pour upload avatars (SP-272) |
-| 2026-02-10 | 2.2     | Variables Stripe activées, compteurs tests à jour (~5281 unit / ~1018 E2E) |
+| 2026-02-10 | 2.2     | Variables Stripe activées                                                  |
+| 2026-03-12 | 2.3     | Compteurs tests mis à jour après rationalisation (~2814 unit / ~189 E2E)   |
 
 ---
 
