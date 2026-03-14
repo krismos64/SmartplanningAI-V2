@@ -7,13 +7,13 @@
 
 'use client'
 
-import { useState, useCallback, useTransition } from 'react'
+import { useState, useCallback, useTransition, useMemo } from 'react'
 import { useSearchParams, usePathname } from 'next/navigation'
 import type { LeaveRequest, LeaveRequestStatus, UserRole } from '@prisma/client'
 
 // UI Components
 import { Button } from '@/components/ui/button'
-import { ExportCsvButton } from '@/components/exports'
+import { ExportCsvButton, ExportPdfButton } from '@/components/exports'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   Dialog,
@@ -390,6 +390,20 @@ export function LeavesPageContent({
     [teams]
   )
 
+  // URL export PDF avec filtres
+  const pdfExportUrl = useMemo(() => {
+    const params = new URLSearchParams()
+    if (filters.status) params.set('status', filters.status)
+    if (filters.type) params.set('type', filters.type)
+    if (filters.employeeId) params.set('employeeId', filters.employeeId)
+    if (filters.teamId) params.set('teamId', filters.teamId)
+    if (filters.startDate)
+      params.set('startDate', filters.startDate.toISOString())
+    if (filters.endDate) params.set('endDate', filters.endDate.toISOString())
+    const qs = params.toString()
+    return `/api/leaves/export/pdf${qs ? `?${qs}` : ''}`
+  }, [filters])
+
   // Determine if user can create requests
   const canCreate = currentUser.employeeId !== null
 
@@ -458,6 +472,12 @@ export function LeavesPageContent({
               endDate: filters.endDate?.toISOString(),
             }}
             label="Export CSV"
+            variant="outline"
+            size="sm"
+          />
+          <ExportPdfButton
+            href={pdfExportUrl}
+            label="Export PDF"
             variant="outline"
             size="sm"
           />
