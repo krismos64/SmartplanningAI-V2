@@ -196,9 +196,8 @@ export function createEmployeeColumns(
     // Équipe
     {
       accessorKey: 'team.name',
-      header: ({ column }) => (
-        <SortableHeader column={column} label="Équipe" />
-      ),
+      header: 'Équipe',
+      enableSorting: false,
       cell: ({ row }) => {
         const team = row.original.team
         return (
