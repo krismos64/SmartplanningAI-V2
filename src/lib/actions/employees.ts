@@ -1564,31 +1564,6 @@ interface EmployeeForCsvExport {
 }
 
 /**
- * Calcule l'ancienneté en années et mois
- */
-function formatAnciennete(hireDate: Date | null): string {
-  if (!hireDate) return ''
-  const now = new Date()
-  let years = now.getFullYear() - hireDate.getFullYear()
-  let months = now.getMonth() - hireDate.getMonth()
-  if (months < 0) {
-    years--
-    months += 12
-  }
-  if (years === 0) return `${months} mois`
-  if (months === 0) return `${years} an${years > 1 ? 's' : ''}`
-  return `${years} an${years > 1 ? 's' : ''} ${months} mois`
-}
-
-/**
- * Formate le type de contrat selon les heures hebdomadaires
- */
-function formatContrat(weeklyHours: number): string {
-  if (weeklyHours >= 35) return 'Temps plein'
-  return 'Temps partiel'
-}
-
-/**
  * Formate le rôle en français
  */
 function formatRoleFr(role: string | null | undefined): string {

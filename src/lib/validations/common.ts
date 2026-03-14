@@ -45,7 +45,10 @@ export function formatPhoneDisplay(phone: string): string {
   // Numéro français +33
   if (cleaned.startsWith('+33')) {
     const digits = cleaned.slice(3)
-    return `+33 ${digits[0]} ${digits.slice(1).replace(/(\d{2})/g, '$1 ').trim()}`
+    return `+33 ${digits[0]} ${digits
+      .slice(1)
+      .replace(/(\d{2})/g, '$1 ')
+      .trim()}`
   }
 
   // Numéro français 0X

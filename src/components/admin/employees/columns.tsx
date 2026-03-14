@@ -173,9 +173,7 @@ export function createEmployeeColumns(
     // Email
     {
       accessorKey: 'email',
-      header: ({ column }) => (
-        <SortableHeader column={column} label="Email" />
-      ),
+      header: ({ column }) => <SortableHeader column={column} label="Email" />,
       cell: ({ row }) => {
         const email = row.original.email || row.original.user?.email
         if (!email) {

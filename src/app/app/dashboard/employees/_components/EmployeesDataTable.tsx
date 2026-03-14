@@ -57,7 +57,7 @@ import {
   getTeamsForSelect,
   exportEmployeesCsv,
 } from '@/lib/actions/employees'
-import { ExportCsvButton } from '@/components/exports'
+import { ExportCsvButton, ExportPdfButton } from '@/components/exports'
 import type {
   EmployeeWithCounts,
   EmployeeFilters as EmployeeFiltersType,
@@ -225,6 +225,22 @@ export function EmployeesDataTable({ userRole }: EmployeesDataTableProps) {
     isImpersonating,
   ])
 
+  // URL export PDF avec filtres et tri
+  const pdfExportUrl = useMemo(() => {
+    const params = new URLSearchParams()
+    if (filters.search) params.set('search', filters.search)
+    if (filters.teamId) params.set('teamId', filters.teamId)
+    if (filters.isActive !== undefined)
+      params.set('isActive', String(filters.isActive))
+    const currentSort = sorting[0]
+    if (currentSort) {
+      params.set('sortBy', currentSort.id)
+      params.set('sortOrder', currentSort.desc ? 'desc' : 'asc')
+    }
+    const qs = params.toString()
+    return `/api/employees/export/pdf${qs ? `?${qs}` : ''}`
+  }, [filters, sorting])
+
   // Handler de tri : reset page à 0 quand on change le tri
   const handleSortingChange = useCallback(
     (updater: SortingState | ((old: SortingState) => SortingState)) => {
@@ -271,6 +287,12 @@ export function EmployeesDataTable({ userRole }: EmployeesDataTableProps) {
           </div>
 
           <div className="flex items-center gap-2">
+            <ExportPdfButton
+              href={pdfExportUrl}
+              label="Export PDF"
+              variant="outline"
+              size="sm"
+            />
             <ExportCsvButton
               action={exportEmployeesCsv}
               filters={{
