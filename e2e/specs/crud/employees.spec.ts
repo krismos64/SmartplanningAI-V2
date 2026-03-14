@@ -37,7 +37,7 @@ test.describe('CRUD Employees (DIRECTOR)', () => {
     await listPage.goto()
     await listPage.waitForLoad()
 
-    await expect(listPage.pageTitle).toContainText(/employes|collaborateurs/i)
+    await expect(listPage.pageTitle).toContainText(/employ[ée]s|collaborateurs/i)
   })
 
   test('affiche le bouton de creation', async ({ directorPage }) => {
@@ -211,7 +211,7 @@ test.describe('Navigation et UX - Employees', () => {
     await listPage.goto()
     await listPage.waitForLoad()
 
-    await expect(directorPage).toHaveTitle(/employes|collaborateurs/i)
+    await expect(directorPage).toHaveTitle(/employ[ée]s|collaborateurs/i)
   })
 
   test('les filtres sont visibles (DIRECTOR)', async ({ directorPage }) => {
