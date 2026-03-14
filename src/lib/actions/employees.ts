@@ -396,6 +396,12 @@ export async function listEmployees(
     // Pagination Prisma
     const { skip, take, orderBy } = getPaginationParams(params)
 
+    // Tri par relation (team.name) → format Prisma nested
+    const resolvedOrderBy =
+      params.sortBy === 'team.name'
+        ? { team: { name: params.sortOrder ?? 'asc' } }
+        : (orderBy ?? { createdAt: 'desc' })
+
     // Requetes paralleles : count + data
     const [total, employees] = await Promise.all([
       prisma.employee.count({ where }),
@@ -403,7 +409,7 @@ export async function listEmployees(
         where,
         skip,
         take,
-        orderBy: orderBy ?? { createdAt: 'desc' },
+        orderBy: resolvedOrderBy,
         include: {
           user: {
             select: {

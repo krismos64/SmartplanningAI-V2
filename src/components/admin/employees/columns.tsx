@@ -10,7 +10,7 @@
 
 'use client'
 
-import { ColumnDef } from '@tanstack/react-table'
+import { Column, ColumnDef } from '@tanstack/react-table'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import {
@@ -24,6 +24,9 @@ import {
   PowerOff,
   Phone,
   Mail,
+  ArrowUp,
+  ArrowDown,
+  ArrowUpDown,
 } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
@@ -58,6 +61,36 @@ export interface EmployeeActionsProps {
   canDelete?: boolean
   /** Mode impersonation - desactive les actions de mutation */
   isImpersonating?: boolean
+}
+
+// ============================================================================
+// Header de colonne triable
+// ============================================================================
+
+function SortableHeader<T>({
+  column,
+  label,
+}: {
+  column: Column<T>
+  label: string
+}) {
+  const sorted = column.getIsSorted()
+  return (
+    <Button
+      variant="ghost"
+      onClick={() => column.toggleSorting(sorted === 'asc')}
+      className="-ml-3 h-8 px-2"
+    >
+      {label}
+      {sorted === 'asc' ? (
+        <ArrowUp className="ml-1.5 h-4 w-4" />
+      ) : sorted === 'desc' ? (
+        <ArrowDown className="ml-1.5 h-4 w-4" />
+      ) : (
+        <ArrowUpDown className="ml-1.5 h-4 w-4 text-muted-foreground/50" />
+      )}
+    </Button>
+  )
 }
 
 // ============================================================================
@@ -110,7 +143,9 @@ export function createEmployeeColumns(
     // Nom complet de l'employe
     {
       accessorKey: 'lastName',
-      header: 'Employé',
+      header: ({ column }) => (
+        <SortableHeader column={column} label="Employé" />
+      ),
       cell: ({ row }) => {
         const employee = row.original
         return (
@@ -138,7 +173,9 @@ export function createEmployeeColumns(
     // Email
     {
       accessorKey: 'email',
-      header: 'Email',
+      header: ({ column }) => (
+        <SortableHeader column={column} label="Email" />
+      ),
       cell: ({ row }) => {
         const email = row.original.email || row.original.user?.email
         if (!email) {
@@ -159,7 +196,9 @@ export function createEmployeeColumns(
     // Équipe
     {
       accessorKey: 'team.name',
-      header: 'Équipe',
+      header: ({ column }) => (
+        <SortableHeader column={column} label="Équipe" />
+      ),
       cell: ({ row }) => {
         const team = row.original.team
         return (
@@ -177,6 +216,7 @@ export function createEmployeeColumns(
     {
       accessorKey: 'phone',
       header: 'Téléphone',
+      enableSorting: false,
       cell: ({ row }) => {
         const phone = row.original.phone
         if (!phone) {
@@ -202,7 +242,9 @@ export function createEmployeeColumns(
     // Heures hebdomadaires
     {
       accessorKey: 'weeklyHours',
-      header: 'Heures/sem',
+      header: ({ column }) => (
+        <SortableHeader column={column} label="Heures/sem" />
+      ),
       cell: ({ row }) => {
         const hours = row.original.weeklyHours
         return <span className="text-sm font-medium">{hours}h</span>
@@ -212,7 +254,9 @@ export function createEmployeeColumns(
     // Date d'embauche
     {
       accessorKey: 'hireDate',
-      header: 'Embauché',
+      header: ({ column }) => (
+        <SortableHeader column={column} label="Embauché" />
+      ),
       cell: ({ row }) => {
         const date = row.original.hireDate
         if (!date) {

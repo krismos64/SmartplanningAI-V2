@@ -18,6 +18,7 @@ import {
   flexRender,
   PaginationState,
   RowSelectionState,
+  SortingState,
 } from '@tanstack/react-table'
 import { Plus, Users, RefreshCw, Trash2 } from 'lucide-react'
 import Link from 'next/link'
@@ -98,6 +99,11 @@ export function EmployeesDataTable({ userRole }: EmployeesDataTableProps) {
     pageSize: 10,
   })
 
+  // Tri serveur
+  const [sorting, setSorting] = useState<SortingState>([
+    { id: 'lastName', desc: false },
+  ])
+
   // Chargement des equipes pour les filtres
   useEffect(() => {
     const loadTeams = async () => {
@@ -117,12 +123,13 @@ export function EmployeesDataTable({ userRole }: EmployeesDataTableProps) {
   const fetchData = useCallback(async () => {
     setIsLoading(true)
     try {
+      const currentSort = sorting[0]
       const result = await listEmployees(
         {
           page: pagination.pageIndex + 1,
           pageSize: pagination.pageSize,
-          sortBy: 'lastName',
-          sortOrder: 'asc',
+          sortBy: currentSort?.id || 'lastName',
+          sortOrder: currentSort?.desc ? 'desc' : 'asc',
         },
         filters
       )
@@ -136,7 +143,7 @@ export function EmployeesDataTable({ userRole }: EmployeesDataTableProps) {
     } finally {
       setIsLoading(false)
     }
-  }, [pagination.pageIndex, pagination.pageSize, filters])
+  }, [pagination.pageIndex, pagination.pageSize, sorting, filters])
 
   // Effet pour charger les donnees
   useEffect(() => {
@@ -218,6 +225,15 @@ export function EmployeesDataTable({ userRole }: EmployeesDataTableProps) {
     isImpersonating,
   ])
 
+  // Handler de tri : reset page à 0 quand on change le tri
+  const handleSortingChange = useCallback(
+    (updater: SortingState | ((old: SortingState) => SortingState)) => {
+      setSorting(updater)
+      setPagination((prev) => ({ ...prev, pageIndex: 0 }))
+    },
+    []
+  )
+
   // Configuration TanStack Table
   const table = useReactTable({
     data,
@@ -226,11 +242,14 @@ export function EmployeesDataTable({ userRole }: EmployeesDataTableProps) {
     state: {
       pagination,
       rowSelection,
+      sorting,
     },
     onPaginationChange: setPagination,
     onRowSelectionChange: setRowSelection,
+    onSortingChange: handleSortingChange,
     getCoreRowModel: getCoreRowModel(),
     manualPagination: true,
+    manualSorting: true,
     enableRowSelection: true,
   })
 
