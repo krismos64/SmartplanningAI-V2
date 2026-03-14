@@ -30,6 +30,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { getEmployee } from '@/lib/actions/employees'
 import { getLeaveBalance } from '@/lib/actions/leaves'
 import { EmployeeLeaveBalanceSection } from './_components/EmployeeLeaveBalanceSection'
+import { formatPhoneDisplay } from '@/lib/validations/common'
 
 interface EmployeeDetailPageProps {
   params: Promise<{ id: string }>
@@ -161,7 +162,7 @@ export default async function EmployeeDetailPage({
               className="flex items-center gap-2 hover:underline"
             >
               <Phone className="h-4 w-4 text-muted-foreground" />
-              <span>{employee.phone}</span>
+              <span>{formatPhoneDisplay(employee.phone)}</span>
             </a>
           )}
 

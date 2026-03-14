@@ -23,6 +23,7 @@ import {
   USER_ROLE_LABELS,
 } from './types'
 import { UserCardSkeleton } from './UserCardSkeleton'
+import { formatPhoneDisplay } from '@/lib/validations/common'
 
 /**
  * UserCard - Carte utilisateur avec variants compact/detailed
@@ -357,7 +358,7 @@ export const UserCard = React.forwardRef<HTMLDivElement, UserCardProps>(
           {employee?.phone && (
             <div className="flex items-center gap-2">
               <Phone className="h-4 w-4 flex-shrink-0" />
-              <span>{employee.phone}</span>
+              <span>{formatPhoneDisplay(employee.phone)}</span>
             </div>
           )}
         </div>

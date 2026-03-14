@@ -43,6 +43,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import type { EmployeeWithCounts } from '@/lib/validations/employee'
+import { formatPhoneDisplay } from '@/lib/validations/common'
 
 // ============================================================================
 // Types pour les actions
@@ -189,10 +190,10 @@ export function createEmployeeColumns(
                 className="flex items-center gap-2 text-sm hover:underline"
               >
                 <Phone className="h-4 w-4 text-muted-foreground" />
-                {phone}
+                {formatPhoneDisplay(phone)}
               </a>
             </TooltipTrigger>
-            <TooltipContent>Appeler {phone}</TooltipContent>
+            <TooltipContent>Appeler {formatPhoneDisplay(phone)}</TooltipContent>
           </Tooltip>
         )
       },

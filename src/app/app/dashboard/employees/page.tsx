@@ -14,8 +14,8 @@ import { redirect } from 'next/navigation'
 import { EmployeesDataTable } from './_components/EmployeesDataTable'
 
 export const metadata: Metadata = {
-  title: 'Gestion des employes | SmartPlanning',
-  description: 'Administration des employes et ressources humaines',
+  title: 'Gestion des employés | SmartPlanning',
+  description: 'Administration des employés et ressources humaines',
 }
 
 export default async function EmployeesPage() {

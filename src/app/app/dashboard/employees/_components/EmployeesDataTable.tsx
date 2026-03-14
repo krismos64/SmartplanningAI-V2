@@ -244,7 +244,7 @@ export function EmployeesDataTable({ userRole }: EmployeesDataTableProps) {
               <Users className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold tracking-tight">Employes</h1>
+              <h1 className="text-2xl font-bold tracking-tight">Employés</h1>
               <p className="text-sm text-muted-foreground">
                 {totalCount} employé{totalCount > 1 ? 's' : ''} au total
               </p>

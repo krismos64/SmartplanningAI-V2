@@ -10,6 +10,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { User, Mail, Phone } from 'lucide-react'
 import { InfoRow } from './InfoRow'
+import { formatPhoneDisplay } from '@/lib/validations/common'
 
 interface PersonalInfoCardProps {
   email: string
@@ -49,7 +50,7 @@ export function PersonalInfoCard({
         <InfoRow
           icon={<Phone className="h-4 w-4" />}
           label="Téléphone"
-          value={phone || 'Non renseigné'}
+          value={phone ? formatPhoneDisplay(phone) : 'Non renseigné'}
           testId="personal-phone"
         />
       </CardContent>

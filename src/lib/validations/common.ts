@@ -16,16 +16,55 @@ export const emailSchema = z
   .trim()
 
 // ============================================
-// TÉLÉPHONE (Format français)
+// TÉLÉPHONE (International)
 // ============================================
 export const phoneSchema = z
   .string()
-  .regex(
-    /^(\+33|0)[1-9](\d{2}){4}$/,
-    'Numéro invalide (format: 0612345678 ou +33612345678)'
+  .transform((val) => val.replace(/[\s.\-()]/g, ''))
+  .pipe(
+    z
+      .string()
+      .regex(
+        /^\+?[0-9]{7,15}$/,
+        'Numéro invalide (7 à 15 chiffres, indicatif optionnel ex: +33612345678)'
+      )
   )
   .or(z.literal(''))
   .optional()
+
+/**
+ * Formate un numéro de téléphone pour l'affichage
+ * Regroupe les chiffres par paires après l'indicatif
+ * Ex: +33612345678 → +33 6 12 34 56 78
+ *     0612345678  → 06 12 34 56 78
+ *     +447911123456 → +44 79 11 12 34 56
+ */
+export function formatPhoneDisplay(phone: string): string {
+  const cleaned = phone.replace(/[\s.\-()]/g, '')
+
+  // Numéro français +33
+  if (cleaned.startsWith('+33')) {
+    const digits = cleaned.slice(3)
+    return `+33 ${digits[0]} ${digits.slice(1).replace(/(\d{2})/g, '$1 ').trim()}`
+  }
+
+  // Numéro français 0X
+  if (cleaned.startsWith('0') && cleaned.length === 10) {
+    return cleaned.replace(/(\d{2})/g, '$1 ').trim()
+  }
+
+  // International : +indicatif puis paires de chiffres
+  if (cleaned.startsWith('+')) {
+    const match = cleaned.match(/^\+(\d{1,3})(\d+)$/)
+    if (match) {
+      const [, countryCode, digits] = match
+      return `+${countryCode} ${digits.replace(/(\d{2})/g, '$1 ').trim()}`
+    }
+  }
+
+  // Fallback : paires de chiffres
+  return cleaned.replace(/(\d{2})/g, '$1 ').trim()
+}
 
 // ============================================
 // MOT DE PASSE SÉCURISÉ

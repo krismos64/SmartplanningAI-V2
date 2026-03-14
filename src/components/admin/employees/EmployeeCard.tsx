@@ -28,6 +28,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import type { EmployeeWithCounts } from '@/lib/validations/employee'
+import { formatPhoneDisplay } from '@/lib/validations/common'
 
 interface EmployeeCardProps {
   employee: EmployeeWithCounts
@@ -165,7 +166,7 @@ export function EmployeeCard({
             {employee.phone && (
               <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
                 <Phone className="h-3.5 w-3.5" />
-                <span>{employee.phone}</span>
+                <span>{formatPhoneDisplay(employee.phone)}</span>
               </div>
             )}
 

@@ -216,7 +216,7 @@ export function EmployeeForm({
           firstName: employee.firstName,
           lastName: employee.lastName,
           phone: employee.phone || '',
-          email: employee.email || '',
+          email: employee.email || employee.user?.email || '',
           hireDate: employee.hireDate
             ? new Date(employee.hireDate).toISOString().split('T')[0]
             : '',
@@ -279,9 +279,14 @@ export function EmployeeForm({
     }
 
     if (isEditing && employee) {
-      // En edition, ne pas passer le role
+      // En edition : envoyer les chaines vides pour permettre la suppression
       const { role: _role, ...updateData } = cleanedData
-      void updateMutation.mutate({ id: employee.id, ...updateData })
+      void updateMutation.mutate({
+        id: employee.id,
+        ...updateData,
+        phone: data.phone || '',
+        email: data.email || '',
+      })
     } else {
       void createMutation.mutate({ companyId, ...cleanedData })
     }
@@ -434,7 +439,9 @@ export function EmployeeForm({
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel>
+                    {isEditing ? 'Email de contact' : 'Email'}
+                  </FormLabel>
                   <FormControl>
                     <div className="relative">
                       <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -447,6 +454,12 @@ export function EmployeeForm({
                       />
                     </div>
                   </FormControl>
+                  {isEditing && (
+                    <FormDescription>
+                      Cet email est utilisé comme contact RH. Il ne modifie pas
+                      l&apos;adresse de connexion de l&apos;employé.
+                    </FormDescription>
+                  )}
                   <FormMessage />
                 </FormItem>
               )}

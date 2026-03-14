@@ -297,7 +297,7 @@ describe('editProfileSchema', () => {
       const data: EditProfileInput = {
         firstName: 'Jean',
         lastName: 'Dupont',
-        phone: '061234567', // 9 chiffres au lieu de 10
+        phone: '012345', // 6 chiffres, minimum 7
       }
 
       const result = editProfileSchema.safeParse(data)
@@ -309,7 +309,7 @@ describe('editProfileSchema', () => {
       const data: EditProfileInput = {
         firstName: 'Jean',
         lastName: 'Dupont',
-        phone: '06123456789', // 11 chiffres au lieu de 10
+        phone: '0612345678901234', // 16 chiffres, maximum 15
       }
 
       const result = editProfileSchema.safeParse(data)
@@ -317,7 +317,7 @@ describe('editProfileSchema', () => {
       expect(result.success).toBe(false)
     })
 
-    it('devrait rejeter un téléphone avec espaces', () => {
+    it('devrait accepter un téléphone avec espaces', () => {
       const data: EditProfileInput = {
         firstName: 'Jean',
         lastName: 'Dupont',
@@ -326,7 +326,79 @@ describe('editProfileSchema', () => {
 
       const result = editProfileSchema.safeParse(data)
 
-      expect(result.success).toBe(false)
+      expect(result.success).toBe(true)
+    })
+
+    it('devrait accepter un téléphone +33 avec espaces', () => {
+      const data: EditProfileInput = {
+        firstName: 'Jean',
+        lastName: 'Dupont',
+        phone: '+33 6 80 91 02 13',
+      }
+
+      const result = editProfileSchema.safeParse(data)
+
+      expect(result.success).toBe(true)
+    })
+
+    it('devrait accepter un téléphone avec points', () => {
+      const data: EditProfileInput = {
+        firstName: 'Jean',
+        lastName: 'Dupont',
+        phone: '06.12.34.56.78',
+      }
+
+      const result = editProfileSchema.safeParse(data)
+
+      expect(result.success).toBe(true)
+    })
+
+    it('devrait accepter un téléphone avec tirets', () => {
+      const data: EditProfileInput = {
+        firstName: 'Jean',
+        lastName: 'Dupont',
+        phone: '06-12-34-56-78',
+      }
+
+      const result = editProfileSchema.safeParse(data)
+
+      expect(result.success).toBe(true)
+    })
+
+    it('devrait accepter un numéro international UK', () => {
+      const data: EditProfileInput = {
+        firstName: 'Jean',
+        lastName: 'Dupont',
+        phone: '+44 79 11 12 34 56',
+      }
+
+      const result = editProfileSchema.safeParse(data)
+
+      expect(result.success).toBe(true)
+    })
+
+    it('devrait accepter un numéro international US', () => {
+      const data: EditProfileInput = {
+        firstName: 'Jean',
+        lastName: 'Dupont',
+        phone: '+1 555 123 4567',
+      }
+
+      const result = editProfileSchema.safeParse(data)
+
+      expect(result.success).toBe(true)
+    })
+
+    it('devrait accepter un numéro belge', () => {
+      const data: EditProfileInput = {
+        firstName: 'Jean',
+        lastName: 'Dupont',
+        phone: '+32 470 12 34 56',
+      }
+
+      const result = editProfileSchema.safeParse(data)
+
+      expect(result.success).toBe(true)
     })
   })
 })

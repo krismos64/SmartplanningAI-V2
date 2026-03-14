@@ -918,6 +918,9 @@ export async function updateEmployee(
         ...(updateData.phone !== undefined && {
           phone: updateData.phone || null,
         }),
+        ...(updateData.email !== undefined && {
+          email: updateData.email || null,
+        }),
         ...(updateData.hireDate !== undefined && {
           hireDate: updateData.hireDate ? new Date(updateData.hireDate) : null,
         }),

@@ -89,7 +89,7 @@ export default async function EditEmployeePage({
                 Modifier {employee.firstName} {employee.lastName}
               </h1>
               <p className="text-sm text-muted-foreground">
-                Mettre a jour les informations de l&apos;employe
+                Mettre à jour les informations de l&apos;employé
               </p>
             </div>
           </div>
