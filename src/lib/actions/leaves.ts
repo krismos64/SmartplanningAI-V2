@@ -1313,13 +1313,7 @@ async function notifyManagersOfNewLeaveRequest(
 // 14. EXPORT CSV - Export des congés au format CSV (SP-333)
 // ============================================================================
 
-import {
-  generateCsv,
-  formatDateFr,
-  formatDateTimeFr,
-  formatBooleanFr,
-  type CsvColumn,
-} from '@/lib/csv'
+import { generateCsv, formatDateFr, type CsvColumn } from '@/lib/csv'
 import type { CsvExportActionResult, LeaveExportFilters } from '@/types'
 
 /**
