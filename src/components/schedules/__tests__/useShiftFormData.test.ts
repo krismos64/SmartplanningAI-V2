@@ -15,6 +15,7 @@ import { useShiftFormData } from '../useShiftFormData'
 
 const mockListEmployees = vi.fn()
 const mockListTeams = vi.fn()
+const mockGetCompanySettings = vi.fn()
 
 vi.mock('@/lib/actions/employees', () => ({
   listEmployees: (params: unknown, filters: unknown) =>
@@ -23,6 +24,10 @@ vi.mock('@/lib/actions/employees', () => ({
 
 vi.mock('@/lib/actions/teams', () => ({
   listTeams: (params: unknown) => mockListTeams(params) as Promise<unknown>,
+}))
+
+vi.mock('@/lib/actions/company-settings', () => ({
+  getCompanySettings: () => mockGetCompanySettings() as Promise<unknown>,
 }))
 
 // ============================================================================
@@ -76,6 +81,17 @@ describe('useShiftFormData', () => {
     vi.clearAllMocks()
     mockListEmployees.mockResolvedValue(mockEmployeesData)
     mockListTeams.mockResolvedValue(mockTeamsData)
+    mockGetCompanySettings.mockResolvedValue({
+      success: true,
+      data: {
+        name: 'Test Company',
+        address: null,
+        workingDays: ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY'],
+        workingHoursStart: '08:30',
+        workingHoursEnd: '17:30',
+        lunchBreak: { enabled: true, start: '12:00', end: '13:00' },
+      },
+    })
   })
 
   describe('Initial state', () => {
@@ -85,12 +101,13 @@ describe('useShiftFormData', () => {
       expect(result.current.isLoading).toBe(true)
       expect(result.current.employees).toEqual([])
       expect(result.current.teams).toEqual([])
+      expect(result.current.companySettings).toBeNull()
       expect(result.current.error).toBeNull()
     })
   })
 
   describe('Data loading', () => {
-    it('charge les employés et équipes', async () => {
+    it('charge les employés, équipes et paramètres entreprise', async () => {
       const { result } = renderHook(() => useShiftFormData())
 
       await waitFor(() => {
@@ -99,6 +116,9 @@ describe('useShiftFormData', () => {
 
       expect(result.current.employees).toHaveLength(2)
       expect(result.current.teams).toHaveLength(2)
+      expect(result.current.companySettings).not.toBeNull()
+      expect(result.current.companySettings?.workingHoursStart).toBe('08:30')
+      expect(result.current.companySettings?.workingHoursEnd).toBe('17:30')
       expect(result.current.error).toBeNull()
     })
 

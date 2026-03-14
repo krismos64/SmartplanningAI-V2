@@ -149,13 +149,18 @@ export function ShiftModal({
 }: ShiftModalProps) {
   const isImpersonating = useIsImpersonating()
 
-  // Charger les données du formulaire
+  // Charger les données du formulaire (employés, équipes, paramètres entreprise)
   const {
     employees,
     teams,
+    companySettings,
     isLoading: isLoadingData,
     error: dataError,
   } = useShiftFormData()
+
+  // Horaires par défaut : paramètres entreprise ou fallback
+  const defaultStartTime = companySettings?.workingHoursStart ?? '09:00'
+  const defaultEndTime = companySettings?.workingHoursEnd ?? '17:00'
 
   // États locaux
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -185,8 +190,8 @@ export function ShiftModal({
       teamId: null,
       startDate: new Date(),
       endDate: new Date(),
-      startTime: '09:00',
-      endTime: '17:00',
+      startTime: defaultStartTime,
+      endTime: defaultEndTime,
       type: 'WORK',
       status: 'DRAFT',
       title: '',
@@ -219,7 +224,7 @@ export function ShiftModal({
           location: schedule.location ?? '',
         })
       } else {
-        // Mode création : réinitialiser la récurrence
+        // Mode création : réinitialiser avec horaires entreprise
         setIsRecurring(false)
         setRecurrenceRule(null)
         reset({
@@ -227,8 +232,8 @@ export function ShiftModal({
           teamId: null,
           startDate: new Date(),
           endDate: new Date(),
-          startTime: '09:00',
-          endTime: '17:00',
+          startTime: defaultStartTime,
+          endTime: defaultEndTime,
           type: 'WORK',
           status: 'DRAFT',
           title: '',
@@ -237,7 +242,7 @@ export function ShiftModal({
         })
       }
     }
-  }, [isOpen, mode, schedule, reset])
+  }, [isOpen, mode, schedule, reset, defaultStartTime, defaultEndTime])
 
   // Employés sélectionnés et dates surveillées
   const selectedEmployeeIds = watch('employeeIds')
