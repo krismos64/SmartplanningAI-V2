@@ -193,15 +193,13 @@ describe('exportEmployeesCsv', () => {
     it('contient les en-têtes français', async () => {
       const result = await exportEmployeesCsv()
 
-      expect(result.data?.data).toContain('Équipe')
       expect(result.data?.data).toContain('Nom')
       expect(result.data?.data).toContain('Prénom')
-      expect(result.data?.data).toContain('Rôle')
-      expect(result.data?.data).toContain('Poste')
-      expect(result.data?.data).toContain('Contrat')
-      expect(result.data?.data).toContain('H/sem')
       expect(result.data?.data).toContain('Email')
       expect(result.data?.data).toContain('Téléphone')
+      expect(result.data?.data).toContain('Équipe')
+      expect(result.data?.data).toContain('Rôle')
+      expect(result.data?.data).toContain('H/sem')
       expect(result.data?.data).toContain('Embauche')
       expect(result.data?.data).toContain('Statut')
     })
@@ -318,12 +316,12 @@ describe('exportEmployeesCsv', () => {
       )
     })
 
-    it('trie par équipe puis nom puis prénom', async () => {
+    it('trie par nom puis prénom par défaut', async () => {
       await exportEmployeesCsv()
 
       expect(mockPrisma.employee.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
-          orderBy: [{ team: { name: 'asc' } }, { lastName: 'asc' }, { firstName: 'asc' }],
+          orderBy: [{ lastName: 'asc' }, { firstName: 'asc' }],
         })
       )
     })

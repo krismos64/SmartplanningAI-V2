@@ -35,4 +35,7 @@ export interface LeaveExportFilters {
 export interface EmployeeExportFilters {
   teamId?: string
   isActive?: boolean
+  search?: string
+  sortBy?: string
+  sortOrder?: 'asc' | 'desc'
 }

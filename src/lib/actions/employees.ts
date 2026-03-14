@@ -1605,23 +1605,17 @@ function formatRoleFr(role: string | null | undefined): string {
  * Colonnes pour l'export CSV des employés
  */
 const EMPLOYEE_CSV_COLUMNS: CsvColumn<EmployeeForCsvExport>[] = [
-  { key: (e) => e.team?.name ?? 'Sans équipe', header: 'Équipe' },
   { key: 'lastName', header: 'Nom' },
   { key: 'firstName', header: 'Prénom' },
-  { key: (e) => formatRoleFr(e.user?.role), header: 'Rôle' },
-  { key: 'jobTitle', header: 'Poste' },
-  { key: (e) => formatContrat(e.weeklyHours), header: 'Contrat' },
-  { key: 'weeklyHours', header: 'H/sem' },
   { key: (e) => e.email ?? e.user?.email ?? '', header: 'Email' },
   { key: (e) => (e.phone ? `="${e.phone}"` : ''), header: 'Téléphone' },
+  { key: (e) => e.team?.name ?? '', header: 'Équipe' },
+  { key: (e) => formatRoleFr(e.user?.role), header: 'Rôle' },
+  { key: 'weeklyHours', header: 'H/sem' },
   {
     key: 'hireDate',
     header: 'Embauche',
     format: (v) => formatDateFr(v as Date | null),
-  },
-  {
-    key: (e) => formatAnciennete(e.hireDate),
-    header: 'Ancienneté',
   },
   {
     key: 'isActive',
@@ -1696,8 +1690,32 @@ export async function exportEmployeesCsv(
       where.isActive = filters.isActive
     }
 
-    // 4️⃣ Récupérer les données enrichies
-    const currentYear = new Date().getFullYear()
+    // Filtre recherche textuelle
+    if (filters?.search) {
+      where.OR = [
+        { firstName: { contains: filters.search, mode: 'insensitive' } },
+        { lastName: { contains: filters.search, mode: 'insensitive' } },
+        { email: { contains: filters.search, mode: 'insensitive' } },
+        {
+          user: {
+            email: { contains: filters.search, mode: 'insensitive' },
+          },
+        },
+      ]
+    }
+
+    // 4️⃣ Résoudre le tri (cohérent avec listEmployees)
+    const sortOrder = filters?.sortOrder ?? 'asc'
+    let exportOrderBy: Record<string, unknown>[]
+    if (filters?.sortBy === 'email') {
+      exportOrderBy = [{ user: { email: sortOrder } }]
+    } else if (filters?.sortBy) {
+      exportOrderBy = [{ [filters.sortBy]: sortOrder }]
+    } else {
+      exportOrderBy = [{ lastName: 'asc' }, { firstName: 'asc' }]
+    }
+
+    // 5️⃣ Récupérer les données enrichies
     const employees = await prisma.employee.findMany({
       where,
       select: {
@@ -1719,7 +1737,7 @@ export async function exportEmployeesCsv(
           },
         },
         leaveBalances: {
-          where: { year: currentYear },
+          where: { year: new Date().getFullYear() },
           select: {
             paidLeaveTotal: true,
             paidLeaveUsed: true,
@@ -1729,15 +1747,11 @@ export async function exportEmployeesCsv(
           take: 1,
         },
       },
-      orderBy: [
-        { team: { name: 'asc' } },
-        { lastName: 'asc' },
-        { firstName: 'asc' },
-      ],
+      orderBy: exportOrderBy,
       take: 10000,
     })
 
-    // 5️⃣ Construire le nom de fichier selon les filtres
+    // 6️⃣ Construire le nom de fichier selon les filtres
     let companySlug = 'export'
     if (user.companyId) {
       const company = await prisma.company.findUnique({
@@ -1768,7 +1782,7 @@ export async function exportEmployeesCsv(
       filenameParts.push('inactifs')
     }
 
-    // 6️⃣ Générer le CSV
+    // 7️⃣ Générer le CSV
     const result = generateCsv(
       employees as EmployeeForCsvExport[],
       EMPLOYEE_CSV_COLUMNS,
@@ -1777,7 +1791,7 @@ export async function exportEmployeesCsv(
       }
     )
 
-    // 7️⃣ Log de traçabilité RGPD
+    // 8️⃣ Log de traçabilité RGPD
     console.warn(
       `[exportEmployeesCsv] User ${user.id} (${user.role}) exported ${employees.length} employees at ${new Date().toISOString()}`
     )

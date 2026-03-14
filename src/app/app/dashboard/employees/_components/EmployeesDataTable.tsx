@@ -273,7 +273,13 @@ export function EmployeesDataTable({ userRole }: EmployeesDataTableProps) {
           <div className="flex items-center gap-2">
             <ExportCsvButton
               action={exportEmployeesCsv}
-              filters={{ teamId: filters.teamId, isActive: filters.isActive }}
+              filters={{
+                teamId: filters.teamId,
+                isActive: filters.isActive,
+                search: filters.search,
+                sortBy: sorting[0]?.id,
+                sortOrder: sorting[0]?.desc ? 'desc' : 'asc',
+              }}
               label="Export CSV"
               variant="outline"
               size="sm"
