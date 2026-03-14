@@ -35,6 +35,7 @@ import type { LeaveRequestWithEmployee } from '@/lib/actions/leaves'
 import { CalendarX, GripVertical } from 'lucide-react'
 import { LeaveType } from '@prisma/client'
 import { useToast } from '@/components/toast/use-toast'
+import Image from 'next/image'
 import { ConflictConfirmDialog } from './ConflictConfirmDialog'
 import { AvailabilityPopover } from './AvailabilityPopover'
 import { AvailabilityType } from '@prisma/client'
@@ -433,7 +434,11 @@ const availabilityTypeLabels: Record<AvailabilityType, string> = {
 // Custom time grid event avec avatar employé (vue jour/semaine)
 // ============================================================================
 
-function TimeGridEventWithAvatar({ calendarEvent }: { calendarEvent: Record<string, unknown> }) {
+function TimeGridEventWithAvatar({
+  calendarEvent,
+}: {
+  calendarEvent: Record<string, unknown>
+}) {
   const title = (calendarEvent.title as string) ?? ''
   const image = calendarEvent._employeeImage as string | null
   const employeeName = (calendarEvent._employeeName as string) ?? ''
@@ -465,9 +470,11 @@ function TimeGridEventWithAvatar({ calendarEvent }: { calendarEvent: Record<stri
       {(image || employeeName) && (
         <div className="mt-0.5 flex-shrink-0">
           {image ? (
-            <img
+            <Image
               src={image}
               alt={employeeName}
+              width={28}
+              height={28}
               className="h-7 w-7 rounded-full object-cover ring-1 ring-white/50"
             />
           ) : (

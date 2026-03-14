@@ -59,9 +59,8 @@ export function formatPhoneDisplay(phone: string): string {
   // International : +indicatif puis paires de chiffres
   if (cleaned.startsWith('+')) {
     const match = cleaned.match(/^\+(\d{1,3})(\d+)$/)
-    if (match) {
-      const [, countryCode, digits] = match
-      return `+${countryCode} ${digits.replace(/(\d{2})/g, '$1 ').trim()}`
+    if (match && match[1] && match[2]) {
+      return `+${match[1]} ${match[2].replace(/(\d{2})/g, '$1 ').trim()}`
     }
   }
 

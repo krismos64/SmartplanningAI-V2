@@ -71,9 +71,7 @@ describe('EmployeeLeaveBalanceSection', () => {
   })
 
   it('affiche le bouton modifier si canEdit=true', () => {
-    render(
-      <EmployeeLeaveBalanceSection balance={mockBalance} canEdit={true} />
-    )
+    render(<EmployeeLeaveBalanceSection balance={mockBalance} canEdit={true} />)
     expect(
       screen.getByRole('button', { name: /modifier les soldes/i })
     ).toBeInTheDocument()
@@ -90,9 +88,7 @@ describe('EmployeeLeaveBalanceSection', () => {
 
   it('ouvre le dialog au clic sur modifier', async () => {
     const user = userEvent.setup()
-    render(
-      <EmployeeLeaveBalanceSection balance={mockBalance} canEdit={true} />
-    )
+    render(<EmployeeLeaveBalanceSection balance={mockBalance} canEdit={true} />)
     expect(screen.queryByTestId('edit-dialog')).not.toBeInTheDocument()
 
     await user.click(

@@ -1594,9 +1594,11 @@ function notifyCancelledLeaveToManagers(
     .then((employee) => {
       const managerUserId = employee?.team?.manager?.userId
       if (managerUserId) {
-        createLeaveNotification(leaveRequestId, managerUserId, 'cancelled').catch(
-          console.error
-        )
+        createLeaveNotification(
+          leaveRequestId,
+          managerUserId,
+          'cancelled'
+        ).catch(console.error)
       }
     })
     .catch(console.error)

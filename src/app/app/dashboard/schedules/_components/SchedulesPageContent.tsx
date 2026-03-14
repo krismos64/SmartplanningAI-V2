@@ -654,7 +654,11 @@ export function SchedulesPageContent({
                   Date
                 </p>
                 <p className="text-base">
-                  {format(new Date(detailSchedule.startDate), 'EEEE d MMMM yyyy', { locale: fr })}
+                  {format(
+                    new Date(detailSchedule.startDate),
+                    'EEEE d MMMM yyyy',
+                    { locale: fr }
+                  )}
                 </p>
               </div>
 

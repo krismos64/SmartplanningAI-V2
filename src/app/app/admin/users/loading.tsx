@@ -21,7 +21,7 @@ export default function UsersLoading() {
       </div>
 
       <div className="rounded-md border">
-        <div className="p-4 space-y-4">
+        <div className="space-y-4 p-4">
           <div className="flex gap-4 border-b pb-4">
             <Skeleton className="h-4 w-24" />
             <Skeleton className="h-4 w-32" />
@@ -52,7 +52,9 @@ export default function UsersLoading() {
         </div>
       </div>
 
-      <span className="sr-only">Chargement de la liste des utilisateurs...</span>
+      <span className="sr-only">
+        Chargement de la liste des utilisateurs...
+      </span>
     </div>
   )
 }

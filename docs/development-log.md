@@ -52,6 +52,13 @@ Historique détaillé du développement de SmartPlanning V2, organisé par phase
 - **Admin Améliorations** (SP-469 à SP-477) : Service MRR unifié, /api/health sécurisé 3 niveaux, bouton rafraîchir, page utilisateurs cross-entreprises + export CSV, widget essais à risque (3 niveaux urgence), email contact admin, statistiques globales + export PDF (7 indicateurs), notifications SSE admin (4 types + 9 intégrations), broadcast email (Promise.allSettled batch/10, 4 catégories)
 - **Solde congés fiche employé** : Affichage CP/RTT sur fiche détail employé avec édition par DIRECTOR/MANAGER/SYSTEM_ADMIN, validation Zod (used ≤ total)
 - **Monitoring System** (SP-464, SP-465) : Page admin avec Suspense + skeleton, health check DB (4 checks), KPIs SaaS, répartition abonnements, 4 graphiques Recharts (activité audit 7j, distribution abonnements, top 5 actions, croissance entreprises 30j)
+- **Améliorations CRUD Employés** (14 mars 2026) :
+  - **Validation téléphone internationale** : Zod `.transform()` + `.pipe()` supprimant espaces/séparateurs avant validation regex E.164 (`/^\+?[0-9]{7,15}$/`), accepte tous formats internationaux
+  - **Formatage téléphone uniforme** : `formatPhoneDisplay()` dans `common.ts`, appliqué dans columns.tsx, UserCard, EmployeeCard, PersonalInfoCard, fiche détail employé
+  - **Email de contact vs email de connexion** : Distinction explicite dans le formulaire d'édition (label "Email de contact" + description), l'email employé est un champ RH indépendant du login User
+  - **Tri serveur colonnes** : `SortableHeader` avec icônes ArrowUp/Down/UpDown, `manualSorting` TanStack Table, Prisma nested `orderBy` pour email (`user.email`) et équipe (`team.name`), 4 colonnes triables (Employé, Email, Heures/sem, Embauché)
+  - **Export CSV amélioré** : Alignement avec filtres/tri actifs du tableau, réduction de 12 à 9 colonnes pour format A4, suppression colonnes Poste/Contrat/Ancienneté
+  - **Export PDF employés** : `EmployeesPdfDocument` (React-PDF, A4 paysage, 8 colonnes, alternance couleurs lignes), API route `/api/employees/export/pdf` avec RBAC + filtres/tri, `ExportPdfButton` réutilisable, `fixed` header/footer multi-pages, `wrap={false}` anti-coupure de lignes
 
 ---
 
@@ -440,4 +447,4 @@ npm run a11y:audit    # Audit Lighthouse
 
 ---
 
-*Dernière mise à jour : 13 mars 2026*
+*Dernière mise à jour : 14 mars 2026*
