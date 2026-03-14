@@ -396,11 +396,16 @@ export async function listEmployees(
     // Pagination Prisma
     const { skip, take, orderBy } = getPaginationParams(params)
 
-    // Tri par relation (team.name) → format Prisma nested
-    const resolvedOrderBy =
-      params.sortBy === 'team.name'
-        ? { team: { name: params.sortOrder ?? 'asc' } }
-        : (orderBy ?? { createdAt: 'desc' })
+    // Tri par relation → format Prisma nested
+    const sortOrder = params.sortOrder ?? 'asc'
+    let resolvedOrderBy: Record<string, unknown>
+    if (params.sortBy === 'team.name') {
+      resolvedOrderBy = { team: { name: sortOrder } }
+    } else if (params.sortBy === 'email') {
+      resolvedOrderBy = { user: { email: sortOrder } }
+    } else {
+      resolvedOrderBy = orderBy ?? { createdAt: 'desc' }
+    }
 
     // Requetes paralleles : count + data
     const [total, employees] = await Promise.all([
