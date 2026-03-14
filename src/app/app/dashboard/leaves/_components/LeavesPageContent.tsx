@@ -7,8 +7,8 @@
 
 'use client'
 
-import { useState, useCallback, useTransition, useMemo } from 'react'
-import { useSearchParams, useRouter, usePathname } from 'next/navigation'
+import { useState, useCallback, useTransition } from 'react'
+import { useSearchParams, usePathname } from 'next/navigation'
 import type { LeaveRequest, LeaveRequestStatus, UserRole } from '@prisma/client'
 
 // UI Components
@@ -137,7 +137,6 @@ export function LeavesPageContent({
 
   // URL params for filters
   const searchParams = useSearchParams()
-  const router = useRouter()
   const pathname = usePathname()
 
   // Impersonation guard
@@ -146,22 +145,19 @@ export function LeavesPageContent({
   // Responsive
   const isMobile = useMediaQuery('(max-width: 1024px)')
 
-  // Build filters from URL (memoized to avoid recreation on each render)
-  const filters = useMemo<LeaveRequestFilters>(
-    () => ({
-      status: (searchParams.get('status') as LeaveRequestStatus) || undefined,
-      type: searchParams.get('type') as LeaveRequestFilters['type'],
-      employeeId: searchParams.get('employee') || undefined,
-      teamId: searchParams.get('team') || undefined,
-      startDate: searchParams.get('startDate')
-        ? new Date(searchParams.get('startDate')!)
-        : undefined,
-      endDate: searchParams.get('endDate')
-        ? new Date(searchParams.get('endDate')!)
-        : undefined,
-    }),
-    [searchParams]
-  )
+  // Build initial filters from URL, then manage as local state
+  const [filters, setFilters] = useState<LeaveRequestFilters>(() => ({
+    status: (searchParams.get('status') as LeaveRequestStatus) || undefined,
+    type: searchParams.get('type') as LeaveRequestFilters['type'],
+    employeeId: searchParams.get('employee') || undefined,
+    teamId: searchParams.get('team') || undefined,
+    startDate: searchParams.get('startDate')
+      ? new Date(searchParams.get('startDate')!)
+      : undefined,
+    endDate: searchParams.get('endDate')
+      ? new Date(searchParams.get('endDate')!)
+      : undefined,
+  }))
 
   // Refetch data helper
   const refetchData = useCallback(
@@ -204,6 +200,10 @@ export function LeavesPageContent({
   // Handlers
   const handleFiltersChange = useCallback(
     (newFilters: LeaveRequestFilters) => {
+      // Update local state (source of truth for filters)
+      setFilters(newFilters)
+
+      // Sync URL for bookmarkability
       const params = new URLSearchParams()
       if (newFilters.status) params.set('status', newFilters.status)
       if (newFilters.type) params.set('type', newFilters.type)
@@ -213,8 +213,8 @@ export function LeavesPageContent({
         params.set('startDate', newFilters.startDate.toISOString())
       if (newFilters.endDate)
         params.set('endDate', newFilters.endDate.toISOString())
-
-      router.push(`${pathname}?${params.toString()}`)
+      const newUrl = `${pathname}${params.size > 0 ? `?${params.toString()}` : ''}`
+      window.history.replaceState(null, '', newUrl)
 
       // Update active status highlight
       setActiveStatus(newFilters.status || null)
@@ -222,7 +222,7 @@ export function LeavesPageContent({
       // Refetch with new filters, reset to page 1
       refetchData(newFilters, 1)
     },
-    [pathname, router, refetchData]
+    [pathname, refetchData]
   )
 
   const handleStatClick = useCallback(
