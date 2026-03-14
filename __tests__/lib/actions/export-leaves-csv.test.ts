@@ -197,14 +197,11 @@ describe('exportLeavesCsv', () => {
 
       expect(result.data?.data).toContain('Employé')
       expect(result.data?.data).toContain('Type')
-      expect(result.data?.data).toContain('Date début')
-      expect(result.data?.data).toContain('Date fin')
+      expect(result.data?.data).toContain('Début')
+      expect(result.data?.data).toContain('Fin')
       expect(result.data?.data).toContain('Jours')
-      expect(result.data?.data).toContain('Demi-journée')
-      expect(result.data?.data).toContain('Période')
       expect(result.data?.data).toContain('Statut')
       expect(result.data?.data).toContain('Motif')
-      expect(result.data?.data).toContain('Validé le')
     })
 
     it('contient les données des congés', async () => {
@@ -234,13 +231,7 @@ describe('exportLeavesCsv', () => {
       expect(result.data?.data).toContain('Approuvé')
     })
 
-    it('formate les booléens en Oui/Non', async () => {
-      const result = await exportLeavesCsv()
-
-      expect(result.data?.data).toContain('Non')
-    })
-
-    it('gère les demi-journées', async () => {
+    it('gère les demi-journées dans la colonne Jours', async () => {
       mockPrisma.leaveRequest.findMany.mockResolvedValue([
         {
           ...mockLeave,
@@ -252,8 +243,7 @@ describe('exportLeavesCsv', () => {
 
       const result = await exportLeavesCsv()
 
-      expect(result.data?.data).toContain('Oui')
-      expect(result.data?.data).toContain('Matin')
+      expect(result.data?.data).toContain('0.5 (Matin)')
     })
   })
 
