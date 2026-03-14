@@ -29,6 +29,7 @@ export interface LeaveExportFilters {
   status?: string
   type?: string
   teamId?: string
+  employeeId?: string
 }
 
 /** Options de filtre pour l'export des employés */

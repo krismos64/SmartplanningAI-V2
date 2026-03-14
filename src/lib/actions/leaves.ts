@@ -1361,28 +1361,23 @@ const LEAVE_CSV_COLUMNS: CsvColumn<LeaveForCsvExport>[] = [
   },
   {
     key: 'startDate',
-    header: 'Date début',
+    header: 'Début',
     format: (v) => formatDateFr(v as Date),
   },
   {
     key: 'endDate',
-    header: 'Date fin',
+    header: 'Fin',
     format: (v) => formatDateFr(v as Date),
   },
-  { key: 'days', header: 'Jours' },
   {
-    key: 'halfDay',
-    header: 'Demi-journée',
-    format: (v) => formatBooleanFr(v as boolean),
-  },
-  {
-    key: 'halfDayPeriod',
-    header: 'Période',
-    format: (v) => {
-      if (!v) return ''
-      const strVal = v as string
-      return HALF_DAY_PERIOD_LABELS[strVal] ?? strVal
+    key: (l) => {
+      const label = `${l.days}`
+      if (l.halfDay && l.halfDayPeriod) {
+        return `${label} (${HALF_DAY_PERIOD_LABELS[l.halfDayPeriod] ?? l.halfDayPeriod})`
+      }
+      return label
     },
+    header: 'Jours',
   },
   {
     key: 'status',
@@ -1391,11 +1386,6 @@ const LEAVE_CSV_COLUMNS: CsvColumn<LeaveForCsvExport>[] = [
       LEAVE_STATUS_LABELS[String(v) as LeaveRequestStatus] ?? String(v),
   },
   { key: 'reason', header: 'Motif' },
-  {
-    key: 'reviewedAt',
-    header: 'Validé le',
-    format: (v) => formatDateTimeFr(v as Date | null),
-  },
 ]
 
 /**
@@ -1493,6 +1483,10 @@ export async function exportLeavesCsv(
 
     if (filters?.type) {
       where.type = filters.type as LeaveType
+    }
+
+    if (filters?.employeeId) {
+      where.employeeId = filters.employeeId
     }
 
     if (filters?.teamId) {

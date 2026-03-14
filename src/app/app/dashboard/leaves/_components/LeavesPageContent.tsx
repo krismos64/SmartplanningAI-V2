@@ -452,6 +452,7 @@ export function LeavesPageContent({
             filters={{
               status: filters.status,
               type: filters.type,
+              employeeId: filters.employeeId,
               teamId: filters.teamId,
               startDate: filters.startDate?.toISOString(),
               endDate: filters.endDate?.toISOString(),
