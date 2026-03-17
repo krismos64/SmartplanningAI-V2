@@ -2,7 +2,7 @@
  * Page Object pour les tests E2E de la page Congés
  *
  * @ticket SP-416
- * @description Encapsule les interactions avec la page /app/dashboard/leaves
+ * @description Encapsule les interactions avec la page /app/tableau-de-bord/leaves
  */
 
 import { Page, Locator, expect } from '@playwright/test'
@@ -85,7 +85,7 @@ export class LeavesPage {
   // ==========================================================================
 
   async goto() {
-    await this.page.goto('/app/dashboard/leaves')
+    await this.page.goto('/app/tableau-de-bord/conges')
     // Use domcontentloaded instead of networkidle because SSE keeps connection open
     await this.page.waitForLoadState('domcontentloaded')
     // Wait for page content to be ready (heading is always unique)
@@ -95,12 +95,12 @@ export class LeavesPage {
   }
 
   async gotoBalances() {
-    await this.page.goto('/app/dashboard/leaves/balances')
+    await this.page.goto('/app/tableau-de-bord/conges/balances')
     await this.page.waitForLoadState('domcontentloaded')
   }
 
   async gotoDetail(id: string) {
-    await this.page.goto(`/app/dashboard/leaves/${id}`)
+    await this.page.goto(`/app/tableau-de-bord/leaves/${id}`)
     await this.page.waitForLoadState('domcontentloaded')
   }
 

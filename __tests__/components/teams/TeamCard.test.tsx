@@ -159,11 +159,11 @@ describe('TeamCard', () => {
       const modifierLink = screen.getByText('Modifier').closest('a')
       expect(voirLink).toHaveAttribute(
         'href',
-        '/app/director/teams/clteam000001'
+        '/app/directeur/equipes/clteam000001'
       )
       expect(modifierLink).toHaveAttribute(
         'href',
-        '/app/director/teams/clteam000001/edit'
+        '/app/directeur/equipes/clteam000001/edit'
       )
     })
   })

@@ -7,7 +7,7 @@
 import { render, screen } from '@testing-library/react'
 import { describe, it, expect } from 'vitest'
 
-import { PasswordStrengthIndicator } from '@/app/app/profile/password/_components/PasswordStrengthIndicator'
+import { PasswordStrengthIndicator } from '@/app/app/profil/password/_components/PasswordStrengthIndicator'
 
 describe('PasswordStrengthIndicator', () => {
   // ============================================

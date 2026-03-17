@@ -22,7 +22,7 @@ const TEST_USERS = {
   EMPLOYEE: {
     email: 'bob.wilson@techcorp.com',
     password: 'Password123!',
-    expectedDashboard: '/app/dashboard',
+    expectedDashboard: '/app/tableau-de-bord',
   },
   MANAGER: {
     email: 'jane.smith@techcorp.com',
@@ -32,7 +32,7 @@ const TEST_USERS = {
   DIRECTOR: {
     email: 'john.doe@techcorp.com',
     password: 'Password123!',
-    expectedDashboard: '/app/director/dashboard',
+    expectedDashboard: '/app/directeur/dashboard',
   },
   // Note: SYSTEM_ADMIN doit etre cree manuellement en base pour les tests
   // SYSTEM_ADMIN: {
@@ -127,18 +127,18 @@ test.describe('Routes publiques', () => {
 // ============================================================================
 
 test.describe('Protection des routes /app/*', () => {
-  test('non authentifie -> /app/dashboard redirige vers /connexion avec callbackUrl', async ({
+  test('non authentifie -> /app/tableau-de-bord redirige vers /connexion avec callbackUrl', async ({
     page,
   }) => {
-    await page.goto('/app/dashboard')
+    await page.goto('/app/tableau-de-bord')
 
     // Doit rediriger vers login avec callbackUrl
     await expect(page).toHaveURL(/\/connexion\?callbackUrl=/)
 
-    // Verifier que le callbackUrl contient /app/dashboard
+    // Verifier que le callbackUrl contient /app/tableau-de-bord
     const url = new URL(page.url())
     const callbackUrl = url.searchParams.get('callbackUrl')
-    expect(callbackUrl).toContain('/app/dashboard')
+    expect(callbackUrl).toContain('/app/tableau-de-bord')
   })
 
   test('non authentifie -> /app/admin/dashboard redirige vers /connexion', async ({
@@ -150,10 +150,10 @@ test.describe('Protection des routes /app/*', () => {
     await expect(page).toHaveURL(/\/connexion/)
   })
 
-  test('non authentifie -> /app/director/dashboard redirige vers /connexion', async ({
+  test('non authentifie -> /app/directeur/dashboard redirige vers /connexion', async ({
     page,
   }) => {
-    await page.goto('/app/director/dashboard')
+    await page.goto('/app/directeur/dashboard')
 
     await expect(page).toHaveURL(/\/connexion/)
   })
@@ -166,10 +166,10 @@ test.describe('Protection des routes /app/*', () => {
     await expect(page).toHaveURL(/\/connexion/)
   })
 
-  test('non authentifie -> /app/profile redirige vers /connexion', async ({
+  test('non authentifie -> /app/profil redirige vers /connexion', async ({
     page,
   }) => {
-    await page.goto('/app/profile')
+    await page.goto('/app/profil')
 
     await expect(page).toHaveURL(/\/connexion/)
   })
@@ -180,7 +180,7 @@ test.describe('Protection des routes /app/*', () => {
 // ============================================================================
 
 test.describe('Redirection si deja authentifie', () => {
-  test('EMPLOYEE connecte -> /connexion redirige vers /app/dashboard', async ({
+  test('EMPLOYEE connecte -> /connexion redirige vers /app/tableau-de-bord', async ({
     page,
   }) => {
     // Se connecter en tant qu'EMPLOYEE
@@ -192,11 +192,11 @@ test.describe('Redirection si deja authentifie', () => {
     // Maintenant, aller sur /connexion
     await page.goto('/connexion')
 
-    // Doit rediriger vers /app/dashboard (dashboard par defaut pour EMPLOYEE)
+    // Doit rediriger vers /app/tableau-de-bord (dashboard par defaut pour EMPLOYEE)
     await expect(page).toHaveURL(/\/app\/dashboard/)
   })
 
-  test('DIRECTOR connecte -> /connexion redirige vers /app/director/dashboard', async ({
+  test('DIRECTOR connecte -> /connexion redirige vers /app/directeur/dashboard', async ({
     page,
   }) => {
     // Se connecter en tant que DIRECTOR
@@ -208,7 +208,7 @@ test.describe('Redirection si deja authentifie', () => {
     // Aller sur /connexion
     await page.goto('/connexion')
 
-    // Doit rediriger vers /app/director/dashboard
+    // Doit rediriger vers /app/directeur/dashboard
     await expect(page).toHaveURL(/\/app\/director\/dashboard/)
   })
 
@@ -254,36 +254,36 @@ test.describe('RBAC - Controle par role', () => {
       // Note: loginAs attend déjà la redirection vers /app
     })
 
-    test('EMPLOYEE peut acceder a /app/dashboard', async ({ page }) => {
-      await page.goto('/app/dashboard')
+    test('EMPLOYEE peut acceder a /app/tableau-de-bord', async ({ page }) => {
+      await page.goto('/app/tableau-de-bord')
 
       // Doit rester sur dashboard (pas de redirection)
       await expect(page).toHaveURL(/\/app\/dashboard/)
     })
 
-    test('EMPLOYEE -> /app/admin/* redirige vers /app/dashboard', async ({
+    test('EMPLOYEE -> /app/admin/* redirige vers /app/tableau-de-bord', async ({
       page,
     }) => {
       await page.goto('/app/admin/dashboard')
 
-      // Doit etre redirige vers /app/dashboard (acces refuse silencieux)
-      await expect(page).toHaveURL('/app/dashboard')
+      // Doit etre redirige vers /app/tableau-de-bord (acces refuse silencieux)
+      await expect(page).toHaveURL('/app/tableau-de-bord')
     })
 
-    test('EMPLOYEE -> /app/director/* redirige vers /app/dashboard', async ({
+    test('EMPLOYEE -> /app/directeur/* redirige vers /app/tableau-de-bord', async ({
       page,
     }) => {
-      await page.goto('/app/director/dashboard')
+      await page.goto('/app/directeur/dashboard')
 
-      await expect(page).toHaveURL('/app/dashboard')
+      await expect(page).toHaveURL('/app/tableau-de-bord')
     })
 
-    test('EMPLOYEE -> /app/manager/* redirige vers /app/dashboard', async ({
+    test('EMPLOYEE -> /app/manager/* redirige vers /app/tableau-de-bord', async ({
       page,
     }) => {
       await page.goto('/app/manager/dashboard')
 
-      await expect(page).toHaveURL('/app/dashboard')
+      await expect(page).toHaveURL('/app/tableau-de-bord')
     })
   })
 
@@ -300,30 +300,30 @@ test.describe('RBAC - Controle par role', () => {
       await expect(page).toHaveURL(/\/app\/manager/)
     })
 
-    test('MANAGER peut acceder a /app/dashboard (route employee)', async ({
+    test('MANAGER peut acceder a /app/tableau-de-bord (route employee)', async ({
       page,
     }) => {
-      await page.goto('/app/dashboard')
+      await page.goto('/app/tableau-de-bord')
 
       // Les managers ont aussi acces aux routes employee
       await expect(page).toHaveURL(/\/app\/dashboard/)
     })
 
-    test('MANAGER -> /app/admin/* redirige vers /app/dashboard', async ({
+    test('MANAGER -> /app/admin/* redirige vers /app/tableau-de-bord', async ({
       page,
     }) => {
       await page.goto('/app/admin/dashboard')
 
       // Redirection silencieuse vers dashboard
-      await expect(page).toHaveURL('/app/dashboard')
+      await expect(page).toHaveURL('/app/tableau-de-bord')
     })
 
-    test('MANAGER -> /app/director/* redirige vers /app/dashboard', async ({
+    test('MANAGER -> /app/directeur/* redirige vers /app/tableau-de-bord', async ({
       page,
     }) => {
-      await page.goto('/app/director/dashboard')
+      await page.goto('/app/directeur/dashboard')
 
-      await expect(page).toHaveURL('/app/dashboard')
+      await expect(page).toHaveURL('/app/tableau-de-bord')
     })
   })
 
@@ -333,8 +333,8 @@ test.describe('RBAC - Controle par role', () => {
       // Note: loginAs attend déjà la redirection vers /app
     })
 
-    test('DIRECTOR peut acceder a /app/director/*', async ({ page }) => {
-      await page.goto('/app/director/dashboard')
+    test('DIRECTOR peut acceder a /app/directeur/*', async ({ page }) => {
+      await page.goto('/app/directeur/dashboard')
 
       await expect(page).toHaveURL(/\/app\/director/)
     })
@@ -348,19 +348,19 @@ test.describe('RBAC - Controle par role', () => {
       await expect(page).toHaveURL(/\/app\/manager/)
     })
 
-    test('DIRECTOR peut acceder a /app/dashboard', async ({ page }) => {
-      await page.goto('/app/dashboard')
+    test('DIRECTOR peut acceder a /app/tableau-de-bord', async ({ page }) => {
+      await page.goto('/app/tableau-de-bord')
 
       await expect(page).toHaveURL(/\/app\/dashboard/)
     })
 
-    test('DIRECTOR -> /app/admin/* redirige vers /app/dashboard', async ({
+    test('DIRECTOR -> /app/admin/* redirige vers /app/tableau-de-bord', async ({
       page,
     }) => {
       await page.goto('/app/admin/dashboard')
 
       // Seuls les SYSTEM_ADMIN peuvent acceder a /app/admin
-      await expect(page).toHaveURL('/app/dashboard')
+      await expect(page).toHaveURL('/app/tableau-de-bord')
     })
   })
 })
@@ -372,7 +372,7 @@ test.describe('RBAC - Controle par role', () => {
 test.describe('Scenarios avances', () => {
   test('callbackUrl est respecte apres connexion', async ({ page }) => {
     // Tenter d'acceder a une page protegee
-    await page.goto('/app/profile')
+    await page.goto('/app/profil')
 
     // Verifier la redirection vers login avec callbackUrl
     await expect(page).toHaveURL(/\/connexion\?callbackUrl=/)
@@ -384,7 +384,7 @@ test.describe('Scenarios avances', () => {
     await page.getByPlaceholder('••••••••').fill(TEST_USERS.EMPLOYEE.password)
     await page.getByRole('button', { name: 'Se connecter' }).click()
 
-    // Apres connexion, doit revenir a /app/profile (ou dashboard si profile n'existe pas)
+    // Apres connexion, doit revenir a /app/profil (ou dashboard si profile n'existe pas)
     // Timeout augmenté pour CI nightly (serveur dev plus lent)
     await page.waitForURL(/\/app/, { timeout: 30000 })
   })
@@ -398,14 +398,14 @@ test.describe('Scenarios avances', () => {
     await loginAs(page, TEST_USERS.MANAGER)
 
     // Naviguer vers plusieurs pages
-    await page.goto('/app/dashboard')
+    await page.goto('/app/tableau-de-bord')
     await expect(page).toHaveURL(/\/app\/dashboard/)
 
     await page.goto('/app/manager/dashboard')
     await expect(page).toHaveURL(/\/app\/manager/)
 
     // Retour au dashboard
-    await page.goto('/app/dashboard')
+    await page.goto('/app/tableau-de-bord')
     await expect(page).toHaveURL(/\/app\/dashboard/)
 
     // La session est toujours active (pas de redirection vers login)
@@ -416,10 +416,10 @@ test.describe('Scenarios avances', () => {
     await loginAs(page, TEST_USERS.EMPLOYEE)
 
     // Tenter d'acceder a une route admin
-    await page.goto('/app/admin/users')
+    await page.goto('/app/admin/utilisateurs')
 
     // Doit rediriger silencieusement vers dashboard
-    await expect(page).toHaveURL('/app/dashboard')
+    await expect(page).toHaveURL('/app/tableau-de-bord')
 
     // Verifier qu'il n'y a pas de message d'erreur 403
     await expect(

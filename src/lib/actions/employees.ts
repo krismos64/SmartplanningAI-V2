@@ -836,7 +836,7 @@ export async function createEmployee(
     }
 
     // Revalide le cache
-    revalidatePath('/app/dashboard/employees')
+    revalidatePath('/app/tableau-de-bord/employes')
 
     return {
       success: true,
@@ -987,7 +987,7 @@ export async function updateEmployee(
     }).catch(console.error)
 
     // Revalide le cache
-    revalidatePath('/app/dashboard/employees')
+    revalidatePath('/app/tableau-de-bord/employes')
     revalidatePath(`/app/dashboard/employees/${id}`)
 
     return {
@@ -1085,7 +1085,7 @@ export async function deleteEmployee(id: string): Promise<DeleteActionResult> {
     }).catch(console.error)
 
     // Revalide le cache
-    revalidatePath('/app/dashboard/employees')
+    revalidatePath('/app/tableau-de-bord/employes')
 
     return { success: true }
   } catch (error) {
@@ -1189,7 +1189,7 @@ export async function toggleEmployeeStatus(
       details: { from: !isActive, to: isActive },
     }).catch(console.error)
 
-    revalidatePath('/app/dashboard/employees')
+    revalidatePath('/app/tableau-de-bord/employes')
     revalidatePath(`/app/dashboard/employees/${id}`)
 
     return {
@@ -1510,7 +1510,7 @@ export async function bulkDeleteEmployees(
       }
     }
 
-    revalidatePath('/app/dashboard/employees')
+    revalidatePath('/app/tableau-de-bord/employes')
 
     return {
       success: true,
@@ -1984,7 +1984,7 @@ export async function activateAccount(data: {
                   priority: 'LOW',
                   relatedType: 'User',
                   relatedId: targetUser.id,
-                  actionUrl: '/app/dashboard/employees',
+                  actionUrl: '/app/tableau-de-bord/employes',
                   userId: director.id,
                   companyId: targetUser.companyId!,
                 },

@@ -374,7 +374,7 @@ export const authConfig: NextAuthConfig = {
       // plutôt que via la session, car c'est plus fiable en Edge Runtime.
       const isImpersonationBlockedRoute =
         pathname.startsWith('/app/admin') ||
-        pathname.startsWith('/app/dashboard/billing')
+        pathname.startsWith('/app/tableau-de-bord/facturation')
       if (isLoggedIn && isImpersonationBlockedRoute) {
         try {
           const impersonationCookie = request.cookies.get(
@@ -388,7 +388,7 @@ export const authConfig: NextAuthConfig = {
               'originalAdminId' in parsed
             ) {
               // Redirige vers le dashboard de l'entreprise impersonnée
-              return Response.redirect(new URL('/app/dashboard', nextUrl))
+              return Response.redirect(new URL('/app/tableau-de-bord', nextUrl))
             }
           }
         } catch {
@@ -440,7 +440,7 @@ export const authConfig: NextAuthConfig = {
           if (!subscriptionCheck.allowed) {
             // Redirection vers billing avec le motif (trial_expired,
             // past_due, canceled...) pour afficher le bon message
-            const billingUrl = new URL('/app/dashboard/billing', nextUrl)
+            const billingUrl = new URL('/app/tableau-de-bord/facturation', nextUrl)
             if (subscriptionCheck.redirectReason) {
               billingUrl.searchParams.set(
                 'reason',

@@ -103,7 +103,7 @@ export function TeamForm({
     successMessage: 'Équipe créée avec succès',
     onSuccess: () => {
       onSuccess?.()
-      router.push('/app/director/teams')
+      router.push('/app/directeur/equipes')
       router.refresh()
     },
   })
@@ -113,7 +113,7 @@ export function TeamForm({
     successMessage: 'Équipe modifiée avec succès',
     onSuccess: () => {
       onSuccess?.()
-      router.push('/app/director/teams')
+      router.push('/app/directeur/equipes')
       router.refresh()
     },
   })

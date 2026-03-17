@@ -32,11 +32,11 @@ vi.mock('next/navigation', () => ({
     forward: vi.fn(),
     prefetch: vi.fn(),
   }),
-  usePathname: () => '/app/admin/users',
+  usePathname: () => '/app/admin/utilisateurs',
 }))
 
 // Import après mocks
-import { UsersDataTable } from '@/app/app/admin/users/_components/UsersDataTable'
+import { UsersDataTable } from '@/app/app/admin/utilisateurs/_components/UsersDataTable'
 
 // ============================================================================
 // Fixtures

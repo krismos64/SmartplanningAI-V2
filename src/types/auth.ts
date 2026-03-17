@@ -232,7 +232,7 @@ export const AUTH_API_PREFIX = '/api/auth'
 /**
  * Route par défaut après connexion
  */
-export const DEFAULT_LOGIN_REDIRECT = '/app/dashboard'
+export const DEFAULT_LOGIN_REDIRECT = '/app/tableau-de-bord'
 
 /**
  * Routes exclues du middleware (invitations, etc.)
@@ -256,7 +256,7 @@ export const MIDDLEWARE_EXCLUDED_ROUTES = ['/app/invite', '/app/join'] as const
  */
 export const ROLE_PROTECTED_ROUTES: Record<string, UserRole> = {
   '/app/admin': 'SYSTEM_ADMIN',
-  '/app/director': 'DIRECTOR',
+  '/app/directeur': 'DIRECTOR',
   '/app/manager': 'MANAGER',
 } as const
 
@@ -267,15 +267,15 @@ export const ROLE_PROTECTED_ROUTES: Record<string, UserRole> = {
  * Chaque rôle a son propre espace de travail.
  *
  * @example
- * DEFAULT_REDIRECT_BY_ROLE['DIRECTOR'] // '/app/director/dashboard'
+ * DEFAULT_REDIRECT_BY_ROLE['DIRECTOR'] // '/app/directeur/dashboard'
  *
  * @ticket SP-110
  */
 export const DEFAULT_REDIRECT_BY_ROLE: Record<UserRole, string> = {
   SYSTEM_ADMIN: '/app/admin/dashboard',
-  DIRECTOR: '/app/director/dashboard',
+  DIRECTOR: '/app/directeur/dashboard',
   MANAGER: '/app/manager/dashboard',
-  EMPLOYEE: '/app/dashboard',
+  EMPLOYEE: '/app/tableau-de-bord',
 } as const
 
 /**
@@ -286,7 +286,7 @@ export const DEFAULT_REDIRECT_BY_ROLE: Record<UserRole, string> = {
  *
  * @ticket SP-110
  */
-export const ACCESS_DENIED_REDIRECT = '/app/dashboard' as const
+export const ACCESS_DENIED_REDIRECT = '/app/tableau-de-bord' as const
 
 // ============================================================================
 // CONSTANTES SUBSCRIPTION GUARD (SP-440)
@@ -299,9 +299,9 @@ export const ACCESS_DENIED_REDIRECT = '/app/dashboard' as const
  * @ticket SP-440
  */
 export const SUBSCRIPTION_EXEMPT_ROUTES = [
-  '/app/dashboard/billing',
-  '/app/profile',
-  '/app/settings',
+  '/app/tableau-de-bord/facturation',
+  '/app/profil',
+  '/app/parametres',
 ] as const
 
 // ============================================================================

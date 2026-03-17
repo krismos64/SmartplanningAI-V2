@@ -67,7 +67,7 @@ const mockNotification = {
   message: 'Test message',
   type: 'PLANNING' as const,
   priority: 'LOW' as const,
-  actionUrl: '/app/dashboard',
+  actionUrl: '/app/tableau-de-bord',
   relatedType: 'Schedule',
   relatedId: 'schedule-1',
   isRead: false,

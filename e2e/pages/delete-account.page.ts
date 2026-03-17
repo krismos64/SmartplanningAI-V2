@@ -65,7 +65,7 @@ export class DeleteAccountPage {
    * Navigation vers la page de suppression de compte
    */
   async goto() {
-    await this.page.goto('/app/profile/delete')
+    await this.page.goto('/app/profil/delete')
   }
 
   /**

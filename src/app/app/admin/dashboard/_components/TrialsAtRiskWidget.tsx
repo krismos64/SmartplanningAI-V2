@@ -87,7 +87,7 @@ function TrialRow({
       <div className="min-w-0 flex-1 space-y-1">
         <div className="flex flex-wrap items-center gap-2">
           <Link
-            href={`/app/admin/companies/${trial.companyId}`}
+            href={`/app/admin/entreprises/${trial.companyId}`}
             className="flex items-center gap-1 font-medium text-primary hover:underline"
           >
             <Building2 className="h-3.5 w-3.5 flex-shrink-0" aria-hidden />
@@ -124,7 +124,7 @@ function TrialRow({
       {/* Actions */}
       <div className="flex items-center gap-2">
         <Button asChild variant="ghost" size="sm">
-          <Link href={`/app/admin/companies/${trial.companyId}`}>
+          <Link href={`/app/admin/entreprises/${trial.companyId}`}>
             <ExternalLink className="mr-1 h-3.5 w-3.5" aria-hidden />
             Voir
           </Link>

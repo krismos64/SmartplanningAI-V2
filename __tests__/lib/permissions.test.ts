@@ -61,7 +61,7 @@ describe('PROTECTED_ROUTES', () => {
   })
 
   it('devrait protéger /app/director avec DIRECTOR', () => {
-    expect(PROTECTED_ROUTES['/app/director']).toBe('DIRECTOR')
+    expect(PROTECTED_ROUTES['/app/directeur']).toBe('DIRECTOR')
   })
 
   it('devrait protéger /app/manager avec MANAGER', () => {
@@ -163,11 +163,11 @@ describe('getRequiredRoleForRoute', () => {
     })
 
     it('devrait retourner SYSTEM_ADMIN pour /app/admin/users', () => {
-      expect(getRequiredRoleForRoute('/app/admin/users')).toBe('SYSTEM_ADMIN')
+      expect(getRequiredRoleForRoute('/app/admin/utilisateurs')).toBe('SYSTEM_ADMIN')
     })
 
     it('devrait retourner SYSTEM_ADMIN pour /app/admin/companies/123', () => {
-      expect(getRequiredRoleForRoute('/app/admin/companies/123')).toBe(
+      expect(getRequiredRoleForRoute('/app/admin/entreprises/123')).toBe(
         'SYSTEM_ADMIN'
       )
     })
@@ -175,17 +175,17 @@ describe('getRequiredRoleForRoute', () => {
 
   describe('routes director', () => {
     it('devrait retourner DIRECTOR pour /app/director', () => {
-      expect(getRequiredRoleForRoute('/app/director')).toBe('DIRECTOR')
+      expect(getRequiredRoleForRoute('/app/directeur')).toBe('DIRECTOR')
     })
 
     it('devrait retourner DIRECTOR pour /app/director/dashboard', () => {
-      expect(getRequiredRoleForRoute('/app/director/dashboard')).toBe(
+      expect(getRequiredRoleForRoute('/app/directeur/dashboard')).toBe(
         'DIRECTOR'
       )
     })
 
     it('devrait retourner DIRECTOR pour /app/director/teams/settings', () => {
-      expect(getRequiredRoleForRoute('/app/director/teams/settings')).toBe(
+      expect(getRequiredRoleForRoute('/app/directeur/equipes/settings')).toBe(
         'DIRECTOR'
       )
     })
@@ -213,11 +213,11 @@ describe('getRequiredRoleForRoute', () => {
     })
 
     it('devrait retourner EMPLOYEE pour /app/dashboard', () => {
-      expect(getRequiredRoleForRoute('/app/dashboard')).toBe('EMPLOYEE')
+      expect(getRequiredRoleForRoute('/app/tableau-de-bord')).toBe('EMPLOYEE')
     })
 
     it('devrait retourner EMPLOYEE pour /app/profile', () => {
-      expect(getRequiredRoleForRoute('/app/profile')).toBe('EMPLOYEE')
+      expect(getRequiredRoleForRoute('/app/profil')).toBe('EMPLOYEE')
     })
 
     it('devrait retourner EMPLOYEE pour /app/leave-requests', () => {
@@ -249,7 +249,7 @@ describe('getRequiredRoleForRoute', () => {
     })
 
     it('devrait matcher /app/director avant /app pour /app/director/test', () => {
-      expect(getRequiredRoleForRoute('/app/director/test')).toBe('DIRECTOR')
+      expect(getRequiredRoleForRoute('/app/directeur/test')).toBe('DIRECTOR')
     })
 
     it('devrait matcher /app/manager avant /app pour /app/manager/test', () => {
@@ -267,10 +267,10 @@ describe('canAccessRoute', () => {
     const role: UserRole = 'SYSTEM_ADMIN'
 
     it('peut accéder à toutes les routes /app/*', () => {
-      expect(canAccessRoute('/app/admin/users', role)).toBe(true)
-      expect(canAccessRoute('/app/director/dashboard', role)).toBe(true)
+      expect(canAccessRoute('/app/admin/utilisateurs', role)).toBe(true)
+      expect(canAccessRoute('/app/directeur/dashboard', role)).toBe(true)
       expect(canAccessRoute('/app/manager/team', role)).toBe(true)
-      expect(canAccessRoute('/app/dashboard', role)).toBe(true)
+      expect(canAccessRoute('/app/tableau-de-bord', role)).toBe(true)
     })
 
     it('peut accéder aux routes publiques', () => {
@@ -283,14 +283,14 @@ describe('canAccessRoute', () => {
     const role: UserRole = 'DIRECTOR'
 
     it('peut accéder aux routes director et inférieures', () => {
-      expect(canAccessRoute('/app/director/dashboard', role)).toBe(true)
+      expect(canAccessRoute('/app/directeur/dashboard', role)).toBe(true)
       expect(canAccessRoute('/app/manager/team', role)).toBe(true)
-      expect(canAccessRoute('/app/dashboard', role)).toBe(true)
+      expect(canAccessRoute('/app/tableau-de-bord', role)).toBe(true)
     })
 
     it('ne peut PAS accéder aux routes admin', () => {
-      expect(canAccessRoute('/app/admin/users', role)).toBe(false)
-      expect(canAccessRoute('/app/admin/companies', role)).toBe(false)
+      expect(canAccessRoute('/app/admin/utilisateurs', role)).toBe(false)
+      expect(canAccessRoute('/app/admin/entreprises', role)).toBe(false)
     })
   })
 
@@ -299,13 +299,13 @@ describe('canAccessRoute', () => {
 
     it('peut accéder aux routes manager et inférieures', () => {
       expect(canAccessRoute('/app/manager/team', role)).toBe(true)
-      expect(canAccessRoute('/app/dashboard', role)).toBe(true)
-      expect(canAccessRoute('/app/profile', role)).toBe(true)
+      expect(canAccessRoute('/app/tableau-de-bord', role)).toBe(true)
+      expect(canAccessRoute('/app/profil', role)).toBe(true)
     })
 
     it('ne peut PAS accéder aux routes director et admin', () => {
-      expect(canAccessRoute('/app/admin/users', role)).toBe(false)
-      expect(canAccessRoute('/app/director/dashboard', role)).toBe(false)
+      expect(canAccessRoute('/app/admin/utilisateurs', role)).toBe(false)
+      expect(canAccessRoute('/app/directeur/dashboard', role)).toBe(false)
     })
   })
 
@@ -313,22 +313,22 @@ describe('canAccessRoute', () => {
     const role: UserRole = 'EMPLOYEE'
 
     it('peut accéder uniquement aux routes /app/* générales', () => {
-      expect(canAccessRoute('/app/dashboard', role)).toBe(true)
-      expect(canAccessRoute('/app/profile', role)).toBe(true)
+      expect(canAccessRoute('/app/tableau-de-bord', role)).toBe(true)
+      expect(canAccessRoute('/app/profil', role)).toBe(true)
       expect(canAccessRoute('/app/leave-requests', role)).toBe(true)
     })
 
     it('ne peut PAS accéder aux routes manager, director, admin', () => {
-      expect(canAccessRoute('/app/admin/users', role)).toBe(false)
-      expect(canAccessRoute('/app/director/dashboard', role)).toBe(false)
+      expect(canAccessRoute('/app/admin/utilisateurs', role)).toBe(false)
+      expect(canAccessRoute('/app/directeur/dashboard', role)).toBe(false)
       expect(canAccessRoute('/app/manager/team', role)).toBe(false)
     })
   })
 
   describe('utilisateur non authentifié (undefined)', () => {
     it('ne peut PAS accéder aux routes protégées', () => {
-      expect(canAccessRoute('/app/dashboard', undefined)).toBe(false)
-      expect(canAccessRoute('/app/admin/users', undefined)).toBe(false)
+      expect(canAccessRoute('/app/tableau-de-bord', undefined)).toBe(false)
+      expect(canAccessRoute('/app/admin/utilisateurs', undefined)).toBe(false)
     })
 
     it('peut accéder aux routes publiques (pas de restriction de rôle)', () => {
@@ -351,7 +351,7 @@ describe('getDefaultDashboardForRole', () => {
 
   it('devrait retourner /app/director/dashboard pour DIRECTOR', () => {
     expect(getDefaultDashboardForRole('DIRECTOR')).toBe(
-      '/app/director/dashboard'
+      '/app/directeur/dashboard'
     )
   })
 
@@ -360,16 +360,16 @@ describe('getDefaultDashboardForRole', () => {
   })
 
   it('devrait retourner /app/dashboard pour EMPLOYEE', () => {
-    expect(getDefaultDashboardForRole('EMPLOYEE')).toBe('/app/dashboard')
+    expect(getDefaultDashboardForRole('EMPLOYEE')).toBe('/app/tableau-de-bord')
   })
 
   it('devrait retourner /app/dashboard par défaut si rôle undefined', () => {
-    expect(getDefaultDashboardForRole(undefined)).toBe('/app/dashboard')
+    expect(getDefaultDashboardForRole(undefined)).toBe('/app/tableau-de-bord')
   })
 
   it('devrait retourner /app/dashboard pour un rôle invalide', () => {
     // @ts-expect-error - Test de rôle invalide
-    expect(getDefaultDashboardForRole('INVALID_ROLE')).toBe('/app/dashboard')
+    expect(getDefaultDashboardForRole('INVALID_ROLE')).toBe('/app/tableau-de-bord')
   })
 })
 
@@ -382,14 +382,14 @@ describe('Scénarios RBAC intégrés', () => {
     it('un DIRECTOR connecté sur /login devrait être redirigé vers /app/director/dashboard', () => {
       const userRole: UserRole = 'DIRECTOR'
       const redirectUrl = getDefaultDashboardForRole(userRole)
-      expect(redirectUrl).toBe('/app/director/dashboard')
+      expect(redirectUrl).toBe('/app/directeur/dashboard')
       expect(canAccessRoute(redirectUrl, userRole)).toBe(true)
     })
 
     it('un EMPLOYEE connecté sur /login devrait être redirigé vers /app/dashboard', () => {
       const userRole: UserRole = 'EMPLOYEE'
       const redirectUrl = getDefaultDashboardForRole(userRole)
-      expect(redirectUrl).toBe('/app/dashboard')
+      expect(redirectUrl).toBe('/app/tableau-de-bord')
       expect(canAccessRoute(redirectUrl, userRole)).toBe(true)
     })
   })
@@ -397,7 +397,7 @@ describe('Scénarios RBAC intégrés', () => {
   describe("workflow d'accès refusé", () => {
     it("un EMPLOYEE essayant d'accéder à /app/admin devrait être redirigé", () => {
       const userRole: UserRole = 'EMPLOYEE'
-      const attemptedRoute = '/app/admin/users'
+      const attemptedRoute = '/app/admin/utilisateurs'
 
       // L'accès est refusé
       expect(canAccessRoute(attemptedRoute, userRole)).toBe(false)
@@ -409,7 +409,7 @@ describe('Scénarios RBAC intégrés', () => {
 
     it("un MANAGER essayant d'accéder à /app/director devrait être redirigé", () => {
       const userRole: UserRole = 'MANAGER'
-      const attemptedRoute = '/app/director/settings'
+      const attemptedRoute = '/app/directeur/settings'
 
       expect(canAccessRoute(attemptedRoute, userRole)).toBe(false)
 
@@ -420,7 +420,7 @@ describe('Scénarios RBAC intégrés', () => {
 
   describe('escalade de privilèges (sécurité)', () => {
     it("ne devrait jamais permettre à un rôle inférieur d'accéder aux routes supérieures", () => {
-      const adminRoute = '/app/admin/users'
+      const adminRoute = '/app/admin/utilisateurs'
 
       // Seul SYSTEM_ADMIN peut accéder
       expect(canAccessRoute(adminRoute, 'SYSTEM_ADMIN')).toBe(true)

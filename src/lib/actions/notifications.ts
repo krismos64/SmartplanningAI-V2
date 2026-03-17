@@ -376,7 +376,7 @@ export async function createLeaveNotification(
         priority,
         relatedType: 'LeaveRequest',
         relatedId: leaveRequestId,
-        actionUrl: '/app/dashboard/leaves',
+        actionUrl: '/app/tableau-de-bord/conges',
         userId: targetUserId,
         companyId: user.companyId,
       },
@@ -484,7 +484,7 @@ export async function createTaskNotification(
         priority,
         relatedType: 'PersonalTask',
         relatedId: taskId,
-        actionUrl: '/app/dashboard/tasks',
+        actionUrl: '/app/tableau-de-bord/taches',
         userId,
         companyId: task.user.companyId,
       },
@@ -597,7 +597,7 @@ export async function createIncidentNotification(
         priority: 'HIGH',
         relatedType: 'IncidentNote',
         relatedId: incidentNoteId,
-        actionUrl: '/app/dashboard/incidents',
+        actionUrl: '/app/tableau-de-bord/incidents',
         userId: targetUserId,
         companyId: user.companyId,
       },
@@ -726,7 +726,7 @@ export async function createSystemNotification(
       emitNotification(notif.userId, notif)
     }
 
-    revalidatePath('/app/dashboard')
+    revalidatePath('/app/tableau-de-bord')
 
     return { success: true, data: { count: notifications.count } }
   } catch (error) {
@@ -957,7 +957,7 @@ export async function markAsRead(
       },
     })
 
-    revalidatePath('/app/dashboard')
+    revalidatePath('/app/tableau-de-bord')
 
     return { success: true, data: updated }
   } catch (error) {
@@ -992,7 +992,7 @@ export async function markAllAsRead(): Promise<
       },
     })
 
-    revalidatePath('/app/dashboard')
+    revalidatePath('/app/tableau-de-bord')
 
     return { success: true, data: { count: result.count } }
   } catch (error) {
@@ -1036,7 +1036,7 @@ export async function deleteNotification(
       where: { id: notificationId },
     })
 
-    revalidatePath('/app/dashboard')
+    revalidatePath('/app/tableau-de-bord')
 
     return { success: true, data: { deleted: true } }
   } catch (error) {
@@ -1068,7 +1068,7 @@ export async function deleteAllRead(): Promise<
       },
     })
 
-    revalidatePath('/app/dashboard')
+    revalidatePath('/app/tableau-de-bord')
 
     return { success: true, data: { count: result.count } }
   } catch (error) {

@@ -20,7 +20,7 @@ vi.mock('@/components/notifications', () => ({
 }))
 
 vi.mock(
-  '@/app/app/dashboard/notifications/_components/NotificationsFilters',
+  '@/app/app/tableau-de-bord/notifications/_components/NotificationsFilters',
   () => ({
     NotificationsFilters: () => (
       <div data-testid="notifications-filters">Filters</div>
@@ -29,7 +29,7 @@ vi.mock(
 )
 
 vi.mock(
-  '@/app/app/dashboard/notifications/_components/NotificationsBulkActions',
+  '@/app/app/tableau-de-bord/notifications/_components/NotificationsBulkActions',
   () => ({
     NotificationsBulkActions: () => (
       <div data-testid="notifications-bulk-actions">Bulk Actions</div>
@@ -38,7 +38,7 @@ vi.mock(
 )
 
 vi.mock(
-  '@/app/app/dashboard/notifications/_components/NotificationsTable',
+  '@/app/app/tableau-de-bord/notifications/_components/NotificationsTable',
   () => ({
     NotificationsTable: () => (
       <div data-testid="notifications-table">Table</div>
@@ -47,7 +47,7 @@ vi.mock(
 )
 
 vi.mock(
-  '@/app/app/dashboard/notifications/_components/NotificationsListSkeleton',
+  '@/app/app/tableau-de-bord/notifications/_components/NotificationsListSkeleton',
   () => ({
     NotificationsListSkeleton: () => (
       <div data-testid="notifications-skeleton">Loading...</div>
@@ -56,7 +56,7 @@ vi.mock(
 )
 
 import { useNotificationsPaginated } from '@/hooks/use-notifications-paginated'
-import { NotificationsPageContent } from '@/app/app/dashboard/notifications/_components/NotificationsPageContent'
+import { NotificationsPageContent } from '@/app/app/tableau-de-bord/notifications/_components/NotificationsPageContent'
 
 const mockHookReturn = {
   notifications: [],

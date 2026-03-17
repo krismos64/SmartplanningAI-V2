@@ -15,7 +15,7 @@
  *
  * RGPD COMPLIANCE :
  * Ne stocke que des données non sensibles :
- * - Routes (ex: "/app/dashboard/employees")
+ * - Routes (ex: "/app/tableau-de-bord/employes")
  * - Titres de pages (ex: "Collaborateurs")
  * - Noms d'icônes (ex: "Users")
  * - Timestamps
@@ -33,20 +33,20 @@ import { navigationItems } from '@/lib/navigation/menu-items'
  * Utilisé pour les routes qui ne sont pas dans navigationItems
  */
 const ROUTE_INFO_MAP: Record<string, { title: string; icon: string }> = {
-  '/app/dashboard': { title: 'Dashboard', icon: 'Home' },
+  '/app/tableau-de-bord': { title: 'Dashboard', icon: 'Home' },
   '/app/admin/dashboard': { title: 'Dashboard SaaS', icon: 'Activity' },
-  '/app/admin/companies': { title: 'Entreprises', icon: 'Building' },
-  '/app/admin/monitoring': { title: 'Monitoring', icon: 'Activity' },
-  '/app/admin/logs': { title: 'Logs système', icon: 'AlertCircle' },
-  '/app/dashboard/employees': { title: 'Collaborateurs', icon: 'Users' },
-  '/app/director/teams': { title: 'Équipes', icon: 'UsersRound' },
-  '/app/dashboard/schedules': { title: 'Plannings', icon: 'Calendar' },
-  '/app/dashboard/leaves': { title: 'Congés', icon: 'Plane' },
-  '/app/dashboard/tasks': { title: 'Notes perso', icon: 'ClipboardList' },
+  '/app/admin/entreprises': { title: 'Entreprises', icon: 'Building' },
+  '/app/admin/surveillance': { title: 'Monitoring', icon: 'Activity' },
+  '/app/admin/journaux': { title: 'Logs système', icon: 'AlertCircle' },
+  '/app/tableau-de-bord/employes': { title: 'Collaborateurs', icon: 'Users' },
+  '/app/directeur/equipes': { title: 'Équipes', icon: 'UsersRound' },
+  '/app/tableau-de-bord/plannings': { title: 'Plannings', icon: 'Calendar' },
+  '/app/tableau-de-bord/conges': { title: 'Congés', icon: 'Plane' },
+  '/app/tableau-de-bord/taches': { title: 'Notes perso', icon: 'ClipboardList' },
   '/stats': { title: 'Statistiques', icon: 'BarChart' },
-  '/app/dashboard/incidents': { title: 'Incidents', icon: 'AlertCircle' },
+  '/app/tableau-de-bord/incidents': { title: 'Incidents', icon: 'AlertCircle' },
   '/ai-planning': { title: 'IA Planning', icon: 'Brain' },
-  '/settings': { title: 'Paramètres', icon: 'Settings' },
+  '/app/parametres': { title: 'Paramètres', icon: 'Settings' },
 }
 
 /**

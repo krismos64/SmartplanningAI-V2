@@ -63,7 +63,7 @@ export class EditProfilePage {
    * Naviguer vers la page d'édition du profil
    */
   async goto() {
-    await this.page.goto('/app/profile/edit')
+    await this.page.goto('/app/profil/edit')
   }
 
   /**

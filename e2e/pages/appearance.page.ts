@@ -66,7 +66,7 @@ export class AppearancePage {
    * Navigue vers la page Apparence
    */
   async goto() {
-    await this.page.goto('/app/settings/appearance')
+    await this.page.goto('/app/parametres/appearance')
   }
 
   /**
@@ -197,7 +197,7 @@ export class AppearancePage {
    */
   async goBack() {
     await this.backButton.click()
-    await this.page.waitForURL('/app/settings')
+    await this.page.waitForURL('/app/parametres')
   }
 
   /**

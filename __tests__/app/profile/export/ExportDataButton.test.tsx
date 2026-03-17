@@ -40,7 +40,7 @@ vi.mock('@/hooks/use-crud-mutation', () => ({
 }))
 
 // Import le composant après les mocks
-import { ExportDataButton } from '@/app/app/profile/_components/ExportDataButton'
+import { ExportDataButton } from '@/app/app/profil/_components/ExportDataButton'
 
 // Mock URL methods globalement
 const mockCreateObjectURL = vi.fn(() => 'blob:mock-url')

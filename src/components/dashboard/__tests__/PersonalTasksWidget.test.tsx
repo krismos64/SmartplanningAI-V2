@@ -122,7 +122,7 @@ describe('PersonalTasksWidget', () => {
 
     const addButton = screen.getByTestId('widget-add-task-link')
     expect(addButton).toBeInTheDocument()
-    expect(addButton).toHaveAttribute('href', '/app/dashboard/tasks')
+    expect(addButton).toHaveAttribute('href', '/app/tableau-de-bord/taches')
   })
 
   it('affiche le badge En retard pour une date passée', () => {

@@ -214,7 +214,7 @@ describe('API /api/admin/impersonate', () => {
       const data = (await response.json()) as ImpersonateSuccessResponse
 
       expect(data.success).toBe(true)
-      expect(data.redirectTo).toBe('/app/dashboard')
+      expect(data.redirectTo).toBe('/app/tableau-de-bord')
       expect(data.impersonation.isImpersonating).toBe(true)
       expect(data.impersonation.impersonatedCompanyName).toBe('TechCorp')
       expect(data.impersonation.impersonatedUserId).toBe('user-001')
@@ -270,7 +270,7 @@ describe('API /api/admin/impersonate', () => {
       const data = (await response.json()) as ImpersonateSuccessResponse
       expect(data.success).toBe(true)
       expect(data.warning).toContain('cookie nettoyé')
-      expect(data.redirectTo).toBe('/app/admin/companies')
+      expect(data.redirectTo).toBe('/app/admin/entreprises')
 
       // Cookie supprimé par sécurité
       const setCookie = response.headers.get('set-cookie')
@@ -296,7 +296,7 @@ describe('API /api/admin/impersonate', () => {
       expect(response.status).toBe(200)
       const data = (await response.json()) as ImpersonateSuccessResponse
       expect(data.success).toBe(true)
-      expect(data.redirectTo).toBe('/app/admin/companies')
+      expect(data.redirectTo).toBe('/app/admin/entreprises')
 
       // Cookie supprimé via response.cookies.delete()
       const setCookie = response.headers.get('set-cookie')

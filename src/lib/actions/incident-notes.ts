@@ -228,7 +228,7 @@ function buildIncidentNoteRBACWhere(
   }
 }
 
-const INCIDENT_PATH = '/app/dashboard/incidents'
+const INCIDENT_PATH = '/app/tableau-de-bord/incidents'
 
 // ============================================================================
 // 1. createIncidentNote - Création (MANAGER+ uniquement)

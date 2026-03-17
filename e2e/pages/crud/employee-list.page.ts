@@ -65,7 +65,7 @@ export class EmployeeListPage {
     this.pageTitle = page.getByRole('heading', { name: /employ/i })
     this.totalCount = page.locator('text=/\\d+ employ/i')
     this.newEmployeeButton = page.locator(
-      'a[href="/app/dashboard/employees/new"]'
+      'a[href="/app/tableau-de-bord/employees/new"]'
     )
     this.refreshButton = page.getByRole('button', { name: /actualiser/i })
 
@@ -98,7 +98,7 @@ export class EmployeeListPage {
    * Navigue vers la liste des employes
    */
   async goto(): Promise<void> {
-    await this.page.goto('/app/dashboard/employees')
+    await this.page.goto('/app/tableau-de-bord/employes')
   }
 
   /**

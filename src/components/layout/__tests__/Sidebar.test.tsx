@@ -11,7 +11,7 @@ import { Sidebar } from '../Sidebar'
 
 // Mock next/navigation
 vi.mock('next/navigation', () => ({
-  usePathname: vi.fn(() => '/app/dashboard'),
+  usePathname: vi.fn(() => '/app/tableau-de-bord'),
 }))
 
 // Mock framer-motion
@@ -125,7 +125,7 @@ describe('Sidebar - Leaves Link', () => {
     render(<Sidebar user={defaultUser} />)
 
     const leavesLink = screen.getByText('Congés').closest('a')
-    expect(leavesLink).toHaveAttribute('href', '/app/dashboard/leaves')
+    expect(leavesLink).toHaveAttribute('href', '/app/tableau-de-bord/conges')
   })
 
   it('does not show Congés link for SYSTEM_ADMIN role', () => {

@@ -398,7 +398,7 @@ export async function cancelSubscription(
               message: `${companyName} a résilié son abonnement`,
               type: 'WARNING',
               priority: 'HIGH',
-              actionUrl: '/app/admin/companies',
+              actionUrl: '/app/admin/entreprises',
             })
           )
           .catch(console.error)
@@ -622,7 +622,7 @@ async function handleCheckoutCompleted(
         title: 'Nouvelle souscription activée',
         message: `Entreprise #${companyId.slice(0, 8)} — ${quantity} employé${quantity > 1 ? 's' : ''} (${formatAmountEuros(quantity * STRIPE_PRICING.UNIT_AMOUNT_CENTS)}/mois)`,
         type: 'SUCCESS',
-        actionUrl: '/app/admin/companies',
+        actionUrl: '/app/admin/entreprises',
       })
     )
     .catch(console.error)
@@ -728,7 +728,7 @@ async function handleSubscriptionUpdated(
           title: 'Abonnement expiré',
           message: `L'abonnement de l'entreprise #${companyId} a expiré`,
           type: 'WARNING',
-          actionUrl: '/app/admin/logs',
+          actionUrl: '/app/admin/journaux',
         })
       )
       .catch(console.error)
@@ -808,7 +808,7 @@ async function handleSubscriptionDeleted(
         message: `La souscription de l'entreprise #${companyId.slice(0, 8)} a été supprimée par Stripe`,
         type: 'WARNING',
         priority: 'HIGH',
-        actionUrl: '/app/admin/companies',
+        actionUrl: '/app/admin/entreprises',
       })
     )
     .catch(console.error)
@@ -934,7 +934,7 @@ async function handleInvoicePaid(
         message: `Paiement de ${formatAmountEuros(amountPaid)} reçu pour l'entreprise #${dbSub.companyId.slice(0, 8)}`,
         type: 'SUCCESS',
         priority: 'LOW',
-        actionUrl: '/app/admin/companies',
+        actionUrl: '/app/admin/entreprises',
       })
     )
     .catch(console.error)
@@ -1016,7 +1016,7 @@ async function handleInvoicePaymentFailed(
         message: `Paiement échoué pour l'entreprise #${dbSub.companyId} (${formatAmountEuros(amountDue)})`,
         type: 'WARNING',
         priority: 'HIGH',
-        actionUrl: '/app/admin/logs',
+        actionUrl: '/app/admin/journaux',
       })
     )
     .catch(console.error)

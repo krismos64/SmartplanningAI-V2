@@ -124,8 +124,8 @@ export function SubscriptionBanner({
 
   // Ne pas afficher sur la page billing (les alertes contextuelles SP-440 y sont déjà)
   if (
-    pathname === '/app/dashboard/billing' ||
-    pathname.startsWith('/app/dashboard/billing/')
+    pathname === '/app/tableau-de-bord/facturation' ||
+    pathname.startsWith('/app/tableau-de-bord/facturation/')
   ) {
     return null
   }

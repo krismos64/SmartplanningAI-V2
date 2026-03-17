@@ -33,7 +33,7 @@ vi.mock('@/hooks/use-crud-mutation', () => ({
 }))
 
 // Import après les mocks
-import { EditProfileForm } from '@/app/app/profile/edit/_components/EditProfileForm'
+import { EditProfileForm } from '@/app/app/profil/edit/_components/EditProfileForm'
 import { useCrudMutation } from '@/hooks/use-crud-mutation'
 
 // ============================================================================
@@ -114,13 +114,13 @@ describe('EditProfileForm', () => {
     it('should render back link to profile', () => {
       render(<EditProfileForm {...defaultProps} />)
       const backLink = screen.getByTestId('back-to-profile')
-      expect(backLink).toHaveAttribute('href', '/app/profile')
+      expect(backLink).toHaveAttribute('href', '/app/profil')
     })
 
     it('should render cancel button linking to profile', () => {
       render(<EditProfileForm {...defaultProps} />)
       const cancelButton = screen.getByTestId('cancel-button')
-      expect(cancelButton).toHaveAttribute('href', '/app/profile')
+      expect(cancelButton).toHaveAttribute('href', '/app/profil')
     })
 
     it('should render submit button', () => {

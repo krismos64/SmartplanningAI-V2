@@ -34,7 +34,7 @@ function makeInput(
     subscriptionStatus: 'ACTIVE',
     trialEndsAt: null,
     currentPeriodEnd: null,
-    pathname: '/app/dashboard',
+    pathname: '/app/tableau-de-bord',
     ...overrides,
   }
 }
@@ -89,7 +89,7 @@ describe('checkSubscriptionAccess', () => {
       const result = checkSubscriptionAccess(
         makeInput({
           subscriptionStatus: null,
-          pathname: '/app/dashboard/billing',
+          pathname: '/app/tableau-de-bord/facturation',
         })
       )
       expect(result).toEqual<SubscriptionAccessResult>({ allowed: true })
@@ -99,7 +99,7 @@ describe('checkSubscriptionAccess', () => {
       const result = checkSubscriptionAccess(
         makeInput({
           subscriptionStatus: 'EXPIRED',
-          pathname: '/app/profile',
+          pathname: '/app/profil',
         })
       )
       expect(result).toEqual<SubscriptionAccessResult>({ allowed: true })
@@ -109,7 +109,7 @@ describe('checkSubscriptionAccess', () => {
       const result = checkSubscriptionAccess(
         makeInput({
           subscriptionStatus: 'CANCELED',
-          pathname: '/app/profile/edit',
+          pathname: '/app/profil/edit',
         })
       )
       expect(result).toEqual<SubscriptionAccessResult>({ allowed: true })
@@ -119,7 +119,7 @@ describe('checkSubscriptionAccess', () => {
       const result = checkSubscriptionAccess(
         makeInput({
           subscriptionStatus: 'CANCELED',
-          pathname: '/app/settings',
+          pathname: '/app/parametres',
         })
       )
       expect(result).toEqual<SubscriptionAccessResult>({ allowed: true })
@@ -129,7 +129,7 @@ describe('checkSubscriptionAccess', () => {
       const result = checkSubscriptionAccess(
         makeInput({
           subscriptionStatus: 'CANCELED',
-          pathname: '/app/settings/appearance',
+          pathname: '/app/parametres/apparence',
         })
       )
       expect(result).toEqual<SubscriptionAccessResult>({ allowed: true })

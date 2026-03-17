@@ -50,7 +50,7 @@ export const ROLE_HIERARCHY: Record<UserRole, number> = {
  */
 export const PROTECTED_ROUTES: Record<string, UserRole> = {
   '/app/admin': 'SYSTEM_ADMIN',
-  '/app/director': 'DIRECTOR',
+  '/app/directeur': 'DIRECTOR',
   '/app/manager': 'MANAGER',
   '/app': 'EMPLOYEE', // Route par défaut pour tous les authentifiés
 } as const
@@ -106,13 +106,13 @@ export function hasRequiredRole(
  * route qui correspond au pathname. Les routes sont triées par spécificité
  * (plus long en premier) pour garantir un matching correct.
  *
- * @param pathname - Chemin de la route (ex: '/app/admin/users')
+ * @param pathname - Chemin de la route (ex: '/app/admin/utilisateurs')
  * @returns Le rôle minimum requis, ou null si la route n'est pas protégée par rôle
  *
  * @example
- * getRequiredRoleForRoute('/app/admin/users')     // 'SYSTEM_ADMIN'
- * getRequiredRoleForRoute('/app/director/teams')  // 'DIRECTOR'
- * getRequiredRoleForRoute('/app/dashboard')       // 'EMPLOYEE'
+ * getRequiredRoleForRoute('/app/admin/utilisateurs')     // 'SYSTEM_ADMIN'
+ * getRequiredRoleForRoute('/app/directeur/equipes')  // 'DIRECTOR'
+ * getRequiredRoleForRoute('/app/tableau-de-bord')       // 'EMPLOYEE'
  * getRequiredRoleForRoute('/login')               // null (route publique)
  */
 export function getRequiredRoleForRoute(pathname: string): UserRole | null {
@@ -135,8 +135,8 @@ export function getRequiredRoleForRoute(pathname: string): UserRole | null {
  * @returns true si l'utilisateur peut accéder à la route
  *
  * @example
- * canAccessRoute('/app/admin/users', 'SYSTEM_ADMIN') // true
- * canAccessRoute('/app/admin/users', 'EMPLOYEE')     // false
+ * canAccessRoute('/app/admin/utilisateurs', 'SYSTEM_ADMIN') // true
+ * canAccessRoute('/app/admin/utilisateurs', 'EMPLOYEE')     // false
  * canAccessRoute('/login', 'EMPLOYEE')               // true (pas de restriction)
  */
 export function canAccessRoute(
@@ -163,7 +163,7 @@ export function canAccessRoute(
  *
  * @example
  * getDefaultDashboardForRole('SYSTEM_ADMIN') // '/app/admin/dashboard'
- * getDefaultDashboardForRole('EMPLOYEE')     // '/app/dashboard'
+ * getDefaultDashboardForRole('EMPLOYEE')     // '/app/tableau-de-bord'
  */
 export function getDefaultDashboardForRole(
   userRole: UserRole | undefined
@@ -172,12 +172,12 @@ export function getDefaultDashboardForRole(
     case 'SYSTEM_ADMIN':
       return '/app/admin/dashboard'
     case 'DIRECTOR':
-      return '/app/director/dashboard'
+      return '/app/directeur/dashboard'
     case 'MANAGER':
       return '/app/manager/dashboard'
     case 'EMPLOYEE':
     default:
-      return '/app/dashboard'
+      return '/app/tableau-de-bord'
   }
 }
 

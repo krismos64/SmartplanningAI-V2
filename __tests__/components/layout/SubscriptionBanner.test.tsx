@@ -16,7 +16,7 @@ import { SubscriptionBanner } from '@/components/layout/SubscriptionBanner'
 // ============================================================================
 
 // Mock next/navigation
-const mockPathname = vi.fn(() => '/app/dashboard')
+const mockPathname = vi.fn(() => '/app/tableau-de-bord')
 vi.mock('next/navigation', () => ({
   usePathname: () => mockPathname(),
 }))
@@ -71,7 +71,7 @@ describe('SubscriptionBanner', () => {
   beforeEach(() => {
     localStorageMock.clear()
     vi.clearAllMocks()
-    mockPathname.mockReturnValue('/app/dashboard')
+    mockPathname.mockReturnValue('/app/tableau-de-bord')
   })
 
   afterEach(() => {
@@ -103,7 +103,7 @@ describe('SubscriptionBanner', () => {
     })
 
     it('ne rend rien sur la page billing', () => {
-      mockPathname.mockReturnValue('/app/dashboard/billing')
+      mockPathname.mockReturnValue('/app/tableau-de-bord/facturation')
       const { container } = render(
         <SubscriptionBanner
           {...defaultProps}
@@ -115,7 +115,7 @@ describe('SubscriptionBanner', () => {
     })
 
     it('ne rend rien sur une sous-route billing', () => {
-      mockPathname.mockReturnValue('/app/dashboard/billing/invoices')
+      mockPathname.mockReturnValue('/app/tableau-de-bord/facturation/invoices')
       const { container } = render(
         <SubscriptionBanner
           {...defaultProps}
@@ -261,7 +261,7 @@ describe('SubscriptionBanner', () => {
         />
       )
       const cta = screen.getByTestId('subscription-banner-cta')
-      expect(cta).toHaveAttribute('href', '/app/dashboard/billing')
+      expect(cta).toHaveAttribute('href', '/app/tableau-de-bord/facturation')
     })
 
     it('affiche "Mettre à jour" pour PAST_DUE', () => {

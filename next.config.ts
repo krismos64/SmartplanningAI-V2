@@ -160,6 +160,67 @@ const nextConfig: NextConfig = {
         destination: '/erreur-serveur',
         permanent: true,
       },
+      // Routes applicatives
+      {
+        source: '/app/dashboard/:path*',
+        destination: '/app/tableau-de-bord/:path*',
+        permanent: true,
+      },
+      {
+        source: '/app/dashboard',
+        destination: '/app/tableau-de-bord',
+        permanent: true,
+      },
+      {
+        source: '/app/settings/:path*',
+        destination: '/app/parametres/:path*',
+        permanent: true,
+      },
+      {
+        source: '/app/settings',
+        destination: '/app/parametres',
+        permanent: true,
+      },
+      {
+        source: '/app/profile/:path*',
+        destination: '/app/profil/:path*',
+        permanent: true,
+      },
+      {
+        source: '/app/profile',
+        destination: '/app/profil',
+        permanent: true,
+      },
+      {
+        source: '/app/director/:path*',
+        destination: '/app/directeur/:path*',
+        permanent: true,
+      },
+      {
+        source: '/app/admin/companies/:path*',
+        destination: '/app/admin/entreprises/:path*',
+        permanent: true,
+      },
+      {
+        source: '/app/admin/logs',
+        destination: '/app/admin/journaux',
+        permanent: true,
+      },
+      {
+        source: '/app/admin/users',
+        destination: '/app/admin/utilisateurs',
+        permanent: true,
+      },
+      {
+        source: '/app/admin/monitoring',
+        destination: '/app/admin/surveillance',
+        permanent: true,
+      },
+      {
+        source: '/app/admin/stats',
+        destination: '/app/admin/statistiques',
+        permanent: true,
+      },
     ]
   },
 

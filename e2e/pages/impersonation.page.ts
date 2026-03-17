@@ -68,7 +68,7 @@ export class ImpersonationPage {
    */
   async startImpersonation(companyName: string): Promise<void> {
     // Naviguer vers la liste des entreprises
-    await this.page.goto('/app/admin/companies', {
+    await this.page.goto('/app/admin/entreprises', {
       waitUntil: 'domcontentloaded',
     })
     await expect(this.companiesTitle).toBeVisible({ timeout: 15000 })
@@ -201,8 +201,8 @@ export class ImpersonationPage {
       { timeout: 60000 }
     )
 
-    // 6. Naviguer vers /app/admin/companies
-    await this.page.goto('/app/admin/companies', {
+    // 6. Naviguer vers /app/admin/entreprises
+    await this.page.goto('/app/admin/entreprises', {
       waitUntil: 'domcontentloaded',
     })
     await expect(this.companiesTitle).toBeVisible({ timeout: 15000 })

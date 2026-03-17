@@ -8,7 +8,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
-import { NotificationsTable } from '@/app/app/dashboard/notifications/_components/NotificationsTable'
+import { NotificationsTable } from '@/app/app/tableau-de-bord/notifications/_components/NotificationsTable'
 
 // Mock du composant NotificationItem
 vi.mock('@/components/notifications', () => ({
@@ -48,7 +48,7 @@ const mockNotifications = [
     message: 'Votre demande a été approuvée',
     type: 'LEAVE' as const,
     priority: 'LOW' as const,
-    actionUrl: '/app/dashboard/leaves',
+    actionUrl: '/app/tableau-de-bord/conges',
     relatedType: 'LeaveRequest',
     relatedId: 'leave-1',
     isRead: true,

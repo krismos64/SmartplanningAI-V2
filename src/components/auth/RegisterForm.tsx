@@ -122,7 +122,7 @@ export function RegisterForm() {
         description: 'Redirection vers votre tableau de bord...',
       })
 
-      router.push('/app/dashboard')
+      router.push('/app/tableau-de-bord')
       router.refresh()
     } catch {
       // Erreur inattendue

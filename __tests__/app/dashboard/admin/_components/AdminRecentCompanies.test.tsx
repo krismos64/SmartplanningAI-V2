@@ -115,7 +115,7 @@ describe('AdminRecentCompanies', () => {
       await renderAdminRecentCompanies(mockCompanies)
 
       const link = screen.getByRole('link', { name: /voir tout/i })
-      expect(link).toHaveAttribute('href', '/admin/companies')
+      expect(link).toHaveAttribute('href', '/admin/entreprises')
     })
   })
 

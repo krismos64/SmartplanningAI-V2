@@ -310,8 +310,8 @@ export async function updateCompanySettings(
       details: updates as unknown as Prisma.InputJsonValue,
     }).catch(console.error)
 
-    revalidatePath('/app/settings')
-    revalidatePath('/app/settings/company')
+    revalidatePath('/app/parametres')
+    revalidatePath('/app/parametres/entreprise')
 
     return { success: true, data: settings }
   } catch (error) {
@@ -391,8 +391,8 @@ export async function resetCompanySettings(): Promise<
       details: { action: 'reset', restoredDefaults: true },
     }).catch(console.error)
 
-    revalidatePath('/app/settings')
-    revalidatePath('/app/settings/company')
+    revalidatePath('/app/parametres')
+    revalidatePath('/app/parametres/entreprise')
 
     const settings: CompanySettings = {
       name: company.name, // Garder le nom actuel

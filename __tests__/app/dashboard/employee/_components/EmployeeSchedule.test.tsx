@@ -12,7 +12,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
-import { EmployeeSchedule } from '@/app/app/dashboard/_components/EmployeeSchedule'
+import { EmployeeSchedule } from '@/app/app/tableau-de-bord/_components/EmployeeSchedule'
 
 // Mock des composants charts pour eviter les erreurs Recharts
 vi.mock('@/components/charts', () => ({

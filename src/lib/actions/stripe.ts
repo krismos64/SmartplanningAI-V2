@@ -44,7 +44,7 @@ import { stripe } from '@/lib/stripe'
 // Constantes
 // ============================================================================
 
-const BILLING_PATH = '/app/dashboard/billing'
+const BILLING_PATH = '/app/tableau-de-bord/facturation'
 
 // ============================================================================
 // Actions

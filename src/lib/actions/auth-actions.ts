@@ -227,7 +227,7 @@ export async function registerAction(
           title: 'Nouvelle entreprise inscrite',
           message: `${companyName.trim()} vient de s'inscrire (${email.toLowerCase()})`,
           type: 'INFO',
-          actionUrl: '/app/admin/logs',
+          actionUrl: '/app/admin/journaux',
         })
       )
       .catch(console.error)

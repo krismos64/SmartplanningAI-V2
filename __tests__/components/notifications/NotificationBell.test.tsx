@@ -235,7 +235,7 @@ describe('NotificationBell - SP-322', () => {
           name: /voir toutes les notifications/i,
         })
         expect(link).toBeInTheDocument()
-        expect(link).toHaveAttribute('href', '/app/dashboard/notifications')
+        expect(link).toHaveAttribute('href', '/app/tableau-de-bord/notifications')
       })
     })
 

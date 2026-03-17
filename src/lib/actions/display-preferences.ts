@@ -217,8 +217,8 @@ export async function updateDisplayPreferences(
 
     // 4. Revalidate les pages qui utilisent les préférences
     revalidatePath('/app')
-    revalidatePath('/app/settings')
-    revalidatePath('/app/settings/appearance')
+    revalidatePath('/app/parametres')
+    revalidatePath('/app/parametres/apparence')
 
     // 5. Retourner les préférences mises à jour
     return await getDisplayPreferences()

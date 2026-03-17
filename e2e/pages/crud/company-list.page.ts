@@ -65,7 +65,7 @@ export class CompanyListPage {
     this.pageTitle = page.getByRole('heading', { name: /entreprises/i })
     this.totalCount = page.locator('text=/\\d+ entreprise/i')
     this.newCompanyButton = page.locator(
-      'a[href="/app/admin/companies/new"]'
+      'a[href="/app/admin/entreprises/new"]'
     )
     this.refreshButton = page.getByRole('button', { name: /actualiser/i })
 
@@ -94,7 +94,7 @@ export class CompanyListPage {
    * Navigue vers la liste des entreprises
    */
   async goto(): Promise<void> {
-    await this.page.goto('/app/admin/companies')
+    await this.page.goto('/app/admin/entreprises')
   }
 
   /**

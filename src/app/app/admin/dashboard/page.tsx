@@ -68,7 +68,7 @@ export default async function AdminDashboardPage() {
 
   // Verification du role (SYSTEM_ADMIN uniquement)
   if (!hasRequiredRole(session.user.role, 'SYSTEM_ADMIN')) {
-    redirect('/app/dashboard')
+    redirect('/app/tableau-de-bord')
   }
 
   // Recuperer les statistiques via le service SP-144

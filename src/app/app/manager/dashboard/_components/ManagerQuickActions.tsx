@@ -50,7 +50,7 @@ export function ManagerQuickActions({
           {/* Voir l'equipe */}
           <Button asChild variant="default">
             <Link
-              href="/app/dashboard/employees"
+              href="/app/tableau-de-bord/employes"
               className="flex items-center gap-2"
             >
               <svg
@@ -76,7 +76,7 @@ export function ManagerQuickActions({
           {/* Planning */}
           <Button asChild variant="outline">
             <Link
-              href="/app/dashboard/schedules"
+              href="/app/tableau-de-bord/plannings"
               className="flex items-center gap-2"
             >
               <svg
@@ -102,7 +102,7 @@ export function ManagerQuickActions({
           {/* Tous les conges */}
           <Button asChild variant="outline" className="relative">
             <Link
-              href="/app/dashboard/leaves"
+              href="/app/tableau-de-bord/conges"
               className="flex items-center gap-2"
             >
               <svg
@@ -135,7 +135,7 @@ export function ManagerQuickActions({
           {/* Notes d'incident */}
           <Button asChild variant="outline">
             <Link
-              href="/app/dashboard/incidents"
+              href="/app/tableau-de-bord/incidents"
               className="flex items-center gap-2"
             >
               <svg

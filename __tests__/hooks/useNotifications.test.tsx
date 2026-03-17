@@ -49,7 +49,7 @@ const mockNotifications = [
     message: 'Votre demande a été approuvée',
     type: 'LEAVE',
     priority: 'LOW',
-    actionUrl: '/app/dashboard/leaves',
+    actionUrl: '/app/tableau-de-bord/conges',
     relatedType: 'LeaveRequest',
     relatedId: 'leave-1',
     isRead: true,

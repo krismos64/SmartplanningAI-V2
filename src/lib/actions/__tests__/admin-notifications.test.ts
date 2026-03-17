@@ -73,7 +73,7 @@ const MOCK_NOTIFICATION = {
   priority: 'MEDIUM',
   userId: 'admin-001',
   companyId: null,
-  actionUrl: '/app/admin/logs',
+  actionUrl: '/app/admin/journaux',
   isRead: false,
   readAt: null,
   relatedType: null,
@@ -102,7 +102,7 @@ describe('createAdminNotification', () => {
       title: 'Nouvelle entreprise inscrite',
       message: "Acme Corp vient de s'inscrire",
       type: 'INFO' as any,
-      actionUrl: '/app/admin/logs',
+      actionUrl: '/app/admin/journaux',
     })
 
     expect(mockCreateMany).toHaveBeenCalledTimes(1)
@@ -185,11 +185,11 @@ describe('createAdminNotification', () => {
       title: 'Test',
       message: 'Test',
       type: 'SYSTEM' as any,
-      actionUrl: '/app/admin/logs',
+      actionUrl: '/app/admin/journaux',
     })
 
     const callData = mockCreateMany.mock.calls[0]![0].data
-    expect(callData[0].actionUrl).toBe('/app/admin/logs')
+    expect(callData[0].actionUrl).toBe('/app/admin/journaux')
   })
 
   it('propage les erreurs Prisma', async () => {

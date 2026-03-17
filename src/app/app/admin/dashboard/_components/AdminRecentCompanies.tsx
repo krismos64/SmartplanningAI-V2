@@ -104,7 +104,7 @@ export async function AdminRecentCompanies({
             </p>
           </div>
           <Button variant="outline" size="sm" asChild>
-            <Link href="/admin/companies">Voir tout</Link>
+            <Link href="/admin/entreprises">Voir tout</Link>
           </Button>
         </div>
       </CardHeader>

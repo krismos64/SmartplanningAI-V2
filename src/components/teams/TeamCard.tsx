@@ -169,13 +169,13 @@ export function TeamCard({
       {showActions && (
         <CardFooter className="justify-end gap-2 border-t pt-4">
           <Button variant="ghost" size="sm" asChild>
-            <Link href={`/app/director/teams/${team.id}`}>
+            <Link href={`/app/directeur/equipes/${team.id}`}>
               <Eye className="mr-1 h-4 w-4" />
               Voir
             </Link>
           </Button>
           <Button variant="ghost" size="sm" asChild>
-            <Link href={`/app/director/teams/${team.id}/edit`}>
+            <Link href={`/app/directeur/equipes/${team.id}/edit`}>
               <Edit className="mr-1 h-4 w-4" />
               Modifier
             </Link>

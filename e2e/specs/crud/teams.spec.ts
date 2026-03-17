@@ -108,7 +108,7 @@ test.describe('Gestion membres Teams (DIRECTOR)', () => {
   }) => {
     // Note: Necessite un ID d'equipe valide
     // On teste l'acces au pattern de route
-    await directorPage.goto('/app/director/teams')
+    await directorPage.goto('/app/directeur/equipes')
 
     const listPage = new TeamListPage(directorPage)
     await listPage.waitForLoad()
@@ -123,13 +123,13 @@ test.describe('Gestion membres Teams (DIRECTOR)', () => {
 // =============================================================================
 
 test.describe('Permissions Teams (MANAGER)', () => {
-  // Note: Les equipes sont gerees dans /app/director/teams
+  // Note: Les equipes sont gerees dans /app/directeur/equipes
   // Les MANAGERs n'ont pas acces aux routes /director
 
-  test('MANAGER ne peut pas acceder a /app/director/teams', async ({
+  test('MANAGER ne peut pas acceder a /app/directeur/equipes', async ({
     managerPage,
   }) => {
-    await managerPage.goto('/app/director/teams')
+    await managerPage.goto('/app/directeur/equipes')
 
     // Doit etre redirige vers son dashboard
     await expect(managerPage).toHaveURL(/\/app\/(manager|dashboard)/)
@@ -138,7 +138,7 @@ test.describe('Permissions Teams (MANAGER)', () => {
   test('MANAGER ne peut pas acceder au formulaire de creation', async ({
     managerPage,
   }) => {
-    await managerPage.goto('/app/director/teams/new')
+    await managerPage.goto('/app/directeur/equipes/new')
 
     // Doit etre redirige
     await expect(managerPage).toHaveURL(/\/app\/(manager|dashboard)/)
@@ -150,19 +150,19 @@ test.describe('Permissions Teams (MANAGER)', () => {
 // =============================================================================
 
 test.describe('Restrictions Teams (EMPLOYEE)', () => {
-  test('EMPLOYEE ne peut pas acceder a /app/director/teams', async ({
+  test('EMPLOYEE ne peut pas acceder a /app/directeur/equipes', async ({
     employeePage,
   }) => {
-    await employeePage.goto('/app/director/teams')
+    await employeePage.goto('/app/directeur/equipes')
 
     // Doit etre redirige vers son dashboard
     await expect(employeePage).toHaveURL(/\/app\/dashboard/)
   })
 
-  test('EMPLOYEE ne peut pas acceder a /app/director/teams/new', async ({
+  test('EMPLOYEE ne peut pas acceder a /app/directeur/equipes/new', async ({
     employeePage,
   }) => {
-    await employeePage.goto('/app/director/teams/new')
+    await employeePage.goto('/app/directeur/equipes/new')
 
     // Doit etre redirige
     await expect(employeePage).toHaveURL(/\/app\/dashboard/)

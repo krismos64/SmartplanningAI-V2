@@ -167,7 +167,7 @@ export async function POST(request: Request): Promise<NextResponse> {
   // 8. Construire la réponse avec le cookie posé directement dessus
   const response = NextResponse.json({
     success: true,
-    redirectTo: '/app/dashboard',
+    redirectTo: '/app/tableau-de-bord',
     impersonation: {
       isImpersonating: true,
       originalAdminId: session.user.id,
@@ -211,7 +211,7 @@ export async function POST(request: Request): Promise<NextResponse> {
         title: 'Impersonation démarrée',
         message: `${session.user.email} a démarré une impersonation de ${targetUser.email} (${targetUser.company?.name ?? 'N/A'})`,
         type: 'SYSTEM',
-        actionUrl: '/app/admin/logs',
+        actionUrl: '/app/admin/journaux',
       })
     )
     .catch(console.error)
@@ -232,7 +232,7 @@ export async function DELETE(): Promise<NextResponse> {
     // et on redirige vers l'admin (évite le blocage utilisateur)
     const response = NextResponse.json({
       success: true,
-      redirectTo: '/app/admin/companies',
+      redirectTo: '/app/admin/entreprises',
       warning: 'Aucune impersonation active, cookie nettoyé',
     })
     response.cookies.delete(IMPERSONATION_COOKIE_NAME)
@@ -242,7 +242,7 @@ export async function DELETE(): Promise<NextResponse> {
   // 2. Construire la réponse avec suppression du cookie
   const response = NextResponse.json({
     success: true,
-    redirectTo: '/app/admin/companies',
+    redirectTo: '/app/admin/entreprises',
   })
 
   response.cookies.delete(IMPERSONATION_COOKIE_NAME)
@@ -271,7 +271,7 @@ export async function DELETE(): Promise<NextResponse> {
         title: 'Impersonation arrêtée',
         message: `Impersonation de ${context.targetEmail} (${context.targetCompanyName ?? 'N/A'}) terminée après ${durationMin} min`,
         type: 'SYSTEM',
-        actionUrl: '/app/admin/logs',
+        actionUrl: '/app/admin/journaux',
       })
     )
     .catch(console.error)

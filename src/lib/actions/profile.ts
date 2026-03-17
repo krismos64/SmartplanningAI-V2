@@ -269,8 +269,8 @@ export async function updateProfile(
     }).catch(console.error)
 
     // 5. Revalidate le cache
-    revalidatePath('/app/profile')
-    revalidatePath('/app/profile/edit')
+    revalidatePath('/app/profil')
+    revalidatePath('/app/profil/edit')
 
     // 6. Retourner les données mises à jour
     return await getProfile()
@@ -376,8 +376,8 @@ export async function changePassword(
     }).catch(console.error)
 
     // 7. Revalidate (même si pas de données affichées, pour cohérence)
-    revalidatePath('/app/profile')
-    revalidatePath('/app/profile/password')
+    revalidatePath('/app/profil')
+    revalidatePath('/app/profil/password')
 
     return {
       success: true,

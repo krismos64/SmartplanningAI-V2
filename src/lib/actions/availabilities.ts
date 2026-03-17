@@ -521,7 +521,7 @@ export async function createAvailability(
 
     revalidatePath('/app/availabilities')
     revalidatePath('/app/schedules')
-    revalidatePath('/app/dashboard')
+    revalidatePath('/app/tableau-de-bord')
 
     return {
       success: true,
@@ -622,7 +622,7 @@ export async function updateAvailability(
     revalidatePath('/app/availabilities')
     revalidatePath(`/app/availabilities/${validated.id}`)
     revalidatePath('/app/schedules')
-    revalidatePath('/app/dashboard')
+    revalidatePath('/app/tableau-de-bord')
 
     return { success: true, data: updated as AvailabilityWithRelations }
   } catch (error) {
@@ -680,7 +680,7 @@ export async function deleteAvailability(
 
     revalidatePath('/app/availabilities')
     revalidatePath('/app/schedules')
-    revalidatePath('/app/dashboard')
+    revalidatePath('/app/tableau-de-bord')
 
     return { success: true }
   } catch (error) {

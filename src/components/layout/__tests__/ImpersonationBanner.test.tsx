@@ -118,7 +118,7 @@ describe('ImpersonationBanner', () => {
     })
 
     await waitFor(() => {
-      expect(mockPush).toHaveBeenCalledWith('/app/admin/companies')
+      expect(mockPush).toHaveBeenCalledWith('/app/admin/entreprises')
     })
   })
 

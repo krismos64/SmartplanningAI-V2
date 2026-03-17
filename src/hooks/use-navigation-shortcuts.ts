@@ -52,7 +52,7 @@ export interface NavigationShortcut {
 export const DEFAULT_NAVIGATION_SHORTCUTS: NavigationShortcut[] = [
   {
     sequence: 'g h',
-    path: '/app/dashboard',
+    path: '/app/tableau-de-bord',
     label: 'Accueil',
     description: 'Aller au tableau de bord',
     icon: 'Home',
@@ -60,7 +60,7 @@ export const DEFAULT_NAVIGATION_SHORTCUTS: NavigationShortcut[] = [
   },
   {
     sequence: 'g e',
-    path: '/app/dashboard/employees',
+    path: '/app/tableau-de-bord/employes',
     label: 'Employés',
     description: 'Aller à la liste des employés',
     icon: 'Users',
@@ -84,7 +84,7 @@ export const DEFAULT_NAVIGATION_SHORTCUTS: NavigationShortcut[] = [
   },
   {
     sequence: 'g l',
-    path: '/app/dashboard/leaves',
+    path: '/app/tableau-de-bord/conges',
     label: 'Congés',
     description: 'Aller aux demandes de congés',
     icon: 'CalendarOff',

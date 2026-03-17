@@ -107,10 +107,10 @@ export default async function ManagerDashboardPage() {
     redirect('/app/admin/dashboard')
   }
   if (session.user.role === 'DIRECTOR') {
-    redirect('/app/director/dashboard')
+    redirect('/app/directeur/dashboard')
   }
   if (!hasRequiredRole(session.user.role, 'MANAGER')) {
-    redirect('/app/dashboard')
+    redirect('/app/tableau-de-bord')
   }
 
   // Recuperer l'utilisateur avec son employee et son equipe geree

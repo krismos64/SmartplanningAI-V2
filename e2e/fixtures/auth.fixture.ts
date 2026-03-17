@@ -44,7 +44,7 @@ export const TEST_USERS: Record<string, TestUser> = {
     email: 'bob.wilson@techcorp.com',
     password: 'Password123!',
     role: 'EMPLOYEE',
-    expectedDashboard: '/app/dashboard',
+    expectedDashboard: '/app/tableau-de-bord',
     displayName: 'Bob Wilson',
   },
   MANAGER: {
@@ -58,7 +58,7 @@ export const TEST_USERS: Record<string, TestUser> = {
     email: 'john.doe@techcorp.com',
     password: 'Password123!',
     role: 'DIRECTOR',
-    expectedDashboard: '/app/director/dashboard',
+    expectedDashboard: '/app/directeur/dashboard',
     displayName: 'John Doe',
   },
   SYSTEM_ADMIN: {
@@ -105,7 +105,7 @@ export async function loginAs(page: Page, user: TestUser): Promise<void> {
   await page.getByRole('button', { name: 'Se connecter' }).click()
 
   // Attendre la redirection vers un dashboard (pattern permissif)
-  // Note: Le login peut rediriger vers /app/dashboard d'abord, puis le middleware
+  // Note: Le login peut rediriger vers /app/tableau-de-bord d'abord, puis le middleware
   // redirige vers le dashboard spécifique au rôle. On accepte les deux.
   // Timeout 60s pour CI nightly (serveur dev plus lent)
   await page.waitForURL(

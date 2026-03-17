@@ -191,7 +191,7 @@ export function EmployeeForm({
     successMessage: 'Employé créé avec succès',
     onSuccess: () => {
       onSuccess?.()
-      router.push('/app/dashboard/employees')
+      router.push('/app/tableau-de-bord/employes')
       router.refresh()
     },
   })
@@ -201,7 +201,7 @@ export function EmployeeForm({
     successMessage: 'Employé modifié avec succès',
     onSuccess: () => {
       onSuccess?.()
-      router.push('/app/dashboard/employees')
+      router.push('/app/tableau-de-bord/employes')
       router.refresh()
     },
   })

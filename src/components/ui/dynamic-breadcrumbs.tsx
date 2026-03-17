@@ -304,7 +304,7 @@ export function DynamicBreadcrumbs({
   pathname,
   showHomeIcon = true,
   homeLabel = 'Accueil',
-  homeHref = '/app/dashboard',
+  homeHref = '/app/tableau-de-bord',
   className,
 }: DynamicBreadcrumbsProps) {
   // Parser le pathname et extraire les segments
