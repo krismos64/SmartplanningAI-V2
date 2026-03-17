@@ -109,7 +109,7 @@ describe('ResetPasswordPage', () => {
       const newLinkButton = screen.getByRole('link', {
         name: /demander un nouveau lien/i,
       })
-      expect(newLinkButton).toHaveAttribute('href', '/forgot-password')
+      expect(newLinkButton).toHaveAttribute('href', '/mot-de-passe-oublie')
     })
 
     it('shows link back to login when token missing', async () => {
@@ -122,7 +122,7 @@ describe('ResetPasswordPage', () => {
       )
 
       const loginLink = screen.getByRole('link', { name: /retour/i })
-      expect(loginLink).toHaveAttribute('href', '/login')
+      expect(loginLink).toHaveAttribute('href', '/connexion')
     })
 
     it('does not render ResetPasswordForm when token missing', async () => {

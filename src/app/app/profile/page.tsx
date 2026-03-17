@@ -53,7 +53,7 @@ export default async function ProfilePage() {
   // 1. Vérifier l'authentification
   const session = await auth()
   if (!session?.user) {
-    redirect('/login')
+    redirect('/connexion')
   }
 
   // 2. Récupérer les données du profil

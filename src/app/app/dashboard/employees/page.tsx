@@ -22,7 +22,7 @@ export default async function EmployeesPage() {
   const session = await auth()
 
   if (!session?.user) {
-    redirect('/login')
+    redirect('/connexion')
   }
 
   // Seuls SYSTEM_ADMIN, DIRECTOR et MANAGER ont acces

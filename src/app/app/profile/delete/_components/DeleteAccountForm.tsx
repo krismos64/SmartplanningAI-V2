@@ -71,7 +71,7 @@ export function DeleteAccountForm({ userEmail }: DeleteAccountFormProps) {
     errorMessage: 'Erreur lors de la suppression du compte',
     onSuccess: () => {
       // Déconnecter l'utilisateur après suppression
-      void signOut({ callbackUrl: '/login?deleted=true' })
+      void signOut({ callbackUrl: '/connexion?deleted=true' })
     },
     onError: (error, field) => {
       // Si l'erreur concerne un champ spécifique, l'afficher sur le champ

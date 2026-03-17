@@ -32,7 +32,7 @@ export default async function AuditLogsPage({
   const session = await auth()
 
   if (!session?.user) {
-    redirect('/login')
+    redirect('/connexion')
   }
 
   // 2. RBAC côté page (double protection avec middleware)

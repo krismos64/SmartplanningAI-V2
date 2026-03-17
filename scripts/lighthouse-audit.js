@@ -29,8 +29,8 @@ const REPORT_FILE = path.join(OUTPUT_DIR, 'lighthouse-a11y-report.md')
 // Pages à auditer
 const PAGES = [
   { name: 'Accueil', url: '/' },
-  { name: 'Login', url: '/login' },
-  { name: 'Register', url: '/register' },
+  { name: 'Connexion', url: '/connexion' },
+  { name: 'Inscription', url: '/inscription' },
 ]
 
 // Seuil minimum pour le score d'accessibilité

@@ -39,7 +39,7 @@ export default function LoginPage() {
       <p className="text-center text-sm text-muted-foreground">
         Pas encore de compte ?{' '}
         <Link
-          href="/register"
+          href="/inscription"
           className="font-medium text-cyan-600 transition-colors hover:text-cyan-500 hover:underline dark:text-cyan-400 dark:hover:text-cyan-300"
         >
           Créer un compte

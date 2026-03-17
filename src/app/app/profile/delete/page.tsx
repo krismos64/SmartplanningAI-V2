@@ -25,7 +25,7 @@ export default async function DeleteAccountPage() {
   const session = await auth()
 
   if (!session?.user?.email) {
-    redirect('/login')
+    redirect('/connexion')
   }
 
   return (

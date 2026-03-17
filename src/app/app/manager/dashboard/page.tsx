@@ -99,7 +99,7 @@ export default async function ManagerDashboardPage() {
   const session = await auth()
 
   if (!session?.user) {
-    redirect('/login')
+    redirect('/connexion')
   }
 
   // Verification du role (MANAGER ou superieur mais pas SYSTEM_ADMIN)

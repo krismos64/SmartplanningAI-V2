@@ -35,7 +35,7 @@ export default async function EditProfilePage() {
 
   // Rediriger vers login si non authentifié
   if (!result.success) {
-    redirect('/login')
+    redirect('/connexion')
   }
 
   const { user, employee } = result.data

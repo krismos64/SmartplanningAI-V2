@@ -18,7 +18,7 @@ export default async function SchedulesPage() {
   const session = await auth()
 
   if (!session?.user) {
-    redirect('/login')
+    redirect('/connexion')
   }
 
   const userRole = session.user.role as

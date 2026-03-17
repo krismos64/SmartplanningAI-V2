@@ -102,7 +102,7 @@ export default async function BillingPage({
   const session = await auth()
 
   if (!session?.user) {
-    redirect('/login')
+    redirect('/connexion')
   }
 
   // Vérification du rôle DIRECTOR (ou supérieur)

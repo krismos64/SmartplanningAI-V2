@@ -499,7 +499,7 @@ describe('RegisterForm', () => {
       })
 
       await waitFor(() => {
-        expect(mockPush).toHaveBeenCalledWith('/login')
+        expect(mockPush).toHaveBeenCalledWith('/connexion')
       })
     })
   })

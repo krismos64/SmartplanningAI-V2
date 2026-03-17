@@ -63,7 +63,7 @@ export default async function AdminDashboardPage() {
   const session = await auth()
 
   if (!session?.user) {
-    redirect('/login')
+    redirect('/connexion')
   }
 
   // Verification du role (SYSTEM_ADMIN uniquement)

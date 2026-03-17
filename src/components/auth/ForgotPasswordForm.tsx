@@ -134,7 +134,7 @@ export function ForgotPasswordForm() {
         </div>
 
         <Link
-          href="/login"
+          href="/connexion"
           className="inline-flex items-center gap-1 text-sm font-medium text-cyan-600 transition-colors hover:text-cyan-500 dark:text-cyan-400 dark:hover:text-cyan-300"
         >
           <ArrowLeft className="h-4 w-4" />
@@ -197,7 +197,7 @@ export function ForgotPasswordForm() {
         {/* Link back to login */}
         <div className="text-center">
           <Link
-            href="/login"
+            href="/connexion"
             className="inline-flex items-center gap-1 text-sm font-medium text-cyan-600 transition-colors hover:text-cyan-500 dark:text-cyan-400 dark:hover:text-cyan-300"
           >
             <ArrowLeft className="h-4 w-4" />

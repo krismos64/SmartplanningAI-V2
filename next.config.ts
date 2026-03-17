@@ -135,6 +135,34 @@ const nextConfig: NextConfig = {
     ]
   },
 
+  // Redirections 301 pour les anciennes URLs anglaises vers les nouvelles URLs françaises
+  async redirects() {
+    return [
+      { source: '/login', destination: '/connexion', permanent: true },
+      { source: '/register', destination: '/inscription', permanent: true },
+      {
+        source: '/forgot-password',
+        destination: '/mot-de-passe-oublie',
+        permanent: true,
+      },
+      {
+        source: '/reset-password',
+        destination: '/reinitialisation-mot-de-passe',
+        permanent: true,
+      },
+      {
+        source: '/activate-account',
+        destination: '/activation-compte',
+        permanent: true,
+      },
+      {
+        source: '/server-error',
+        destination: '/erreur-serveur',
+        permanent: true,
+      },
+    ]
+  },
+
   // Variables d'environnement exposées côté client (préfixées par NEXT_PUBLIC_)
   env: {
     APP_NAME: 'SmartPlanning',

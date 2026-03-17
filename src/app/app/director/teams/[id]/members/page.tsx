@@ -44,7 +44,7 @@ export default async function TeamMembersPage(props: {
   const session = await auth()
 
   if (!session?.user) {
-    redirect('/login')
+    redirect('/connexion')
   }
 
   // SYSTEM_ADMIN, DIRECTOR et MANAGER peuvent gerer les membres

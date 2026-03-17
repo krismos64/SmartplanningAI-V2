@@ -39,7 +39,7 @@ export default function RegisterPage() {
       <p className="text-center text-sm text-muted-foreground">
         Vous avez déjà un compte ?{' '}
         <Link
-          href="/login"
+          href="/connexion"
           className="font-medium text-cyan-600 transition-colors hover:text-cyan-500 hover:underline dark:text-cyan-400 dark:hover:text-cyan-300"
         >
           Se connecter

@@ -22,7 +22,7 @@ export default async function ChangePasswordPage() {
   const session = await auth()
 
   if (!session?.user) {
-    redirect('/login')
+    redirect('/connexion')
   }
 
   return (

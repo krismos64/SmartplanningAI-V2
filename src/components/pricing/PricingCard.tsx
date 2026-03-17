@@ -86,7 +86,7 @@ export function PricingCard({
           className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 text-white hover:from-cyan-600 hover:to-blue-600"
           asChild
         >
-          <Link href="/register">Démarrer l&apos;essai gratuit</Link>
+          <Link href="/inscription">Démarrer l&apos;essai gratuit</Link>
         </Button>
       )}
     </div>

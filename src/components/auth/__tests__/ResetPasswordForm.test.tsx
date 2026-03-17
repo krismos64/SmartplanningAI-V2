@@ -82,7 +82,7 @@ describe('ResetPasswordForm', () => {
 
       const loginLink = screen.getByRole('link', { name: /retour/i })
       expect(loginLink).toBeInTheDocument()
-      expect(loginLink).toHaveAttribute('href', '/login')
+      expect(loginLink).toHaveAttribute('href', '/connexion')
     })
 
     it('renders password requirements hint', () => {

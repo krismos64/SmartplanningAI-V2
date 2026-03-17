@@ -27,7 +27,7 @@ export default async function CompanySettingsPage() {
   const session = await auth()
 
   if (!session?.user) {
-    redirect('/login')
+    redirect('/connexion')
   }
 
   // RBAC : Redirection si rôle non autorisé

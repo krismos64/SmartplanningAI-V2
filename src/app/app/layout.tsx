@@ -27,7 +27,7 @@ export default async function AppLayout({
   const session = await auth()
 
   if (!session?.user) {
-    redirect('/login')
+    redirect('/connexion')
   }
 
   // Récupérer les données utilisateur fraîches depuis la DB (dont l'avatar)

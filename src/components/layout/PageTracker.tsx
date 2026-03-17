@@ -55,9 +55,9 @@ const ROUTE_INFO_MAP: Record<string, { title: string; icon: string }> = {
 const EXCLUDED_ROUTES = [
   '/auth',
   '/api',
-  '/login',
-  '/register',
-  '/forgot-password',
+  '/connexion',
+  '/inscription',
+  '/mot-de-passe-oublie',
 ]
 
 /**

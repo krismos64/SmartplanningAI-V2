@@ -50,7 +50,7 @@ export default async function TeamDetailPage(props: {
   const session = await auth()
 
   if (!session?.user) {
-    redirect('/login')
+    redirect('/connexion')
   }
 
   // Seuls SYSTEM_ADMIN, DIRECTOR et MANAGER ont acces

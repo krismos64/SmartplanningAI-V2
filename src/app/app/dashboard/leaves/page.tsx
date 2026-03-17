@@ -17,7 +17,7 @@ export default async function LeavesPage() {
   const session = await auth()
 
   if (!session?.user?.id) {
-    redirect('/login')
+    redirect('/connexion')
   }
 
   const userRole = session.user.role

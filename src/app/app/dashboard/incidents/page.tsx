@@ -27,7 +27,7 @@ export default async function IncidentsPage() {
   const session = await auth()
 
   if (!session?.user?.id) {
-    redirect('/login')
+    redirect('/connexion')
   }
 
   const userRole = session.user.role

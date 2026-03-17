@@ -34,7 +34,7 @@ export default async function ExportDataPage() {
   const session = await auth()
 
   if (!session?.user?.id) {
-    redirect('/login')
+    redirect('/connexion')
   }
 
   return (

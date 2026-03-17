@@ -4,7 +4,7 @@
  * Scenarios testes :
  * - Routes publiques accessibles sans authentification
  * - Protection des routes /app/* (redirection vers login)
- * - Redirection si deja authentifie sur /login /register
+ * - Redirection si deja authentifie sur /connexion /inscription
  * - RBAC : verification des permissions par role
  *
  * @ticket SP-110
@@ -49,7 +49,7 @@ async function loginAs(
   page: Page,
   user: { email: string; password: string }
 ): Promise<void> {
-  await page.goto('/login')
+  await page.goto('/connexion')
   // Use domcontentloaded - login page has no SSE but for consistency
   await page.waitForLoadState('domcontentloaded')
   await page
@@ -75,7 +75,7 @@ async function _logout(page: Page): Promise<void> {
   const logoutButton = page.getByRole('button', { name: /deconnexion|logout/i })
   if (await logoutButton.isVisible({ timeout: 2000 }).catch(() => false)) {
     await logoutButton.click()
-    await page.waitForURL('/login', { timeout: 5000 })
+    await page.waitForURL('/connexion', { timeout: 5000 })
   } else {
     // Fallback: aller directement sur /api/auth/signout
     await page.goto('/api/auth/signout')
@@ -83,7 +83,7 @@ async function _logout(page: Page): Promise<void> {
       .getByRole('button', { name: /sign out/i })
       .click()
       .catch(() => {})
-    await page.goto('/login')
+    await page.goto('/connexion')
   }
 }
 
@@ -103,19 +103,19 @@ test.describe('Routes publiques', () => {
     await expect(page).toHaveTitle(/SmartPlanning/i)
   })
 
-  test('/login est accessible sans authentification', async ({ page }) => {
-    await page.goto('/login')
+  test('/connexion est accessible sans authentification', async ({ page }) => {
+    await page.goto('/connexion')
 
-    await expect(page).toHaveURL('/login')
+    await expect(page).toHaveURL('/connexion')
     await expect(
       page.getByRole('heading', { name: /Bon retour/i })
     ).toBeVisible()
   })
 
-  test('/register est accessible sans authentification', async ({ page }) => {
-    await page.goto('/register')
+  test('/inscription est accessible sans authentification', async ({ page }) => {
+    await page.goto('/inscription')
 
-    await expect(page).toHaveURL('/register')
+    await expect(page).toHaveURL('/inscription')
     await expect(
       page.getByRole('heading', { name: /Créer votre compte/i })
     ).toBeVisible()
@@ -127,13 +127,13 @@ test.describe('Routes publiques', () => {
 // ============================================================================
 
 test.describe('Protection des routes /app/*', () => {
-  test('non authentifie -> /app/dashboard redirige vers /login avec callbackUrl', async ({
+  test('non authentifie -> /app/dashboard redirige vers /connexion avec callbackUrl', async ({
     page,
   }) => {
     await page.goto('/app/dashboard')
 
     // Doit rediriger vers login avec callbackUrl
-    await expect(page).toHaveURL(/\/login\?callbackUrl=/)
+    await expect(page).toHaveURL(/\/connexion\?callbackUrl=/)
 
     // Verifier que le callbackUrl contient /app/dashboard
     const url = new URL(page.url())
@@ -141,37 +141,37 @@ test.describe('Protection des routes /app/*', () => {
     expect(callbackUrl).toContain('/app/dashboard')
   })
 
-  test('non authentifie -> /app/admin/dashboard redirige vers /login', async ({
+  test('non authentifie -> /app/admin/dashboard redirige vers /connexion', async ({
     page,
   }) => {
     await page.goto('/app/admin/dashboard')
 
     // Doit rediriger vers login
-    await expect(page).toHaveURL(/\/login/)
+    await expect(page).toHaveURL(/\/connexion/)
   })
 
-  test('non authentifie -> /app/director/dashboard redirige vers /login', async ({
+  test('non authentifie -> /app/director/dashboard redirige vers /connexion', async ({
     page,
   }) => {
     await page.goto('/app/director/dashboard')
 
-    await expect(page).toHaveURL(/\/login/)
+    await expect(page).toHaveURL(/\/connexion/)
   })
 
-  test('non authentifie -> /app/manager/dashboard redirige vers /login', async ({
+  test('non authentifie -> /app/manager/dashboard redirige vers /connexion', async ({
     page,
   }) => {
     await page.goto('/app/manager/dashboard')
 
-    await expect(page).toHaveURL(/\/login/)
+    await expect(page).toHaveURL(/\/connexion/)
   })
 
-  test('non authentifie -> /app/profile redirige vers /login', async ({
+  test('non authentifie -> /app/profile redirige vers /connexion', async ({
     page,
   }) => {
     await page.goto('/app/profile')
 
-    await expect(page).toHaveURL(/\/login/)
+    await expect(page).toHaveURL(/\/connexion/)
   })
 })
 
@@ -180,7 +180,7 @@ test.describe('Protection des routes /app/*', () => {
 // ============================================================================
 
 test.describe('Redirection si deja authentifie', () => {
-  test('EMPLOYEE connecte -> /login redirige vers /app/dashboard', async ({
+  test('EMPLOYEE connecte -> /connexion redirige vers /app/dashboard', async ({
     page,
   }) => {
     // Se connecter en tant qu'EMPLOYEE
@@ -189,14 +189,14 @@ test.describe('Redirection si deja authentifie', () => {
     // Attendre la redirection vers le dashboard
     await page.waitForURL(/\/app/, { timeout: 10000 })
 
-    // Maintenant, aller sur /login
-    await page.goto('/login')
+    // Maintenant, aller sur /connexion
+    await page.goto('/connexion')
 
     // Doit rediriger vers /app/dashboard (dashboard par defaut pour EMPLOYEE)
     await expect(page).toHaveURL(/\/app\/dashboard/)
   })
 
-  test('DIRECTOR connecte -> /login redirige vers /app/director/dashboard', async ({
+  test('DIRECTOR connecte -> /connexion redirige vers /app/director/dashboard', async ({
     page,
   }) => {
     // Se connecter en tant que DIRECTOR
@@ -205,14 +205,14 @@ test.describe('Redirection si deja authentifie', () => {
     // Attendre la redirection
     await page.waitForURL(/\/app/, { timeout: 10000 })
 
-    // Aller sur /login
-    await page.goto('/login')
+    // Aller sur /connexion
+    await page.goto('/connexion')
 
     // Doit rediriger vers /app/director/dashboard
     await expect(page).toHaveURL(/\/app\/director\/dashboard/)
   })
 
-  test('MANAGER connecte -> /login redirige vers /app/manager/dashboard', async ({
+  test('MANAGER connecte -> /connexion redirige vers /app/manager/dashboard', async ({
     page,
   }) => {
     // Se connecter en tant que MANAGER
@@ -221,22 +221,22 @@ test.describe('Redirection si deja authentifie', () => {
     // Attendre la redirection
     await page.waitForURL(/\/app/, { timeout: 10000 })
 
-    // Aller sur /login
-    await page.goto('/login')
+    // Aller sur /connexion
+    await page.goto('/connexion')
 
     // Doit rediriger vers /app/manager/dashboard
     await expect(page).toHaveURL(/\/app\/manager\/dashboard/)
   })
 
-  test('utilisateur connecte -> /register redirige vers son dashboard', async ({
+  test('utilisateur connecte -> /inscription redirige vers son dashboard', async ({
     page,
   }) => {
     // Se connecter
     await loginAs(page, TEST_USERS.EMPLOYEE)
     await page.waitForURL(/\/app/, { timeout: 10000 })
 
-    // Aller sur /register
-    await page.goto('/register')
+    // Aller sur /inscription
+    await page.goto('/inscription')
 
     // Doit rediriger vers le dashboard
     await expect(page).toHaveURL(/\/app\/dashboard/)
@@ -375,7 +375,7 @@ test.describe('Scenarios avances', () => {
     await page.goto('/app/profile')
 
     // Verifier la redirection vers login avec callbackUrl
-    await expect(page).toHaveURL(/\/login\?callbackUrl=/)
+    await expect(page).toHaveURL(/\/connexion\?callbackUrl=/)
 
     // Se connecter
     await page

@@ -59,7 +59,7 @@ export default async function EmployeeDetailPage({
   const { id } = await params
 
   if (!session?.user) {
-    redirect('/login')
+    redirect('/connexion')
   }
 
   // Seuls SYSTEM_ADMIN, DIRECTOR et MANAGER ont acces

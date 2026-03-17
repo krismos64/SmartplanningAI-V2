@@ -113,7 +113,7 @@ export function RegisterForm() {
           description:
             'Votre compte a été créé. Connectez-vous pour continuer.',
         })
-        router.push('/login')
+        router.push('/connexion')
         return
       }
 

@@ -42,7 +42,7 @@ export default async function EditTeamPage(props: {
   const session = await auth()
 
   if (!session?.user) {
-    redirect('/login')
+    redirect('/connexion')
   }
 
   // Seuls SYSTEM_ADMIN et DIRECTOR peuvent modifier

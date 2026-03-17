@@ -32,7 +32,7 @@ export default async function LeaveDetailPage({ params }: PageProps) {
   const session = await auth()
 
   if (!session?.user?.id) {
-    redirect('/login')
+    redirect('/connexion')
   }
 
   const { id } = await params

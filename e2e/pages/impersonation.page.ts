@@ -162,20 +162,20 @@ export class ImpersonationPage {
       await setConsentCookie(this.page.context())
     }
 
-    // 4. Naviguer vers /login et attendre que la page soit prete.
+    // 4. Naviguer vers /connexion et attendre que la page soit prete.
     // En CI nightly, le serveur Next.js peut etre lent a servir la page
     // apres clearCookies(). On fait un goto explicite avec retry pour
     // s'assurer que la page de login est chargee avant loginAs().
-    // Apres clearCookies(), le middleware peut rediriger vers /login ou
-    // servir la page directement — on attend que l'URL contienne /login.
+    // Apres clearCookies(), le middleware peut rediriger vers /connexion ou
+    // servir la page directement — on attend que l'URL contienne /connexion.
     for (let attempt = 0; attempt < 3; attempt++) {
       try {
-        await this.page.goto('/login', { timeout: 30000, waitUntil: 'domcontentloaded' })
-        // Verifier qu'on est bien sur /login (le middleware peut rediriger)
-        await this.page.waitForURL(/\/login/, { timeout: 10000 })
+        await this.page.goto('/connexion', { timeout: 30000, waitUntil: 'domcontentloaded' })
+        // Verifier qu'on est bien sur /connexion (le middleware peut rediriger)
+        await this.page.waitForURL(/\/connexion/, { timeout: 10000 })
         break
       } catch {
-        if (attempt === 2) throw new Error('Failed to navigate to /login after 3 attempts')
+        if (attempt === 2) throw new Error('Failed to navigate to /connexion after 3 attempts')
         // Force un second clearCookies en cas de cookie residuel qui redirect
         await this.page.context().clearCookies()
         await setConsentCookie(this.page.context())
@@ -190,8 +190,8 @@ export class ImpersonationPage {
     const emailField = this.page.getByPlaceholder('vous@entreprise.com')
     await emailField.waitFor({ state: 'visible', timeout: 45000 })
 
-    // 5. Re-login admin directement (on est deja sur /login avec le champ visible,
-    // evite le double goto('/login') que ferait loginAs)
+    // 5. Re-login admin directement (on est deja sur /connexion avec le champ visible,
+    // evite le double goto('/connexion') que ferait loginAs)
     const admin = TEST_USERS.SYSTEM_ADMIN
     await emailField.fill(admin.email)
     await this.page.getByPlaceholder('••••••••').fill(admin.password)

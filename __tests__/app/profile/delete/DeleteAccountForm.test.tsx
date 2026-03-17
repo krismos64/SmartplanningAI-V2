@@ -266,7 +266,7 @@ describe('DeleteAccountForm', () => {
 
       await waitFor(() => {
         expect(mockSignOut).toHaveBeenCalledWith({
-          callbackUrl: '/login?deleted=true',
+          callbackUrl: '/connexion?deleted=true',
         })
       })
     })

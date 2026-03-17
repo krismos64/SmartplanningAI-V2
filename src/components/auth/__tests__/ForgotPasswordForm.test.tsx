@@ -65,7 +65,7 @@ describe('ForgotPasswordForm', () => {
 
       const loginLink = screen.getByRole('link', { name: /retour/i })
       expect(loginLink).toBeInTheDocument()
-      expect(loginLink).toHaveAttribute('href', '/login')
+      expect(loginLink).toHaveAttribute('href', '/connexion')
     })
 
     it('renders description text', () => {

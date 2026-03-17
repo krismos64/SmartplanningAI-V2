@@ -127,7 +127,7 @@ export default async function AdminStatsPage() {
   const session = await auth()
 
   if (!session?.user) {
-    redirect('/login')
+    redirect('/connexion')
   }
 
   if (!hasRequiredRole(session.user.role, 'SYSTEM_ADMIN')) {

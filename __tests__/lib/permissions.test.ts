@@ -230,12 +230,12 @@ describe('getRequiredRoleForRoute', () => {
       expect(getRequiredRoleForRoute('/')).toBeNull()
     })
 
-    it('devrait retourner null pour /login', () => {
-      expect(getRequiredRoleForRoute('/login')).toBeNull()
+    it('devrait retourner null pour /connexion', () => {
+      expect(getRequiredRoleForRoute('/connexion')).toBeNull()
     })
 
-    it('devrait retourner null pour /register', () => {
-      expect(getRequiredRoleForRoute('/register')).toBeNull()
+    it('devrait retourner null pour /inscription', () => {
+      expect(getRequiredRoleForRoute('/inscription')).toBeNull()
     })
 
     it('devrait retourner null pour /api/auth/signin', () => {
@@ -274,7 +274,7 @@ describe('canAccessRoute', () => {
     })
 
     it('peut accéder aux routes publiques', () => {
-      expect(canAccessRoute('/login', role)).toBe(true)
+      expect(canAccessRoute('/connexion', role)).toBe(true)
       expect(canAccessRoute('/', role)).toBe(true)
     })
   })
@@ -332,7 +332,7 @@ describe('canAccessRoute', () => {
     })
 
     it('peut accéder aux routes publiques (pas de restriction de rôle)', () => {
-      expect(canAccessRoute('/login', undefined)).toBe(true)
+      expect(canAccessRoute('/connexion', undefined)).toBe(true)
       expect(canAccessRoute('/', undefined)).toBe(true)
     })
   })

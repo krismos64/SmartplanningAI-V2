@@ -23,7 +23,7 @@ export default async function TasksPage() {
   const session = await auth()
 
   if (!session?.user?.id) {
-    redirect('/login')
+    redirect('/connexion')
   }
 
   // Fetch initial tasks

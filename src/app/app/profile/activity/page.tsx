@@ -36,7 +36,7 @@ export default async function UserActivityPage({
   // 1. Authentification
   const session = await auth()
   if (!session?.user) {
-    redirect('/login')
+    redirect('/connexion')
   }
 
   // 2. Lire les filtres depuis l'URL (Next.js 15 : searchParams est une Promise)

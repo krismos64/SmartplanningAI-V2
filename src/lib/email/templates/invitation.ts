@@ -45,7 +45,7 @@ export async function sendInvitationEmail(
     expiresIn = '48 heures',
   } = params
   const baseUrl = getBaseUrl()
-  const activationUrl = `${baseUrl}/activate-account?token=${encodeURIComponent(token)}`
+  const activationUrl = `${baseUrl}/activation-compte?token=${encodeURIComponent(token)}`
 
   try {
     const html = await render(

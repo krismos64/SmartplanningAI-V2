@@ -97,7 +97,7 @@ export default async function EmployeeDashboardPage() {
   const session = await auth()
 
   if (!session?.user) {
-    redirect('/login')
+    redirect('/connexion')
   }
 
   // Verification du role - Employee ou redirection vers le dashboard approprié

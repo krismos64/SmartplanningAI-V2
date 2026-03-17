@@ -129,7 +129,7 @@ export function AboutContent() {
                 >
                   <Button size="lg" className={GRADIENT_BUTTON_CLASSES} asChild>
                     <Link
-                      href="/register"
+                      href="/inscription"
                       aria-label="Créer un compte SmartPlanning gratuitement"
                     >
                       Essayer gratuitement
@@ -288,7 +288,7 @@ export function AboutContent() {
                 <div className="flex flex-col justify-center gap-4 sm:flex-row">
                   <Button size="lg" className={GRADIENT_BUTTON_CLASSES} asChild>
                     <Link
-                      href="/register"
+                      href="/inscription"
                       aria-label="Créer un compte et démarrer gratuitement avec SmartPlanning"
                     >
                       Démarrer gratuitement

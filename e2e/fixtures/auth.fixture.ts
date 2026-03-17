@@ -84,7 +84,7 @@ export async function loginAs(page: Page, user: TestUser): Promise<void> {
   // Goto avec retry en cas de connection reset (serveur CI lent au démarrage)
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
-      await page.goto('/login', { timeout: 30000 })
+      await page.goto('/connexion', { timeout: 30000 })
       break
     } catch (error) {
       if (attempt === 2) throw error
@@ -147,8 +147,8 @@ export async function logout(page: Page): Promise<void> {
     }
   }
 
-  // Attendre redirection vers login
-  await page.waitForURL('**/login**', { timeout: 10000 })
+  // Attendre redirection vers connexion
+  await page.waitForURL('**/connexion**', { timeout: 10000 })
 }
 
 // =============================================================================

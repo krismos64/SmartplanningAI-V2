@@ -211,10 +211,10 @@ export type SessionStrategy = 'jwt' | 'database'
  */
 export const PUBLIC_ROUTES = [
   '/',
-  '/login',
-  '/register',
-  '/forgot-password',
-  '/reset-password',
+  '/connexion',
+  '/inscription',
+  '/mot-de-passe-oublie',
+  '/reinitialisation-mot-de-passe',
   '/verify-email',
   '/api/auth',
 ] as const
@@ -222,7 +222,7 @@ export const PUBLIC_ROUTES = [
 /**
  * Routes d'authentification (redirections si déjà connecté)
  */
-export const AUTH_ROUTES = ['/login', '/register'] as const
+export const AUTH_ROUTES = ['/connexion', '/inscription'] as const
 
 /**
  * Préfixe des routes API d'authentification

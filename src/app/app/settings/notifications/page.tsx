@@ -22,7 +22,7 @@ export default async function NotificationsSettingsPage() {
   const session = await auth()
 
   if (!session?.user) {
-    redirect('/login')
+    redirect('/connexion')
   }
 
   const result = await getNotificationPreferences()

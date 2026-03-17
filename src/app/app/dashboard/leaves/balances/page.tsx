@@ -23,7 +23,7 @@ export default async function BalancesPage() {
   const session = await auth()
 
   if (!session?.user?.id) {
-    redirect('/login')
+    redirect('/connexion')
   }
 
   // Seuls DIRECTOR et SYSTEM_ADMIN ont accès

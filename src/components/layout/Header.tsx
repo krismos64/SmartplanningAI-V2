@@ -73,7 +73,7 @@ export function Header({ user, isImpersonating }: HeaderProps) {
     .slice(0, 2)
 
   const handleLogout = async () => {
-    await signOut({ callbackUrl: '/login' })
+    await signOut({ callbackUrl: '/connexion' })
   }
 
   return (

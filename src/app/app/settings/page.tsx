@@ -22,7 +22,7 @@ export default async function SettingsPage() {
   const session = await auth()
 
   if (!session?.user) {
-    redirect('/login')
+    redirect('/connexion')
   }
 
   return <SettingsPageContent userRole={session.user.role as string} />

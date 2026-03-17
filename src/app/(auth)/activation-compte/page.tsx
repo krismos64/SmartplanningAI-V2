@@ -1,34 +1,30 @@
 /**
- * Reset Password Page - Page de réinitialisation du mot de passe
+ * Activate Account Page - Page d'activation de compte invite
  *
  * @description Server Component avec metadata SEO.
- * Récupère le token depuis les query params.
- * Le formulaire est géré par le Client Component ResetPasswordForm.
- * Design dark cohérent avec la landing page.
- *
- * @ticket SP-263
- * @see Context7 - Next.js 15 App Router patterns, searchParams handling
+ * Recupere le token depuis les query params.
+ * Le formulaire est gere par le Client Component ActivateAccountForm.
  */
 
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { AlertCircle, ArrowLeft } from 'lucide-react'
 
-import { ResetPasswordForm } from '@/components/auth'
-import { Button } from '@/components/ui/button'
+import { ActivateAccountForm } from '@/components/auth'
 
 export const metadata: Metadata = {
-  title: 'Réinitialiser le mot de passe',
-  description: 'Créez un nouveau mot de passe pour votre compte SmartPlanning',
+  title: 'Activer votre compte | SmartPlanning',
+  description:
+    'Activez votre compte SmartPlanning en choisissant un mot de passe sécurisé',
 }
 
-interface ResetPasswordPageProps {
+interface ActivateAccountPageProps {
   searchParams: Promise<{ token?: string }>
 }
 
-export default async function ResetPasswordPage({
+export default async function ActivateAccountPage({
   searchParams,
-}: ResetPasswordPageProps) {
+}: ActivateAccountPageProps) {
   const params = await searchParams
   const token = params.token
 
@@ -45,25 +41,20 @@ export default async function ResetPasswordPage({
             Lien invalide
           </h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Ce lien de réinitialisation est invalide ou a expiré.
+            Ce lien d&apos;activation est invalide. Veuillez contacter votre
+            administrateur pour obtenir un nouveau lien.
           </p>
         </div>
 
         {/* Actions */}
         <div className="space-y-3">
-          <Link href="/forgot-password" className="block">
-            <Button className="w-full bg-gradient-to-r from-blue-500 to-cyan-400 text-white shadow-lg shadow-blue-500/25 hover:from-blue-600 hover:to-cyan-500">
-              Demander un nouveau lien
-            </Button>
-          </Link>
-
           <div className="text-center">
             <Link
-              href="/login"
+              href="/connexion"
               className="inline-flex items-center gap-1 text-sm font-medium text-cyan-600 transition-colors hover:text-cyan-500 dark:text-cyan-400 dark:hover:text-cyan-300"
             >
               <ArrowLeft className="h-4 w-4" />
-              Retour à la connexion
+              Aller à la connexion
             </Link>
           </div>
         </div>
@@ -76,15 +67,15 @@ export default async function ResetPasswordPage({
       {/* Header */}
       <div className="text-center">
         <h1 className="text-2xl font-bold tracking-tight text-foreground">
-          Nouveau mot de passe
+          Activer votre compte
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Choisissez un mot de passe sécurisé pour votre compte
+          Choisissez un mot de passe sécurisé pour accéder à SmartPlanning
         </p>
       </div>
 
-      {/* Reset Password Form Component */}
-      <ResetPasswordForm token={token} />
+      {/* Activate Account Form Component */}
+      <ActivateAccountForm token={token} />
     </div>
   )
 }

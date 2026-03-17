@@ -160,7 +160,7 @@ export class DeleteAccountPage {
    * Vérifie la redirection vers login avec paramètre deleted
    */
   async expectRedirectToLogin() {
-    await expect(this.page).toHaveURL(/\/login\?deleted=true/)
+    await expect(this.page).toHaveURL(/\/connexion\?deleted=true/)
   }
 
   /**

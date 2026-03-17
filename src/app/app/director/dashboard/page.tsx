@@ -104,7 +104,7 @@ export default async function DirectorDashboardPage() {
   const session = await auth()
 
   if (!session?.user) {
-    redirect('/login')
+    redirect('/connexion')
   }
 
   // Verification du role (DIRECTOR ou superieur)
