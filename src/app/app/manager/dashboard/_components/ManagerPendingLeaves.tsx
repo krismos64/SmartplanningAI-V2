@@ -290,7 +290,7 @@ export function ManagerPendingLeaves({
             {pendingLeaves.length > 5 && (
               <div className="mt-4">
                 <Button asChild variant="outline" className="w-full">
-                  <Link href="/app/tableau-de-bord/conges?status=PENDING">
+                  <Link href="/app/dashboard/leaves?status=PENDING">
                     Voir toutes les demandes ({pendingLeaves.length})
                   </Link>
                 </Button>

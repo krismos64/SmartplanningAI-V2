@@ -132,7 +132,7 @@ export function HeroSection() {
                 className="h-14 border-0 bg-gradient-to-r from-blue-500 to-cyan-400 px-8 text-base text-white shadow-xl shadow-blue-500/25 hover:from-blue-600 hover:to-cyan-500"
                 asChild
               >
-                <Link href="/inscription">
+                <Link href="/register">
                   Démarrer gratuitement
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
@@ -160,7 +160,7 @@ export function HeroSection() {
               className="h-14 w-full border-0 bg-gradient-to-r from-blue-500 to-cyan-400 px-8 text-base text-white shadow-xl shadow-blue-500/25 hover:from-blue-600 hover:to-cyan-500"
               asChild
             >
-              <Link href="/inscription">
+              <Link href="/register">
                 Démarrer gratuitement
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Link>

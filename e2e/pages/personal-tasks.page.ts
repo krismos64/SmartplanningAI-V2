@@ -2,7 +2,7 @@
  * Page Object pour les tests E2E de la page Notes perso
  *
  * @ticket SP-421
- * @description Encapsule les interactions avec /app/tableau-de-bord/tasks et le widget
+ * @description Encapsule les interactions avec /app/dashboard/tasks et le widget
  */
 
 import { Page, Locator, expect } from '@playwright/test'
@@ -75,14 +75,14 @@ export class PersonalTasksPage {
   // ==========================================================================
 
   async goto() {
-    await this.page.goto('/app/tableau-de-bord/taches')
+    await this.page.goto('/app/dashboard/tasks')
     // Use domcontentloaded instead of networkidle because SSE keeps connection open
     await this.page.waitForLoadState('domcontentloaded')
     await this.pageTitle.waitFor({ state: 'visible', timeout: 20000 })
   }
 
   async gotoEmployeeDashboard() {
-    await this.page.goto('/app/tableau-de-bord')
+    await this.page.goto('/app/dashboard')
     await this.page.waitForLoadState('domcontentloaded')
   }
 
@@ -92,7 +92,7 @@ export class PersonalTasksPage {
   }
 
   async gotoDirectorDashboard() {
-    await this.page.goto('/app/directeur/dashboard')
+    await this.page.goto('/app/director/dashboard')
     await this.page.waitForLoadState('domcontentloaded')
   }
 

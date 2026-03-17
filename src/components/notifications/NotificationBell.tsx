@@ -178,7 +178,7 @@ export function NotificationBell() {
             asChild
             data-testid="notification-view-all"
           >
-            <Link href="/app/tableau-de-bord/notifications">
+            <Link href="/app/dashboard/notifications">
               Voir toutes les notifications
               <ChevronRight className="h-4 w-4" />
             </Link>

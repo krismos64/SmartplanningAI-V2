@@ -41,7 +41,7 @@ function generateTestEmail(): string {
 
 test.describe('Login Page', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/connexion')
+    await page.goto('/login')
   })
 
   test('should display login form correctly', async ({ page }) => {
@@ -158,7 +158,7 @@ test.describe('Login Page', () => {
   test('should navigate to register page', async ({ page }) => {
     await page.getByRole('link', { name: 'Créer un compte' }).click()
 
-    await expect(page).toHaveURL('/inscription')
+    await expect(page).toHaveURL('/register')
   })
 })
 
@@ -168,7 +168,7 @@ test.describe('Login Page', () => {
 
 test.describe('Register Page', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/inscription')
+    await page.goto('/register')
   })
 
   test('should display register form correctly', async ({ page }) => {
@@ -295,8 +295,8 @@ test.describe('Register Page', () => {
     // Soumettre
     await page.getByRole('button', { name: 'Créer mon compte' }).click()
 
-    // Attendre la redirection vers le dashboard ou connexion
-    await page.waitForURL(/\/app\/|\/connexion/, { timeout: 30000 })
+    // Attendre la redirection vers le dashboard ou login
+    await page.waitForURL(/\/app\/|\/login/, { timeout: 30000 })
   })
 
   test('should toggle password visibility for both password fields', async ({
@@ -336,7 +336,7 @@ test.describe('Register Page', () => {
   test('should navigate to login page', async ({ page }) => {
     await page.getByRole('link', { name: 'Se connecter' }).click()
 
-    await expect(page).toHaveURL('/connexion')
+    await expect(page).toHaveURL('/login')
   })
 
   test('should show password requirements description', async ({ page }) => {
@@ -353,17 +353,17 @@ test.describe('Register Page', () => {
 
 test.describe('Auth Navigation & Accessibility', () => {
   test('should have proper page titles', async ({ page }) => {
-    await page.goto('/connexion')
+    await page.goto('/login')
     await expect(page).toHaveTitle(/Connexion/i)
 
-    await page.goto('/inscription')
+    await page.goto('/register')
     await expect(page).toHaveTitle(/Créer un compte/i)
   })
 
   test('should maintain focus order for keyboard navigation on login', async ({
     page,
   }) => {
-    await page.goto('/connexion')
+    await page.goto('/login')
 
     // Focus directement sur le champ email pour tester la navigation
     const emailInput = page.getByPlaceholder('vous@entreprise.com')
@@ -376,13 +376,13 @@ test.describe('Auth Navigation & Accessibility', () => {
   })
 
   test('should have accessible form labels', async ({ page }) => {
-    await page.goto('/connexion')
+    await page.goto('/login')
 
     // Vérifier que les labels sont présents
     await expect(page.getByText('Email').first()).toBeVisible()
     await expect(page.getByText('Mot de passe').first()).toBeVisible()
 
-    await page.goto('/inscription')
+    await page.goto('/register')
 
     await expect(page.getByText('Nom complet').first()).toBeVisible()
     await expect(page.getByText('Email professionnel').first()).toBeVisible()

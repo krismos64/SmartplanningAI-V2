@@ -231,7 +231,7 @@ export function PersonalTasksWidget({
         </div>
         <Button asChild variant="outline" size="sm">
           <Link
-            href="/app/tableau-de-bord/taches"
+            href="/app/dashboard/tasks"
             className="flex items-center gap-1"
             data-testid="widget-add-task-link"
           >
@@ -274,7 +274,7 @@ export function PersonalTasksWidget({
               className="w-full justify-between text-sm text-muted-foreground"
             >
               <Link
-                href="/app/tableau-de-bord/taches"
+                href="/app/dashboard/tasks"
                 data-testid="widget-view-all-link"
               >
                 <span>
@@ -297,7 +297,7 @@ export function PersonalTasksWidget({
               className="w-full justify-center text-sm text-muted-foreground"
             >
               <Link
-                href="/app/tableau-de-bord/taches"
+                href="/app/dashboard/tasks"
                 data-testid="widget-manage-link"
               >
                 Gérer mes tâches

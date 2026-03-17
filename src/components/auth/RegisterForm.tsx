@@ -113,7 +113,7 @@ export function RegisterForm() {
           description:
             'Votre compte a été créé. Connectez-vous pour continuer.',
         })
-        router.push('/connexion')
+        router.push('/login')
         return
       }
 
@@ -122,7 +122,7 @@ export function RegisterForm() {
         description: 'Redirection vers votre tableau de bord...',
       })
 
-      router.push('/app/tableau-de-bord')
+      router.push('/app/dashboard')
       router.refresh()
     } catch {
       // Erreur inattendue

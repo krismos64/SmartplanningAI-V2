@@ -6,8 +6,8 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
-import { InvoiceHistory } from '@/app/app/tableau-de-bord/facturation/_components/InvoiceHistory'
-import type { SerializedPayment } from '@/app/app/tableau-de-bord/facturation/_components/InvoiceHistory'
+import { InvoiceHistory } from '@/app/app/dashboard/billing/_components/InvoiceHistory'
+import type { SerializedPayment } from '@/app/app/dashboard/billing/_components/InvoiceHistory'
 
 // ============================================================================
 // Mocks

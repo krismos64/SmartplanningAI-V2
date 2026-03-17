@@ -134,14 +134,14 @@ export class EmployeeFormPage {
    * Navigue vers le formulaire de creation
    */
   async gotoNew(): Promise<void> {
-    await this.page.goto('/app/tableau-de-bord/employes/new')
+    await this.page.goto('/app/dashboard/employees/new')
   }
 
   /**
    * Navigue vers le formulaire d'edition
    */
   async gotoEdit(employeeId: string): Promise<void> {
-    await this.page.goto(`/app/tableau-de-bord/employees/${employeeId}/edit`)
+    await this.page.goto(`/app/dashboard/employees/${employeeId}/edit`)
   }
 
   /**

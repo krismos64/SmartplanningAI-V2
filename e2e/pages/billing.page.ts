@@ -161,11 +161,11 @@ export class BillingPage {
   // ==========================================================================
 
   async goto(): Promise<void> {
-    await this.page.goto('/app/tableau-de-bord/facturation')
+    await this.page.goto('/app/dashboard/billing')
   }
 
   async gotoWithReason(reason: string): Promise<void> {
-    await this.page.goto(`/app/tableau-de-bord/facturation?reason=${reason}`)
+    await this.page.goto(`/app/dashboard/billing?reason=${reason}`)
   }
 
   async waitForLoad(): Promise<void> {

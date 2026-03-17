@@ -63,12 +63,12 @@ export default async function AdminDashboardPage() {
   const session = await auth()
 
   if (!session?.user) {
-    redirect('/connexion')
+    redirect('/login')
   }
 
   // Verification du role (SYSTEM_ADMIN uniquement)
   if (!hasRequiredRole(session.user.role, 'SYSTEM_ADMIN')) {
-    redirect('/app/tableau-de-bord')
+    redirect('/app/dashboard')
   }
 
   // Recuperer les statistiques via le service SP-144

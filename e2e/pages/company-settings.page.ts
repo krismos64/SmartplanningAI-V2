@@ -89,7 +89,7 @@ export class CompanySettingsPage {
   async goto() {
     for (let attempt = 0; attempt < 3; attempt++) {
       try {
-        await this.page.goto('/app/parametres/company', {
+        await this.page.goto('/app/settings/company', {
           waitUntil: 'domcontentloaded',
           timeout: 30000,
         })

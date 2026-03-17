@@ -83,12 +83,12 @@ test.describe('Impersonation - restrictions securite', () => {
 
     await impersonation.startImpersonation(TARGET_COMPANY)
 
-    // Tenter d'acceder a /app/admin/entreprises → redirection vers un dashboard
+    // Tenter d'acceder a /app/admin/companies → redirection vers un dashboard
     // Le middleware redirige avant le chargement complet, ce qui peut lancer
     // net::ERR_ABORTED — on absorbe cette erreur attendue.
     // En mode impersonation TechCorp (director), la redirection peut aller vers
-    // /app/tableau-de-bord ou /app/directeur/dashboard selon le role du tenant.
-    await adminPage.goto('/app/admin/entreprises', {
+    // /app/dashboard ou /app/director/dashboard selon le role du tenant.
+    await adminPage.goto('/app/admin/companies', {
       waitUntil: 'domcontentloaded',
     }).catch(() => {})
     await adminPage.waitForURL(/\/app\/(dashboard|director|manager|employee)/, {
@@ -108,13 +108,13 @@ test.describe('Impersonation - restrictions securite', () => {
 
     await impersonation.startImpersonation(TARGET_COMPANY)
 
-    // Tenter d'acceder a /app/tableau-de-bord/facturation → redirection vers /app/tableau-de-bord
+    // Tenter d'acceder a /app/dashboard/billing → redirection vers /app/dashboard
     // Le middleware redirige avant le chargement complet, ce qui peut lancer
     // net::ERR_ABORTED — on absorbe cette erreur attendue
-    await adminPage.goto('/app/tableau-de-bord/facturation', {
+    await adminPage.goto('/app/dashboard/billing', {
       waitUntil: 'domcontentloaded',
     }).catch(() => {})
-    await adminPage.waitForURL('**/app/tableau-de-bord**', {
+    await adminPage.waitForURL('**/app/dashboard**', {
       timeout: 15000,
       waitUntil: 'domcontentloaded',
     })
@@ -190,7 +190,7 @@ test.describe('Impersonation - cas limites', () => {
     adminPage,
   }) => {
     // Naviguer vers la liste des entreprises
-    await adminPage.goto('/app/admin/entreprises', {
+    await adminPage.goto('/app/admin/companies', {
       waitUntil: 'domcontentloaded',
     })
 

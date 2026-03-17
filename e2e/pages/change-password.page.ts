@@ -67,7 +67,7 @@ export class ChangePasswordPage {
    * Navigation vers la page de changement de mot de passe
    */
   async goto() {
-    await this.page.goto('/app/profil/password')
+    await this.page.goto('/app/profile/password')
   }
 
   /**

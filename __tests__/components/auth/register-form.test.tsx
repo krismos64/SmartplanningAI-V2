@@ -469,7 +469,7 @@ describe('RegisterForm', () => {
       })
 
       await waitFor(() => {
-        expect(mockPush).toHaveBeenCalledWith('/app/tableau-de-bord')
+        expect(mockPush).toHaveBeenCalledWith('/app/dashboard')
         expect(mockRefresh).toHaveBeenCalled()
       })
     })
@@ -499,7 +499,7 @@ describe('RegisterForm', () => {
       })
 
       await waitFor(() => {
-        expect(mockPush).toHaveBeenCalledWith('/connexion')
+        expect(mockPush).toHaveBeenCalledWith('/login')
       })
     })
   })

@@ -102,7 +102,7 @@ export class DashboardEmployeePage {
    * Navigue vers le dashboard employee
    */
   async goto(): Promise<void> {
-    await this.page.goto('/app/tableau-de-bord')
+    await this.page.goto('/app/dashboard')
   }
 
   /**

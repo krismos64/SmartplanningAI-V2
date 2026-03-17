@@ -153,8 +153,8 @@ export async function updateNotificationPreferences(
       },
     })
 
-    revalidatePath('/app/parametres')
-    revalidatePath('/app/parametres/notifications')
+    revalidatePath('/app/settings')
+    revalidatePath('/app/settings/notifications')
 
     return { success: true, data: updatedNotifications }
   } catch (error) {
@@ -211,8 +211,8 @@ export async function resetNotificationPreferences(): Promise<
       },
     })
 
-    revalidatePath('/app/parametres')
-    revalidatePath('/app/parametres/notifications')
+    revalidatePath('/app/settings')
+    revalidatePath('/app/settings/notifications')
 
     return { success: true, data: { ...DEFAULT_NOTIFICATION_PREFERENCES } }
   } catch (error) {

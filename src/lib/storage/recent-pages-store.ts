@@ -27,7 +27,7 @@
  * Interface d'une page récente
  */
 export interface RecentPage {
-  /** Chemin de la page (ex: "/app/tableau-de-bord/employes") */
+  /** Chemin de la page (ex: "/app/dashboard/employees") */
   path: string
   /** Titre affiché (ex: "Collaborateurs") */
   title: string

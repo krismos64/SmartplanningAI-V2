@@ -8,7 +8,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-import { ChangePasswordForm } from '@/app/app/profil/password/_components/ChangePasswordForm'
+import { ChangePasswordForm } from '@/app/app/profile/password/_components/ChangePasswordForm'
 
 // Mock next/navigation
 const mockPush = vi.fn()
@@ -335,7 +335,7 @@ describe('ChangePasswordForm', () => {
       await user.click(screen.getByTestId('submit-button'))
 
       await waitFor(() => {
-        expect(mockPush).toHaveBeenCalledWith('/app/profil')
+        expect(mockPush).toHaveBeenCalledWith('/app/profile')
         expect(mockRefresh).toHaveBeenCalled()
       })
     })

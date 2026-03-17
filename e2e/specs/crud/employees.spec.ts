@@ -179,20 +179,20 @@ test.describe('Permissions Employees (MANAGER)', () => {
 // =============================================================================
 
 test.describe('Restrictions Employees (EMPLOYEE)', () => {
-  test('EMPLOYEE ne peut pas acceder a /app/tableau-de-bord/employees', async ({
+  test('EMPLOYEE ne peut pas acceder a /app/dashboard/employees', async ({
     employeePage,
   }) => {
-    await employeePage.goto('/app/tableau-de-bord/employes')
+    await employeePage.goto('/app/dashboard/employees')
 
     // Doit rester sur son dashboard ou etre redirige
     // L'EMPLOYEE n'a pas acces a la gestion des employes
     await expect(employeePage).toHaveURL(/\/app\/dashboard(?!\/employees)/)
   })
 
-  test('EMPLOYEE ne peut pas acceder a /app/tableau-de-bord/employees/new', async ({
+  test('EMPLOYEE ne peut pas acceder a /app/dashboard/employees/new', async ({
     employeePage,
   }) => {
-    await employeePage.goto('/app/tableau-de-bord/employes/new')
+    await employeePage.goto('/app/dashboard/employees/new')
 
     // Doit etre redirige
     await expect(employeePage).toHaveURL(/\/app\/dashboard(?!\/employees)/)

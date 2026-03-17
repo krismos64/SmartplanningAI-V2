@@ -128,7 +128,7 @@ describe('TeamsDataTable', () => {
     it('le lien pointe vers /app/director/teams/new', () => {
       render(<TeamsDataTable teams={mockTeams} />)
       const link = screen.getByText('Nouvelle équipe').closest('a')
-      expect(link).toHaveAttribute('href', '/app/directeur/equipes/new')
+      expect(link).toHaveAttribute('href', '/app/director/teams/new')
     })
   })
 

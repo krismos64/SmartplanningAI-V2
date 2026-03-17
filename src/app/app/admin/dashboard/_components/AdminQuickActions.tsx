@@ -49,7 +49,7 @@ export function AdminQuickActions({
           {/* Creer une entreprise */}
           <Button variant="default" asChild>
             <Link
-              href="/admin/entreprises/new"
+              href="/admin/companies/new"
               className="flex items-center gap-2"
             >
               <svg
@@ -80,7 +80,7 @@ export function AdminQuickActions({
 
           {/* Gerer les entreprises */}
           <Button variant="outline" asChild>
-            <Link href="/admin/entreprises" className="flex items-center gap-2">
+            <Link href="/admin/companies" className="flex items-center gap-2">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"

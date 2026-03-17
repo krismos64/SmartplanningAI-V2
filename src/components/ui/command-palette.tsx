@@ -192,10 +192,10 @@ export function CommandPalette({
           router.push('/schedules/new')
           break
         case 'add-employee':
-          router.push('/app/tableau-de-bord/employes/new')
+          router.push('/app/dashboard/employees/new')
           break
         case 'create-team':
-          router.push('/app/directeur/equipes/new')
+          router.push('/app/director/teams/new')
           break
         default:
           // Action non gérée - ignorer silencieusement

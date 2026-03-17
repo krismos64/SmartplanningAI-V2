@@ -590,7 +590,7 @@ export async function createTeam(
     }).catch(console.error)
 
     // Revalide le cache
-    revalidatePath('/app/directeur/equipes')
+    revalidatePath('/app/director/teams')
 
     return {
       success: true,
@@ -737,8 +737,8 @@ export async function updateTeam(
     }).catch(console.error)
 
     // Revalide le cache
-    revalidatePath('/app/directeur/equipes')
-    revalidatePath(`/app/directeur/equipes/${id}`)
+    revalidatePath('/app/director/teams')
+    revalidatePath(`/app/director/teams/${id}`)
 
     return {
       success: true,
@@ -829,7 +829,7 @@ export async function deleteTeam(id: string): Promise<DeleteActionResult> {
     }).catch(console.error)
 
     // Revalide le cache
-    revalidatePath('/app/directeur/equipes')
+    revalidatePath('/app/director/teams')
 
     return { success: true }
   } catch (error) {
@@ -961,8 +961,8 @@ export async function assignManager(
       },
     }).catch(console.error)
 
-    revalidatePath('/app/directeur/equipes')
-    revalidatePath(`/app/directeur/equipes/${teamId}`)
+    revalidatePath('/app/director/teams')
+    revalidatePath(`/app/director/teams/${teamId}`)
 
     return {
       success: true,
@@ -1116,9 +1116,9 @@ export async function addTeamMember(
       details: { action: 'addMember', employeeId },
     }).catch(console.error)
 
-    revalidatePath('/app/directeur/equipes')
-    revalidatePath(`/app/directeur/equipes/${teamId}`)
-    revalidatePath('/app/tableau-de-bord/employes')
+    revalidatePath('/app/director/teams')
+    revalidatePath(`/app/director/teams/${teamId}`)
+    revalidatePath('/app/dashboard/employees')
 
     return {
       success: true,
@@ -1262,9 +1262,9 @@ export async function removeTeamMember(
       details: { action: 'removeMember', employeeId },
     }).catch(console.error)
 
-    revalidatePath('/app/directeur/equipes')
-    revalidatePath(`/app/directeur/equipes/${teamId}`)
-    revalidatePath('/app/tableau-de-bord/employes')
+    revalidatePath('/app/director/teams')
+    revalidatePath(`/app/director/teams/${teamId}`)
+    revalidatePath('/app/dashboard/employees')
 
     return {
       success: true,

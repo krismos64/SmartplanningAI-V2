@@ -43,7 +43,7 @@ export async function sendResetPasswordEmail(
 ): Promise<{ success: boolean; messageId?: string; error?: string }> {
   const { firstName, email, token, expiresIn = '1 heure' } = params
   const baseUrl = getBaseUrl()
-  const resetUrl = `${baseUrl}/reinitialisation-mot-de-passe?token=${encodeURIComponent(token)}`
+  const resetUrl = `${baseUrl}/reset-password?token=${encodeURIComponent(token)}`
 
   try {
     // Rendre le template React Email en HTML

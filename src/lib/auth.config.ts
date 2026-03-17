@@ -42,14 +42,14 @@ export const authConfig: NextAuthConfig = {
    * Pages personnalisées
    *
    * Je surcharge les pages par défaut de NextAuth pour utiliser mes propres
-   * pages d'authentification (/connexion) avec le design SmartPlanning.
-   * La page d'erreur pointe aussi vers /connexion : en cas d'erreur OAuth
+   * pages d'authentification (/login) avec le design SmartPlanning.
+   * La page d'erreur pointe aussi vers /login : en cas d'erreur OAuth
    * ou de session expirée, l'utilisateur est redirigé vers le formulaire
    * de connexion avec un message d'erreur contextuel.
    */
   pages: {
-    signIn: '/connexion',
-    error: '/connexion',
+    signIn: '/login',
+    error: '/login',
   },
 
   /**
@@ -277,9 +277,9 @@ export const authConfig: NextAuthConfig = {
      *
      * 1. Routes API auth (/api/auth/*) → toujours accessibles (NextAuth)
      * 2. Routes exclues (invitations) → bypass pour les liens email
-     * 3. Routes d'auth (connexion/inscription) → redirect si déjà connecté
+     * 3. Routes d'auth (login/register) → redirect si déjà connecté
      * 4. Routes publiques (/, /tarifs, CGV...) → accessibles à tous
-     * 5. Routes /app/* non authentifié → redirect vers /connexion
+     * 5. Routes /app/* non authentifié → redirect vers /login
      * 6. RBAC → vérification du rôle requis pour la route
      * 7. Impersonation Guard → bloque admin/billing en mode support
      * 8. Subscription Guard → bloque si abonnement expiré/impayé
@@ -313,10 +313,10 @@ export const authConfig: NextAuthConfig = {
       }
 
       // --- Etape 3 : Routes d'authentification ---
-      // Si un utilisateur déjà connecté accède à /connexion ou /inscription,
+      // Si un utilisateur déjà connecté accède à /login ou /register,
       // on le redirige vers son dashboard selon son rôle.
       // IMPORTANT : cette vérification est AVANT les routes publiques
-      // car /connexion est dans les deux listes (publique + auth)
+      // car /login est dans les deux listes (publique + auth)
       const isAuthRoute = AUTH_ROUTES.some((route) =>
         pathname.startsWith(route)
       )
@@ -340,13 +340,13 @@ export const authConfig: NextAuthConfig = {
 
       // --- Etape 5 : Protection des routes /app/* ---
       // Toute route /app/* nécessite une authentification.
-      // Si non connecté, on redirige vers /connexion en sauvegardant
-      // l'URL d'origine dans callbackUrl pour y revenir après connexion
+      // Si non connecté, on redirige vers /login en sauvegardant
+      // l'URL d'origine dans callbackUrl pour y revenir après login
       const isAppRoute = pathname.startsWith('/app')
       if (isAppRoute && !isLoggedIn) {
         const callbackUrl = encodeURIComponent(pathname + nextUrl.search)
         return Response.redirect(
-          new URL(`/connexion?callbackUrl=${callbackUrl}`, nextUrl)
+          new URL(`/login?callbackUrl=${callbackUrl}`, nextUrl)
         )
       }
 
@@ -374,7 +374,7 @@ export const authConfig: NextAuthConfig = {
       // plutôt que via la session, car c'est plus fiable en Edge Runtime.
       const isImpersonationBlockedRoute =
         pathname.startsWith('/app/admin') ||
-        pathname.startsWith('/app/tableau-de-bord/facturation')
+        pathname.startsWith('/app/dashboard/billing')
       if (isLoggedIn && isImpersonationBlockedRoute) {
         try {
           const impersonationCookie = request.cookies.get(
@@ -388,7 +388,7 @@ export const authConfig: NextAuthConfig = {
               'originalAdminId' in parsed
             ) {
               // Redirige vers le dashboard de l'entreprise impersonnée
-              return Response.redirect(new URL('/app/tableau-de-bord', nextUrl))
+              return Response.redirect(new URL('/app/dashboard', nextUrl))
             }
           }
         } catch {
@@ -440,7 +440,7 @@ export const authConfig: NextAuthConfig = {
           if (!subscriptionCheck.allowed) {
             // Redirection vers billing avec le motif (trial_expired,
             // past_due, canceled...) pour afficher le bon message
-            const billingUrl = new URL('/app/tableau-de-bord/facturation', nextUrl)
+            const billingUrl = new URL('/app/dashboard/billing', nextUrl)
             if (subscriptionCheck.redirectReason) {
               billingUrl.searchParams.set(
                 'reason',

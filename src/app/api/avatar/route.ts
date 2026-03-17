@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
     })
 
     // Invalider le cache pour rafraîchir les données
-    revalidatePath('/app/profil')
+    revalidatePath('/app/profile')
     revalidatePath('/app', 'layout')
     revalidatePath('/app/schedules')
 
@@ -134,7 +134,7 @@ export async function DELETE() {
     })
 
     // Invalider le cache pour rafraîchir les données
-    revalidatePath('/app/profil')
+    revalidatePath('/app/profile')
     revalidatePath('/app', 'layout')
     revalidatePath('/app/schedules')
 

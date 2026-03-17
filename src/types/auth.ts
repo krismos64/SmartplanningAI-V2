@@ -211,10 +211,10 @@ export type SessionStrategy = 'jwt' | 'database'
  */
 export const PUBLIC_ROUTES = [
   '/',
-  '/connexion',
-  '/inscription',
-  '/mot-de-passe-oublie',
-  '/reinitialisation-mot-de-passe',
+  '/login',
+  '/register',
+  '/forgot-password',
+  '/reset-password',
   '/verify-email',
   '/api/auth',
 ] as const
@@ -222,7 +222,7 @@ export const PUBLIC_ROUTES = [
 /**
  * Routes d'authentification (redirections si déjà connecté)
  */
-export const AUTH_ROUTES = ['/connexion', '/inscription'] as const
+export const AUTH_ROUTES = ['/login', '/register'] as const
 
 /**
  * Préfixe des routes API d'authentification
@@ -232,7 +232,7 @@ export const AUTH_API_PREFIX = '/api/auth'
 /**
  * Route par défaut après connexion
  */
-export const DEFAULT_LOGIN_REDIRECT = '/app/tableau-de-bord'
+export const DEFAULT_LOGIN_REDIRECT = '/app/dashboard'
 
 /**
  * Routes exclues du middleware (invitations, etc.)
@@ -256,7 +256,7 @@ export const MIDDLEWARE_EXCLUDED_ROUTES = ['/app/invite', '/app/join'] as const
  */
 export const ROLE_PROTECTED_ROUTES: Record<string, UserRole> = {
   '/app/admin': 'SYSTEM_ADMIN',
-  '/app/directeur': 'DIRECTOR',
+  '/app/director': 'DIRECTOR',
   '/app/manager': 'MANAGER',
 } as const
 
@@ -267,15 +267,15 @@ export const ROLE_PROTECTED_ROUTES: Record<string, UserRole> = {
  * Chaque rôle a son propre espace de travail.
  *
  * @example
- * DEFAULT_REDIRECT_BY_ROLE['DIRECTOR'] // '/app/directeur/dashboard'
+ * DEFAULT_REDIRECT_BY_ROLE['DIRECTOR'] // '/app/director/dashboard'
  *
  * @ticket SP-110
  */
 export const DEFAULT_REDIRECT_BY_ROLE: Record<UserRole, string> = {
   SYSTEM_ADMIN: '/app/admin/dashboard',
-  DIRECTOR: '/app/directeur/dashboard',
+  DIRECTOR: '/app/director/dashboard',
   MANAGER: '/app/manager/dashboard',
-  EMPLOYEE: '/app/tableau-de-bord',
+  EMPLOYEE: '/app/dashboard',
 } as const
 
 /**
@@ -286,7 +286,7 @@ export const DEFAULT_REDIRECT_BY_ROLE: Record<UserRole, string> = {
  *
  * @ticket SP-110
  */
-export const ACCESS_DENIED_REDIRECT = '/app/tableau-de-bord' as const
+export const ACCESS_DENIED_REDIRECT = '/app/dashboard' as const
 
 // ============================================================================
 // CONSTANTES SUBSCRIPTION GUARD (SP-440)
@@ -299,9 +299,9 @@ export const ACCESS_DENIED_REDIRECT = '/app/tableau-de-bord' as const
  * @ticket SP-440
  */
 export const SUBSCRIPTION_EXEMPT_ROUTES = [
-  '/app/tableau-de-bord/facturation',
-  '/app/profil',
-  '/app/parametres',
+  '/app/dashboard/billing',
+  '/app/profile',
+  '/app/settings',
 ] as const
 
 // ============================================================================

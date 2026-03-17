@@ -319,7 +319,7 @@ describe('LoginForm', () => {
       })
 
       await waitFor(() => {
-        expect(mockPush).toHaveBeenCalledWith('/app/tableau-de-bord')
+        expect(mockPush).toHaveBeenCalledWith('/app/dashboard')
         expect(mockRefresh).toHaveBeenCalled()
       })
     })

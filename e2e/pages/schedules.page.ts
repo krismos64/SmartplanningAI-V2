@@ -92,7 +92,7 @@ export class SchedulesPage {
   async goto() {
     for (let attempt = 0; attempt < 3; attempt++) {
       try {
-        await this.page.goto('/app/tableau-de-bord/plannings', {
+        await this.page.goto('/app/dashboard/schedules', {
           waitUntil: 'domcontentloaded',
           timeout: 30000,
         })

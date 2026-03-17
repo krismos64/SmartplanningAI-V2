@@ -6,8 +6,8 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
-import { BillingPageContent } from '@/app/app/tableau-de-bord/facturation/_components/BillingPageContent'
-import type { SerializedBillingData } from '@/app/app/tableau-de-bord/facturation/_components/BillingPageContent'
+import { BillingPageContent } from '@/app/app/dashboard/billing/_components/BillingPageContent'
+import type { SerializedBillingData } from '@/app/app/dashboard/billing/_components/BillingPageContent'
 
 // ============================================================================
 // Mocks

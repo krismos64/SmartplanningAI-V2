@@ -24,7 +24,7 @@ vi.mock('next/navigation', () => ({
     replace: vi.fn(),
     back: vi.fn(),
   }),
-  usePathname: () => '/app/tableau-de-bord',
+  usePathname: () => '/app/dashboard',
 }))
 
 // Mock framer-motion

@@ -384,7 +384,7 @@ describe('createBillingPortalAction', () => {
     expect(mockCreateBillingPortalSession).toHaveBeenCalledWith(
       expect.objectContaining({
         customerId: 'cus_test123',
-        returnUrl: expect.stringContaining('/app/tableau-de-bord/facturation'),
+        returnUrl: expect.stringContaining('/app/dashboard/billing'),
       })
     )
   })
@@ -450,7 +450,7 @@ describe('updateSubscriptionQuantityAction', () => {
     const result = await updateSubscriptionQuantityAction({ quantity: 20 })
 
     expect(result.success).toBe(true)
-    expect(mockRevalidatePath).toHaveBeenCalledWith('/app/tableau-de-bord/facturation')
+    expect(mockRevalidatePath).toHaveBeenCalledWith('/app/dashboard/billing')
   })
 
   it('passe les bons paramètres au service', async () => {
@@ -508,7 +508,7 @@ describe('cancelSubscriptionAction', () => {
       subscriptionId: 'sub_test123',
       cancelImmediately: false,
     })
-    expect(mockRevalidatePath).toHaveBeenCalledWith('/app/tableau-de-bord/facturation')
+    expect(mockRevalidatePath).toHaveBeenCalledWith('/app/dashboard/billing')
   })
 
   it('annule immédiatement si cancelImmediately = true', async () => {

@@ -121,11 +121,11 @@ export class AuditLogsPage {
   // ==========================================================================
 
   async goto(): Promise<void> {
-    await this.page.goto('/app/admin/journaux')
+    await this.page.goto('/app/admin/logs')
   }
 
   async gotoWithParams(params: string): Promise<void> {
-    await this.page.goto(`/app/admin/journaux?${params}`)
+    await this.page.goto(`/app/admin/logs?${params}`)
   }
 
   async waitForLoad(): Promise<void> {

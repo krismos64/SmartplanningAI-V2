@@ -6,8 +6,8 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
-import { SubscriptionStatus } from '@/app/app/tableau-de-bord/facturation/_components/SubscriptionStatus'
-import type { SerializedSubscription } from '@/app/app/tableau-de-bord/facturation/_components/SubscriptionStatus'
+import { SubscriptionStatus } from '@/app/app/dashboard/billing/_components/SubscriptionStatus'
+import type { SerializedSubscription } from '@/app/app/dashboard/billing/_components/SubscriptionStatus'
 
 // ============================================================================
 // Mocks

@@ -65,7 +65,7 @@ export function ImpersonationBanner({
         impersonatedCompanyName: null,
       })
 
-      router.push('/app/admin/entreprises')
+      router.push('/app/admin/companies')
       router.refresh()
     } catch {
       toast.error('Erreur', {

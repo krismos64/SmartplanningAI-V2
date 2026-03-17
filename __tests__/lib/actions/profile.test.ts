@@ -519,8 +519,8 @@ describe('updateProfile', () => {
       phone: '',
     })
 
-    expect(revalidatePath).toHaveBeenCalledWith('/app/profil')
-    expect(revalidatePath).toHaveBeenCalledWith('/app/profil/edit')
+    expect(revalidatePath).toHaveBeenCalledWith('/app/profile')
+    expect(revalidatePath).toHaveBeenCalledWith('/app/profile/edit')
   })
 
   it('should set phone to null when phone is empty string', async () => {

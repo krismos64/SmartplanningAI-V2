@@ -20,8 +20,8 @@ import { AuditLogsPage } from '../pages'
 // =============================================================================
 
 test.describe('Audit Logs — RBAC Protection', () => {
-  test('SYSTEM_ADMIN peut acceder a /app/admin/journaux', async ({ adminPage }) => {
-    await adminPage.goto('/app/admin/journaux')
+  test('SYSTEM_ADMIN peut acceder a /app/admin/logs', async ({ adminPage }) => {
+    await adminPage.goto('/app/admin/logs')
 
     await expect(
       adminPage.getByRole('heading', { name: /journal d'audit/i })
@@ -29,26 +29,26 @@ test.describe('Audit Logs — RBAC Protection', () => {
     await expect(adminPage).toHaveURL(/\/app\/admin\/logs/)
   })
 
-  test('DIRECTOR est redirige depuis /app/admin/journaux', async ({
+  test('DIRECTOR est redirige depuis /app/admin/logs', async ({
     directorPage,
   }) => {
-    await directorPage.goto('/app/admin/journaux')
+    await directorPage.goto('/app/admin/logs')
 
     await expect(directorPage).toHaveURL(/\/app\/(director|dashboard)/)
   })
 
-  test('MANAGER est redirige depuis /app/admin/journaux', async ({
+  test('MANAGER est redirige depuis /app/admin/logs', async ({
     managerPage,
   }) => {
-    await managerPage.goto('/app/admin/journaux')
+    await managerPage.goto('/app/admin/logs')
 
     await expect(managerPage).toHaveURL(/\/app\/(manager|dashboard)/)
   })
 
-  test('EMPLOYEE est redirige depuis /app/admin/journaux', async ({
+  test('EMPLOYEE est redirige depuis /app/admin/logs', async ({
     employeePage,
   }) => {
-    await employeePage.goto('/app/admin/journaux')
+    await employeePage.goto('/app/admin/logs')
 
     await expect(employeePage).toHaveURL(/\/app\/dashboard/)
   })
@@ -302,7 +302,7 @@ test.describe('Audit Logs — Detail modal', () => {
 // =============================================================================
 
 test.describe('Audit Logs — URL bookmarkable', () => {
-  test('charger /app/admin/journaux?action=DELETE applique le filtre', async ({
+  test('charger /app/admin/logs?action=DELETE applique le filtre', async ({
     adminPage,
   }) => {
     const auditPage = new AuditLogsPage(adminPage)
@@ -317,7 +317,7 @@ test.describe('Audit Logs — URL bookmarkable', () => {
     await expect(firstTrigger).toContainText(/suppression/i)
   })
 
-  test('charger /app/admin/journaux?entityType=TEAM applique le filtre', async ({
+  test('charger /app/admin/logs?entityType=TEAM applique le filtre', async ({
     adminPage,
   }) => {
     const auditPage = new AuditLogsPage(adminPage)

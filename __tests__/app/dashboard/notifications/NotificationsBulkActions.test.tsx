@@ -8,7 +8,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
-import { NotificationsBulkActions } from '@/app/app/tableau-de-bord/notifications/_components/NotificationsBulkActions'
+import { NotificationsBulkActions } from '@/app/app/dashboard/notifications/_components/NotificationsBulkActions'
 
 describe('NotificationsBulkActions', () => {
   const defaultProps = {

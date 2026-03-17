@@ -128,14 +128,14 @@ export class CompanyFormPage {
    * Navigue vers le formulaire de creation
    */
   async gotoNew(): Promise<void> {
-    await this.page.goto('/app/admin/entreprises/new')
+    await this.page.goto('/app/admin/companies/new')
   }
 
   /**
    * Navigue vers le formulaire d'edition
    */
   async gotoEdit(companyId: string): Promise<void> {
-    await this.page.goto(`/app/admin/entreprises/${companyId}`)
+    await this.page.goto(`/app/admin/companies/${companyId}`)
   }
 
   /**

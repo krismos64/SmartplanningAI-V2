@@ -24,7 +24,7 @@ vi.mock('@/lib/actions/personal-tasks', () => ({
   getPersonalTasksForWidget: vi.fn(),
 }))
 import { render, screen } from '@testing-library/react'
-import { EmployeeStats } from '@/app/app/tableau-de-bord/_components/EmployeeStats'
+import { EmployeeStats } from '@/app/app/dashboard/_components/EmployeeStats'
 import type { EmployeeStatsResult } from '@/lib/services/dashboard/types'
 
 // Mock des donnees de test

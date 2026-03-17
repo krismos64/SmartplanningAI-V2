@@ -107,7 +107,7 @@ export function CompanyForm({
     successMessage: 'Entreprise créée avec succès',
     onSuccess: () => {
       onSuccess?.()
-      router.push('/admin/entreprises')
+      router.push('/admin/companies')
       router.refresh()
     },
   })
@@ -117,7 +117,7 @@ export function CompanyForm({
     successMessage: 'Entreprise modifiée avec succès',
     onSuccess: () => {
       onSuccess?.()
-      router.push('/admin/entreprises')
+      router.push('/admin/companies')
       router.refresh()
     },
   })

@@ -65,7 +65,7 @@ export class DeleteAccountPage {
    * Navigation vers la page de suppression de compte
    */
   async goto() {
-    await this.page.goto('/app/profil/delete')
+    await this.page.goto('/app/profile/delete')
   }
 
   /**
@@ -160,7 +160,7 @@ export class DeleteAccountPage {
    * Vérifie la redirection vers login avec paramètre deleted
    */
   async expectRedirectToLogin() {
-    await expect(this.page).toHaveURL(/\/connexion\?deleted=true/)
+    await expect(this.page).toHaveURL(/\/login\?deleted=true/)
   }
 
   /**

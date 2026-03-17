@@ -77,7 +77,7 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
       setCountdown((prev) => {
         if (prev <= 1) {
           clearInterval(timer)
-          router.push('/connexion')
+          router.push('/login')
           return 0
         }
         return prev - 1
@@ -161,7 +161,7 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
             </span>{' '}
             secondes...
           </p>
-          <Link href="/connexion">
+          <Link href="/login">
             <Button className={cn('w-full', GRADIENT_BUTTON_CLASSES)}>
               Se connecter maintenant
             </Button>
@@ -284,7 +284,7 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
         {/* Link back to login */}
         <div className="text-center">
           <Link
-            href="/connexion"
+            href="/login"
             className="inline-flex items-center gap-1 text-sm font-medium text-cyan-600 transition-colors hover:text-cyan-500 dark:text-cyan-400 dark:hover:text-cyan-300"
           >
             <ArrowLeft className="h-4 w-4" />

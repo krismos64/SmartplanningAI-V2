@@ -731,7 +731,7 @@ export async function createSchedule(
       .catch(console.error)
 
     revalidatePath('/app/schedules')
-    revalidatePath('/app/tableau-de-bord')
+    revalidatePath('/app/dashboard')
 
     return {
       success: true,
@@ -861,7 +861,7 @@ export async function updateSchedule(
 
     revalidatePath('/app/schedules')
     revalidatePath(`/app/schedules/${validated.id}`)
-    revalidatePath('/app/tableau-de-bord')
+    revalidatePath('/app/dashboard')
 
     return { success: true, data: updated as ScheduleWithRelations }
   } catch (error) {
@@ -924,7 +924,7 @@ export async function deleteSchedule(id: string): Promise<DeleteActionResult> {
     }
 
     revalidatePath('/app/schedules')
-    revalidatePath('/app/tableau-de-bord')
+    revalidatePath('/app/dashboard')
 
     return { success: true }
   } catch (error) {
@@ -1013,7 +1013,7 @@ export async function deleteScheduleGroup(
     }
 
     revalidatePath('/app/schedules')
-    revalidatePath('/app/tableau-de-bord')
+    revalidatePath('/app/dashboard')
 
     return { success: true, data: { deletedCount: result.count } }
   } catch (error) {
@@ -1164,7 +1164,7 @@ export async function duplicateSchedule(
     }
 
     revalidatePath('/app/schedules')
-    revalidatePath('/app/tableau-de-bord')
+    revalidatePath('/app/dashboard')
 
     return { success: true, data: duplicates as ScheduleWithRelations[] }
   } catch (error) {
@@ -1237,7 +1237,7 @@ export async function updateScheduleStatus(
 
     revalidatePath('/app/schedules')
     revalidatePath(`/app/schedules/${id}`)
-    revalidatePath('/app/tableau-de-bord')
+    revalidatePath('/app/dashboard')
 
     return { success: true, data: updated as ScheduleWithRelations }
   } catch (error) {
@@ -1581,7 +1581,7 @@ export async function deleteRecurringSchedules(
     }).catch(console.error)
 
     revalidatePath('/app/schedules')
-    revalidatePath('/app/tableau-de-bord')
+    revalidatePath('/app/dashboard')
 
     return { success: true, data: { deletedCount } }
   } catch (error) {
@@ -1779,7 +1779,7 @@ export async function updateRecurringSchedules(
     }).catch(console.error)
 
     revalidatePath('/app/schedules')
-    revalidatePath('/app/tableau-de-bord')
+    revalidatePath('/app/dashboard')
 
     return { success: true, data: { updatedCount } }
   } catch (error) {

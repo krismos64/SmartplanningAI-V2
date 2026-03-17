@@ -57,7 +57,7 @@ export class SettingsPage {
   }
 
   async goto() {
-    await this.page.goto('/app/parametres')
+    await this.page.goto('/app/settings')
   }
 
   async waitForPageLoad() {
@@ -104,54 +104,54 @@ export class SettingsPage {
 
   async expectCompanySectionClickable() {
     // SP-435: Company section is now active
-    const link = this.page.locator('a[href="/app/parametres/entreprise"]')
+    const link = this.page.locator('a[href="/app/settings/company"]')
     await expect(link).toBeVisible()
   }
 
   async clickCompanySection() {
-    await this.page.locator('a[href="/app/parametres/entreprise"]').click()
+    await this.page.locator('a[href="/app/settings/company"]').click()
   }
 
   async expectProfileSectionClickable() {
     // Le Link enveloppe la Card, donc on cherche le lien parent
-    const link = this.page.locator('a[href="/app/profil"]')
+    const link = this.page.locator('a[href="/app/profile"]')
     await expect(link).toBeVisible()
   }
 
   async expectSecuritySectionClickable() {
     // Le Link enveloppe la Card, donc on cherche le lien parent
-    const link = this.page.locator('a[href="/app/profil/password"]')
+    const link = this.page.locator('a[href="/app/profile/password"]')
     await expect(link).toBeVisible()
   }
 
   async expectAppearanceSectionClickable() {
     // SP-276: Appearance section is now active (no longer disabled)
-    const link = this.page.locator('a[href="/app/parametres/apparence"]')
+    const link = this.page.locator('a[href="/app/settings/appearance"]')
     await expect(link).toBeVisible()
   }
 
   async clickAppearanceSection() {
-    await this.page.locator('a[href="/app/parametres/apparence"]').click()
+    await this.page.locator('a[href="/app/settings/appearance"]').click()
   }
 
   async expectNotificationsSectionClickable() {
     // SP-275: Notifications section is now active (no longer disabled)
-    const link = this.page.locator('a[href="/app/parametres/notifications"]')
+    const link = this.page.locator('a[href="/app/settings/notifications"]')
     await expect(link).toBeVisible()
   }
 
   async clickNotificationsSection() {
-    await this.page.locator('a[href="/app/parametres/notifications"]').click()
+    await this.page.locator('a[href="/app/settings/notifications"]').click()
   }
 
   async clickProfileSection() {
     // Click sur le lien parent qui contient la Card
-    await this.page.locator('a[href="/app/profil"]').click()
+    await this.page.locator('a[href="/app/profile"]').click()
   }
 
   async clickSecuritySection() {
     // Click sur le lien parent qui contient la Card
-    await this.page.locator('a[href="/app/profil/password"]').click()
+    await this.page.locator('a[href="/app/profile/password"]').click()
   }
 
   async expectGridLayout() {

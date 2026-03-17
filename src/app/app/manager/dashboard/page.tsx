@@ -99,7 +99,7 @@ export default async function ManagerDashboardPage() {
   const session = await auth()
 
   if (!session?.user) {
-    redirect('/connexion')
+    redirect('/login')
   }
 
   // Verification du role (MANAGER ou superieur mais pas SYSTEM_ADMIN)
@@ -107,10 +107,10 @@ export default async function ManagerDashboardPage() {
     redirect('/app/admin/dashboard')
   }
   if (session.user.role === 'DIRECTOR') {
-    redirect('/app/directeur/dashboard')
+    redirect('/app/director/dashboard')
   }
   if (!hasRequiredRole(session.user.role, 'MANAGER')) {
-    redirect('/app/tableau-de-bord')
+    redirect('/app/dashboard')
   }
 
   // Recuperer l'utilisateur avec son employee et son equipe geree

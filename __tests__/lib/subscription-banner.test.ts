@@ -173,7 +173,7 @@ describe('getSubscriptionBannerConfig', () => {
       const result = getSubscriptionBannerConfig(
         makeInput({ subscriptionStatus: 'TRIAL', trialEndsAt: futureDate(10) })
       )
-      expect(result.ctaHref).toBe('/app/tableau-de-bord/facturation')
+      expect(result.ctaHref).toBe('/app/dashboard/billing')
     })
 
     it('config.daysRemaining est correct', () => {

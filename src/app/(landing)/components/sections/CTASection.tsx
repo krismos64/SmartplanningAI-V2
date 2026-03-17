@@ -48,7 +48,7 @@ export function CTASection() {
                 className="h-14 bg-white px-8 text-base font-semibold text-blue-600 hover:bg-white/90"
                 asChild
               >
-                <Link href="/inscription">
+                <Link href="/register">
                   Démarrer gratuitement
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>

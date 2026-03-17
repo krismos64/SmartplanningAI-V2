@@ -132,7 +132,7 @@ export class DashboardDirectorPage {
    * Navigue vers le dashboard director
    */
   async goto(): Promise<void> {
-    await this.page.goto('/app/directeur/dashboard')
+    await this.page.goto('/app/director/dashboard')
   }
 
   /**

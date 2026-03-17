@@ -94,7 +94,7 @@ export class ProfilePage {
   }
 
   async goto() {
-    await this.page.goto('/app/profil')
+    await this.page.goto('/app/profile')
   }
 
   async waitForPageLoad() {

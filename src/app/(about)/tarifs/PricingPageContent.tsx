@@ -302,7 +302,7 @@ export function PricingPageContent() {
                 </p>
                 <Button size="lg" className={GRADIENT_BUTTON_CLASSES} asChild>
                   <Link
-                    href="/inscription"
+                    href="/register"
                     aria-label="Démarrer l'essai gratuit de 21 jours sans carte bancaire"
                     data-testid="cta-register"
                   >

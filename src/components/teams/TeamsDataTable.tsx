@@ -202,7 +202,7 @@ const getColumns = (isImpersonating: boolean): ColumnDef<TeamWithCounts>[] => [
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
               <Link
-                href={`/app/directeur/equipes/${team.id}`}
+                href={`/app/director/teams/${team.id}`}
                 className="flex items-center"
               >
                 <Eye className="mr-2 h-4 w-4" />
@@ -223,7 +223,7 @@ const getColumns = (isImpersonating: boolean): ColumnDef<TeamWithCounts>[] => [
                 </span>
               ) : (
                 <Link
-                  href={`/app/directeur/equipes/${team.id}/edit`}
+                  href={`/app/director/teams/${team.id}/edit`}
                   className="flex items-center"
                 >
                   <Edit className="mr-2 h-4 w-4" />
@@ -245,7 +245,7 @@ const getColumns = (isImpersonating: boolean): ColumnDef<TeamWithCounts>[] => [
                 </span>
               ) : (
                 <Link
-                  href={`/app/directeur/equipes/${team.id}/members`}
+                  href={`/app/director/teams/${team.id}/members`}
                   className="flex items-center"
                 >
                   <Users className="mr-2 h-4 w-4" />
@@ -371,7 +371,7 @@ export function TeamsDataTable({
             </Button>
           ) : (
             <Button asChild>
-              <Link href="/app/directeur/equipes/new">
+              <Link href="/app/director/teams/new">
                 <Plus className="mr-2 h-4 w-4" />
                 Nouvelle équipe
               </Link>
@@ -439,7 +439,7 @@ export function TeamsDataTable({
                         </Button>
                       ) : (
                         <Button variant="outline" size="sm" asChild>
-                          <Link href="/app/directeur/equipes/new">
+                          <Link href="/app/director/teams/new">
                             <Plus className="mr-2 h-4 w-4" />
                             Créer une équipe
                           </Link>
@@ -483,7 +483,7 @@ export function TeamsDataTable({
                 </Button>
               ) : (
                 <Button variant="outline" size="sm" asChild>
-                  <Link href="/app/directeur/equipes/new">
+                  <Link href="/app/director/teams/new">
                     <Plus className="mr-2 h-4 w-4" />
                     Créer une équipe
                   </Link>

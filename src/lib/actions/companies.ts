@@ -393,7 +393,7 @@ export async function createCompany(
     }).catch(console.error)
 
     // Revalide le cache
-    revalidatePath('/admin/entreprises')
+    revalidatePath('/admin/companies')
 
     return company
   }) as Promise<CrudActionResult<CompanyDetail>>
@@ -496,7 +496,7 @@ export async function updateCompany(
     }).catch(console.error)
 
     // Revalide le cache
-    revalidatePath('/admin/entreprises')
+    revalidatePath('/admin/companies')
     revalidatePath(`/admin/companies/${id}`)
 
     return company
@@ -552,7 +552,7 @@ export async function deleteCompany(id: string): Promise<DeleteActionResult> {
       }).catch(console.error)
 
       // Revalide le cache
-      revalidatePath('/admin/entreprises')
+      revalidatePath('/admin/companies')
 
       return { deleted: true }
     })
@@ -637,7 +637,7 @@ export async function toggleCompanyStatus(
       details: { from: !isActive, to: isActive },
     }).catch(console.error)
 
-    revalidatePath('/admin/entreprises')
+    revalidatePath('/admin/companies')
     revalidatePath(`/admin/companies/${id}`)
 
     return company

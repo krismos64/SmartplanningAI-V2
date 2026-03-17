@@ -69,7 +69,7 @@ export class TeamMembersPage {
    * Navigue vers la page de gestion des membres
    */
   async goto(teamId: string): Promise<void> {
-    await this.page.goto(`/app/directeur/equipes/${teamId}/members`)
+    await this.page.goto(`/app/director/teams/${teamId}/members`)
   }
 
   /**

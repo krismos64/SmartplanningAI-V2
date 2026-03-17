@@ -64,7 +64,7 @@ export class TeamListPage {
    * Navigue vers la liste des equipes
    */
   async goto(): Promise<void> {
-    await this.page.goto('/app/directeur/equipes')
+    await this.page.goto('/app/director/teams')
   }
 
   /**

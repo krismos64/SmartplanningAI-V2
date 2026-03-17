@@ -35,7 +35,7 @@ export class NotificationsPreferencesPage {
    * Navigue vers la page Notifications
    */
   async goto() {
-    await this.page.goto('/app/parametres/notifications')
+    await this.page.goto('/app/settings/notifications')
   }
 
   /**

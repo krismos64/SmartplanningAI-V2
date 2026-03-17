@@ -58,7 +58,7 @@ vi.mock('@/components/ui/select', () => ({
   }) => <option value={value}>{children}</option>,
 }))
 
-import { NotificationsFilters } from '@/app/app/tableau-de-bord/notifications/_components/NotificationsFilters'
+import { NotificationsFilters } from '@/app/app/dashboard/notifications/_components/NotificationsFilters'
 
 describe('NotificationsFilters', () => {
   const defaultProps = {

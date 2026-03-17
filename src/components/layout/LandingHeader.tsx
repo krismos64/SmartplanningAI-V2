@@ -105,13 +105,13 @@ export function LandingHeader({
                 className="text-muted-foreground hover:bg-accent hover:text-foreground dark:text-white/80 dark:hover:bg-white/10 dark:hover:text-white"
                 asChild
               >
-                <Link href="/connexion">Connexion</Link>
+                <Link href="/login">Connexion</Link>
               </Button>
               <Button
                 className="border-0 bg-gradient-to-r from-blue-500 to-cyan-400 text-white shadow-lg shadow-blue-500/25 hover:from-blue-600 hover:to-cyan-500"
                 asChild
               >
-                <Link href="/inscription">Essai gratuit</Link>
+                <Link href="/register">Essai gratuit</Link>
               </Button>
             </div>
 
@@ -224,7 +224,7 @@ export function LandingHeader({
                       asChild
                     >
                       <Link
-                        href="/connexion"
+                        href="/login"
                         onClick={() => setIsMobileMenuOpen(false)}
                       >
                         Connexion
@@ -236,7 +236,7 @@ export function LandingHeader({
                       asChild
                     >
                       <Link
-                        href="/inscription"
+                        href="/register"
                         onClick={() => setIsMobileMenuOpen(false)}
                       >
                         Essai gratuit

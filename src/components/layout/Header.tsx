@@ -73,7 +73,7 @@ export function Header({ user, isImpersonating }: HeaderProps) {
     .slice(0, 2)
 
   const handleLogout = async () => {
-    await signOut({ callbackUrl: '/connexion' })
+    await signOut({ callbackUrl: '/login' })
   }
 
   return (
@@ -93,7 +93,7 @@ export function Header({ user, isImpersonating }: HeaderProps) {
           </Button>
 
           {/* Logo + Animation Lottie */}
-          <Link href="/app/tableau-de-bord" className="flex items-center gap-2">
+          <Link href="/app/dashboard" className="flex items-center gap-2">
             {animationData && (
               <div className="h-10 w-10">
                 <Lottie
@@ -192,19 +192,19 @@ export function Header({ user, isImpersonating }: HeaderProps) {
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
-                <Link href="/app/profil" className="cursor-pointer">
+                <Link href="/app/profile" className="cursor-pointer">
                   <User className="mr-2 h-4 w-4" />
                   Mon profil
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link href="/app/profil/activity" className="cursor-pointer">
+                <Link href="/app/profile/activity" className="cursor-pointer">
                   <Activity className="mr-2 h-4 w-4" />
                   Mon activité
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link href="/app/parametres" className="cursor-pointer">
+                <Link href="/app/settings" className="cursor-pointer">
                   <Settings className="mr-2 h-4 w-4" />
                   Paramètres
                 </Link>

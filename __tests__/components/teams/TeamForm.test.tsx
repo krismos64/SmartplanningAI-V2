@@ -176,7 +176,7 @@ describe('TeamForm', () => {
       fireEvent.click(screen.getByText("Créer l'équipe"))
 
       await waitFor(() => {
-        expect(mockPush).toHaveBeenCalledWith('/app/directeur/equipes')
+        expect(mockPush).toHaveBeenCalledWith('/app/director/teams')
       })
     })
 

@@ -8,7 +8,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-import { DeleteAccountForm } from '@/app/app/profil/delete/_components/DeleteAccountForm'
+import { DeleteAccountForm } from '@/app/app/profile/delete/_components/DeleteAccountForm'
 
 // Mock next/navigation
 const mockPush = vi.fn()
@@ -129,7 +129,7 @@ describe('DeleteAccountForm', () => {
       render(<DeleteAccountForm userEmail={userEmail} />)
 
       const cancelButton = screen.getByTestId('cancel-button')
-      expect(cancelButton).toHaveAttribute('href', '/app/profil')
+      expect(cancelButton).toHaveAttribute('href', '/app/profile')
     })
   })
 
@@ -266,7 +266,7 @@ describe('DeleteAccountForm', () => {
 
       await waitFor(() => {
         expect(mockSignOut).toHaveBeenCalledWith({
-          callbackUrl: '/connexion?deleted=true',
+          callbackUrl: '/login?deleted=true',
         })
       })
     })

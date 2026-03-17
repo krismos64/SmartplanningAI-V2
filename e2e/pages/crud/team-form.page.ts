@@ -83,14 +83,14 @@ export class TeamFormPage {
    * Navigue vers le formulaire de creation
    */
   async gotoNew(): Promise<void> {
-    await this.page.goto('/app/directeur/equipes/new')
+    await this.page.goto('/app/director/teams/new')
   }
 
   /**
    * Navigue vers le formulaire d'edition
    */
   async gotoEdit(teamId: string): Promise<void> {
-    await this.page.goto(`/app/directeur/equipes/${teamId}/edit`)
+    await this.page.goto(`/app/director/teams/${teamId}/edit`)
   }
 
   /**

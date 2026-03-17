@@ -131,55 +131,55 @@ test.describe('CRUD Companies (SYSTEM_ADMIN)', () => {
 // =============================================================================
 
 test.describe('Restrictions RBAC - Companies', () => {
-  test('DIRECTOR ne peut pas acceder a /app/admin/entreprises', async ({
+  test('DIRECTOR ne peut pas acceder a /app/admin/companies', async ({
     directorPage,
   }) => {
-    await directorPage.goto('/app/admin/entreprises')
+    await directorPage.goto('/app/admin/companies')
 
     // Doit etre redirige vers son dashboard
     await expect(directorPage).toHaveURL(/\/app\/(director|dashboard)/)
   })
 
-  test('MANAGER ne peut pas acceder a /app/admin/entreprises', async ({
+  test('MANAGER ne peut pas acceder a /app/admin/companies', async ({
     managerPage,
   }) => {
-    await managerPage.goto('/app/admin/entreprises')
+    await managerPage.goto('/app/admin/companies')
 
     // Doit etre redirige vers son dashboard
     await expect(managerPage).toHaveURL(/\/app\/(manager|dashboard)/)
   })
 
-  test('EMPLOYEE ne peut pas acceder a /app/admin/entreprises', async ({
+  test('EMPLOYEE ne peut pas acceder a /app/admin/companies', async ({
     employeePage,
   }) => {
-    await employeePage.goto('/app/admin/entreprises')
+    await employeePage.goto('/app/admin/companies')
 
     // Doit etre redirige vers son dashboard
     await expect(employeePage).toHaveURL(/\/app\/dashboard/)
   })
 
-  test('DIRECTOR ne peut pas acceder a /app/admin/entreprises/new', async ({
+  test('DIRECTOR ne peut pas acceder a /app/admin/companies/new', async ({
     directorPage,
   }) => {
-    await directorPage.goto('/app/admin/entreprises/new')
+    await directorPage.goto('/app/admin/companies/new')
 
     // Doit etre redirige
     await expect(directorPage).toHaveURL(/\/app\/(director|dashboard)/)
   })
 
-  test('MANAGER ne peut pas acceder a /app/admin/entreprises/new', async ({
+  test('MANAGER ne peut pas acceder a /app/admin/companies/new', async ({
     managerPage,
   }) => {
-    await managerPage.goto('/app/admin/entreprises/new')
+    await managerPage.goto('/app/admin/companies/new')
 
     // Doit etre redirige
     await expect(managerPage).toHaveURL(/\/app\/(manager|dashboard)/)
   })
 
-  test('EMPLOYEE ne peut pas acceder a /app/admin/entreprises/new', async ({
+  test('EMPLOYEE ne peut pas acceder a /app/admin/companies/new', async ({
     employeePage,
   }) => {
-    await employeePage.goto('/app/admin/entreprises/new')
+    await employeePage.goto('/app/admin/companies/new')
 
     // Doit etre redirige
     await expect(employeePage).toHaveURL(/\/app\/dashboard/)
