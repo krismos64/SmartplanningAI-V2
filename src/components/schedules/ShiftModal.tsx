@@ -312,25 +312,27 @@ export function ShiftModal({
       return
     }
 
-    scheduleConflictTimerRef.current = setTimeout(async () => {
+    scheduleConflictTimerRef.current = setTimeout(() => {
       setIsCheckingScheduleConflicts(true)
-      try {
-        const result = await checkScheduleConflicts(
-          selectedEmployeeIds,
-          watchedStartDate,
-          watchedEndDate,
-          watchedStartTime,
-          watchedEndTime,
-          mode === 'edit' ? schedule?.id : undefined
-        )
-        if (result.success) {
-          setScheduleConflicts(result.data)
-        }
-      } catch {
-        // Silently fail - non-blocking check
-      } finally {
-        setIsCheckingScheduleConflicts(false)
-      }
+      checkScheduleConflicts(
+        selectedEmployeeIds,
+        watchedStartDate,
+        watchedEndDate,
+        watchedStartTime,
+        watchedEndTime,
+        mode === 'edit' ? schedule?.id : undefined
+      )
+        .then((result) => {
+          if (result.success) {
+            setScheduleConflicts(result.data)
+          }
+        })
+        .catch(() => {
+          // Silently fail - non-blocking check
+        })
+        .finally(() => {
+          setIsCheckingScheduleConflicts(false)
+        })
     }, 400)
   }, [
     isOpen,

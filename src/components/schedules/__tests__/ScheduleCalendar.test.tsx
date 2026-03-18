@@ -27,9 +27,7 @@ vi.mock('../ScheduleCalendarMobile', () => ({
 }))
 
 vi.mock('../WeeklyGridView', () => ({
-  WeeklyGridView: () => (
-    <div data-testid="weekly-grid">Weekly Grid</div>
-  ),
+  WeeklyGridView: () => <div data-testid="weekly-grid">Weekly Grid</div>,
 }))
 
 // ============================================================================

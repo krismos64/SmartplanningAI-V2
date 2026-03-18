@@ -138,8 +138,12 @@ describe('IncidentNotesPageContent', () => {
   it('affiche les filtres', () => {
     render(<IncidentNotesPageContent initialNotes={[]} userRole="DIRECTOR" />)
     // Deux instances de filtres (desktop visible + mobile details) — au moins une présente
-    expect(screen.getAllByTestId('incidents-filters').length).toBeGreaterThanOrEqual(1)
-    expect(screen.getAllByTestId('search-input').length).toBeGreaterThanOrEqual(1)
+    expect(
+      screen.getAllByTestId('incidents-filters').length
+    ).toBeGreaterThanOrEqual(1)
+    expect(screen.getAllByTestId('search-input').length).toBeGreaterThanOrEqual(
+      1
+    )
   })
 
   it('affiche les notes initiales', () => {

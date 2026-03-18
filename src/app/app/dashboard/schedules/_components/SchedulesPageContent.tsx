@@ -177,7 +177,10 @@ export function SchedulesPageContent({
 
   // Calcul des dates selon le mode de vue
   // Protéger contre une date invalide (ex: parsing Schedule-X)
-  const safeDate = isNaN(currentDate.getTime()) ? new Date() : currentDate
+  const safeDate = useMemo(
+    () => (isNaN(currentDate.getTime()) ? new Date() : currentDate),
+    [currentDate]
+  )
 
   const dateRange = useMemo(() => {
     switch (viewMode) {
@@ -612,43 +615,45 @@ export function SchedulesPageContent({
         mode={shiftModalMode}
         schedule={selectedSchedule}
         companyId={companyId}
-        onSuccess={async () => {
-          // Si édition récurrence "all" : appliquer les changements à toute la série
-          if (editRecurrenceGroupId && selectedSchedule) {
-            // Relire le schedule mis à jour pour propager ses valeurs
-            const updatedSchedules = await getSchedules({
-              startDate: new Date(selectedSchedule.startDate),
-              endDate: new Date(selectedSchedule.endDate),
-              limit: 1,
-            })
-            const updated = updatedSchedules.success
-              ? updatedSchedules.data.schedules.find(
-                  (s) => s.id === selectedSchedule.id
-                )
-              : null
-
-            if (updated) {
-              await updateRecurrenceGroup(editRecurrenceGroupId, {
-                startTime: updated.startTime,
-                endTime: updated.endTime,
-                type: updated.type,
-                status: updated.status,
-                title: updated.title,
-                description: updated.description,
-                location: updated.location,
+        onSuccess={() => {
+          void (async () => {
+            // Si édition récurrence "all" : appliquer les changements à toute la série
+            if (editRecurrenceGroupId && selectedSchedule) {
+              // Relire le schedule mis à jour pour propager ses valeurs
+              const updatedSchedules = await getSchedules({
+                startDate: new Date(selectedSchedule.startDate),
+                endDate: new Date(selectedSchedule.endDate),
+                limit: 1,
               })
-              toast.success('Récurrence mise à jour')
-            }
-          }
+              const updated = updatedSchedules.success
+                ? updatedSchedules.data.schedules.find(
+                    (s) => s.id === selectedSchedule.id
+                  )
+                : null
 
-          setIsShiftModalOpen(false)
-          setSelectedSchedule(null)
-          setEditRecurrenceGroupId(null)
-          void reloadSchedules(
-            new Date(rangeStartTime),
-            new Date(rangeEndTime),
-            activeFilters
-          )
+              if (updated) {
+                await updateRecurrenceGroup(editRecurrenceGroupId, {
+                  startTime: updated.startTime,
+                  endTime: updated.endTime,
+                  type: updated.type,
+                  status: updated.status,
+                  title: updated.title,
+                  description: updated.description,
+                  location: updated.location,
+                })
+                toast.success('Récurrence mise à jour')
+              }
+            }
+
+            setIsShiftModalOpen(false)
+            setSelectedSchedule(null)
+            setEditRecurrenceGroupId(null)
+            void reloadSchedules(
+              new Date(rangeStartTime),
+              new Date(rangeEndTime),
+              activeFilters
+            )
+          })()
         }}
       />
 
@@ -660,7 +665,7 @@ export function SchedulesPageContent({
           setRecurrenceSchedule(null)
           setRecurrenceAction('edit')
         }}
-        onConfirm={handleRecurrenceConfirm}
+        onConfirm={(scope) => void handleRecurrenceConfirm(scope)}
         action={recurrenceAction}
         counts={recurrenceCounts}
         isLoading={isRecurrenceDeleting}
