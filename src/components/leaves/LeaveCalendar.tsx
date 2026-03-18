@@ -20,6 +20,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { LeaveCalendarDay } from './LeaveCalendarDay'
 import { LEAVE_TYPE_LABELS, LEAVE_TYPE_COLORS } from '@/lib/validations/leave'
 import { LeaveType } from '@prisma/client'
+import { useMediaQuery } from '@/hooks/use-media-query'
 
 type LeaveRequestWithEmployee = LeaveRequest & {
   employee: {
@@ -48,6 +49,16 @@ interface LeaveCalendarProps {
   className?: string
 }
 
+const legendTypes: LeaveType[] = [
+  'PAID_LEAVE',
+  'RTT',
+  'SICK_LEAVE',
+  'UNPAID_LEAVE',
+  'FAMILY_EVENT',
+  'PARENTAL_LEAVE',
+  'OTHER',
+]
+
 export function LeaveCalendar({
   month,
   absences,
@@ -56,6 +67,8 @@ export function LeaveCalendar({
   onCellClick,
   className,
 }: LeaveCalendarProps) {
+  const isMobile = useMediaQuery('(max-width: 1024px)')
+
   const days = useMemo(() => {
     const start = startOfMonth(month)
     const end = endOfMonth(month)
@@ -76,26 +89,38 @@ export function LeaveCalendar({
     return map
   }, [absences])
 
+  // Absences groupées par employé pour la vue mobile
+  const absencesByEmployee = useMemo(() => {
+    const monthStart = startOfMonth(month)
+    const monthEnd = endOfMonth(month)
+    const map = new Map<string, LeaveRequestWithEmployee[]>()
+
+    for (const absence of absences) {
+      const start = new Date(absence.startDate)
+      const end = new Date(absence.endDate)
+      // Inclure si la période chevauche le mois affiché
+      if (start <= monthEnd && end >= monthStart) {
+        const existing = map.get(absence.employeeId) ?? []
+        // Éviter les doublons (même absence)
+        if (!existing.some((a) => a.id === absence.id)) {
+          existing.push(absence)
+        }
+        map.set(absence.employeeId, existing)
+      }
+    }
+
+    return map
+  }, [absences, month])
+
   const handlePrevMonth = () => onMonthChange(subMonths(month, 1))
   const handleNextMonth = () => onMonthChange(addMonths(month, 1))
   const handleToday = () => onMonthChange(new Date())
-
-  const legendTypes: LeaveType[] = [
-    'PAID_LEAVE',
-    'RTT',
-    'SICK_LEAVE',
-    'UNPAID_LEAVE',
-    'FAMILY_EVENT',
-    'PARENTAL_LEAVE',
-    'OTHER',
-  ]
 
   return (
     <div className={cn('space-y-4', className)} data-testid="leaves-calendar">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          {/* WCAG 2.5.5: 44px minimum touch target */}
           <Button
             variant="outline"
             size="icon"
@@ -107,12 +132,11 @@ export function LeaveCalendar({
             <ChevronLeft className="h-4 w-4" />
           </Button>
           <h2
-            className="min-w-[180px] text-center text-lg font-semibold capitalize"
+            className="min-w-[140px] text-center text-lg font-semibold capitalize sm:min-w-[180px]"
             data-testid="calendar-month-year"
           >
             {format(month, 'MMMM yyyy', { locale: fr })}
           </h2>
-          {/* WCAG 2.5.5: 44px minimum touch target */}
           <Button
             variant="outline"
             size="icon"
@@ -129,76 +153,156 @@ export function LeaveCalendar({
         </Button>
       </div>
 
-      {/* Grid */}
-      <div className="overflow-x-auto rounded-lg border">
-        <div
-          className="grid min-w-[800px]"
-          style={{
-            gridTemplateColumns: `150px repeat(${days.length}, minmax(40px, 1fr))`,
-          }}
-        >
-          {/* Header row */}
-          <div className="sticky left-0 z-10 border-b border-r bg-muted/50 p-2 font-medium">
-            Employé
-          </div>
-          {days.map((day) => (
-            <div
-              key={day.toISOString()}
-              className={cn(
-                'border-b p-1 text-center text-xs',
-                isWeekend(day) && 'bg-muted/50',
-                isToday(day) && 'bg-primary/10 font-semibold'
-              )}
-            >
-              <div className="uppercase">
-                {format(day, 'EEE', { locale: fr })}
-              </div>
-              <div>{format(day, 'd')}</div>
-            </div>
-          ))}
-
-          {/* Employee rows */}
+      {/* Vue mobile : liste par employé */}
+      {isMobile ? (
+        <div className="space-y-3">
           {employees.map((employee) => {
             const initials =
               `${employee.firstName?.[0] ?? ''}${employee.lastName?.[0] ?? ''}`.toUpperCase()
+            const employeeAbsences = absencesByEmployee.get(employee.id) ?? []
+
             return (
-              <div key={employee.id} className="contents">
-                <div className="sticky left-0 z-10 flex items-center gap-2 border-b border-r bg-background px-2 text-sm font-medium">
-                  <Avatar className="h-6 w-6 flex-shrink-0">
+              <div
+                key={employee.id}
+                className="rounded-lg border p-3"
+              >
+                <div className="flex items-center gap-2 pb-2">
+                  <Avatar className="h-8 w-8 flex-shrink-0">
                     {employee.image && (
                       <AvatarImage
                         src={employee.image}
                         alt={`${employee.firstName} ${employee.lastName}`}
                       />
                     )}
-                    <AvatarFallback className="text-[10px]">
+                    <AvatarFallback className="text-xs">
                       {initials}
                     </AvatarFallback>
                   </Avatar>
-                  <span className="truncate">
+                  <span className="text-sm font-medium">
                     {employee.firstName} {employee.lastName}
                   </span>
                 </div>
-                {days.map((day) => {
-                  const key = `${employee.id}-${format(day, 'yyyy-MM-dd')}`
-                  const absence = absenceMap.get(key)
-                  return (
-                    <div key={key} className="border-b">
-                      <LeaveCalendarDay
-                        date={day}
-                        absence={absence}
-                        isWeekend={isWeekend(day)}
-                        isToday={isToday(day)}
-                        onClick={() => onCellClick?.(employee, day)}
-                      />
-                    </div>
-                  )
-                })}
+
+                {employeeAbsences.length === 0 ? (
+                  <p className="text-xs text-muted-foreground">
+                    Aucune absence ce mois
+                  </p>
+                ) : (
+                  <div className="space-y-1.5">
+                    {employeeAbsences.map((absence) => {
+                      const colorClass = LEAVE_TYPE_COLORS[absence.type]
+                      const typeLabel = LEAVE_TYPE_LABELS[absence.type]
+                      return (
+                        <div
+                          key={absence.id}
+                          className={cn(
+                            'flex items-center justify-between rounded-md px-2.5 py-1.5 text-xs',
+                            colorClass
+                          )}
+                        >
+                          <span className="font-medium">
+                            {typeLabel}
+                            {absence.halfDay &&
+                              ` (${absence.halfDayPeriod === 'AM' ? 'matin' : 'après-midi'})`}
+                          </span>
+                          <span>
+                            {format(new Date(absence.startDate), 'dd MMM', {
+                              locale: fr,
+                            })}
+                            {absence.days > 1 &&
+                              ` – ${format(new Date(absence.endDate), 'dd MMM', { locale: fr })}`}
+                            {' '}
+                            ({absence.days}j)
+                          </span>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
               </div>
             )
           })}
+
+          {employees.length === 0 && (
+            <div className="flex min-h-[100px] items-center justify-center rounded-lg border border-dashed">
+              <p className="text-sm text-muted-foreground">
+                Aucun employé dans l&apos;équipe
+              </p>
+            </div>
+          )}
         </div>
-      </div>
+      ) : (
+        /* Vue desktop : grille matricielle adaptative */
+        <div className="rounded-lg border">
+          <div
+            className="grid"
+            style={{
+              gridTemplateColumns: `minmax(100px, 140px) repeat(${days.length}, minmax(0, 1fr))`,
+            }}
+          >
+            {/* Header row */}
+            <div className="sticky left-0 z-10 border-b border-r bg-muted/50 px-2 py-1 text-xs font-medium">
+              Employé
+            </div>
+            {days.map((day) => (
+              <div
+                key={day.toISOString()}
+                className={cn(
+                  'border-b px-0.5 py-1 text-center text-[10px] leading-tight',
+                  isWeekend(day) && 'bg-muted/50',
+                  isToday(day) && 'bg-primary/10 font-semibold'
+                )}
+              >
+                <div className="uppercase">
+                  {format(day, 'EEEEE', { locale: fr })}
+                </div>
+                <div>{format(day, 'd')}</div>
+              </div>
+            ))}
+
+            {/* Employee rows */}
+            {employees.map((employee) => {
+              const initials =
+                `${employee.firstName?.[0] ?? ''}${employee.lastName?.[0] ?? ''}`.toUpperCase()
+              return (
+                <div key={employee.id} className="contents">
+                  <div className="sticky left-0 z-10 flex items-center gap-1.5 border-b border-r bg-background px-1.5 text-xs font-medium">
+                    <Avatar className="h-5 w-5 flex-shrink-0">
+                      {employee.image && (
+                        <AvatarImage
+                          src={employee.image}
+                          alt={`${employee.firstName} ${employee.lastName}`}
+                        />
+                      )}
+                      <AvatarFallback className="text-[8px]">
+                        {initials}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="truncate">
+                      {employee.firstName} {employee.lastName}
+                    </span>
+                  </div>
+                  {days.map((day) => {
+                    const key = `${employee.id}-${format(day, 'yyyy-MM-dd')}`
+                    const absence = absenceMap.get(key)
+                    return (
+                      <div key={key} className="border-b">
+                        <LeaveCalendarDay
+                          date={day}
+                          absence={absence}
+                          isWeekend={isWeekend(day)}
+                          isToday={isToday(day)}
+                          onClick={() => onCellClick?.(employee, day)}
+                        />
+                      </div>
+                    )
+                  })}
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Legend */}
       <div className="flex flex-wrap gap-3">

@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { LeaveTypeBadge } from './LeaveTypeBadge'
 import { LeaveStatusBadge } from './LeaveStatusBadge'
-import { Pencil, X, CheckCircle } from 'lucide-react'
+import { Pencil, X, CheckCircle, Settings } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useIsImpersonating } from '@/hooks'
 
@@ -30,6 +30,7 @@ interface LeaveRequestCardProps {
   onEdit?: (id: string) => void
   onCancel?: (id: string) => void
   onReview?: (id: string) => void
+  onManage?: (id: string) => void
   className?: string
 }
 
@@ -46,6 +47,7 @@ export function LeaveRequestCard({
   onEdit,
   onCancel,
   onReview,
+  onManage,
   className,
 }: LeaveRequestCardProps) {
   const isImpersonating = useIsImpersonating()
@@ -57,9 +59,11 @@ export function LeaveRequestCard({
     currentUserRole === 'DIRECTOR' ||
     currentUserRole === 'SYSTEM_ADMIN'
 
+  const isApproved = request.status === ('APPROVED' as LeaveRequestStatus)
   const showEdit = isOwner && isPending && onEdit
-  const showCancel = isOwner && isPending && onCancel
+  const showCancel = isOwner && (isPending || isApproved) && onCancel
   const showReview = canManage && isPending && onReview
+  const showManage = canManage && isApproved && onManage
 
   return (
     <Card
@@ -99,7 +103,7 @@ export function LeaveRequestCard({
           <p className="text-muted-foreground">{request.reason}</p>
         )}
       </CardContent>
-      {!isCancelled && (showEdit || showCancel || showReview) && (
+      {!isCancelled && (showEdit || showCancel || showReview || showManage) && (
         <CardFooter className="gap-2 pt-0">
           {showEdit && (
             <Button
@@ -140,6 +144,20 @@ export function LeaveRequestCard({
             >
               <CheckCircle className="mr-1 h-3 w-3" />
               Examiner
+            </Button>
+          )}
+          {showManage && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onManage(request.id)}
+              disabled={isImpersonating}
+              title={
+                isImpersonating ? 'Non disponible en mode support' : undefined
+              }
+            >
+              <Settings className="mr-1 h-3 w-3" />
+              Gérer
             </Button>
           )}
         </CardFooter>

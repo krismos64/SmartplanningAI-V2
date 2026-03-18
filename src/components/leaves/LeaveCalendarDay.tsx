@@ -37,7 +37,7 @@ export function LeaveCalendarDay({
   if (isWeekend) {
     return (
       <div
-        className="flex h-10 w-full items-center justify-center bg-muted/50 text-xs text-muted-foreground"
+        className="flex h-7 w-full items-center justify-center bg-muted/50 text-xs text-muted-foreground"
         aria-label={`${format(date, 'EEEE d MMMM', { locale: fr })} - Weekend`}
       >
         —
@@ -49,7 +49,7 @@ export function LeaveCalendarDay({
     return (
       <div
         className={cn(
-          'flex h-10 w-full cursor-pointer items-center justify-center text-xs transition-colors hover:bg-muted/30',
+          'flex h-7 w-full cursor-pointer items-center justify-center text-xs transition-colors hover:bg-muted/30',
           isToday && 'ring-2 ring-inset ring-primary'
         )}
         onClick={onClick}
@@ -71,7 +71,7 @@ export function LeaveCalendarDay({
       <PopoverTrigger asChild>
         <div
           className={cn(
-            'relative flex h-10 w-full cursor-pointer items-center justify-center overflow-hidden text-xs font-medium transition-all hover:opacity-80',
+            'relative flex h-7 w-full cursor-pointer items-center justify-center overflow-hidden text-xs font-medium transition-all hover:opacity-80',
             isToday && 'ring-2 ring-inset ring-primary',
             !isHalfDay && colorClass
           )}
@@ -79,27 +79,14 @@ export function LeaveCalendarDay({
           tabIndex={0}
           aria-label={`${typeLabel} - ${format(date, 'EEEE d MMMM', { locale: fr })}`}
         >
-          {isHalfDay ? (
-            <>
-              <div
-                className={cn(
-                  'absolute inset-x-0 h-1/2',
-                  isAM ? 'top-0' : 'bottom-0',
-                  colorClass
-                )}
-              />
-              <span className="relative z-10 text-[10px]">½</span>
-            </>
-          ) : (
-            <span className="truncate px-0.5">
-              {absence.type === 'PAID_LEAVE'
-                ? 'CP'
-                : absence.type === 'RTT'
-                  ? 'RTT'
-                  : absence.type === 'SICK_LEAVE'
-                    ? 'MAL'
-                    : absence.type.slice(0, 3)}
-            </span>
+          {isHalfDay && (
+            <div
+              className={cn(
+                'absolute inset-x-0 h-1/2',
+                isAM ? 'top-0' : 'bottom-0',
+                colorClass
+              )}
+            />
           )}
         </div>
       </PopoverTrigger>

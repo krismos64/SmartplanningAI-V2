@@ -7,6 +7,7 @@ export { LeaveBalanceEditDialog } from './LeaveBalanceEditDialog'
 export { LeaveRequestCard } from './LeaveRequestCard'
 export { LeaveRequestForm } from './LeaveRequestForm'
 export { LeaveReviewDialog } from './LeaveReviewDialog'
+export { LeaveManageDialog } from './LeaveManageDialog'
 
 // SP-412 Components
 export { LeaveFilters } from './LeaveFilters'

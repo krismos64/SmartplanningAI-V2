@@ -79,17 +79,50 @@ export default async function LeavesPage() {
       image: e.user?.image ?? null,
     }))
   } else if (userRole === 'MANAGER' && managedTeamIds.length > 0) {
-    // Manager voit les employés de ses équipes
-    const employeesData = await prisma.employee.findMany({
-      where: { teamId: { in: managedTeamIds }, isActive: true },
-      select: {
-        id: true,
-        firstName: true,
-        lastName: true,
-        user: { select: { image: true } },
-      },
-      orderBy: [{ lastName: 'asc' }, { firstName: 'asc' }],
-    })
+    // Manager voit ses équipes managées et leurs employés
+    const [teamsData, employeesData] = await Promise.all([
+      prisma.team.findMany({
+        where: { id: { in: managedTeamIds } },
+        select: { id: true, name: true },
+        orderBy: { name: 'asc' },
+      }),
+      prisma.employee.findMany({
+        where: { teamId: { in: managedTeamIds }, isActive: true },
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          user: { select: { image: true } },
+        },
+        orderBy: [{ lastName: 'asc' }, { firstName: 'asc' }],
+      }),
+    ])
+    teams = teamsData
+    employees = employeesData.map((e) => ({
+      id: e.id,
+      firstName: e.firstName,
+      lastName: e.lastName,
+      image: e.user?.image ?? null,
+    }))
+  } else if (userRole === 'EMPLOYEE' && employee?.teamId) {
+    // Employee voit son équipe et ses collègues
+    const [teamsData, employeesData] = await Promise.all([
+      prisma.team.findMany({
+        where: { id: employee.teamId },
+        select: { id: true, name: true },
+      }),
+      prisma.employee.findMany({
+        where: { teamId: employee.teamId, isActive: true },
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          user: { select: { image: true } },
+        },
+        orderBy: [{ lastName: 'asc' }, { firstName: 'asc' }],
+      }),
+    ])
+    teams = teamsData
     employees = employeesData.map((e) => ({
       id: e.id,
       firstName: e.firstName,

@@ -23,7 +23,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { MoreHorizontal, Pencil, X, CheckCircle, Eye } from 'lucide-react'
+import { MoreHorizontal, Pencil, X, CheckCircle, Eye, Settings } from 'lucide-react'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -58,6 +58,7 @@ interface LeavesListProps {
   onEdit?: (request: LeaveRequestWithEmployee) => void
   onCancel?: (request: LeaveRequestWithEmployee) => void
   onView?: (request: LeaveRequestWithEmployee) => void
+  onManage?: (request: LeaveRequestWithEmployee) => void
   isLoading?: boolean
 }
 
@@ -69,6 +70,7 @@ function createColumns(
     onEdit?: (r: LeaveRequestWithEmployee) => void
     onCancel?: (r: LeaveRequestWithEmployee) => void
     onReview?: (r: LeaveRequestWithEmployee) => void
+    onManage?: (r: LeaveRequestWithEmployee) => void
   }
 ): ColumnDef<LeaveRequestWithEmployee>[] {
   const canManage =
@@ -154,8 +156,9 @@ function createColumns(
         const showCancel =
           isOwner && (isPending || isApproved) && actions.onCancel
         const showReview = canManage && isPending && actions.onReview
+        const showManage = canManage && isApproved && actions.onManage
 
-        if (!showEdit && !showCancel && !showReview && !actions.onView) {
+        if (!showEdit && !showCancel && !showReview && !showManage && !actions.onView) {
           return null
         }
 
@@ -186,6 +189,12 @@ function createColumns(
                   Examiner
                 </DropdownMenuItem>
               )}
+              {showManage && (
+                <DropdownMenuItem onClick={() => actions.onManage!(request)}>
+                  <Settings className="mr-2 h-4 w-4" />
+                  Gérer
+                </DropdownMenuItem>
+              )}
               {showCancel && (
                 <DropdownMenuItem onClick={() => actions.onCancel!(request)}>
                   <X className="mr-2 h-4 w-4" />
@@ -210,6 +219,7 @@ export function LeavesList({
   onEdit,
   onCancel,
   onView,
+  onManage,
   isLoading = false,
 }: LeavesListProps) {
   const columns = useMemo(
@@ -219,8 +229,9 @@ export function LeavesList({
         onEdit,
         onCancel,
         onReview,
+        onManage,
       }),
-    [currentUserRole, currentUserId, onView, onEdit, onCancel, onReview]
+    [currentUserRole, currentUserId, onView, onEdit, onCancel, onReview, onManage]
   )
 
   const table = useReactTable({

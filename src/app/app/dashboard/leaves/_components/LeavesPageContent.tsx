@@ -38,6 +38,7 @@ import {
   LeaveCalendar,
   LeaveRequestForm,
   LeaveReviewDialog,
+  LeaveManageDialog,
 } from '@/components/leaves'
 
 // Hooks
@@ -119,6 +120,8 @@ export function LeavesPageContent({
     useState<LeaveRequestWithEmployee | null>(null)
   const [reviewingRequest, setReviewingRequest] =
     useState<LeaveRequestWithEmployee | null>(null)
+  const [managingRequest, setManagingRequest] =
+    useState<LeaveRequestWithEmployee | null>(null)
   const [requests, setRequests] =
     useState<LeaveRequestWithEmployee[]>(initialRequests)
   const [pagination, setPagination] = useState(initialPagination)
@@ -130,7 +133,7 @@ export function LeavesPageContent({
 
   // Calendar state
   const [calendarMonth, setCalendarMonth] = useState(new Date())
-  const [calendarAbsences, setCalendarAbsences] = useState<
+  const [calendarAbsencesRaw, setCalendarAbsencesRaw] = useState<
     LeaveRequestWithEmployee[]
   >([])
   const [calendarEmployees] = useState<Employee[]>(employees)
@@ -158,6 +161,42 @@ export function LeavesPageContent({
       ? new Date(searchParams.get('endDate')!)
       : undefined,
   }))
+
+  // Filtrage client des absences du calendrier (type, employé, période)
+  const calendarAbsences = useMemo(() => {
+    let filtered = calendarAbsencesRaw
+    if (filters.type) {
+      filtered = filtered.filter((a) => a.type === filters.type)
+    }
+    if (filters.employeeId) {
+      filtered = filtered.filter((a) => a.employeeId === filters.employeeId)
+    }
+    if (filters.startDate) {
+      filtered = filtered.filter(
+        (a) => new Date(a.endDate) >= filters.startDate!
+      )
+    }
+    if (filters.endDate) {
+      filtered = filtered.filter(
+        (a) => new Date(a.startDate) <= filters.endDate!
+      )
+    }
+    return filtered
+  }, [
+    calendarAbsencesRaw,
+    filters.type,
+    filters.employeeId,
+    filters.startDate,
+    filters.endDate,
+  ])
+
+  // Filtrage des employés affichés dans le calendrier
+  const filteredCalendarEmployees = useMemo(() => {
+    if (filters.employeeId) {
+      return calendarEmployees.filter((e) => e.id === filters.employeeId)
+    }
+    return calendarEmployees
+  }, [calendarEmployees, filters.employeeId])
 
   // Refetch data helper
   const refetchData = useCallback(
@@ -197,6 +236,36 @@ export function LeavesPageContent({
     [pagination.page, pagination.pageSize]
   )
 
+  // Helper : charger les absences du calendrier pour un mois donné
+  const fetchCalendarAbsences = useCallback(
+    (targetMonth: Date, statusFilter?: LeaveRequestStatus) => {
+      const firstTeamId = teams[0]?.id
+      if (!firstTeamId) return
+      startTransition(async () => {
+        const startOfMonth = new Date(
+          targetMonth.getFullYear(),
+          targetMonth.getMonth(),
+          1
+        )
+        const endOfMonth = new Date(
+          targetMonth.getFullYear(),
+          targetMonth.getMonth() + 1,
+          0
+        )
+        const result = await getTeamAbsences(
+          firstTeamId,
+          startOfMonth,
+          endOfMonth,
+          statusFilter
+        )
+        if (result.success) {
+          setCalendarAbsencesRaw(result.data)
+        }
+      })
+    },
+    [teams]
+  )
+
   // Handlers
   const handleFiltersChange = useCallback(
     (newFilters: LeaveRequestFilters) => {
@@ -221,8 +290,13 @@ export function LeavesPageContent({
 
       // Refetch with new filters, reset to page 1
       refetchData(newFilters, 1)
+
+      // Rafraîchir le calendrier si le filtre statut change et qu'on est sur le tab calendrier
+      if (activeTab === 'calendar') {
+        fetchCalendarAbsences(calendarMonth, newFilters.status)
+      }
     },
-    [pathname, refetchData]
+    [pathname, refetchData, activeTab, calendarMonth, fetchCalendarAbsences]
   )
 
   const handleStatClick = useCallback(
@@ -265,12 +339,14 @@ export function LeavesPageContent({
   const handleCreateSuccess = useCallback(() => {
     setIsCreateOpen(false)
     setEditingRequest(null)
-    refetchData(filters)
+    // Defer refetch to next microtask to avoid nested startTransition
+    // (useCrudMutation's onSuccess runs inside its own startTransition)
+    setTimeout(() => refetchData(filters), 0)
   }, [filters, refetchData])
 
   const handleReviewSuccess = useCallback(() => {
     setReviewingRequest(null)
-    refetchData(filters)
+    setTimeout(() => refetchData(filters), 0)
   }, [filters, refetchData])
 
   const handleEdit = useCallback((request: LeaveRequestWithEmployee) => {
@@ -303,6 +379,25 @@ export function LeavesPageContent({
     [requests]
   )
 
+  const handleManage = useCallback((request: LeaveRequestWithEmployee) => {
+    setManagingRequest(request)
+  }, [])
+
+  const handleManageMobile = useCallback(
+    (id: string) => {
+      const request = requests.find((r) => r.id === id)
+      if (request) {
+        setManagingRequest(request)
+      }
+    },
+    [requests]
+  )
+
+  const handleManageSuccess = useCallback(() => {
+    setManagingRequest(null)
+    setTimeout(() => refetchData(filters), 0)
+  }, [filters, refetchData])
+
   const handleCancel = useCallback(
     (request: LeaveRequestWithEmployee) => {
       startTransition(async () => {
@@ -331,63 +426,18 @@ export function LeavesPageContent({
     (tab: string) => {
       setActiveTab(tab as 'list' | 'calendar')
       if (tab === 'calendar') {
-        // Fetch absences for calendar
-        const firstTeamId = teams[0]?.id
-        if (firstTeamId) {
-          startTransition(async () => {
-            const startOfMonth = new Date(
-              calendarMonth.getFullYear(),
-              calendarMonth.getMonth(),
-              1
-            )
-            const endOfMonth = new Date(
-              calendarMonth.getFullYear(),
-              calendarMonth.getMonth() + 1,
-              0
-            )
-            const result = await getTeamAbsences(
-              firstTeamId,
-              startOfMonth,
-              endOfMonth
-            )
-            if (result.success) {
-              setCalendarAbsences(result.data)
-            }
-          })
-        }
+        fetchCalendarAbsences(calendarMonth, filters.status)
       }
     },
-    [calendarMonth, teams]
+    [calendarMonth, filters.status, fetchCalendarAbsences]
   )
 
   const handleMonthChange = useCallback(
     (month: Date) => {
       setCalendarMonth(month)
-      const firstTeamId = teams[0]?.id
-      if (firstTeamId) {
-        startTransition(async () => {
-          const startOfMonth = new Date(
-            month.getFullYear(),
-            month.getMonth(),
-            1
-          )
-          const endOfMonth = new Date(
-            month.getFullYear(),
-            month.getMonth() + 1,
-            0
-          )
-          const result = await getTeamAbsences(
-            firstTeamId,
-            startOfMonth,
-            endOfMonth
-          )
-          if (result.success) {
-            setCalendarAbsences(result.data)
-          }
-        })
-      }
+      fetchCalendarAbsences(month, filters.status)
     },
-    [teams]
+    [filters.status, fetchCalendarAbsences]
   )
 
   // URL export PDF avec filtres
@@ -449,89 +499,113 @@ export function LeavesPageContent({
   )
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6">
       {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Congés</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-xl font-bold tracking-tight md:text-2xl">Congés</h1>
+          <p className="hidden text-muted-foreground sm:block">
             {currentUser.role === 'EMPLOYEE'
               ? 'Gérez vos demandes de congés'
               : 'Gérez les demandes de congés de votre équipe'}
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <ExportCsvButton
-            action={exportLeavesCsv}
-            filters={{
-              status: filters.status,
-              type: filters.type,
-              employeeId: filters.employeeId,
-              teamId: filters.teamId,
-              startDate: filters.startDate?.toISOString(),
-              endDate: filters.endDate?.toISOString(),
-            }}
-            label="Export CSV"
-            variant="outline"
-            size="sm"
-          />
+          {/* Exports */}
+          {currentUser.role !== 'EMPLOYEE' && (
+            <ExportCsvButton
+              action={exportLeavesCsv}
+              filters={{
+                status: filters.status,
+                type: filters.type,
+                employeeId: filters.employeeId,
+                teamId: filters.teamId,
+                startDate: filters.startDate?.toISOString(),
+                endDate: filters.endDate?.toISOString(),
+              }}
+              label="Export CSV"
+              variant="outline"
+              size="sm"
+            />
+          )}
           <ExportPdfButton
             href={pdfExportUrl}
             label="Export PDF"
             variant="outline"
             size="sm"
           />
-          {createButtonContent}
+          {/* Bouton nouvelle demande — visible sur desktop, FAB sur mobile */}
+          <div className="hidden sm:block">{createButtonContent}</div>
         </div>
       </div>
 
-      {/* Stats Bar */}
+      {/* Stats Bar — compacte sur mobile (juste En attente + Approuvés) */}
       <LeaveStatsBar
         stats={stats}
         onStatClick={handleStatClick}
         activeStatus={activeStatus}
       />
 
-      {/* Filters */}
-      <LeaveFilters
-        filters={filters}
-        onFiltersChange={handleFiltersChange}
-        currentUserRole={currentUser.role}
-        employees={employees}
-        teams={teams}
-      />
+      {/* Filters — repliés sur mobile */}
+      <div className="hidden md:block">
+        <LeaveFilters
+          filters={filters}
+          onFiltersChange={handleFiltersChange}
+          currentUserRole={currentUser.role}
+          employees={employees}
+          teams={teams}
+        />
+      </div>
+      <details className="md:hidden">
+        <summary className="flex cursor-pointer items-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-medium">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+          Filtres
+        </summary>
+        <div className="mt-2">
+          <LeaveFilters
+            filters={filters}
+            onFiltersChange={handleFiltersChange}
+            currentUserRole={currentUser.role}
+            employees={employees}
+            teams={teams}
+          />
+        </div>
+      </details>
 
-      {/* Tabs Liste / Calendrier */}
-      <Tabs value={activeTab} onValueChange={handleTabChange}>
-        <TabsList>
-          <TabsTrigger value="list" className="gap-2">
-            <List className="h-4 w-4" />
-            Liste
-          </TabsTrigger>
-          <TabsTrigger value="calendar" className="gap-2">
-            <Calendar className="h-4 w-4" />
-            Calendrier
-          </TabsTrigger>
-        </TabsList>
+      {/* Contenu principal */}
+      {isMobile ? (
+        /* Mobile : liste directe, pas de tabs */
+        <LeavesListMobile
+          requests={requests}
+          pagination={pagination}
+          onLoadMore={handleLoadMore}
+          currentUserRole={currentUser.role}
+          currentUserId={currentUser.employeeId ?? ''}
+          onReview={handleReviewMobile}
+          onEdit={handleEditMobile}
+          onCancel={handleCancelMobile}
+          onManage={handleManageMobile}
+          isLoading={isPending}
+        />
+      ) : (
+        /* Desktop : tabs Liste / Calendrier */
+        <Tabs value={activeTab} onValueChange={handleTabChange}>
+          <TabsList>
+            <TabsTrigger value="list" className="gap-2">
+              <List className="h-4 w-4" />
+              Liste
+            </TabsTrigger>
+            <TabsTrigger value="calendar" className="gap-2">
+              <Calendar className="h-4 w-4" />
+              Calendrier
+            </TabsTrigger>
+          </TabsList>
 
-        <TabsContent
-          value="list"
-          className="mt-4"
-          data-testid="leaves-list-tab"
-        >
-          {isMobile ? (
-            <LeavesListMobile
-              requests={requests}
-              pagination={pagination}
-              onLoadMore={handleLoadMore}
-              currentUserRole={currentUser.role}
-              currentUserId={currentUser.employeeId ?? ''}
-              onReview={handleReviewMobile}
-              onEdit={handleEditMobile}
-              onCancel={handleCancelMobile}
-              isLoading={isPending}
-            />
-          ) : (
+          <TabsContent
+            value="list"
+            className="mt-4"
+            data-testid="leaves-list-tab"
+          >
             <LeavesList
               requests={requests}
               pagination={pagination}
@@ -541,32 +615,33 @@ export function LeavesPageContent({
               onReview={handleReview}
               onEdit={handleEdit}
               onCancel={(request) => handleCancel(request)}
+              onManage={handleManage}
               isLoading={isPending}
             />
-          )}
-        </TabsContent>
+          </TabsContent>
 
-        <TabsContent
-          value="calendar"
-          className="mt-4"
-          data-testid="leaves-calendar-tab"
-        >
-          {teams.length > 0 ? (
-            <LeaveCalendar
-              month={calendarMonth}
-              absences={calendarAbsences}
-              employees={calendarEmployees}
-              onMonthChange={handleMonthChange}
-            />
-          ) : (
-            <div className="flex min-h-[200px] items-center justify-center rounded-lg border border-dashed">
-              <p className="text-muted-foreground">
-                Aucune équipe disponible pour afficher le calendrier
-              </p>
-            </div>
-          )}
-        </TabsContent>
-      </Tabs>
+          <TabsContent
+            value="calendar"
+            className="mt-4"
+            data-testid="leaves-calendar-tab"
+          >
+            {teams.length > 0 ? (
+              <LeaveCalendar
+                month={calendarMonth}
+                absences={calendarAbsences}
+                employees={filteredCalendarEmployees}
+                onMonthChange={handleMonthChange}
+              />
+            ) : (
+              <div className="flex min-h-[200px] items-center justify-center rounded-lg border border-dashed">
+                <p className="text-muted-foreground">
+                  Aucune équipe disponible pour afficher le calendrier
+                </p>
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
+      )}
 
       {/* Create/Edit Dialog (Desktop) / Sheet (Mobile) */}
       {isMobile ? (
@@ -615,6 +690,29 @@ export function LeavesPageContent({
           request={reviewingRequest}
           onSuccess={handleReviewSuccess}
         />
+      )}
+
+      {/* Manage Dialog (Modifier/Révoquer une demande approuvée) */}
+      {managingRequest && (
+        <LeaveManageDialog
+          open={!!managingRequest}
+          onOpenChange={(open) => {
+            if (!open) setManagingRequest(null)
+          }}
+          request={managingRequest}
+          onSuccess={handleManageSuccess}
+        />
+      )}
+
+      {/* FAB Nouvelle demande — mobile uniquement */}
+      {canCreate && isMobile && !isImpersonating && (
+        <Button
+          className="fixed bottom-6 right-6 z-50 h-14 w-14 rounded-full shadow-lg sm:hidden"
+          onClick={() => setIsCreateOpen(true)}
+          aria-label="Nouvelle demande de congé"
+        >
+          <Plus className="h-6 w-6" />
+        </Button>
       )}
     </div>
   )
