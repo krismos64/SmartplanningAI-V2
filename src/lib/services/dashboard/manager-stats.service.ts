@@ -71,7 +71,7 @@ export async function getManagerStats(
     const [
       teamSize,
       pendingLeaveRequests,
-      todayAbsences,
+      todayAbsencesResult,
       coverageRate,
       teamHoursWorked,
       teamPerformance,
@@ -79,7 +79,7 @@ export async function getManagerStats(
     ] = await Promise.all([
       getTeamSize(teamId),
       getPendingLeaveRequestsCount(teamId),
-      getTodayAbsencesCount(teamId),
+      getTodayAbsencesWithDetails(teamId),
       getCoverageRate(teamId, dateRange),
       getTeamHoursWorked(teamId, dateRange),
       getTeamPerformance(teamId, dateRange),
@@ -91,7 +91,8 @@ export async function getManagerStats(
       data: {
         teamSize,
         pendingLeaveRequests,
-        todayAbsences,
+        todayAbsences: todayAbsencesResult.count,
+        todayAbsenceDetails: todayAbsencesResult.details,
         coverageRate,
         teamHoursWorked,
         teamPerformance,
@@ -140,31 +141,83 @@ async function getPendingLeaveRequestsCount(teamId: string): Promise<number> {
 }
 
 /**
- * Compte les absences du jour (conges approuves en cours)
+ * Récupère les absences du jour (congés approuvés + repos planifiés)
  */
-async function getTodayAbsencesCount(teamId: string): Promise<number> {
+async function getTodayAbsencesWithDetails(
+  teamId: string
+): Promise<{
+  count: number
+  details: Array<{ employeeName: string; reason: string }>
+}> {
   const today = new Date()
   today.setHours(0, 0, 0, 0)
 
-  const tomorrow = new Date(today)
-  tomorrow.setDate(tomorrow.getDate() + 1)
-
-  // Recuperer les IDs des employes de l'equipe
+  // Récupérer les employés de l'équipe
   const employees = await prisma.employee.findMany({
     where: { teamId, isActive: true },
-    select: { id: true },
+    select: { id: true, firstName: true, lastName: true },
   })
 
   const employeeIds = employees.map((e) => e.id)
+  const employeeNameMap = new Map(
+    employees.map((e) => [e.id, `${e.firstName} ${e.lastName}`])
+  )
 
-  return prisma.leaveRequest.count({
+  const leaveTypeLabels: Record<string, string> = {
+    PAID_LEAVE: 'Congés payés',
+    RTT: 'RTT',
+    SICK_LEAVE: 'Arrêt maladie',
+    UNPAID_LEAVE: 'Congé sans solde',
+    FAMILY_EVENT: 'Événement familial',
+    PARENTAL_LEAVE: 'Congé parental',
+    OTHER: 'Autre congé',
+  }
+
+  // Congés approuvés du jour
+  const leaves = await prisma.leaveRequest.findMany({
     where: {
       employeeId: { in: employeeIds },
       status: 'APPROVED',
       startDate: { lte: today },
       endDate: { gte: today },
     },
+    select: { employeeId: true, type: true },
   })
+
+  // Repos planifiés du jour
+  const restSchedules = await prisma.schedule.findMany({
+    where: {
+      employeeId: { in: employeeIds },
+      type: 'REST',
+      startDate: { lte: today },
+      endDate: { gte: today },
+    },
+    select: { employeeId: true },
+  })
+
+  const details: Array<{ employeeName: string; reason: string }> = []
+
+  for (const leave of leaves) {
+    details.push({
+      employeeName: employeeNameMap.get(leave.employeeId) ?? 'Inconnu',
+      reason: leaveTypeLabels[leave.type] ?? 'Congé',
+    })
+  }
+
+  for (const rest of restSchedules) {
+    // Éviter les doublons si déjà en congé
+    const alreadyListed = details.some(
+      (d) => d.employeeName === employeeNameMap.get(rest.employeeId)
+    )
+    if (!alreadyListed) {
+      details.push({
+        employeeName: employeeNameMap.get(rest.employeeId) ?? 'Inconnu',
+        reason: 'Repos',
+      })
+    }
+  }
+
+  return { count: details.length, details }
 }
 
 /**
@@ -388,8 +441,8 @@ export async function getManagerTodayAbsencesOnly(
       return { success: false, error: 'Accès non autorisé' }
     }
 
-    const count = await getTodayAbsencesCount(teamId)
-    return { success: true, data: count }
+    const result = await getTodayAbsencesWithDetails(teamId)
+    return { success: true, data: result.count }
   } catch (error) {
     return {
       success: false,

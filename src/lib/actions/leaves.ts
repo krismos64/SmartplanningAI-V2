@@ -35,6 +35,8 @@ import {
   createLeaveRequestSchema,
   updateLeaveRequestSchema,
   updateLeaveBalanceSchema,
+  managerEditLeaveSchema,
+  revokeLeaveSchema,
   leaveRequestFiltersSchema,
   LEAVE_TYPE_LABELS,
   LEAVE_STATUS_LABELS,
@@ -211,7 +213,7 @@ function buildLeaveRBACWhere(user: AuthenticatedUser): Record<string, unknown> {
   }
 }
 
-const LEAVE_PATH = '/app/dashboard/conges'
+const LEAVE_PATH = '/app/dashboard/leaves'
 
 // ============================================================================
 // 1. getLeaveRequests - Liste paginée avec filtres RBAC
@@ -443,6 +445,9 @@ export async function createLeaveRequest(
       })
       .catch(console.error)
 
+    // Notifier les directeurs de l'entreprise (in-app SSE, fire-and-forget)
+    notifyDirectorsOfLeaveEvent(leaveRequest.id, employee.companyId, 'requested')
+
     // SP-415: Notifier les managers de la nouvelle demande par email (en background)
     notifyManagersOfNewLeaveRequest(
       leaveRequest.id,
@@ -652,7 +657,7 @@ export async function cancelLeaveRequest(
       }).catch(console.error)
 
       // SSE : Notifier les managers de l'annulation (fire-and-forget)
-      notifyCancelledLeaveToManagers(leaveRequest.employeeId, id)
+      notifyCancelledLeaveToManagers(leaveRequest.employeeId, id, leaveRequest.companyId)
 
       revalidatePath(LEAVE_PATH)
       return { success: true, data: updated }
@@ -675,7 +680,7 @@ export async function cancelLeaveRequest(
     }).catch(console.error)
 
     // SSE : Notifier les managers de l'annulation (fire-and-forget)
-    notifyCancelledLeaveToManagers(leaveRequest.employeeId, id)
+    notifyCancelledLeaveToManagers(leaveRequest.employeeId, id, leaveRequest.companyId)
 
     revalidatePath(LEAVE_PATH)
     return { success: true, data: updated }
@@ -815,6 +820,14 @@ export async function reviewLeaveRequest(
       ).catch(console.error)
     }
 
+    // SSE : Notifier les directeurs (sauf si c'est le directeur qui a fait l'action)
+    notifyDirectorsOfLeaveEvent(
+      id,
+      leaveRequest.companyId,
+      data.status === LeaveRequestStatus.APPROVED ? 'approved' : 'rejected',
+      user.id
+    )
+
     // SP-444 : Audit trail (fire-and-forget)
     logAuditAction({
       action: 'STATUS_CHANGE',
@@ -838,7 +851,317 @@ export async function reviewLeaveRequest(
 }
 
 // ============================================================================
-// 7. getLeaveBalance - Solde employé pour une année
+// 7. managerEditLeaveRequest - Modification par Manager/Director (APPROVED)
+// ============================================================================
+
+/**
+ * Permet à un Manager/Director de modifier une demande approuvée.
+ * Ajuste automatiquement les soldes de congés si nécessaire.
+ */
+export async function managerEditLeaveRequest(
+  id: string,
+  input: unknown
+): Promise<ActionResult<LeaveRequest>> {
+  const authResult = await getAuthenticatedUser([
+    'MANAGER',
+    'DIRECTOR',
+    'SYSTEM_ADMIN',
+  ])
+  if (!authResult.success) return { success: false, error: authResult.error }
+  const { user } = authResult
+
+  const impersonationBlock = await assertNotImpersonating()
+  if (impersonationBlock) return impersonationBlock
+
+  const validation = validateData(managerEditLeaveSchema, input)
+  if (!validation.success)
+    return { success: false, error: validation.error, field: validation.field }
+  const data = validation.data
+
+  try {
+    const leaveRequest = await prisma.leaveRequest.findUnique({
+      where: { id },
+      include: LEAVE_REQUEST_INCLUDE,
+    })
+
+    if (!leaveRequest) return { success: false, error: 'Demande non trouvée' }
+
+    // Multi-tenant
+    if (!canAccessCompanyEntity(user.companyId, leaveRequest.companyId)) {
+      return { success: false, error: "Vous n'avez pas accès à cette demande" }
+    }
+
+    // MANAGER : uniquement son équipe
+    if (
+      user.role === 'MANAGER' &&
+      leaveRequest.employee.teamId &&
+      !user.managedTeamIds.includes(leaveRequest.employee.teamId)
+    ) {
+      return {
+        success: false,
+        error: 'Vous ne pouvez modifier que les demandes de votre équipe',
+      }
+    }
+
+    // Uniquement les demandes APPROVED
+    if (leaveRequest.status !== LeaveRequestStatus.APPROVED) {
+      return {
+        success: false,
+        error: 'Seules les demandes approuvées peuvent être modifiées par un responsable',
+      }
+    }
+
+    const oldDays = leaveRequest.days
+    const oldType = leaveRequest.type
+    const newDays = calculateWorkingDays(data.startDate, data.endDate, data.halfDay)
+
+    // Vérifier le solde si le nouveau type nécessite un solde
+    if (LEAVE_TYPES_WITH_BALANCE.includes(data.type)) {
+      const year = data.startDate.getFullYear()
+      const balance = await prisma.leaveBalance.findUnique({
+        where: {
+          employeeId_year: { employeeId: leaveRequest.employeeId, year },
+        },
+      })
+
+      if (balance) {
+        // Calculer le solde disponible en tenant compte du recrédit de l'ancien
+        const oldCredit =
+          LEAVE_TYPES_WITH_BALANCE.includes(oldType) && oldType === data.type
+            ? oldDays
+            : 0
+        const effectiveUsed =
+          data.type === LeaveType.PAID_LEAVE
+            ? balance.paidLeaveUsed - oldCredit
+            : balance.rttUsed - oldCredit
+        const total =
+          data.type === LeaveType.PAID_LEAVE
+            ? balance.paidLeaveTotal
+            : balance.rttTotal
+        if (effectiveUsed + newDays > total) {
+          return { success: false, error: 'Solde insuffisant pour cette modification' }
+        }
+      }
+    }
+
+    // Transaction : mise à jour demande + ajustement soldes
+    const updated = await prisma.$transaction(async (tx) => {
+      // 1. Recrédit de l'ancien solde si applicable
+      if (LEAVE_TYPES_WITH_BALANCE.includes(oldType)) {
+        const oldYear = leaveRequest.startDate.getFullYear()
+        const oldBalanceField =
+          oldType === LeaveType.PAID_LEAVE ? 'paidLeaveUsed' : 'rttUsed'
+        await tx.leaveBalance.update({
+          where: {
+            employeeId_year: { employeeId: leaveRequest.employeeId, year: oldYear },
+          },
+          data: { [oldBalanceField]: { decrement: oldDays } },
+        })
+      }
+
+      // 2. Mise à jour de la demande
+      const result = await tx.leaveRequest.update({
+        where: { id },
+        data: {
+          type: data.type,
+          startDate: data.startDate,
+          endDate: data.endDate,
+          days: newDays,
+          halfDay: data.halfDay,
+          halfDayPeriod: data.halfDayPeriod ?? null,
+          reason: data.reason,
+          reviewComment: data.editReason,
+        },
+      })
+
+      // 3. Débit du nouveau solde si applicable
+      if (LEAVE_TYPES_WITH_BALANCE.includes(data.type)) {
+        const newYear = data.startDate.getFullYear()
+        const newBalanceField =
+          data.type === LeaveType.PAID_LEAVE ? 'paidLeaveUsed' : 'rttUsed'
+        await tx.leaveBalance.upsert({
+          where: {
+            employeeId_year: { employeeId: leaveRequest.employeeId, year: newYear },
+          },
+          create: {
+            employeeId: leaveRequest.employeeId,
+            companyId: leaveRequest.companyId,
+            year: newYear,
+            [newBalanceField]: newDays,
+          },
+          update: { [newBalanceField]: { increment: newDays } },
+        })
+      }
+
+      return result
+    })
+
+    // Notification SSE à l'employé (fire-and-forget)
+    if (leaveRequest.employee.userId) {
+      createLeaveNotification(
+        id,
+        leaveRequest.employee.userId,
+        'approved'
+      ).catch(console.error)
+    }
+
+    // Audit trail (fire-and-forget)
+    logAuditAction({
+      action: 'UPDATE',
+      entityType: 'LEAVE',
+      entityId: id,
+      userId: user.id,
+      companyId: leaveRequest.companyId,
+      details: {
+        managerEdit: true,
+        editReason: data.editReason,
+        oldType,
+        newType: data.type,
+        oldDays,
+        newDays,
+        oldStart: leaveRequest.startDate.toISOString(),
+        newStart: data.startDate.toISOString(),
+        oldEnd: leaveRequest.endDate.toISOString(),
+        newEnd: data.endDate.toISOString(),
+      },
+    }).catch(console.error)
+
+    revalidatePath(LEAVE_PATH)
+    return { success: true, data: updated }
+  } catch (error) {
+    const { error: message } = handlePrismaError(error)
+    return { success: false, error: message }
+  }
+}
+
+// ============================================================================
+// 8. revokeLeaveRequest - Révocation par Manager/Director (APPROVED → CANCELLED)
+// ============================================================================
+
+/**
+ * Permet à un Manager/Director de révoquer une demande approuvée.
+ * Recrédite automatiquement le solde de congés.
+ */
+export async function revokeLeaveRequest(
+  id: string,
+  input: unknown
+): Promise<ActionResult<LeaveRequest>> {
+  const authResult = await getAuthenticatedUser([
+    'MANAGER',
+    'DIRECTOR',
+    'SYSTEM_ADMIN',
+  ])
+  if (!authResult.success) return { success: false, error: authResult.error }
+  const { user } = authResult
+
+  const impersonationBlock = await assertNotImpersonating()
+  if (impersonationBlock) return impersonationBlock
+
+  const validation = validateData(revokeLeaveSchema, input)
+  if (!validation.success)
+    return { success: false, error: validation.error, field: validation.field }
+  const data = validation.data
+
+  try {
+    const leaveRequest = await prisma.leaveRequest.findUnique({
+      where: { id },
+      include: LEAVE_REQUEST_INCLUDE,
+    })
+
+    if (!leaveRequest) return { success: false, error: 'Demande non trouvée' }
+
+    // Multi-tenant
+    if (!canAccessCompanyEntity(user.companyId, leaveRequest.companyId)) {
+      return { success: false, error: "Vous n'avez pas accès à cette demande" }
+    }
+
+    // MANAGER : uniquement son équipe
+    if (
+      user.role === 'MANAGER' &&
+      leaveRequest.employee.teamId &&
+      !user.managedTeamIds.includes(leaveRequest.employee.teamId)
+    ) {
+      return {
+        success: false,
+        error: 'Vous ne pouvez révoquer que les demandes de votre équipe',
+      }
+    }
+
+    // Uniquement les demandes APPROVED
+    if (leaveRequest.status !== LeaveRequestStatus.APPROVED) {
+      return {
+        success: false,
+        error: 'Seules les demandes approuvées peuvent être révoquées',
+      }
+    }
+
+    const days = leaveRequest.days
+
+    // Transaction : annulation + recrédit solde
+    const updated = await prisma.$transaction(async (tx) => {
+      const result = await tx.leaveRequest.update({
+        where: { id },
+        data: {
+          status: LeaveRequestStatus.CANCELLED,
+          reviewComment: data.revokeReason,
+          reviewedById: user.id,
+          reviewedAt: new Date(),
+        },
+      })
+
+      // Recrédit du solde si type avec balance
+      if (LEAVE_TYPES_WITH_BALANCE.includes(leaveRequest.type)) {
+        const year = leaveRequest.startDate.getFullYear()
+        const balanceField =
+          leaveRequest.type === LeaveType.PAID_LEAVE
+            ? 'paidLeaveUsed'
+            : 'rttUsed'
+        await tx.leaveBalance.update({
+          where: {
+            employeeId_year: { employeeId: leaveRequest.employeeId, year },
+          },
+          data: { [balanceField]: { decrement: days } },
+        })
+      }
+
+      return result
+    })
+
+    // Notification SSE à l'employé (fire-and-forget)
+    if (leaveRequest.employee.userId) {
+      createLeaveNotification(
+        id,
+        leaveRequest.employee.userId,
+        'cancelled'
+      ).catch(console.error)
+    }
+
+    // Audit trail (fire-and-forget)
+    logAuditAction({
+      action: 'STATUS_CHANGE',
+      entityType: 'LEAVE',
+      entityId: id,
+      userId: user.id,
+      companyId: leaveRequest.companyId,
+      details: {
+        from: 'APPROVED',
+        to: 'CANCELLED',
+        revokedByManager: true,
+        revokeReason: data.revokeReason,
+        balanceRecredited: LEAVE_TYPES_WITH_BALANCE.includes(leaveRequest.type),
+      },
+    }).catch(console.error)
+
+    revalidatePath(LEAVE_PATH)
+    return { success: true, data: updated }
+  } catch (error) {
+    const { error: message } = handlePrismaError(error)
+    return { success: false, error: message }
+  }
+}
+
+// ============================================================================
+// 9. getLeaveBalance - Solde employé pour une année
 // ============================================================================
 
 export async function getLeaveBalance(
@@ -989,27 +1312,37 @@ export async function updateLeaveBalance(
 export async function getTeamAbsences(
   teamId: string,
   startDate: Date,
-  endDate: Date
+  endDate: Date,
+  status?: LeaveRequestStatus
 ): Promise<ActionResult<LeaveRequestWithEmployee[]>> {
-  const authResult = await getAuthenticatedUser([
-    'MANAGER',
-    'DIRECTOR',
-    'SYSTEM_ADMIN',
-  ])
+  const authResult = await getAuthenticatedUser()
   if (!authResult.success) return { success: false, error: authResult.error }
   const { user } = authResult
 
   try {
-    // MANAGER : vérifier accès à l'équipe
+    // MANAGER : vérifier accès à l'équipe managée
     if (user.role === 'MANAGER' && !user.managedTeamIds.includes(teamId)) {
       return { success: false, error: "Vous n'avez pas accès à cette équipe" }
+    }
+
+    // EMPLOYEE : vérifier qu'il appartient bien à cette équipe
+    if (user.role === 'EMPLOYEE') {
+      if (!user.employeeId) {
+        return { success: false, error: 'Profil employé non trouvé' }
+      }
+      const employee = await prisma.employee.findUnique({
+        where: { id: user.employeeId },
+        select: { teamId: true },
+      })
+      if (!employee || employee.teamId !== teamId) {
+        return { success: false, error: "Vous n'avez pas accès à cette équipe" }
+      }
     }
 
     const absences = await prisma.leaveRequest.findMany({
       where: {
         employee: { teamId },
-        status: LeaveRequestStatus.APPROVED,
-        // Chevauchement : startDate <= endDate AND endDate >= startDate
+        status: status ?? LeaveRequestStatus.APPROVED,
         startDate: { lte: endDate },
         endDate: { gte: startDate },
         ...(user.companyId && { companyId: user.companyId }),
@@ -1032,11 +1365,7 @@ export async function getTeamAbsences(
 export async function getLeaveStats(
   teamId?: string
 ): Promise<ActionResult<LeaveStats>> {
-  const authResult = await getAuthenticatedUser([
-    'MANAGER',
-    'DIRECTOR',
-    'SYSTEM_ADMIN',
-  ])
+  const authResult = await getAuthenticatedUser()
   if (!authResult.success) return { success: false, error: authResult.error }
   const { user } = authResult
 
@@ -1046,6 +1375,8 @@ export async function getLeaveStats(
     if (teamId) where.employee = { teamId }
     else if (user.role === 'MANAGER')
       where.employee = { teamId: { in: user.managedTeamIds } }
+    else if (user.role === 'EMPLOYEE' && user.employeeId)
+      where.employeeId = user.employeeId
 
     const requests = await prisma.leaveRequest.findMany({
       where,
@@ -1566,7 +1897,8 @@ export async function exportLeavesCsv(
  */
 function notifyCancelledLeaveToManagers(
   employeeId: string,
-  leaveRequestId: string
+  leaveRequestId: string,
+  companyId: string
 ): void {
   prisma.employee
     .findUnique({
@@ -1587,6 +1919,43 @@ function notifyCancelledLeaveToManagers(
           managerUserId,
           'cancelled'
         ).catch(console.error)
+      }
+    })
+    .catch(console.error)
+
+  // Notifier aussi les directeurs
+  notifyDirectorsOfLeaveEvent(leaveRequestId, companyId, 'cancelled')
+}
+
+/**
+ * Notifie tous les DIRECTOR de l'entreprise d'un événement congé.
+ * Fire-and-forget — ne bloque pas l'action appelante.
+ *
+ * @param leaveRequestId - ID de la demande
+ * @param companyId - ID de l'entreprise
+ * @param action - Type d'événement (requested, approved, rejected, cancelled)
+ * @param excludeUserId - Ne pas notifier cet utilisateur (ex: le directeur qui a fait l'action)
+ */
+function notifyDirectorsOfLeaveEvent(
+  leaveRequestId: string,
+  companyId: string,
+  action: 'requested' | 'approved' | 'rejected' | 'cancelled',
+  excludeUserId?: string
+): void {
+  prisma.user
+    .findMany({
+      where: {
+        companyId,
+        role: UserRole.DIRECTOR,
+        ...(excludeUserId ? { id: { not: excludeUserId } } : {}),
+      },
+      select: { id: true },
+    })
+    .then((directors) => {
+      for (const d of directors) {
+        createLeaveNotification(leaveRequestId, d.id, action).catch(
+          console.error
+        )
       }
     })
     .catch(console.error)

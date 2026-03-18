@@ -36,7 +36,7 @@ const mockNotifications = [
     message: 'Un nouveau planning a été créé',
     type: 'PLANNING',
     priority: 'LOW',
-    actionUrl: '/app/dashboard/schedule',
+    actionUrl: '/app/dashboard/schedules',
     relatedType: 'Schedule',
     relatedId: 'schedule-1',
     isRead: false,

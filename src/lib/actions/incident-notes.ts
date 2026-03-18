@@ -323,6 +323,26 @@ export async function createIncidentNote(
         .catch(console.error)
     }
 
+    // SSE : Notifier les directeurs (sauf si c'est le directeur qui a créé la note)
+    if (user.role !== 'DIRECTOR') {
+      prisma.user
+        .findMany({
+          where: {
+            companyId: subject.companyId,
+            role: UserRole.DIRECTOR,
+          },
+          select: { id: true },
+        })
+        .then((directors) => {
+          for (const d of directors) {
+            createIncidentNotification(note.id, d.id, 'created').catch(
+              console.error
+            )
+          }
+        })
+        .catch(console.error)
+    }
+
     revalidatePath(INCIDENT_PATH)
     return { success: true, data: note }
   } catch (error) {

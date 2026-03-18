@@ -101,6 +101,60 @@ export const updateLeaveRequestSchema = z
 
 export type UpdateLeaveRequestInput = z.infer<typeof updateLeaveRequestSchema>
 
+// ─── Schéma d'édition Manager/Director sur demande approuvée ────────
+
+export const managerEditLeaveSchema = z
+  .object({
+    type: LeaveTypeSchema,
+    startDate: z.coerce.date({
+      errorMap: () => ({ message: 'Date de début invalide' }),
+    }),
+    endDate: z.coerce.date({
+      errorMap: () => ({ message: 'Date de fin invalide' }),
+    }),
+    halfDay: z.boolean().default(false),
+    halfDayPeriod: HalfDayPeriodSchema.optional().nullable(),
+    reason: z
+      .string()
+      .max(500, 'La raison ne doit pas dépasser 500 caractères')
+      .optional(),
+    editReason: z
+      .string()
+      .min(1, 'Un motif de modification est obligatoire')
+      .max(500, 'Le motif ne doit pas dépasser 500 caractères'),
+  })
+  .superRefine((data, ctx) => {
+    if (data.endDate < data.startDate) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'La date de fin doit être après la date de début',
+        path: ['endDate'],
+      })
+    }
+
+    if (data.halfDay && !data.halfDayPeriod) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Précisez matin (AM) ou après-midi (PM) pour une demi-journée',
+        path: ['halfDayPeriod'],
+      })
+    }
+  })
+
+export type ManagerEditLeaveInput = z.infer<typeof managerEditLeaveSchema>
+export type ManagerEditLeaveFormValues = z.input<typeof managerEditLeaveSchema>
+
+// ─── Schéma de révocation Manager/Director ──────────────────────────
+
+export const revokeLeaveSchema = z.object({
+  revokeReason: z
+    .string()
+    .min(1, 'Un motif de révocation est obligatoire')
+    .max(500, 'Le motif ne doit pas dépasser 500 caractères'),
+})
+
+export type RevokeLeaveInput = z.infer<typeof revokeLeaveSchema>
+
 // ─── Schéma de mise à jour des soldes (Director) ───────────────────
 
 export const updateLeaveBalanceSchema = z

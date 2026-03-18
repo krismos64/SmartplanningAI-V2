@@ -121,6 +121,11 @@ export interface ManagerStatsResult {
   pendingLeaveRequests: number
   /** Absences du jour (conges approuves) */
   todayAbsences: number
+  /** Détails des absences du jour */
+  todayAbsenceDetails: Array<{
+    employeeName: string
+    reason: string
+  }>
   /** Taux de couverture planning (%) */
   coverageRate: number
   /** Heures travaillees par l'equipe ce mois */

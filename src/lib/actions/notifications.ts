@@ -36,6 +36,7 @@ import {
 import {
   parseUserPreferences,
   isInAppNotificationEnabled,
+  isEmailNotificationEnabled,
 } from '@/lib/utils/preferences'
 import { getNotificationCategory } from '@/lib/helpers/notification-categories'
 import {
@@ -140,22 +141,26 @@ async function getAuthenticatedUser(
 // ============================================================================
 
 /**
- * Crée une notification pour un événement de planning
+ * Crée une notification pour un événement de planning (single schedule)
  *
  * @param scheduleId - ID du planning concerné
  * @param employeeUserId - ID de l'utilisateur employé destinataire
  * @param action - Type d'action (created, updated, deleted)
+ * @param creatorUserId - ID de l'utilisateur qui a créé/modifié le planning (pour éviter l'auto-notification)
+ * @param scheduleData - Données du schedule (optionnel, utilisé pour deleteSchedule car le schedule est déjà supprimé)
  * @returns Résultat de création (non-bloquant)
- *
- * @example
- * // Dans createSchedule
- * createPlanningNotification(schedule.id, employee.userId, 'created')
- *   .catch(console.error) // Non-bloquant
  */
 export async function createPlanningNotification(
   scheduleId: string,
   employeeUserId: string,
-  action: PlanningNotificationAction
+  action: PlanningNotificationAction,
+  creatorUserId?: string,
+  scheduleData?: {
+    startTime: string | Date
+    endTime: string | Date
+    companyId: string
+    type: string
+  }
 ): Promise<NotificationResult> {
   try {
     // Validation de l'action
@@ -164,48 +169,53 @@ export async function createPlanningNotification(
       return { success: false, error: 'Action de planning invalide' }
     }
 
-    // Récupérer les infos du planning
-    const schedule = await prisma.schedule.findUnique({
-      where: { id: scheduleId },
-      select: {
-        id: true,
-        startTime: true,
-        endTime: true,
-        companyId: true,
-        employee: {
-          select: {
-            firstName: true,
-            lastName: true,
-          },
-        },
-      },
-    })
+    // Ne pas notifier le créateur lui-même
+    if (creatorUserId && creatorUserId === employeeUserId) {
+      return { success: true, notification: null, skipped: 'self-notification' }
+    }
 
-    if (!schedule) {
-      return { success: false, error: 'Planning non trouvé' }
+    // Récupérer les infos du planning (ou utiliser les données fournies pour delete)
+    let startTime: string | Date
+
+    if (scheduleData) {
+      startTime = scheduleData.startTime
+    } else {
+      const schedule = await prisma.schedule.findUnique({
+        where: { id: scheduleId },
+        select: {
+          id: true,
+          startTime: true,
+          endTime: true,
+          companyId: true,
+        },
+      })
+
+      if (!schedule) {
+        return { success: false, error: 'Planning non trouvé' }
+      }
+      startTime = schedule.startTime
     }
 
     // Récupérer l'utilisateur destinataire avec ses préférences
     const user = await prisma.user.findUnique({
       where: { id: employeeUserId },
-      select: { id: true, companyId: true, preferences: true },
+      select: { id: true, email: true, name: true, companyId: true, preferences: true },
     })
 
     if (!user || !user.companyId) {
       return { success: false, error: 'Utilisateur non trouvé' }
     }
 
-    // SP-275: Vérifier les préférences de notifications
     const userPrefs = parseUserPreferences(user.preferences)
     const category = getNotificationCategory(NotificationType.PLANNING)
 
-    if (!isInAppNotificationEnabled(userPrefs, category)) {
-      if (process.env.NODE_ENV === 'development') {
-        console.warn(
-          `[Notification] In-app désactivé pour ${category} (user: ${employeeUserId})`
-        )
-      }
-      return { success: true, notification: null, skipped: 'inApp disabled' }
+    // Vérifier préférence in-app
+    const inAppEnabled = isInAppNotificationEnabled(userPrefs, category)
+    // Vérifier préférence email
+    const emailEnabled = isEmailNotificationEnabled(userPrefs, category)
+
+    if (!inAppEnabled && !emailEnabled) {
+      return { success: true, notification: null, skipped: 'all channels disabled' }
     }
 
     // Construire le message selon l'action
@@ -215,41 +225,59 @@ export async function createPlanningNotification(
     > = {
       created: {
         title: 'Nouveau planning assigné',
-        message: `Un nouveau planning a été créé pour le ${formatDate(schedule.startTime)}.`,
+        message: `Un nouveau planning a été créé pour le ${formatDate(startTime)}.`,
       },
       updated: {
         title: 'Planning modifié',
-        message: `Votre planning du ${formatDate(schedule.startTime)} a été modifié.`,
+        message: `Votre planning du ${formatDate(startTime)} a été modifié.`,
       },
       deleted: {
         title: 'Planning supprimé',
-        message: `Votre planning du ${formatDate(schedule.startTime)} a été supprimé.`,
+        message: `Votre planning du ${formatDate(startTime)} a été supprimé.`,
       },
     }
 
     const { title, message } = actionMessages[action]
-
-    // Déterminer la priorité selon l'action
     const priority: NotificationPriority =
       action === 'deleted' ? 'HIGH' : action === 'updated' ? 'MEDIUM' : 'LOW'
 
-    // Créer la notification
-    const notification = await prisma.notification.create({
-      data: {
-        title,
-        message,
-        type: NotificationType.PLANNING,
-        priority,
-        relatedType: 'Schedule',
-        relatedId: scheduleId,
-        actionUrl: '/app/dashboard/schedule',
-        userId: employeeUserId,
-        companyId: user.companyId,
-      },
-    })
+    let notification: Notification | null = null
 
-    // Émettre via SSE (non-bloquant)
-    emitNotification(employeeUserId, notification)
+    // Notification in-app + SSE
+    if (inAppEnabled) {
+      notification = await prisma.notification.create({
+        data: {
+          title,
+          message,
+          type: NotificationType.PLANNING,
+          priority,
+          relatedType: 'Schedule',
+          relatedId: scheduleId,
+          actionUrl: '/app/dashboard/schedules',
+          userId: employeeUserId,
+          companyId: user.companyId,
+        },
+      })
+      emitNotification(employeeUserId, notification)
+    }
+
+    // Email planning (fire-and-forget)
+    if (emailEnabled && user.email) {
+      const { sendScheduleNotificationEmail } = await import(
+        '@/lib/email/templates/schedule-notification'
+      )
+      sendScheduleNotificationEmail({
+        employeeEmail: user.email,
+        firstName: user.name?.split(' ')[0] || 'Collaborateur',
+        action,
+        count: 1,
+        startDate: typeof startTime === 'string' ? new Date(startTime) : startTime,
+        scheduleType: scheduleData?.type || 'WORK',
+        timeRange: scheduleData
+          ? `${formatTime(scheduleData.startTime)} - ${formatTime(scheduleData.endTime)}`
+          : undefined,
+      }).catch(console.error)
+    }
 
     return { success: true, notification }
   } catch (error) {
@@ -257,6 +285,148 @@ export async function createPlanningNotification(
     return {
       success: false,
       error: 'Erreur lors de la création de la notification',
+    }
+  }
+}
+
+/**
+ * Crée une notification groupée pour un batch de schedules créés pour un même employé.
+ * Envoie UNE seule notification in-app + UN seul email au lieu d'une par créneau.
+ *
+ * @param schedules - Liste des schedules créés pour cet employé
+ * @param employeeUserId - ID de l'utilisateur employé destinataire
+ * @param action - Type d'action (created, updated, deleted)
+ * @param creatorUserId - ID du créateur (pour éviter l'auto-notification)
+ */
+export async function createBatchPlanningNotification(
+  schedules: Array<{
+    id: string
+    startDate: Date
+    endDate: Date
+    startTime: string
+    endTime: string
+    type: string
+    companyId: string
+  }>,
+  employeeUserId: string,
+  action: PlanningNotificationAction,
+  creatorUserId?: string
+): Promise<NotificationResult> {
+  try {
+    if (schedules.length === 0) {
+      return { success: false, error: 'Aucun schedule fourni' }
+    }
+
+    // Ne pas notifier le créateur lui-même
+    if (creatorUserId && creatorUserId === employeeUserId) {
+      return { success: true, notification: null, skipped: 'self-notification' }
+    }
+
+    // Si un seul schedule, déléguer à la version simple
+    if (schedules.length === 1) {
+      const s = schedules[0]!
+      return createPlanningNotification(s.id, employeeUserId, action, creatorUserId, {
+        startTime: s.startTime,
+        endTime: s.endTime,
+        companyId: s.companyId,
+        type: s.type,
+      })
+    }
+
+    // Récupérer l'utilisateur avec préférences
+    const user = await prisma.user.findUnique({
+      where: { id: employeeUserId },
+      select: { id: true, email: true, name: true, companyId: true, preferences: true },
+    })
+
+    if (!user || !user.companyId) {
+      return { success: false, error: 'Utilisateur non trouvé' }
+    }
+
+    const userPrefs = parseUserPreferences(user.preferences)
+    const category = getNotificationCategory(NotificationType.PLANNING)
+    const inAppEnabled = isInAppNotificationEnabled(userPrefs, category)
+    const emailEnabled = isEmailNotificationEnabled(userPrefs, category)
+
+    if (!inAppEnabled && !emailEnabled) {
+      return { success: true, notification: null, skipped: 'all channels disabled' }
+    }
+
+    // Calculer la plage de dates
+    const sortedByDate = [...schedules].sort(
+      (a, b) => a.startDate.getTime() - b.startDate.getTime()
+    )
+    const firstDate = sortedByDate[0]!.startDate
+    const lastDate = sortedByDate[sortedByDate.length - 1]!.startDate
+    const count = schedules.length
+    const scheduleType = schedules[0]!.type
+
+    // Messages groupés
+    const actionMessages: Record<
+      PlanningNotificationAction,
+      { title: string; message: string }
+    > = {
+      created: {
+        title: `${count} nouveaux créneaux assignés`,
+        message: `${count} créneaux ont été ajoutés à votre planning du ${formatDate(firstDate)} au ${formatDate(lastDate)}.`,
+      },
+      updated: {
+        title: `${count} créneaux modifiés`,
+        message: `${count} créneaux de votre planning ont été modifiés (${formatDate(firstDate)} au ${formatDate(lastDate)}).`,
+      },
+      deleted: {
+        title: `${count} créneaux supprimés`,
+        message: `${count} créneaux ont été retirés de votre planning (${formatDate(firstDate)} au ${formatDate(lastDate)}).`,
+      },
+    }
+
+    const { title, message } = actionMessages[action]
+    const priority: NotificationPriority =
+      action === 'deleted' ? 'HIGH' : action === 'updated' ? 'MEDIUM' : 'LOW'
+
+    let notification: Notification | null = null
+
+    // UNE seule notification in-app
+    if (inAppEnabled) {
+      notification = await prisma.notification.create({
+        data: {
+          title,
+          message,
+          type: NotificationType.PLANNING,
+          priority,
+          relatedType: 'Schedule',
+          relatedId: sortedByDate[0]!.id,
+          actionUrl: '/app/dashboard/schedules',
+          userId: employeeUserId,
+          companyId: user.companyId,
+        },
+      })
+      emitNotification(employeeUserId, notification)
+    }
+
+    // UN seul email groupé (fire-and-forget)
+    if (emailEnabled && user.email) {
+      const { sendScheduleNotificationEmail } = await import(
+        '@/lib/email/templates/schedule-notification'
+      )
+      sendScheduleNotificationEmail({
+        employeeEmail: user.email,
+        firstName: user.name?.split(' ')[0] || 'Collaborateur',
+        action,
+        count,
+        startDate: firstDate,
+        endDate: lastDate,
+        scheduleType,
+        timeRange: `${schedules[0]!.startTime} - ${schedules[0]!.endTime}`,
+      }).catch(console.error)
+    }
+
+    return { success: true, notification }
+  } catch (error) {
+    console.error('[createBatchPlanningNotification] Error:', error)
+    return {
+      success: false,
+      error: 'Erreur lors de la création de la notification groupée',
     }
   }
 }
@@ -1126,4 +1296,15 @@ function formatDate(date: Date | string): string {
     month: '2-digit',
     year: 'numeric',
   }).format(dateObj)
+}
+
+/**
+ * Formate une heure (extrait HH:MM si c'est une Date, sinon retourne tel quel)
+ */
+function formatTime(time: Date | string): string {
+  if (typeof time === 'string') return time
+  return new Intl.DateTimeFormat('fr-FR', {
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(time)
 }

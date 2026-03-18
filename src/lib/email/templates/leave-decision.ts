@@ -68,7 +68,7 @@ export async function sendLeaveApprovedEmail(
   const { firstName, email, leaveType, startDate, endDate, dashboardUrl } = data
 
   const baseUrl = getBaseUrl()
-  const finalDashboardUrl = dashboardUrl ?? `${baseUrl}/dashboard/conges`
+  const finalDashboardUrl = dashboardUrl ?? `${baseUrl}/app/dashboard/leaves`
 
   try {
     // Préparer les props pour le template
@@ -137,7 +137,7 @@ export async function sendLeaveRejectedEmail(
   } = data
 
   const baseUrl = getBaseUrl()
-  const finalDashboardUrl = dashboardUrl ?? `${baseUrl}/dashboard/conges`
+  const finalDashboardUrl = dashboardUrl ?? `${baseUrl}/app/dashboard/leaves`
 
   try {
     // Préparer les props pour le template
