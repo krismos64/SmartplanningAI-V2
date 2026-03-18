@@ -39,7 +39,7 @@ export function EmployeeQuickActions({
         <div className="flex flex-wrap gap-3">
           {/* Demander un conge */}
           <Button asChild variant="default">
-            <Link href="/leaves/new" className="flex items-center gap-2">
+            <Link href="/app/dashboard/leaves" className="flex items-center gap-2">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
@@ -60,7 +60,7 @@ export function EmployeeQuickActions({
 
           {/* Voir mon planning */}
           <Button asChild variant="outline">
-            <Link href="/planning" className="flex items-center gap-2">
+            <Link href="/app/dashboard/schedules" className="flex items-center gap-2">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
@@ -83,7 +83,7 @@ export function EmployeeQuickActions({
 
           {/* Mes demandes */}
           <Button asChild variant="outline" className="relative">
-            <Link href="/leaves" className="flex items-center gap-2">
+            <Link href="/app/dashboard/leaves" className="flex items-center gap-2">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"

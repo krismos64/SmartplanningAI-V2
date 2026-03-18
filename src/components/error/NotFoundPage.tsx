@@ -104,7 +104,7 @@ export function NotFoundPage() {
         </Button>
 
         <Button asChild variant="outline" size="lg" className="min-w-[160px]">
-          <Link href="/dashboard">
+          <Link href="/app/dashboard">
             <LayoutDashboard className="mr-2 h-4 w-4" aria-hidden="true" />
             Dashboard
           </Link>

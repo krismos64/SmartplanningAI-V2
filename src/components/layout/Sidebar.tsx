@@ -222,8 +222,12 @@ export function Sidebar({ user, variant = 'neon' }: SidebarProps) {
         <SidebarMenu>
           {filteredMenuItems.map((item, index) => {
             const Icon = item.icon
-            const isActive =
-              pathname === item.href || pathname.startsWith(`${item.href}/`)
+            // Correspondance exacte pour les pages racines (dashboard, admin/dashboard)
+            // qui sont préfixes d'autres routes
+            const exactMatchPaths = ['/app/dashboard', '/app/admin/dashboard']
+            const isActive = exactMatchPaths.includes(item.href)
+              ? pathname === item.href
+              : pathname === item.href || pathname.startsWith(`${item.href}/`)
 
             return (
               <SidebarMenuItem key={item.id}>
