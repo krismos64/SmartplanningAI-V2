@@ -112,9 +112,9 @@ function IncidentNoteCardComponent({
             </span>
           </div>
 
-          {/* Actions */}
+          {/* Actions — masquées sur mobile (tap card = voir détail) */}
           <div
-            className="flex justify-end gap-1 pt-2"
+            className="hidden justify-end gap-1 pt-2 sm:flex"
             onClick={(e) => e.stopPropagation()}
           >
             <Button

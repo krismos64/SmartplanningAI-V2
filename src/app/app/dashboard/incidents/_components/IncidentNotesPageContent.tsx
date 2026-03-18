@@ -199,38 +199,55 @@ export function IncidentNotesPageContent({
   // ─── Render ─────────────────────────────────────────────────────────
 
   return (
-    <div className="space-y-6" data-testid="incidents-page-content">
+    <div className="space-y-4 md:space-y-6" data-testid="incidents-page-content">
       {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">
+          <h1 className="text-xl font-bold tracking-tight md:text-2xl">
             Notes d&apos;incident
           </h1>
-          <p className="text-muted-foreground">
+          <p className="hidden text-muted-foreground sm:block">
             Suivi comportemental avec contrôle de visibilité
           </p>
         </div>
         {canCreate && (
-          <Button
-            onClick={handleCreateNote}
-            disabled={isImpersonating}
-            title={
-              isImpersonating ? 'Non disponible en mode support' : undefined
-            }
-            data-testid="create-note-button"
-          >
-            <Plus className="mr-2 h-4 w-4" aria-hidden="true" />
-            Nouvelle note
-          </Button>
+          <div className="hidden sm:block">
+            <Button
+              onClick={handleCreateNote}
+              disabled={isImpersonating}
+              title={
+                isImpersonating ? 'Non disponible en mode support' : undefined
+              }
+              data-testid="create-note-button"
+            >
+              <Plus className="mr-2 h-4 w-4" aria-hidden="true" />
+              Nouvelle note
+            </Button>
+          </div>
         )}
       </div>
 
-      {/* Filters */}
-      <IncidentNotesFilters
-        filters={filters}
-        onFiltersChange={handleFiltersChange}
-        onResetFilters={handleResetFilters}
-      />
+      {/* Filters — visibles desktop, repliés mobile */}
+      <div className="hidden md:block">
+        <IncidentNotesFilters
+          filters={filters}
+          onFiltersChange={handleFiltersChange}
+          onResetFilters={handleResetFilters}
+        />
+      </div>
+      <details className="md:hidden">
+        <summary className="flex cursor-pointer items-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-medium">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+          Filtres
+        </summary>
+        <div className="mt-2">
+          <IncidentNotesFilters
+            filters={filters}
+            onFiltersChange={handleFiltersChange}
+            onResetFilters={handleResetFilters}
+          />
+        </div>
+      </details>
 
       {/* Notes list */}
       <IncidentNotesList
@@ -271,6 +288,17 @@ export function IncidentNotesPageContent({
         >
           Mise à jour...
         </div>
+      )}
+
+      {/* FAB Nouvelle note — mobile uniquement */}
+      {canCreate && !isImpersonating && (
+        <Button
+          className="fixed bottom-6 right-6 z-50 h-14 w-14 rounded-full shadow-lg sm:hidden"
+          onClick={handleCreateNote}
+          aria-label="Nouvelle note d'incident"
+        >
+          <Plus className="h-6 w-6" />
+        </Button>
       )}
     </div>
   )
