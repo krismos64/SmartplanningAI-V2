@@ -273,15 +273,15 @@ export function EmployeesDataTable({ userRole }: EmployeesDataTableProps) {
     <TooltipProvider>
       <div className="space-y-4">
         {/* Header */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+            <div className="hidden h-10 w-10 items-center justify-center rounded-lg bg-primary/10 sm:flex">
               <Users className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold tracking-tight">Employés</h1>
-              <p className="text-sm text-muted-foreground">
-                {totalCount} employé{totalCount > 1 ? 's' : ''} au total
+              <h1 className="text-xl font-bold tracking-tight md:text-2xl">Employés</h1>
+              <p className="text-xs text-muted-foreground sm:text-sm">
+                {totalCount} employé{totalCount > 1 ? 's' : ''}
               </p>
             </div>
           </div>
@@ -311,36 +311,57 @@ export function EmployeesDataTable({ userRole }: EmployeesDataTableProps) {
               size="sm"
               onClick={() => void fetchData()}
               disabled={isLoading}
+              className="hidden sm:flex"
             >
               <RefreshCw
                 className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`}
               />
               Actualiser
             </Button>
-            {isImpersonating ? (
-              <Button disabled title="Non disponible en mode support">
-                <Plus className="mr-2 h-4 w-4" />
-                Nouvel employé
-              </Button>
-            ) : (
-              <Button asChild>
-                <Link href="/app/dashboard/employees/new">
+            {/* Bouton desktop — FAB sur mobile */}
+            <div className="hidden sm:block">
+              {isImpersonating ? (
+                <Button disabled title="Non disponible en mode support">
                   <Plus className="mr-2 h-4 w-4" />
                   Nouvel employé
-                </Link>
-              </Button>
-            )}
+                </Button>
+              ) : (
+                <Button asChild>
+                  <Link href="/app/dashboard/employees/new">
+                    <Plus className="mr-2 h-4 w-4" />
+                    Nouvel employé
+                  </Link>
+                </Button>
+              )}
+            </div>
           </div>
         </div>
 
-        {/* Filtres */}
-        <EmployeeFilters
-          filters={filters}
-          onFiltersChange={setFilters}
-          teams={teams}
-          disabled={isLoading}
-          showCompanyFilter={userRole === 'SYSTEM_ADMIN'}
-        />
+        {/* Filtres — visibles desktop, repliés mobile */}
+        <div className="hidden md:block">
+          <EmployeeFilters
+            filters={filters}
+            onFiltersChange={setFilters}
+            teams={teams}
+            disabled={isLoading}
+            showCompanyFilter={userRole === 'SYSTEM_ADMIN'}
+          />
+        </div>
+        <details className="md:hidden">
+          <summary className="flex cursor-pointer items-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-medium">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+            Filtres
+          </summary>
+          <div className="mt-2">
+            <EmployeeFilters
+              filters={filters}
+              onFiltersChange={setFilters}
+              teams={teams}
+              disabled={isLoading}
+              showCompanyFilter={userRole === 'SYSTEM_ADMIN'}
+            />
+          </div>
+        </details>
 
         {/* Barre d'actions bulk */}
         {canDelete && Object.keys(rowSelection).length > 0 && (
@@ -427,41 +448,26 @@ export function EmployeesDataTable({ userRole }: EmployeesDataTableProps) {
           </Table>
         </div>
 
-        {/* Cards mobile */}
-        <div className="space-y-3 md:hidden">
+        {/* Cards mobile — tap = voir détail */}
+        <div className="space-y-2 md:hidden">
           {isLoading ? (
             <div className="flex items-center justify-center py-12">
               <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
               Chargement...
             </div>
           ) : data.length > 0 ? (
-            data.map((employee, idx) => (
+            data.map((employee) => (
               <EmployeeCard
                 key={employee.id}
                 employee={employee}
-                selected={!!rowSelection[idx]}
-                onSelectChange={(v) =>
-                  setRowSelection((prev) => {
-                    const next = { ...prev }
-                    if (v) {
-                      next[idx] = true
-                    } else {
-                      delete next[idx]
-                    }
-                    return next
-                  })
-                }
                 onView={() => handleView(employee)}
-                onEdit={() => handleEdit(employee)}
-                onDelete={canDelete ? () => handleDelete(employee) : undefined}
-                onToggleStatus={() => handleToggleStatus(employee)}
-                canDelete={canDelete}
               />
             ))
           ) : (
-            <p className="py-12 text-center text-muted-foreground">
-              Aucun employé trouvé.
-            </p>
+            <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
+              <Users className="mb-3 h-10 w-10 opacity-40" />
+              <p className="text-sm">Aucun employé trouvé</p>
+            </div>
           )}
         </div>
 
@@ -565,6 +571,17 @@ export function EmployeesDataTable({ userRole }: EmployeesDataTableProps) {
           void fetchData()
         }}
       />
+
+      {/* FAB Nouvel employé — mobile uniquement */}
+      {!isImpersonating && (
+        <Link
+          href="/app/dashboard/employees/new"
+          className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-transform active:scale-95 sm:hidden"
+          aria-label="Nouvel employé"
+        >
+          <Plus className="h-6 w-6" />
+        </Link>
+      )}
     </TooltipProvider>
   )
 }
