@@ -64,9 +64,9 @@ export class EmployeeListPage {
     // Header
     this.pageTitle = page.getByRole('heading', { name: /employ/i })
     this.totalCount = page.locator('text=/\\d+ employ/i')
-    this.newEmployeeButton = page.locator(
-      'a[href="/app/dashboard/employees/new"]'
-    )
+    this.newEmployeeButton = page.getByRole('link', {
+      name: /nouvel employ/i,
+    })
     this.refreshButton = page.getByRole('button', { name: /actualiser/i })
 
     // Filtres

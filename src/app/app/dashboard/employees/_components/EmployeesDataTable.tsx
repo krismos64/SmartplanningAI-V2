@@ -320,37 +320,26 @@ export function EmployeesDataTable({ userRole }: EmployeesDataTableProps) {
               />
               Actualiser
             </Button>
-            {/* Bouton desktop — FAB sur mobile */}
-            <div className="hidden sm:block">
-              {isImpersonating ? (
-                <Button disabled title="Non disponible en mode support">
+            {/* Bouton desktop — masqué sur mobile (FAB en bas) */}
+            {isImpersonating ? (
+              <Button disabled title="Non disponible en mode support">
+                <Plus className="mr-2 h-4 w-4" />
+                Nouvel employé
+              </Button>
+            ) : (
+              <Button asChild>
+                <Link href="/app/dashboard/employees/new">
                   <Plus className="mr-2 h-4 w-4" />
                   Nouvel employé
-                </Button>
-              ) : (
-                <Button asChild>
-                  <Link href="/app/dashboard/employees/new">
-                    <Plus className="mr-2 h-4 w-4" />
-                    Nouvel employé
-                  </Link>
-                </Button>
-              )}
-            </div>
+                </Link>
+              </Button>
+            )}
           </div>
         </div>
 
-        {/* Filtres — visibles desktop, repliés mobile */}
-        <div className="hidden md:block">
-          <EmployeeFilters
-            filters={filters}
-            onFiltersChange={setFilters}
-            teams={teams}
-            disabled={isLoading}
-            showCompanyFilter={userRole === 'SYSTEM_ADMIN'}
-          />
-        </div>
-        <details className="md:hidden">
-          <summary className="flex cursor-pointer items-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-medium">
+        {/* Filtres — un seul composant, dans un details replié sur mobile */}
+        <details open className="group">
+          <summary className="flex cursor-pointer items-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-medium md:hidden">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
@@ -365,7 +354,7 @@ export function EmployeesDataTable({ userRole }: EmployeesDataTableProps) {
             </svg>
             Filtres
           </summary>
-          <div className="mt-2">
+          <div className="mt-2 md:mt-0">
             <EmployeeFilters
               filters={filters}
               onFiltersChange={setFilters}

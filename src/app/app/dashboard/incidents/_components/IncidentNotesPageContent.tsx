@@ -230,31 +230,13 @@ export function IncidentNotesPageContent({
         )}
       </div>
 
-      {/* Filters — visibles desktop, repliés mobile */}
-      <div className="hidden md:block">
-        <IncidentNotesFilters
-          filters={filters}
-          onFiltersChange={handleFiltersChange}
-          onResetFilters={handleResetFilters}
-        />
-      </div>
-      <details className="md:hidden">
-        <summary className="flex cursor-pointer items-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-medium">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="h-4 w-4"
-          >
-            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
-          </svg>
+      {/* Filters — un seul composant, replié sur mobile */}
+      <details open className="group">
+        <summary className="flex cursor-pointer items-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-medium md:hidden">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" /></svg>
           Filtres
         </summary>
-        <div className="mt-2">
+        <div className="mt-2 md:mt-0">
           <IncidentNotesFilters
             filters={filters}
             onFiltersChange={handleFiltersChange}

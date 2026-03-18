@@ -481,34 +481,13 @@ export function SchedulesPageContent({
         </div>
       </div>
 
-      {/* Filtres — visibles sur desktop, repliés sur mobile */}
-      <Card className="hidden md:block">
-        <CardContent className="pt-4">
-          <SchedulesFilters
-            onFiltersChange={handleFiltersChange}
-            teams={teams}
-            employees={employees}
-            showStatusFilter={userRole !== 'EMPLOYEE'}
-          />
-        </CardContent>
-      </Card>
-      <details className="md:hidden">
-        <summary className="flex cursor-pointer items-center gap-2 rounded-lg border px-4 py-3 text-sm font-medium">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="h-4 w-4"
-          >
-            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
-          </svg>
+      {/* Filtres — un seul composant, replié sur mobile */}
+      <details open className="group">
+        <summary className="flex cursor-pointer items-center gap-2 rounded-lg border px-4 py-3 text-sm font-medium md:hidden">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" /></svg>
           Filtres
         </summary>
-        <Card className="mt-2">
+        <Card className="mt-2 md:mt-0">
           <CardContent className="pt-4">
             <SchedulesFilters
               onFiltersChange={handleFiltersChange}
