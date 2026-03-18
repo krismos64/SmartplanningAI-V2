@@ -18,9 +18,9 @@ import {
   staggerItem,
   useReducedMotion,
 } from '@/lib/animations'
-import { Users, CalendarClock, UserX, Clock } from 'lucide-react'
+import { Users, CalendarClock, UserX } from 'lucide-react'
 import { StatCard } from '@/components/dashboard'
-import type { StatCardProps, TrendDirection } from '@/types/dashboard'
+import type { StatCardProps } from '@/types/dashboard'
 import type { ManagerStatsResult } from '@/lib/services/dashboard/types'
 import { cn } from '@/lib/utils'
 
@@ -31,25 +31,6 @@ export interface ManagerStatsProps {
   isLoading?: boolean
   /** Classes CSS additionnelles */
   className?: string
-}
-
-/**
- * Determine la direction de tendance
- */
-function getTrendDirection(trend: number): TrendDirection {
-  if (trend > 0) return 'up'
-  if (trend < 0) return 'down'
-  return 'neutral'
-}
-
-/**
- * Formate les heures en format lisible
- */
-function formatHours(hours: number): string {
-  const h = Math.floor(hours)
-  const m = Math.round((hours - h) * 60)
-  if (m === 0) return `${h}h`
-  return `${h}h${m.toString().padStart(2, '0')}`
 }
 
 /**
@@ -88,21 +69,11 @@ export function ManagerStats({
       icon: UserX,
       description:
         stats.todayAbsences > 0
-          ? 'Collaborateurs absents'
+          ? stats.todayAbsenceDetails
+              .map((a) => `${a.employeeName} (${a.reason})`)
+              .join(', ')
           : 'Équipe au complet',
       variant: stats.todayAbsences > 0 ? 'danger' : 'success',
-    },
-    {
-      title: 'Heures équipe',
-      value: formatHours(stats.teamHoursWorked.current),
-      icon: Clock,
-      trend: {
-        value: Math.abs(stats.teamHoursWorked.trend),
-        direction: getTrendDirection(stats.teamHoursWorked.trend),
-        label: 'vs mois dernier',
-      },
-      description: 'Ce mois',
-      variant: 'info',
     },
   ]
 
@@ -112,7 +83,7 @@ export function ManagerStats({
   if (shouldReduceMotion || isLoading) {
     return (
       <div
-        className={cn('grid grid-cols-2 gap-4 md:grid-cols-4', className)}
+        className={cn('grid grid-cols-1 gap-4 sm:grid-cols-3', className)}
         role="region"
         aria-label="Statistiques équipe"
         data-testid="manager-stats"
@@ -129,7 +100,7 @@ export function ManagerStats({
       variants={staggerContainer}
       initial="hidden"
       animate="visible"
-      className={cn('grid grid-cols-2 gap-4 md:grid-cols-4', className)}
+      className={cn('grid grid-cols-1 gap-4 sm:grid-cols-3', className)}
       role="region"
       aria-label="Statistiques équipe"
       data-testid="manager-stats"

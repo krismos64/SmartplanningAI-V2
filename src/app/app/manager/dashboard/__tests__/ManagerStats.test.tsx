@@ -35,6 +35,7 @@ type ManagerStatsResult = {
   teamSize: number
   pendingLeaveRequests: number
   todayAbsences: number
+  todayAbsenceDetails: Array<{ employeeName: string; reason: string }>
   coverageRate: number
   teamHoursWorked: {
     current: number
@@ -58,6 +59,10 @@ const mockStats: ManagerStatsResult = {
   teamSize: 8,
   pendingLeaveRequests: 3,
   todayAbsences: 2,
+  todayAbsenceDetails: [
+    { employeeName: 'Alice Dupont', reason: 'Congés payés' },
+    { employeeName: 'Bob Martin', reason: 'Repos' },
+  ],
   coverageRate: 95,
   teamHoursWorked: {
     current: 280.5,
@@ -72,13 +77,12 @@ const mockStats: ManagerStatsResult = {
 }
 
 describe('ManagerStats', () => {
-  it('affiche les 4 KPIs', () => {
+  it('affiche les 3 KPIs', () => {
     render(<ManagerStats stats={mockStats} />)
 
     expect(screen.getByText('Membres équipe')).toBeInTheDocument()
     expect(screen.getByText('Congés à valider')).toBeInTheDocument()
     expect(screen.getByText("Absents aujourd'hui")).toBeInTheDocument()
-    expect(screen.getByText('Heures équipe')).toBeInTheDocument()
   })
 
   it('affiche la valeur du nombre de membres', () => {
@@ -99,18 +103,12 @@ describe('ManagerStats', () => {
     expect(screen.getByText('2')).toBeInTheDocument()
   })
 
-  it('affiche les heures equipe formatees', () => {
+  it('affiche les noms des absents avec motif', () => {
     render(<ManagerStats stats={mockStats} />)
 
-    // 280.5 heures = 280h30
-    expect(screen.getByText('280h30')).toBeInTheDocument()
-  })
-
-  it('affiche la tendance positive', () => {
-    render(<ManagerStats stats={mockStats} />)
-
-    // La tendance de +5,8 % doit etre affichee (format francais avec virgule)
-    expect(screen.getByText(/5,8\s*%/)).toBeInTheDocument()
+    expect(
+      screen.getByText(/Alice Dupont \(Congés payés\)/)
+    ).toBeInTheDocument()
   })
 
   it('affiche la description pour les membres', () => {
@@ -133,6 +131,7 @@ describe('ManagerStats', () => {
     const statsNoAbsences = {
       ...mockStats,
       todayAbsences: 0,
+      todayAbsenceDetails: [],
     }
     render(<ManagerStats stats={statsNoAbsences} />)
 

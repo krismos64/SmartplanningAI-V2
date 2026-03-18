@@ -50,21 +50,6 @@ function formatChartData(performance: TeamMemberPerformance[]) {
 }
 
 /**
- * Calcule les statistiques globales de l'equipe
- */
-function calculateTeamStats(performance: TeamMemberPerformance[]) {
-  const totalWorked = performance.reduce((sum, m) => sum + m.hoursWorked, 0)
-  const totalScheduled = performance.reduce(
-    (sum, m) => sum + m.scheduledHours,
-    0
-  )
-  const averageCompletion =
-    totalScheduled > 0 ? Math.round((totalWorked / totalScheduled) * 100) : 0
-
-  return { totalWorked, averageCompletion }
-}
-
-/**
  * Composant graphique de performance equipe
  *
  * @example
@@ -81,54 +66,17 @@ export function ManagerTeamChart({
   className,
 }: ManagerTeamChartProps) {
   const chartData = formatChartData(teamPerformance)
-  const { totalWorked, averageCompletion } = calculateTeamStats(teamPerformance)
   const shouldReduceMotion = useReducedMotion()
-
-  // Format total heures
-  const formatTotal = (hours: number): string => {
-    const h = Math.floor(hours)
-    const m = Math.round((hours - h) * 60)
-    if (m === 0) return `${h}h`
-    return `${h}h${m.toString().padStart(2, '0')}`
-  }
 
   const content = (
     <Card
       className={cn('overflow-hidden', className)}
       data-testid="manager-team-chart"
     >
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <div>
-          <CardTitle className="text-base font-medium">
-            Performance équipe
-          </CardTitle>
-          <p className="text-sm text-muted-foreground">
-            Heures travaillées ce mois
-          </p>
-        </div>
-        <div className="text-right">
-          <p className="text-sm text-muted-foreground">
-            Total :{' '}
-            <span className="font-semibold text-foreground">
-              {formatTotal(totalWorked)}
-            </span>
-          </p>
-          <p className="text-xs text-muted-foreground">
-            Complétion moyenne :{' '}
-            <span
-              className={cn(
-                'font-semibold',
-                averageCompletion >= 90
-                  ? 'text-emerald-600'
-                  : averageCompletion >= 70
-                    ? 'text-amber-600'
-                    : 'text-red-600'
-              )}
-            >
-              {averageCompletion}%
-            </span>
-          </p>
-        </div>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-base font-medium">
+          Heures travaillées ce mois
+        </CardTitle>
       </CardHeader>
       <CardContent>
         {teamPerformance.length === 0 && !isLoading ? (
