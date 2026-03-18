@@ -176,8 +176,12 @@
    ═══════════════════════════════════════════════════ */
 
 .sx__week-grid__date-axis {
-  border-bottom: 1px solid hsl(var(--border) / 0.06);
+  border-bottom: 1px solid hsl(var(--border) / 0.3);
   padding-bottom: 0.375rem;
+}
+
+.dark .sx__week-grid__date-axis {
+  border-bottom-color: hsl(var(--border) / 0.2);
 }
 
 .sx__week-grid__date {

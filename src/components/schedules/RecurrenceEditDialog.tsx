@@ -1,13 +1,21 @@
 /**
- * Composant RecurrenceEditDialog - Dialog de modification/suppression groupée
+ * Composant RecurrenceEditDialog - Dialog de gestion de créneau récurrent
  *
- * @description Dialog pour choisir la portée d'une modification/suppression
- * sur un créneau récurrent (ce créneau, futurs, ou tous)
+ * @description Dialog pour choisir l'action et la portée sur un créneau récurrent
  * @ticket SP-399
  */
 
 'use client'
 
+import { useState } from 'react'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,38 +27,34 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
-import { CalendarX, CalendarClock, Calendar, Trash2, Edit } from 'lucide-react'
+import { Calendar, CalendarRange, Trash2, Pencil } from 'lucide-react'
 import { useIsImpersonating } from '@/hooks'
 
 // ============================================================================
 // Types
 // ============================================================================
 
-export type RecurrenceEditScope = 'single' | 'future' | 'all'
+export type RecurrenceEditScope = 'single' | 'all'
 
 export type RecurrenceEditAction = 'edit' | 'delete'
 
 interface RecurrenceEditDialogProps {
-  /** Si le dialog est ouvert */
   isOpen: boolean
-  /** Callback de fermeture */
   onClose: () => void
-  /** Callback de confirmation avec la portée choisie */
   onConfirm: (scope: RecurrenceEditScope) => void
-  /** Action en cours (édition ou suppression) */
   action: RecurrenceEditAction
-  /** Nombre de créneaux concernés pour chaque option */
   counts?: {
     single: number
     future: number
     all: number
   }
-  /** Chargement en cours */
   isLoading?: boolean
+  /** Callback pour changer d'action (modifier → supprimer) */
+  onActionChange?: (action: RecurrenceEditAction) => void
 }
 
 // ============================================================================
-// Composant
+// Composant principal
 // ============================================================================
 
 export function RecurrenceEditDialog({
@@ -60,109 +64,195 @@ export function RecurrenceEditDialog({
   action,
   counts = { single: 1, future: 0, all: 0 },
   isLoading = false,
+  onActionChange,
 }: RecurrenceEditDialogProps) {
   const isImpersonating = useIsImpersonating()
   const isDelete = action === 'delete'
+  const [confirmDeleteAll, setConfirmDeleteAll] = useState(false)
 
   const title = isDelete
     ? 'Supprimer un créneau récurrent'
-    : 'Modifier un créneau récurrent'
+    : 'Créneau récurrent'
 
   const description = isDelete
-    ? "Ce créneau fait partie d'une série récurrente. Quelle action souhaitez-vous effectuer ?"
-    : "Ce créneau fait partie d'une série récurrente. Quels créneaux souhaitez-vous modifier ?"
+    ? 'Quels créneaux souhaitez-vous supprimer ?'
+    : 'Que souhaitez-vous faire ?'
 
-  const handleConfirm = (scope: RecurrenceEditScope) => {
-    onConfirm(scope)
+  const handleClose = () => {
+    setConfirmDeleteAll(false)
+    onClose()
   }
 
   return (
-    <AlertDialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <AlertDialogContent className="sm:max-w-md">
-        <AlertDialogHeader>
-          <AlertDialogTitle className="flex items-center gap-2">
-            {isDelete ? (
-              <Trash2 className="h-5 w-5 text-destructive" />
-            ) : (
-              <Edit className="h-5 w-5 text-primary" />
+    <>
+      <Dialog open={isOpen && !confirmDeleteAll} onOpenChange={(open) => !open && handleClose()}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              {isDelete ? (
+                <Trash2 className="h-5 w-5 text-destructive" />
+              ) : (
+                <Pencil className="h-5 w-5 text-primary" />
+              )}
+              {title}
+            </DialogTitle>
+            <DialogDescription>{description}</DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-2">
+            {/* Section Modifier */}
+            {!isDelete && (
+              <div className="space-y-2">
+                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  Modifier
+                </p>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  <Button
+                    variant="outline"
+                    className="h-auto justify-start gap-3 p-3 text-left"
+                    onClick={() => onConfirm('single')}
+                    disabled={isLoading || isImpersonating}
+                  >
+                    <Calendar className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
+                    <div>
+                      <p className="text-sm font-medium">Ce créneau</p>
+                    </div>
+                  </Button>
+
+                  {counts.all > 1 && (
+                    <Button
+                      variant="outline"
+                      className="h-auto justify-start gap-3 p-3 text-left"
+                      onClick={() => onConfirm('all')}
+                      disabled={isLoading || isImpersonating}
+                    >
+                      <CalendarRange className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
+                      <div>
+                        <p className="text-sm font-medium">Toute la série</p>
+                        <p className="text-xs text-muted-foreground">
+                          {counts.all} créneaux
+                        </p>
+                      </div>
+                    </Button>
+                  )}
+                </div>
+              </div>
             )}
-            {title}
-          </AlertDialogTitle>
-          <AlertDialogDescription>{description}</AlertDialogDescription>
-        </AlertDialogHeader>
 
-        <div className="flex flex-col gap-3 py-4">
-          {/* Option: Ce créneau uniquement */}
-          <Button
-            variant="outline"
-            className="h-auto justify-start gap-3 p-4 text-left"
-            onClick={() => handleConfirm('single')}
-            disabled={isLoading || isImpersonating}
-            title={
-              isImpersonating ? 'Non disponible en mode support' : undefined
-            }
-          >
-            <CalendarX className="h-5 w-5 flex-shrink-0 text-muted-foreground" />
-            <div className="flex-1">
-              <p className="font-medium">Ce créneau uniquement</p>
-              <p className="text-sm text-muted-foreground">
-                {isDelete ? 'Supprime' : 'Modifie'} uniquement cette occurrence
-                {counts.single > 1 && ` (${counts.single} créneau)`}
-              </p>
-            </div>
-          </Button>
-
-          {/* Option: Ce créneau et les suivants */}
-          {counts.future > 0 && (
-            <Button
-              variant="outline"
-              className="h-auto justify-start gap-3 p-4 text-left"
-              onClick={() => handleConfirm('future')}
-              disabled={isLoading || isImpersonating}
-              title={
-                isImpersonating ? 'Non disponible en mode support' : undefined
-              }
-            >
-              <CalendarClock className="h-5 w-5 flex-shrink-0 text-muted-foreground" />
-              <div className="flex-1">
-                <p className="font-medium">Ce créneau et les suivants</p>
-                <p className="text-sm text-muted-foreground">
-                  {isDelete ? 'Supprime' : 'Modifie'} cette occurrence et toutes
-                  les futures ({counts.future} créneau
-                  {counts.future > 1 ? 'x' : ''})
+            {/* Section Supprimer */}
+            {!isDelete && onActionChange && (
+              <div className="space-y-2">
+                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  Supprimer
                 </p>
-              </div>
-            </Button>
-          )}
+                <div className="grid gap-2 sm:grid-cols-2">
+                  <Button
+                    variant="outline"
+                    className="h-auto justify-start gap-3 border-destructive/30 p-3 text-left text-destructive hover:bg-destructive/5"
+                    onClick={() => {
+                      onActionChange('delete')
+                      onConfirm('single')
+                    }}
+                    disabled={isLoading || isImpersonating}
+                  >
+                    <Trash2 className="h-4 w-4 flex-shrink-0" />
+                    <div>
+                      <p className="text-sm font-medium">Ce créneau</p>
+                    </div>
+                  </Button>
 
-          {/* Option: Tous les créneaux */}
-          {counts.all > 1 && (
-            <Button
-              variant="outline"
-              className="h-auto justify-start gap-3 p-4 text-left"
-              onClick={() => handleConfirm('all')}
-              disabled={isLoading || isImpersonating}
-              title={
-                isImpersonating ? 'Non disponible en mode support' : undefined
-              }
+                  {counts.all > 1 && (
+                    <Button
+                      variant="outline"
+                      className="h-auto justify-start gap-3 border-destructive/30 p-3 text-left text-destructive hover:bg-destructive/5"
+                      onClick={() => {
+                        onActionChange('delete')
+                        setConfirmDeleteAll(true)
+                      }}
+                      disabled={isLoading || isImpersonating}
+                    >
+                      <Trash2 className="h-4 w-4 flex-shrink-0" />
+                      <div>
+                        <p className="text-sm font-medium">Toute la série</p>
+                        <p className="text-xs text-destructive/70">
+                          {counts.all} créneaux
+                        </p>
+                      </div>
+                    </Button>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Mode delete direct (si appelé en mode delete) */}
+            {isDelete && (
+              <div className="grid gap-2 sm:grid-cols-2">
+                <Button
+                  variant="outline"
+                  className="h-auto justify-start gap-3 border-destructive/30 p-3 text-left text-destructive hover:bg-destructive/5"
+                  onClick={() => onConfirm('single')}
+                  disabled={isLoading || isImpersonating}
+                >
+                  <Calendar className="h-4 w-4 flex-shrink-0" />
+                  <div>
+                    <p className="text-sm font-medium">Ce créneau</p>
+                  </div>
+                </Button>
+
+                {counts.all > 1 && (
+                  <Button
+                    variant="outline"
+                    className="h-auto justify-start gap-3 border-destructive/30 p-3 text-left text-destructive hover:bg-destructive/5"
+                    onClick={() => setConfirmDeleteAll(true)}
+                    disabled={isLoading || isImpersonating}
+                  >
+                    <CalendarRange className="h-4 w-4 flex-shrink-0" />
+                    <div>
+                      <p className="text-sm font-medium">Toute la série</p>
+                      <p className="text-xs text-destructive/70">
+                        {counts.all} créneaux
+                      </p>
+                    </div>
+                  </Button>
+                )}
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button variant="ghost" onClick={handleClose} disabled={isLoading}>
+              Annuler
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Confirmation suppression de toute la série */}
+      <AlertDialog open={confirmDeleteAll} onOpenChange={setConfirmDeleteAll}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Supprimer toute la série ?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Les {counts.all} créneaux de cette récurrence seront définitivement
+              supprimés. Cette action est irréversible.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isLoading}>Annuler</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => {
+                setConfirmDeleteAll(false)
+                onConfirm('all')
+              }}
+              disabled={isLoading}
             >
-              <Calendar className="h-5 w-5 flex-shrink-0 text-muted-foreground" />
-              <div className="flex-1">
-                <p className="font-medium">Tous les créneaux de la série</p>
-                <p className="text-sm text-muted-foreground">
-                  {isDelete ? 'Supprime' : 'Modifie'} tous les créneaux de cette
-                  récurrence ({counts.all} créneau{counts.all > 1 ? 'x' : ''})
-                </p>
-              </div>
-            </Button>
-          )}
-        </div>
-
-        <AlertDialogFooter>
-          <AlertDialogCancel disabled={isLoading}>Annuler</AlertDialogCancel>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+              {isLoading ? 'Suppression...' : 'Supprimer tout'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   )
 }
 

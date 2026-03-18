@@ -44,13 +44,13 @@ const statusOptions = [
 const typeOptions = [
   { value: 'all', label: 'Tous les types' },
   { value: 'WORK', label: 'Travail' },
+  { value: 'REST', label: 'Repos' },
   { value: 'BREAK', label: 'Pause' },
   { value: 'MEETING', label: 'Réunion' },
   { value: 'TRAINING', label: 'Formation' },
   { value: 'REMOTE', label: 'Télétravail' },
   { value: 'ON_CALL', label: 'Astreinte' },
   { value: 'OVERTIME', label: 'Heures sup.' },
-  { value: 'REST', label: 'Repos' },
 ]
 
 // ============================================================================
@@ -64,7 +64,7 @@ export function SchedulesFilters({
   showStatusFilter = true,
 }: SchedulesFiltersProps) {
   const [search, setSearch] = useState('')
-  const [status, setStatus] = useState<string>('all')
+  const [status, setStatus] = useState<string>('CONFIRMED')
   const [type, setType] = useState<string>('all')
   const [teamId, setTeamId] = useState<string>('all')
   const [employeeId, setEmployeeId] = useState<string>('all')
@@ -109,10 +109,15 @@ export function SchedulesFilters({
     [applyFilters]
   )
 
+  // Appliquer le filtre statut par défaut au mount
   useEffect(() => {
+    if (showStatusFilter) {
+      applyFilters({ status: 'CONFIRMED' })
+    }
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Les selects appliquent immédiatement
@@ -150,16 +155,17 @@ export function SchedulesFilters({
 
   const handleReset = useCallback(() => {
     setSearch('')
-    setStatus('all')
+    setStatus(showStatusFilter ? 'CONFIRMED' : 'all')
     setType('all')
     setTeamId('all')
     setEmployeeId('all')
-    onFiltersChange({})
-  }, [onFiltersChange])
+    onFiltersChange(showStatusFilter ? { status: 'CONFIRMED' } : {})
+  }, [onFiltersChange, showStatusFilter])
 
+  const defaultStatus = showStatusFilter ? 'CONFIRMED' : 'all'
   const hasFilters =
     search.trim() ||
-    status !== 'all' ||
+    status !== defaultStatus ||
     type !== 'all' ||
     teamId !== 'all' ||
     employeeId !== 'all'

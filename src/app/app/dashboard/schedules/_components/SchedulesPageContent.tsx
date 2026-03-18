@@ -12,24 +12,18 @@ import { useState, useTransition, useCallback, useEffect, useMemo } from 'react'
 import {
   CalendarDays,
   Plus,
-  ChevronLeft,
-  ChevronRight,
-  Eye,
-  EyeOff,
   Clock,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
+import { useToast } from '@/components/toast/use-toast'
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { Switch } from '@/components/ui/switch'
-import { Label } from '@/components/ui/label'
-import { getSchedules, ScheduleWithRelations } from '@/lib/actions/schedules'
+  getSchedules,
+  deleteSchedule,
+  deleteRecurrenceGroup,
+  updateRecurrenceGroup,
+  type ScheduleWithRelations,
+} from '@/lib/actions/schedules'
 import {
   getAvailabilitiesForCalendar,
   type AvailabilityWithEmployee,
@@ -43,6 +37,8 @@ import {
   ShiftModal,
   ExportDropdown,
   WeeklyHoursPanel,
+  RecurrenceEditDialog,
+  type RecurrenceEditScope,
 } from '@/components/schedules'
 import type { EmployeeWithHours } from '@/components/schedules'
 import {
@@ -63,9 +59,8 @@ import { scheduleTypeLabels } from '@/lib/validations/schedule'
 import type { ScheduleType } from '@prisma/client'
 import {
   format,
-  addDays,
-  addWeeks,
-  addMonths,
+  startOfDay,
+  endOfDay,
   startOfWeek,
   endOfWeek,
   startOfMonth,
@@ -104,9 +99,12 @@ export function SchedulesPageContent({
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   initialEndDate: _initialEndDate,
 }: SchedulesPageContentProps) {
+  const toast = useToast()
+
   // États
   const [schedules, setSchedules] =
     useState<ScheduleWithRelations[]>(initialSchedules)
+  const [calendarVersion, setCalendarVersion] = useState(0)
   const [viewMode, setViewMode] = useState<ViewMode>('week')
   const [currentDate, setCurrentDate] = useState(new Date())
   const [isPending, startTransition] = useTransition()
@@ -126,11 +124,20 @@ export function SchedulesPageContent({
   const [detailSchedule, setDetailSchedule] =
     useState<ScheduleWithRelations | null>(null)
 
+  // État pour le dialog récurrence (choix single/all)
+  const [recurrenceSchedule, setRecurrenceSchedule] =
+    useState<ScheduleWithRelations | null>(null)
+  const [recurrenceAction, setRecurrenceAction] = useState<'edit' | 'delete'>('edit')
+  const [isRecurrenceDialogOpen, setIsRecurrenceDialogOpen] = useState(false)
+  const [isRecurrenceDeleting, setIsRecurrenceDeleting] = useState(false)
+  // Si true, le prochain submit du ShiftModal appliquera les changements à toute la récurrence
+  const [editRecurrenceGroupId, setEditRecurrenceGroupId] = useState<string | null>(null)
+
   // État pour les indisponibilités (SP-402)
   const [availabilities, setAvailabilities] = useState<
     AvailabilityWithEmployee[]
   >([])
-  const [showAvailabilities, setShowAvailabilities] = useState(true)
+  const [showAvailabilities] = useState(false)
   const [isLoadingAvailabilities, setIsLoadingAvailabilities] = useState(false)
 
   // État pour les équipes (filtre)
@@ -147,8 +154,8 @@ export function SchedulesPageContent({
     }[]
   >([])
 
-  // État pour le panneau heures semaine (SP-406)
-  const [showHoursPanel, setShowHoursPanel] = useState(true)
+  // Panneau heures toujours visible
+  const showHoursPanel = true
 
   // Chargement des équipes et employés au mount
   useEffect(() => {
@@ -168,18 +175,21 @@ export function SchedulesPageContent({
   const canCreate = userRole === 'DIRECTOR' || userRole === 'MANAGER'
   const canExport = userRole !== 'SYSTEM_ADMIN'
 
-  // Calcul des dates selon le mode de vue (stabilisé par timestamps)
+  // Calcul des dates selon le mode de vue
+  // Protéger contre une date invalide (ex: parsing Schedule-X)
+  const safeDate = isNaN(currentDate.getTime()) ? new Date() : currentDate
+
   const dateRange = useMemo(() => {
     switch (viewMode) {
       case 'day':
         return {
-          start: currentDate,
-          end: currentDate,
-          label: format(currentDate, 'EEEE d MMMM yyyy', { locale: fr }),
+          start: startOfDay(safeDate),
+          end: endOfDay(safeDate),
+          label: format(safeDate, 'EEEE d MMMM yyyy', { locale: fr }),
         }
       case 'week': {
-        const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 })
-        const weekEnd = endOfWeek(currentDate, { weekStartsOn: 1 })
+        const weekStart = startOfWeek(safeDate, { weekStartsOn: 1 })
+        const weekEnd = endOfWeek(safeDate, { weekStartsOn: 1 })
         return {
           start: weekStart,
           end: weekEnd,
@@ -187,16 +197,16 @@ export function SchedulesPageContent({
         }
       }
       case 'month': {
-        const monthStart = startOfMonth(currentDate)
-        const monthEnd = endOfMonth(currentDate)
+        const monthStart = startOfMonth(safeDate)
+        const monthEnd = endOfMonth(safeDate)
         return {
           start: monthStart,
           end: monthEnd,
-          label: format(currentDate, 'MMMM yyyy', { locale: fr }),
+          label: format(safeDate, 'MMMM yyyy', { locale: fr }),
         }
       }
     }
-  }, [viewMode, currentDate])
+  }, [viewMode, safeDate])
 
   // Chargement des indisponibilités (SP-402)
   const loadAvailabilities = useCallback(
@@ -251,104 +261,38 @@ export function SchedulesPageContent({
 
         if (result.success && result.data) {
           setSchedules(result.data.schedules)
+          setCalendarVersion((v) => v + 1)
         }
       })
     },
     []
   )
 
-  // Navigation
-  const navigate = useCallback(
-    (direction: 'prev' | 'next') => {
-      const offset = direction === 'prev' ? -1 : 1
-      let newDate: Date
+  // Callback quand Schedule-X change de période (navigation interne)
+  const handleRangeChange = useCallback(
+    (start: Date, end: Date) => {
+      // Déduire le viewMode depuis la durée du range
+      const diffDays = Math.round(
+        (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)
+      )
 
-      switch (viewMode) {
-        case 'day':
-          newDate = addDays(currentDate, offset)
-          break
-        case 'week':
-          newDate = addWeeks(currentDate, offset)
-          break
-        case 'month':
-          newDate = addMonths(currentDate, offset)
-          break
+      if (diffDays <= 1) {
+        setViewMode('day')
+        setCurrentDate(start)
+      } else if (diffDays <= 7) {
+        setViewMode('week')
+        setCurrentDate(start)
+      } else {
+        // Vue mois : le range commence au lundi de la première semaine visible
+        // (ex: 23 fév pour mars). On prend le milieu du range pour cibler le bon mois.
+        setViewMode('month')
+        const mid = new Date(start.getTime() + (end.getTime() - start.getTime()) / 2)
+        setCurrentDate(mid)
       }
 
-      setCurrentDate(newDate)
-
-      // Calculer les nouvelles dates et recharger
-      const newRange = (() => {
-        switch (viewMode) {
-          case 'day':
-            return { start: newDate, end: newDate }
-          case 'week':
-            return {
-              start: startOfWeek(newDate, { weekStartsOn: 1 }),
-              end: endOfWeek(newDate, { weekStartsOn: 1 }),
-            }
-          case 'month':
-            return {
-              start: startOfMonth(newDate),
-              end: endOfMonth(newDate),
-            }
-        }
-      })()
-
-      void reloadSchedules(newRange.start, newRange.end, activeFilters)
+      void reloadSchedules(start, end, activeFilters)
     },
-    [viewMode, currentDate, activeFilters, reloadSchedules]
-  )
-
-  const goToToday = useCallback(() => {
-    const today = new Date()
-    setCurrentDate(today)
-
-    const range = (() => {
-      switch (viewMode) {
-        case 'day':
-          return { start: today, end: today }
-        case 'week':
-          return {
-            start: startOfWeek(today, { weekStartsOn: 1 }),
-            end: endOfWeek(today, { weekStartsOn: 1 }),
-          }
-        case 'month':
-          return {
-            start: startOfMonth(today),
-            end: endOfMonth(today),
-          }
-      }
-    })()
-
-    void reloadSchedules(range.start, range.end, activeFilters)
-  }, [viewMode, activeFilters, reloadSchedules])
-
-  // Changement de mode de vue
-  const handleViewModeChange = useCallback(
-    (newMode: ViewMode) => {
-      setViewMode(newMode)
-
-      const range = (() => {
-        switch (newMode) {
-          case 'day':
-            return { start: currentDate, end: currentDate }
-          case 'week':
-            return {
-              start: startOfWeek(currentDate, { weekStartsOn: 1 }),
-              end: endOfWeek(currentDate, { weekStartsOn: 1 }),
-            }
-          case 'month':
-            return {
-              start: startOfMonth(currentDate),
-              end: endOfMonth(currentDate),
-            }
-        }
-      })()
-
-      void reloadSchedules(range.start, range.end, activeFilters)
-    },
-    [currentDate, activeFilters, reloadSchedules]
+    [activeFilters, reloadSchedules]
   )
 
   // Gestion des filtres
@@ -377,6 +321,77 @@ export function SchedulesPageContent({
     [rangeStartTime, rangeEndTime, activeFilters, reloadSchedules]
   )
 
+  // Handler récurrence : choix single/all
+  const handleRecurrenceConfirm = async (scope: RecurrenceEditScope) => {
+    if (!recurrenceSchedule) return
+
+    if (recurrenceAction === 'edit') {
+      setIsRecurrenceDialogOpen(false)
+      setShiftModalMode('edit')
+      setSelectedSchedule(recurrenceSchedule)
+      if (scope === 'single') {
+        setEditRecurrenceGroupId(null)
+      } else {
+        setEditRecurrenceGroupId(recurrenceSchedule.recurrenceGroupId)
+      }
+      setIsShiftModalOpen(true)
+    } else {
+      // Suppression
+      setIsRecurrenceDeleting(true)
+      try {
+        if (scope === 'single') {
+          const result = await deleteSchedule(recurrenceSchedule.id)
+          if (result.success) {
+            toast.success('Créneau supprimé')
+          } else {
+            toast.error(result.error ?? 'Erreur')
+          }
+        } else {
+          const result = await deleteRecurrenceGroup(
+            recurrenceSchedule.recurrenceGroupId!
+          )
+          if (result.success) {
+            toast.success(`${result.data.deletedCount} créneaux supprimés`)
+          } else {
+            toast.error(result.error ?? 'Erreur')
+          }
+        }
+        setIsRecurrenceDialogOpen(false)
+        setRecurrenceSchedule(null)
+        void reloadSchedules(
+          new Date(rangeStartTime),
+          new Date(rangeEndTime),
+          activeFilters
+        )
+      } catch {
+        toast.error('Erreur inattendue')
+      } finally {
+        setIsRecurrenceDeleting(false)
+      }
+    }
+  }
+
+  // Compter les créneaux de la récurrence
+  const recurrenceCounts = useMemo(() => {
+    if (!recurrenceSchedule?.recurrenceGroupId) {
+      return { single: 1, future: 0, all: 0 }
+    }
+    const groupId = recurrenceSchedule.recurrenceGroupId
+    const allInGroup = schedules.filter(
+      (s) => s.recurrenceGroupId === groupId
+    )
+    const futureInGroup = allInGroup.filter(
+      (s) =>
+        new Date(s.startDate) >= new Date(recurrenceSchedule.startDate) &&
+        s.id !== recurrenceSchedule.id
+    )
+    return {
+      single: 1,
+      future: futureInGroup.length + 1,
+      all: allInGroup.length,
+    }
+  }, [recurrenceSchedule, schedules])
+
   return (
     <div className="space-y-6" data-testid="schedules-page">
       {/* Header */}
@@ -397,135 +412,36 @@ export function SchedulesPageContent({
             </p>
           </div>
         </div>
-        {canCreate && (
-          <Button
-            data-testid="new-shift-button"
-            className="sp-btn-glow"
-            onClick={() => {
-              setShiftModalMode('create')
-              setSelectedSchedule(null)
-              setIsShiftModalOpen(true)
-            }}
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            Nouveau planning
-          </Button>
-        )}
+        <div className="flex items-center gap-2">
+          {canExport && (
+            <ExportDropdown
+              startDate={dateRange.start}
+              endDate={dateRange.end}
+              viewMode={viewMode === 'day' ? 'week' : viewMode}
+              filters={activeFilters}
+              allowedFormats={userRole === 'EMPLOYEE' ? ['pdf'] : undefined}
+            />
+          )}
+          {canCreate && (
+            <Button
+              data-testid="new-shift-button"
+              className="sp-btn-glow"
+              onClick={() => {
+                setShiftModalMode('create')
+                setSelectedSchedule(null)
+                setIsShiftModalOpen(true)
+              }}
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              Nouveau planning
+            </Button>
+          )}
+        </div>
       </div>
 
-      {/* Navigation et contrôles */}
-      <Card>
-        <CardHeader className="pb-3">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            {/* Navigation date */}
-            <div className="flex items-center gap-2">
-              <Button
-                data-testid="nav-prev"
-                variant="outline"
-                size="icon"
-                onClick={() => navigate('prev')}
-                disabled={isPending}
-                aria-label="Période précédente"
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <Button
-                data-testid="nav-today"
-                variant="outline"
-                onClick={goToToday}
-                className="min-w-[100px]"
-                disabled={isPending}
-              >
-                Aujourd&apos;hui
-              </Button>
-              <Button
-                data-testid="nav-next"
-                variant="outline"
-                size="icon"
-                onClick={() => navigate('next')}
-                disabled={isPending}
-                aria-label="Période suivante"
-              >
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-              <span
-                className="ml-4 font-display text-lg font-semibold capitalize tracking-tight"
-                data-testid="date-range-label"
-              >
-                {dateRange.label}
-              </span>
-            </div>
-
-            {/* Contrôles de vue */}
-            <div className="flex items-center gap-2">
-              {/* Export PDF (SP-403) */}
-              {canExport && (
-                <ExportDropdown
-                  startDate={dateRange.start}
-                  endDate={dateRange.end}
-                  viewMode={viewMode === 'day' ? 'week' : viewMode}
-                  filters={activeFilters}
-                  allowedFormats={userRole === 'EMPLOYEE' ? ['pdf'] : undefined}
-                />
-              )}
-
-              {/* Toggle indisponibilités (SP-402) */}
-              <div className="flex items-center gap-2 rounded-md border px-3 py-1.5 transition-shadow duration-150 dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]">
-                <Switch
-                  id="show-availabilities"
-                  data-testid="availability-toggle"
-                  checked={showAvailabilities}
-                  onCheckedChange={setShowAvailabilities}
-                  aria-label="Afficher les indisponibilités"
-                />
-                <Label
-                  htmlFor="show-availabilities"
-                  className="flex cursor-pointer items-center gap-1.5 text-sm"
-                >
-                  {showAvailabilities ? (
-                    <Eye className="h-4 w-4" />
-                  ) : (
-                    <EyeOff className="h-4 w-4" />
-                  )}
-                  <span className="hidden sm:inline">Indispos</span>
-                </Label>
-              </div>
-
-              {/* Toggle heures semaine (SP-406) */}
-              <Button
-                variant={showHoursPanel ? 'default' : 'outline'}
-                size="sm"
-                className="hidden items-center gap-1.5 md:flex"
-                onClick={() => setShowHoursPanel((v) => !v)}
-                aria-label="Afficher les heures semaine"
-                data-testid="hours-panel-toggle"
-              >
-                <Clock className="h-4 w-4" />
-                <span className="hidden lg:inline">Heures</span>
-              </Button>
-
-              <Select
-                value={viewMode}
-                onValueChange={(value: ViewMode) => handleViewModeChange(value)}
-              >
-                <SelectTrigger
-                  className="w-[130px]"
-                  data-testid="view-mode-select"
-                >
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="day">Jour</SelectItem>
-                  <SelectItem value="week">Semaine</SelectItem>
-                  <SelectItem value="month">Mois</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </CardHeader>
-
-        {/* Filtres */}
-        <CardContent className="border-t pt-4">
+      {/* Filtres — visibles sur desktop, repliés sur mobile */}
+      <Card className="hidden md:block">
+        <CardContent className="pt-4">
           <SchedulesFilters
             onFiltersChange={handleFiltersChange}
             teams={teams}
@@ -534,22 +450,46 @@ export function SchedulesPageContent({
           />
         </CardContent>
       </Card>
+      <details className="md:hidden">
+        <summary className="flex cursor-pointer items-center gap-2 rounded-lg border px-4 py-3 text-sm font-medium">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+          Filtres
+        </summary>
+        <Card className="mt-2">
+          <CardContent className="pt-4">
+            <SchedulesFilters
+              onFiltersChange={handleFiltersChange}
+              teams={teams}
+              employees={employees}
+              showStatusFilter={userRole !== 'EMPLOYEE'}
+            />
+          </CardContent>
+        </Card>
+      </details>
 
       {/* Calendrier + Panneau heures (SP-406) */}
       <div className="flex gap-6">
         <Card className="min-w-0 flex-1">
           <CardContent className="pt-6">
             <ScheduleCalendar
+              key={calendarVersion}
               schedules={schedules}
               viewMode={viewMode}
               currentDate={currentDate}
               onScheduleClick={(schedule) => {
-                if (canCreate) {
+                if (!canCreate) {
+                  setDetailSchedule(schedule)
+                  return
+                }
+                // Si créneau récurrent → afficher le dialog de choix
+                if (schedule.isRecurring && schedule.recurrenceGroupId) {
+                  setRecurrenceSchedule(schedule)
+                  setRecurrenceAction('edit')
+                  setIsRecurrenceDialogOpen(true)
+                } else {
                   setShiftModalMode('edit')
                   setSelectedSchedule(schedule)
                   setIsShiftModalOpen(true)
-                } else {
-                  setDetailSchedule(schedule)
                 }
               }}
               onScheduleUpdate={handleScheduleUpdate}
@@ -557,6 +497,9 @@ export function SchedulesPageContent({
               canEdit={canCreate}
               availabilities={availabilities}
               showAvailabilities={showAvailabilities}
+              onRangeChange={handleRangeChange}
+              teamIds={teams.map((t) => t.id)}
+              companyId={companyId}
             />
           </CardContent>
         </Card>
@@ -567,7 +510,8 @@ export function SchedulesPageContent({
             schedules={schedules}
             employees={employees as EmployeeWithHours[]}
             isOpen={showHoursPanel}
-            onToggle={() => setShowHoursPanel((v) => !v)}
+            viewMode={viewMode}
+            onToggle={() => {}}
           />
         </div>
       </div>
@@ -579,7 +523,7 @@ export function SchedulesPageContent({
             <Button
               size="icon"
               className="fixed bottom-6 right-6 z-50 h-12 w-12 rounded-full shadow-lg"
-              aria-label="Voir les heures semaine"
+              aria-label="Voir les heures"
               data-testid="hours-panel-mobile-trigger"
             >
               <Clock className="h-5 w-5" />
@@ -589,7 +533,7 @@ export function SchedulesPageContent({
             <SheetHeader className="border-b px-4 py-3">
               <SheetTitle className="flex items-center gap-2 text-sm">
                 <Clock className="h-4 w-4" />
-                Heures semaine
+                {viewMode === 'day' ? 'Heures jour' : viewMode === 'month' ? 'Heures mois' : 'Heures semaine'}
               </SheetTitle>
             </SheetHeader>
             <WeeklyHoursPanel
@@ -597,6 +541,7 @@ export function SchedulesPageContent({
               employees={employees as EmployeeWithHours[]}
               isOpen={true}
               onToggle={() => {}}
+              viewMode={viewMode}
             />
           </SheetContent>
         </Sheet>
@@ -608,19 +553,64 @@ export function SchedulesPageContent({
         onClose={() => {
           setIsShiftModalOpen(false)
           setSelectedSchedule(null)
+          setEditRecurrenceGroupId(null)
         }}
         mode={shiftModalMode}
         schedule={selectedSchedule}
         companyId={companyId}
-        onSuccess={() => {
+        onSuccess={async () => {
+          // Si édition récurrence "all" : appliquer les changements à toute la série
+          if (editRecurrenceGroupId && selectedSchedule) {
+            // Relire le schedule mis à jour pour propager ses valeurs
+            const updatedSchedules = await getSchedules({
+              startDate: new Date(selectedSchedule.startDate),
+              endDate: new Date(selectedSchedule.endDate),
+              limit: 1,
+            })
+            const updated = updatedSchedules.success
+              ? updatedSchedules.data.schedules.find(
+                  (s) => s.id === selectedSchedule.id
+                )
+              : null
+
+            if (updated) {
+              await updateRecurrenceGroup(editRecurrenceGroupId, {
+                startTime: updated.startTime,
+                endTime: updated.endTime,
+                type: updated.type,
+                status: updated.status,
+                title: updated.title,
+                description: updated.description,
+                location: updated.location,
+              })
+              toast.success('Récurrence mise à jour')
+            }
+          }
+
           setIsShiftModalOpen(false)
           setSelectedSchedule(null)
+          setEditRecurrenceGroupId(null)
           void reloadSchedules(
             new Date(rangeStartTime),
             new Date(rangeEndTime),
             activeFilters
           )
         }}
+      />
+
+      {/* Dialog choix récurrence (modifier/supprimer single/all) */}
+      <RecurrenceEditDialog
+        isOpen={isRecurrenceDialogOpen}
+        onClose={() => {
+          setIsRecurrenceDialogOpen(false)
+          setRecurrenceSchedule(null)
+          setRecurrenceAction('edit')
+        }}
+        onConfirm={handleRecurrenceConfirm}
+        action={recurrenceAction}
+        counts={recurrenceCounts}
+        isLoading={isRecurrenceDeleting}
+        onActionChange={setRecurrenceAction}
       />
 
       {/* Dialog détail planning (lecture seule pour EMPLOYEE) */}

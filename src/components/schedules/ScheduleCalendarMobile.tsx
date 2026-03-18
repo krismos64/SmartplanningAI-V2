@@ -1,96 +1,47 @@
 /**
- * Composant ScheduleCalendarMobile - Vue cards responsive
+ * ScheduleCalendarMobile - Vue mobile intuitive des plannings
  *
- * @description Vue en cards empilées verticalement pour mobile/tablette (<768px)
- * Pas de scroll horizontal - design mobile-first
- * Affiche les indisponibilités en badges (SP-402)
+ * Navigation jour par jour avec swipe visuel.
+ * Cards épurées : nom + horaire + couleur type.
  *
- * @ticket SP-396, SP-402
+ * @ticket SP-396
  */
 
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useCallback, useRef } from 'react'
 import {
   format,
   isSameDay,
-  eachDayOfInterval,
   isToday,
   addDays,
-  isWithinInterval,
+  subDays,
+  startOfDay,
+  endOfDay,
 } from 'date-fns'
 import { fr } from 'date-fns/locale'
-import { Card, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Clock, Users, CalendarX } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Clock, CalendarDays } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { ScheduleCalendarProps } from './ScheduleCalendar'
 import { ScheduleWithRelations } from '@/lib/actions/schedules'
 import { Skeleton } from '@/components/ui/skeleton'
-import { AvailabilityBadge } from './AvailabilityBadge'
-import { AvailabilityPopover } from './AvailabilityPopover'
-import type { AvailabilityWithEmployee } from '@/lib/actions/availabilities'
 
 // ============================================================================
-// Configuration des couleurs et labels
+// Couleurs par type
 // ============================================================================
 
-const typeConfig = {
-  WORK: {
-    bg: 'bg-blue-50 dark:bg-blue-950',
-    border: 'border-l-blue-500',
-    text: 'text-blue-700 dark:text-blue-300',
-    label: 'Travail',
-  },
-  BREAK: {
-    bg: 'bg-yellow-50 dark:bg-yellow-950',
-    border: 'border-l-yellow-500',
-    text: 'text-yellow-700 dark:text-yellow-300',
-    label: 'Pause',
-  },
-  MEETING: {
-    bg: 'bg-purple-50 dark:bg-purple-950',
-    border: 'border-l-purple-500',
-    text: 'text-purple-700 dark:text-purple-300',
-    label: 'Réunion',
-  },
-  TRAINING: {
-    bg: 'bg-orange-50 dark:bg-orange-950',
-    border: 'border-l-orange-500',
-    text: 'text-orange-700 dark:text-orange-300',
-    label: 'Formation',
-  },
-  REMOTE: {
-    bg: 'bg-teal-50 dark:bg-teal-950',
-    border: 'border-l-teal-500',
-    text: 'text-teal-700 dark:text-teal-300',
-    label: 'Télétravail',
-  },
-  ON_CALL: {
-    bg: 'bg-red-50 dark:bg-red-950',
-    border: 'border-l-red-500',
-    text: 'text-red-700 dark:text-red-300',
-    label: 'Astreinte',
-  },
-  OVERTIME: {
-    bg: 'bg-pink-50 dark:bg-pink-950',
-    border: 'border-l-pink-500',
-    text: 'text-pink-700 dark:text-pink-300',
-    label: 'Heures sup.',
-  },
-  REST: {
-    bg: 'bg-green-50 dark:bg-green-950',
-    border: 'border-l-green-500',
-    text: 'text-green-700 dark:text-green-300',
-    label: 'Repos',
-  },
-} as const
-
-const statusConfig = {
-  DRAFT: { variant: 'outline' as const, label: 'Brouillon' },
-  CONFIRMED: { variant: 'default' as const, label: 'Confirmé' },
-} as const
+const typeColors: Record<string, { bg: string; border: string; label: string }> = {
+  WORK: { bg: 'bg-blue-50 dark:bg-blue-950/50', border: 'border-l-blue-500', label: 'Travail' },
+  REST: { bg: 'bg-green-50 dark:bg-green-950/50', border: 'border-l-green-500', label: 'Repos' },
+  BREAK: { bg: 'bg-yellow-50 dark:bg-yellow-950/50', border: 'border-l-yellow-500', label: 'Pause' },
+  MEETING: { bg: 'bg-purple-50 dark:bg-purple-950/50', border: 'border-l-purple-500', label: 'Réunion' },
+  TRAINING: { bg: 'bg-orange-50 dark:bg-orange-950/50', border: 'border-l-orange-500', label: 'Formation' },
+  REMOTE: { bg: 'bg-teal-50 dark:bg-teal-950/50', border: 'border-l-teal-500', label: 'Télétravail' },
+  ON_CALL: { bg: 'bg-red-50 dark:bg-red-950/50', border: 'border-l-red-500', label: 'Astreinte' },
+  OVERTIME: { bg: 'bg-pink-50 dark:bg-pink-950/50', border: 'border-l-pink-500', label: 'Heures sup.' },
+}
 
 // ============================================================================
 // Composant principal
@@ -98,331 +49,221 @@ const statusConfig = {
 
 export function ScheduleCalendarMobile({
   schedules,
-  viewMode,
   currentDate,
   onScheduleClick,
+  onRangeChange,
   isLoading,
-  availabilities = [],
-  showAvailabilities = true,
-  onAvailabilityClick,
 }: ScheduleCalendarProps) {
-  // État pour le popover d'indisponibilité
-  const [selectedAvailability, setSelectedAvailability] =
-    useState<AvailabilityWithEmployee | null>(null)
-  const [popoverOpen, setPopoverOpen] = useState(false)
+  const [mobileDate, setMobileDate] = useState(currentDate)
+  const dateInputRef = useRef<HTMLInputElement>(null)
 
-  // Handler pour le clic sur une indisponibilité
-  const handleAvailabilityClick = (avail: AvailabilityWithEmployee) => {
-    if (onAvailabilityClick) {
-      onAvailabilityClick(avail)
-    } else {
-      setSelectedAvailability(avail)
-      setPopoverOpen(true)
-    }
-  }
+  // Navigation jour par jour
+  const goToPrev = useCallback(() => {
+    const prev = subDays(mobileDate, 1)
+    setMobileDate(prev)
+    onRangeChange?.(startOfDay(prev), endOfDay(prev))
+  }, [mobileDate, onRangeChange])
 
-  // Calculer les jours à afficher selon le mode de vue
-  const schedulesByDay = useMemo(() => {
-    let days: Date[]
+  const goToNext = useCallback(() => {
+    const next = addDays(mobileDate, 1)
+    setMobileDate(next)
+    onRangeChange?.(startOfDay(next), endOfDay(next))
+  }, [mobileDate, onRangeChange])
 
-    switch (viewMode) {
-      case 'day':
-        days = [currentDate]
-        break
-      case 'week':
-        days = eachDayOfInterval({
-          start: currentDate,
-          end: addDays(currentDate, 6),
-        })
-        break
-      case 'month':
-        // Pour le mois, on affiche seulement les jours avec des schedules
-        const uniqueDays = new Set(
-          schedules.map((s) => format(new Date(s.startDate), 'yyyy-MM-dd'))
-        )
-        days = Array.from(uniqueDays)
-          .sort()
-          .map((d) => new Date(d))
-        break
-      default:
-        days = [currentDate]
-    }
+  const goToToday = useCallback(() => {
+    const today = new Date()
+    setMobileDate(today)
+    onRangeChange?.(startOfDay(today), endOfDay(today))
+  }, [onRangeChange])
 
-    return days.map((day) => {
-      // Filtrer les indisponibilités pour ce jour (SP-402)
-      const dayAvailabilities = showAvailabilities
-        ? availabilities.filter((avail) => {
-            const startDate = new Date(avail.startDate)
-            const endDate = new Date(avail.endDate)
-            return isWithinInterval(day, { start: startDate, end: endDate })
-          })
-        : []
+  const goToDate = useCallback(
+    (date: Date) => {
+      setMobileDate(date)
+      onRangeChange?.(startOfDay(date), endOfDay(date))
+    },
+    [onRangeChange]
+  )
 
-      return {
-        date: day,
-        schedules: schedules.filter((s) =>
-          isSameDay(new Date(s.startDate), day)
-        ),
-        availabilities: dayAvailabilities,
+  const handleDateInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const val = e.target.value
+      if (!val) return
+      const date = new Date(val + 'T00:00:00')
+      if (!isNaN(date.getTime())) {
+        goToDate(date)
       }
-    })
-  }, [schedules, viewMode, currentDate, availabilities, showAvailabilities])
+    },
+    [goToDate]
+  )
 
-  // État de chargement
+  // Filtrer les schedules du jour affiché
+  const daySchedules = useMemo(
+    () =>
+      schedules
+        .filter((s) => isSameDay(new Date(s.startDate), mobileDate))
+        .sort((a, b) => a.startTime.localeCompare(b.startTime)),
+    [schedules, mobileDate]
+  )
+
+  const today = isToday(mobileDate)
+
   if (isLoading) {
-    return <MobileCalendarSkeleton />
-  }
-
-  // Aucun schedule
-  if (schedules.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-        <CalendarX className="mb-4 h-12 w-12 opacity-50" />
-        <p className="text-lg font-medium">Aucun planning</p>
-        <p className="text-sm">Pas de plannings pour cette période</p>
-      </div>
-    )
+    return <MobileSkeleton />
   }
 
   return (
     <div className="space-y-4">
-      {schedulesByDay.map(
-        ({
-          date,
-          schedules: daySchedules,
-          availabilities: dayAvailabilities,
-        }) => (
-          <DaySection
-            key={date.toISOString()}
-            date={date}
-            schedules={daySchedules}
-            availabilities={dayAvailabilities}
-            onScheduleClick={onScheduleClick}
-            onAvailabilityClick={handleAvailabilityClick}
-            showEmptyDays={viewMode !== 'month'}
-          />
-        )
-      )}
-
-      {/* Popover de détail d'indisponibilité (SP-402) */}
-      {selectedAvailability && (
-        <AvailabilityPopover
-          availability={selectedAvailability}
-          open={popoverOpen}
-          onOpenChange={(open) => {
-            setPopoverOpen(open)
-            if (!open) {
-              setSelectedAvailability(null)
-            }
-          }}
+      {/* Navigation jour */}
+      <div className="flex items-center justify-between rounded-xl bg-muted/50 p-2">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={goToPrev}
+          className="h-10 w-10 touch-manipulation"
+          aria-label="Jour précédent"
         >
-          <span />
-        </AvailabilityPopover>
-      )}
-    </div>
-  )
-}
+          <ChevronLeft className="h-5 w-5" />
+        </Button>
 
-// ============================================================================
-// Section par jour
-// ============================================================================
+        <div className="relative flex flex-col items-center">
+          {/* Date picker natif caché — s'ouvre au tap sur la date */}
+          <input
+            ref={dateInputRef}
+            type="date"
+            value={format(mobileDate, 'yyyy-MM-dd')}
+            onChange={handleDateInputChange}
+            className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+            aria-label="Choisir une date"
+          />
+          <span className="text-xs font-medium uppercase text-muted-foreground">
+            {today ? "Aujourd'hui" : format(mobileDate, 'EEEE', { locale: fr })}
+          </span>
+          <span className="text-lg font-bold">
+            {format(mobileDate, 'd MMMM yyyy', { locale: fr })}
+          </span>
+        </div>
 
-interface DaySectionProps {
-  date: Date
-  schedules: ScheduleWithRelations[]
-  availabilities?: AvailabilityWithEmployee[]
-  onScheduleClick?: (schedule: ScheduleWithRelations) => void
-  onAvailabilityClick?: (availability: AvailabilityWithEmployee) => void
-  showEmptyDays?: boolean
-}
-
-function DaySection({
-  date,
-  schedules,
-  availabilities = [],
-  onScheduleClick,
-  onAvailabilityClick,
-  showEmptyDays = true,
-}: DaySectionProps) {
-  const today = isToday(date)
-
-  // Ne pas afficher les jours sans schedules (sauf si showEmptyDays ou aujourd'hui)
-  if (schedules.length === 0 && !showEmptyDays && !today) {
-    return null
-  }
-
-  return (
-    <div className="space-y-2">
-      {/* En-tête du jour */}
-      <div
-        className={cn(
-          'sticky top-0 z-10 flex items-center gap-2 rounded-lg px-3 py-2 font-medium',
-          today ? 'bg-primary text-primary-foreground' : 'bg-muted'
-        )}
-      >
-        <span className="capitalize">
-          {format(date, 'EEEE d MMMM', { locale: fr })}
-        </span>
-        {today && (
-          <Badge variant="secondary" className="text-xs">
-            Aujourd&apos;hui
-          </Badge>
-        )}
-        <span className="ml-auto text-sm opacity-75">
-          {schedules.length} planning{schedules.length > 1 ? 's' : ''}
-        </span>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={goToNext}
+          className="h-10 w-10 touch-manipulation"
+          aria-label="Jour suivant"
+        >
+          <ChevronRight className="h-5 w-5" />
+        </Button>
       </div>
 
-      {/* Badges d'indisponibilités (SP-402) */}
-      {availabilities.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 px-1">
-          {availabilities.map((avail) => (
-            <AvailabilityBadge
-              key={avail.id}
-              availability={avail}
-              compact
-              onClick={onAvailabilityClick}
+      {/* Bouton retour à aujourd'hui */}
+      {!today && (
+        <button
+          onClick={goToToday}
+          className="w-full rounded-lg bg-primary/10 py-2 text-center text-xs font-medium text-primary transition-colors hover:bg-primary/20"
+        >
+          Revenir à aujourd&apos;hui
+        </button>
+      )}
+
+      {/* Liste des plannings du jour */}
+      {daySchedules.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
+          <CalendarDays className="mb-3 h-10 w-10 opacity-40" />
+          <p className="text-sm">Aucun planning ce jour</p>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {daySchedules.map((schedule) => (
+            <MobileScheduleCard
+              key={schedule.id}
+              schedule={schedule}
+              onClick={() => onScheduleClick?.(schedule)}
             />
           ))}
         </div>
       )}
 
-      {/* Cards des schedules */}
-      {schedules.length === 0 ? (
-        <p className="py-2 pl-3 text-sm text-muted-foreground">
-          Aucun planning prévu
+      {/* Résumé */}
+      {daySchedules.length > 0 && (
+        <p className="text-center text-xs text-muted-foreground">
+          {daySchedules.length} planning{daySchedules.length > 1 ? 's' : ''}
         </p>
-      ) : (
-        <div className="space-y-2">
-          {schedules
-            .sort((a, b) => a.startTime.localeCompare(b.startTime))
-            .map((schedule) => (
-              <ScheduleCard
-                key={schedule.id}
-                schedule={schedule}
-                onClick={() => onScheduleClick?.(schedule)}
-              />
-            ))}
-        </div>
       )}
     </div>
   )
 }
 
 // ============================================================================
-// Card d'un schedule
+// Card simplifiée
 // ============================================================================
 
-interface ScheduleCardProps {
+function MobileScheduleCard({
+  schedule,
+  onClick,
+}: {
   schedule: ScheduleWithRelations
   onClick?: () => void
-}
+}) {
+  const defaultType = { bg: 'bg-blue-50 dark:bg-blue-950/50', border: 'border-l-blue-500', label: 'Travail' }
+  const type = typeColors[schedule.type] ?? defaultType
 
-function ScheduleCard({ schedule, onClick }: ScheduleCardProps) {
-  const type =
-    typeConfig[schedule.type as keyof typeof typeConfig] || typeConfig.WORK
-  const status =
-    statusConfig[schedule.status as keyof typeof statusConfig] ||
-    statusConfig.DRAFT
-
-  const initials = `${schedule.employee?.firstName?.[0] ?? '?'}${schedule.employee?.lastName?.[0] ?? '?'}`
+  const employeeName =
+    `${schedule.employee?.firstName ?? ''} ${schedule.employee?.lastName ?? ''}`.trim() || 'N/A'
+  const initials = `${schedule.employee?.firstName?.[0] ?? ''}${schedule.employee?.lastName?.[0] ?? ''}`.toUpperCase()
   const employeeImage = schedule.employee?.user?.image
 
+  const timeLabel =
+    schedule.type === 'REST'
+      ? 'Journée entière'
+      : `${schedule.startTime} – ${schedule.endTime}`
+
   return (
-    <Card
+    <div
+      onClick={onClick}
       className={cn(
-        'cursor-pointer border-l-4 transition-all',
-        'hover:shadow-md active:scale-[0.98]',
+        'flex items-center gap-3 rounded-lg border-l-4 p-3 transition-all active:scale-[0.98]',
         type.bg,
         type.border,
-        schedule.status === 'DRAFT' &&
-          'border-dashed opacity-60 hover:opacity-80'
+        onClick && 'cursor-pointer',
+        schedule.status === 'DRAFT' && 'border-dashed opacity-60'
       )}
-      onClick={onClick}
     >
-      <CardContent className="p-4">
-        <div className="flex items-start gap-3">
-          {/* Avatar employé */}
-          <Avatar className="h-10 w-10 flex-shrink-0">
-            {employeeImage && (
-              <AvatarImage
-                src={employeeImage}
-                alt={`${schedule.employee?.firstName ?? ''} ${schedule.employee?.lastName ?? ''}`}
-              />
-            )}
-            <AvatarFallback className="text-sm font-medium">
-              {initials}
-            </AvatarFallback>
-          </Avatar>
-
-          {/* Contenu principal */}
-          <div className="min-w-0 flex-1 space-y-1">
-            {/* Nom et statut */}
-            <div className="flex items-center justify-between gap-2">
-              <span className="truncate font-medium">
-                {schedule.employee?.firstName ?? 'N/A'}{' '}
-                {schedule.employee?.lastName ?? ''}
-              </span>
-              <Badge variant={status.variant} className="flex-shrink-0 text-xs">
-                {status.label}
-              </Badge>
-            </div>
-
-            {/* Titre si présent */}
-            {schedule.title && (
-              <p className="truncate text-sm font-medium">{schedule.title}</p>
-            )}
-
-            {/* Horaires */}
-            <div className="flex items-center gap-1 text-sm text-muted-foreground">
-              <Clock className="h-3.5 w-3.5" />
-              <span>
-                {schedule.type === 'REST'
-                  ? 'Journée entière'
-                  : `${schedule.startTime} - ${schedule.endTime}`}
-              </span>
-            </div>
-
-            {/* Équipe si présente */}
-            {schedule.team && (
-              <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                <Users className="h-3.5 w-3.5" />
-                <span className="truncate">{schedule.team.name}</span>
-              </div>
-            )}
-
-            {/* Type de shift */}
-            <Badge variant="outline" className={cn('text-xs', type.text)}>
-              {type.label}
-            </Badge>
-          </div>
-        </div>
-
-        {/* Description si présente */}
-        {schedule.description && (
-          <p className="mt-2 line-clamp-2 border-t pt-2 text-sm text-muted-foreground">
-            {schedule.description}
-          </p>
+      {/* Avatar */}
+      <Avatar className="h-9 w-9 flex-shrink-0">
+        {employeeImage && (
+          <AvatarImage src={employeeImage} alt={employeeName} />
         )}
-      </CardContent>
-    </Card>
+        <AvatarFallback className="text-xs font-medium">
+          {initials}
+        </AvatarFallback>
+      </Avatar>
+
+      {/* Nom + Horaire */}
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-medium">{employeeName}</p>
+        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+          <Clock className="h-3 w-3" />
+          <span>{timeLabel}</span>
+        </div>
+      </div>
+
+      {/* Type label */}
+      <span className={cn('shrink-0 text-xs font-medium', type.border.replace('border-l-', 'text-'))}>
+        {type.label}
+      </span>
+    </div>
   )
 }
 
 // ============================================================================
-// Skeleton de chargement
+// Skeleton
 // ============================================================================
 
-function MobileCalendarSkeleton() {
+function MobileSkeleton() {
   return (
     <div className="space-y-4">
-      {[1, 2, 3].map((day) => (
-        <div key={day} className="space-y-2">
-          <Skeleton className="h-10 w-full rounded-lg" />
-          {[1, 2].map((card) => (
-            <Skeleton key={card} className="h-28 w-full rounded-lg" />
-          ))}
-        </div>
+      <Skeleton className="h-16 w-full rounded-xl" />
+      {[1, 2, 3].map((i) => (
+        <Skeleton key={i} className="h-16 w-full rounded-lg" />
       ))}
     </div>
   )

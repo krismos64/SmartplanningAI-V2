@@ -10,14 +10,16 @@
 
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import {
+  AlertTriangle,
   CalendarIcon,
+  ChevronRight,
   Clock,
   Users,
   Search,
@@ -54,6 +56,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { cn } from '@/lib/utils'
@@ -67,6 +70,7 @@ import {
   createSchedule,
   updateSchedule,
   deleteSchedule,
+  checkScheduleConflicts,
 } from '@/lib/actions/schedules'
 import type { ScheduleWithRelations } from '@/lib/actions/schedules'
 import { useShiftFormData, type EmployeeOption } from './useShiftFormData'
@@ -166,6 +170,7 @@ export function ShiftModal({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
+  const errorRef = useRef<HTMLDivElement>(null)
   const [employeeSearch, setEmployeeSearch] = useState('')
 
   // État pour la récurrence (mode création uniquement)
@@ -193,7 +198,7 @@ export function ShiftModal({
       startTime: defaultStartTime,
       endTime: defaultEndTime,
       type: 'WORK',
-      status: 'DRAFT',
+      status: 'CONFIRMED',
       title: '',
       description: '',
       location: '',
@@ -235,7 +240,7 @@ export function ShiftModal({
           startTime: defaultStartTime,
           endTime: defaultEndTime,
           type: 'WORK',
-          status: 'DRAFT',
+          status: 'CONFIRMED',
           title: '',
           description: '',
           location: '',
@@ -279,6 +284,73 @@ export function ShiftModal({
     enabled: isOpen && selectedEmployeeIds?.length > 0,
     debounceMs: 300,
   })
+
+  // Détection des conflits congés / plannings existants
+  const [scheduleConflicts, setScheduleConflicts] = useState<{
+    hasConflicts: boolean
+    warning: string
+    conflicts: Array<{ employeeName: string; type: string; details: string }>
+  } | null>(null)
+  const [isCheckingScheduleConflicts, setIsCheckingScheduleConflicts] =
+    useState(false)
+  const scheduleConflictTimerRef = useRef<NodeJS.Timeout | null>(null)
+
+  const checkScheduleConflictsDebounced = useCallback(() => {
+    if (scheduleConflictTimerRef.current) {
+      clearTimeout(scheduleConflictTimerRef.current)
+    }
+
+    if (
+      !isOpen ||
+      !selectedEmployeeIds?.length ||
+      !watchedStartDate ||
+      !watchedEndDate ||
+      !watchedStartTime ||
+      !watchedEndTime
+    ) {
+      setScheduleConflicts(null)
+      return
+    }
+
+    scheduleConflictTimerRef.current = setTimeout(async () => {
+      setIsCheckingScheduleConflicts(true)
+      try {
+        const result = await checkScheduleConflicts(
+          selectedEmployeeIds,
+          watchedStartDate,
+          watchedEndDate,
+          watchedStartTime,
+          watchedEndTime,
+          mode === 'edit' ? schedule?.id : undefined
+        )
+        if (result.success) {
+          setScheduleConflicts(result.data)
+        }
+      } catch {
+        // Silently fail - non-blocking check
+      } finally {
+        setIsCheckingScheduleConflicts(false)
+      }
+    }, 400)
+  }, [
+    isOpen,
+    selectedEmployeeIds,
+    watchedStartDate,
+    watchedEndDate,
+    watchedStartTime,
+    watchedEndTime,
+    mode,
+    schedule?.id,
+  ])
+
+  useEffect(() => {
+    checkScheduleConflictsDebounced()
+    return () => {
+      if (scheduleConflictTimerRef.current) {
+        clearTimeout(scheduleConflictTimerRef.current)
+      }
+    }
+  }, [checkScheduleConflictsDebounced])
 
   // Filtrer les employés par recherche et équipe
   const filteredEmployees = useMemo(() => {
@@ -383,6 +455,7 @@ export function ShiftModal({
 
         if (!result.success) {
           setSubmitError(result.error ?? 'Erreur lors de la création')
+          setTimeout(() => errorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100)
           return
         }
       } else if (mode === 'edit' && schedule) {
@@ -402,6 +475,7 @@ export function ShiftModal({
 
         if (!result.success) {
           setSubmitError(result.error ?? 'Erreur lors de la modification')
+          setTimeout(() => errorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100)
           return
         }
       }
@@ -642,11 +716,11 @@ export function ShiftModal({
             </div>
           )}
 
-          {/* Date et heure */}
-          <div className="grid gap-4 sm:grid-cols-2">
-            {/* Date de début */}
+          {/* Date et horaires */}
+          <div className="space-y-4">
+            {/* Date unique */}
             <div className="space-y-2">
-              <Label>Date de début</Label>
+              <Label>Date</Label>
               <Controller
                 name="startDate"
                 control={control}
@@ -662,8 +736,8 @@ export function ShiftModal({
                       >
                         <CalendarIcon className="mr-2 h-4 w-4" />
                         {field.value
-                          ? format(field.value, 'PPP', { locale: fr })
-                          : 'Sélectionner'}
+                          ? format(field.value, 'EEEE d MMMM yyyy', { locale: fr })
+                          : 'Sélectionner une date'}
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">
@@ -672,9 +746,8 @@ export function ShiftModal({
                         selected={field.value}
                         onSelect={(date) => {
                           field.onChange(date)
-                          // Mettre à jour endDate si elle est avant startDate
-                          const endDate = watch('endDate')
-                          if (date && endDate && date > endDate) {
+                          // endDate = startDate (même jour)
+                          if (date) {
                             setValue('endDate', date)
                           }
                         }}
@@ -691,85 +764,36 @@ export function ShiftModal({
               )}
             </div>
 
-            {/* Date de fin */}
-            <div className="space-y-2">
-              <Label>Date de fin</Label>
-              <Controller
-                name="endDate"
-                control={control}
-                render={({ field }) => (
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          'w-full justify-start text-left font-normal',
-                          !field.value && 'text-muted-foreground'
-                        )}
-                      >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {field.value
-                          ? format(field.value, 'PPP', { locale: fr })
-                          : 'Sélectionner'}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={field.value}
-                        onSelect={field.onChange}
-                        disabled={(date) => {
-                          const startDate = watch('startDate')
-                          return startDate ? date < startDate : false
-                        }}
-                        locale={fr}
-                      />
-                    </PopoverContent>
-                  </Popover>
-                )}
-              />
-              {errors.endDate && (
-                <p className="text-sm text-destructive">
-                  {errors.endDate.message}
-                </p>
-              )}
-            </div>
-
-            {/* Heure de début — masqué pour REST (journée entière) */}
-            {!isRestType && (
-              <div className="space-y-2">
-                <Label className="flex items-center gap-2">
-                  <Clock className="h-4 w-4" />
-                  Heure de début
-                </Label>
-                <Input type="time" {...register('startTime')} />
-                {errors.startTime && (
-                  <p className="text-sm text-destructive">
-                    {errors.startTime.message}
-                  </p>
-                )}
+            {/* Horaires — masqués pour REST (journée entière) */}
+            {!isRestType ? (
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-2">
+                    <Clock className="h-4 w-4" />
+                    Début
+                  </Label>
+                  <Input type="time" {...register('startTime')} />
+                  {errors.startTime && (
+                    <p className="text-sm text-destructive">
+                      {errors.startTime.message}
+                    </p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-2">
+                    <Clock className="h-4 w-4" />
+                    Fin
+                  </Label>
+                  <Input type="time" {...register('endTime')} />
+                  {errors.endTime && (
+                    <p className="text-sm text-destructive">
+                      {errors.endTime.message}
+                    </p>
+                  )}
+                </div>
               </div>
-            )}
-
-            {/* Heure de fin — masqué pour REST (journée entière) */}
-            {!isRestType && (
-              <div className="space-y-2">
-                <Label className="flex items-center gap-2">
-                  <Clock className="h-4 w-4" />
-                  Heure de fin
-                </Label>
-                <Input type="time" {...register('endTime')} />
-                {errors.endTime && (
-                  <p className="text-sm text-destructive">
-                    {errors.endTime.message}
-                  </p>
-                )}
-              </div>
-            )}
-
-            {/* Indication journée entière pour REST */}
-            {isRestType && (
-              <div className="col-span-2 rounded-md bg-muted p-3 text-sm text-muted-foreground">
+            ) : (
+              <div className="rounded-md bg-muted p-3 text-sm text-muted-foreground">
                 Journée entière (repos)
               </div>
             )}
@@ -837,49 +861,55 @@ export function ShiftModal({
             </div>
           </div>
 
-          {/* Titre (optionnel) */}
-          <div className="space-y-2">
-            <Label>Titre (optionnel)</Label>
-            <Input
-              {...register('title')}
-              placeholder="Ex: Réunion d'équipe, Formation..."
-              maxLength={100}
-            />
-            {errors.title && (
-              <p className="text-sm text-destructive">{errors.title.message}</p>
-            )}
-          </div>
+          {/* Options avancées (titre, description, lieu) */}
+          <details className="group">
+            <summary className="flex cursor-pointer items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground">
+              <ChevronRight className="h-4 w-4 transition-transform group-open:rotate-90" />
+              Options avancées
+            </summary>
+            <div className="mt-3 space-y-4 pl-6">
+              <div className="space-y-2">
+                <Label>Titre</Label>
+                <Input
+                  {...register('title')}
+                  placeholder="Ex: Réunion d'équipe, Formation..."
+                  maxLength={100}
+                />
+                {errors.title && (
+                  <p className="text-sm text-destructive">{errors.title.message}</p>
+                )}
+              </div>
 
-          {/* Description (optionnelle) */}
-          <div className="space-y-2">
-            <Label>Description (optionnelle)</Label>
-            <Textarea
-              {...register('description')}
-              placeholder="Détails supplémentaires..."
-              maxLength={500}
-              rows={3}
-            />
-            {errors.description && (
-              <p className="text-sm text-destructive">
-                {errors.description.message}
-              </p>
-            )}
-          </div>
+              <div className="space-y-2">
+                <Label>Description</Label>
+                <Textarea
+                  {...register('description')}
+                  placeholder="Détails supplémentaires..."
+                  maxLength={500}
+                  rows={2}
+                />
+                {errors.description && (
+                  <p className="text-sm text-destructive">
+                    {errors.description.message}
+                  </p>
+                )}
+              </div>
 
-          {/* Lieu (optionnel) */}
-          <div className="space-y-2">
-            <Label>Lieu (optionnel)</Label>
-            <Input
-              {...register('location')}
-              placeholder="Ex: Bureau A, Salle de réunion..."
-              maxLength={200}
-            />
-            {errors.location && (
-              <p className="text-sm text-destructive">
-                {errors.location.message}
-              </p>
-            )}
-          </div>
+              <div className="space-y-2">
+                <Label>Lieu</Label>
+                <Input
+                  {...register('location')}
+                  placeholder="Ex: Bureau A, Salle de réunion..."
+                  maxLength={200}
+                />
+                {errors.location && (
+                  <p className="text-sm text-destructive">
+                    {errors.location.message}
+                  </p>
+                )}
+              </div>
+            </div>
+          </details>
 
           {/* Récurrence (mode création uniquement) */}
           {mode === 'create' && (
@@ -913,11 +943,46 @@ export function ShiftModal({
             />
           )}
 
+          {/* Alerte de conflits congés / plannings existants */}
+          {scheduleConflicts?.hasConflicts &&
+            !isCheckingScheduleConflicts && (
+              <Alert
+                variant="default"
+                className="border-amber-500/50 bg-amber-50 text-amber-900 dark:border-amber-400/30 dark:bg-amber-950/30 dark:text-amber-200 [&>svg]:text-amber-600"
+              >
+                <AlertTriangle className="h-4 w-4" />
+                <AlertTitle>Conflit détecté</AlertTitle>
+                <AlertDescription>
+                  <p className="mb-2">{scheduleConflicts.warning}</p>
+                  <ul className="space-y-1">
+                    {scheduleConflicts.conflicts.map((c, i) => (
+                      <li
+                        key={i}
+                        className="rounded-md border border-amber-200 bg-white/50 px-2 py-1.5 text-xs dark:border-amber-800 dark:bg-amber-950/50"
+                      >
+                        <span className="font-medium">{c.employeeName}</span>
+                        {' — '}
+                        {c.details}
+                      </li>
+                    ))}
+                  </ul>
+                </AlertDescription>
+              </Alert>
+            )}
+
           {/* Indicateur de vérification en cours */}
-          {isCheckingConflicts && (
+          {(isCheckingConflicts || isCheckingScheduleConflicts) && (
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Loader2 className="h-4 w-4 animate-spin" />
-              <span>Vérification des disponibilités...</span>
+              <span>Vérification des conflits...</span>
+            </div>
+          )}
+
+          {/* Erreur de conflit (visible près des boutons) */}
+          {submitError && (
+            <div ref={errorRef} className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mt-0.5 h-4 w-4 flex-shrink-0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <span>{submitError}</span>
             </div>
           )}
 

@@ -12,7 +12,7 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState, useCallback } from 'react'
-import { useCalendarApp, ScheduleXCalendar } from '@schedule-x/react'
+import { useNextCalendarApp, ScheduleXCalendar } from '@schedule-x/react'
 import {
   createViewDay,
   createViewWeek,
@@ -32,7 +32,7 @@ import {
   type AvailabilityWithEmployee,
 } from '@/lib/actions/availabilities'
 import type { LeaveRequestWithEmployee } from '@/lib/actions/leaves'
-import { CalendarX, GripVertical } from 'lucide-react'
+import { GripVertical } from 'lucide-react'
 import { LeaveType } from '@prisma/client'
 import { useToast } from '@/components/toast/use-toast'
 import Image from 'next/image'
@@ -520,8 +520,13 @@ export function ScheduleCalendarDesktop({
   leaveRequests = [],
   showLeaves = true,
   onLeaveClick,
+  onRangeChange,
 }: ScheduleCalendarProps) {
   const { success, error: toastError } = useToast()
+
+  // Ref stable pour onRangeChange (closure dans useNextCalendarApp)
+  const onRangeChangeRef = useRef(onRangeChange)
+  onRangeChangeRef.current = onRangeChange
 
   // État pour le popover d'indisponibilité
   const [selectedAvailability, setSelectedAvailability] =
@@ -568,12 +573,14 @@ export function ScheduleCalendarDesktop({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const originalEventsRef = useRef<Map<string, any>>(new Map())
 
-  // Créer le service d'events une seule fois
+  // Créer les plugins une seule fois (via useState pour stabilité)
   const [eventsService] = useState(() => {
     const service = createEventsServicePlugin()
     eventsServiceRef.current = service
     return service
   })
+
+
 
   // Fonction pour effectuer la mise à jour réelle
   const performUpdate = useCallback(
@@ -923,7 +930,7 @@ export function ScheduleCalendarDesktop({
   }, [canEdit, eventsService])
 
   // Configuration du calendrier
-  const calendar = useCalendarApp(
+  const calendar = useNextCalendarApp(
     {
       views: [createViewDay(), createViewWeek(), createViewMonthGrid()],
       defaultView: getDefaultView(),
@@ -976,6 +983,18 @@ export function ScheduleCalendarDesktop({
             if (schedule) {
               onScheduleClick(schedule)
             }
+          }
+        },
+        onRangeUpdate(range) {
+          if (onRangeChangeRef.current) {
+            // Schedule-X range peut être string 'YYYY-MM-DD HH:mm' ou 'YYYY-MM-DD'
+            const toDate = (v: unknown): Date => {
+              const s = typeof v === 'string' ? v : String(v)
+              // Extraire juste YYYY-MM-DD (10 premiers caractères)
+              const dateOnly = s.substring(0, 10)
+              return new Date(dateOnly + 'T00:00:00')
+            }
+            onRangeChangeRef.current(toDate(range.start), toDate(range.end))
           }
         },
         onEventUpdate: (event) => {
@@ -1034,22 +1053,43 @@ export function ScheduleCalendarDesktop({
     return () => clearTimeout(timer)
   }, [schedules, events])
 
+  // Masquer les jours hors du mois courant dans la vue mois
+  useEffect(() => {
+    if (viewMode !== 'month') return
+
+    const timer = setTimeout(() => {
+      const dayEls = document.querySelectorAll<HTMLElement>('.sx__month-grid-day')
+      dayEls.forEach((el) => {
+        const dateHeader = el.querySelector('.sx__month-grid-day__header-date')
+        if (!dateHeader) return
+
+        // Schedule-X stocke la date dans un attribut ou on peut la déduire du texte
+        const dayNum = parseInt(dateHeader.textContent ?? '', 10)
+        if (isNaN(dayNum)) return
+
+        // Dernier groupe de la grille : si les numéros sont petits (1-14), c'est le mois suivant
+        // Premier groupe : si les numéros sont grands (15-31), c'est le mois précédent
+        const allDayEls = Array.from(document.querySelectorAll('.sx__month-grid-day'))
+        const idx = allDayEls.indexOf(el)
+        const isLeading = idx < 7 && dayNum > 14
+        const isTrailing = idx >= allDayEls.length - 14 && dayNum <= 14
+
+        if (isLeading || isTrailing) {
+          el.style.visibility = 'hidden'
+        } else {
+          el.style.visibility = ''
+        }
+      })
+    }, 100)
+
+    return () => clearTimeout(timer)
+  }, [viewMode, currentDate, schedules])
+
   // État de chargement
   if (isLoading) {
     return (
       <div className="flex h-96 items-center justify-center">
         <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary" />
-      </div>
-    )
-  }
-
-  // Aucun schedule
-  if (schedules.length === 0) {
-    return (
-      <div className="flex h-64 flex-col items-center justify-center text-muted-foreground">
-        <CalendarX className="mb-4 h-12 w-12 opacity-50" />
-        <p className="text-lg font-medium">Aucun planning pour cette période</p>
-        <p className="text-sm">Créez un nouveau planning pour commencer</p>
       </div>
     )
   }

@@ -10,11 +10,12 @@
 
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useMediaQuery } from '@/hooks'
 import { ScheduleWithRelations } from '@/lib/actions/schedules'
 import { ScheduleCalendarDesktop } from './ScheduleCalendarDesktop'
 import { ScheduleCalendarMobile } from './ScheduleCalendarMobile'
+import { WeeklyGridView } from './WeeklyGridView'
 import { Skeleton } from '@/components/ui/skeleton'
 import type { AvailabilityWithEmployee } from '@/lib/actions/availabilities'
 import type { LeaveRequestWithEmployee } from '@/lib/actions/leaves'
@@ -52,6 +53,12 @@ export interface ScheduleCalendarProps {
   showLeaves?: boolean
   /** Callback au clic sur un congé (SP-415) */
   onLeaveClick?: (leave: LeaveRequestWithEmployee) => void
+  /** Callback quand Schedule-X change de période (navigation interne) */
+  onRangeChange?: (start: Date, end: Date) => void
+  /** IDs des équipes pour charger les congés (vue grille) */
+  teamIds?: string[]
+  /** ID entreprise */
+  companyId?: string
 }
 
 // ============================================================================
@@ -67,30 +74,29 @@ export function ScheduleCalendar(props: ScheduleCalendarProps) {
     setMounted(true)
   }, [])
 
-  // Clé de remount pour Schedule-X quand les schedules ou la vue changent
-  // Schedule-X ne supporte pas la mise à jour dynamique des events/view via son API
-  const calendarKey = useMemo(
-    () =>
-      `${props.viewMode}-${props.schedules
-        .map((s) => s.id)
-        .sort()
-        .join(',')}`,
-    [props.schedules, props.viewMode]
-  )
-
   // Afficher skeleton pendant le montage
   if (!mounted) {
     return <ScheduleCalendarSkeleton />
   }
 
-  // Desktop : Schedule-X calendar
-  // Mobile/Tablet : Cards view
+  // Desktop : vue grille pour semaine, Schedule-X pour jour/mois
+  // Mobile : vue jour par jour
   return (
     <div data-testid="schedule-calendar">
-      {isDesktop ? (
-        <ScheduleCalendarDesktop key={calendarKey} {...props} />
-      ) : (
+      {!isDesktop ? (
         <ScheduleCalendarMobile {...props} />
+      ) : props.viewMode === 'week' ? (
+        <WeeklyGridView
+          schedules={props.schedules}
+          currentDate={props.currentDate}
+          onScheduleClick={props.onScheduleClick}
+          onRangeChange={props.onRangeChange}
+          canEdit={props.canEdit}
+          isLoading={props.isLoading}
+          teamIds={props.teamIds}
+        />
+      ) : (
+        <ScheduleCalendarDesktop {...props} />
       )}
     </div>
   )

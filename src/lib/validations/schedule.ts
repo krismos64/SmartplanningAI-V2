@@ -358,13 +358,13 @@ export type ScheduleFilters = z.infer<typeof scheduleFiltersSchema>
  */
 export const scheduleTypeLabels: Record<ScheduleType, string> = {
   WORK: 'Travail',
-  MEETING: 'Reunion',
-  BREAK: 'Pause',
-  TRAINING: 'Formation',
-  REMOTE: 'Teletravail',
-  ON_CALL: 'Astreinte',
-  OVERTIME: 'Heures supplementaires',
   REST: 'Repos',
+  BREAK: 'Pause',
+  MEETING: 'Réunion',
+  TRAINING: 'Formation',
+  REMOTE: 'Télétravail',
+  ON_CALL: 'Astreinte',
+  OVERTIME: 'Heures supplémentaires',
 }
 
 /**
@@ -372,7 +372,7 @@ export const scheduleTypeLabels: Record<ScheduleType, string> = {
  */
 export const scheduleStatusLabels: Record<ScheduleStatus, string> = {
   DRAFT: 'Brouillon',
-  CONFIRMED: 'Confirme',
+  CONFIRMED: 'Confirmé',
 }
 
 /**

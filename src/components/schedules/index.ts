@@ -8,6 +8,7 @@ export {
   ScheduleCalendar,
   type ScheduleCalendarProps,
 } from './ScheduleCalendar'
+export { WeeklyGridView } from './WeeklyGridView'
 export { ScheduleCalendarDesktop } from './ScheduleCalendarDesktop'
 export { ScheduleCalendarMobile } from './ScheduleCalendarMobile'
 export { ShiftModal, type ShiftModalProps } from './ShiftModal'

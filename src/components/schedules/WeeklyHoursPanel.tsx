@@ -24,11 +24,14 @@ export interface EmployeeWithHours {
   image?: string | null
 }
 
+export type ViewMode = 'day' | 'week' | 'month'
+
 export interface WeeklyHoursPanelProps {
   schedules: ScheduleWithRelations[]
   employees: EmployeeWithHours[]
   isOpen: boolean
   onToggle: () => void
+  viewMode?: ViewMode
 }
 
 // ============================================================================
@@ -58,10 +61,35 @@ function getInitials(firstName: string, lastName: string): string {
 // Composant
 // ============================================================================
 
+/**
+ * Calcule les heures contractuelles de référence selon la vue.
+ * weeklyHours est la base. On estime :
+ * - jour : weeklyHours / 5
+ * - semaine : weeklyHours
+ * - mois : weeklyHours * 52 / 12 ≈ weeklyHours * 4.33
+ */
+function getContractHours(weeklyHours: number, viewMode: ViewMode): number {
+  switch (viewMode) {
+    case 'day':
+      return weeklyHours / 5
+    case 'week':
+      return weeklyHours
+    case 'month':
+      return Math.round((weeklyHours * 52) / 12 * 10) / 10
+  }
+}
+
+const viewLabels: Record<ViewMode, string> = {
+  day: 'Heures jour',
+  week: 'Heures semaine',
+  month: 'Heures mois',
+}
+
 export function WeeklyHoursPanel({
   schedules,
   employees,
   isOpen,
+  viewMode = 'week',
 }: WeeklyHoursPanelProps) {
   const employeeHours = useMemo(() => {
     // Sommer les heures planifiées par employé
@@ -85,7 +113,7 @@ export function WeeklyHoursPanel({
       .filter((emp) => hoursMap.has(emp.id))
       .map((emp) => {
         const planned = hoursMap.get(emp.id) ?? 0
-        const contract = emp.weeklyHours
+        const contract = getContractHours(emp.weeklyHours, viewMode)
         const diff = planned - contract
         const percentage = contract > 0 ? (planned / contract) * 100 : 0
 
@@ -95,7 +123,7 @@ export function WeeklyHoursPanel({
       .sort((a, b) => a.diff - b.diff)
 
     return result
-  }, [schedules, employees])
+  }, [schedules, employees, viewMode])
 
   if (!isOpen) return null
 
@@ -105,7 +133,7 @@ export function WeeklyHoursPanel({
         {/* Header */}
         <div className="sp-panel-header flex items-center gap-2 px-4 py-3">
           <Clock className="h-4 w-4 text-primary" />
-          <h3 className="text-sm font-semibold">Heures semaine</h3>
+          <h3 className="text-sm font-semibold">{viewLabels[viewMode]}</h3>
         </div>
 
         {/* Content */}
@@ -162,24 +190,34 @@ export function WeeklyHoursPanel({
                     </div>
                     <div className="flex items-center gap-1.5 text-sm">
                       <span className="text-muted-foreground">
-                        {emp.planned.toFixed(1).replace('.0', '')}h /{' '}
-                        {emp.contract}h
+                        {viewMode === 'week' ? (
+                          <>
+                            {emp.planned.toFixed(1).replace('.0', '')}h /{' '}
+                            {emp.contract}h
+                          </>
+                        ) : (
+                          <>{emp.planned.toFixed(1).replace('.0', '')}h</>
+                        )}
                       </span>
-                      <span className={cn('text-xs font-semibold', diffColor)}>
-                        {diffText}
-                      </span>
+                      {viewMode === 'week' && (
+                        <span className={cn('text-xs font-semibold', diffColor)}>
+                          {diffText}
+                        </span>
+                      )}
                     </div>
                   </div>
-                  {/* Progress bar */}
-                  <div className="sp-progress-track h-1.5 w-full rounded-full">
-                    <div
-                      className={cn(
-                        'sp-progress-bar h-full rounded-full transition-all',
-                        barColor
-                      )}
-                      style={{ width: `${barPercent}%` }}
-                    />
-                  </div>
+                  {/* Progress bar (semaine uniquement) */}
+                  {viewMode === 'week' && (
+                    <div className="sp-progress-track h-1.5 w-full rounded-full">
+                      <div
+                        className={cn(
+                          'sp-progress-bar h-full rounded-full transition-all',
+                          barColor
+                        )}
+                        style={{ width: `${barPercent}%` }}
+                      />
+                    </div>
+                  )}
                 </div>
               )
             })

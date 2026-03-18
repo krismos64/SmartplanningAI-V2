@@ -26,7 +26,10 @@ import {
   type CreateScheduleInput,
   type UpdateScheduleInput,
 } from '@/lib/validations/schedule'
-import { createPlanningNotification } from '@/lib/actions/notifications'
+import {
+  createPlanningNotification,
+  createBatchPlanningNotification,
+} from '@/lib/actions/notifications'
 import type { CrudActionResult, DeleteActionResult } from '@/types'
 import {
   generateOccurrences,
@@ -267,6 +270,95 @@ async function canModifySchedule(
 
   // DIRECTOR et MANAGER : peuvent modifier selon leurs acces
   return canAccessSchedule(user, schedule)
+}
+
+/**
+ * Vérifie les conflits bloquants pour un créneau :
+ * 1. Congé approuvé sur la période → REFUS
+ * 2. Chevauchement horaire avec un planning existant → REFUS
+ *
+ * @returns null si OK, sinon un message d'erreur explicite
+ */
+async function validateNoConflicts(
+  employeeId: string,
+  startDate: Date,
+  endDate: Date,
+  startTime: string,
+  endTime: string,
+  excludeScheduleId?: string
+): Promise<string | null> {
+  // Récupérer le nom de l'employé pour les messages
+  const employee = await prisma.employee.findUnique({
+    where: { id: employeeId },
+    select: { firstName: true, lastName: true },
+  })
+  const name = employee
+    ? `${employee.firstName} ${employee.lastName}`
+    : 'Cet employé'
+
+  // 1. Vérifier les congés approuvés
+  const leaveTypeLabels: Record<string, string> = {
+    PAID_LEAVE: 'congés payés',
+    RTT: 'RTT',
+    SICK_LEAVE: 'arrêt maladie',
+    UNPAID_LEAVE: 'congé sans solde',
+    FAMILY_EVENT: 'événement familial',
+    PARENTAL_LEAVE: 'congé parental',
+    OTHER: 'congé',
+  }
+
+  // Élargir au jour entier pour éviter les problèmes d'heures dans les timestamps
+  const leaveCheckStart = new Date(startDate)
+  leaveCheckStart.setHours(0, 0, 0, 0)
+  const leaveCheckEnd = new Date(endDate)
+  leaveCheckEnd.setHours(23, 59, 59, 999)
+
+  const conflictingLeave = await prisma.leaveRequest.findFirst({
+    where: {
+      employeeId,
+      status: 'APPROVED',
+      startDate: { lte: leaveCheckEnd },
+      endDate: { gte: leaveCheckStart },
+    },
+    select: { type: true, startDate: true, endDate: true },
+  })
+
+  if (conflictingLeave) {
+    const leaveLabel = leaveTypeLabels[conflictingLeave.type] ?? 'congé'
+    const from = conflictingLeave.startDate.toLocaleDateString('fr-FR')
+    const to = conflictingLeave.endDate.toLocaleDateString('fr-FR')
+    return `Impossible : ${name} est en ${leaveLabel} du ${from} au ${to}. Annulez d'abord le congé avant de planifier un créneau.`
+  }
+
+  // 2. Vérifier les chevauchements de plannings existants
+  // Les dates sont stockées avec des heures variables → comparer sur la journée entière
+  const dayStart = new Date(startDate)
+  dayStart.setHours(0, 0, 0, 0)
+  const dayEnd = new Date(endDate)
+  dayEnd.setHours(23, 59, 59, 999)
+
+  const sameDaySchedules = await prisma.schedule.findMany({
+    where: {
+      employeeId,
+      startDate: { lte: dayEnd },
+      endDate: { gte: dayStart },
+      ...(excludeScheduleId ? { id: { not: excludeScheduleId } } : {}),
+    },
+    select: { startTime: true, endTime: true, startDate: true },
+  })
+
+  // Vérifier le chevauchement horaire en code (comparaison strings HH:mm)
+  for (const existing of sameDaySchedules) {
+    // Pas de chevauchement si le nouveau finit avant/au début de l'ancien
+    // OU le nouveau commence après/à la fin de l'ancien
+    const noOverlap = endTime <= existing.startTime || startTime >= existing.endTime
+    if (!noOverlap) {
+      const date = existing.startDate.toLocaleDateString('fr-FR')
+      return `Impossible : ${name} a déjà un planning le ${date} de ${existing.startTime} à ${existing.endTime}. Les horaires se chevauchent avec le créneau ${startTime}–${endTime}.`
+    }
+  }
+
+  return null
 }
 
 /**
@@ -525,6 +617,192 @@ export async function getScheduleById(
   }
 }
 
+// ============================================================================
+// Détection de conflits Planning / Congés
+// ============================================================================
+
+interface ScheduleConflict {
+  employeeId: string
+  employeeName: string
+  type: 'leave' | 'schedule'
+  details: string
+}
+
+interface ScheduleConflictResult {
+  hasConflicts: boolean
+  conflicts: ScheduleConflict[]
+  warning: string
+}
+
+/**
+ * Vérifie les conflits entre les plannings à créer et :
+ * 1. Les congés approuvés des employés sur la période
+ * 2. Les plannings existants qui chevauchent le créneau
+ *
+ * Retourne un warning non-bloquant avec la liste des conflits.
+ */
+export async function checkScheduleConflicts(
+  employeeIds: string[],
+  startDate: Date,
+  endDate: Date,
+  startTime: string,
+  endTime: string,
+  excludeScheduleId?: string
+): Promise<CrudActionResult<ScheduleConflictResult>> {
+  try {
+    const authResult = await getAuthenticatedUser()
+    if (!authResult.success) {
+      return { success: false, error: authResult.error }
+    }
+
+    const conflicts: ScheduleConflict[] = []
+
+    // Récupérer les noms des employés
+    const employees = await prisma.employee.findMany({
+      where: { id: { in: employeeIds } },
+      select: { id: true, firstName: true, lastName: true },
+    })
+    const nameMap = new Map(
+      employees.map((e) => [e.id, `${e.firstName} ${e.lastName}`])
+    )
+
+    // 1. Vérifier les congés approuvés qui chevauchent la période
+    const approvedLeaves = await prisma.leaveRequest.findMany({
+      where: {
+        employeeId: { in: employeeIds },
+        status: 'APPROVED',
+        startDate: { lte: endDate },
+        endDate: { gte: startDate },
+      },
+      select: {
+        employeeId: true,
+        type: true,
+        startDate: true,
+        endDate: true,
+        halfDay: true,
+        halfDayPeriod: true,
+      },
+    })
+
+    const leaveTypeLabels: Record<string, string> = {
+      PAID_LEAVE: 'congés payés',
+      RTT: 'RTT',
+      SICK_LEAVE: 'arrêt maladie',
+      UNPAID_LEAVE: 'congé sans solde',
+      FAMILY_EVENT: 'événement familial',
+      PARENTAL_LEAVE: 'congé parental',
+      OTHER: 'congé',
+    }
+
+    for (const leave of approvedLeaves) {
+      const name = nameMap.get(leave.employeeId) ?? 'Employé inconnu'
+      const leaveLabel = leaveTypeLabels[leave.type] ?? 'congé'
+      const from = leave.startDate.toLocaleDateString('fr-FR')
+      const to = leave.endDate.toLocaleDateString('fr-FR')
+
+      // Pour les demi-journées, vérifier si le créneau tombe sur la période d'absence
+      if (leave.halfDay) {
+        const isAM = leave.halfDayPeriod === 'AM'
+        const leaveEnd = isAM ? '12:00' : '23:59'
+        const leaveStart = isAM ? '00:00' : '12:00'
+        // Si le créneau ne chevauche pas la demi-journée, pas de conflit
+        if (endTime <= leaveStart || startTime >= leaveEnd) {
+          continue
+        }
+      }
+
+      conflicts.push({
+        employeeId: leave.employeeId,
+        employeeName: name,
+        type: 'leave',
+        details: `En ${leaveLabel} du ${from} au ${to}${leave.halfDay ? ` (${leave.halfDayPeriod === 'AM' ? 'matin' : 'après-midi'})` : ''}`,
+      })
+    }
+
+    // 2. Vérifier les plannings existants qui chevauchent
+    const existingSchedules = await prisma.schedule.findMany({
+      where: {
+        employeeId: { in: employeeIds },
+        startDate: { lte: endDate },
+        endDate: { gte: startDate },
+        ...(excludeScheduleId ? { id: { not: excludeScheduleId } } : {}),
+      },
+      select: {
+        employeeId: true,
+        startDate: true,
+        endDate: true,
+        startTime: true,
+        endTime: true,
+        type: true,
+      },
+    })
+
+    for (const schedule of existingSchedules) {
+      // Vérifier le chevauchement horaire
+      if (startTime >= schedule.endTime || endTime <= schedule.startTime) {
+        continue
+      }
+
+      const name = nameMap.get(schedule.employeeId) ?? 'Employé inconnu'
+      const from = schedule.startDate.toLocaleDateString('fr-FR')
+
+      conflicts.push({
+        employeeId: schedule.employeeId,
+        employeeName: name,
+        type: 'schedule',
+        details: `Planning existant le ${from} (${schedule.startTime}–${schedule.endTime})`,
+      })
+    }
+
+    // Dédupliquer les conflits congés par employé (un seul warning par employé)
+    const seen = new Set<string>()
+    const dedupedConflicts = conflicts.filter((c) => {
+      const key = `${c.employeeId}-${c.type}-${c.details}`
+      if (seen.has(key)) return false
+      seen.add(key)
+      return true
+    })
+
+    // Construire le message d'avertissement
+    let warning = ''
+    if (dedupedConflicts.length > 0) {
+      const leaveConflicts = dedupedConflicts.filter((c) => c.type === 'leave')
+      const scheduleConflicts = dedupedConflicts.filter(
+        (c) => c.type === 'schedule'
+      )
+
+      const parts: string[] = []
+      if (leaveConflicts.length > 0) {
+        const names = [...new Set(leaveConflicts.map((c) => c.employeeName))]
+        parts.push(
+          `${names.join(', ')} ${names.length > 1 ? 'sont' : 'est'} en congé sur cette période`
+        )
+      }
+      if (scheduleConflicts.length > 0) {
+        const names = [
+          ...new Set(scheduleConflicts.map((c) => c.employeeName)),
+        ]
+        parts.push(
+          `${names.join(', ')} ${names.length > 1 ? 'ont' : 'a'} déjà un planning sur ce créneau`
+        )
+      }
+      warning = parts.join('. ') + '.'
+    }
+
+    return {
+      success: true,
+      data: {
+        hasConflicts: dedupedConflicts.length > 0,
+        conflicts: dedupedConflicts,
+        warning,
+      },
+    }
+  } catch (error) {
+    console.error('[checkScheduleConflicts] Error:', error)
+    return { success: false, error: 'Erreur lors de la vérification des conflits' }
+  }
+}
+
 /**
  * Cree un ou plusieurs schedules
  * Support multi-employes via employeeIds
@@ -644,6 +922,24 @@ export async function createSchedule(
       recurrenceGroupId = generateRecurrenceGroupId()
     }
 
+    // Vérifier les conflits bloquants (congés + chevauchements) pour chaque employé × occurrence
+    // Pour les types REST, ne pas vérifier les chevauchements horaires (journée entière)
+    const isRest = validated.type === 'REST'
+    for (const employeeId of employeeIds) {
+      for (const occurrence of occurrenceDates) {
+        const conflict = await validateNoConflicts(
+          employeeId,
+          occurrence.startDate,
+          occurrence.endDate,
+          isRest ? '00:00' : validated.startTime,
+          isRest ? '23:59' : validated.endTime
+        )
+        if (conflict) {
+          return { success: false, error: conflict }
+        }
+      }
+    }
+
     // Construire la liste des créations (employés × occurrences)
     const createOperations: Prisma.ScheduleCreateArgs[] = []
 
@@ -710,7 +1006,7 @@ export async function createSchedule(
       }).catch(console.error)
     }
 
-    // SSE : Notifier les employés du nouveau planning (fire-and-forget)
+    // Notifier les employés du nouveau planning (groupé par employé, fire-and-forget)
     const notifyEmpIds = [...new Set(schedules.map((s) => s.employeeId))]
     prisma.employee
       .findMany({
@@ -719,13 +1015,32 @@ export async function createSchedule(
       })
       .then((employees) => {
         const userIdMap = new Map(employees.map((e) => [e.id, e.userId]))
+        // Grouper les schedules par employé pour envoyer UNE notification par employé
+        const schedulesByEmployee = new Map<string, typeof schedules>()
         for (const s of schedules) {
           const uid = userIdMap.get(s.employeeId)
           if (uid) {
-            createPlanningNotification(s.id, uid, 'created').catch(
-              console.error
-            )
+            const existing = schedulesByEmployee.get(uid) || []
+            existing.push(s)
+            schedulesByEmployee.set(uid, existing)
           }
+        }
+        // Envoyer une notification groupée par employé
+        for (const [uid, empSchedules] of schedulesByEmployee) {
+          createBatchPlanningNotification(
+            empSchedules.map((s) => ({
+              id: s.id,
+              startDate: s.startDate,
+              endDate: s.endDate,
+              startTime: s.startTime,
+              endTime: s.endTime,
+              type: s.type,
+              companyId: s.companyId,
+            })),
+            uid,
+            'created',
+            user.id
+          ).catch(console.error)
         }
       })
       .catch(console.error)
@@ -790,6 +1105,26 @@ export async function updateSchedule(
       return { success: false, error: 'Modification non autorisée' }
     }
 
+    // Vérifier les conflits bloquants (congés + chevauchements)
+    const newStartDate = validated.startDate ?? existing.startDate
+    const newEndDate = validated.endDate ?? existing.endDate
+    const newStartTime = validated.startTime ?? existing.startTime
+    const newEndTime = validated.endTime ?? existing.endTime
+    const newType = validated.type ?? existing.type
+    const isRest = newType === 'REST'
+
+    const conflict = await validateNoConflicts(
+      existing.employeeId,
+      newStartDate,
+      newEndDate,
+      isRest ? '00:00' : newStartTime,
+      isRest ? '23:59' : newEndTime,
+      existing.id // Exclure le schedule actuel
+    )
+    if (conflict) {
+      return { success: false, error: conflict }
+    }
+
     // Mettre a jour
     const updated = await prisma.schedule.update({
       where: { id: validated.id },
@@ -844,7 +1179,7 @@ export async function updateSchedule(
       },
     }).catch(console.error)
 
-    // SSE : Notifier l'employé de la modification (fire-and-forget)
+    // Notifier l'employé de la modification (fire-and-forget, sauf si c'est le créateur)
     prisma.employee
       .findUnique({
         where: { id: updated.employeeId },
@@ -852,9 +1187,12 @@ export async function updateSchedule(
       })
       .then((emp) => {
         if (emp?.userId) {
-          createPlanningNotification(updated.id, emp.userId, 'updated').catch(
-            console.error
-          )
+          createPlanningNotification(
+            updated.id,
+            emp.userId,
+            'updated',
+            user.id
+          ).catch(console.error)
         }
       })
       .catch(console.error)
@@ -916,11 +1254,21 @@ export async function deleteSchedule(id: string): Promise<DeleteActionResult> {
       details: { employeeId: schedule.employeeId, type: schedule.type },
     }).catch(console.error)
 
-    // Notification SSE : planning supprimé (fire-and-forget)
+    // Notification planning supprimé (fire-and-forget)
+    // On passe scheduleData car le schedule est déjà supprimé en base
     if (schedule.employee?.userId) {
-      createPlanningNotification(id, schedule.employee.userId, 'deleted').catch(
-        console.error
-      )
+      createPlanningNotification(
+        id,
+        schedule.employee.userId,
+        'deleted',
+        user.id,
+        {
+          startTime: schedule.startTime,
+          endTime: schedule.endTime,
+          companyId: schedule.companyId,
+          type: schedule.type,
+        }
+      ).catch(console.error)
     }
 
     revalidatePath('/app/schedules')
@@ -1018,6 +1366,175 @@ export async function deleteScheduleGroup(
     return { success: true, data: { deletedCount: result.count } }
   } catch (error) {
     console.error('[deleteScheduleGroup] Error:', error)
+    const prismaError = handlePrismaError(error)
+    return { success: false, error: prismaError.error }
+  }
+}
+
+/**
+ * Supprime tous les schedules d'une récurrence
+ */
+export async function deleteRecurrenceGroup(
+  recurrenceGroupId: string
+): Promise<CrudActionResult<{ deletedCount: number }>> {
+  const authResult = await getAuthenticatedUser()
+  if (!authResult.success) return { success: false, error: authResult.error }
+
+  const impersonationBlock = await assertNotImpersonating()
+  if (impersonationBlock) return impersonationBlock
+
+  const user = authResult.user
+
+  try {
+    const schedules = await prisma.schedule.findMany({
+      where: { recurrenceGroupId },
+      include: { employee: { select: { userId: true } } },
+    })
+
+    if (schedules.length === 0) {
+      return { success: false, error: 'Aucun planning trouvé dans cette récurrence' }
+    }
+
+    for (const schedule of schedules) {
+      const canModify = await canModifySchedule(user, schedule)
+      if (!canModify) {
+        return { success: false, error: 'Suppression non autorisée' }
+      }
+    }
+
+    const result = await prisma.schedule.deleteMany({
+      where: { recurrenceGroupId },
+    })
+
+    // Audit (fire-and-forget)
+    logAuditAction({
+      action: 'DELETE',
+      entityType: 'SCHEDULE',
+      userId: user.id,
+      companyId: schedules[0]?.companyId ?? undefined,
+      details: { recurrenceGroupId, deletedCount: result.count },
+    }).catch(console.error)
+
+    // Notifications (fire-and-forget)
+    const notifiedUserIds = new Set<string>()
+    for (const s of schedules) {
+      const uid = s.employee?.userId
+      if (uid && !notifiedUserIds.has(uid)) {
+        notifiedUserIds.add(uid)
+        createPlanningNotification(s.id, uid, 'deleted', user.id, {
+          startTime: s.startTime,
+          endTime: s.endTime,
+          companyId: s.companyId,
+          type: s.type,
+        }).catch(console.error)
+      }
+    }
+
+    revalidatePath('/app/schedules')
+    revalidatePath('/app/dashboard')
+
+    return { success: true, data: { deletedCount: result.count } }
+  } catch (error) {
+    console.error('[deleteRecurrenceGroup] Error:', error)
+    const prismaError = handlePrismaError(error)
+    return { success: false, error: prismaError.error }
+  }
+}
+
+/**
+ * Met à jour tous les schedules d'une récurrence (horaires, type, statut)
+ */
+export async function updateRecurrenceGroup(
+  recurrenceGroupId: string,
+  input: {
+    startTime?: string
+    endTime?: string
+    type?: string
+    status?: string
+    title?: string | null
+    description?: string | null
+    location?: string | null
+  }
+): Promise<CrudActionResult<{ updatedCount: number }>> {
+  const authResult = await getAuthenticatedUser()
+  if (!authResult.success) return { success: false, error: authResult.error }
+
+  const impersonationBlock = await assertNotImpersonating()
+  if (impersonationBlock) return impersonationBlock
+
+  const user = authResult.user
+
+  try {
+    const schedules = await prisma.schedule.findMany({
+      where: { recurrenceGroupId },
+      include: { employee: { select: { userId: true } } },
+    })
+
+    if (schedules.length === 0) {
+      return { success: false, error: 'Aucun planning trouvé dans cette récurrence' }
+    }
+
+    for (const schedule of schedules) {
+      const canModify = await canModifySchedule(user, schedule)
+      if (!canModify) {
+        return { success: false, error: 'Modification non autorisée' }
+      }
+    }
+
+    const data: Record<string, unknown> = {}
+    if (input.startTime !== undefined) data.startTime = input.startTime
+    if (input.endTime !== undefined) data.endTime = input.endTime
+    if (input.type !== undefined) data.type = input.type
+    if (input.status !== undefined) data.status = input.status
+    if (input.title !== undefined) data.title = input.title
+    if (input.description !== undefined) data.description = input.description
+    if (input.location !== undefined) data.location = input.location
+
+    const result = await prisma.schedule.updateMany({
+      where: { recurrenceGroupId },
+      data,
+    })
+
+    // Audit (fire-and-forget)
+    logAuditAction({
+      action: 'UPDATE',
+      entityType: 'SCHEDULE',
+      userId: user.id,
+      companyId: schedules[0]?.companyId ?? undefined,
+      details: { recurrenceGroupId, updatedCount: result.count, changes: input },
+    }).catch(console.error)
+
+    // Notifications (fire-and-forget)
+    const notifiedUserIds = new Set<string>()
+    for (const s of schedules) {
+      const uid = s.employee?.userId
+      if (uid && !notifiedUserIds.has(uid)) {
+        notifiedUserIds.add(uid)
+        createBatchPlanningNotification(
+          schedules
+            .filter((sc) => sc.employee?.userId === uid)
+            .map((sc) => ({
+              id: sc.id,
+              startDate: sc.startDate,
+              endDate: sc.endDate,
+              startTime: input.startTime ?? sc.startTime,
+              endTime: input.endTime ?? sc.endTime,
+              type: input.type ?? sc.type,
+              companyId: sc.companyId,
+            })),
+          uid,
+          'updated',
+          user.id
+        ).catch(console.error)
+      }
+    }
+
+    revalidatePath('/app/schedules')
+    revalidatePath('/app/dashboard')
+
+    return { success: true, data: { updatedCount: result.count } }
+  } catch (error) {
+    console.error('[updateRecurrenceGroup] Error:', error)
     const prismaError = handlePrismaError(error)
     return { success: false, error: prismaError.error }
   }
