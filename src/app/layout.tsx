@@ -3,7 +3,7 @@
  *
  * ✅ Source : Next.js 15 App Router + SEO best practices (Context7)
  *
- * OBJECTIF (CDA) :
+ * OBJECTIF :
  * Ce fichier définit la structure HTML de base pour TOUTES les pages.
  * Il est OBLIGATOIRE dans Next.js App Router et doit contenir <html> et <body>.
  *
@@ -14,7 +14,7 @@
  * - Structure HTML sémantique
  * - Viewport responsive
  *
- * RÉFÉRENCE CDA :
+ * RÉFÉRENCE :
  * - Next.js 15 Metadata API (remplace next/head)
  * - React Server Component par défaut
  * - SEO-first approach pour référencement Google

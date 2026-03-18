@@ -32,6 +32,9 @@ vi.mock('@/lib/prisma', () => ({
     employee: {
       findUnique: vi.fn(),
     },
+    user: {
+      findMany: vi.fn().mockResolvedValue([]),
+    },
   },
 }))
 
@@ -130,6 +133,8 @@ function setupAuth(
 
 beforeEach(() => {
   vi.resetAllMocks()
+  // Mock pour notifier les directeurs (fire-and-forget)
+  vi.mocked(prisma.user.findMany).mockResolvedValue([])
 })
 
 // ─── createIncidentNote ─────────────────────────────────────────────

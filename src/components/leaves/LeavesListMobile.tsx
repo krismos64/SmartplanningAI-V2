@@ -4,10 +4,7 @@ import type { LeaveRequest, LeaveRequestStatus, UserRole } from '@prisma/client'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { LeaveStatusBadge } from './LeaveStatusBadge'
-import {
-  LEAVE_TYPE_LABELS,
-  LEAVE_TYPE_COLORS,
-} from '@/lib/validations/leave'
+import { LEAVE_TYPE_LABELS, LEAVE_TYPE_COLORS } from '@/lib/validations/leave'
 import { Pencil, X, CheckCircle, Settings, Calendar } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useIsImpersonating } from '@/hooks'
@@ -77,7 +74,8 @@ export function LeavesListMobile({
         const isOwner = request.employee.id === currentUserId
         const isPending = request.status === ('PENDING' as LeaveRequestStatus)
         const isApproved = request.status === ('APPROVED' as LeaveRequestStatus)
-        const isCancelled = request.status === ('CANCELLED' as LeaveRequestStatus)
+        const isCancelled =
+          request.status === ('CANCELLED' as LeaveRequestStatus)
         const canManage =
           currentUserRole === 'MANAGER' ||
           currentUserRole === 'DIRECTOR' ||
@@ -87,12 +85,14 @@ export function LeavesListMobile({
         const showCancel = isOwner && (isPending || isApproved) && onCancel
         const showReview = canManage && isPending && onReview
         const showManage = canManage && isApproved && onManage
-        const hasActions = !isCancelled && (showEdit || showCancel || showReview || showManage)
+        const hasActions =
+          !isCancelled && (showEdit || showCancel || showReview || showManage)
 
         const typeLabel = LEAVE_TYPE_LABELS[request.type]
         const typeColor = LEAVE_TYPE_COLORS[request.type]
         const employeeName = `${request.employee.firstName} ${request.employee.lastName}`
-        const initials = `${request.employee.firstName?.[0] ?? ''}${request.employee.lastName?.[0] ?? ''}`.toUpperCase()
+        const initials =
+          `${request.employee.firstName?.[0] ?? ''}${request.employee.lastName?.[0] ?? ''}`.toUpperCase()
 
         return (
           <div
@@ -124,13 +124,21 @@ export function LeavesListMobile({
                   <LeaveStatusBadge status={request.status} size="sm" />
                 </div>
                 <div className="mt-0.5 flex items-center gap-2 text-xs text-muted-foreground">
-                  <span className={cn('rounded px-1.5 py-0.5 text-[10px] font-medium', typeColor)}>
+                  <span
+                    className={cn(
+                      'rounded px-1.5 py-0.5 text-[10px] font-medium',
+                      typeColor
+                    )}
+                  >
                     {typeLabel}
                   </span>
                   <span>
-                    {dateFormatter.format(new Date(request.startDate))} – {dateFormatter.format(new Date(request.endDate))}
+                    {dateFormatter.format(new Date(request.startDate))} –{' '}
+                    {dateFormatter.format(new Date(request.endDate))}
                   </span>
-                  <span>({request.days}j{request.halfDay ? ' ½' : ''})</span>
+                  <span>
+                    ({request.days}j{request.halfDay ? ' ½' : ''})
+                  </span>
                 </div>
               </div>
             </div>
@@ -202,7 +210,8 @@ export function LeavesListMobile({
 
       {requests.length > 0 && (
         <p className="text-center text-xs text-muted-foreground">
-          {requests.length} / {pagination.total} demande{pagination.total > 1 ? 's' : ''}
+          {requests.length} / {pagination.total} demande
+          {pagination.total > 1 ? 's' : ''}
         </p>
       )}
     </div>

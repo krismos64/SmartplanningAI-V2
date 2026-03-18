@@ -156,7 +156,11 @@ export function LeaveManageDialog({
 
   const workingDays =
     startDate && endDate
-      ? calculateWorkingDays(new Date(startDate), new Date(endDate), watchHalfDay)
+      ? calculateWorkingDays(
+          new Date(startDate),
+          new Date(endDate),
+          watchHalfDay
+        )
       : 0
 
   // Edit mutation
@@ -223,23 +227,21 @@ export function LeaveManageDialog({
               {mode === 'edit' && 'Modifier la demande'}
               {mode === 'revoke' && 'Révoquer la demande'}
             </DialogTitle>
-            <DialogDescription>
-              Demande de {employeeName}
-            </DialogDescription>
+            <DialogDescription>Demande de {employeeName}</DialogDescription>
           </DialogHeader>
 
           {/* Mode sélection */}
           {mode === 'choose' && (
             <div className="space-y-4">
-              <div className="rounded-lg border p-3 space-y-2">
+              <div className="space-y-2 rounded-lg border p-3">
                 <div className="flex items-center gap-2">
                   <span className="font-medium">{employeeName}</span>
                   <LeaveTypeBadge type={request.type} size="sm" />
                 </div>
                 <p className="text-sm text-muted-foreground">
                   {dateFormatter.format(new Date(request.startDate))} –{' '}
-                  {dateFormatter.format(new Date(request.endDate))} ({request.days}{' '}
-                  jour{request.days > 1 ? 's' : ''})
+                  {dateFormatter.format(new Date(request.endDate))} (
+                  {request.days} jour{request.days > 1 ? 's' : ''})
                 </p>
                 {request.reason && (
                   <p className="text-sm text-muted-foreground">
@@ -286,12 +288,14 @@ export function LeaveManageDialog({
               >
                 <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-950/30">
                   <div className="flex gap-2">
-                    <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0 text-amber-600" />
+                    <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0 text-amber-600" />
                     <div className="text-sm text-amber-800 dark:text-amber-200">
-                      <p className="font-medium">Modification d&apos;une demande approuvée</p>
+                      <p className="font-medium">
+                        Modification d&apos;une demande approuvée
+                      </p>
                       <p>
-                        L&apos;employé sera notifié de cette modification. Les soldes de congés
-                        seront automatiquement ajustés.
+                        L&apos;employé sera notifié de cette modification. Les
+                        soldes de congés seront automatiquement ajustés.
                       </p>
                     </div>
                   </div>
@@ -304,7 +308,10 @@ export function LeaveManageDialog({
                     <FormItem>
                       <FormLabel>Type de congé</FormLabel>
                       <FormControl>
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value}
+                        >
                           <SelectTrigger>
                             <SelectValue />
                           </SelectTrigger>
@@ -337,11 +344,18 @@ export function LeaveManageDialog({
                         {dateRange?.from ? (
                           dateRange.to ? (
                             <>
-                              {format(dateRange.from, 'dd MMM yyyy', { locale: fr })} –{' '}
-                              {format(dateRange.to, 'dd MMM yyyy', { locale: fr })}
+                              {format(dateRange.from, 'dd MMM yyyy', {
+                                locale: fr,
+                              })}{' '}
+                              –{' '}
+                              {format(dateRange.to, 'dd MMM yyyy', {
+                                locale: fr,
+                              })}
                             </>
                           ) : (
-                            format(dateRange.from, 'dd MMM yyyy', { locale: fr })
+                            format(dateRange.from, 'dd MMM yyyy', {
+                              locale: fr,
+                            })
                           )
                         ) : (
                           'Sélectionner les dates'
@@ -354,7 +368,8 @@ export function LeaveManageDialog({
                         selected={dateRange}
                         onSelect={(range) => {
                           setDateRange(range)
-                          if (range?.from) form.setValue('startDate', range.from)
+                          if (range?.from)
+                            form.setValue('startDate', range.from)
                           if (range?.to) form.setValue('endDate', range.to)
                         }}
                         locale={fr}
@@ -421,7 +436,10 @@ export function LeaveManageDialog({
                     <FormItem>
                       <FormLabel>Motif du congé (optionnel)</FormLabel>
                       <FormControl>
-                        <Textarea placeholder="Raison de la demande..." {...field} />
+                        <Textarea
+                          placeholder="Raison de la demande..."
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -453,8 +471,13 @@ export function LeaveManageDialog({
                   >
                     Retour
                   </Button>
-                  <Button type="submit" disabled={isEditPending || isImpersonating}>
-                    {isEditPending ? 'Modification...' : 'Confirmer la modification'}
+                  <Button
+                    type="submit"
+                    disabled={isEditPending || isImpersonating}
+                  >
+                    {isEditPending
+                      ? 'Modification...'
+                      : 'Confirmer la modification'}
                   </Button>
                 </DialogFooter>
               </form>
@@ -466,21 +489,21 @@ export function LeaveManageDialog({
             <div className="space-y-4">
               <div className="rounded-lg border border-destructive/50 bg-destructive/5 p-3">
                 <div className="flex gap-2">
-                  <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0 text-destructive" />
+                  <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0 text-destructive" />
                   <div className="text-sm">
                     <p className="font-medium text-destructive">
                       Attention : action irréversible
                     </p>
                     <p className="text-muted-foreground">
-                      La demande de <strong>{employeeName}</strong> sera annulée.
-                      L&apos;employé sera notifié et ses soldes de congés seront recrédités
-                      automatiquement.
+                      La demande de <strong>{employeeName}</strong> sera
+                      annulée. L&apos;employé sera notifié et ses soldes de
+                      congés seront recrédités automatiquement.
                     </p>
                   </div>
                 </div>
               </div>
 
-              <div className="rounded-lg border p-3 space-y-1">
+              <div className="space-y-1 rounded-lg border p-3">
                 <div className="flex items-center gap-2">
                   <LeaveTypeBadge type={request.type} size="sm" />
                   <span className="text-sm">
@@ -542,7 +565,8 @@ export function LeaveManageDialog({
               {dateFormatter.format(new Date(request.endDate))}).
               <br />
               <br />
-              L&apos;employé sera notifié de cette décision. Cette action est irréversible.
+              L&apos;employé sera notifié de cette décision. Cette action est
+              irréversible.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

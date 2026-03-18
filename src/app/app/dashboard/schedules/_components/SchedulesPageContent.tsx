@@ -9,11 +9,7 @@
 'use client'
 
 import { useState, useTransition, useCallback, useEffect, useMemo } from 'react'
-import {
-  CalendarDays,
-  Plus,
-  Clock,
-} from 'lucide-react'
+import { CalendarDays, Plus, Clock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { useToast } from '@/components/toast/use-toast'
@@ -127,11 +123,15 @@ export function SchedulesPageContent({
   // État pour le dialog récurrence (choix single/all)
   const [recurrenceSchedule, setRecurrenceSchedule] =
     useState<ScheduleWithRelations | null>(null)
-  const [recurrenceAction, setRecurrenceAction] = useState<'edit' | 'delete'>('edit')
+  const [recurrenceAction, setRecurrenceAction] = useState<'edit' | 'delete'>(
+    'edit'
+  )
   const [isRecurrenceDialogOpen, setIsRecurrenceDialogOpen] = useState(false)
   const [isRecurrenceDeleting, setIsRecurrenceDeleting] = useState(false)
   // Si true, le prochain submit du ShiftModal appliquera les changements à toute la récurrence
-  const [editRecurrenceGroupId, setEditRecurrenceGroupId] = useState<string | null>(null)
+  const [editRecurrenceGroupId, setEditRecurrenceGroupId] = useState<
+    string | null
+  >(null)
 
   // État pour les indisponibilités (SP-402)
   const [availabilities, setAvailabilities] = useState<
@@ -286,7 +286,9 @@ export function SchedulesPageContent({
         // Vue mois : le range commence au lundi de la première semaine visible
         // (ex: 23 fév pour mars). On prend le milieu du range pour cibler le bon mois.
         setViewMode('month')
-        const mid = new Date(start.getTime() + (end.getTime() - start.getTime()) / 2)
+        const mid = new Date(
+          start.getTime() + (end.getTime() - start.getTime()) / 2
+        )
         setCurrentDate(mid)
       }
 
@@ -377,9 +379,7 @@ export function SchedulesPageContent({
       return { single: 1, future: 0, all: 0 }
     }
     const groupId = recurrenceSchedule.recurrenceGroupId
-    const allInGroup = schedules.filter(
-      (s) => s.recurrenceGroupId === groupId
-    )
+    const allInGroup = schedules.filter((s) => s.recurrenceGroupId === groupId)
     const futureInGroup = allInGroup.filter(
       (s) =>
         new Date(s.startDate) >= new Date(recurrenceSchedule.startDate) &&
@@ -413,6 +413,45 @@ export function SchedulesPageContent({
           </div>
         </div>
         <div className="flex items-center gap-2">
+          {/* Sélecteur de vue */}
+          <div className="hidden items-center rounded-lg border p-0.5 sm:flex">
+            {(['day', 'week', 'month'] as const).map((mode) => (
+              <button
+                key={mode}
+                onClick={() => {
+                  setViewMode(mode)
+                  const range = (() => {
+                    switch (mode) {
+                      case 'day':
+                        return {
+                          start: startOfDay(safeDate),
+                          end: endOfDay(safeDate),
+                        }
+                      case 'week':
+                        return {
+                          start: startOfWeek(safeDate, { weekStartsOn: 1 }),
+                          end: endOfWeek(safeDate, { weekStartsOn: 1 }),
+                        }
+                      case 'month':
+                        return {
+                          start: startOfMonth(safeDate),
+                          end: endOfMonth(safeDate),
+                        }
+                    }
+                  })()
+                  void reloadSchedules(range.start, range.end, activeFilters)
+                }}
+                className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+                  viewMode === mode
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                {mode === 'day' ? 'Jour' : mode === 'week' ? 'Semaine' : 'Mois'}
+              </button>
+            ))}
+          </div>
+
           {canExport && (
             <ExportDropdown
               startDate={dateRange.start}
@@ -452,7 +491,18 @@ export function SchedulesPageContent({
       </Card>
       <details className="md:hidden">
         <summary className="flex cursor-pointer items-center gap-2 rounded-lg border px-4 py-3 text-sm font-medium">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="h-4 w-4"
+          >
+            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+          </svg>
           Filtres
         </summary>
         <Card className="mt-2">
@@ -533,7 +583,11 @@ export function SchedulesPageContent({
             <SheetHeader className="border-b px-4 py-3">
               <SheetTitle className="flex items-center gap-2 text-sm">
                 <Clock className="h-4 w-4" />
-                {viewMode === 'day' ? 'Heures jour' : viewMode === 'month' ? 'Heures mois' : 'Heures semaine'}
+                {viewMode === 'day'
+                  ? 'Heures jour'
+                  : viewMode === 'month'
+                    ? 'Heures mois'
+                    : 'Heures semaine'}
               </SheetTitle>
             </SheetHeader>
             <WeeklyHoursPanel

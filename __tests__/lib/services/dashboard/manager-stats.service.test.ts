@@ -404,7 +404,11 @@ describe('manager-stats.service', () => {
         },
       ])
 
-      prismaMock.leaveRequest.count.mockResolvedValue(2)
+      prismaMock.leaveRequest.findMany.mockResolvedValue([
+        { employeeId: 'emp-2', type: 'PAID_LEAVE' },
+        { employeeId: 'emp-2', type: 'RTT' },
+      ] as never)
+      prismaMock.schedule.findMany.mockResolvedValue([])
 
       const result = await getManagerTodayAbsencesOnly('emp-1', 'team-1')
 
@@ -425,7 +429,8 @@ describe('manager-stats.service', () => {
       })
 
       prismaMock.employee.findMany.mockResolvedValue([])
-      prismaMock.leaveRequest.count.mockResolvedValue(0)
+      prismaMock.leaveRequest.findMany.mockResolvedValue([])
+      prismaMock.schedule.findMany.mockResolvedValue([])
 
       const result = await getManagerTodayAbsencesOnly('emp-1', 'team-1')
 

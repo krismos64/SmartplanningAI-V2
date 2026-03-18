@@ -45,23 +45,6 @@ export default function LoginPage() {
           Créer un compte
         </Link>
       </p>
-
-      {/* Demo accounts (pour développement) */}
-      {process.env.NODE_ENV === 'development' && (
-        <div className="rounded-lg border border-dashed border-border bg-muted/50 p-4">
-          <p className="mb-2 text-xs font-medium text-foreground">
-            🧪 Comptes de test
-          </p>
-          <div className="space-y-1 text-xs text-muted-foreground">
-            <p>Director: john.doe@techcorp.com</p>
-            <p>Manager: jane.smith@techcorp.com</p>
-            <p>Employee: bob.wilson@techcorp.com</p>
-            <p className="mt-2 font-medium text-cyan-600 dark:text-cyan-400">
-              Mot de passe : Password123!
-            </p>
-          </div>
-        </div>
-      )}
     </div>
   )
 }

@@ -44,6 +44,10 @@ vi.mock('@/lib/actions/leaves', () => ({}))
 
 // Mock Schedule-X components
 vi.mock('@schedule-x/react', () => ({
+  useNextCalendarApp: vi.fn(() => ({
+    setDate: vi.fn(),
+    setView: vi.fn(),
+  })),
   useCalendarApp: vi.fn(() => ({
     setDate: vi.fn(),
     setView: vi.fn(),
@@ -223,12 +227,11 @@ describe('ScheduleCalendarDesktop', () => {
       expect(spinner).toBeInTheDocument()
     })
 
-    it('affiche un message vide quand aucun schedule', () => {
+    it('affiche le calendrier meme sans schedule', () => {
       render(<ScheduleCalendarDesktop {...defaultProps} schedules={[]} />)
 
-      expect(
-        screen.getByText('Aucun planning pour cette période')
-      ).toBeInTheDocument()
+      // Le calendrier Schedule-X est toujours affiché pour permettre la navigation
+      expect(screen.getByTestId('schedule-x-calendar')).toBeInTheDocument()
     })
   })
 

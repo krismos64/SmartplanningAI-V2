@@ -41,6 +41,10 @@ vi.mock('@/lib/prisma', () => ({
       findMany: vi.fn().mockResolvedValue([]),
       count: vi.fn(),
     },
+    user: {
+      findMany: vi.fn().mockResolvedValue([]),
+      findUnique: vi.fn(),
+    },
     $transaction: vi.fn(),
   },
 }))
@@ -162,6 +166,8 @@ beforeEach(() => {
   vi.resetAllMocks()
   // Default mock pour les notifications SSE (fire-and-forget .then() chain)
   vi.mocked(prisma.employee.findMany).mockResolvedValue([])
+  // Mock pour notifyDirectorsOfLeaveEvent
+  vi.mocked(prisma.user.findMany).mockResolvedValue([])
 })
 
 // ─── getLeaveRequests ─────────────────────────────────────────────

@@ -137,8 +137,9 @@ describe('IncidentNotesPageContent', () => {
 
   it('affiche les filtres', () => {
     render(<IncidentNotesPageContent initialNotes={[]} userRole="DIRECTOR" />)
-    expect(screen.getByTestId('incidents-filters')).toBeInTheDocument()
-    expect(screen.getByTestId('search-input')).toBeInTheDocument()
+    // Deux instances de filtres (desktop visible + mobile details) — au moins une présente
+    expect(screen.getAllByTestId('incidents-filters').length).toBeGreaterThanOrEqual(1)
+    expect(screen.getAllByTestId('search-input').length).toBeGreaterThanOrEqual(1)
   })
 
   it('affiche les notes initiales', () => {
@@ -178,7 +179,7 @@ describe('IncidentNotesPageContent', () => {
     expect(screen.getByText('Absence')).toBeInTheDocument()
 
     // Filtrer par "Retard"
-    fireEvent.change(screen.getByTestId('search-input'), {
+    fireEvent.change(screen.getAllByTestId('search-input')[0]!, {
       target: { value: 'Retard' },
     })
 

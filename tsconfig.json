@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    // Mode strict TypeScript (OBLIGATOIRE pour projet CDA)
+    // Mode strict TypeScript
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "noImplicitReturns": true,

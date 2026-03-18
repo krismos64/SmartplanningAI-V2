@@ -74,16 +74,49 @@ interface WeeklyGridViewProps {
 // Couleurs par type de planning
 // ============================================================================
 
-const typeStyles: Record<string, { bg: string; text: string; label: string }> = {
-  WORK: { bg: 'bg-blue-100 dark:bg-blue-900/60', text: 'text-blue-800 dark:text-blue-200', label: 'Travail' },
-  REST: { bg: 'bg-green-100 dark:bg-green-900/60', text: 'text-green-800 dark:text-green-200', label: 'Repos' },
-  BREAK: { bg: 'bg-yellow-100 dark:bg-yellow-900/60', text: 'text-yellow-800 dark:text-yellow-200', label: 'Pause' },
-  MEETING: { bg: 'bg-purple-100 dark:bg-purple-900/60', text: 'text-purple-800 dark:text-purple-200', label: 'Réunion' },
-  TRAINING: { bg: 'bg-orange-100 dark:bg-orange-900/60', text: 'text-orange-800 dark:text-orange-200', label: 'Formation' },
-  REMOTE: { bg: 'bg-teal-100 dark:bg-teal-900/60', text: 'text-teal-800 dark:text-teal-200', label: 'Télétravail' },
-  ON_CALL: { bg: 'bg-red-100 dark:bg-red-900/60', text: 'text-red-800 dark:text-red-200', label: 'Astreinte' },
-  OVERTIME: { bg: 'bg-pink-100 dark:bg-pink-900/60', text: 'text-pink-800 dark:text-pink-200', label: 'Heures sup.' },
-}
+const typeStyles: Record<string, { bg: string; text: string; label: string }> =
+  {
+    WORK: {
+      bg: 'bg-blue-100 dark:bg-blue-900/60',
+      text: 'text-blue-800 dark:text-blue-200',
+      label: 'Travail',
+    },
+    REST: {
+      bg: 'bg-green-100 dark:bg-green-900/60',
+      text: 'text-green-800 dark:text-green-200',
+      label: 'Repos',
+    },
+    BREAK: {
+      bg: 'bg-yellow-100 dark:bg-yellow-900/60',
+      text: 'text-yellow-800 dark:text-yellow-200',
+      label: 'Pause',
+    },
+    MEETING: {
+      bg: 'bg-purple-100 dark:bg-purple-900/60',
+      text: 'text-purple-800 dark:text-purple-200',
+      label: 'Réunion',
+    },
+    TRAINING: {
+      bg: 'bg-orange-100 dark:bg-orange-900/60',
+      text: 'text-orange-800 dark:text-orange-200',
+      label: 'Formation',
+    },
+    REMOTE: {
+      bg: 'bg-teal-100 dark:bg-teal-900/60',
+      text: 'text-teal-800 dark:text-teal-200',
+      label: 'Télétravail',
+    },
+    ON_CALL: {
+      bg: 'bg-red-100 dark:bg-red-900/60',
+      text: 'text-red-800 dark:text-red-200',
+      label: 'Astreinte',
+    },
+    OVERTIME: {
+      bg: 'bg-pink-100 dark:bg-pink-900/60',
+      text: 'text-pink-800 dark:text-pink-200',
+      label: 'Heures sup.',
+    },
+  }
 
 const leaveStyle = {
   bg: 'bg-amber-100 dark:bg-amber-900/50',
@@ -131,7 +164,9 @@ export function WeeklyGridView({
         if (r.success) allLeaves.push(...r.data)
       }
       // Dédupliquer par ID
-      const unique = Array.from(new Map(allLeaves.map((l) => [l.id, l])).values())
+      const unique = Array.from(
+        new Map(allLeaves.map((l) => [l.id, l])).values()
+      )
       setLeaves(unique)
     }
     void loadLeaves()
@@ -230,18 +265,29 @@ export function WeeklyGridView({
         {/* Header navigation */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="icon" onClick={goToPrev} className="h-9 w-9">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={goToPrev}
+              className="h-9 w-9"
+            >
               <ChevronLeft className="h-4 w-4" />
             </Button>
             <Button variant="outline" size="sm" onClick={goToToday}>
               Aujourd&apos;hui
             </Button>
-            <Button variant="outline" size="icon" onClick={goToNext} className="h-9 w-9">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={goToNext}
+              className="h-9 w-9"
+            >
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
           <h3 className="text-sm font-semibold capitalize">
-            {format(weekStart, 'd MMM', { locale: fr })} – {format(weekEnd, 'd MMM yyyy', { locale: fr })}
+            {format(weekStart, 'd MMM', { locale: fr })} –{' '}
+            {format(weekEnd, 'd MMM yyyy', { locale: fr })}
           </h3>
         </div>
 
@@ -265,7 +311,12 @@ export function WeeklyGridView({
                         today && 'bg-primary/10'
                       )}
                     >
-                      <div className={cn('uppercase', today && 'font-bold text-primary')}>
+                      <div
+                        className={cn(
+                          'uppercase',
+                          today && 'font-bold text-primary'
+                        )}
+                      >
                         {format(day, 'EEE', { locale: fr })}
                       </div>
                       <div
@@ -345,7 +396,8 @@ function EmployeeRow({
   onScheduleClick?: (s: ScheduleWithRelations) => void
   canEdit: boolean
 }) {
-  const initials = `${employee.firstName[0] ?? ''}${employee.lastName[0] ?? ''}`.toUpperCase()
+  const initials =
+    `${employee.firstName[0] ?? ''}${employee.lastName[0] ?? ''}`.toUpperCase()
   const empLeaves = leaveIndex.get(employee.id) ?? []
 
   return (
@@ -434,7 +486,11 @@ function ScheduleCell({
   canEdit: boolean
 }) {
   const style = typeStyles[schedule.type] ?? typeStyles['WORK']
-  const defaultStyle = { bg: 'bg-blue-100 dark:bg-blue-900/60', text: 'text-blue-800 dark:text-blue-200', label: 'Travail' }
+  const defaultStyle = {
+    bg: 'bg-blue-100 dark:bg-blue-900/60',
+    text: 'text-blue-800 dark:text-blue-200',
+    label: 'Travail',
+  }
   const s = style ?? defaultStyle
 
   const timeLabel =
@@ -453,7 +509,8 @@ function ScheduleCell({
             s.text,
             onClick && 'cursor-pointer hover:brightness-95 active:scale-[0.97]',
             canEdit && 'cursor-grab active:cursor-grabbing',
-            schedule.status === 'DRAFT' && 'opacity-50 border border-dashed border-current'
+            schedule.status === 'DRAFT' &&
+              'border border-dashed border-current opacity-50'
           )}
         >
           {timeLabel}
@@ -464,9 +521,14 @@ function ScheduleCell({
           {schedule.employee?.firstName} {schedule.employee?.lastName}
         </p>
         <p>
-          {s.label} — {schedule.type === 'REST' ? 'Journée entière' : `${schedule.startTime} – ${schedule.endTime}`}
+          {s.label} —{' '}
+          {schedule.type === 'REST'
+            ? 'Journée entière'
+            : `${schedule.startTime} – ${schedule.endTime}`}
         </p>
-        {schedule.title && <p className="text-muted-foreground">{schedule.title}</p>}
+        {schedule.title && (
+          <p className="text-muted-foreground">{schedule.title}</p>
+        )}
       </TooltipContent>
     </Tooltip>
   )
@@ -499,7 +561,8 @@ function LeaveCell({ leave }: { leave: LeaveRequestWithEmployee }) {
         </p>
         <p>{typeLabel}</p>
         <p className="text-muted-foreground">
-          {format(new Date(leave.startDate), 'd MMM', { locale: fr })} – {format(new Date(leave.endDate), 'd MMM', { locale: fr })}
+          {format(new Date(leave.startDate), 'd MMM', { locale: fr })} –{' '}
+          {format(new Date(leave.endDate), 'd MMM', { locale: fr })}
         </p>
       </TooltipContent>
     </Tooltip>

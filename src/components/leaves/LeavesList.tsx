@@ -23,7 +23,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { MoreHorizontal, Pencil, X, CheckCircle, Eye, Settings } from 'lucide-react'
+import {
+  MoreHorizontal,
+  Pencil,
+  X,
+  CheckCircle,
+  Eye,
+  Settings,
+} from 'lucide-react'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -158,7 +165,13 @@ function createColumns(
         const showReview = canManage && isPending && actions.onReview
         const showManage = canManage && isApproved && actions.onManage
 
-        if (!showEdit && !showCancel && !showReview && !showManage && !actions.onView) {
+        if (
+          !showEdit &&
+          !showCancel &&
+          !showReview &&
+          !showManage &&
+          !actions.onView
+        ) {
           return null
         }
 
@@ -231,7 +244,15 @@ export function LeavesList({
         onReview,
         onManage,
       }),
-    [currentUserRole, currentUserId, onView, onEdit, onCancel, onReview, onManage]
+    [
+      currentUserRole,
+      currentUserId,
+      onView,
+      onEdit,
+      onCancel,
+      onReview,
+      onManage,
+    ]
   )
 
   const table = useReactTable({

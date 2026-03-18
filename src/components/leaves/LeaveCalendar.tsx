@@ -162,10 +162,7 @@ export function LeaveCalendar({
             const employeeAbsences = absencesByEmployee.get(employee.id) ?? []
 
             return (
-              <div
-                key={employee.id}
-                className="rounded-lg border p-3"
-              >
+              <div key={employee.id} className="rounded-lg border p-3">
                 <div className="flex items-center gap-2 pb-2">
                   <Avatar className="h-8 w-8 flex-shrink-0">
                     {employee.image && (
@@ -210,8 +207,7 @@ export function LeaveCalendar({
                               locale: fr,
                             })}
                             {absence.days > 1 &&
-                              ` – ${format(new Date(absence.endDate), 'dd MMM', { locale: fr })}`}
-                            {' '}
+                              ` – ${format(new Date(absence.endDate), 'dd MMM', { locale: fr })}`}{' '}
                             ({absence.days}j)
                           </span>
                         </div>

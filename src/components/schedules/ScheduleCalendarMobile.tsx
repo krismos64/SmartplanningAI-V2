@@ -32,15 +32,50 @@ import { Skeleton } from '@/components/ui/skeleton'
 // Couleurs par type
 // ============================================================================
 
-const typeColors: Record<string, { bg: string; border: string; label: string }> = {
-  WORK: { bg: 'bg-blue-50 dark:bg-blue-950/50', border: 'border-l-blue-500', label: 'Travail' },
-  REST: { bg: 'bg-green-50 dark:bg-green-950/50', border: 'border-l-green-500', label: 'Repos' },
-  BREAK: { bg: 'bg-yellow-50 dark:bg-yellow-950/50', border: 'border-l-yellow-500', label: 'Pause' },
-  MEETING: { bg: 'bg-purple-50 dark:bg-purple-950/50', border: 'border-l-purple-500', label: 'Réunion' },
-  TRAINING: { bg: 'bg-orange-50 dark:bg-orange-950/50', border: 'border-l-orange-500', label: 'Formation' },
-  REMOTE: { bg: 'bg-teal-50 dark:bg-teal-950/50', border: 'border-l-teal-500', label: 'Télétravail' },
-  ON_CALL: { bg: 'bg-red-50 dark:bg-red-950/50', border: 'border-l-red-500', label: 'Astreinte' },
-  OVERTIME: { bg: 'bg-pink-50 dark:bg-pink-950/50', border: 'border-l-pink-500', label: 'Heures sup.' },
+const typeColors: Record<
+  string,
+  { bg: string; border: string; label: string }
+> = {
+  WORK: {
+    bg: 'bg-blue-50 dark:bg-blue-950/50',
+    border: 'border-l-blue-500',
+    label: 'Travail',
+  },
+  REST: {
+    bg: 'bg-green-50 dark:bg-green-950/50',
+    border: 'border-l-green-500',
+    label: 'Repos',
+  },
+  BREAK: {
+    bg: 'bg-yellow-50 dark:bg-yellow-950/50',
+    border: 'border-l-yellow-500',
+    label: 'Pause',
+  },
+  MEETING: {
+    bg: 'bg-purple-50 dark:bg-purple-950/50',
+    border: 'border-l-purple-500',
+    label: 'Réunion',
+  },
+  TRAINING: {
+    bg: 'bg-orange-50 dark:bg-orange-950/50',
+    border: 'border-l-orange-500',
+    label: 'Formation',
+  },
+  REMOTE: {
+    bg: 'bg-teal-50 dark:bg-teal-950/50',
+    border: 'border-l-teal-500',
+    label: 'Télétravail',
+  },
+  ON_CALL: {
+    bg: 'bg-red-50 dark:bg-red-950/50',
+    border: 'border-l-red-500',
+    label: 'Astreinte',
+  },
+  OVERTIME: {
+    bg: 'bg-pink-50 dark:bg-pink-950/50',
+    border: 'border-l-pink-500',
+    label: 'Heures sup.',
+  },
 }
 
 // ============================================================================
@@ -203,12 +238,18 @@ function MobileScheduleCard({
   schedule: ScheduleWithRelations
   onClick?: () => void
 }) {
-  const defaultType = { bg: 'bg-blue-50 dark:bg-blue-950/50', border: 'border-l-blue-500', label: 'Travail' }
+  const defaultType = {
+    bg: 'bg-blue-50 dark:bg-blue-950/50',
+    border: 'border-l-blue-500',
+    label: 'Travail',
+  }
   const type = typeColors[schedule.type] ?? defaultType
 
   const employeeName =
-    `${schedule.employee?.firstName ?? ''} ${schedule.employee?.lastName ?? ''}`.trim() || 'N/A'
-  const initials = `${schedule.employee?.firstName?.[0] ?? ''}${schedule.employee?.lastName?.[0] ?? ''}`.toUpperCase()
+    `${schedule.employee?.firstName ?? ''} ${schedule.employee?.lastName ?? ''}`.trim() ||
+    'N/A'
+  const initials =
+    `${schedule.employee?.firstName?.[0] ?? ''}${schedule.employee?.lastName?.[0] ?? ''}`.toUpperCase()
   const employeeImage = schedule.employee?.user?.image
 
   const timeLabel =
@@ -247,7 +288,12 @@ function MobileScheduleCard({
       </div>
 
       {/* Type label */}
-      <span className={cn('shrink-0 text-xs font-medium', type.border.replace('border-l-', 'text-'))}>
+      <span
+        className={cn(
+          'shrink-0 text-xs font-medium',
+          type.border.replace('border-l-', 'text-')
+        )}
+      >
         {type.label}
       </span>
     </div>

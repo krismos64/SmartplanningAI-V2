@@ -224,7 +224,11 @@ function getStatusStyle(status: string) {
   }
 }
 
-function formatDays(days: number, halfDay: boolean, halfDayPeriod: string | null): string {
+function formatDays(
+  days: number,
+  halfDay: boolean,
+  halfDayPeriod: string | null
+): string {
   if (halfDay && halfDayPeriod) {
     return `${days} (${HALF_DAY_LABELS[halfDayPeriod] ?? halfDayPeriod})`
   }

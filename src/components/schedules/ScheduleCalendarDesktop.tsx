@@ -580,8 +580,6 @@ export function ScheduleCalendarDesktop({
     return service
   })
 
-
-
   // Fonction pour effectuer la mise à jour réelle
   const performUpdate = useCallback(
     async (
@@ -1058,7 +1056,9 @@ export function ScheduleCalendarDesktop({
     if (viewMode !== 'month') return
 
     const timer = setTimeout(() => {
-      const dayEls = document.querySelectorAll<HTMLElement>('.sx__month-grid-day')
+      const dayEls = document.querySelectorAll<HTMLElement>(
+        '.sx__month-grid-day'
+      )
       dayEls.forEach((el) => {
         const dateHeader = el.querySelector('.sx__month-grid-day__header-date')
         if (!dateHeader) return
@@ -1069,7 +1069,9 @@ export function ScheduleCalendarDesktop({
 
         // Dernier groupe de la grille : si les numéros sont petits (1-14), c'est le mois suivant
         // Premier groupe : si les numéros sont grands (15-31), c'est le mois précédent
-        const allDayEls = Array.from(document.querySelectorAll('.sx__month-grid-day'))
+        const allDayEls = Array.from(
+          document.querySelectorAll('.sx__month-grid-day')
+        )
         const idx = allDayEls.indexOf(el)
         const isLeading = idx < 7 && dayNum > 14
         const isTrailing = idx >= allDayEls.length - 14 && dayNum <= 14

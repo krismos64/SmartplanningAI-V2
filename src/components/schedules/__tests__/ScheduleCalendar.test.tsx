@@ -26,6 +26,12 @@ vi.mock('../ScheduleCalendarMobile', () => ({
   ),
 }))
 
+vi.mock('../WeeklyGridView', () => ({
+  WeeklyGridView: () => (
+    <div data-testid="weekly-grid">Weekly Grid</div>
+  ),
+}))
+
 // ============================================================================
 // Mock useMediaQuery
 // ============================================================================
@@ -73,13 +79,29 @@ describe('ScheduleCalendar', () => {
       expect(container).toBeTruthy()
     })
 
-    it('affiche le calendrier desktop quand isDesktop=true', async () => {
+    it('affiche la grille semaine quand isDesktop=true et viewMode=week', async () => {
       mockUseMediaQuery.mockReturnValue(true)
 
       render(
         <ScheduleCalendar
           schedules={mockSchedules}
           viewMode="week"
+          currentDate={new Date('2026-01-26')}
+        />
+      )
+
+      await waitFor(() => {
+        expect(screen.getByTestId('weekly-grid')).toBeInTheDocument()
+      })
+    })
+
+    it('affiche le calendrier desktop quand isDesktop=true et viewMode=day', async () => {
+      mockUseMediaQuery.mockReturnValue(true)
+
+      render(
+        <ScheduleCalendar
+          schedules={mockSchedules}
+          viewMode="day"
           currentDate={new Date('2026-01-26')}
         />
       )

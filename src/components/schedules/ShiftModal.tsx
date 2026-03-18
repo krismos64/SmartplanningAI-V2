@@ -455,7 +455,14 @@ export function ShiftModal({
 
         if (!result.success) {
           setSubmitError(result.error ?? 'Erreur lors de la création')
-          setTimeout(() => errorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100)
+          setTimeout(
+            () =>
+              errorRef.current?.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center',
+              }),
+            100
+          )
           return
         }
       } else if (mode === 'edit' && schedule) {
@@ -475,7 +482,14 @@ export function ShiftModal({
 
         if (!result.success) {
           setSubmitError(result.error ?? 'Erreur lors de la modification')
-          setTimeout(() => errorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100)
+          setTimeout(
+            () =>
+              errorRef.current?.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center',
+              }),
+            100
+          )
           return
         }
       }
@@ -736,7 +750,9 @@ export function ShiftModal({
                       >
                         <CalendarIcon className="mr-2 h-4 w-4" />
                         {field.value
-                          ? format(field.value, 'EEEE d MMMM yyyy', { locale: fr })
+                          ? format(field.value, 'EEEE d MMMM yyyy', {
+                              locale: fr,
+                            })
                           : 'Sélectionner une date'}
                       </Button>
                     </PopoverTrigger>
@@ -876,7 +892,9 @@ export function ShiftModal({
                   maxLength={100}
                 />
                 {errors.title && (
-                  <p className="text-sm text-destructive">{errors.title.message}</p>
+                  <p className="text-sm text-destructive">
+                    {errors.title.message}
+                  </p>
                 )}
               </div>
 
@@ -944,31 +962,30 @@ export function ShiftModal({
           )}
 
           {/* Alerte de conflits congés / plannings existants */}
-          {scheduleConflicts?.hasConflicts &&
-            !isCheckingScheduleConflicts && (
-              <Alert
-                variant="default"
-                className="border-amber-500/50 bg-amber-50 text-amber-900 dark:border-amber-400/30 dark:bg-amber-950/30 dark:text-amber-200 [&>svg]:text-amber-600"
-              >
-                <AlertTriangle className="h-4 w-4" />
-                <AlertTitle>Conflit détecté</AlertTitle>
-                <AlertDescription>
-                  <p className="mb-2">{scheduleConflicts.warning}</p>
-                  <ul className="space-y-1">
-                    {scheduleConflicts.conflicts.map((c, i) => (
-                      <li
-                        key={i}
-                        className="rounded-md border border-amber-200 bg-white/50 px-2 py-1.5 text-xs dark:border-amber-800 dark:bg-amber-950/50"
-                      >
-                        <span className="font-medium">{c.employeeName}</span>
-                        {' — '}
-                        {c.details}
-                      </li>
-                    ))}
-                  </ul>
-                </AlertDescription>
-              </Alert>
-            )}
+          {scheduleConflicts?.hasConflicts && !isCheckingScheduleConflicts && (
+            <Alert
+              variant="default"
+              className="border-amber-500/50 bg-amber-50 text-amber-900 dark:border-amber-400/30 dark:bg-amber-950/30 dark:text-amber-200 [&>svg]:text-amber-600"
+            >
+              <AlertTriangle className="h-4 w-4" />
+              <AlertTitle>Conflit détecté</AlertTitle>
+              <AlertDescription>
+                <p className="mb-2">{scheduleConflicts.warning}</p>
+                <ul className="space-y-1">
+                  {scheduleConflicts.conflicts.map((c, i) => (
+                    <li
+                      key={i}
+                      className="rounded-md border border-amber-200 bg-white/50 px-2 py-1.5 text-xs dark:border-amber-800 dark:bg-amber-950/50"
+                    >
+                      <span className="font-medium">{c.employeeName}</span>
+                      {' — '}
+                      {c.details}
+                    </li>
+                  ))}
+                </ul>
+              </AlertDescription>
+            </Alert>
+          )}
 
           {/* Indicateur de vérification en cours */}
           {(isCheckingConflicts || isCheckingScheduleConflicts) && (
@@ -980,8 +997,24 @@ export function ShiftModal({
 
           {/* Erreur de conflit (visible près des boutons) */}
           {submitError && (
-            <div ref={errorRef} className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mt-0.5 h-4 w-4 flex-shrink-0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <div
+              ref={errorRef}
+              className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="mt-0.5 h-4 w-4 flex-shrink-0"
+              >
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="8" x2="12" y2="12" />
+                <line x1="12" y1="16" x2="12.01" y2="16" />
+              </svg>
               <span>{submitError}</span>
             </div>
           )}

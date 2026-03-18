@@ -85,7 +85,10 @@ export function RecurrenceEditDialog({
 
   return (
     <>
-      <Dialog open={isOpen && !confirmDeleteAll} onOpenChange={(open) => !open && handleClose()}>
+      <Dialog
+        open={isOpen && !confirmDeleteAll}
+        onOpenChange={(open) => !open && handleClose()}
+      >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -233,8 +236,8 @@ export function RecurrenceEditDialog({
           <AlertDialogHeader>
             <AlertDialogTitle>Supprimer toute la série ?</AlertDialogTitle>
             <AlertDialogDescription>
-              Les {counts.all} créneaux de cette récurrence seront définitivement
-              supprimés. Cette action est irréversible.
+              Les {counts.all} créneaux de cette récurrence seront
+              définitivement supprimés. Cette action est irréversible.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

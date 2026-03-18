@@ -446,7 +446,11 @@ export async function createLeaveRequest(
       .catch(console.error)
 
     // Notifier les directeurs de l'entreprise (in-app SSE, fire-and-forget)
-    notifyDirectorsOfLeaveEvent(leaveRequest.id, employee.companyId, 'requested')
+    notifyDirectorsOfLeaveEvent(
+      leaveRequest.id,
+      employee.companyId,
+      'requested'
+    )
 
     // SP-415: Notifier les managers de la nouvelle demande par email (en background)
     notifyManagersOfNewLeaveRequest(
@@ -657,7 +661,11 @@ export async function cancelLeaveRequest(
       }).catch(console.error)
 
       // SSE : Notifier les managers de l'annulation (fire-and-forget)
-      notifyCancelledLeaveToManagers(leaveRequest.employeeId, id, leaveRequest.companyId)
+      notifyCancelledLeaveToManagers(
+        leaveRequest.employeeId,
+        id,
+        leaveRequest.companyId
+      )
 
       revalidatePath(LEAVE_PATH)
       return { success: true, data: updated }
@@ -680,7 +688,11 @@ export async function cancelLeaveRequest(
     }).catch(console.error)
 
     // SSE : Notifier les managers de l'annulation (fire-and-forget)
-    notifyCancelledLeaveToManagers(leaveRequest.employeeId, id, leaveRequest.companyId)
+    notifyCancelledLeaveToManagers(
+      leaveRequest.employeeId,
+      id,
+      leaveRequest.companyId
+    )
 
     revalidatePath(LEAVE_PATH)
     return { success: true, data: updated }
@@ -907,13 +919,18 @@ export async function managerEditLeaveRequest(
     if (leaveRequest.status !== LeaveRequestStatus.APPROVED) {
       return {
         success: false,
-        error: 'Seules les demandes approuvées peuvent être modifiées par un responsable',
+        error:
+          'Seules les demandes approuvées peuvent être modifiées par un responsable',
       }
     }
 
     const oldDays = leaveRequest.days
     const oldType = leaveRequest.type
-    const newDays = calculateWorkingDays(data.startDate, data.endDate, data.halfDay)
+    const newDays = calculateWorkingDays(
+      data.startDate,
+      data.endDate,
+      data.halfDay
+    )
 
     // Vérifier le solde si le nouveau type nécessite un solde
     if (LEAVE_TYPES_WITH_BALANCE.includes(data.type)) {
@@ -939,7 +956,10 @@ export async function managerEditLeaveRequest(
             ? balance.paidLeaveTotal
             : balance.rttTotal
         if (effectiveUsed + newDays > total) {
-          return { success: false, error: 'Solde insuffisant pour cette modification' }
+          return {
+            success: false,
+            error: 'Solde insuffisant pour cette modification',
+          }
         }
       }
     }
@@ -953,7 +973,10 @@ export async function managerEditLeaveRequest(
           oldType === LeaveType.PAID_LEAVE ? 'paidLeaveUsed' : 'rttUsed'
         await tx.leaveBalance.update({
           where: {
-            employeeId_year: { employeeId: leaveRequest.employeeId, year: oldYear },
+            employeeId_year: {
+              employeeId: leaveRequest.employeeId,
+              year: oldYear,
+            },
           },
           data: { [oldBalanceField]: { decrement: oldDays } },
         })
@@ -981,7 +1004,10 @@ export async function managerEditLeaveRequest(
           data.type === LeaveType.PAID_LEAVE ? 'paidLeaveUsed' : 'rttUsed'
         await tx.leaveBalance.upsert({
           where: {
-            employeeId_year: { employeeId: leaveRequest.employeeId, year: newYear },
+            employeeId_year: {
+              employeeId: leaveRequest.employeeId,
+              year: newYear,
+            },
           },
           create: {
             employeeId: leaveRequest.employeeId,

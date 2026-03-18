@@ -199,7 +199,10 @@ export function IncidentNotesPageContent({
   // ─── Render ─────────────────────────────────────────────────────────
 
   return (
-    <div className="space-y-4 md:space-y-6" data-testid="incidents-page-content">
+    <div
+      className="space-y-4 md:space-y-6"
+      data-testid="incidents-page-content"
+    >
       {/* Header */}
       <div className="flex items-center justify-between gap-3">
         <div>
@@ -237,7 +240,18 @@ export function IncidentNotesPageContent({
       </div>
       <details className="md:hidden">
         <summary className="flex cursor-pointer items-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-medium">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="h-4 w-4"
+          >
+            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+          </svg>
           Filtres
         </summary>
         <div className="mt-2">

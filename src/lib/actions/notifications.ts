@@ -199,7 +199,13 @@ export async function createPlanningNotification(
     // Récupérer l'utilisateur destinataire avec ses préférences
     const user = await prisma.user.findUnique({
       where: { id: employeeUserId },
-      select: { id: true, email: true, name: true, companyId: true, preferences: true },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        companyId: true,
+        preferences: true,
+      },
     })
 
     if (!user || !user.companyId) {
@@ -215,7 +221,11 @@ export async function createPlanningNotification(
     const emailEnabled = isEmailNotificationEnabled(userPrefs, category)
 
     if (!inAppEnabled && !emailEnabled) {
-      return { success: true, notification: null, skipped: 'all channels disabled' }
+      return {
+        success: true,
+        notification: null,
+        skipped: 'all channels disabled',
+      }
     }
 
     // Construire le message selon l'action
@@ -271,7 +281,8 @@ export async function createPlanningNotification(
         firstName: user.name?.split(' ')[0] || 'Collaborateur',
         action,
         count: 1,
-        startDate: typeof startTime === 'string' ? new Date(startTime) : startTime,
+        startDate:
+          typeof startTime === 'string' ? new Date(startTime) : startTime,
         scheduleType: scheduleData?.type || 'WORK',
         timeRange: scheduleData
           ? `${formatTime(scheduleData.startTime)} - ${formatTime(scheduleData.endTime)}`
@@ -325,18 +336,30 @@ export async function createBatchPlanningNotification(
     // Si un seul schedule, déléguer à la version simple
     if (schedules.length === 1) {
       const s = schedules[0]!
-      return createPlanningNotification(s.id, employeeUserId, action, creatorUserId, {
-        startTime: s.startTime,
-        endTime: s.endTime,
-        companyId: s.companyId,
-        type: s.type,
-      })
+      return createPlanningNotification(
+        s.id,
+        employeeUserId,
+        action,
+        creatorUserId,
+        {
+          startTime: s.startTime,
+          endTime: s.endTime,
+          companyId: s.companyId,
+          type: s.type,
+        }
+      )
     }
 
     // Récupérer l'utilisateur avec préférences
     const user = await prisma.user.findUnique({
       where: { id: employeeUserId },
-      select: { id: true, email: true, name: true, companyId: true, preferences: true },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        companyId: true,
+        preferences: true,
+      },
     })
 
     if (!user || !user.companyId) {
@@ -349,7 +372,11 @@ export async function createBatchPlanningNotification(
     const emailEnabled = isEmailNotificationEnabled(userPrefs, category)
 
     if (!inAppEnabled && !emailEnabled) {
-      return { success: true, notification: null, skipped: 'all channels disabled' }
+      return {
+        success: true,
+        notification: null,
+        skipped: 'all channels disabled',
+      }
     }
 
     // Calculer la plage de dates

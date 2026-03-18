@@ -265,7 +265,8 @@ export function RecurrenceConfig({
                 {totalSchedules > 1 ? 'seront créés' : 'sera créé'}
               </p>
               <p className="mt-0.5 text-xs">
-                {selectedDays.length} jour{selectedDays.length > 1 ? 's' : ''} × {weeks} semaine{weeks > 1 ? 's' : ''}
+                {selectedDays.length} jour{selectedDays.length > 1 ? 's' : ''} ×{' '}
+                {weeks} semaine{weeks > 1 ? 's' : ''}
                 {employeeCount > 1 && ` × ${employeeCount} employés`}
               </p>
               {showWarning && (

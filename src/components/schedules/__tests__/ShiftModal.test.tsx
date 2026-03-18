@@ -320,10 +320,9 @@ describe('ShiftModal', () => {
         />
       )
 
-      expect(screen.getByText('Date de début')).toBeInTheDocument()
-      expect(screen.getByText('Date de fin')).toBeInTheDocument()
-      expect(screen.getByText('Heure de début')).toBeInTheDocument()
-      expect(screen.getByText('Heure de fin')).toBeInTheDocument()
+      expect(screen.getByText('Date')).toBeInTheDocument()
+      expect(screen.getByText('Début')).toBeInTheDocument()
+      expect(screen.getByText('Fin')).toBeInTheDocument()
     })
 
     it('pré-remplit les dates en mode édition', () => {
@@ -357,9 +356,7 @@ describe('ShiftModal', () => {
         />
       )
 
-      expect(screen.getByText('Titre (optionnel)')).toBeInTheDocument()
-      expect(screen.getByText('Description (optionnelle)')).toBeInTheDocument()
-      expect(screen.getByText('Lieu (optionnel)')).toBeInTheDocument()
+      expect(screen.getByText('Options avancées')).toBeInTheDocument()
     })
 
     it('pré-remplit les champs optionnels en mode édition', () => {

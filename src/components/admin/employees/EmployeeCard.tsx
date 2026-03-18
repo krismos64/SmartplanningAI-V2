@@ -17,11 +17,9 @@ interface EmployeeCardProps {
   canDelete?: boolean
 }
 
-export function EmployeeCard({
-  employee,
-  onView,
-}: EmployeeCardProps) {
-  const initials = `${employee.firstName?.[0] ?? ''}${employee.lastName?.[0] ?? ''}`.toUpperCase()
+export function EmployeeCard({ employee, onView }: EmployeeCardProps) {
+  const initials =
+    `${employee.firstName?.[0] ?? ''}${employee.lastName?.[0] ?? ''}`.toUpperCase()
 
   return (
     <div

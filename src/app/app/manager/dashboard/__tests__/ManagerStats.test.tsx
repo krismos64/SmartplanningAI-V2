@@ -152,32 +152,6 @@ describe('ManagerStats', () => {
     ).toBeInTheDocument()
   })
 
-  it('gere les heures entieres sans minutes', () => {
-    const statsWholeHours = {
-      ...mockStats,
-      teamHoursWorked: {
-        current: 280,
-        previous: 265,
-        trend: 5.6,
-      },
-    }
-    render(<ManagerStats stats={statsWholeHours} />)
-
-    expect(screen.getByText('280h')).toBeInTheDocument()
-  })
-
-  it('affiche tendance negative', () => {
-    const statsNegativeTrend = {
-      ...mockStats,
-      teamHoursWorked: {
-        current: 250,
-        previous: 280,
-        trend: -10.7,
-      },
-    }
-    render(<ManagerStats stats={statsNegativeTrend} />)
-
-    // Format francais avec virgule decimale
-    expect(screen.getByText(/10,7\s*%/)).toBeInTheDocument()
-  })
+  // Note: les tests "heures équipe" et "tendance" ont été supprimés
+  // car la card Heures équipe a été retirée du dashboard manager
 })

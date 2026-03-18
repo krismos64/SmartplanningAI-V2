@@ -143,9 +143,7 @@ async function getPendingLeaveRequestsCount(teamId: string): Promise<number> {
 /**
  * Récupère les absences du jour (congés approuvés + repos planifiés)
  */
-async function getTodayAbsencesWithDetails(
-  teamId: string
-): Promise<{
+async function getTodayAbsencesWithDetails(teamId: string): Promise<{
   count: number
   details: Array<{ employeeName: string; reason: string }>
 }> {

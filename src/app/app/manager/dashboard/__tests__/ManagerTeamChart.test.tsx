@@ -32,30 +32,10 @@ const mockTeamPerformance = [
 ]
 
 describe('ManagerTeamChart', () => {
-  it('affiche le titre "Performance equipe"', () => {
-    render(<ManagerTeamChart teamPerformance={mockTeamPerformance} />)
-
-    expect(screen.getByText('Performance équipe')).toBeInTheDocument()
-  })
-
-  it('affiche la description', () => {
+  it('affiche le titre "Heures travaillées ce mois"', () => {
     render(<ManagerTeamChart teamPerformance={mockTeamPerformance} />)
 
     expect(screen.getByText('Heures travaillées ce mois')).toBeInTheDocument()
-  })
-
-  it('affiche le total des heures', () => {
-    render(<ManagerTeamChart teamPerformance={mockTeamPerformance} />)
-
-    // 35 + 32 + 28 = 95h
-    expect(screen.getByText('95h')).toBeInTheDocument()
-  })
-
-  it('affiche le pourcentage de completion moyenne', () => {
-    render(<ManagerTeamChart teamPerformance={mockTeamPerformance} />)
-
-    // (95 / 105) * 100 = 90%
-    expect(screen.getByText('90%')).toBeInTheDocument()
   })
 
   it('a le data-testid manager-team-chart', () => {
@@ -70,56 +50,5 @@ describe('ManagerTeamChart', () => {
     expect(screen.getByText("Aucun membre dans l'équipe")).toBeInTheDocument()
   })
 
-  it('applique couleur verte pour completion >= 90%', () => {
-    const highPerformance = [
-      { name: 'Alice D.', hoursWorked: 35, scheduledHours: 35 },
-    ]
-    render(<ManagerTeamChart teamPerformance={highPerformance} />)
-
-    // 100% completion = vert (emerald)
-    const completion = screen.getByText('100%')
-    expect(completion).toHaveClass('text-emerald-600')
-  })
-
-  it('applique couleur ambre pour completion entre 70 et 90%', () => {
-    const mediumPerformance = [
-      { name: 'Alice D.', hoursWorked: 28, scheduledHours: 35 },
-    ]
-    render(<ManagerTeamChart teamPerformance={mediumPerformance} />)
-
-    // 80% completion = ambre
-    const completion = screen.getByText('80%')
-    expect(completion).toHaveClass('text-amber-600')
-  })
-
-  it('applique couleur rouge pour completion < 70%', () => {
-    const lowPerformance = [
-      { name: 'Alice D.', hoursWorked: 20, scheduledHours: 35 },
-    ]
-    render(<ManagerTeamChart teamPerformance={lowPerformance} />)
-
-    // 57% completion = rouge
-    const completion = screen.getByText('57%')
-    expect(completion).toHaveClass('text-red-600')
-  })
-
-  it('gere scheduledHours = 0 sans division par zero', () => {
-    const noScheduled = [
-      { name: 'Alice D.', hoursWorked: 10, scheduledHours: 0 },
-    ]
-    render(<ManagerTeamChart teamPerformance={noScheduled} />)
-
-    // 0% completion (pas de division par zero)
-    expect(screen.getByText('0%')).toBeInTheDocument()
-  })
-
-  it('formate les heures avec minutes', () => {
-    const withMinutes = [
-      { name: 'Alice D.', hoursWorked: 35.5, scheduledHours: 35 },
-    ]
-    render(<ManagerTeamChart teamPerformance={withMinutes} />)
-
-    // 35.5h = 35h30
-    expect(screen.getByText('35h30')).toBeInTheDocument()
-  })
+  // Tests de completion/couleurs supprimés — le header total/completion a été retiré
 })

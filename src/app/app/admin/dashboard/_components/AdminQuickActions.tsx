@@ -80,7 +80,10 @@ export function AdminQuickActions({
 
           {/* Gerer les entreprises */}
           <Button variant="outline" asChild>
-            <Link href="/app/admin/companies" className="flex items-center gap-2">
+            <Link
+              href="/app/admin/companies"
+              className="flex items-center gap-2"
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
@@ -140,7 +143,10 @@ export function AdminQuickActions({
 
           {/* Parametres plateforme */}
           <Button variant="outline" asChild>
-            <Link href="/app/admin/settings" className="flex items-center gap-2">
+            <Link
+              href="/app/admin/settings"
+              className="flex items-center gap-2"
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"

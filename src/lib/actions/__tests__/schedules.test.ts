@@ -25,17 +25,22 @@ vi.mock('@/lib/prisma', () => ({
   prisma: {
     schedule: {
       findMany: vi.fn(),
+      findFirst: vi.fn(),
       findUnique: vi.fn(),
       create: vi.fn(),
       update: vi.fn(),
       delete: vi.fn(),
       deleteMany: vi.fn(),
+      updateMany: vi.fn(),
       count: vi.fn(),
     },
     employee: {
       findFirst: vi.fn(),
       findMany: vi.fn(),
       findUnique: vi.fn(),
+    },
+    leaveRequest: {
+      findFirst: vi.fn(),
     },
     team: {
       findMany: vi.fn(),
@@ -123,6 +128,10 @@ const mockSession = (
 describe('schedules actions', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    // Mock par défaut : pas de conflit congé ni chevauchement
+    vi.mocked(prisma.leaveRequest.findFirst).mockResolvedValue(null)
+    vi.mocked(prisma.schedule.findMany).mockResolvedValue([])
+    vi.mocked(prisma.employee.findUnique).mockResolvedValue(null)
   })
 
   // ==========================================================================

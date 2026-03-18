@@ -351,7 +351,8 @@ async function validateNoConflicts(
   for (const existing of sameDaySchedules) {
     // Pas de chevauchement si le nouveau finit avant/au début de l'ancien
     // OU le nouveau commence après/à la fin de l'ancien
-    const noOverlap = endTime <= existing.startTime || startTime >= existing.endTime
+    const noOverlap =
+      endTime <= existing.startTime || startTime >= existing.endTime
     if (!noOverlap) {
       const date = existing.startDate.toLocaleDateString('fr-FR')
       return `Impossible : ${name} a déjà un planning le ${date} de ${existing.startTime} à ${existing.endTime}. Les horaires se chevauchent avec le créneau ${startTime}–${endTime}.`
@@ -779,9 +780,7 @@ export async function checkScheduleConflicts(
         )
       }
       if (scheduleConflicts.length > 0) {
-        const names = [
-          ...new Set(scheduleConflicts.map((c) => c.employeeName)),
-        ]
+        const names = [...new Set(scheduleConflicts.map((c) => c.employeeName))]
         parts.push(
           `${names.join(', ')} ${names.length > 1 ? 'ont' : 'a'} déjà un planning sur ce créneau`
         )
@@ -799,7 +798,10 @@ export async function checkScheduleConflicts(
     }
   } catch (error) {
     console.error('[checkScheduleConflicts] Error:', error)
-    return { success: false, error: 'Erreur lors de la vérification des conflits' }
+    return {
+      success: false,
+      error: 'Erreur lors de la vérification des conflits',
+    }
   }
 }
 
@@ -1392,7 +1394,10 @@ export async function deleteRecurrenceGroup(
     })
 
     if (schedules.length === 0) {
-      return { success: false, error: 'Aucun planning trouvé dans cette récurrence' }
+      return {
+        success: false,
+        error: 'Aucun planning trouvé dans cette récurrence',
+      }
     }
 
     for (const schedule of schedules) {
@@ -1471,7 +1476,10 @@ export async function updateRecurrenceGroup(
     })
 
     if (schedules.length === 0) {
-      return { success: false, error: 'Aucun planning trouvé dans cette récurrence' }
+      return {
+        success: false,
+        error: 'Aucun planning trouvé dans cette récurrence',
+      }
     }
 
     for (const schedule of schedules) {
@@ -1501,7 +1509,11 @@ export async function updateRecurrenceGroup(
       entityType: 'SCHEDULE',
       userId: user.id,
       companyId: schedules[0]?.companyId ?? undefined,
-      details: { recurrenceGroupId, updatedCount: result.count, changes: input },
+      details: {
+        recurrenceGroupId,
+        updatedCount: result.count,
+        changes: input,
+      },
     }).catch(console.error)
 
     // Notifications (fire-and-forget)

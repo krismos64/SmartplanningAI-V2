@@ -220,7 +220,7 @@ describe('exportSchedulesCsv', () => {
     it('traduit les statuts', async () => {
       const result = await exportSchedulesCsv()
 
-      expect(result.data?.data).toContain('Confirme')
+      expect(result.data?.data).toContain('Confirmé')
     })
 
     it('calcule la durée correctement', async () => {

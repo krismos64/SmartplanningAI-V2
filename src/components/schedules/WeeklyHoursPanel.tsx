@@ -75,7 +75,7 @@ function getContractHours(weeklyHours: number, viewMode: ViewMode): number {
     case 'week':
       return weeklyHours
     case 'month':
-      return Math.round((weeklyHours * 52) / 12 * 10) / 10
+      return Math.round(((weeklyHours * 52) / 12) * 10) / 10
   }
 }
 
@@ -200,7 +200,9 @@ export function WeeklyHoursPanel({
                         )}
                       </span>
                       {viewMode === 'week' && (
-                        <span className={cn('text-xs font-semibold', diffColor)}>
+                        <span
+                          className={cn('text-xs font-semibold', diffColor)}
+                        >
                           {diffText}
                         </span>
                       )}
