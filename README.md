@@ -1,7 +1,7 @@
 # SmartPlanning
 
-[![CI - Lint, Test & Build](https://github.com/krismos64/SmartplanningAI-V2/actions/workflows/ci.yml/badge.svg)](https://github.com/krismos64/SmartplanningAI-V2/actions/workflows/ci.yml)
-[![CD - Build & Deploy](https://github.com/krismos64/SmartplanningAI-V2/actions/workflows/cd.yml/badge.svg)](https://github.com/krismos64/SmartplanningAI-V2/actions/workflows/cd.yml)
+[![CI - Lint, Test & Build](https://github.com/krismos64/SmartplanningAI/actions/workflows/ci.yml/badge.svg)](https://github.com/krismos64/SmartplanningAI/actions/workflows/ci.yml)
+[![CD - Build & Deploy](https://github.com/krismos64/SmartplanningAI/actions/workflows/cd.yml/badge.svg)](https://github.com/krismos64/SmartplanningAI/actions/workflows/cd.yml)
 
 Plateforme SaaS multi-tenant de gestion intelligente des plannings et des ressources humaines.
 
@@ -81,16 +81,16 @@ npm run test:a11y        # Tests accessibilité axe-core
 
 ```
 src/
-├── app/              # Next.js 15 App Router (63 pages, 5 layouts)
+├── app/              # Next.js 15 App Router (62 pages, 5 layouts)
 │   ├── (auth)/       # Login, register, activate-account
 │   ├── (about)/      # À propos, tarifs
 │   ├── (landing)/    # Landing page
 │   ├── (legal)/      # Pages légales RGPD
 │   ├── app/          # Routes protégées par rôle
 │   └── api/          # API Routes (avatar, webhooks, health, SSE...)
-├── components/       # 197 composants React
-├── lib/              # Actions (26), services (18), validations Zod (27), animations, email
-├── hooks/            # 20 hooks custom
+├── components/       # 199 composants React
+├── lib/              # Actions (38), services (18), validations Zod (23), animations, email
+├── hooks/            # 22 hooks custom
 ├── types/            # Types TypeScript globaux
 └── styles/           # Design tokens centralisés
 ```
