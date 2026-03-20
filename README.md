@@ -40,6 +40,15 @@ Plateforme SaaS multi-tenant de gestion intelligente des plannings et des ressou
 
 > Historique détaillé du développement : [`docs/development-log.md`](docs/development-log.md)
 
+## Prérequis
+
+| Outil      | Version minimale | Vérification          |
+| ---------- | ---------------- | --------------------- |
+| Node.js    | >= 20.0.0        | `node -v`             |
+| npm        | >= 10.0.0        | `npm -v`              |
+| Docker     | >= 24.0          | `docker --version`    |
+| Docker Compose | >= 2.0       | `docker compose version` |
+
 ## Installation
 
 ```bash
@@ -50,17 +59,40 @@ cp .env.example .env.local    # Configurer les variables
 docker-compose up -d           # PostgreSQL + Redis + Adminer
 npx prisma migrate dev
 npx prisma generate
+npm run db:seed                # Données de démonstration
 npm run dev
 ```
+
+### Variables d'environnement
+
+Copier `.env.example` vers `.env.local` et renseigner au minimum :
+
+| Variable | Description | Obligatoire |
+| -------- | ----------- | :---------: |
+| `DATABASE_URL` | URL PostgreSQL (pré-rempli pour Docker local) | Oui |
+| `AUTH_SECRET` | Clé JWT — `openssl rand -base64 32` | Oui |
+| `AUTH_URL` | URL de l'app (`http://localhost:3000`) | Oui |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD` | Config SMTP pour emails transactionnels | Oui |
+| `STRIPE_SECRET_KEY`, `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Clés API Stripe (mode test en dev) | Oui |
+| `STRIPE_WEBHOOK_SECRET` | Webhook Stripe — `stripe listen --forward-to localhost:3000/api/webhooks/stripe` | Oui |
+| `STRIPE_PRICE_ID` | Price ID du tarif per-seat | Oui |
+| `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` | Upload avatars | Oui |
+| `REDIS_URL` | URL Redis (pré-rempli pour Docker local) | Oui |
+| `CRON_SECRET` | Secret routes cron — `openssl rand -base64 32` | Oui |
+| `HEALTH_API_KEY` | Secret endpoint `/api/health` | Oui |
+
+Voir `.env.example` pour la liste complète et les variables optionnelles (Umami, Sentry, OpenAI).
 
 ### Accès locaux
 
 | Service     | URL                   | Identifiants                                              |
 | ----------- | --------------------- | --------------------------------------------------------- |
-| Application | http://localhost:3000 | —                                                         |
+| Application | http://localhost:3000 | `contact@smartplanning.fr` / `Password123!` (admin)       |
 | Adminer     | http://localhost:8081 | smartplanning / smartplanning_password / smartplanning_db |
 | PostgreSQL  | localhost:5433        | —                                                         |
 | Redis       | localhost:6380        | —                                                         |
+
+> Tous les comptes du seed partagent le mot de passe `Password123!`. Voir `prisma/seed.ts` pour la liste complète.
 
 ## Scripts
 
@@ -158,3 +190,13 @@ Rationalisation mars 2026 : focus sur la logique métier critique (RBAC, Zod, Se
 - [`docs/development-log.md`](docs/development-log.md) — Journal de développement détaillé
 - [`docs/analytics.md`](docs/analytics.md) — Configuration Umami
 - [`docs/security/`](docs/security/) — Plan de sécurisation, incidents, hardening
+
+## Auteur
+
+**Christophe Mostefaoui** — Développeur full-stack freelance
+
+Projet réalisé dans le cadre du titre professionnel **Concepteur Développeur d'Applications** (CDA).
+
+## Licence
+
+Ce projet est propriétaire. Tous droits réservés.

@@ -3,7 +3,7 @@
  *
  * ✅ Source : Documentation officielle Prisma (Context7) - SP-105
  *
- * PROBLÉMATIQUE (CDA) :
+ * PROBLÉMATIQUE :
  * Next.js 15 avec hot-reload crée de multiples instances de PrismaClient
  * en développement, causant des fuites de connexions à PostgreSQL.
  *
@@ -23,14 +23,14 @@
  * - Gestion des événements Prisma pour monitoring
  * - Support métriques connection pool
  *
- * RÉFÉRENCE CDA :
+ * RÉFÉRENCE  :
  * - Best practice officielle Prisma pour Next.js
  * - Évite "too many connections" en dev
  * - Pattern recommandé dans la doc Prisma + Vercel
  * - Optimisé pour production et monitoring
  */
 
-import { PrismaClient, Prisma } from '@prisma/client'
+import { Prisma, PrismaClient } from '@prisma/client'
 
 /**
  * Type pour le stockage global de l'instance Prisma
