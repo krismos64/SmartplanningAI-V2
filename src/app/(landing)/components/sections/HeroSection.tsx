@@ -8,7 +8,7 @@
 import { useRef } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { ArrowRight, PlayCircle } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   motion,
@@ -137,18 +137,10 @@ export function HeroSection() {
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
               </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                className="h-14 border-2 px-8 text-base font-semibold"
-              >
-                <PlayCircle className="mr-2 h-5 w-5" />
-                Voir la démo
-              </Button>
             </motion.div>
           </motion.div>
 
-          {/* CTA Buttons - Mobile only (after text) */}
+          {/* CTA Button - Mobile only (after text) */}
           <motion.div
             variants={fadeInUp}
             initial={false}
@@ -164,14 +156,6 @@ export function HeroSection() {
                 Démarrer gratuitement
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="h-14 w-full border-2 px-8 text-base font-semibold"
-            >
-              <PlayCircle className="mr-2 h-5 w-5" />
-              Voir la démo
             </Button>
           </motion.div>
         </div>

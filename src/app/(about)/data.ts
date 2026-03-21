@@ -4,14 +4,14 @@
  */
 
 import {
-  Sparkles,
+  Building2,
+  Factory,
   Heart,
   Shield,
-  Building2,
-  Users,
-  Factory,
-  Stethoscope,
   ShoppingBag,
+  Sparkles,
+  Stethoscope,
+  Users,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -123,5 +123,5 @@ export const mission = {
     Trop d'entreprises perdent un temps précieux avec des outils inadaptés, des fichiers Excel complexes
     ou des tableaux blancs difficiles à maintenir.`,
   solution: `SmartPlanning est né de cette conviction : offrir une solution moderne, intuitive et accessible
-    qui permet aux managers de se concentrer sur l'essentiel — leurs équipes et leur métier.`,
+    qui permet aux managers de se concentrer sur l'essentiel, leurs équipes et leur métier.`,
 }
