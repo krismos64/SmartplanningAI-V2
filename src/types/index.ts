@@ -30,30 +30,6 @@ export type {
 } from './auth'
 
 // ============================================================================
-// TYPES PRISMA PERSONNALISÉS
-// ============================================================================
-export type {
-  UserWithRelations,
-  SafeUser,
-  CompanyWithEmployees,
-  EmployeeWithRelations,
-  ScheduleWithRelations,
-  LeaveRequestWithRelations,
-  TeamWithMembers,
-  // NotificationWithUser exporté depuis './notification' (SP-321)
-  SubscriptionWithCompany,
-  CreateUserInput,
-  UpdateUserInput,
-  CreateEmployeeInput,
-  CreateScheduleInput,
-  CreateLeaveRequestInput,
-  ScheduleFilters,
-  LeaveRequestFilters,
-  CompanyStats,
-  EmployeeStats,
-} from './prisma'
-
-// ============================================================================
 // TYPES CRUD GENERIQUES
 // ============================================================================
 export type {

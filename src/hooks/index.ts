@@ -1,8 +1,8 @@
 /**
  * Barrel export pour tous les hooks personnalisés
- * Import unique : import { useCrudMutation, useMediaQuery, useLoading } from '@/hooks'
+ * Import unique : import { useCrudMutation, useMediaQuery } from '@/hooks'
  *
- * @ticket SP-150, SP-266, SP-264
+ * @ticket SP-150, SP-264
  */
 
 // Media query hook
@@ -18,19 +18,6 @@ export {
   useRefreshList,
 } from './use-crud-mutation'
 
-// Loading hooks (SP-266)
-export {
-  useLoading,
-  type UseLoadingOptions,
-  type UseLoadingResult,
-} from './use-loading'
-
-export {
-  useProgressLoading,
-  type UseProgressLoadingOptions,
-  type UseProgressLoadingResult,
-} from './use-progress-loading'
-
 // Keyboard shortcuts hooks (SP-264)
 export {
   useKeyboardShortcuts,
@@ -43,14 +30,3 @@ export {
 
 // Impersonation hook (SP-454)
 export { useIsImpersonating } from './use-is-impersonating'
-
-// Breadcrumb resolver hooks (SP-264)
-export {
-  useBreadcrumbResolver,
-  useBreadcrumbsFromPathname,
-  isIdSegment,
-  getEntityTypeFromPreviousSegment,
-  type UseBreadcrumbResolverOptions,
-  type UseBreadcrumbResolverResult,
-  type ResolvedBreadcrumbSegment,
-} from './use-breadcrumb-resolver'

@@ -233,9 +233,9 @@ export const faqs: FAQ[] = [
       "Oui ! SmartPlanning supporte l'import Excel, CSV et propose des intégrations avec les principaux outils RH du marché.",
   },
   {
-    question: 'Combien d\'utilisateurs puis-je ajouter ?',
+    question: "Combien d'utilisateurs puis-je ajouter ?",
     answer:
-      'Il n\'y a aucune limite ! Ajoutez autant d\'employés que nécessaire. La facturation s\'ajuste automatiquement à 2,90 € par employé et par mois.',
+      "Il n'y a aucune limite ! Ajoutez autant d'employés que nécessaire. La facturation s'ajuste automatiquement à 2,90 € par employé et par mois.",
   },
   {
     question: 'Mes données sont-elles sécurisées ?',

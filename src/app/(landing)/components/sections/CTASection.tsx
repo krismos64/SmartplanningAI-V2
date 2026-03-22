@@ -58,9 +58,7 @@ export function CTASection() {
                 className="h-14 border-2 border-white bg-transparent px-8 text-base font-semibold text-white hover:bg-white hover:text-blue-600"
                 asChild
               >
-                <Link href="#contact">
-                  Besoin de renseignements
-                </Link>
+                <Link href="#contact">Besoin de renseignements</Link>
               </Button>
             </div>
           </div>

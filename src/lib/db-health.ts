@@ -29,8 +29,33 @@
  * - Scripts cron : vérification périodique
  */
 
-import { checkConnection, getDatabaseStats } from './prisma-utils'
 import { prisma } from './prisma'
+
+type DatabaseStats = {
+  timestamp: Date
+  isConnected: boolean
+  poolSize?: number
+  activeConnections?: number
+  idleConnections?: number
+  waitingRequests?: number
+}
+
+async function checkConnection(): Promise<boolean> {
+  try {
+    await prisma.$queryRaw`SELECT 1`
+    return true
+  } catch (error) {
+    console.error('❌ Erreur de connexion DB:', error)
+    return false
+  }
+}
+
+async function getDatabaseStats(): Promise<DatabaseStats> {
+  return {
+    timestamp: new Date(),
+    isConnected: await checkConnection(),
+  }
+}
 
 /**
  * Statut global du health check
