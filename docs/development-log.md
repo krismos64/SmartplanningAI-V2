@@ -26,10 +26,10 @@ Historique détaillé du développement de SmartPlanning V2, organisé par phase
 
 - **Auth System** (SP-109) : LoginForm, RegisterForm avec React Hook Form + Zod, Server Actions, auto-login, création automatique Employee + LeaveBalance à l'inscription, champ téléphone optionnel + **Système d'invitation** : lors de la création d'un employé avec email, création automatique d'un compte User avec rôle choisi (EMPLOYEE/MANAGER/DIRECTOR), envoi d'email d'invitation avec token 48h, page `/activate-account` pour choix du mot de passe, notification SSE temps réel aux directeurs à l'activation, renvoi d'invitation si lien expiré, RBAC (MANAGER ne peut inviter que des EMPLOYEE)
 - **DataTable avancée** (SP-120) : Composant de tableau avec tri multi-colonnes, pagination, recherche fuzzy, sélection multi-rows, actions par ligne, responsive (table desktop / cards mobile)
-- **Form System** (SP-119) : 7 composants formulaire avec React Hook Form + Zod, 23 schémas de validation
+- **Form System** (SP-119) : 5 composants formulaire (FormField, FormInput, FormTextarea, FormSelect, FormDatePicker) avec React Hook Form + Zod, 23 schémas de validation — _FormCheckbox et FormRadioGroup supprimés le 22/03/2026 (jamais utilisés en production)_
 - **Toast System** (SP-122) : Notifications avec Sonner, hook useToast()
 - **Modal System** (SP-121) : Modals et loading states
-- **Composants métier** (SP-123) : UserCard, TeamCard, AvatarStack
+- **Composants métier** (SP-123) : UserCard, TeamCard — _Note : les composants génériques `cards/` (UserCard, TeamCard, AvatarStack) ont été supprimés le 22 mars 2026 (code mort, jamais utilisés en production). Les composants actifs sont dans `components/teams/` et `components/employees/`._
 - **Dashboard Components** (SP-142) : StatCard, TrendIndicator, StatsGrid avec types par rôle
 - **Charts Recharts** (SP-143) : AreaChartWidget, BarChartWidget, PieChartWidget avec tooltips Shadcn et dark mode
 - **Dashboard Services Prisma** (SP-144) : Services data layer par rôle (Employee, Manager, Director, Admin) avec architecture multi-tenant
@@ -184,13 +184,13 @@ Bannières progressives avec calcul urgence et CTA contextuels
 - SP-119 : Form System (7 composants + 23 schémas Zod)
 - SP-121 : Modals et Loading States
 - SP-122 : Toast System (Sonner)
-- SP-123 : Composants métier (UserCard, TeamCard, AvatarStack)
+- SP-123 : Composants métier (supprimés le 22/03/2026 — code mort, jamais intégrés en production)
 
 ### Phase 3.5 : Qualité & Déploiement (3 décembre 2025)
 
 - SP-127 : Configuration VPS OVH
 - SP-128 : Pipeline CI/CD GitHub Actions
-- SP-129 : Page Coming Soon + Premier déploiement
+- SP-129 : Premier déploiement _(composant ComingSoonPage supprimé le 22/03/2026 — code mort)_
 
 ### Phase 3.6 : Tests (5 décembre 2025)
 
@@ -249,6 +249,18 @@ Bannières progressives avec calcul urgence et CTA contextuels
 - SP-414 : Pages Détail et Balances (48 tests)
 - SP-416 : Tests E2E Leaves (21 tests)
 
+### Nettoyage code mort (22 mars 2026)
+
+Audit approfondi et suppression de ~8 100 lignes de code mort :
+- **Pages dev/test** : 9 fichiers supprimés (`/app/app/dev/*`, `/app/(test)/*`) — pages de sandbox jamais protégées en production
+- **Composants morts** : `cards/` (7 fichiers), `hoc/with-loading` (3 fichiers), `FormCheckbox`, `FormRadioGroup`, `ThemeDropdown`, `ComingSoonPage`
+- **Hooks morts** : `useLoading`, `useProgressLoading`, `useBreadcrumbResolver`
+- **Utilitaires morts** : `prisma-utils.ts`, `error-logger.ts`, `types/prisma.ts`, `navigation/index.ts`
+- **Dépendances npm** : suppression `match-sorter`, `@types/match-sorter`, `@axe-core/playwright`, `@testing-library/dom`, `@react-email/preview-server` ; `react-email` déplacé en devDependencies
+- **Script mort** : `test:a11y` (dossier cible inexistant)
+- **Tests supprimés** : `error-logger.test.ts`, `with-loading.test.tsx` (fichiers sources supprimés)
+- Résultat : 154 fichiers tests / 2 746 tests Vitest, 0 erreur TypeScript, 0 warning lint
+
 ### Phase 8+ : Fonctionnalités avancées (à venir)
 
 - Notifications push et email
@@ -303,9 +315,9 @@ Bannières progressives avec calcul urgence et CTA contextuels
 
 ## Tests détaillés
 
-### Couverture Vitest (156 fichiers — 2 814 tests)
+### Couverture Vitest (154 fichiers — 2 746 tests)
 
-> Rationalisation mars 2026 : suppression de tous les tests cosmétiques (rendu pur, attributs SVG, props passthrough). Chaque test restant est justifiable en soutenance CDA.
+> Rationalisation mars 2026 : suppression de tous les tests cosmétiques (rendu pur, attributs SVG, props passthrough). Nettoyage code mort 22/03/2026 : suppression tests `error-logger` et `with-loading` (fichiers sources supprimés). Chaque test restant est justifiable en soutenance CDA.
 
 | Catégorie | Tests |
 |-----------|-------|
@@ -327,8 +339,8 @@ Bannières progressives avec calcul urgence et CTA contextuels
 
 | Priorité | Fichiers | Tests | Description |
 |----------|----------|-------|-------------|
-| **A — CRITIQUE** | ~96 | ~1 822 | Logique métier, sécurité, RBAC, Zod, accès données, API |
-| **B — UTILE** | ~60 | ~992 | Composants UI complexes, hooks, interactions |
+| **A — CRITIQUE** | ~95 | ~1 790 | Logique métier, sécurité, RBAC, Zod, accès données, API |
+| **B — UTILE** | ~59 | ~956 | Composants UI complexes, hooks, interactions |
 | **C — COSMÉTIQUE** | 0 | 0 | Tous supprimés |
 
 ### Tests E2E Playwright (13 fichiers — 189 tests)
@@ -395,7 +407,7 @@ Tests desktop sur Chromium. Tous les tests E2E couvrent des workflows critiques.
 - Self-hosted sur VPS OVH (Docker + PostgreSQL dédié)
 - Dashboard : `https://analytics.smartplanning.fr`
 - Tracking conditionnel (consentement analytics RGPD)
-- Hook `useUmamiTrack()` pour events custom
+- Hook `useUmamiTrack()` pour events custom _(hook défini mais non invoqué en production — prévu pour tracking avancé)_
 - `UmamiAnalyticsWrapper` (Server Component) + `UmamiAnalytics` (Client Component)
 
 ---
@@ -428,14 +440,14 @@ Tests desktop sur Chromium. Tous les tests E2E couvrent des workflows critiques.
 ### Conformité AA (SP-269 — 25 janvier 2026)
 
 - **Skip to Main Content** (WCAG 2.4.1) : Composant `SkipLink`, pattern sr-only + focus visible
-- **Tests E2E axe-core** : 14 tests (pages publiques, skip link, keyboard, contrast, forms, ARIA)
 - **Lighthouse Audit Script** : Seuil 90%, rapport Markdown
 - **Score moyen** : 100%
 
 ```bash
-npm run test:a11y     # Tests E2E accessibilité
 npm run a11y:audit    # Audit Lighthouse
 ```
+
+> _Note : les tests E2E axe-core (`test:a11y`, `@axe-core/playwright`) ont été supprimés le 22/03/2026 — le dossier `e2e/specs/a11y/` n'existait plus, le script et la dépendance étaient morts._
 
 ---
 
@@ -447,4 +459,4 @@ npm run a11y:audit    # Audit Lighthouse
 
 ---
 
-*Dernière mise à jour : 14 mars 2026*
+*Dernière mise à jour : 22 mars 2026*
