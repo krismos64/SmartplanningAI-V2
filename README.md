@@ -1,7 +1,7 @@
 # SmartPlanning
 
-[![CI - Lint, Test & Build](https://github.com/krismos64/SmartplanningAI/actions/workflows/ci.yml/badge.svg)](https://github.com/krismos64/SmartplanningAI/actions/workflows/ci.yml)
-[![CD - Build & Deploy](https://github.com/krismos64/SmartplanningAI/actions/workflows/cd.yml/badge.svg)](https://github.com/krismos64/SmartplanningAI/actions/workflows/cd.yml)
+[![CI - Lint, Test & Build](https://github.com/krismos64/SmartplanningAI-V2/actions/workflows/ci.yml/badge.svg)](https://github.com/krismos64/SmartplanningAI-V2/actions/workflows/ci.yml)
+[![CD - Build & Deploy](https://github.com/krismos64/SmartplanningAI-V2/actions/workflows/cd.yml/badge.svg)](https://github.com/krismos64/SmartplanningAI-V2/actions/workflows/cd.yml)
 
 Plateforme SaaS multi-tenant de gestion intelligente des plannings et des ressources humaines.
 
@@ -52,8 +52,8 @@ Plateforme SaaS multi-tenant de gestion intelligente des plannings et des ressou
 ## Installation
 
 ```bash
-git clone https://github.com/krismos64/SmartplanningAI.git
-cd SmartplanningAI
+git clone https://github.com/krismos64/SmartplanningAI-V2.git
+cd SmartplanningAI-V2
 npm install
 cp .env.example .env.local    # Configurer les variables
 docker-compose up -d           # PostgreSQL + Redis + Adminer
@@ -106,23 +106,22 @@ npm run db:seed          # Seed base de données
 npm run test             # Tests unitaires (watch)
 npm run test -- --run    # Tests unitaires (single run)
 npm run test:e2e         # Tests E2E Playwright
-npm run test:a11y        # Tests accessibilité axe-core
 ```
 
 ## Architecture
 
 ```
 src/
-├── app/              # Next.js 15 App Router (62 pages, 5 layouts)
+├── app/              # Next.js 15 App Router (53 pages, 5 layouts)
 │   ├── (auth)/       # Login, register, activate-account
 │   ├── (about)/      # À propos, tarifs
 │   ├── (landing)/    # Landing page
 │   ├── (legal)/      # Pages légales RGPD
 │   ├── app/          # Routes protégées par rôle
 │   └── api/          # API Routes (avatar, webhooks, health, SSE...)
-├── components/       # 199 composants React
+├── components/       # 172 composants React
 ├── lib/              # Actions (38), services (18), validations Zod (23), animations, email
-├── hooks/            # 22 hooks custom
+├── hooks/            # 17 hooks custom
 ├── types/            # Types TypeScript globaux
 └── styles/           # Design tokens centralisés
 ```
@@ -137,9 +136,9 @@ Voir [`docs/database-architecture.md`](docs/database-architecture.md) pour le d�
 
 | Type      | Framework  | Fichiers | Tests     |
 | --------- | ---------- | -------- | --------- |
-| Unitaires | Vitest     | 156      | 2 814     |
+| Unitaires | Vitest     | 154      | 2 746     |
 | E2E       | Playwright | 13       | 189       |
-| **Total** |            | **169**  | **3 003** |
+| **Total** |            | **167**  | **2 935** |
 
 Rationalisation mars 2026 : focus sur la logique métier critique (RBAC, Zod, Server Actions, Stripe, workflows E2E). Zéro test cosmétique.
 
