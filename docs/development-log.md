@@ -59,6 +59,18 @@ Historique détaillé du développement de SmartPlanning V2, organisé par phase
   - **Tri serveur colonnes** : `SortableHeader` avec icônes ArrowUp/Down/UpDown, `manualSorting` TanStack Table, Prisma nested `orderBy` pour email (`user.email`) et équipe (`team.name`), 4 colonnes triables (Employé, Email, Heures/sem, Embauché)
   - **Export CSV amélioré** : Alignement avec filtres/tri actifs du tableau, réduction de 12 à 9 colonnes pour format A4, suppression colonnes Poste/Contrat/Ancienneté
   - **Export PDF employés** : `EmployeesPdfDocument` (React-PDF, A4 paysage, 8 colonnes, alternance couleurs lignes), API route `/api/employees/export/pdf` avec RBAC + filtres/tri, `ExportPdfButton` réutilisable, `fixed` header/footer multi-pages, `wrap={false}` anti-coupure de lignes
+- **Améliorations Planning** (mars 2026) :
+  - `WeeklyGridView` : Vue grille hebdomadaire avec affichage par employé et par jour
+  - Formulaire planning pré-rempli avec horaires entreprise (fallback 09:00-17:00)
+  - UX mobile entièrement repensée avec filtres repliables `<details>`
+- **Améliorations Congés** (mars 2026) :
+  - Export PDF congés avec filtres actifs du tableau (A4 paysage)
+  - `LeavesListMobile` : liste mobile enrichie avec badges, actions swipe
+  - Filtres repliables sur mobile
+- **Améliorations UX mobile globales** (mars 2026) :
+  - Employees : `EmployeeCard` simplifié, `EmployeesDataTable` responsive
+  - Incidents : `IncidentNotesPageContent` adapté mobile
+  - Navigation : sidebar état actif corrigé, liens réparés
 
 ---
 
@@ -248,6 +260,21 @@ Bannières progressives avec calcul urgence et CTA contextuels
 - SP-413 : Page Congés + Orchestrateur (18 tests)
 - SP-414 : Pages Détail et Balances (48 tests)
 - SP-416 : Tests E2E Leaves (21 tests)
+
+### Améliorations UX & Correctifs (14–21 mars 2026)
+
+- **Export PDF congés filtré** : Export PDF avec filtres du tableau (A4 paysage, colonnes alignées avec l'affichage)
+- **Plannings pré-remplis** : Le formulaire de création utilise les horaires d'ouverture configurés en paramètres entreprise (`workingHoursStart`/`workingHoursEnd`) au lieu de 09:00-17:00 codé en dur
+- **Francisation URLs** : Tentative de francisation complète des routes (`/connexion`, `/tableau-de-bord`, etc.) puis revert — les URLs anglaises restent la pratique standard
+- **Notifications director** : Ajout notifications planning pour les directeurs, correction liens cassés
+- **Refonte page planning** : Nouvelle `WeeklyGridView` avec vue grille hebdomadaire, UX mobile améliorée, actions serveur enrichies (~2 150 lignes ajoutées)
+- **UX mobile congés** : `LeavesPageContent` et `LeavesListMobile` réécrits pour mobile, filtres repliables, layout responsive
+- **UX mobile employés** : `EmployeesDataTable` et `EmployeeCard` refactorisés pour mobile
+- **UX mobile incidents** : `IncidentNotesPageContent` amélioré pour mobile, layout repensé
+- **Dashboard manager** : `ManagerStats` et `ManagerTeamChart` simplifiés (suppression code redondant)
+- **Navigation** : Correction liens cassés sidebar, état actif sidebar, `PageTracker` mis à jour
+- **Landing page** : Mise à jour CTA et Hero section
+- **Lint & tests** : Résolution de tous les warnings lint, correction des tests E2E (employees, leaves, incidents, schedules)
 
 ### Nettoyage code mort (22 mars 2026)
 
