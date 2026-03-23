@@ -42,7 +42,7 @@ export interface SessionMetadata {
   email: string
   role: string
   companyId: string | null
-  loginAt: string    // ISO 8601
+  loginAt: string // ISO 8601
   lastSeenAt: string // ISO 8601, mis à jour à chaque rafraîchissement JWT
   ip: string
   userAgent: string
@@ -135,7 +135,8 @@ export async function getActiveSessions(): Promise<SessionMetadata[]> {
       count: 100,
     })
 
-    for await (const keys of stream) {
+    for await (const rawKeys of stream) {
+      const keys = rawKeys as string[]
       if (keys.length === 0) continue
 
       // Pipeline : récupère toutes les valeurs en un seul aller-retour réseau

@@ -105,7 +105,8 @@ export async function invalidateCache(pattern: string): Promise<number> {
       count: 100,
     })
 
-    for await (const keys of stream) {
+    for await (const rawKeys of stream) {
+      const keys = rawKeys as string[]
       if (keys.length === 0) continue
 
       const pipeline = redis.pipeline()
@@ -202,8 +203,6 @@ export async function invalidateEmployeesCache(
  * Invalide le cache des listes de congés pour une entreprise.
  * À appeler après création/validation/refus/annulation d'un congé.
  */
-export async function invalidateLeavesCache(
-  companyId: string
-): Promise<void> {
+export async function invalidateLeavesCache(companyId: string): Promise<void> {
   await invalidateCache(`leaves:*${companyId}*`)
 }

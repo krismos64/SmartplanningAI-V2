@@ -52,12 +52,33 @@ export async function getDirectorStats(
     }
 
     // Cache Redis : les stats directeur sont cachées 5 minutes (SP-480)
-    return await withCache(
-      `dashboard:director:${companyId}`,
-      300,
-      async () => {
-        // Recuperation des donnees en parallele
-        const [
+    return await withCache(`dashboard:director:${companyId}`, 300, async () => {
+      // Recuperation des donnees en parallele
+      const [
+        totalEmployees,
+        totalTeams,
+        pendingLeaveRequests,
+        averageAttendanceRate,
+        plannedHoursThisMonth,
+        absencesLast7Days,
+        teamStats,
+        leaveTypeDistribution,
+        employeeGrowth,
+      ] = await Promise.all([
+        getTotalEmployees(companyId),
+        getTotalTeams(companyId),
+        getPendingLeaveRequestsCount(companyId),
+        getAverageAttendanceRate(companyId, dateRange),
+        getPlannedHoursThisMonth(companyId),
+        getAbsencesLast7Days(companyId),
+        getTeamStats(companyId, dateRange),
+        getLeaveTypeDistribution(companyId),
+        getEmployeeGrowth(companyId),
+      ])
+
+      return {
+        success: true as const,
+        data: {
           totalEmployees,
           totalTeams,
           pendingLeaveRequests,
@@ -67,34 +88,9 @@ export async function getDirectorStats(
           teamStats,
           leaveTypeDistribution,
           employeeGrowth,
-        ] = await Promise.all([
-          getTotalEmployees(companyId),
-          getTotalTeams(companyId),
-          getPendingLeaveRequestsCount(companyId),
-          getAverageAttendanceRate(companyId, dateRange),
-          getPlannedHoursThisMonth(companyId),
-          getAbsencesLast7Days(companyId),
-          getTeamStats(companyId, dateRange),
-          getLeaveTypeDistribution(companyId),
-          getEmployeeGrowth(companyId),
-        ])
-
-        return {
-          success: true as const,
-          data: {
-            totalEmployees,
-            totalTeams,
-            pendingLeaveRequests,
-            averageAttendanceRate,
-            plannedHoursThisMonth,
-            absencesLast7Days,
-            teamStats,
-            leaveTypeDistribution,
-            employeeGrowth,
-          },
-        }
+        },
       }
-    )
+    })
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Erreur inconnue'
     return {
