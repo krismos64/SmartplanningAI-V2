@@ -15,7 +15,8 @@ Plateforme SaaS multi-tenant de gestion intelligente des plannings et des ressou
 | --------------- | ----------------------------------------------------------------------------- |
 | Frontend        | Next.js 15.5.9 (App Router), React 19, TypeScript 5.7.2, Tailwind + Shadcn/ui |
 | Backend         | NextAuth v5 (Auth.js), Prisma 6.18.0, Zod, Stripe v20.3.1                     |
-| Base de données | PostgreSQL 16, Redis 7                                                        |
+| Base de données | PostgreSQL 16, Redis 7 (ioredis 5.10)                                         |
+| Emails          | React Email (28 templates), Nodemailer SMTP                                    |
 | DevOps          | Docker, GitHub Actions (CI/CD), VPS OVH (Ubuntu 24.04), Nginx, Let's Encrypt  |
 
 ## Fonctionnalités
@@ -25,11 +26,12 @@ Plateforme SaaS multi-tenant de gestion intelligente des plannings et des ressou
 - **Planning** : Calendrier Schedule-X (drag & drop, récurrence, conflits, exports PDF/Excel/CSV), vues jour/semaine/mois
 - **Congés** : Workflow validation (PENDING → APPROVED/REJECTED), soldes CP/RTT, overlay calendrier, demi-journées
 - **Billing** : Abonnement per-seat Stripe (2,90€/employé/mois), portail client, webhooks, sync employés auto
-- **Notifications** : Temps réel SSE, préférences par catégorie/canal, toast sonner
+- **Notifications** : Temps réel SSE, 29 emails transactionnels (React Email), préférences par catégorie/canal respectées avant chaque envoi
+- **Redis** : Rate limiting distribué (INCR+EXPIRE), sessions actives (TTL 24h), cache dashboards (TTL 300s), fallback mémoire si indisponible
 - **CRUD** : Entreprises, employés, équipes avec RBAC et multi-tenant strict
 - **Audit** : Journal d'audit complet, export CSV, protection anti-injection
 - **Impersonation** : Mode support SYSTEM_ADMIN lecture seule avec audit trail
-- **Monitoring** : Health check DB, KPIs SaaS, graphiques admin, service MRR unifié
+- **Monitoring** : Health check DB + Redis (PING/PONG), KPIs SaaS, graphiques admin, service MRR unifié
 - **Admin** : Page utilisateurs cross-tenant, essais à risque, broadcast email, stats + export PDF
 - **Profil** : Avatar Cloudinary, RGPD (export données, suppression compte), préférences affichage
 - **Settings** : Apparence, notifications, entreprise (jours travaillés, horaires)
@@ -119,16 +121,16 @@ src/
 │   ├── (legal)/      # Pages légales RGPD
 │   ├── app/          # Routes protégées par rôle
 │   └── api/          # API Routes (avatar, webhooks, health, SSE...)
-├── components/       # 172 composants React
-├── lib/              # Actions (38), services (18), validations Zod (23), animations, email
-├── hooks/            # 17 hooks custom
+├── components/       # 188 composants React
+├── lib/              # Actions (38), services (18), validations Zod (23), animations, email (28 templates)
+├── hooks/            # 19 hooks custom
 ├── types/            # Types TypeScript globaux
 └── styles/           # Design tokens centralisés
 ```
 
 ## Base de données
 
-18 modèles Prisma (14 core + 4 NextAuth), 14 enums, 16 migrations.
+18 modèles Prisma (14 core + 4 NextAuth), 14 enums, 54 index, 16 migrations.
 
 Voir [`docs/database-architecture.md`](docs/database-architecture.md) pour le détail complet.
 
@@ -171,8 +173,9 @@ Rationalisation mars 2026 : focus sur la logique métier critique (RBAC, Zod, Se
 - RBAC 4 niveaux avec `checkPermission()` sur chaque Server Action
 - Validation Zod aux frontières, protection CSRF (NextAuth)
 - Cookies httpOnly + secure + sameSite, hashage bcrypt
-- Rate limiting, audit logs, CSP headers, SRI en production
+- Rate limiting Redis distribué (fallback mémoire), audit logs, CSP headers, SRI en production
 - Subscription guard middleware Edge Runtime
+- Emails sécurité envoyés inconditionnellement (changement mot de passe, suppression RGPD), emails métier soumis aux préférences utilisateur
 
 > Documentation sécurité : [`docs/security/`](docs/security/)
 
