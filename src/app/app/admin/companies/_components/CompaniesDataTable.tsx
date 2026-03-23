@@ -169,7 +169,9 @@ export function CompaniesDataTable() {
           if (result.success) {
             // Forcer NextAuth à relire le JWT enrichi
             await updateSession(result.impersonation)
-            router.push(result.redirectTo)
+            // Full page reload pour que le middleware + layout Server Component
+            // se ré-exécutent avec le nouveau JWT (rôle DIRECTOR, companyId cible)
+            window.location.href = result.redirectTo
           }
         } catch (error) {
           console.error('Erreur impersonation:', error)

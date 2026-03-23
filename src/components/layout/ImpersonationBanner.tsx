@@ -65,8 +65,8 @@ export function ImpersonationBanner({
         impersonatedCompanyName: null,
       })
 
-      router.push('/app/admin/companies')
-      router.refresh()
+      // Full page reload pour restaurer le layout SYSTEM_ADMIN complet
+      window.location.href = '/app/admin/companies'
     } catch {
       toast.error('Erreur', {
         description: 'Une erreur inattendue est survenue',

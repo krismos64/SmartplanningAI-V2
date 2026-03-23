@@ -214,7 +214,7 @@ describe('API /api/admin/impersonate', () => {
       const data = (await response.json()) as ImpersonateSuccessResponse
 
       expect(data.success).toBe(true)
-      expect(data.redirectTo).toBe('/app/dashboard')
+      expect(data.redirectTo).toBe('/app/director/dashboard')
       expect(data.impersonation.isImpersonating).toBe(true)
       expect(data.impersonation.impersonatedCompanyName).toBe('TechCorp')
       expect(data.impersonation.impersonatedUserId).toBe('user-001')

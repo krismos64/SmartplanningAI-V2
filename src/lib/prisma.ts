@@ -159,14 +159,19 @@ export async function disconnectPrisma(): Promise<void> {
 }
 
 // Enregistrer les handlers de shutdown
+// Accès indirect via globalThis pour éviter les warnings du bundler Edge Runtime
+// qui détecte statiquement process.on/process.exit comme incompatibles.
+// En Edge Runtime, globalThis.process n'expose pas .on ni .exit.
 if (process.env.NODE_ENV !== 'test') {
-  process.on('SIGINT', () => {
-    void disconnectPrisma().then(() => process.exit(0))
-  })
-
-  process.on('SIGTERM', () => {
-    void disconnectPrisma().then(() => process.exit(0))
-  })
+  const proc = globalThis.process
+  if (typeof proc?.on === 'function' && typeof proc?.exit === 'function') {
+    proc.on('SIGINT', () => {
+      void disconnectPrisma().then(() => proc.exit(0))
+    })
+    proc.on('SIGTERM', () => {
+      void disconnectPrisma().then(() => proc.exit(0))
+    })
+  }
 }
 
 /**

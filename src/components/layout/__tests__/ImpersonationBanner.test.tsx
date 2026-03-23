@@ -54,6 +54,11 @@ describe('ImpersonationBanner', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     global.fetch = vi.fn()
+    // Mock window.location.href (utilisé pour le full reload après arrêt impersonation)
+    Object.defineProperty(window, 'location', {
+      writable: true,
+      value: { href: '/', assign: vi.fn(), replace: vi.fn() },
+    })
   })
 
   it("affiche la bannière avec le nom de l'entreprise et l'email", () => {
@@ -118,7 +123,7 @@ describe('ImpersonationBanner', () => {
     })
 
     await waitFor(() => {
-      expect(mockPush).toHaveBeenCalledWith('/app/admin/companies')
+      expect(window.location.href).toBe('/app/admin/companies')
     })
   })
 

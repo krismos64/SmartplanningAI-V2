@@ -165,9 +165,17 @@ export async function POST(request: Request): Promise<NextResponse> {
   }
 
   // 8. Construire la réponse avec le cookie posé directement dessus
+  // Redirect vers le dashboard approprié selon le rôle impersonné
+  const roleRedirects: Record<string, string> = {
+    DIRECTOR: '/app/director/dashboard',
+    MANAGER: '/app/manager/dashboard',
+    EMPLOYEE: '/app/dashboard',
+  }
+  const redirectTo = roleRedirects[targetUser.role] ?? '/app/dashboard'
+
   const response = NextResponse.json({
     success: true,
-    redirectTo: '/app/dashboard',
+    redirectTo,
     impersonation: {
       isImpersonating: true,
       originalAdminId: session.user.id,
