@@ -276,6 +276,52 @@ Bannières progressives avec calcul urgence et CTA contextuels
 - **Landing page** : Mise à jour CTA et Hero section
 - **Lint & tests** : Résolution de tous les warnings lint, correction des tests E2E (employees, leaves, incidents, schedules)
 
+### Intégration Redis (23 mars 2026)
+
+Implémentation complète de Redis (ioredis 5.10) pour 3 usages concrets :
+- **Rate limiting distribué** : Remplacement de la Map JavaScript en mémoire par Redis INCR + EXPIRE atomique (MULTI/EXEC). Fallback automatique sur la Map si Redis est indisponible. Fonctionne en multi-instances derrière un load balancer.
+- **Sessions actives** : Suivi des sessions utilisateur dans Redis (SET/GET/DEL/SCAN, TTL 24h). Intégré dans NextAuth `authorize()` (login) et `signOut` event (logout). Le JWT reste le mécanisme d'auth principal, Redis est informatif.
+- **Cache applicatif TTL** : Wrapper `withCache()` avec SET/GET/SCAN+DEL. Intégré sur les 3 dashboards (directeur, manager, employé — TTL 300s). Invalidation automatique après CRUD employés et congés via `invalidateDashboardCache()` / `invalidateEmployeesCache()` / `invalidateLeavesCache()`.
+- **Health check Redis** : PING/PONG ajouté dans `/api/health`. Si Redis est down, statut "degraded" (pas "unhealthy" car les fallbacks fonctionnent).
+- **Client singleton** : Même pattern que Prisma (`globalThis` en dev, instance fraîche en prod). LazyConnect, backoff exponentiel, graceful shutdown SIGINT/SIGTERM.
+- Fichiers créés : `src/lib/redis.ts`, `src/lib/session-store.ts`, `src/lib/cache.ts`
+- Fichiers modifiés : `rate-limit.ts`, `auth.ts`, `db-health.ts`, 3 dashboard services, `employees.ts`, `leaves.ts`
+- Résultat : 154 fichiers tests / 2 746 tests, 0 régression, build OK
+
+### Système d'emails complet (23 mars 2026)
+
+Ajout de 11 notifications email pour couvrir l'intégralité du workflow SaaS :
+
+**Sécurité & RGPD :**
+- `PasswordChangedEmail` : notification à l'utilisateur quand son mot de passe est modifié (sécurité)
+- `AccountDeletedEmail` : confirmation de suppression de compte (RGPD article 17)
+- `DataExportEmail` : confirmation d'export des données personnelles (RGPD article 20)
+
+**Cycle de vie employé :**
+- `NewRegistrationEmail` : notification à `contact@smartplanning.fr` quand une nouvelle entreprise s'inscrit
+- `EmployeeActivatedEmail` : bienvenue envoyé à l'employé qui active son compte via le lien d'invitation
+- `EmployeeDeactivatedEmail` : notification quand un directeur désactive le compte d'un employé
+- `TeamMemberAddedEmail` : bienvenue quand un employé est ajouté à une équipe
+
+**Congés :**
+- `LeaveRevokedEmail` : notification quand un manager annule un congé déjà approuvé
+- `LeaveBalanceChangedEmail` : notification quand le directeur modifie le solde de congés
+
+**Planning :**
+- `ScheduleNotificationEmail` : branchement du template existant (qui n'était jamais appelé) sur les 3 actions principales (création, modification, suppression). Envoi groupé par employé pour les créations multi-créneaux.
+
+Tous les emails sont fire-and-forget avec gestion d'erreur silencieuse. L'échec d'un envoi ne bloque jamais l'action principale.
+
+**Total emails actifs : 29** (28 templates React Email + 20 fonctions d'envoi)
+
+- 11 fichiers créés (8 templates `.tsx` + 3 fonctions d'envoi `.ts`)
+- 7 Server Actions modifiées (`profile.ts`, `employees.ts`, `leaves.ts`, `schedules.ts`, `teams.ts`, `auth-actions.ts`)
+- Résultat : 154 fichiers tests / 2 746 tests, 0 régression, build OK
+
+### Documentation Prisma enrichie (23 mars 2026)
+
+Réécriture complète des commentaires du fichier `prisma/schema.prisma` avec des explications en français, rédigées comme un développeur qui documente ses choix techniques pour une soutenance CDA. Chaque modèle, champ, index et enum est commenté avec le "pourquoi" (pas juste le "quoi") : choix du CUID, stratégie cascade vs SetNull, isolation multi-tenant par companyId, convention snake_case PostgreSQL, RGPD, droit du travail français, etc.
+
 ### Nettoyage code mort (22 mars 2026)
 
 Audit approfondi et suppression de ~8 100 lignes de code mort :
@@ -290,7 +336,6 @@ Audit approfondi et suppression de ~8 100 lignes de code mort :
 
 ### Phase 8+ : Fonctionnalités avancées (à venir)
 
-- Notifications push et email
 - Mode hors-ligne (PWA)
 - Application mobile (React Native)
 - IA pour optimisation des plannings
@@ -427,7 +472,8 @@ Tests desktop sur Chromium. Tous les tests E2E couvrent des workflows critiques.
 ### Optimisations
 
 - Code splitting, lazy loading, images Next.js, compression gzip
-- Cache Redis, indexes database, React.memo, Suspense boundaries
+- Cache Redis TTL (ioredis 5.10 — dashboards 300s, rate limiting INCR+EXPIRE, sessions actives 24h)
+- Indexes database (54 @@index dans le schéma Prisma), React.memo, Suspense boundaries
 
 ### Umami Analytics (SP-345 — janvier 2026)
 
@@ -486,4 +532,4 @@ npm run a11y:audit    # Audit Lighthouse
 
 ---
 
-*Dernière mise à jour : 22 mars 2026*
+*Dernière mise à jour : 23 mars 2026*
