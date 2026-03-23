@@ -80,7 +80,7 @@ describe('POST /api/contact', () => {
       'X-RateLimit-Remaining': '4',
       'X-RateLimit-Reset': '1234567890',
     })
-    checkRateLimit.mockReturnValue({
+    checkRateLimit.mockResolvedValue({
       allowed: true,
       remaining: 4,
       resetAt: Date.now() + 60000,
@@ -273,7 +273,7 @@ describe('POST /api/contact', () => {
 
   describe('Rate Limiting', () => {
     it('devrait retourner 429 quand la limite est dépassée', async () => {
-      checkRateLimit.mockReturnValue({
+      checkRateLimit.mockResolvedValue({
         allowed: false,
         remaining: 0,
         resetAt: Date.now() + 60000,
@@ -301,7 +301,7 @@ describe('POST /api/contact', () => {
     })
 
     it('ne devrait pas appeler sendContactEmails si rate limited', async () => {
-      checkRateLimit.mockReturnValue({
+      checkRateLimit.mockResolvedValue({
         allowed: false,
         remaining: 0,
         resetAt: Date.now() + 60000,

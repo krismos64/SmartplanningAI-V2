@@ -2,7 +2,12 @@
  * Tests unitaires pour le rate limiter
  *
  * @ticket SP-288
- * @description Tests du système de rate limiting en mémoire
+ * @description Tests du système de rate limiting (fallback mémoire)
+ *
+ * Note : dans l'environnement de test, REDIS_URL n'est pas défini,
+ * donc getRedisClient() retourne null et le fallback mémoire est utilisé.
+ * C'est exactement le comportement attendu : on teste la logique de
+ * rate limiting, pas la connexion Redis.
  */
 
 import { describe, it, expect, beforeEach } from 'vitest'
@@ -16,7 +21,6 @@ import {
 
 describe('Rate Limiter', () => {
   beforeEach(() => {
-    // Réinitialiser le cache entre chaque test
     resetRateLimitCache()
   })
 
@@ -30,51 +34,49 @@ describe('Rate Limiter', () => {
       windowMs: 60000, // 1 minute
     }
 
-    it('devrait autoriser la première requête', () => {
-      const result = checkRateLimit('test-ip', defaultConfig)
+    it('devrait autoriser la première requête', async () => {
+      const result = await checkRateLimit('test-ip', defaultConfig)
 
       expect(result.allowed).toBe(true)
       expect(result.remaining).toBe(4)
     })
 
-    it('devrait autoriser les requêtes sous la limite', () => {
+    it('devrait autoriser les requêtes sous la limite', async () => {
       for (let i = 0; i < 4; i++) {
-        checkRateLimit('test-ip-2', defaultConfig)
+        await checkRateLimit('test-ip-2', defaultConfig)
       }
 
-      const result = checkRateLimit('test-ip-2', defaultConfig)
+      const result = await checkRateLimit('test-ip-2', defaultConfig)
 
       expect(result.allowed).toBe(true)
       expect(result.remaining).toBe(0)
     })
 
-    it('devrait bloquer les requêtes au-dessus de la limite', () => {
+    it('devrait bloquer les requêtes au-dessus de la limite', async () => {
       for (let i = 0; i < 5; i++) {
-        checkRateLimit('test-ip-3', defaultConfig)
+        await checkRateLimit('test-ip-3', defaultConfig)
       }
 
-      const result = checkRateLimit('test-ip-3', defaultConfig)
+      const result = await checkRateLimit('test-ip-3', defaultConfig)
 
       expect(result.allowed).toBe(false)
       expect(result.remaining).toBe(0)
     })
 
-    it('devrait traiter chaque IP séparément', () => {
-      // Épuiser la limite pour IP1
+    it('devrait traiter chaque IP séparément', async () => {
       for (let i = 0; i < 6; i++) {
-        checkRateLimit('ip-1', defaultConfig)
+        await checkRateLimit('ip-1', defaultConfig)
       }
 
-      // IP2 devrait toujours être autorisée
-      const result = checkRateLimit('ip-2', defaultConfig)
+      const result = await checkRateLimit('ip-2', defaultConfig)
 
       expect(result.allowed).toBe(true)
       expect(result.remaining).toBe(4)
     })
 
-    it('devrait inclure le timestamp de reset', () => {
+    it('devrait inclure le timestamp de reset', async () => {
       const before = Date.now()
-      const result = checkRateLimit('test-ip-4', defaultConfig)
+      const result = await checkRateLimit('test-ip-4', defaultConfig)
       const after = Date.now()
 
       expect(result.resetAt).toBeGreaterThanOrEqual(
@@ -83,11 +85,10 @@ describe('Rate Limiter', () => {
       expect(result.resetAt).toBeLessThanOrEqual(after + defaultConfig.windowMs)
     })
 
-    it('devrait utiliser la configuration par défaut si non fournie', () => {
-      const result = checkRateLimit('test-ip-5')
+    it('devrait utiliser la configuration par défaut si non fournie', async () => {
+      const result = await checkRateLimit('test-ip-5')
 
       expect(result.allowed).toBe(true)
-      // La config par défaut est 5 requêtes/minute
       expect(result.remaining).toBe(4)
     })
 
@@ -97,18 +98,15 @@ describe('Rate Limiter', () => {
         windowMs: 50, // 50ms
       }
 
-      // Épuiser la limite
-      checkRateLimit('test-ip-6', shortConfig)
-      checkRateLimit('test-ip-6', shortConfig)
-      const blocked = checkRateLimit('test-ip-6', shortConfig)
+      await checkRateLimit('test-ip-6', shortConfig)
+      await checkRateLimit('test-ip-6', shortConfig)
+      const blocked = await checkRateLimit('test-ip-6', shortConfig)
 
       expect(blocked.allowed).toBe(false)
 
-      // Attendre l'expiration
       await new Promise((resolve) => setTimeout(resolve, 60))
 
-      // Devrait être autorisé à nouveau
-      const result = checkRateLimit('test-ip-6', shortConfig)
+      const result = await checkRateLimit('test-ip-6', shortConfig)
 
       expect(result.allowed).toBe(true)
       expect(result.remaining).toBe(1)
@@ -187,13 +185,13 @@ describe('Rate Limiter', () => {
       const result = {
         allowed: true,
         remaining: 3,
-        resetAt: 1700000000000, // timestamp en ms
+        resetAt: 1700000000000,
       }
 
       const headers = getRateLimitHeaders(result)
 
       expect(headers['X-RateLimit-Remaining']).toBe('3')
-      expect(headers['X-RateLimit-Reset']).toBe('1700000000') // en secondes
+      expect(headers['X-RateLimit-Reset']).toBe('1700000000')
     })
 
     it('devrait gérer les valeurs 0', () => {
@@ -214,9 +212,9 @@ describe('Rate Limiter', () => {
   // ==========================================================================
 
   describe('Cache management', () => {
-    it('devrait permettre de réinitialiser le cache', () => {
-      checkRateLimit('ip-cache-1')
-      checkRateLimit('ip-cache-2')
+    it('devrait permettre de réinitialiser le cache', async () => {
+      await checkRateLimit('ip-cache-1')
+      await checkRateLimit('ip-cache-2')
 
       expect(getRateLimitCacheSize()).toBe(2)
 
@@ -225,17 +223,16 @@ describe('Rate Limiter', () => {
       expect(getRateLimitCacheSize()).toBe(0)
     })
 
-    it('devrait retourner la taille correcte du cache', () => {
+    it('devrait retourner la taille correcte du cache', async () => {
       expect(getRateLimitCacheSize()).toBe(0)
 
-      checkRateLimit('ip-size-1')
+      await checkRateLimit('ip-size-1')
       expect(getRateLimitCacheSize()).toBe(1)
 
-      checkRateLimit('ip-size-2')
+      await checkRateLimit('ip-size-2')
       expect(getRateLimitCacheSize()).toBe(2)
 
-      // Même IP ne devrait pas augmenter la taille
-      checkRateLimit('ip-size-1')
+      await checkRateLimit('ip-size-1')
       expect(getRateLimitCacheSize()).toBe(2)
     })
   })
