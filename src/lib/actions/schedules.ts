@@ -32,6 +32,7 @@ import {
 } from '@/lib/actions/notifications'
 import type { CrudActionResult, DeleteActionResult } from '@/types'
 import { sendScheduleNotificationEmail } from '@/lib/email/templates/schedule-notification'
+import { canSendEmailToEmployee } from '@/lib/email/check-preference'
 import {
   generateOccurrences,
   generateRecurrenceGroupId,
@@ -1055,9 +1056,11 @@ export async function createSchedule(
         where: { id: { in: notifEmployeeIds } },
         select: { id: true, firstName: true, email: true },
       })
-      .then((employees) => {
+      .then(async (employees) => {
         for (const emp of employees) {
           if (!emp.email) continue
+          const canSend = await canSendEmailToEmployee(emp.email, 'planning')
+          if (!canSend) continue
           const empSchedules = schedules.filter((s) => s.employeeId === emp.id)
           if (empSchedules.length === 0) continue
           const first = empSchedules[0]
@@ -1237,17 +1240,22 @@ export async function updateSchedule(
         where: { id: updated.employeeId },
         select: { firstName: true, email: true },
       })
-      .then((emp) => {
+      .then(async (emp) => {
         if (emp?.email) {
-          sendScheduleNotificationEmail({
-            employeeEmail: emp.email,
-            firstName: emp.firstName,
-            action: 'updated',
-            count: 1,
-            startDate: updated.startDate,
-            scheduleType: updated.type,
-            timeRange: `${updated.startTime} - ${updated.endTime}`,
-          }).catch(console.error)
+          const canSendUpdate = await canSendEmailToEmployee(
+            emp.email,
+            'planning'
+          )
+          if (canSendUpdate)
+            sendScheduleNotificationEmail({
+              employeeEmail: emp.email,
+              firstName: emp.firstName,
+              action: 'updated',
+              count: 1,
+              startDate: updated.startDate,
+              scheduleType: updated.type,
+              timeRange: `${updated.startTime} - ${updated.endTime}`,
+            }).catch(console.error)
         }
       })
       .catch(console.error)
@@ -1330,17 +1338,22 @@ export async function deleteSchedule(id: string): Promise<DeleteActionResult> {
       ).catch(console.error)
     }
 
-    // SP-480 : Email de notification de suppression planning (fire-and-forget)
+    // SP-480 : Email de notification de suppression planning (fire-and-forget, respecte préférences)
     if (schedule.employee?.email) {
-      sendScheduleNotificationEmail({
-        employeeEmail: schedule.employee.email,
-        firstName: schedule.employee.firstName,
-        action: 'deleted',
-        count: 1,
-        startDate: schedule.startDate,
-        scheduleType: schedule.type,
-        timeRange: `${schedule.startTime} - ${schedule.endTime}`,
-      }).catch(console.error)
+      const canSendDelete = await canSendEmailToEmployee(
+        schedule.employee.email,
+        'planning'
+      )
+      if (canSendDelete)
+        sendScheduleNotificationEmail({
+          employeeEmail: schedule.employee.email,
+          firstName: schedule.employee.firstName,
+          action: 'deleted',
+          count: 1,
+          startDate: schedule.startDate,
+          scheduleType: schedule.type,
+          timeRange: `${schedule.startTime} - ${schedule.endTime}`,
+        }).catch(console.error)
     }
 
     revalidatePath('/app/schedules')

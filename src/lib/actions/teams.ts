@@ -1122,18 +1122,27 @@ export async function addTeamMember(
       select: { firstName: true, email: true },
     })
     if (addedEmployee?.email) {
-      const managerName = team.manager
-        ? `${(team.manager as { firstName: string }).firstName} ${(team.manager as { lastName: string }).lastName}`
-        : null
-      const { sendTeamMemberAddedEmail } = await import(
-        '@/lib/email/templates/team-notifications'
+      const { canSendEmailToEmployee } = await import(
+        '@/lib/email/check-preference'
       )
-      sendTeamMemberAddedEmail({
-        firstName: addedEmployee.firstName,
-        email: addedEmployee.email,
-        teamName: team.name,
-        managerName,
-      }).catch(console.error)
+      const canSend = await canSendEmailToEmployee(
+        addedEmployee.email,
+        'planning'
+      )
+      if (canSend) {
+        const managerName = team.manager
+          ? `${(team.manager as { firstName: string }).firstName} ${(team.manager as { lastName: string }).lastName}`
+          : null
+        const { sendTeamMemberAddedEmail } = await import(
+          '@/lib/email/templates/team-notifications'
+        )
+        sendTeamMemberAddedEmail({
+          firstName: addedEmployee.firstName,
+          email: addedEmployee.email,
+          teamName: team.name,
+          managerName,
+        }).catch(console.error)
+      }
     }
 
     revalidatePath('/app/director/teams')

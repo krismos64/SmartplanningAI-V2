@@ -54,6 +54,10 @@ import {
   sendLeaveRevokedEmail,
   sendLeaveBalanceChangedEmail,
 } from '@/lib/email/templates/leave-notifications'
+import {
+  canSendEmailToUser,
+  canSendEmailToEmployee,
+} from '@/lib/email/check-preference'
 import type { ListActionResult, ListQueryParams } from '@/types'
 import type { LeaveEmailData, LeaveRequestedEmailData } from '@/types'
 import { createLeaveNotification } from '@/lib/actions/notifications'
@@ -818,23 +822,31 @@ export async function reviewLeaveRequest(
       return result
     })
 
-    // Envoi email hors transaction (non bloquant)
+    // Envoi email hors transaction (non bloquant, respecte les préférences SP-480)
     try {
-      const emailData: LeaveEmailData = {
-        firstName: leaveRequest.employee.firstName,
-        email: leaveRequest.employee.email ?? '',
-        leaveType: leaveRequest.type,
-        startDate: leaveRequest.startDate,
-        endDate: leaveRequest.endDate,
-      }
+      const employeeEmail = leaveRequest.employee.email ?? ''
+      const canSend =
+        employeeEmail && leaveRequest.employee.userId
+          ? await canSendEmailToUser(leaveRequest.employee.userId, 'leaves')
+          : true
 
-      if (data.status === LeaveRequestStatus.APPROVED) {
-        await sendLeaveApprovedEmail(emailData)
-      } else if (data.status === LeaveRequestStatus.REJECTED) {
-        await sendLeaveRejectedEmail({
-          ...emailData,
-          rejectionReason: data.reviewComment ?? '',
-        })
+      if (canSend && employeeEmail) {
+        const emailData: LeaveEmailData = {
+          firstName: leaveRequest.employee.firstName,
+          email: employeeEmail,
+          leaveType: leaveRequest.type,
+          startDate: leaveRequest.startDate,
+          endDate: leaveRequest.endDate,
+        }
+
+        if (data.status === LeaveRequestStatus.APPROVED) {
+          await sendLeaveApprovedEmail(emailData)
+        } else if (data.status === LeaveRequestStatus.REJECTED) {
+          await sendLeaveRejectedEmail({
+            ...emailData,
+            rejectionReason: data.reviewComment ?? '',
+          })
+        }
       }
     } catch (emailError) {
       console.error('[reviewLeaveRequest] Email error:', emailError)
@@ -1204,14 +1216,19 @@ export async function revokeLeaveRequest(
       select: { firstName: true, email: true },
     })
     if (revokedEmployee?.email) {
-      sendLeaveRevokedEmail({
-        firstName: revokedEmployee.firstName,
-        email: revokedEmployee.email,
-        leaveType: leaveRequest.type,
-        startDate: leaveRequest.startDate,
-        endDate: leaveRequest.endDate,
-        revokeReason: data.revokeReason,
-      }).catch(console.error)
+      const canSendRevoke = await canSendEmailToEmployee(
+        revokedEmployee.email,
+        'leaves'
+      )
+      if (canSendRevoke)
+        sendLeaveRevokedEmail({
+          firstName: revokedEmployee.firstName,
+          email: revokedEmployee.email,
+          leaveType: leaveRequest.type,
+          startDate: leaveRequest.startDate,
+          endDate: leaveRequest.endDate,
+          revokeReason: data.revokeReason,
+        }).catch(console.error)
     }
 
     revalidatePath(LEAVE_PATH)
@@ -1360,17 +1377,22 @@ export async function updateLeaveBalance(
       },
     }).catch(console.error)
 
-    // SP-480 : Email de notification de modification du solde (fire-and-forget)
+    // SP-480 : Email de notification de modification du solde (fire-and-forget, respecte préférences)
     if (employee.email) {
-      sendLeaveBalanceChangedEmail({
-        firstName: employee.firstName,
-        email: employee.email,
-        year,
-        paidLeaveTotal: balance.paidLeaveTotal,
-        paidLeaveRemaining: balance.paidLeaveTotal - balance.paidLeaveUsed,
-        rttTotal: balance.rttTotal,
-        rttRemaining: balance.rttTotal - balance.rttUsed,
-      }).catch(console.error)
+      const canSendBalance = await canSendEmailToEmployee(
+        employee.email,
+        'leaves'
+      )
+      if (canSendBalance)
+        sendLeaveBalanceChangedEmail({
+          firstName: employee.firstName,
+          email: employee.email,
+          year,
+          paidLeaveTotal: balance.paidLeaveTotal,
+          paidLeaveRemaining: balance.paidLeaveTotal - balance.paidLeaveUsed,
+          rttTotal: balance.rttTotal,
+          rttRemaining: balance.rttTotal - balance.rttUsed,
+        }).catch(console.error)
     }
 
     revalidatePath(LEAVE_PATH)
@@ -1692,10 +1714,12 @@ async function notifyManagersOfNewLeaveRequest(
       }))
     }
 
-    // Envoyer un email à chaque manager/directeur
+    // Envoyer un email à chaque manager/directeur (respecte les préférences SP-480)
     const emailPromises = managers
       .filter((m) => m.email)
-      .map((manager) => {
+      .map(async (manager) => {
+        const canSend = await canSendEmailToEmployee(manager.email!, 'leaves')
+        if (!canSend) return
         const emailData: LeaveRequestedEmailData = {
           managerEmail: manager.email!,
           managerName: manager.firstName,
