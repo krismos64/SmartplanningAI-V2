@@ -14,6 +14,7 @@ import { Prisma } from '@prisma/client'
 
 import { PRICING } from '@/lib/config/pricing'
 import { sendWelcomeEmail } from '@/lib/email/templates/welcome'
+import { sendNewRegistrationEmail } from '@/lib/email/templates/new-registration'
 import { hashPassword } from '@/lib/password'
 import { prisma } from '@/lib/prisma'
 import { logAuditAction } from '@/lib/services/audit'
@@ -250,6 +251,19 @@ export async function registerAction(
         )
       }
     }
+
+    // 9. Notifier l'admin par email de la nouvelle inscription (fire-and-forget, SP-480)
+    sendNewRegistrationEmail({
+      companyName: companyName.trim(),
+      directorName: name.trim(),
+      directorEmail: email.toLowerCase(),
+      phone: phone || null,
+    }).catch((err) => {
+      if (process.env.NODE_ENV === 'development') {
+        // eslint-disable-next-line no-console
+        console.error('[registerAction] Failed to send admin notification:', err)
+      }
+    })
 
     return {
       success: true,
