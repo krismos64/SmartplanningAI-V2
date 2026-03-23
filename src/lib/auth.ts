@@ -19,6 +19,7 @@ import { prisma } from '@/lib/prisma'
 import { verifyPassword } from '@/lib/password'
 import { authConfig } from '@/lib/auth.config'
 import { logAuditAction } from '@/lib/services/audit'
+import { registerSession, removeSession } from '@/lib/session-store'
 
 /**
  * Schéma de validation des credentials
@@ -145,7 +146,19 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           details: { email: user.email },
         }).catch(console.error)
 
-        // 9. Retourner l'utilisateur (sans le mot de passe)
+        // 9. Enregistrer la session active dans Redis (fire-and-forget, SP-480)
+        // Si Redis est down, le JWT fonctionne quand même normalement.
+        registerSession(user.id, {
+          email: user.email,
+          role: user.role,
+          companyId: user.companyId,
+          loginAt: new Date().toISOString(),
+          lastSeenAt: new Date().toISOString(),
+          ip: 'unknown', // Pas d'accès au Request dans authorize()
+          userAgent: 'unknown',
+        }).catch(console.error)
+
+        // 10. Retourner l'utilisateur (sans le mot de passe)
         return {
           id: user.id,
           email: user.email,
@@ -195,6 +208,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           userId: token.sub,
           companyId: (token.companyId as string) ?? undefined,
         }).catch(console.error)
+
+        // Supprimer la session de Redis (fire-and-forget, SP-480)
+        removeSession(token.sub).catch(console.error)
       }
     },
   },
