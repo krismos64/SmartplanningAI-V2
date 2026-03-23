@@ -318,6 +318,19 @@ Tous les emails sont fire-and-forget avec gestion d'erreur silencieuse. L'échec
 - 7 Server Actions modifiées (`profile.ts`, `employees.ts`, `leaves.ts`, `schedules.ts`, `teams.ts`, `auth-actions.ts`)
 - Résultat : 154 fichiers tests / 2 746 tests, 0 régression, build OK
 
+### Respect des préférences de notification email (23 mars 2026)
+
+Correction d'un bug où les emails métier étaient envoyés sans vérifier les préférences utilisateur. Les toggles dans Settings > Notifications étaient sauvegardés en base mais jamais consultés avant l'envoi.
+
+- Création de `src/lib/email/check-preference.ts` : utilitaire centralisé `canSendEmailToUser(userId, category)` et `canSendEmailToEmployee(email, category)` qui interroge `User.preferences` en base et vérifie `isEmailNotificationEnabled()` avant chaque envoi
+- **Emails désormais soumis aux préférences** (catégorie `leaves`) : LeaveApprovedEmail, LeaveRejectedEmail, LeaveRequestedEmail (vers managers), LeaveRevokedEmail, LeaveBalanceChangedEmail
+- **Emails désormais soumis aux préférences** (catégorie `planning`) : ScheduleNotificationEmail (create/update/delete), TeamMemberAddedEmail
+- **Emails toujours envoyés** (sécurité/RGPD/billing/auth) : PasswordChangedEmail, AccountDeletedEmail, DataExportEmail, WelcomeEmail, InvitationEmail, ResetPasswordEmail, NewRegistrationEmail, tous les emails Stripe
+- Si un utilisateur désactive "Congés > Email" dans ses préférences, il ne reçoit plus les emails de congés mais garde les notifications in-app (SSE) si activées
+- Comportement par défaut : tout activé (si `preferences` est null, `?? true` renvoie true)
+- 4 Server Actions modifiées (`leaves.ts`, `schedules.ts`, `teams.ts`)
+- Résultat : 154 fichiers tests / 2 746 tests, 0 régression, build OK
+
 ### Documentation Prisma enrichie (23 mars 2026)
 
 Réécriture complète des commentaires du fichier `prisma/schema.prisma` avec des explications en français, rédigées comme un développeur qui documente ses choix techniques pour une soutenance CDA. Chaque modèle, champ, index et enum est commenté avec le "pourquoi" (pas juste le "quoi") : choix du CUID, stratégie cascade vs SetNull, isolation multi-tenant par companyId, convention snake_case PostgreSQL, RGPD, droit du travail français, etc.
