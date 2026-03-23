@@ -30,6 +30,7 @@
  */
 
 import { prisma } from './prisma'
+import { pingRedis } from './redis'
 
 type DatabaseStats = {
   timestamp: Date
@@ -79,6 +80,7 @@ export type HealthCheckResult = {
     latency: HealthCheck
     migrations: HealthCheck
     poolSize: HealthCheck
+    redis: HealthCheck
   }
   metrics: {
     latency: number
@@ -153,6 +155,10 @@ export async function checkDatabaseHealth(): Promise<HealthCheckResult> {
       poolSize: {
         status: 'pass',
         message: 'Informations non disponibles',
+      },
+      redis: {
+        status: 'fail',
+        message: 'Non testé',
       },
     },
     metrics: {
@@ -279,6 +285,40 @@ export async function checkDatabaseHealth(): Promise<HealthCheckResult> {
       result.checks.poolSize = {
         status: 'pass',
         message: 'Métriques non disponibles (normal en prod)',
+      }
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // CHECK 5 : REDIS (SP-480)
+    // ═══════════════════════════════════════════════════════════
+    // Redis n'est pas critique : si indisponible, l'application
+    // fonctionne normalement grâce aux fallbacks (mémoire pour le
+    // rate limiting, pas de cache pour les dashboards). Le statut
+    // passe en "degraded" mais jamais en "unhealthy" à cause de Redis.
+    try {
+      const redisPong = await pingRedis()
+
+      if (redisPong) {
+        result.checks.redis = {
+          status: 'pass',
+          message: 'Redis connecté (PONG)',
+        }
+      } else {
+        result.checks.redis = {
+          status: 'warn',
+          message: 'Redis indisponible (fallback mémoire actif)',
+        }
+        if (result.status === 'healthy') {
+          result.status = 'degraded'
+        }
+      }
+    } catch {
+      result.checks.redis = {
+        status: 'warn',
+        message: 'Redis indisponible (fallback mémoire actif)',
+      }
+      if (result.status === 'healthy') {
+        result.status = 'degraded'
       }
     }
   } catch (error) {

@@ -14,6 +14,7 @@
  */
 
 import { prisma } from '@/lib/prisma'
+import { withCache } from '@/lib/cache'
 import type {
   ManagerStatsParams,
   ManagerStatsResult,
@@ -67,38 +68,44 @@ export async function getManagerStats(
       }
     }
 
-    // Recuperation des donnees en parallele
-    const [
-      teamSize,
-      pendingLeaveRequests,
-      todayAbsencesResult,
-      coverageRate,
-      teamHoursWorked,
-      teamPerformance,
-      leaveRequestsTrend,
-    ] = await Promise.all([
-      getTeamSize(teamId),
-      getPendingLeaveRequestsCount(teamId),
-      getTodayAbsencesWithDetails(teamId),
-      getCoverageRate(teamId, dateRange),
-      getTeamHoursWorked(teamId, dateRange),
-      getTeamPerformance(teamId, dateRange),
-      getLeaveRequestsTrend(teamId),
-    ])
+    // Cache Redis : les stats manager sont cachées 5 minutes (SP-480)
+    return await withCache(
+      `dashboard:manager:${companyId}:${managerId}`,
+      300,
+      async () => {
+        const [
+          teamSize,
+          pendingLeaveRequests,
+          todayAbsencesResult,
+          coverageRate,
+          teamHoursWorked,
+          teamPerformance,
+          leaveRequestsTrend,
+        ] = await Promise.all([
+          getTeamSize(teamId),
+          getPendingLeaveRequestsCount(teamId),
+          getTodayAbsencesWithDetails(teamId),
+          getCoverageRate(teamId, dateRange),
+          getTeamHoursWorked(teamId, dateRange),
+          getTeamPerformance(teamId, dateRange),
+          getLeaveRequestsTrend(teamId),
+        ])
 
-    return {
-      success: true,
-      data: {
-        teamSize,
-        pendingLeaveRequests,
-        todayAbsences: todayAbsencesResult.count,
-        todayAbsenceDetails: todayAbsencesResult.details,
-        coverageRate,
-        teamHoursWorked,
-        teamPerformance,
-        leaveRequestsTrend,
-      },
-    }
+        return {
+          success: true as const,
+          data: {
+            teamSize,
+            pendingLeaveRequests,
+            todayAbsences: todayAbsencesResult.count,
+            todayAbsenceDetails: todayAbsencesResult.details,
+            coverageRate,
+            teamHoursWorked,
+            teamPerformance,
+            leaveRequestsTrend,
+          },
+        }
+      }
+    )
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Erreur inconnue'
     return {

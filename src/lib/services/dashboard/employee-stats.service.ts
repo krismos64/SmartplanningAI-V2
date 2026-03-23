@@ -13,6 +13,7 @@
  */
 
 import { prisma } from '@/lib/prisma'
+import { withCache } from '@/lib/cache'
 import type {
   EmployeeStatsParams,
   EmployeeStatsResult,
@@ -58,34 +59,40 @@ export async function getEmployeeStats(
       }
     }
 
-    // Recuperation des donnees en parallele
-    const [
-      hoursWorked,
-      upcomingShifts,
-      leaveBalance,
-      pendingRequests,
-      nextShift,
-      weeklySchedule,
-    ] = await Promise.all([
-      getHoursWorked(employeeId, dateRange),
-      getUpcomingShiftsCount(employeeId),
-      getLeaveBalance(employeeId),
-      getPendingRequestsCount(employeeId),
-      getNextShift(employeeId),
-      getWeeklySchedule(employeeId),
-    ])
+    // Cache Redis : les stats employé sont cachées 5 minutes (SP-480)
+    return await withCache(
+      `dashboard:employee:${companyId}:${employeeId}`,
+      300,
+      async () => {
+        const [
+          hoursWorked,
+          upcomingShifts,
+          leaveBalance,
+          pendingRequests,
+          nextShift,
+          weeklySchedule,
+        ] = await Promise.all([
+          getHoursWorked(employeeId, dateRange),
+          getUpcomingShiftsCount(employeeId),
+          getLeaveBalance(employeeId),
+          getPendingRequestsCount(employeeId),
+          getNextShift(employeeId),
+          getWeeklySchedule(employeeId),
+        ])
 
-    return {
-      success: true,
-      data: {
-        hoursWorked,
-        upcomingShifts,
-        leaveBalance,
-        pendingRequests,
-        nextShift,
-        weeklySchedule,
-      },
-    }
+        return {
+          success: true as const,
+          data: {
+            hoursWorked,
+            upcomingShifts,
+            leaveBalance,
+            pendingRequests,
+            nextShift,
+            weeklySchedule,
+          },
+        }
+      }
+    )
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Erreur inconnue'
     return {

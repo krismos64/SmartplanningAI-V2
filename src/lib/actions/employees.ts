@@ -47,6 +47,10 @@ import { hashPassword } from '@/lib/password'
 import { sendInvitationEmail } from '@/lib/email/templates/invitation'
 import { emitNotification } from '@/lib/notifications/emit-notification'
 import { resetPasswordSchema } from '@/lib/validations'
+import {
+  invalidateDashboardCache,
+  invalidateEmployeesCache,
+} from '@/lib/cache'
 
 // ============================================================================
 // Types internes
@@ -835,8 +839,12 @@ export async function createEmployee(
       })
     }
 
-    // Revalide le cache
+    // Revalide le cache Next.js + Redis (SP-480)
     revalidatePath('/app/dashboard/employees')
+    if (data.companyId) {
+      invalidateDashboardCache(data.companyId).catch(console.error)
+      invalidateEmployeesCache(data.companyId).catch(console.error)
+    }
 
     return {
       success: true,
@@ -986,9 +994,11 @@ export async function updateEmployee(
       details: updateData as unknown as Prisma.InputJsonValue,
     }).catch(console.error)
 
-    // Revalide le cache
+    // Revalide le cache Next.js + Redis (SP-480)
     revalidatePath('/app/dashboard/employees')
     revalidatePath(`/app/dashboard/employees/${id}`)
+    invalidateDashboardCache(existing.companyId).catch(console.error)
+    invalidateEmployeesCache(existing.companyId).catch(console.error)
 
     return {
       success: true,
@@ -1084,8 +1094,10 @@ export async function deleteEmployee(id: string): Promise<DeleteActionResult> {
       },
     }).catch(console.error)
 
-    // Revalide le cache
+    // Revalide le cache Next.js + Redis (SP-480)
     revalidatePath('/app/dashboard/employees')
+    invalidateDashboardCache(employee.companyId).catch(console.error)
+    invalidateEmployeesCache(employee.companyId).catch(console.error)
 
     return { success: true }
   } catch (error) {

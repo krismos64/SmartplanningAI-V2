@@ -49,6 +49,10 @@ import {
 } from '@/lib/email/templates/leave-decision'
 import { sendLeaveRequestedEmail } from '@/lib/email/templates/leave-requested'
 import { assertNotImpersonating } from '@/lib/impersonation'
+import {
+  invalidateDashboardCache,
+  invalidateLeavesCache,
+} from '@/lib/cache'
 import type { ListActionResult, ListQueryParams } from '@/types'
 import type { LeaveEmailData, LeaveRequestedEmailData } from '@/types'
 import { createLeaveNotification } from '@/lib/actions/notifications'
@@ -214,6 +218,15 @@ function buildLeaveRBACWhere(user: AuthenticatedUser): Record<string, unknown> {
 }
 
 const LEAVE_PATH = '/app/dashboard/leaves'
+
+/**
+ * Invalide le cache Redis après modification de congés (SP-480)
+ * Fire-and-forget : si Redis est down, l'opération est ignorée.
+ */
+function invalidateLeavesCacheForCompany(companyId: string): void {
+  invalidateDashboardCache(companyId).catch(console.error)
+  invalidateLeavesCache(companyId).catch(console.error)
+}
 
 // ============================================================================
 // 1. getLeaveRequests - Liste paginée avec filtres RBAC
@@ -482,6 +495,7 @@ export async function createLeaveRequest(
     }).catch(console.error)
 
     revalidatePath(LEAVE_PATH)
+    invalidateLeavesCacheForCompany(employee.companyId)
     return { success: true, data: leaveRequest, warning }
   } catch (error) {
     const { error: message } = handlePrismaError(error)
@@ -575,6 +589,7 @@ export async function updateLeaveRequest(
     }).catch(console.error)
 
     revalidatePath(LEAVE_PATH)
+    invalidateLeavesCacheForCompany(existing.companyId)
     return { success: true, data: updated }
   } catch (error) {
     const { error: message } = handlePrismaError(error)
@@ -668,6 +683,7 @@ export async function cancelLeaveRequest(
       )
 
       revalidatePath(LEAVE_PATH)
+      invalidateLeavesCacheForCompany(leaveRequest.companyId)
       return { success: true, data: updated }
     }
 
@@ -695,6 +711,7 @@ export async function cancelLeaveRequest(
     )
 
     revalidatePath(LEAVE_PATH)
+    invalidateLeavesCacheForCompany(leaveRequest.companyId)
     return { success: true, data: updated }
   } catch (error) {
     const { error: message } = handlePrismaError(error)
@@ -855,6 +872,7 @@ export async function reviewLeaveRequest(
     }).catch(console.error)
 
     revalidatePath(LEAVE_PATH)
+    invalidateLeavesCacheForCompany(leaveRequest.companyId)
     return { success: true, data: updated }
   } catch (error) {
     const { error: message } = handlePrismaError(error)
@@ -1053,6 +1071,7 @@ export async function managerEditLeaveRequest(
     }).catch(console.error)
 
     revalidatePath(LEAVE_PATH)
+    invalidateLeavesCacheForCompany(leaveRequest.companyId)
     return { success: true, data: updated }
   } catch (error) {
     const { error: message } = handlePrismaError(error)
@@ -1179,6 +1198,7 @@ export async function revokeLeaveRequest(
     }).catch(console.error)
 
     revalidatePath(LEAVE_PATH)
+    invalidateLeavesCacheForCompany(leaveRequest.companyId)
     return { success: true, data: updated }
   } catch (error) {
     const { error: message } = handlePrismaError(error)
@@ -1324,6 +1344,7 @@ export async function updateLeaveBalance(
     }).catch(console.error)
 
     revalidatePath(LEAVE_PATH)
+    invalidateLeavesCacheForCompany(employee.companyId)
     return { success: true, data: balance }
   } catch (error) {
     const { error: message } = handlePrismaError(error)
