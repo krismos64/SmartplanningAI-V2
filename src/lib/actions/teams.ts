@@ -1116,6 +1116,26 @@ export async function addTeamMember(
       details: { action: 'addMember', employeeId },
     }).catch(console.error)
 
+    // SP-480 : Email de bienvenue dans l'équipe (fire-and-forget)
+    const addedEmployee = await prisma.employee.findUnique({
+      where: { id: employeeId },
+      select: { firstName: true, email: true },
+    })
+    if (addedEmployee?.email) {
+      const managerName = team.manager
+        ? `${(team.manager as { firstName: string }).firstName} ${(team.manager as { lastName: string }).lastName}`
+        : null
+      const { sendTeamMemberAddedEmail } = await import(
+        '@/lib/email/templates/team-notifications'
+      )
+      sendTeamMemberAddedEmail({
+        firstName: addedEmployee.firstName,
+        email: addedEmployee.email,
+        teamName: team.name,
+        managerName,
+      }).catch(console.error)
+    }
+
     revalidatePath('/app/director/teams')
     revalidatePath(`/app/director/teams/${teamId}`)
     revalidatePath('/app/dashboard/employees')

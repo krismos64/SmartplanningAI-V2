@@ -17,6 +17,11 @@ import { hashPassword, verifyPassword } from '@/lib/password'
 import { logAuditAction } from '@/lib/services/audit'
 import { assertNotImpersonating } from '@/lib/impersonation'
 import {
+  sendPasswordChangedEmail,
+  sendAccountDeletedEmail,
+  sendDataExportEmail,
+} from '@/lib/email/templates/account-notifications'
+import {
   editProfileSchema,
   type EditProfileInput,
 } from '@/lib/validations/profile'
@@ -375,6 +380,20 @@ export async function changePassword(
       details: { method: 'change-password' },
     }).catch(console.error)
 
+    // SP-480 : Notification email de changement de mot de passe (fire-and-forget)
+    // Sécurité : prévenir l'utilisateur que son mot de passe a été modifié
+    const userForEmail = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { email: true, name: true },
+    })
+    if (userForEmail) {
+      const firstName = userForEmail.name?.split(' ')[0] || 'Utilisateur'
+      sendPasswordChangedEmail({
+        firstName,
+        email: userForEmail.email,
+      }).catch(console.error)
+    }
+
     // 7. Revalidate (même si pas de données affichées, pour cohérence)
     revalidatePath('/app/profile')
     revalidatePath('/app/profile/password')
@@ -530,6 +549,13 @@ export async function deleteAccount(
     console.warn(
       `[deleteAccount] User ${user.id} account successfully deleted at ${new Date().toISOString()}`
     )
+
+    // SP-480 : Email de confirmation de suppression RGPD (fire-and-forget)
+    const firstName = user.name?.split(' ')[0] || 'Utilisateur'
+    sendAccountDeletedEmail({
+      firstName,
+      email: user.email,
+    }).catch(console.error)
 
     // Pas de revalidatePath car l'utilisateur sera déconnecté
     return {
@@ -879,6 +905,13 @@ export async function exportUserData(): Promise<
       entityId: userId,
       userId,
       details: { format: 'json', filename },
+    }).catch(console.error)
+
+    // SP-480 : Email de confirmation d'export RGPD (fire-and-forget)
+    const exportFirstName = user.name?.split(' ')[0] || 'Utilisateur'
+    sendDataExportEmail({
+      firstName: exportFirstName,
+      email: user.email,
     }).catch(console.error)
 
     return {

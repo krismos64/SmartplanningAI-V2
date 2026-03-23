@@ -31,6 +31,7 @@ import {
   createBatchPlanningNotification,
 } from '@/lib/actions/notifications'
 import type { CrudActionResult, DeleteActionResult } from '@/types'
+import { sendScheduleNotificationEmail } from '@/lib/email/templates/schedule-notification'
 import {
   generateOccurrences,
   generateRecurrenceGroupId,
@@ -1047,6 +1048,37 @@ export async function createSchedule(
       })
       .catch(console.error)
 
+    // SP-480 : Email de notification planning aux employés concernés (fire-and-forget)
+    const notifEmployeeIds = [...new Set(schedules.map((s) => s.employeeId))]
+    prisma.employee
+      .findMany({
+        where: { id: { in: notifEmployeeIds } },
+        select: { id: true, firstName: true, email: true },
+      })
+      .then((employees) => {
+        for (const emp of employees) {
+          if (!emp.email) continue
+          const empSchedules = schedules.filter((s) => s.employeeId === emp.id)
+          if (empSchedules.length === 0) continue
+          const first = empSchedules[0]
+          if (!first) continue
+          sendScheduleNotificationEmail({
+            employeeEmail: emp.email,
+            firstName: emp.firstName,
+            action: 'created',
+            count: empSchedules.length,
+            startDate: first.startDate,
+            endDate:
+              empSchedules.length > 1
+                ? empSchedules[empSchedules.length - 1]?.endDate
+                : undefined,
+            scheduleType: first.type,
+            timeRange: `${first.startTime} - ${first.endTime}`,
+          }).catch(console.error)
+        }
+      })
+      .catch(console.error)
+
     revalidatePath('/app/schedules')
     revalidatePath('/app/dashboard')
 
@@ -1199,6 +1231,27 @@ export async function updateSchedule(
       })
       .catch(console.error)
 
+    // SP-480 : Email de notification de modification planning (fire-and-forget)
+    prisma.employee
+      .findUnique({
+        where: { id: updated.employeeId },
+        select: { firstName: true, email: true },
+      })
+      .then((emp) => {
+        if (emp?.email) {
+          sendScheduleNotificationEmail({
+            employeeEmail: emp.email,
+            firstName: emp.firstName,
+            action: 'updated',
+            count: 1,
+            startDate: updated.startDate,
+            scheduleType: updated.type,
+            timeRange: `${updated.startTime} - ${updated.endTime}`,
+          }).catch(console.error)
+        }
+      })
+      .catch(console.error)
+
     revalidatePath('/app/schedules')
     revalidatePath(`/app/schedules/${validated.id}`)
     revalidatePath('/app/dashboard')
@@ -1227,10 +1280,14 @@ export async function deleteSchedule(id: string): Promise<DeleteActionResult> {
   const user = authResult.user
 
   try {
-    // Recuperer le schedule avec le userId de l'employé
+    // Recuperer le schedule avec le userId et l'email de l'employé
     const schedule = await prisma.schedule.findUnique({
       where: { id },
-      include: { employee: { select: { userId: true } } },
+      include: {
+        employee: {
+          select: { userId: true, firstName: true, email: true },
+        },
+      },
     })
 
     if (!schedule) {
@@ -1271,6 +1328,19 @@ export async function deleteSchedule(id: string): Promise<DeleteActionResult> {
           type: schedule.type,
         }
       ).catch(console.error)
+    }
+
+    // SP-480 : Email de notification de suppression planning (fire-and-forget)
+    if (schedule.employee?.email) {
+      sendScheduleNotificationEmail({
+        employeeEmail: schedule.employee.email,
+        firstName: schedule.employee.firstName,
+        action: 'deleted',
+        count: 1,
+        startDate: schedule.startDate,
+        scheduleType: schedule.type,
+        timeRange: `${schedule.startTime} - ${schedule.endTime}`,
+      }).catch(console.error)
     }
 
     revalidatePath('/app/schedules')
