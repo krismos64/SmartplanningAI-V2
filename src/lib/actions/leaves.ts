@@ -49,10 +49,11 @@ import {
 } from '@/lib/email/templates/leave-decision'
 import { sendLeaveRequestedEmail } from '@/lib/email/templates/leave-requested'
 import { assertNotImpersonating } from '@/lib/impersonation'
+import { invalidateDashboardCache, invalidateLeavesCache } from '@/lib/cache'
 import {
-  invalidateDashboardCache,
-  invalidateLeavesCache,
-} from '@/lib/cache'
+  sendLeaveRevokedEmail,
+  sendLeaveBalanceChangedEmail,
+} from '@/lib/email/templates/leave-notifications'
 import type { ListActionResult, ListQueryParams } from '@/types'
 import type { LeaveEmailData, LeaveRequestedEmailData } from '@/types'
 import { createLeaveNotification } from '@/lib/actions/notifications'
@@ -1197,6 +1198,22 @@ export async function revokeLeaveRequest(
       },
     }).catch(console.error)
 
+    // SP-480 : Email de notification de révocation à l'employé (fire-and-forget)
+    const revokedEmployee = await prisma.employee.findUnique({
+      where: { id: leaveRequest.employeeId },
+      select: { firstName: true, email: true },
+    })
+    if (revokedEmployee?.email) {
+      sendLeaveRevokedEmail({
+        firstName: revokedEmployee.firstName,
+        email: revokedEmployee.email,
+        leaveType: leaveRequest.type,
+        startDate: leaveRequest.startDate,
+        endDate: leaveRequest.endDate,
+        revokeReason: data.revokeReason,
+      }).catch(console.error)
+    }
+
     revalidatePath(LEAVE_PATH)
     invalidateLeavesCacheForCompany(leaveRequest.companyId)
     return { success: true, data: updated }
@@ -1306,7 +1323,7 @@ export async function updateLeaveBalance(
     // Vérifier que l'employé appartient à la même entreprise
     const employee = await prisma.employee.findUnique({
       where: { id: employeeId },
-      select: { companyId: true },
+      select: { companyId: true, firstName: true, email: true },
     })
 
     if (!employee) return { success: false, error: 'Employé non trouvé' }
@@ -1342,6 +1359,19 @@ export async function updateLeaveBalance(
         balanceUpdate: data as unknown as Prisma.InputJsonValue,
       },
     }).catch(console.error)
+
+    // SP-480 : Email de notification de modification du solde (fire-and-forget)
+    if (employee.email) {
+      sendLeaveBalanceChangedEmail({
+        firstName: employee.firstName,
+        email: employee.email,
+        year,
+        paidLeaveTotal: balance.paidLeaveTotal,
+        paidLeaveRemaining: balance.paidLeaveTotal - balance.paidLeaveUsed,
+        rttTotal: balance.rttTotal,
+        rttRemaining: balance.rttTotal - balance.rttUsed,
+      }).catch(console.error)
+    }
 
     revalidatePath(LEAVE_PATH)
     invalidateLeavesCacheForCompany(employee.companyId)

@@ -1201,6 +1201,19 @@ export async function toggleEmployeeStatus(
       details: { from: !isActive, to: isActive },
     }).catch(console.error)
 
+    // SP-480 : Email de notification de désactivation (fire-and-forget)
+    // On n'envoie que si le compte est désactivé (pas à la réactivation)
+    if (!isActive && employee.email) {
+      const { sendEmployeeDeactivatedEmail } = await import(
+        '@/lib/email/templates/account-notifications'
+      )
+      sendEmployeeDeactivatedEmail({
+        firstName: employee.firstName,
+        email: employee.email,
+        companyName: employee.company?.name || 'SmartPlanning',
+      }).catch(console.error)
+    }
+
     revalidatePath('/app/dashboard/employees')
     revalidatePath(`/app/dashboard/employees/${id}`)
 
@@ -2027,6 +2040,26 @@ export async function activateAccount(data: {
         role: targetUser.role,
       },
     }).catch(console.error)
+
+    // 10. Email de bienvenue à l'employé activé (fire-and-forget, SP-480)
+    if (targetUser.companyId) {
+      const company = await prisma.company.findUnique({
+        where: { id: targetUser.companyId },
+        select: { name: true },
+      })
+      if (company) {
+        const { sendEmployeeActivatedEmail } = await import(
+          '@/lib/email/templates/account-notifications'
+        )
+        const activatedFirstName =
+          targetUser.name?.split(' ')[0] || 'Utilisateur'
+        sendEmployeeActivatedEmail({
+          firstName: activatedFirstName,
+          email: targetUser.email,
+          companyName: company.name,
+        }).catch(console.error)
+      }
+    }
 
     return {
       success: true,
