@@ -1,3 +1,56 @@
+// ============================================================================
+// SCHEMA PRISMA — SmartPlanning (langage prisma schema client PSL)
+// ============================================================================
+//
+// Ce fichier décrit toute la structure de la base de données PostgreSQL.
+// Prisma le lit pour générer le client TypeScript typé (prisma generate)
+// et pour créer les migrations SQL (prisma migrate dev).
+//
+// Le projet est un SaaS multi-tenant : chaque entreprise (Company) a ses
+// propres données, isolées des autres. Concrètement, presque chaque table
+// porte un champ companyId qui sert de filtre obligatoire dans toutes
+// les requêtes. Un utilisateur de l'entreprise A ne peut jamais voir
+// les données de l'entreprise B.
+//
+// Choix techniques importants :
+//
+// 1) Les identifiants utilisent cuid() plutôt que uuid() ou autoincrement().
+//    Un CUID est une chaîne unique, courte, compatible URL, et surtout
+//    non séquentielle. Ça veut dire qu'un utilisateur malveillant ne peut
+//    pas deviner l'id suivant en incrémentant un chiffre (contrairement
+//    à un id auto-incrémenté 1, 2, 3...). C'est une bonne pratique
+//    de sécurité recommandée par l'OWASP.
+//
+// 2) Chaque table est mappée en snake_case via @@map("nom_table") pour
+//    respecter les conventions PostgreSQL, alors que côté TypeScript
+//    on garde le PascalCase (User, Company, etc.) qui est la norme JS/TS.
+//
+// 3) La suppression en cascade (onDelete: Cascade) est utilisée partout
+//    sauf exception. Si une entreprise est supprimée, toutes ses données
+//    partent avec. C'est un choix voulu pour respecter le droit à
+//    l'effacement du RGPD (article 17). L'exception notable : Payment
+//    utilise onDelete: SetNull sur la relation Subscription, parce qu'on
+//    doit garder l'historique des paiements même si l'abonnement est
+//    supprimé (obligation comptable de conservation).
+//
+// 4) Les index (@@index) accélèrent les requêtes fréquentes. Sans index,
+//    PostgreSQL doit parcourir toute la table pour trouver une ligne.
+//    Avec un index, il va directement au bon endroit, comme un sommaire
+//    dans un livre. J'ai mis des index sur les colonnes qui servent
+//    souvent de filtre : companyId (isolation multi-tenant), status
+//    (filtrer par état), les dates (affichage planning par semaine/mois).
+//
+// 5) Les champs Json? (comme preferences ou recurrenceRule) stockent des
+//    objets flexibles en JSONB dans PostgreSQL. C'est pratique quand la
+//    structure peut évoluer sans avoir à modifier le schéma à chaque fois.
+//    Le compromis : on perd le typage strict côté base de données, donc
+//    la validation se fait côté application avec Zod.
+//
+// Architecture : 18 modèles au total (14 métier + 4 imposés par NextAuth v5)
+// Base de données : PostgreSQL 16 via Docker en local, Docker en production
+// ORM : Prisma 6.18
+// ============================================================================
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,66 +63,96 @@ datasource db {
 // ============================================================================
 // AUTHENTIFICATION (NextAuth v5)
 // ============================================================================
+// Les 4 modèles suivants (User, Account, Session, VerificationToken) sont
+// imposés par NextAuth v5. C'est le standard
+// d'authentification pour Next.js. J'ai enrichi le modèle User avec les
+// champs métier du projet (rôle, entreprise, préférences, etc.).
+// Account et Session sont gérés automatiquement par NextAuth, on n'y
+// touche quasiment jamais dans le code applicatif.
+// ============================================================================
 
 model User {
+  // Identifiant unique généré automatiquement (voir explication CUID en haut)
   id            String    @id @default(cuid())
   email         String    @unique
-  emailVerified DateTime?
+  emailVerified DateTime? // Rempli automatiquement par NextAuth quand l'email est vérifié
   name          String?
-  password      String // Hash bcrypt
-  image         String?
-  role          UserRole  @default(EMPLOYEE)
+  password      String // Le mot de passe n'est jamais stocké en clair, c'est un hash bcrypt
+  image         String? // URL de l'avatar (stocké sur Cloudinary)
 
-  // Relations NextAuth v5
+  // Le rôle détermine ce que l'utilisateur peut faire dans l'application.
+  // Par défaut c'est EMPLOYEE, le rôle le plus restrictif.
+  // La hiérarchie complète : SYSTEM_ADMIN > DIRECTOR > MANAGER > EMPLOYEE
+  role UserRole @default(EMPLOYEE)
+
+  // Relations NextAuth v5 (gérées automatiquement, nécessaires pour le fonctionnement interne)
   accounts Account[]
   sessions Session[]
 
-  // Relations métier
+  // L'entreprise à laquelle appartient l'utilisateur.
+  // C'est la clé de voûte du multi-tenant : toutes les requêtes filtrent par companyId.
+  // Le ? signifie que companyId peut être null, c'est le cas pour le SYSTEM_ADMIN
+  // qui n'appartient à aucune entreprise puisqu'il gère toute la plateforme.
+  // onDelete Cascade : si l'entreprise est supprimée, tous ses utilisateurs le sont aussi (RGPD).
   companyId String?
-  company   Company?  @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  employee  Employee?
+  company   Company? @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
-  // Notifications
+  // Un User peut avoir un profil Employee associé (relation 1:1).
+  // La séparation User/Employee est voulue : User gère l'authentification,
+  // Employee gère les données RH (poste, équipe, heures, compétences).
+  employee Employee?
+
+  // Toutes les notifications destinées à cet utilisateur
   notifications Notification[]
 
-  // Congés
+  // Quand un manager ou directeur modifie le solde de congés d'un employé,
+  // on garde la trace de qui a fait la modification
   leaveBalanceUpdates LeaveBalance[] @relation("LeaveBalanceUpdatedBy")
 
-  // Tâches personnelles (todolist privée)
+  // Todolist privée de l'utilisateur, visible uniquement par lui
   personalTasks PersonalTask[] @relation("UserPersonalTasks")
 
-  // Notes d'incident (auteur)
+  // Notes d'incident rédigées par cet utilisateur (en tant que manager/directeur)
   incidentNotesAuthored IncidentNote[] @relation("IncidentNoteAuthor")
 
-  // Audit trail (SP-442)
+  // Journal d'audit : toutes les actions importantes faites par cet utilisateur
+  // (connexion, création, modification, suppression, export, etc.)
   auditLogs AuditLog[]
 
-  // Permissions & sécurité
-  isActive        Boolean   @default(true)
-  isEmailVerified Boolean   @default(false)
-  lastLoginAt     DateTime?
+  // Sécurité et état du compte
+  isActive        Boolean   @default(true) // Permet de désactiver un compte sans le supprimer
+  isEmailVerified Boolean   @default(false) // Passe à true après clic sur le lien d'activation reçu par email
+  lastLoginAt     DateTime? // Date de dernière connexion, utile pour détecter les comptes inactifs
 
-  // Préférences utilisateur (SP-433)
-  // Structure: { display: { theme, dateFormat, timeFormat, language }, notifications: { email: {...}, inApp: {...} } }
+  // Préférences utilisateur stockées en JSON flexible.
+  // Contient le thème (clair/sombre), le format de date, la langue,
+  // et les préférences de notifications (quels emails recevoir, etc.)
+  // Exemple : { display: { theme: "dark" }, notifications: { email: { leaves: true } } }
   preferences Json?
 
-  // Audit
+  // Timestamps automatiques : createdAt est rempli à la création,
+  // updatedAt est mis à jour automatiquement par Prisma à chaque modification
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([email])
-  @@index([companyId])
-  @@index([role])
+  // Index pour accélérer les recherches fréquentes
+  @@index([email]) // Recherche par email (connexion)
+  @@index([companyId]) // Filtre multi-tenant (liste des utilisateurs d'une entreprise)
+  @@index([role]) // Filtre par rôle (ex: "tous les managers de cette entreprise")
+  // Le nom de la table en base de données sera "users" (convention PostgreSQL snake_case)
   @@map("users")
 }
 
+// Modèle imposé par NextAuth v5, stocke les comptes OAuth (Google, GitHub, etc.)
+// Dans SmartPlanning on utilise uniquement l'authentification par email/mot de passe,
+// mais la table existe au cas où on ajouterait des providers OAuth plus tard.
 model Account {
   id                String  @id @default(cuid())
   userId            String
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String? @db.Text
+  refresh_token     String? @db.Text // @db.Text = stocké en type TEXT sans limite de taille en PostgreSQL
   access_token      String? @db.Text
   expires_at        Int?
   token_type        String?
@@ -79,11 +162,15 @@ model Account {
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  // Contrainte unique composite : un seul compte par provider et par identifiant provider
   @@unique([provider, providerAccountId])
   @@index([userId])
   @@map("accounts")
 }
 
+// Modèle imposé par NextAuth v5, gère les sessions utilisateur.
+// En pratique on utilise les JWT (tokens signés) plutôt que les sessions en base,
+// mais NextAuth a besoin que cette table existe.
 model Session {
   id           String   @id @default(cuid())
   sessionToken String   @unique
@@ -95,11 +182,15 @@ model Session {
   @@map("sessions")
 }
 
+// Modèle imposé par NextAuth v5, stocke les tokens temporaires
+// utilisés pour la vérification d'email et la réinitialisation de mot de passe.
+// Ces tokens expirent après 48h pour des raisons de sécurité.
 model VerificationToken {
   identifier String
   token      String   @unique
   expires    DateTime
 
+  // Contrainte unique composite : un seul token par identifiant
   @@unique([identifier, token])
   @@map("verification_tokens")
 }
@@ -107,31 +198,41 @@ model VerificationToken {
 // ============================================================================
 // ENTREPRISES (Multi-tenant)
 // ============================================================================
+// Company est le modèle central du multi-tenant. Chaque entreprise cliente
+// est une Company, et toutes les données métier (employés, plannings,
+// congés, etc.) lui sont rattachées via companyId.
+// C'est ce qui garantit l'isolation des données entre les clients.
+// ============================================================================
 
 model Company {
   id      String  @id @default(cuid())
   name    String
-  slug    String  @unique // URL-friendly : /app/acme-corp
-  logo    String?
+  slug    String  @unique // Identifiant lisible dans l'URL, ex: "acme-corp" pour /app/acme-corp
+  logo    String? // URL du logo (stocké sur Cloudinary)
   email   String?
   phone   String?
-  address String? @db.Text
+  address String? @db.Text // Text car une adresse peut être longue (multilignes)
 
-  // Configuration planning
-  workingHoursStart String   @default("09:00") // Format HH:mm
+  // Configuration des horaires de travail par défaut pour toute l'entreprise.
+  // Chaque entreprise peut personnaliser ses jours et heures ouvrés.
+  workingHoursStart String   @default("09:00")
   workingHoursEnd   String   @default("18:00")
   workingDays       String[] @default(["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"])
   timezone          String   @default("Europe/Paris")
 
-  // Configuration horaires avancée par jour (JSONB)
-  // Exemple: { "MONDAY": { "start": "09:00", "end": "18:00", "break": "12:00-14:00" } }
+  // Configuration avancée par jour, en JSON pour plus de flexibilité.
+  // Permet de définir des horaires différents selon le jour de la semaine.
+  // Exemple : { "MONDAY": { "start": "09:00", "end": "18:00", "break": "12:00-14:00" } }
   defaultOpeningHours Json?
 
-  // Abonnement SaaS (source de vérité = Subscription.plan)
+  // Dates liées à l'abonnement SaaS.
+  // La vraie source de vérité pour le plan et le statut, c'est le modèle Subscription.
+  // Ces dates sont dupliquées ici pour pouvoir les lire rapidement sans jointure,
+  // notamment dans le middleware qui vérifie l'abonnement sur chaque requête.
   trialEndsAt        DateTime?
   subscriptionEndsAt DateTime?
 
-  // Relations
+  // Toutes les entités rattachées à cette entreprise
   users          User[]
   teams          Team[]
   employees      Employee[]
@@ -139,96 +240,111 @@ model Company {
   leaveRequests  LeaveRequest[]
   leaveBalances  LeaveBalance[]
   notifications  Notification[]
-  subscription   Subscription?
+  subscription   Subscription? // Une seule souscription par entreprise (relation 1:1)
   payments       Payment[]
   availabilities Availability[]
   incidentNotes  IncidentNote[]
   emailLogs      EmailLog[]
   auditLogs      AuditLog[]
 
-  // Audit
-  isActive  Boolean  @default(true)
+  isActive  Boolean  @default(true) // Permet de désactiver une entreprise sans supprimer ses données
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([slug])
-  @@index([isActive])
+  @@index([slug]) // Recherche par slug (dans les URLs)
+  @@index([isActive]) // Filtre rapide pour n'afficher que les entreprises actives
   @@map("companies")
 }
 
 // ============================================================================
 // ABONNEMENTS & PAIEMENTS (Stripe)
 // ============================================================================
+// Le modèle économique est un tarif "per-seat" : l'entreprise paie 2,90€ HT
+// par employé actif par mois. Stripe gère tout le cycle de paiement
+// (carte bancaire, factures, relances). Côté application, on stocke
+// les identifiants Stripe pour faire le lien, et on écoute les webhooks
+// Stripe pour mettre à jour le statut en temps réel.
+// ============================================================================
 
 model Subscription {
-  id        String  @id @default(cuid())
+  id String @id @default(cuid())
+
+  // Relation 1:1 avec Company : une entreprise a un seul abonnement.
+  // Le @unique sur companyId garantit cette contrainte en base de données.
   companyId String  @unique
   company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
-  // Stripe
-  stripeCustomerId     String  @unique
-  stripeSubscriptionId String? @unique
-  stripePriceId        String?
-  stripeProductId      String? // ID du produit Stripe
+  // Identifiants Stripe pour faire le lien avec leur système.
+  // On les stocke pour pouvoir appeler l'API Stripe (modifier l'abonnement,
+  // ouvrir le portail client, annuler, etc.)
+  stripeCustomerId     String  @unique // Chaque entreprise est un "Customer" chez Stripe
+  stripeSubscriptionId String? @unique // L'id de l'abonnement actif (null si pas encore abonné)
+  stripePriceId        String? // L'id du tarif appliqué chez Stripe
+  stripeProductId      String? // L'id du produit Stripe
 
-  // Plan per-seat
+  // Détails du tarif per-seat
   plan             SubscriptionPlan @default(FREE)
-  quantity         Int              @default(0) // Nombre d'employés facturés (= Stripe subscription_item.quantity)
-  pricePerEmployee Int              @default(290) // Prix en CENTIMES par employé (290 = 2,90€)
-  planPrice        Int              @default(0) // Prix total en CENTIMES (calculé = quantity × pricePerEmployee)
+  quantity         Int              @default(0) // Nombre d'employés facturés, synchronisé avec Stripe
+  pricePerEmployee Int              @default(290) // Prix en centimes (290 = 2,90€), stocké en centimes pour éviter les erreurs d'arrondi avec les décimaux
+  planPrice        Int              @default(0) // Prix total en centimes, calculé : quantity x pricePerEmployee
   currency         String           @default("EUR")
   billingInterval  String? // "month" ou "year"
 
-  // Métadonnées techniques webhooks (jamais de PII)
+  // Métadonnées techniques reçues des webhooks Stripe.
+  // Jamais de données personnelles ici (pas de nom, email, carte bancaire).
   metadata Json?
 
-  // Statut
+  // État de l'abonnement, mis à jour automatiquement via les webhooks Stripe
   status             SubscriptionStatus @default(TRIAL)
-  currentPeriodStart DateTime?
-  currentPeriodEnd   DateTime?
-  cancelAtPeriodEnd  Boolean            @default(false)
-  canceledAt         DateTime?
+  currentPeriodStart DateTime? // Début de la période de facturation en cours
+  currentPeriodEnd   DateTime? // Fin de la période, c'est à cette date que le prochain paiement est prélevé
+  cancelAtPeriodEnd  Boolean            @default(false) // Si true, l'abonnement s'arrête à la fin de la période en cours
+  canceledAt         DateTime? // Date d'annulation effective
 
-  // Relations
-  payments Payment[]
+  payments Payment[] // Historique de tous les paiements liés à cet abonnement
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([stripeCustomerId])
-  @@index([stripeSubscriptionId])
-  @@index([status])
+  @@index([stripeCustomerId]) // Recherche rapide quand on reçoit un webhook Stripe (qui envoie le customerId)
+  @@index([stripeSubscriptionId]) // Idem pour les webhooks qui envoient le subscriptionId
+  @@index([status]) // Filtre par statut (ex: admin qui veut voir tous les abonnements en retard)
   @@map("subscriptions")
 }
 
 model Payment {
-  id             String        @id @default(cuid())
-  companyId      String
-  company        Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  id String @id @default(cuid())
+
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  // onDelete SetNull ici et non Cascade : si l'abonnement est supprimé,
+  // on garde quand même l'historique des paiements. C'est une obligation
+  // légale comptable (conservation des preuves de transaction).
   subscriptionId String?
   subscription   Subscription? @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
 
-  // Stripe
+  // Identifiants Stripe pour retrouver le paiement et la facture dans leur dashboard
   stripePaymentId String  @unique
   stripeInvoiceId String?
 
-  // Montant (en centimes)
+  // Le montant est stocké en centimes (comme chez Stripe) pour éviter
+  // les problèmes d'arrondi des nombres à virgule. 2,90€ = 290 centimes.
   amount   Int
   currency String @default("EUR")
 
-  // Statut
   status         PaymentStatus @default(PENDING)
-  paymentMethod  String? // "card", "sepa_debit", etc.
-  failureReason  String? // Code d'erreur Stripe (ex: "card_declined")
-  failureMessage String? // Message d'erreur lisible
+  paymentMethod  String? // Type de moyen de paiement : "card", "sepa_debit", etc.
+  failureReason  String? // Code technique Stripe en cas d'échec (ex: "card_declined")
+  failureMessage String? // Message lisible pour l'utilisateur en cas d'échec
 
-  // Métadonnées techniques
-  metadata Json?
+  metadata Json? // Métadonnées techniques Stripe
 
-  // Dates
-  paidAt    DateTime?
+  paidAt    DateTime? // Date du paiement effectif (null si en attente ou échoué)
   createdAt DateTime  @default(now())
 
+  // Index composé : les paiements d'une entreprise triés du plus récent au plus ancien.
+  // C'est la requête la plus fréquente (page billing : "voir mes derniers paiements").
   @@index([companyId, createdAt(sort: Desc)])
   @@index([subscriptionId])
   @@index([status])
@@ -238,156 +354,206 @@ model Payment {
 // ============================================================================
 // LOGS EMAILS BILLING (SP-368)
 // ============================================================================
+// On garde une trace de chaque email transactionnel envoyé (confirmation
+// de paiement, rappel d'essai, etc.) pour éviter d'envoyer des doublons
+// et pour pouvoir diagnostiquer les problèmes d'envoi.
+// ============================================================================
 
 model EmailLog {
-  id             String   @id @default(cuid())
+  id             String  @id @default(cuid())
   companyId      String
-  company        Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  company        Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
   subscriptionId String?
-  emailType      String   // PAYMENT_CONFIRMED, PAYMENT_FAILED, SUBSCRIPTION_ACTIVATED, SUBSCRIPTION_CANCELED, TRIAL_REMINDER_14, TRIAL_REMINDER_7, TRIAL_REMINDER_3, TRIAL_EXPIRED, QUANTITY_UPDATED
+
+  // Le type d'email envoyé, par exemple PAYMENT_CONFIRMED, TRIAL_REMINDER_7, etc.
+  // C'est une String et non un enum parce que les types d'emails peuvent évoluer
+  // sans qu'on ait besoin de faire une migration de base de données à chaque fois.
+  emailType String
+
   recipientEmail String
   sentAt         DateTime @default(now())
-  status         String   @default("SENT") // SENT, FAILED, BOUNCED
-  metadata       Json?
+  status         String   @default("SENT") // SENT, FAILED ou BOUNCED
 
+  metadata Json? // Détails techniques (message d'erreur SMTP en cas d'échec, etc.)
+
+  // Contrainte unique : un seul email de chaque type par abonnement.
+  // Ça empêche d'envoyer deux fois le même rappel d'essai à la même entreprise.
   @@unique([subscriptionId, emailType])
   @@index([companyId])
-  @@index([emailType, sentAt])
+  @@index([emailType, sentAt]) // Pour retrouver rapidement les emails d'un certain type sur une période
   @@map("email_logs")
 }
 
 // ============================================================================
 // AUDIT TRAIL (SP-442)
 // ============================================================================
+// Le journal d'audit enregistre toutes les actions importantes dans
+// l'application : qui a fait quoi, quand, et sur quelle entité.
+// C'est indispensable pour la traçabilité (exigence RGPD et sécurité)
+// et pour le support client (comprendre ce qui s'est passé en cas de problème).
+// ============================================================================
 
 model AuditLog {
   id         String          @id @default(cuid())
-  action     AuditAction
-  entityType AuditEntityType
-  entityId   String?
-  userId     String
-  user       User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  companyId  String?
-  company    Company?        @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  details    Json?
-  createdAt  DateTime        @default(now())
+  action     AuditAction // CREATE, UPDATE, DELETE, LOGIN, etc.
+  entityType AuditEntityType // Sur quel type d'objet porte l'action (COMPANY, EMPLOYEE, etc.)
+  entityId   String? // L'id de l'objet concerné (null pour les actions générales comme LOGIN)
 
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // companyId est nullable parce que le SYSTEM_ADMIN n'a pas d'entreprise
+  companyId String?
+  company   Company? @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  // Détails supplémentaires en JSON, par exemple les anciennes valeurs avant modification,
+  // ou l'adresse IP de connexion. Flexible car chaque type d'action a des détails différents.
+  details Json?
+
+  createdAt DateTime @default(now()) // Pas de updatedAt volontairement, un log d'audit ne se modifie jamais
+
+  // Index composé : les logs d'une entreprise triés du plus récent au plus ancien
   @@index([companyId, createdAt(sort: Desc)])
   @@index([userId])
-  @@index([entityType, entityId])
-  @@index([action])
+  @@index([entityType, entityId]) // Pour retrouver tout l'historique d'un objet précis
+  @@index([action]) // Pour filtrer par type d'action (ex: "toutes les suppressions")
   @@map("audit_logs")
 }
 
 // ============================================================================
 // ÉQUIPES & EMPLOYÉS
 // ============================================================================
+// La structure RH de l'entreprise : des équipes avec un manager,
+// et des employés rattachés à ces équipes. Un employé peut exister
+// sans être dans une équipe (ex: freelance, direction).
+// ============================================================================
 
 model Team {
   id          String  @id @default(cuid())
   name        String
   description String?
-  color       String  @default("#3B82F6") // Couleur pour l'affichage planning
+  color       String  @default("#3B82F6") // Couleur utilisée dans la vue planning pour distinguer les équipes visuellement
 
-  // Manager de l'équipe
+  // Le manager de l'équipe. C'est un Employee et non un User,
+  // parce que le manager a aussi ses propres plannings et congés.
+  // Nullable car on peut créer une équipe avant d'y affecter un manager.
   managerId String?
   manager   Employee? @relation("TeamManager", fields: [managerId], references: [id])
 
-  // Relations
   companyId String
   company   Company    @relation(fields: [companyId], references: [id], onDelete: Cascade)
   employees Employee[] @relation("TeamMembers")
   schedules Schedule[]
 
-  // Audit
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([companyId])
-  @@index([managerId])
+  @@index([companyId]) // Filtre multi-tenant
+  @@index([managerId]) // Retrouver rapidement les équipes gérées par un manager
   @@map("teams")
 }
 
 model Employee {
-  id     String  @id @default(cuid())
+  id String @id @default(cuid())
+
+  // Relation 1:1 optionnelle avec User. Un Employee peut exister sans compte User
+  // (ex: un employé ajouté par le directeur qui n'a pas encore activé son compte).
+  // Le @unique sur userId garantit qu'un User ne peut avoir qu'un seul profil Employee.
   userId String? @unique
   user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  // Informations RH
+  // Informations RH classiques
   firstName  String
   lastName   String
-  jobTitle   String?
-  department String?
+  jobTitle   String? // Intitulé du poste
+  department String? // Service ou département
   phone      String?
-  email      String?
-  hireDate   DateTime?
+  email      String? // Email professionnel (peut être différent de l'email du compte User)
+  hireDate   DateTime? // Date d'embauche
 
-  // Planning
-  weeklyHours Float @default(35.0) // Heures contractuelles
+  // Heures contractuelles par semaine, 35h par défaut (durée légale en France).
+  // En Float pour gérer les temps partiels (ex: 28.5h).
+  weeklyHours Float @default(35.0)
 
-  // Compétences & Préférences (IA future)
-  skills      String[] @default([]) // ["React", "TypeScript", "Node.js"]
-  // Exemple preferences: { "preferredDays": ["MONDAY", "TUESDAY"], "maxConsecutiveDays": 5 }
-  preferences Json?
+  // Compétences et préférences, prévus pour une future fonctionnalité
+  // de suggestion intelligente de plannings. Stockés en JSON pour la flexibilité.
+  skills      String[] @default([]) // Ex: ["React", "TypeScript", "Management"]
+  preferences Json? // Ex: { "preferredDays": ["MONDAY", "TUESDAY"], "maxConsecutiveDays": 5 }
 
-  // Relations
   companyId String
   company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
+  // L'équipe à laquelle l'employé appartient (nullable, pas obligatoire)
   teamId String?
   team   Team?   @relation("TeamMembers", fields: [teamId], references: [id])
 
+  // Un employé peut être manager de plusieurs équipes
   managedTeams   Team[]         @relation("TeamManager")
   schedules      Schedule[]
   leaveRequests  LeaveRequest[]
   leaveBalances  LeaveBalance[]
   availabilities Availability[]
-  incidentNotes  IncidentNote[] @relation("IncidentNoteSubject")
 
-  // Audit
-  isActive  Boolean  @default(true)
+  // Les notes d'incident où cet employé est le sujet (pas l'auteur)
+  incidentNotes IncidentNote[] @relation("IncidentNoteSubject")
+
+  isActive  Boolean  @default(true) // Permet de désactiver un employé qui a quitté l'entreprise
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([companyId])
-  @@index([teamId])
-  @@index([userId])
-  @@index([isActive])
+  @@index([companyId]) // Filtre multi-tenant (la requête la plus fréquente)
+  @@index([teamId]) // Liste des membres d'une équipe
+  @@index([userId]) // Retrouver l'Employee à partir du User connecté
+  @@index([isActive]) // Ne pas afficher les employés désactivés dans les listes
   @@map("employees")
 }
 
 // ============================================================================
 // PLANNINGS
 // ============================================================================
+// Le coeur fonctionnel de l'application. Un Schedule est un créneau
+// dans le planning d'un employé : une journée de travail, une réunion,
+// une formation, du télétravail, etc. Les créneaux peuvent être
+// récurrents (toutes les semaines) et concerner plusieurs employés.
+// ============================================================================
 
 model Schedule {
   id String @id @default(cuid())
 
-  // Dates & horaires
+  // Les dates définissent le jour (ou la plage de jours),
+  // les heures définissent le créneau horaire dans la journée.
+  // Séparés volontairement : startDate/endDate sont des DateTime (jour),
+  // startTime/endTime sont des String "HH:mm" (heure).
+  // Ce découpage simplifie les requêtes par plage de dates dans la vue planning.
   startDate DateTime
   endDate   DateTime
-  startTime String // Format HH:mm
-  endTime   String // Format HH:mm
+  startTime String // Ex: "09:00"
+  endTime   String // Ex: "18:00"
 
-  // Type de créneau
+  // Le type indique la nature du créneau (travail, réunion, formation, etc.)
+  // Le status permet de gérer un workflow brouillon/confirmé
   type   ScheduleType   @default(WORK)
   status ScheduleStatus @default(CONFIRMED)
 
-  // Description
   title       String?
-  description String? @db.Text
-  location    String?
-  color       String? @default("#10B981")
+  description String? @db.Text // Text car la description peut être longue
+  location    String? // Lieu (salle de réunion, adresse client, etc.)
+  color       String? @default("#10B981") // Couleur d'affichage dans le calendrier
 
-  // Récurrence (SP-399)
+  // Gestion de la récurrence (ex: "tous les lundis de 9h à 18h").
+  // isRecurring est un booléen simple pour filtrer rapidement.
+  // recurrenceRule contient les détails en JSON : fréquence, jours, date de fin.
+  // recurrenceGroupId relie tous les créneaux d'une même série récurrente,
+  // ce qui permet de modifier ou supprimer toute la série d'un coup.
   isRecurring       Boolean @default(false)
-  recurrenceRule    Json?   // Format: { frequency: "WEEKLY", interval: 1, daysOfWeek: ["MONDAY"], endDate?: "2025-12-31" }
-  recurrenceGroupId String? // ID partagé par tous les créneaux d'une série récurrente
+  recurrenceRule    Json? // Ex: { frequency: "WEEKLY", interval: 1, daysOfWeek: ["MONDAY"], endDate: "2026-06-30" }
+  recurrenceGroupId String?
 
-  // Multi-employés (SP-397)
-  scheduleGroupId String? // ID partagé pour les créneaux créés simultanément pour plusieurs employés
+  // Quand un manager crée un créneau pour plusieurs employés en même temps,
+  // tous les créneaux partagent le même scheduleGroupId.
+  // Utile pour modifier ou supprimer le groupe entier.
+  scheduleGroupId String?
 
-  // Relations
   employeeId String
   employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
 
@@ -397,53 +563,54 @@ model Schedule {
   companyId String
   company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
-  // Audit
-  createdById String? // ID du User qui a créé
+  createdById String? // L'utilisateur qui a créé ce créneau (pour la traçabilité)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  @@index([employeeId])
-  @@index([companyId])
-  @@index([startDate, endDate])
-  @@index([status])
-  @@index([type])
-  @@index([recurrenceGroupId])
-  @@index([scheduleGroupId])
+  @@index([employeeId]) // Les plannings d'un employé
+  @@index([companyId]) // Filtre multi-tenant
+  @@index([startDate, endDate]) // Requêtes par plage de dates (vue semaine, vue mois)
+  @@index([status]) // Filtrer brouillons vs confirmés
+  @@index([type]) // Filtrer par type de créneau
+  @@index([recurrenceGroupId]) // Retrouver tous les créneaux d'une série récurrente
+  @@index([scheduleGroupId]) // Retrouver tous les créneaux d'un groupe multi-employés
   @@map("schedules")
 }
 
 // ============================================================================
 // DISPONIBILITÉS EMPLOYÉS (SP-392)
 // ============================================================================
+// Les employés peuvent déclarer leurs disponibilités ou indisponibilités.
+// Le manager en tient compte quand il crée les plannings.
+// C'est complémentaire des congés : un congé est une absence validée,
+// une disponibilité est une préférence ou contrainte déclarée.
+// ============================================================================
 
 model Availability {
   id String @id @default(cuid())
 
-  // Période
   startDate DateTime
   endDate   DateTime
-  startTime String? // Format HH:mm (optionnel pour journée entière)
-  endTime   String? // Format HH:mm (optionnel pour journée entière)
+  startTime String? // Nullable : si pas renseigné, ça concerne la journée entière
+  endTime   String?
 
-  // Type de disponibilité
   type   AvailabilityType @default(UNAVAILABLE)
-  reason String?          @db.Text
+  reason String?          @db.Text // Motif libre (ex: "rendez-vous médical", "garde enfant")
 
-  // Récurrence
+  // Même logique de récurrence que pour Schedule
   isRecurring    Boolean @default(false)
-  recurrenceRule Json?   // Format: { frequency: "WEEKLY", daysOfWeek: ["MONDAY", "TUESDAY"] }
+  recurrenceRule Json?
 
-  // Relations
   employeeId String
   employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
 
   companyId String
   company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
-  // Audit
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // Index composé sur 3 colonnes : retrouver les disponibilités d'un employé sur une période
   @@index([employeeId, startDate, endDate])
   @@index([companyId])
   @@index([type])
@@ -453,79 +620,84 @@ model Availability {
 // ============================================================================
 // DEMANDES DE CONGÉS
 // ============================================================================
+// Workflow classique : l'employé fait une demande, le manager la valide
+// ou la refuse. Le statut suit le cycle PENDING > APPROVED/REJECTED.
+// L'employé peut aussi annuler sa demande (CANCELLED).
+// ============================================================================
 
 model LeaveRequest {
   id String @id @default(cuid())
 
-  // Dates
   startDate DateTime
   endDate   DateTime
-  days      Float // Nombre de jours ouvrés
+  days      Float // Nombre de jours ouvrés demandés. En Float pour gérer les demi-journées (ex: 0.5)
 
-  // Type de congé
   type   LeaveType          @default(PAID_LEAVE)
-  status LeaveRequestStatus @default(PENDING)
+  status LeaveRequestStatus @default(PENDING) // Toute nouvelle demande commence en attente
 
-  // Demi-journée
+  // Gestion des demi-journées : un employé peut poser juste une matinée ou un après-midi
   halfDay       Boolean @default(false)
-  halfDayPeriod String? // "AM" | "PM"
+  halfDayPeriod String? // "AM" (matin) ou "PM" (après-midi)
 
-  // Justification
-  reason      String?
-  comment     String?  @db.Text
-  attachments String[] @default([]) // URLs fichiers justificatifs
+  reason      String? // Motif de la demande
+  comment     String?  @db.Text // Commentaire libre plus détaillé
+  attachments String[] @default([]) // URLs de pièces jointes (certificat médical, etc.)
 
-  // Relations
   employeeId String
   employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
 
   companyId String
   company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
-  // Validation
-  reviewedById  String? // ID du manager qui valide
-  reviewedAt    DateTime?
-  reviewComment String?   @db.Text
+  // Informations de validation par le manager
+  reviewedById  String? // Qui a validé ou refusé
+  reviewedAt    DateTime? // Quand
+  reviewComment String?   @db.Text // Motif du refus ou commentaire du manager
 
-  // Audit
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([employeeId])
-  @@index([companyId])
-  @@index([status])
-  @@index([startDate, endDate])
+  @@index([employeeId]) // Les demandes d'un employé
+  @@index([companyId]) // Filtre multi-tenant
+  @@index([status]) // Filtrer par statut (ex: "toutes les demandes en attente à traiter")
+  @@index([startDate, endDate]) // Requêtes par période (overlay congés sur le planning)
   @@map("leave_requests")
 }
 
 // ============================================================================
 // SOLDES DE CONGÉS (SP-408)
 // ============================================================================
+// Chaque employé a un compteur de jours de congés par année.
+// Le solde est mis à jour automatiquement quand une demande est approuvée.
+// On sépare congés payés et RTT car ce sont des compteurs indépendants
+// en droit du travail français.
+// ============================================================================
 
 model LeaveBalance {
   id         String @id @default(cuid())
   employeeId String
   companyId  String
-  year       Int
+  year       Int // L'année concernée (2025, 2026, etc.)
 
-  // Congés payés
+  // Congés payés : 25 jours par défaut (droit du travail français, 5 semaines)
   paidLeaveTotal Float @default(25)
   paidLeaveUsed  Float @default(0)
 
-  // RTT
+  // RTT (Réduction du Temps de Travail) : varie selon les entreprises
   rttTotal Float @default(0)
   rttUsed  Float @default(0)
 
-  // Audit
+  // Qui a modifié le solde en dernier (traçabilité)
   updatedById String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  // Relations
   employee  Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
   company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
   updatedBy User?    @relation("LeaveBalanceUpdatedBy", fields: [updatedById], references: [id])
 
+  // Contrainte unique : un seul solde par employé et par année.
+  // Empêche les doublons (ex: deux lignes pour l'année 2026 du même employé).
   @@unique([employeeId, year])
   @@index([companyId])
   @@index([year])
@@ -535,237 +707,272 @@ model LeaveBalance {
 // ============================================================================
 // NOTIFICATIONS
 // ============================================================================
+// Système de notifications en temps réel via SSE (Server-Sent Events).
+// Chaque notification est liée à un utilisateur et peut pointer vers
+// l'objet concerné (un congé, un planning, etc.) via relatedType/relatedId.
+// ============================================================================
 
 model Notification {
   id String @id @default(cuid())
 
-  // Contenu
   title   String
   message String           @db.Text
-  type    NotificationType @default(INFO)
+  type    NotificationType @default(INFO) // Catégorie : info, succès, alerte, planning, congé, etc.
 
-  // Priorité (SP-321)
-  priority NotificationPriority @default(MEDIUM)
+  priority NotificationPriority @default(MEDIUM) // Permet de trier et mettre en avant les urgentes
 
-  // Contexte
+  // Lien polymorphe vers l'objet concerné.
+  // "Polymorphe" signifie que ça peut pointer vers n'importe quel type d'entité
+  // (un congé, un planning, une tâche...). C'est plus simple qu'une foreign key
+  // par type d'entité, même si on perd la contrainte d'intégrité en base.
   relatedType String? // "LeaveRequest", "Schedule", "PersonalTask", "IncidentNote"
-  relatedId   String? // ID de l'objet lié
+  relatedId   String? // L'id de l'objet
 
-  // URL d'action (SP-321) - Lien vers la page concernée
-  actionUrl String? // Ex: "/app/dashboard/leaves/123", "/app/dashboard/planning"
+  // URL vers la page concernée, pour que l'utilisateur puisse cliquer
+  // sur la notification et arriver directement au bon endroit
+  actionUrl String?
 
-  // Destinataire
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   companyId String?
   company   Company? @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
-  // Statut
-  isRead Boolean   @default(false)
-  readAt DateTime?
+  isRead Boolean   @default(false) // Passe à true quand l'utilisateur clique ou marque comme lu
+  readAt DateTime? // Horodatage de la lecture
 
-  // Audit
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // Index composé : les notifications non lues d'un utilisateur (la requête la plus fréquente)
   @@index([userId, isRead])
   @@index([companyId])
-  @@index([createdAt(sort: Desc)])
+  @@index([createdAt(sort: Desc)]) // Tri chronologique inversé (les plus récentes en premier)
   @@index([priority])
   @@map("notifications")
 }
 
 // ============================================================================
-// TÂCHES PERSONNELLES (Todolist privée - SP-417)
+// TÂCHES PERSONNELLES (Todolist privée, SP-417)
+// ============================================================================
+// Chaque utilisateur a sa propre todolist, 100% privée.
+// Personne d'autre ne peut voir ni modifier ses tâches.
+// Le champ "order" permet le réordonnancement par drag and drop.
 // ============================================================================
 
 model PersonalTask {
   id          String    @id @default(cuid())
-  title       String    @db.VarChar(200)
+  title       String    @db.VarChar(200) // Limité à 200 caractères pour garder des titres concis
   description String?   @db.Text
-  dueDate     DateTime?
+  dueDate     DateTime? // Date d'échéance optionnelle
   completed   Boolean   @default(false)
-  order       Int       @default(0)
+  order       Int       @default(0) // Position dans la liste, mis à jour par le drag and drop
 
-  // Propriétaire unique - 100% privé
+  // Rattaché directement au User (pas à l'Employee), parce que même
+  // un SYSTEM_ADMIN sans profil employé peut avoir sa todolist.
   userId String
   user   User   @relation("UserPersonalTasks", fields: [userId], references: [id], onDelete: Cascade)
 
-  // Timestamps
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([userId])
-  @@index([userId, completed])
-  @@index([userId, order])
+  @@index([userId]) // Toutes les tâches d'un utilisateur
+  @@index([userId, completed]) // Les tâches non terminées d'un utilisateur (affichage principal)
+  @@index([userId, order]) // Tri par position dans la liste (drag and drop)
   @@map("personal_tasks")
 }
 
 // ============================================================================
-// NOTES D'INCIDENT (Suivi comportemental - SP-424)
+// NOTES D'INCIDENT (Suivi comportemental, SP-424)
+// ============================================================================
+// Permet aux managers et directeurs de consigner des faits sur un employé
+// (retard, absence, comportement, mérite, etc.). C'est un outil RH classique
+// pour garder une trace écrite. La visibilité est contrôlée par le RBAC :
+// certaines notes sont réservées au directeur, d'autres visibles par
+// les managers de l'équipe.
 // ============================================================================
 
 model IncidentNote {
   id String @id @default(cuid())
 
-  // Sujet de la note (employé concerné)
+  // L'employé concerné par la note (le "sujet")
   subjectId String
   subject   Employee @relation("IncidentNoteSubject", fields: [subjectId], references: [id], onDelete: Cascade)
 
-  // Auteur de la note (manager/directeur qui rédige)
+  // La personne qui rédige la note (manager ou directeur)
   authorId String
-  author   User @relation("IncidentNoteAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  author   User   @relation("IncidentNoteAuthor", fields: [authorId], references: [id], onDelete: Cascade)
 
-  // Contenu
-  title   String  @db.VarChar(200)
-  content String  @db.Text
-  date    DateTime @default(now()) // Date de l'incident
+  title   String   @db.VarChar(200)
+  content String   @db.Text // Le contenu détaillé de la note
+  date    DateTime @default(now()) // La date de l'incident (pas forcément la date de rédaction)
 
-  // Visibilité RBAC
+  // Contrôle de visibilité selon le rôle.
+  // DIRECTOR_ONLY par défaut, c'est le niveau le plus restrictif.
+  // Le choix est laissé à l'auteur au moment de la rédaction.
   visibility IncidentNoteVisibility @default(DIRECTOR_ONLY)
 
-  // Multi-tenant
   companyId String
   company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
-  // Audit
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([subjectId])
-  @@index([authorId])
-  @@index([companyId])
-  @@index([visibility])
-  @@index([date])
+  @@index([subjectId]) // Toutes les notes concernant un employé
+  @@index([authorId]) // Toutes les notes rédigées par un auteur
+  @@index([companyId]) // Filtre multi-tenant
+  @@index([visibility]) // Filtre par niveau de visibilité dans les requêtes RBAC
+  @@index([date]) // Tri chronologique des incidents
   @@map("incident_notes")
 }
 
 // ============================================================================
 // ENUMS
 // ============================================================================
+// Les enums définissent des listes de valeurs fixes. PostgreSQL les stocke
+// comme des types natifs, ce qui est plus performant et plus sûr qu'une
+// simple String : impossible d'insérer une valeur non prévue.
+// Côté TypeScript, Prisma génère les types correspondants automatiquement,
+// donc le compilateur vérifie qu'on utilise des valeurs valides.
+// ============================================================================
 
+// Visibilité des notes d'incident selon le rôle hiérarchique
 enum IncidentNoteVisibility {
-  DIRECTOR_ONLY    // Visible uniquement par les directeurs
-  MANAGER_ONLY     // Visible uniquement par les managers de l'équipe
-  MANAGER_DIRECTOR // Visible par managers + directeurs
-  ALL              // Visible par tous (info générale)
+  DIRECTOR_ONLY // Seuls les directeurs de l'entreprise peuvent voir cette note
+  MANAGER_ONLY // Seuls les managers de l'équipe concernée peuvent voir cette note
+  MANAGER_DIRECTOR // Visible par les managers et les directeurs
+  ALL // Visible par tout le monde (information générale, non sensible)
 }
 
+// Les 4 rôles de l'application, du plus puissant au moins puissant.
+// Chaque rôle hérite des permissions du rôle inférieur.
 enum UserRole {
-  SYSTEM_ADMIN // Super admin plateforme SaaS
-  DIRECTOR // Directeur entreprise (accès total entreprise)
-  MANAGER // Manager équipe (gestion équipe)
-  EMPLOYEE // Employé (consultation + demandes congés)
+  SYSTEM_ADMIN // Administrateur de la plateforme SaaS, accès à toutes les entreprises
+  DIRECTOR // Directeur d'une entreprise, accès total à son entreprise
+  MANAGER // Manager d'une ou plusieurs équipes, gère ses équipes
+  EMPLOYEE // Employé de base, consulte son planning et fait des demandes de congés
 }
 
+// Les deux plans d'abonnement proposés
 enum SubscriptionPlan {
-  FREE     // Essai gratuit / démo
-  PER_SEAT // Tarif unique 2,90€/employé/mois
+  FREE // Plan gratuit pendant la période d'essai (14 jours)
+  PER_SEAT // Plan payant à 2,90€ HT par employé actif par mois
 }
 
+// Les différents états possibles d'un abonnement.
+// Ces statuts sont synchronisés avec Stripe via les webhooks.
 enum SubscriptionStatus {
-  TRIAL      // Période d'essai
-  ACTIVE     // Actif payé
-  PAST_DUE   // Paiement en retard
-  CANCELED   // Annulé
-  EXPIRED    // Expiré
-  INCOMPLETE // Paiement incomplet Stripe (3D Secure en attente)
+  TRIAL // Période d'essai gratuite de 14 jours
+  ACTIVE // Abonnement actif, les paiements passent correctement
+  PAST_DUE // Le dernier paiement a échoué, Stripe va retenter automatiquement
+  CANCELED // L'entreprise a annulé son abonnement
+  EXPIRED // L'abonnement a expiré (fin de période après annulation)
+  INCOMPLETE // Le paiement nécessite une action supplémentaire (3D Secure, vérification bancaire DSP2 européenne)
 }
 
+// Les états possibles d'un paiement
 enum PaymentStatus {
-  PENDING         // En attente de traitement
-  SUCCEEDED       // Paiement réussi
-  FAILED          // Paiement échoué
-  REFUNDED        // Remboursé
-  REQUIRES_ACTION // 3D Secure en attente
+  PENDING // Le paiement vient d'être créé, en attente de traitement par Stripe
+  SUCCEEDED // Le paiement a été encaissé avec succès
+  FAILED // Le paiement a échoué (carte refusée, fonds insuffisants, etc.)
+  REFUNDED // Le paiement a été remboursé
+  REQUIRES_ACTION // Le paiement nécessite une action du client (3D Secure, validation bancaire)
 }
 
+// Les types de créneaux dans le planning
 enum ScheduleType {
-  WORK // Travail normal
+  WORK // Journée de travail normale
   MEETING // Réunion
   BREAK // Pause
   TRAINING // Formation
   REMOTE // Télétravail
-  ON_CALL // Astreinte
+  ON_CALL // Astreinte (l'employé est joignable en cas de besoin)
   OVERTIME // Heures supplémentaires
-  REST // Repos (journée entière)
+  REST // Jour de repos (journée entière)
 }
 
+// Le workflow d'un créneau de planning
 enum ScheduleStatus {
-  DRAFT // Brouillon
-  CONFIRMED // Confirmé
+  DRAFT // Brouillon, pas encore visible par les employés
+  CONFIRMED // Confirmé et visible par tous
 }
 
+// Les types de congés, basés sur le droit du travail français
 enum LeaveType {
-  PAID_LEAVE     // Congés payés
-  SICK_LEAVE     // Arrêt maladie
-  UNPAID_LEAVE   // Congé sans solde
-  RTT            // RTT
-  PARENTAL_LEAVE // Congé parental
-  FAMILY_EVENT   // Événement familial
-  OTHER          // Autre
+  PAID_LEAVE // Congés payés (25 jours/an en France)
+  SICK_LEAVE // Arrêt maladie (avec justificatif médical)
+  UNPAID_LEAVE // Congé sans solde (non rémunéré)
+  RTT // RTT, Réduction du Temps de Travail (spécifique au droit français)
+  PARENTAL_LEAVE // Congé parental (naissance ou adoption)
+  FAMILY_EVENT // Événement familial (mariage, décès, etc.)
+  OTHER // Autre type de congé non listé
 }
 
+// Le workflow de validation d'une demande de congé
 enum LeaveRequestStatus {
-  PENDING // En attente
-  APPROVED // Approuvée
-  REJECTED // Refusée
-  CANCELLED // Annulée par l'employé
+  PENDING // En attente de validation par le manager
+  APPROVED // Approuvée par le manager
+  REJECTED // Refusée par le manager (avec motif obligatoire)
+  CANCELLED // Annulée par l'employé lui-même
 }
 
+// Les catégories de notifications
 enum NotificationType {
-  // Types génériques (existants)
-  INFO       // Information générale
-  SUCCESS    // Succès d'une opération
-  WARNING    // Avertissement
-  ERROR      // Erreur
-  SYSTEM     // Notification système
+  // Catégories génériques pour les messages système
+  INFO // Information générale
+  SUCCESS // Confirmation d'une action réussie
+  WARNING // Avertissement (ex: essai bientôt terminé)
+  ERROR // Erreur (ex: paiement échoué)
+  SYSTEM // Message système (maintenance, mise à jour)
 
-  // Types métier (SP-321)
-  PLANNING   // Notification liée aux plannings
-  LEAVE      // Notification liée aux congés
-  TASK       // Notification liée aux tâches
-  INCIDENT   // Notification liée aux incidents
+  // Catégories métier pour les notifications liées aux fonctionnalités
+  PLANNING // Modification ou création de planning
+  LEAVE // Demande de congé (nouvelle, approuvée, refusée)
+  TASK // Tâche personnelle (rappel d'échéance)
+  INCIDENT // Nouvelle note d'incident
 }
 
+// Les niveaux de priorité des notifications
 enum NotificationPriority {
-  LOW      // Priorité basse (informative)
-  MEDIUM   // Priorité moyenne (action recommandée)
-  HIGH     // Priorité haute (action requise)
-  URGENT   // Urgente (action immédiate requise)
+  LOW // Informative, pas d'action nécessaire
+  MEDIUM // Action recommandée dans un délai raisonnable
+  HIGH // Action requise rapidement
+  URGENT // Action immédiate nécessaire (ex: paiement échoué, accès bloqué)
 }
 
+// Les types de disponibilité/indisponibilité déclarés par les employés
 enum AvailabilityType {
-  UNAVAILABLE // Indisponible
-  PREFERRED   // Préférence horaire
-  VACATION    // Congés/Vacances
-  SICK        // Maladie
-  TRAINING    // Formation
-  OTHER       // Autre
+  UNAVAILABLE // L'employé n'est pas disponible sur ce créneau
+  PREFERRED // L'employé préfère travailler sur ce créneau (souhait, pas garanti)
+  VACATION // En vacances
+  SICK // En arrêt maladie
+  TRAINING // En formation
+  OTHER // Autre motif
 }
 
+// Les types d'actions enregistrées dans le journal d'audit
 enum AuditAction {
-  CREATE          // Création d'une entité
-  UPDATE          // Modification d'une entité
-  DELETE          // Suppression d'une entité
-  LOGIN           // Connexion utilisateur
-  LOGOUT          // Déconnexion utilisateur
-  EXPORT          // Export de données (RGPD)
-  STATUS_CHANGE   // Changement de statut (activation/désactivation)
-  IMPERSONATE     // Impersonation par un admin
+  CREATE // Création d'un objet (employé, équipe, planning, etc.)
+  UPDATE // Modification d'un objet existant
+  DELETE // Suppression d'un objet
+  LOGIN // Connexion d'un utilisateur à l'application
+  LOGOUT // Déconnexion
+  EXPORT // Export de données personnelles (droit d'accès RGPD, article 15)
+  STATUS_CHANGE // Changement de statut (activation/désactivation d'un compte)
+  IMPERSONATE // Un admin a utilisé le mode "voir en tant que" pour accéder à l'espace d'un client
   PASSWORD_CHANGE // Changement de mot de passe
 }
 
+// Les types d'entités concernées par les actions d'audit
 enum AuditEntityType {
-  COMPANY       // Entreprise
-  EMPLOYEE      // Employé
-  TEAM          // Équipe
-  SCHEDULE      // Planning
-  LEAVE         // Congé
-  SUBSCRIPTION  // Abonnement
-  USER          // Utilisateur
-  SETTINGS      // Paramètres
-  INCIDENT_NOTE // Note d'incident
-  AVAILABILITY  // Disponibilité
+  COMPANY // Action sur une entreprise
+  EMPLOYEE // Action sur un employé
+  TEAM // Action sur une équipe
+  SCHEDULE // Action sur un créneau de planning
+  LEAVE // Action sur une demande de congé
+  SUBSCRIPTION // Action sur un abonnement
+  USER // Action sur un compte utilisateur
+  SETTINGS // Action sur les paramètres
+  INCIDENT_NOTE // Action sur une note d'incident
+  AVAILABILITY // Action sur une déclaration de disponibilité
 }
