@@ -33,10 +33,8 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { useToast } from '@/components/toast/use-toast'
-import {
-  sendAdminMessageToCompany,
-  type AdminMessageInput,
-} from '@/lib/actions/admin-contact'
+import { sendAdminMessageToCompany } from '@/lib/actions/admin-contact'
+import type { AdminMessageInput } from '@/lib/actions/admin-contact.schemas'
 
 // ============================================================================
 // Types

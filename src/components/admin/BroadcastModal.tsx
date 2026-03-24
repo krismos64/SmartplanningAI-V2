@@ -29,11 +29,11 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { useToast } from '@/components/toast/use-toast'
-import {
-  sendAdminBroadcast,
-  type BroadcastInput,
-  type BroadcastResult,
-} from '@/lib/actions/admin-contact'
+import { sendAdminBroadcast } from '@/lib/actions/admin-contact'
+import type {
+  BroadcastInput,
+  BroadcastResult,
+} from '@/lib/actions/admin-contact.schemas'
 
 // ============================================================================
 // Types & constantes (côté client — ne pas importer depuis 'use server')
