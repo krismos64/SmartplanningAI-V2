@@ -48,7 +48,7 @@ Historique détaillé du développement de SmartPlanning V2, organisé par phase
 - **Company Settings** (SP-435) : Configuration entreprise (nom, adresse, jours travaillés, horaires, pause déjeuner), validations Zod cross-field, RBAC DIRECTOR/SYSTEM_ADMIN
 - **Audit System** (SP-442 à SP-446) : Journal d'audit complet avec modèle Prisma AuditLog (9 actions, 10 types d'entités), service fire-and-forget, page admin avec DataTable TanStack + filtres + export CSV + modal détail JSON, protection anti-injection
 - **User Activity Page** (SP-463) : Timeline relative française (`Intl.RelativeTimeFormat`), Server Action filtrant par userId JWT
-- **Impersonation Mode** (SP-453, SP-454, SP-456) : Mode support SYSTEM_ADMIN "Voir espace client" avec cookie HttpOnly TTL 3600s, API REST, bannière orange, impersonation guard middleware, subscription guard bypass, audit trail
+- **Impersonation Mode** (SP-453, SP-454, SP-456) : Mode support SYSTEM_ADMIN "Voir espace client" avec cookie HttpOnly TTL 3600s, API REST, bannière orange, impersonation guard middleware, subscription guard bypass, audit trail — **24 mars 2026** : page billing accessible en lecture seule en mode impersonation (les mutations Stripe restent bloquées par `assertNotImpersonating()` sur chaque Server Action), principe de minimisation RGPD art. 5.1.c
 - **Admin Améliorations** (SP-469 à SP-477) : Service MRR unifié, /api/health sécurisé 3 niveaux, bouton rafraîchir, page utilisateurs cross-entreprises + export CSV, widget essais à risque (3 niveaux urgence), email contact admin, statistiques globales + export PDF (7 indicateurs), notifications SSE admin (4 types + 9 intégrations), broadcast email (Promise.allSettled batch/10, 4 catégories)
 - **Solde congés fiche employé** : Affichage CP/RTT sur fiche détail employé avec édition par DIRECTOR/MANAGER/SYSTEM_ADMIN, validation Zod (used ≤ total)
 - **Monitoring System** (SP-464, SP-465) : Page admin avec Suspense + skeleton, health check DB (4 checks), KPIs SaaS, répartition abonnements, 4 graphiques Recharts (activité audit 7j, distribution abonnements, top 5 actions, croissance entreprises 30j)
@@ -331,6 +331,31 @@ Correction d'un bug où les emails métier étaient envoyés sans vérifier les 
 - 4 Server Actions modifiées (`leaves.ts`, `schedules.ts`, `teams.ts`)
 - Résultat : 154 fichiers tests / 2 746 tests, 0 régression, build OK
 
+### Fix boucle infinie impersonation et crashs Edge Runtime (23 mars 2026)
+
+Résolution de deux bugs critiques en production :
+- **Boucle infinie impersonation** : `router.push()` ne forçait pas le rechargement des Server Components. Le layout ne se ré-exécutait pas avec le nouveau JWT (rôle DIRECTOR, companyId cible), causant des redirections en boucle. Fix : remplacement par `window.location.href` pour forcer un full page reload côté client.
+- **Crash Edge Runtime `prisma.ts`** : `process.on('SIGINT')` et `process.exit()` étaient détectés statiquement par le bundler Edge Runtime comme incompatibles. Fix : accès indirect via `globalThis.process` avec vérification `typeof proc?.on === 'function'` pour rester invisible au bundler.
+- **Redirect role-aware** : l'impersonation redirige désormais vers `/app/director/dashboard`, `/app/manager/dashboard` ou `/app/dashboard` selon le rôle du user cible, évitant une chaîne de redirections inutile.
+
+### Fix erreur 503 production — export objets depuis fichier 'use server' (24 mars 2026)
+
+Bug critique : l'application retournait des erreurs 503 en production alors que tout fonctionnait en local. Cause : le fichier `src/lib/actions/admin-contact.ts` avait la directive `'use server'` et exportait 3 objets (schemas Zod `AdminMessageSchema`, `BroadcastSchema` et constante `BROADCAST_CATEGORY_LABELS`). Next.js 15 tolère cela en mode dev mais le runtime de production crash avec `Error: A "use server" file can only export async functions, found object`.
+
+- Extraction des schemas, types et constantes dans `admin-contact.schemas.ts` (sans `'use server'`)
+- `admin-contact.ts` ne garde plus que les 2 Server Actions async (`sendAdminMessageToCompany`, `sendAdminBroadcast`)
+- Mise à jour des imports dans `BroadcastModal.tsx` et `ContactModal.tsx`
+- Résultat : TypeScript OK, build Next.js OK, 9 tests admin-broadcast OK
+
+### Accès billing en lecture seule en mode impersonation (24 mars 2026)
+
+La page `/app/dashboard/billing` était bloquée en mode impersonation par le guard middleware au même titre que les routes admin. C'était trop conservateur : les mutations Stripe sont déjà protégées par `assertNotImpersonating()` dans les 4 Server Actions (`createCheckoutAction`, `createBillingPortalAction`, `cancelSubscriptionAction`, `updateSubscriptionQuantityAction`).
+
+- Retrait de `pathname.startsWith('/app/dashboard/billing')` du guard impersonation dans `auth.config.ts`
+- Le SYSTEM_ADMIN peut désormais consulter l'état d'abonnement, les paiements et l'historique de facturation d'un client en mode support
+- Les actions de modification (checkout, annulation, portail Stripe) restent bloquées
+- Justification RGPD : principe de minimisation (art. 5.1.c) respecté — consultation uniquement, pas de traitement
+
 ### Documentation Prisma enrichie (23 mars 2026)
 
 Réécriture complète des commentaires du fichier `prisma/schema.prisma` avec des explications en français, rédigées comme un développeur qui documente ses choix techniques pour une soutenance CDA. Chaque modèle, champ, index et enum est commenté avec le "pourquoi" (pas juste le "quoi") : choix du CUID, stratégie cascade vs SetNull, isolation multi-tenant par companyId, convention snake_case PostgreSQL, RGPD, droit du travail français, etc.
@@ -545,4 +570,4 @@ npm run a11y:audit    # Audit Lighthouse
 
 ---
 
-*Dernière mise à jour : 23 mars 2026*
+*Dernière mise à jour : 24 mars 2026*
