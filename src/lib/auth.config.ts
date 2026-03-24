@@ -368,13 +368,13 @@ export const authConfig: NextAuthConfig = {
 
       // --- Etape 7 : Impersonation Guard (SP-453, SP-454) ---
       // Quand un SYSTEM_ADMIN est en mode "voir l'espace client",
-      // il ne doit PAS pouvoir accéder au panel admin ni à la
-      // facturation de l'entreprise impersonnée (lecture seule).
+      // il ne doit PAS pouvoir accéder au panel admin.
+      // La page billing est accessible en lecture seule (support),
+      // les mutations Stripe restent bloquées par assertNotImpersonating().
       // On détecte l'impersonation via un cookie HttpOnly sécurisé
       // plutôt que via la session, car c'est plus fiable en Edge Runtime.
       const isImpersonationBlockedRoute =
-        pathname.startsWith('/app/admin') ||
-        pathname.startsWith('/app/dashboard/billing')
+        pathname.startsWith('/app/admin')
       if (isLoggedIn && isImpersonationBlockedRoute) {
         try {
           const impersonationCookie = request.cookies.get(
