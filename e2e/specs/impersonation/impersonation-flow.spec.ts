@@ -101,27 +101,26 @@ test.describe('Impersonation - restrictions securite', () => {
     await impersonation.stopImpersonation()
   })
 
-  test('la route billing est bloquee en mode impersonation', async ({
+  test('la route billing est accessible en lecture seule en mode impersonation', async ({
     adminPage,
   }) => {
     const impersonation = new ImpersonationPage(adminPage)
 
     await impersonation.startImpersonation(TARGET_COMPANY)
 
-    // Tenter d'acceder a /app/dashboard/billing → redirection vers /app/dashboard
-    // Le middleware redirige avant le chargement complet, ce qui peut lancer
-    // net::ERR_ABORTED — on absorbe cette erreur attendue
+    // Acceder a /app/dashboard/billing — autorise en lecture seule
+    // Les mutations Stripe sont protegees par assertNotImpersonating()
     await adminPage.goto('/app/dashboard/billing', {
       waitUntil: 'domcontentloaded',
-    }).catch(() => {})
-    await adminPage.waitForURL('**/app/dashboard**', {
+    })
+    await adminPage.waitForURL('**/billing**', {
       timeout: 15000,
       waitUntil: 'domcontentloaded',
     })
 
-    // Verifier qu'on n'est PAS sur la page billing
+    // Verifier qu'on est bien sur la page billing
     const url = adminPage.url()
-    expect(url).not.toContain('/billing')
+    expect(url).toContain('/billing')
 
     await impersonation.stopImpersonation()
   })
