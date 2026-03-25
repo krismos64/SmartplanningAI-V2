@@ -140,7 +140,7 @@ jobs:
   # ============================================
   # JOB 3 : TESTS E2E (Critical - Optimisé)
   # ============================================
-  # OPTIMISATION SP-333 : Tests critiques uniquement (~180 tests)
+  # OPTIMISATION SP-333 : Tests critiques uniquement (~163 tests, 12 specs)
   # - Réduit le temps de 40min à ~10-12min
   # - Suite complète exécutée chaque nuit (nightly-e2e.yml)
   #
@@ -352,8 +352,8 @@ jobs:
 # ==============================================
 #
 # STRATÉGIE E2E OPTIMISÉE :
-# - CI : Tests critiques uniquement (~180 tests, ~10-12 min)
-# - Nightly : Suite complète (~5638 unitaires + ~549 E2E desktop + ~170 E2E mobile, chaque nuit à 2h00 UTC)
+# - CI : Tests critiques uniquement (~163 tests, 12 specs, ~10-12 min)
+# - Nightly : Suite complète (~2 746 unitaires + 189 E2E desktop, chaque nuit à 2h00 UTC)
 #
 # FLUX D'EXÉCUTION (Push sur feature branch) :
 #
@@ -399,9 +399,8 @@ jobs:
 # - profile/profile-display
 #
 # TESTS NIGHTLY (nightly-e2e.yml) :
-# - Tests unitaires Vitest (~5638 tests)
-# - Tests E2E desktop Chromium (~549 tests)
-# - Tests E2E mobile 5 devices (~170 tests)
+# - Tests unitaires Vitest (~2 746 tests)
+# - Tests E2E desktop Chromium (189 tests, 13 specs)
 # - Exécuté chaque nuit à 2h00 UTC
 #
 # SÉCURITÉ DU DÉPLOIEMENT :

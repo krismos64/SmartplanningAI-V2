@@ -3,9 +3,8 @@
 # ==============================================
 #
 # Suite COMPLÈTE des tests exécutée chaque nuit :
-# 1. Tests unitaires Vitest (~5638 tests)
-# 2. Tests E2E Playwright desktop (~549 tests)
-# 3. Tests E2E Playwright mobile (5 devices)
+# 1. Tests unitaires Vitest (~2 746 tests)
+# 2. Tests E2E Playwright desktop (189 tests, 13 specs)
 #
 # Permet de détecter les régressions sans bloquer les PR.
 #
@@ -39,7 +38,7 @@ jobs:
   # ============================================
   # JOB 1 : TESTS UNITAIRES (Vitest)
   # ============================================
-  # Lance TOUS les tests unitaires (~5638 tests)
+  # Lance TOUS les tests unitaires (~2 746 tests)
   # Pas besoin de PostgreSQL : les tests unitaires mockent Prisma
   unit-tests:
     name: Unit Tests (Vitest)
@@ -82,8 +81,8 @@ jobs:
   # ============================================
   # JOB 2 : TESTS E2E COMPLETS (Playwright)
   # ============================================
-  # Lance TOUS les tests E2E desktop + mobile (5 devices)
-  # Environ ~549 tests desktop + ~170 tests mobile
+  # Lance TOUS les tests E2E desktop (189 tests, 13 specs)
+  # Chromium uniquement, pas de tests mobile actuellement
   e2e-tests:
     name: Full E2E Suite
     runs-on: ubuntu-latest

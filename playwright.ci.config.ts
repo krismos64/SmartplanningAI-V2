@@ -1,7 +1,7 @@
 /**
  * Configuration Playwright optimisée pour la CI
  *
- * Stratégie : Tests critiques uniquement (~180 tests)
+ * Stratégie : Tests critiques uniquement (~163 tests, 12 specs)
  * - Smoke tests
  * - Authentification & RBAC
  * - CRUD principaux
