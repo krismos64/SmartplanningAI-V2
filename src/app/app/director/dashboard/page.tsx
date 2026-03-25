@@ -11,6 +11,7 @@ import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { hasRequiredRole } from '@/lib/permissions'
 import { getDirectorStats } from '@/lib/services/dashboard'
+import { getEffectiveSessionData } from '@/lib/impersonation'
 
 import { DirectorWelcome } from './_components/DirectorWelcome'
 import { DirectorStats } from './_components/DirectorStats'
@@ -107,14 +108,17 @@ export default async function DirectorDashboardPage() {
     redirect('/login')
   }
 
+  // SP-456 : résoudre les données effectives (impersonation cookie fallback)
+  const effective = await getEffectiveSessionData(session)
+
   // Verification du role (DIRECTOR ou superieur)
-  if (!hasRequiredRole(session.user.role, 'DIRECTOR')) {
+  if (!hasRequiredRole(effective.role as import('@prisma/client').UserRole, 'DIRECTOR')) {
     redirect('/app/dashboard')
   }
 
   // Recuperer l'utilisateur avec son entreprise
   const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
+    where: { id: effective.userId },
     include: {
       company: {
         select: {
@@ -132,7 +136,7 @@ export default async function DirectorDashboardPage() {
 
   // Recuperer les statistiques via le service SP-144
   const statsResult = await getDirectorStats({
-    userId: session.user.id,
+    userId: effective.userId,
     companyId: user.company.id,
   })
 

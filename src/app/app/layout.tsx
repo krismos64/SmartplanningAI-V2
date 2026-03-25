@@ -11,6 +11,7 @@ import { cookies } from 'next/headers'
 import { auth } from '@/lib/auth'
 import { IMPERSONATION_COOKIE_NAME } from '@/types/auth'
 import type { ImpersonationContext } from '@/types/auth'
+import { getEffectiveSessionData } from '@/lib/impersonation'
 
 // Defense en profondeur : noindex meme si robots.txt bloque /app/
 export const metadata: Metadata = {
@@ -30,11 +31,57 @@ export default async function AppLayout({
     redirect('/login')
   }
 
+  // SP-453/456 : résoudre les données effectives en tenant compte du
+  // race condition updateSession() / navigation (cookie fallback)
+  const effective = await getEffectiveSessionData(session)
+  const isImpersonating = effective.userId !== session.user.id
+
+  // SP-453 : données impersonation pour la bannière
+  let impersonationData:
+    | {
+        isImpersonating: boolean
+        impersonatedCompanyName: string
+        impersonatedUserEmail: string
+      }
+    | undefined
+
+  if (isImpersonating) {
+    // Lire les détails depuis le JWT ou le cookie
+    if (session.user.isImpersonating) {
+      impersonationData = {
+        isImpersonating: true,
+        impersonatedCompanyName:
+          session.user.impersonatedCompanyName ?? 'Entreprise',
+        impersonatedUserEmail: session.user.impersonatedUserEmail ?? '',
+      }
+    } else {
+      // Fallback cookie pour la bannière
+      try {
+        const cookieStore = await cookies()
+        const impCookie = cookieStore.get(IMPERSONATION_COOKIE_NAME)
+        if (impCookie?.value) {
+          const ctx = JSON.parse(
+            decodeURIComponent(impCookie.value)
+          ) as ImpersonationContext
+          impersonationData = {
+            isImpersonating: true,
+            impersonatedCompanyName: ctx.targetCompanyName ?? 'Entreprise',
+            impersonatedUserEmail: ctx.targetEmail ?? '',
+          }
+        }
+      } catch {
+        // Cookie invalide — ignorer
+      }
+    }
+  }
+
   // Récupérer les données utilisateur fraîches depuis la DB (dont l'avatar)
   const dbUser = await prisma.user.findUnique({
-    where: { id: session.user.id },
+    where: { id: effective.userId },
     select: {
       image: true,
+      name: true,
+      email: true,
       company: {
         select: { name: true },
       },
@@ -44,17 +91,20 @@ export default async function AppLayout({
   const companyName = dbUser?.company?.name || 'SmartPlanning'
 
   const user = {
-    id: session.user.id,
+    id: effective.userId,
     name:
-      session.user.name || session.user.email?.split('@')[0] || 'Utilisateur',
-    email: session.user.email || '',
+      dbUser?.name ||
+      session.user.name ||
+      session.user.email?.split('@')[0] ||
+      'Utilisateur',
+    email: dbUser?.email || session.user.email || '',
     image: dbUser?.image || null,
-    role: session.user.role as
+    role: effective.role as
       | 'SYSTEM_ADMIN'
       | 'DIRECTOR'
       | 'MANAGER'
       | 'EMPLOYEE',
-    organizationId: session.user.companyId || undefined,
+    organizationId: effective.companyId || undefined,
     companyName,
   }
 
@@ -63,49 +113,6 @@ export default async function AppLayout({
     subscriptionStatus: session.user.subscriptionStatus ?? null,
     trialEndsAt: session.user.trialEndsAt ?? null,
     currentPeriodEnd: session.user.currentPeriodEnd ?? null,
-  }
-
-  // SP-453 : données impersonation pour la bannière
-  // Source primaire : JWT (session.user.isImpersonating)
-  // Fallback : cookie sp-impersonation (plus fiable si updateSession() échoue)
-  let impersonationData:
-    | {
-        isImpersonating: boolean
-        impersonatedCompanyName: string
-        impersonatedUserEmail: string
-      }
-    | undefined
-
-  if (session.user.isImpersonating) {
-    impersonationData = {
-      isImpersonating: true,
-      impersonatedCompanyName:
-        session.user.impersonatedCompanyName ?? 'Entreprise',
-      impersonatedUserEmail: session.user.impersonatedUserEmail ?? '',
-    }
-  } else {
-    // SP-456 : fallback cookie pour robustesse (updateSession peut échouer)
-    try {
-      const cookieStore = await cookies()
-      const impCookie = cookieStore.get(IMPERSONATION_COOKIE_NAME)
-      if (impCookie?.value) {
-        const ctx = JSON.parse(
-          decodeURIComponent(impCookie.value)
-        ) as ImpersonationContext
-        // Vérifier que le cookie n'est pas expiré (IMPERSONATION_MAX_AGE = 3600s)
-        const isExpired =
-          ctx.startedAt && Date.now() - ctx.startedAt > 3600 * 1000
-        if (ctx.originalAdminId && ctx.targetCompanyName && !isExpired) {
-          impersonationData = {
-            isImpersonating: true,
-            impersonatedCompanyName: ctx.targetCompanyName,
-            impersonatedUserEmail: ctx.targetEmail ?? '',
-          }
-        }
-      }
-    } catch {
-      // Cookie invalide — ignorer
-    }
   }
 
   return (

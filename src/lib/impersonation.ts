@@ -88,6 +88,54 @@ export async function stopImpersonation(): Promise<void> {
   cookieStore.delete(IMPERSONATION_COOKIE_NAME)
 }
 
+/**
+ * Résout les données utilisateur effectives en tenant compte de l'impersonation.
+ *
+ * Corrige le race condition où le cookie sp-impersonation est posé mais le JWT
+ * NextAuth n'a pas encore été mis à jour par session.update() au moment où le
+ * Server Component s'exécute.
+ *
+ * @param session - Session NextAuth (peut encore contenir les données admin)
+ * @returns userId, role et companyId effectifs
+ * @ticket SP-456
+ */
+export async function getEffectiveSessionData(session: {
+  user: {
+    id: string
+    role: string
+    companyId?: string | null
+    isImpersonating?: boolean
+    impersonatedUserId?: string
+    impersonatedCompanyId?: string
+  }
+}): Promise<{ userId: string; role: string; companyId: string | null }> {
+  // Cas 1 : JWT déjà mis à jour
+  if (session.user.isImpersonating && session.user.impersonatedUserId) {
+    return {
+      userId: session.user.impersonatedUserId,
+      role: session.user.role,
+      companyId: session.user.impersonatedCompanyId ?? session.user.companyId ?? null,
+    }
+  }
+
+  // Cas 2 : JWT pas encore mis à jour, fallback cookie
+  const ctx = await getImpersonationContextFromHeaders()
+  if (ctx) {
+    return {
+      userId: ctx.targetUserId,
+      role: ctx.targetRole,
+      companyId: ctx.targetCompanyId,
+    }
+  }
+
+  // Cas 3 : pas d'impersonation
+  return {
+    userId: session.user.id,
+    role: session.user.role,
+    companyId: session.user.companyId ?? null,
+  }
+}
+
 /** Résultat de blocage impersonation, compatible CrudActionResult */
 type ImpersonationBlockResult = { success: false; error: string }
 
