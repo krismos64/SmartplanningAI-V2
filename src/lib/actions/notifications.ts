@@ -937,7 +937,7 @@ export async function createSystemNotification(
 // Admin Notification Factory (SP-476)
 // ============================================================================
 
-export interface AdminNotificationParams {
+interface AdminNotificationParams {
   title: string
   message: string
   type: NotificationType
