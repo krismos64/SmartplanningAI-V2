@@ -1131,10 +1131,13 @@ export async function checkAvailabilityConflicts(
   }
 
   try {
+    const user = authResult.user
+
     // Récupérer toutes les indisponibilités qui chevauchent la période
+    // Filtrage companyId pour isolation multi-tenant (defense-in-depth)
     const whereClause: Prisma.AvailabilityWhereInput = {
       employeeId: { in: employeeIds },
-      // Chevauchement de dates : l'indispo commence avant la fin ET finit après le début
+      ...(user.companyId ? { companyId: user.companyId } : {}),
       startDate: { lte: endDate },
       endDate: { gte: startDate },
     }

@@ -1289,6 +1289,7 @@ export async function getEmployeesByTeam(
       where: {
         teamId,
         isActive: true,
+        ...(user.companyId ? { companyId: user.companyId } : {}),
       },
       select: {
         id: true,
@@ -1463,8 +1464,12 @@ export async function bulkDeleteEmployees(
 
   try {
     // Recupere les employes avec leurs counts pour verifier l'acces et les dependances
+    // Filtrage companyId au niveau DB pour isolation multi-tenant
     const employees = await prisma.employee.findMany({
-      where: { id: { in: ids } },
+      where: {
+        id: { in: ids },
+        ...(user.companyId ? { companyId: user.companyId } : {}),
+      },
       select: {
         id: true,
         firstName: true,

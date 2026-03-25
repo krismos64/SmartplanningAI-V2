@@ -25,6 +25,8 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { auth } from '@/lib/auth'
+import { getEffectiveSessionData } from '@/lib/impersonation'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -70,15 +72,19 @@ function isValidEntityType(type: string): type is EntityType {
 }
 
 /**
+ * Filtre companyId conditionnel : appliqué sauf pour SYSTEM_ADMIN (companyId null)
+ */
+function companyFilter(companyId: string | null) {
+  return companyId ? { companyId } : {}
+}
+
+/**
  * Résout le nom d'un employé
  */
-async function resolveEmployeeName(id: string): Promise<string | null> {
-  const employee = await prisma.employee.findUnique({
-    where: { id },
-    select: {
-      firstName: true,
-      lastName: true,
-    },
+async function resolveEmployeeName(id: string, companyId: string | null): Promise<string | null> {
+  const employee = await prisma.employee.findFirst({
+    where: { id, ...companyFilter(companyId) },
+    select: { firstName: true, lastName: true },
   })
 
   if (!employee) return null
@@ -88,9 +94,9 @@ async function resolveEmployeeName(id: string): Promise<string | null> {
 /**
  * Résout le nom d'une équipe
  */
-async function resolveTeamName(id: string): Promise<string | null> {
-  const team = await prisma.team.findUnique({
-    where: { id },
+async function resolveTeamName(id: string, companyId: string | null): Promise<string | null> {
+  const team = await prisma.team.findFirst({
+    where: { id, ...companyFilter(companyId) },
     select: { name: true },
   })
 
@@ -100,7 +106,10 @@ async function resolveTeamName(id: string): Promise<string | null> {
 /**
  * Résout le nom d'une entreprise
  */
-async function resolveCompanyName(id: string): Promise<string | null> {
+async function resolveCompanyName(id: string, companyId: string | null): Promise<string | null> {
+  // Non-admin ne peut résoudre que le nom de sa propre entreprise
+  if (companyId && id !== companyId) return null
+
   const company = await prisma.company.findUnique({
     where: { id },
     select: { name: true },
@@ -112,23 +121,16 @@ async function resolveCompanyName(id: string): Promise<string | null> {
 /**
  * Résout le nom d'un planning
  */
-async function resolveScheduleName(id: string): Promise<string | null> {
-  const schedule = await prisma.schedule.findUnique({
-    where: { id },
-    select: {
-      title: true,
-      startDate: true,
-    },
+async function resolveScheduleName(id: string, companyId: string | null): Promise<string | null> {
+  const schedule = await prisma.schedule.findFirst({
+    where: { id, ...companyFilter(companyId) },
+    select: { title: true, startDate: true },
   })
 
   if (!schedule) return null
 
-  // Utiliser le titre si présent, sinon formater la date
-  if (schedule.title) {
-    return schedule.title
-  }
+  if (schedule.title) return schedule.title
 
-  // Formater la date de début
   return new Intl.DateTimeFormat('fr-FR', {
     dateStyle: 'medium',
   }).format(schedule.startDate)
@@ -137,16 +139,13 @@ async function resolveScheduleName(id: string): Promise<string | null> {
 /**
  * Résout le nom d'une demande de congés
  */
-async function resolveLeaveRequestName(id: string): Promise<string | null> {
-  const leaveRequest = await prisma.leaveRequest.findUnique({
-    where: { id },
+async function resolveLeaveRequestName(id: string, companyId: string | null): Promise<string | null> {
+  const leaveRequest = await prisma.leaveRequest.findFirst({
+    where: { id, ...companyFilter(companyId) },
     select: {
       type: true,
       employee: {
-        select: {
-          firstName: true,
-          lastName: true,
-        },
+        select: { firstName: true, lastName: true },
       },
     },
   })
@@ -156,7 +155,6 @@ async function resolveLeaveRequestName(id: string): Promise<string | null> {
   const employeeName =
     `${leaveRequest.employee.firstName} ${leaveRequest.employee.lastName}`.trim()
 
-  // Traduire le type de congé
   const leaveTypeLabels: Record<string, string> = {
     ANNUAL: 'Congés annuels',
     SICK: 'Maladie',
@@ -168,7 +166,6 @@ async function resolveLeaveRequestName(id: string): Promise<string | null> {
   }
 
   const leaveType = leaveTypeLabels[leaveRequest.type] || leaveRequest.type
-
   return `${leaveType} - ${employeeName}`
 }
 
@@ -177,19 +174,20 @@ async function resolveLeaveRequestName(id: string): Promise<string | null> {
  */
 async function resolveEntityName(
   type: EntityType,
-  id: string
+  id: string,
+  companyId: string | null
 ): Promise<string | null> {
   switch (type) {
     case 'employees':
-      return resolveEmployeeName(id)
+      return resolveEmployeeName(id, companyId)
     case 'teams':
-      return resolveTeamName(id)
+      return resolveTeamName(id, companyId)
     case 'companies':
-      return resolveCompanyName(id)
+      return resolveCompanyName(id, companyId)
     case 'schedules':
-      return resolveScheduleName(id)
+      return resolveScheduleName(id, companyId)
     case 'leave-requests':
-      return resolveLeaveRequestName(id)
+      return resolveLeaveRequestName(id, companyId)
     default:
       return null
   }
@@ -219,6 +217,17 @@ export async function GET(
   context: RouteContext
 ): Promise<NextResponse> {
   try {
+    // Authentification obligatoire
+    const session = await auth()
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { success: false, error: 'Non authentifié' },
+        { status: 401 }
+      )
+    }
+
+    const effective = await getEffectiveSessionData(session)
+
     // Next.js 15 : params est une Promise
     const params = await context.params
     const { type, id } = params
@@ -246,8 +255,8 @@ export async function GET(
       )
     }
 
-    // Résolution du nom
-    const name = await resolveEntityName(type, id)
+    // Résolution du nom (filtré par companyId du tenant)
+    const name = await resolveEntityName(type, id, effective.companyId)
 
     // Entité non trouvée
     if (name === null) {
@@ -273,7 +282,7 @@ export async function GET(
       {
         status: 200,
         headers: {
-          'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
+          'Cache-Control': 'private, s-maxage=60, stale-while-revalidate=300',
         },
       }
     )

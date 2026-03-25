@@ -659,13 +659,16 @@ export async function checkScheduleConflicts(
       return { success: false, error: authResult.error }
     }
 
+    const user = authResult.user
     const conflicts: ScheduleConflict[] = []
 
-    // Récupérer les noms des employés
+    // Filtrer les employeeIds par companyId du tenant (defense-in-depth)
+    const companyScope = user.companyId ? { companyId: user.companyId } : {}
     const employees = await prisma.employee.findMany({
-      where: { id: { in: employeeIds } },
+      where: { id: { in: employeeIds }, ...companyScope },
       select: { id: true, firstName: true, lastName: true },
     })
+    const validEmployeeIds = employees.map((e) => e.id)
     const nameMap = new Map(
       employees.map((e) => [e.id, `${e.firstName} ${e.lastName}`])
     )
@@ -673,7 +676,7 @@ export async function checkScheduleConflicts(
     // 1. Vérifier les congés approuvés qui chevauchent la période
     const approvedLeaves = await prisma.leaveRequest.findMany({
       where: {
-        employeeId: { in: employeeIds },
+        employeeId: { in: validEmployeeIds },
         status: 'APPROVED',
         startDate: { lte: endDate },
         endDate: { gte: startDate },
@@ -726,7 +729,7 @@ export async function checkScheduleConflicts(
     // 2. Vérifier les plannings existants qui chevauchent
     const existingSchedules = await prisma.schedule.findMany({
       where: {
-        employeeId: { in: employeeIds },
+        employeeId: { in: validEmployeeIds },
         startDate: { lte: endDate },
         endDate: { gte: startDate },
         ...(excludeScheduleId ? { id: { not: excludeScheduleId } } : {}),
