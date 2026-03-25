@@ -356,6 +356,55 @@ La page `/app/dashboard/billing` était bloquée en mode impersonation par le gu
 - Les actions de modification (checkout, annulation, portail Stripe) restent bloquées
 - Justification RGPD : principe de minimisation (art. 5.1.c) respecté — consultation uniquement, pas de traitement
 
+### Fix 503 production — dynamic import de fichiers 'use server' (25 mars 2026)
+
+Le système d'impersonation et la déconnexion retournaient des erreurs 503 en production (Nginx) alors que tout fonctionnait en dev. Deux causes identifiées et corrigées :
+
+**Cause 1 — export interface dans un fichier 'use server'** : `notifications.ts` exportait `interface AdminNotificationParams` avec la directive `'use server'`. Même bug que le commit `d3e097f` (24 mars) sur `admin-contact.ts`. Next.js 15 en prod transforme les fichiers `'use server'` en endpoints server action — un export non-async fait crasher le module.
+
+**Cause 2 — dynamic import d'un fichier 'use server' depuis des routes API et services** : 9 sites dans le code faisaient `import('@/lib/actions/notifications')` (route impersonate, stripe.service.ts, auth-actions.ts). En prod, le dynamic import d'un module `'use server'` échoue car Next.js le transforme en référence d'endpoint, incompatible avec `import()`.
+
+- Extraction de `createAdminNotification` dans `src/lib/services/admin-notification.service.ts` (sans `'use server'`)
+- Mise à jour des 9 sites d'import dynamique
+- Suppression de la fonction de `notifications.ts`
+- Fichiers modifiés : `notifications.ts`, `admin-notification.service.ts`, `route.ts` (impersonate), `stripe.service.ts`, `auth-actions.ts`, `admin-notifications.test.ts`
+
+### Fix impersonation — race condition JWT / cookie (25 mars 2026)
+
+Après le fix 503, l'impersonation affichait "Entreprise non configurée" et les données d'autres entreprises (fuite multi-tenant). Cause : `session.update()` côté client ne prend pas effet avant `window.location.href` — le Server Component lit l'ancien JWT (SYSTEM_ADMIN, companyId null).
+
+**Problème 1 — Layout et page Director** : `auth()` retournait encore les données SYSTEM_ADMIN au moment du rendu serveur. Le cookie `sp-impersonation` était bien posé mais seul utilisé pour la bannière, pas pour résoudre l'identité utilisateur.
+
+**Problème 2 — Server Actions RBAC** : `getAuthenticatedUser()` dans les actions (employees, teams, schedules, leaves, availabilities) utilisait `auth()` directement. Avec role = SYSTEM_ADMIN et companyId = null, `buildRBACWhereClause` ne filtrait pas par company → retour de TOUS les employés toutes entreprises confondues.
+
+- Création de `getEffectiveSessionData()` dans `impersonation.ts` : résout userId/role/companyId en fallback sur le cookie `sp-impersonation` quand le JWT n'est pas encore mis à jour
+- Application dans le layout `/app/layout.tsx` et la page Director Dashboard
+- Application dans `getAuthenticatedUser()` de 5 fichiers d'actions (employees, teams, schedules, leaves, availabilities)
+- Fichiers modifiés : `impersonation.ts`, `layout.tsx`, `director/dashboard/page.tsx`, `employees.ts`, `teams.ts`, `schedules.ts`, `leaves.ts`, `availabilities.ts`
+
+### Audit et renforcement isolation multi-tenant (25 mars 2026)
+
+Audit sécurité complet de l'isolation multi-tenant. 4 failles identifiées et corrigées :
+
+**CRITIQUE — `/api/entities/[type]/[id]/route.ts`** : Endpoint de résolution de noms pour breadcrumbs (employés, équipes, entreprises, plannings, congés) sans aucun appel `auth()`. N'importe qui pouvait résoudre les noms d'entités de toutes les entreprises sans authentification.
+- Ajout `auth()` + `getEffectiveSessionData()` + filtrage `companyId` sur les 5 fonctions resolve
+- `findUnique` remplacé par `findFirst` avec `companyId` dans le `where`
+- `Cache-Control` passé de `public` à `private`
+
+**HAUTE — `checkScheduleConflicts` (schedules.ts)** : Les `employeeIds` passés en paramètre n'étaient pas validés contre le `companyId` du caller. Un utilisateur d'une entreprise A pouvait passer des UUIDs d'employés d'une entreprise B et obtenir leurs données de congés/plannings via les détails de conflit.
+- Ajout `companyId` sur la query employees + utilisation des IDs validés pour les queries suivantes
+
+**HAUTE — `checkAvailabilityConflicts` (availabilities.ts)** : Même problème — `employeeIds` non validés, fuite possible de dates de disponibilité cross-tenant.
+- Ajout `companyId` dans le `whereClause`
+
+**MOYENNE — `getEmployeesByTeam` et `bulkDeleteEmployees` (employees.ts)** : Requêtes Prisma par ID sans `companyId` dans le WHERE. Vérification RBAC en JS post-fetch correcte mais fragile.
+- Ajout `companyId` au niveau DB (defense-in-depth)
+
+Pattern utilisé partout : `...(companyId ? { companyId } : {})` — filtre ignoré pour SYSTEM_ADMIN (companyId null), appliqué pour tous les autres rôles.
+
+- Fichiers modifiés : `entities/[type]/[id]/route.ts`, `schedules.ts`, `availabilities.ts`, `employees.ts`
+- Résultat : 154 fichiers tests / 2 746 tests, 0 régression, TypeScript OK, build OK
+
 ### Documentation Prisma enrichie (23 mars 2026)
 
 Réécriture complète des commentaires du fichier `prisma/schema.prisma` avec des explications en français, rédigées comme un développeur qui documente ses choix techniques pour une soutenance CDA. Chaque modèle, champ, index et enum est commenté avec le "pourquoi" (pas juste le "quoi") : choix du CUID, stratégie cascade vs SetNull, isolation multi-tenant par companyId, convention snake_case PostgreSQL, RGPD, droit du travail français, etc.

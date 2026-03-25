@@ -171,6 +171,7 @@ Rationalisation mars 2026 : focus sur la logique métier critique (RBAC, Zod, Se
 ## Sécurité
 
 - RBAC 4 niveaux avec `checkPermission()` sur chaque Server Action
+- Isolation multi-tenant par `companyId` sur chaque requête Prisma (defense-in-depth)
 - Validation Zod aux frontières, protection CSRF (NextAuth)
 - Cookies httpOnly + secure + sameSite, hashage bcrypt
 - Rate limiting Redis distribué (fallback mémoire), audit logs, CSP headers, SRI en production
