@@ -23,24 +23,15 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 // Mocks
 // ============================================================================
 
-vi.mock('next/cache', () => ({
-  revalidatePath: vi.fn(),
-}))
-
-vi.mock('@/lib/auth', () => ({
-  auth: vi.fn(),
-}))
-
-const mockGetSystemAdminUserIds = vi.fn()
-vi.mock('@/lib/services/admin-notification.service', () => ({
-  getSystemAdminUserIds: (...args: any[]) => mockGetSystemAdminUserIds(...args),
-}))
-
 const mockCreateMany = vi.fn()
 const mockFindMany = vi.fn()
+const mockUserFindMany = vi.fn()
 
 vi.mock('@/lib/prisma', () => ({
   prisma: {
+    user: {
+      findMany: (...args: any[]) => mockUserFindMany(...args),
+    },
     notification: {
       createMany: (...args: any[]) => mockCreateMany(...args),
       findMany: (...args: any[]) => mockFindMany(...args),
@@ -49,7 +40,7 @@ vi.mock('@/lib/prisma', () => ({
 }))
 
 const mockEmitNotification = vi.fn()
-vi.mock('@/lib/notifications', () => ({
+vi.mock('@/lib/notifications/emit-notification', () => ({
   emitNotification: (...args: any[]) => mockEmitNotification(...args),
 }))
 
@@ -57,7 +48,7 @@ vi.mock('@/lib/notifications', () => ({
 // Import
 // ============================================================================
 
-import { createAdminNotification } from '../notifications'
+import { createAdminNotification } from '@/lib/services/admin-notification.service'
 
 // ============================================================================
 // Fixtures
@@ -89,7 +80,9 @@ const MOCK_NOTIFICATION = {
 describe('createAdminNotification', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    mockGetSystemAdminUserIds.mockResolvedValue(ADMIN_IDS)
+    mockUserFindMany.mockResolvedValue(
+      ADMIN_IDS.map((id) => ({ id }))
+    )
     mockCreateMany.mockResolvedValue({ count: 2 })
     mockFindMany.mockResolvedValue([
       { ...MOCK_NOTIFICATION, userId: 'admin-001' },
@@ -134,7 +127,7 @@ describe('createAdminNotification', () => {
   })
 
   it('ne fait rien si aucun admin', async () => {
-    mockGetSystemAdminUserIds.mockResolvedValue([])
+    mockUserFindMany.mockResolvedValue([])
 
     await createAdminNotification({
       title: 'Test',

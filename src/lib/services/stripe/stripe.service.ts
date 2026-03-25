@@ -391,7 +391,7 @@ export async function cancelSubscription(
         }
 
         // Notification in-app admin
-        import('@/lib/actions/notifications')
+        import('@/lib/services/admin-notification.service')
           .then(({ createAdminNotification }) =>
             createAdminNotification({
               title: 'Abonnement annulé',
@@ -616,7 +616,7 @@ async function handleCheckoutCompleted(
     .catch((err) => console.error('[Webhook] Director lookup failed:', err))
 
   // Fire-and-forget : notification SYSTEM_ADMIN nouvelle souscription (SP-476)
-  import('@/lib/actions/notifications')
+  import('@/lib/services/admin-notification.service')
     .then(({ createAdminNotification }) =>
       createAdminNotification({
         title: 'Nouvelle souscription activée',
@@ -722,7 +722,7 @@ async function handleSubscriptionUpdated(
 
   // Fire-and-forget : notification SYSTEM_ADMIN si abonnement expiré (SP-476)
   if (internalStatus === 'EXPIRED') {
-    import('@/lib/actions/notifications')
+    import('@/lib/services/admin-notification.service')
       .then(({ createAdminNotification }) =>
         createAdminNotification({
           title: 'Abonnement expiré',
@@ -801,7 +801,7 @@ async function handleSubscriptionDeleted(
     .catch((err) => console.error('[Webhook] Director lookup failed:', err))
 
   // Fire-and-forget : notification SYSTEM_ADMIN souscription supprimée (SP-476)
-  import('@/lib/actions/notifications')
+  import('@/lib/services/admin-notification.service')
     .then(({ createAdminNotification }) =>
       createAdminNotification({
         title: 'Souscription annulée',
@@ -927,7 +927,7 @@ async function handleInvoicePaid(
   }
 
   // Fire-and-forget : notification SYSTEM_ADMIN paiement reçu (SP-476)
-  import('@/lib/actions/notifications')
+  import('@/lib/services/admin-notification.service')
     .then(({ createAdminNotification }) =>
       createAdminNotification({
         title: 'Paiement reçu',
@@ -1009,7 +1009,7 @@ async function handleInvoicePaymentFailed(
   })
 
   // Fire-and-forget : notification SYSTEM_ADMIN paiement échoué (SP-476)
-  import('@/lib/actions/notifications')
+  import('@/lib/services/admin-notification.service')
     .then(({ createAdminNotification }) =>
       createAdminNotification({
         title: 'Paiement échoué',

@@ -213,7 +213,7 @@ export async function POST(request: Request): Promise<NextResponse> {
   }).catch(console.error)
 
   // 10. Notification SYSTEM_ADMIN : impersonation démarrée (fire-and-forget, SP-476)
-  import('@/lib/actions/notifications')
+  import('@/lib/services/admin-notification.service')
     .then(({ createAdminNotification }) =>
       createAdminNotification({
         title: 'Impersonation démarrée',
@@ -273,7 +273,7 @@ export async function DELETE(): Promise<NextResponse> {
 
   // 4. Notification SYSTEM_ADMIN : impersonation arrêtée (fire-and-forget, SP-476)
   const durationMin = Math.round(duration / 60)
-  import('@/lib/actions/notifications')
+  import('@/lib/services/admin-notification.service')
     .then(({ createAdminNotification }) =>
       createAdminNotification({
         title: 'Impersonation arrêtée',

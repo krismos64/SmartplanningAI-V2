@@ -222,7 +222,7 @@ export async function registerAction(
     }).catch(console.error)
 
     // 7. Notification SYSTEM_ADMIN : nouvelle inscription (fire-and-forget, SP-476)
-    import('@/lib/actions/notifications')
+    import('@/lib/services/admin-notification.service')
       .then(({ createAdminNotification }) =>
         createAdminNotification({
           title: 'Nouvelle entreprise inscrite',
