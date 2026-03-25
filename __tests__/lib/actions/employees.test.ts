@@ -54,6 +54,14 @@ vi.mock('@/lib/notifications/emit-notification', () => ({
 }))
 vi.mock('@/lib/impersonation', () => ({
   assertNotImpersonating: vi.fn(),
+  getEffectiveSessionData: vi.fn().mockImplementation(
+    (session: { user: { id: string; role: string; companyId?: string | null } }) =>
+      Promise.resolve({
+        userId: session.user.id,
+        role: session.user.role,
+        companyId: session.user.companyId ?? null,
+      })
+  ),
 }))
 vi.mock('@/lib/services/audit', () => ({
   logAuditAction: vi.fn().mockResolvedValue(undefined),

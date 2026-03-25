@@ -48,7 +48,7 @@ import {
   sendLeaveRejectedEmail,
 } from '@/lib/email/templates/leave-decision'
 import { sendLeaveRequestedEmail } from '@/lib/email/templates/leave-requested'
-import { assertNotImpersonating } from '@/lib/impersonation'
+import { assertNotImpersonating, getEffectiveSessionData } from '@/lib/impersonation'
 import { invalidateDashboardCache, invalidateLeavesCache } from '@/lib/cache'
 import {
   sendLeaveRevokedEmail,
@@ -163,7 +163,8 @@ async function getAuthenticatedUser(
       }
     }
 
-    const role = session.user.role
+    const effective = await getEffectiveSessionData(session)
+    const role = effective.role as UserRole
     if (!allowedRoles.includes(role)) {
       return {
         success: false,
@@ -171,8 +172,8 @@ async function getAuthenticatedUser(
       }
     }
 
-    const userId = session.user.id
-    const companyId = session.user.companyId ?? null
+    const userId = effective.userId
+    const companyId = effective.companyId ?? null
 
     let employeeId: string | null = null
     let managedTeamIds: string[] = []

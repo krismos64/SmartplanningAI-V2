@@ -24,7 +24,7 @@ import {
   handlePrismaError,
 } from './crud-helpers'
 import { logAuditAction } from '@/lib/services/audit'
-import { assertNotImpersonating } from '@/lib/impersonation'
+import { assertNotImpersonating, getEffectiveSessionData } from '@/lib/impersonation'
 import {
   createTeamSchema,
   updateTeamSchema,
@@ -95,7 +95,8 @@ async function getAuthenticatedUser(): Promise<AccessCheckResult> {
       }
     }
 
-    const role = session.user.role
+    const effective = await getEffectiveSessionData(session)
+    const role = effective.role as UserRole
 
     // Verifie que le role est autorise
     if (!ALLOWED_ROLES.includes(role)) {
@@ -105,8 +106,8 @@ async function getAuthenticatedUser(): Promise<AccessCheckResult> {
       }
     }
 
-    const userId = session.user.id
-    const companyId = session.user.companyId ?? null
+    const userId = effective.userId
+    const companyId = effective.companyId ?? null
 
     // Pour un MANAGER, on doit recuperer son employeeId et ses equipes gerees
     let employeeId: string | null = null

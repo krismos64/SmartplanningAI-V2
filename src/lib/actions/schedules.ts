@@ -39,7 +39,7 @@ import {
   MAX_TOTAL_SCHEDULES,
   type RecurrenceRule,
 } from '@/lib/utils/recurrence'
-import { assertNotImpersonating } from '@/lib/impersonation'
+import { assertNotImpersonating, getEffectiveSessionData } from '@/lib/impersonation'
 
 // ============================================================================
 // Types
@@ -170,9 +170,10 @@ async function getAuthenticatedUser(): Promise<AccessCheckResult> {
       }
     }
 
-    const userId = session.user.id
-    const role = session.user.role
-    const companyId = session.user.companyId ?? null
+    const effective = await getEffectiveSessionData(session)
+    const userId = effective.userId
+    const role = effective.role as UserRole
+    const companyId = effective.companyId ?? null
 
     let employeeId: string | null = null
     let managedTeamIds: string[] = []

@@ -19,6 +19,7 @@ import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/prisma'
 import { UserRole, NotificationType, type Prisma } from '@prisma/client'
 import { auth } from '@/lib/auth'
+import { getEffectiveSessionData } from '@/lib/impersonation'
 import {
   validateData,
   getPaginationParams,
@@ -100,7 +101,9 @@ async function getAuthenticatedUser(): Promise<AccessCheckResult> {
       }
     }
 
-    const role = session.user.role
+    // SP-456 : résoudre les données effectives (impersonation cookie fallback)
+    const effective = await getEffectiveSessionData(session)
+    const role = effective.role as UserRole
 
     // Verifie que le role est autorise
     if (!ALLOWED_ROLES.includes(role)) {
@@ -110,8 +113,8 @@ async function getAuthenticatedUser(): Promise<AccessCheckResult> {
       }
     }
 
-    const userId = session.user.id
-    const companyId = session.user.companyId ?? null
+    const userId = effective.userId
+    const companyId = effective.companyId
 
     // Pour un MANAGER, on doit recuperer son employeeId et ses equipes gerees
     let employeeId: string | null = null
@@ -180,9 +183,11 @@ async function getAuthenticatedUserForSelect(): Promise<AccessCheckResult> {
       }
     }
 
-    const role = session.user.role
-    const userId = session.user.id
-    const companyId = session.user.companyId ?? null
+    // SP-456 : résoudre les données effectives (impersonation cookie fallback)
+    const effective = await getEffectiveSessionData(session)
+    const role = effective.role as UserRole
+    const userId = effective.userId
+    const companyId = effective.companyId
 
     let employeeId: string | null = null
     let teamId: string | null = null
