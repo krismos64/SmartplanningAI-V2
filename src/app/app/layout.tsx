@@ -34,9 +34,12 @@ export default async function AppLayout({
   // SP-453/456 : résoudre les données effectives en tenant compte du
   // race condition updateSession() / navigation (cookie fallback)
   const effective = await getEffectiveSessionData(session)
-  const isImpersonating = effective.userId !== session.user.id
 
   // SP-453 : données impersonation pour la bannière
+  // Détection via JWT (session.user.isImpersonating) OU cookie fallback
+  // Note: on ne peut PAS comparer effective.userId !== session.user.id car
+  // le JWT callback modifie token.id vers l'utilisateur impersonné, donc
+  // session.user.id == effective.userId dans tous les cas.
   let impersonationData:
     | {
         isImpersonating: boolean
@@ -45,33 +48,32 @@ export default async function AppLayout({
       }
     | undefined
 
-  if (isImpersonating) {
-    // Lire les détails depuis le JWT ou le cookie
-    if (session.user.isImpersonating) {
-      impersonationData = {
-        isImpersonating: true,
-        impersonatedCompanyName:
-          session.user.impersonatedCompanyName ?? 'Entreprise',
-        impersonatedUserEmail: session.user.impersonatedUserEmail ?? '',
-      }
-    } else {
-      // Fallback cookie pour la bannière
-      try {
-        const cookieStore = await cookies()
-        const impCookie = cookieStore.get(IMPERSONATION_COOKIE_NAME)
-        if (impCookie?.value) {
-          const ctx = JSON.parse(
-            decodeURIComponent(impCookie.value)
-          ) as ImpersonationContext
+  if (session.user.isImpersonating) {
+    impersonationData = {
+      isImpersonating: true,
+      impersonatedCompanyName:
+        session.user.impersonatedCompanyName ?? 'Entreprise',
+      impersonatedUserEmail: session.user.impersonatedUserEmail ?? '',
+    }
+  } else {
+    // SP-456 : fallback cookie quand updateSession() n'a pas encore pris effet
+    try {
+      const cookieStore = await cookies()
+      const impCookie = cookieStore.get(IMPERSONATION_COOKIE_NAME)
+      if (impCookie?.value) {
+        const ctx = JSON.parse(
+          decodeURIComponent(impCookie.value)
+        ) as ImpersonationContext
+        if (ctx.originalAdminId && ctx.targetCompanyName) {
           impersonationData = {
             isImpersonating: true,
             impersonatedCompanyName: ctx.targetCompanyName ?? 'Entreprise',
             impersonatedUserEmail: ctx.targetEmail ?? '',
           }
         }
-      } catch {
-        // Cookie invalide — ignorer
       }
+    } catch {
+      // Cookie invalide — ignorer
     }
   }
 
