@@ -16,7 +16,6 @@ import { nameSchema, phoneSchema } from './common'
  * Champs NON modifiables ici :
  * - email : Nécessite un flux de vérification séparé (hors scope CDA)
  * - role : Modifiable uniquement par SYSTEM_ADMIN/DIRECTOR
- * - weeklyHours : Géré par le DIRECTOR/MANAGER
  * - team : Assignation gérée par le DIRECTOR/MANAGER
  *
  * @ticket SP-271
@@ -42,6 +41,12 @@ export const editProfileSchema = z.object({
     .optional()
     .or(z.literal('')),
   hireDate: z.coerce.date().optional().nullable(),
+  weeklyHours: z
+    .number()
+    .min(1, 'Minimum 1h')
+    .max(60, 'Maximum 60h')
+    .optional()
+    .nullable(),
 })
 
 /**
@@ -62,6 +67,7 @@ export const EDIT_PROFILE_LABELS = {
   phone: 'Téléphone',
   jobTitle: 'Poste',
   hireDate: "Date d'embauche",
+  weeklyHours: 'Heures hebdomadaires',
 } as const
 
 /**

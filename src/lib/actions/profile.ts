@@ -221,7 +221,8 @@ export async function updateProfile(
       }
     }
 
-    const { firstName, lastName, phone, jobTitle, hireDate } = validation.data
+    const { firstName, lastName, phone, jobTitle, hireDate, weeklyHours } =
+      validation.data
 
     // 3. Récupérer l'utilisateur avec son Employee
     const user = await prisma.user.findUnique({
@@ -244,6 +245,7 @@ export async function updateProfile(
           phone: phone || null,
           jobTitle: jobTitle || null,
           hireDate: hireDate || null,
+          ...(weeklyHours != null ? { weeklyHours } : {}),
         },
       })
 

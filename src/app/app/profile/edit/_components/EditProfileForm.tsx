@@ -18,7 +18,7 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Loader2, Save, Briefcase, Calendar } from 'lucide-react'
+import { ArrowLeft, Loader2, Save, Briefcase, Calendar, Clock } from 'lucide-react'
 import Link from 'next/link'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
@@ -66,6 +66,7 @@ interface EditProfileFormProps {
     phone: string
     jobTitle: string
     hireDate: Date | null
+    weeklyHours: number | null
   }
   /** Indique si l'utilisateur a un profil Employee associé */
   hasEmployee: boolean
@@ -270,6 +271,14 @@ export function EditProfileForm({
                       <PopoverContent className="w-auto p-0" align="start">
                         <CalendarComponent
                           mode="single"
+                          captionLayout="dropdown"
+                          startMonth={new Date(1970, 0)}
+                          endMonth={new Date()}
+                          defaultMonth={
+                            field.value
+                              ? new Date(field.value)
+                              : new Date()
+                          }
                           selected={
                             field.value ? new Date(field.value) : undefined
                           }
@@ -283,6 +292,48 @@ export function EditProfileForm({
                       </PopoverContent>
                     </Popover>
                     <FormMessage data-testid="error-hireDate" />
+                  </FormItem>
+                )}
+              />
+            )}
+
+            {/* Heures hebdomadaires - Uniquement si Employee existe */}
+            {hasEmployee && (
+              <FormField
+                control={form.control}
+                name="weeklyHours"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      {EDIT_PROFILE_LABELS.weeklyHours}
+                    </FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Clock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                        <Input
+                          type="number"
+                          min={1}
+                          max={60}
+                          step={0.5}
+                          {...field}
+                          value={field.value ?? ''}
+                          onChange={(e) =>
+                            field.onChange(
+                              e.target.value === ''
+                                ? null
+                                : parseFloat(e.target.value)
+                            )
+                          }
+                          disabled={isPending}
+                          data-testid="input-weeklyHours"
+                          className="pl-10"
+                        />
+                      </div>
+                    </FormControl>
+                    <FormDescription>
+                      Entre 1 et 60 heures par semaine
+                    </FormDescription>
+                    <FormMessage data-testid="error-weeklyHours" />
                   </FormItem>
                 )}
               />

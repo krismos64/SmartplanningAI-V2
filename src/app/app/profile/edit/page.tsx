@@ -49,6 +49,7 @@ export default async function EditProfilePage() {
     phone: employee?.phone ?? '',
     jobTitle: employee?.jobTitle ?? '',
     hireDate: employee?.hireDate ?? null,
+    weeklyHours: employee?.weeklyHours ?? null,
   }
 
   return (
