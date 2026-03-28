@@ -21,6 +21,7 @@ import { Footer } from './Footer'
 import { PageTracker } from './PageTracker'
 import { SubscriptionBanner } from './SubscriptionBanner'
 import { ImpersonationBanner } from './ImpersonationBanner'
+import { EmailVerificationBanner } from './EmailVerificationBanner'
 
 type UserRole = 'SYSTEM_ADMIN' | 'DIRECTOR' | 'MANAGER' | 'EMPLOYEE'
 
@@ -36,6 +37,12 @@ interface ImpersonationData {
   isImpersonating: boolean
   impersonatedCompanyName: string
   impersonatedUserEmail: string
+}
+
+/** Données vérification email pour la bannière (SP-299) */
+interface EmailVerificationData {
+  isEmailVerified: false
+  userEmail: string
 }
 
 interface DashboardLayoutProps {
@@ -54,6 +61,8 @@ interface DashboardLayoutProps {
   subscriptionData?: SubscriptionData
   /** Données d'impersonation pour la bannière (SP-453) */
   impersonationData?: ImpersonationData
+  /** Données vérification email pour la bannière (SP-299) */
+  emailVerificationData?: EmailVerificationData
   /** Variante de style de la sidebar (défaut: 'cosmic') */
   sidebarVariant?: SidebarVariant
 }
@@ -69,6 +78,7 @@ function DashboardLayoutContent({
   sidebarVariant,
   subscriptionData,
   impersonationData,
+  emailVerificationData,
 }: {
   children: React.ReactNode
   user: DashboardLayoutProps['user']
@@ -76,6 +86,7 @@ function DashboardLayoutContent({
   sidebarVariant: SidebarVariant
   subscriptionData?: SubscriptionData
   impersonationData?: ImpersonationData
+  emailVerificationData?: EmailVerificationData
 }) {
   const { openShortcutsModal } = useKeyboardShortcutsContext()
 
@@ -118,6 +129,13 @@ function DashboardLayoutContent({
               />
             )}
 
+            {/* Email Verification Banner — SP-299 */}
+            {emailVerificationData && (
+              <EmailVerificationBanner
+                userEmail={emailVerificationData.userEmail}
+              />
+            )}
+
             {/* Page content */}
             <main className="bg-mesh flex-1 transition-all duration-300">
               <ScrollArea className="h-[calc(100vh-4rem-3.5rem)]">
@@ -155,6 +173,7 @@ export function DashboardLayout({
   user,
   subscriptionData,
   impersonationData,
+  emailVerificationData,
   sidebarVariant = 'aurora',
 }: DashboardLayoutProps) {
   const pathname = usePathname()
@@ -169,6 +188,7 @@ export function DashboardLayout({
             sidebarVariant={sidebarVariant}
             subscriptionData={subscriptionData}
             impersonationData={impersonationData}
+            emailVerificationData={emailVerificationData}
           >
             {children}
           </DashboardLayoutContent>

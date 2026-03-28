@@ -84,6 +84,7 @@ export default async function AppLayout({
       image: true,
       name: true,
       email: true,
+      isEmailVerified: true,
       company: {
         select: { name: true },
       },
@@ -117,11 +118,18 @@ export default async function AppLayout({
     currentPeriodEnd: session.user.currentPeriodEnd ?? null,
   }
 
+  // SP-299 : données vérification email pour la bannière
+  const emailVerificationData =
+    dbUser && !dbUser.isEmailVerified
+      ? { isEmailVerified: false as const, userEmail: dbUser.email || user.email }
+      : undefined
+
   return (
     <DashboardLayout
       user={user}
       subscriptionData={subscriptionData}
       impersonationData={impersonationData}
+      emailVerificationData={emailVerificationData}
     >
       {children}
     </DashboardLayout>
