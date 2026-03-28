@@ -245,7 +245,9 @@ export async function updateProfile(
           phone: phone || null,
           jobTitle: jobTitle || null,
           hireDate: hireDate || null,
-          ...(weeklyHours != null ? { weeklyHours } : {}),
+          ...(weeklyHours !== null && weeklyHours !== undefined
+            ? { weeklyHours }
+            : {}),
         },
       })
 
