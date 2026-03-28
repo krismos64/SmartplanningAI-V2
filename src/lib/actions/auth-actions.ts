@@ -19,6 +19,7 @@ import { hashPassword } from '@/lib/password'
 import { prisma } from '@/lib/prisma'
 import { logAuditAction } from '@/lib/services/audit'
 import { signupSchema, type SignupFormData } from '@/lib/validations'
+import { sendVerificationEmailAction } from '@/lib/actions/verification-actions'
 
 /**
  * Types de retour pour les Server Actions
@@ -252,7 +253,17 @@ export async function registerAction(
       }
     }
 
-    // 9. Notifier l'admin par email de la nouvelle inscription (fire-and-forget, SP-480)
+    // 9. Envoyer l'email de vérification (fire-and-forget, SP-299)
+    sendVerificationEmailAction({
+      email: email.toLowerCase(),
+    }).catch((err) => {
+      if (process.env.NODE_ENV === 'development') {
+        // eslint-disable-next-line no-console
+        console.error('[registerAction] Failed to send verification email:', err)
+      }
+    })
+
+    // 10. Notifier l'admin par email de la nouvelle inscription (fire-and-forget, SP-480)
     sendNewRegistrationEmail({
       companyName: companyName.trim(),
       directorName: name.trim(),

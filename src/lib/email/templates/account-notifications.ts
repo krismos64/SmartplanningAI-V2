@@ -14,10 +14,11 @@
 import { render } from '@react-email/components'
 
 import { sendEmail } from '@/lib/email'
-import { getBaseUrl } from '@/lib/email/config'
+import { getBaseUrl, getContactEmail } from '@/lib/email/config'
 
 import { PasswordChangedEmail } from '../../../../emails/templates/PasswordChangedEmail'
 import { AccountDeletedEmail } from '../../../../emails/templates/AccountDeletedEmail'
+import { AccountDeletionAdminEmail } from '../../../../emails/templates/AccountDeletionAdminEmail'
 import { DataExportEmail } from '../../../../emails/templates/DataExportEmail'
 import { EmployeeActivatedEmail } from '../../../../emails/templates/EmployeeActivatedEmail'
 import { EmployeeDeactivatedEmail } from '../../../../emails/templates/EmployeeDeactivatedEmail'
@@ -94,6 +95,48 @@ export async function sendAccountDeletedEmail(params: {
     const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue'
     if (process.env.NODE_ENV === 'development') {
       console.error('[sendAccountDeletedEmail] Error:', error)
+    }
+    return { success: false, error: errorMessage }
+  }
+}
+
+// ============================================================================
+// Notification admin : suppression de compte
+// ============================================================================
+
+export async function sendAccountDeletionAdminEmail(params: {
+  userName: string
+  userEmail: string
+  companyName: string | null
+  userRole: string
+}): Promise<EmailResult> {
+  try {
+    const baseUrl = getBaseUrl()
+    const adminEmail = getContactEmail()
+    const html = await render(
+      AccountDeletionAdminEmail({
+        userName: params.userName,
+        userEmail: params.userEmail,
+        companyName: params.companyName,
+        userRole: params.userRole,
+        deletedAt: new Date().toLocaleString('fr-FR', {
+          dateStyle: 'long',
+          timeStyle: 'short',
+          timeZone: 'Europe/Paris',
+        }),
+        adminUrl: `${baseUrl}/app/admin/logs`,
+      })
+    )
+
+    return await sendEmail({
+      to: adminEmail,
+      subject: `Suppression de compte : ${params.userName} (${params.companyName || 'Sans entreprise'})`,
+      html,
+    })
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue'
+    if (process.env.NODE_ENV === 'development') {
+      console.error('[sendAccountDeletionAdminEmail] Error:', error)
     }
     return { success: false, error: errorMessage }
   }

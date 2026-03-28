@@ -24,7 +24,7 @@ Historique détaillé du développement de SmartPlanning V2, organisé par phase
 
 ## Composants UI production-ready
 
-- **Auth System** (SP-109) : LoginForm, RegisterForm avec React Hook Form + Zod, Server Actions, auto-login, création automatique Employee + LeaveBalance à l'inscription, champ téléphone optionnel + **Système d'invitation** : lors de la création d'un employé avec email, création automatique d'un compte User avec rôle choisi (EMPLOYEE/MANAGER/DIRECTOR), envoi d'email d'invitation avec token 48h, page `/activate-account` pour choix du mot de passe, notification SSE temps réel aux directeurs à l'activation, renvoi d'invitation si lien expiré, RBAC (MANAGER ne peut inviter que des EMPLOYEE)
+- **Auth System** (SP-109, SP-299) : LoginForm, RegisterForm avec React Hook Form + Zod, Server Actions, auto-login, création automatique Employee + LeaveBalance à l'inscription, champ téléphone optionnel + **Vérification email** : envoi automatique d'un email de vérification à l'inscription, page `/verify-email` avec vérification auto au mount, gestion token expiré avec renvoi, mise à jour `emailVerified` + `isEmailVerified` + **Système d'invitation** : lors de la création d'un employé avec email, création automatique d'un compte User avec rôle choisi (EMPLOYEE/MANAGER/DIRECTOR), envoi d'email d'invitation avec token 48h, page `/activate-account` pour choix du mot de passe, notification SSE temps réel aux directeurs à l'activation, renvoi d'invitation si lien expiré, RBAC (MANAGER ne peut inviter que des EMPLOYEE)
 - **DataTable avancée** (SP-120) : Composant de tableau avec tri multi-colonnes, pagination, recherche fuzzy, sélection multi-rows, actions par ligne, responsive (table desktop / cards mobile)
 - **Form System** (SP-119) : 5 composants formulaire (FormField, FormInput, FormTextarea, FormSelect, FormDatePicker) avec React Hook Form + Zod, 23 schémas de validation — _FormCheckbox et FormRadioGroup supprimés le 22/03/2026 (jamais utilisés en production)_
 - **Toast System** (SP-122) : Notifications avec Sonner, hook useToast()
@@ -420,6 +420,55 @@ Audit approfondi et suppression de ~8 100 lignes de code mort :
 - **Script mort** : `test:a11y` (dossier cible inexistant)
 - **Tests supprimés** : `error-logger.test.ts`, `with-loading.test.tsx` (fichiers sources supprimés)
 - Résultat : 154 fichiers tests / 2 746 tests Vitest, 0 erreur TypeScript, 0 warning lint
+
+### Vérification email à l'inscription (28 mars 2026)
+
+Implémentation complète du flux de vérification d'email (SP-299), partiellement codé côté backend mais jamais activé :
+
+**Nouveau flux d'inscription :**
+1. L'utilisateur s'inscrit → `registerAction` crée le compte (`isEmailVerified: false`)
+2. Email de bienvenue + **email de vérification** envoyés en parallèle (fire-and-forget)
+3. L'utilisateur clique sur le lien → `/verify-email?token=verify_xxx`
+4. `VerifyEmailContent` appelle `verifyEmailAction` automatiquement au montage
+5. Token validé → `emailVerified` (Date) + `isEmailVerified` (Boolean) mis à jour → redirect vers `/login`
+6. Si token expiré → formulaire pour saisir son email et recevoir un nouveau lien
+
+**Fichiers créés :**
+- `src/app/(auth)/verify-email/page.tsx` : Server Component avec metadata SEO, lecture du token depuis `searchParams`
+- `src/components/auth/VerifyEmailContent.tsx` : Client Component avec vérification auto au mount, états loading/succès/erreur/expiré, countdown redirect 5s, bouton renvoyer
+
+**Fichiers modifiés :**
+- `src/lib/actions/verification-actions.ts` : ajout `isEmailVerified: true` dans la transaction (en plus de `emailVerified: Date`)
+- `src/lib/actions/auth-actions.ts` : appel `sendVerificationEmailAction` fire-and-forget après inscription
+- `src/components/auth/index.ts` : export du nouveau composant
+- Résultat : 154 fichiers tests / 2 746 tests, 0 régression, TypeScript OK
+
+### Fix lien cassé email de bienvenue (28 mars 2026)
+
+Le bouton "Accéder à mon espace" dans l'email `WelcomeEmail` pointait vers `/connexion` (404) au lieu de `/login`. Corrigé dans `src/lib/email/templates/welcome.ts`. Audit complet des 29 templates d'email : tous les autres liens sont valides.
+
+### Notification admin suppression de compte (28 mars 2026)
+
+Ajout d'un email automatique à `contact@smartplanning.fr` quand un utilisateur supprime son compte. Symétrique de `NewRegistrationEmail` (arrivées) pour tracer les départs.
+
+**Fichiers créés :**
+- `emails/templates/AccountDeletionAdminEmail.tsx` : template avec box rouge (nom, email, entreprise, rôle, date, CTA vers audit logs)
+
+**Fichiers modifiés :**
+- `src/lib/email/templates/account-notifications.ts` : ajout `sendAccountDeletionAdminEmail()` envoyé à `contact@smartplanning.fr`
+- `src/lib/actions/profile.ts` : récupération `role` + `company.name` dans le select du `deleteAccount`, appel fire-and-forget
+- Résultat : 154 fichiers tests / 2 746 tests, 0 régression, TypeScript OK
+
+**Total emails actifs : 30** (29 templates React Email + 1 nouveau)
+
+### Amélioration DatePicker — sélection année/mois (28 mars 2026)
+
+Le `FormDatePicker` utilisait `react-day-picker` v9 en mode navigation mois par mois uniquement. Pour sélectionner une date d'embauche ancienne, il fallait cliquer des dizaines de fois sur la flèche précédente.
+
+- Ajout `captionLayout="dropdown"` : deux menus déroulants (mois + année) remplacent la navigation flèche
+- Plage : 1970 à aujourd'hui + 5 ans
+- Fichier modifié : `src/components/forms/FormDatePicker.tsx`
+- Impact : tous les formulaires utilisant `FormDatePicker` (profil, employés, disponibilités)
 
 ### Phase 8+ : Fonctionnalités avancées (à venir)
 

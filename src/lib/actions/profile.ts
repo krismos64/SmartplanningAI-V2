@@ -19,6 +19,7 @@ import { assertNotImpersonating } from '@/lib/impersonation'
 import {
   sendPasswordChangedEmail,
   sendAccountDeletedEmail,
+  sendAccountDeletionAdminEmail,
   sendDataExportEmail,
 } from '@/lib/email/templates/account-notifications'
 import {
@@ -471,7 +472,7 @@ export async function deleteAccount(
 
     const { confirmEmail, password } = validation.data
 
-    // 3. Récupérer l'utilisateur avec email et mot de passe
+    // 3. Récupérer l'utilisateur avec email, mot de passe et entreprise
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
       select: {
@@ -479,6 +480,8 @@ export async function deleteAccount(
         email: true,
         password: true,
         name: true,
+        role: true,
+        company: { select: { name: true } },
       },
     })
 
@@ -555,6 +558,14 @@ export async function deleteAccount(
     sendAccountDeletedEmail({
       firstName,
       email: user.email,
+    }).catch(console.error)
+
+    // SP-299 : Notification admin de la suppression (fire-and-forget)
+    sendAccountDeletionAdminEmail({
+      userName: user.name || 'Utilisateur',
+      userEmail: user.email,
+      companyName: user.company?.name || null,
+      userRole: user.role,
     }).catch(console.error)
 
     // Pas de revalidatePath car l'utilisateur sera déconnecté

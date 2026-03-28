@@ -207,6 +207,10 @@ export const FormDatePicker = React.forwardRef<
               mode="single"
               selected={value}
               onSelect={handleSelect}
+              captionLayout="dropdown"
+              startMonth={new Date(1970, 0)}
+              endMonth={new Date(new Date().getFullYear() + 5, 11)}
+              defaultMonth={value || new Date()}
               disabled={[
                 ...(minDate ? [{ before: minDate }] : []),
                 ...(maxDate ? [{ after: maxDate }] : []),
@@ -224,6 +228,10 @@ export const FormDatePicker = React.forwardRef<
                 month: 'space-y-4',
                 caption: 'flex justify-center pt-1 relative items-center',
                 caption_label: 'text-sm font-medium',
+                dropdowns: 'flex items-center gap-2',
+                dropdown_root: 'relative',
+                dropdown:
+                  'absolute inset-0 opacity-0 cursor-pointer',
                 nav: 'space-x-1 flex items-center',
                 nav_button: cn(
                   'h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100',

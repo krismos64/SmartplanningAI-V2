@@ -214,11 +214,11 @@ export async function verifyEmailAction(data: {
       return { success: true }
     }
 
-    // 6. Mettre à jour emailVerified et supprimer le token (transaction)
+    // 6. Mettre à jour emailVerified + isEmailVerified et supprimer le token (transaction)
     await prisma.$transaction([
       prisma.user.update({
         where: { id: user.id },
-        data: { emailVerified: new Date() },
+        data: { emailVerified: new Date(), isEmailVerified: true },
       }),
       prisma.verificationToken.delete({
         where: { token },

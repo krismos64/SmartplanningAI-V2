@@ -16,17 +16,17 @@ Plateforme SaaS multi-tenant de gestion intelligente des plannings et des ressou
 | Frontend        | Next.js 15.5.9 (App Router), React 19, TypeScript 5.7.2, Tailwind + Shadcn/ui |
 | Backend         | NextAuth v5 (Auth.js), Prisma 6.18.0, Zod, Stripe v20.3.1                     |
 | Base de données | PostgreSQL 16, Redis 7 (ioredis 5.10)                                         |
-| Emails          | React Email (28 templates), Nodemailer SMTP                                    |
+| Emails          | React Email (30 templates), Nodemailer SMTP                                    |
 | DevOps          | Docker, GitHub Actions (CI/CD), VPS OVH (Ubuntu 24.04), Nginx, Let's Encrypt  |
 
 ## Fonctionnalités
 
-- **Authentification** : Multi-rôles (SYSTEM_ADMIN, DIRECTOR, MANAGER, EMPLOYEE), invitation par email, activation de compte
+- **Authentification** : Multi-rôles (SYSTEM_ADMIN, DIRECTOR, MANAGER, EMPLOYEE), vérification email à l'inscription, invitation par email, activation de compte
 - **Dashboards** : 4 tableaux de bord par rôle avec KPIs, graphiques Recharts, animations Framer Motion
 - **Planning** : Calendrier Schedule-X (drag & drop, récurrence, conflits, exports PDF/Excel/CSV), vues jour/semaine/mois
 - **Congés** : Workflow validation (PENDING → APPROVED/REJECTED), soldes CP/RTT, overlay calendrier, demi-journées
 - **Billing** : Abonnement per-seat Stripe (2,90€/employé/mois), portail client, webhooks, sync employés auto
-- **Notifications** : Temps réel SSE, 29 emails transactionnels (React Email), préférences par catégorie/canal respectées avant chaque envoi
+- **Notifications** : Temps réel SSE, 30 emails transactionnels (React Email), préférences par catégorie/canal respectées avant chaque envoi
 - **Redis** : Rate limiting distribué (INCR+EXPIRE), sessions actives (TTL 24h), cache dashboards (TTL 300s), fallback mémoire si indisponible
 - **CRUD** : Entreprises, employés, équipes avec RBAC et multi-tenant strict
 - **Audit** : Journal d'audit complet, export CSV, protection anti-injection
@@ -115,14 +115,14 @@ npm run test:e2e         # Tests E2E Playwright
 ```
 src/
 ├── app/              # Next.js 15 App Router (53 pages, 5 layouts)
-│   ├── (auth)/       # Login, register, activate-account
+│   ├── (auth)/       # Login, register, verify-email, activate-account
 │   ├── (about)/      # À propos, tarifs
 │   ├── (landing)/    # Landing page
 │   ├── (legal)/      # Pages légales RGPD
 │   ├── app/          # Routes protégées par rôle
 │   └── api/          # API Routes (avatar, webhooks, health, SSE...)
-├── components/       # 188 composants React
-├── lib/              # Actions (38), services (18), validations Zod (23), animations, email (28 templates)
+├── components/       # 190 composants React
+├── lib/              # Actions (38), services (18), validations Zod (23), animations, email (30 templates)
 ├── hooks/            # 19 hooks custom
 ├── types/            # Types TypeScript globaux
 └── styles/           # Design tokens centralisés
@@ -176,6 +176,7 @@ Rationalisation mars 2026 : focus sur la logique métier critique (RBAC, Zod, Se
 - Cookies httpOnly + secure + sameSite, hashage bcrypt
 - Rate limiting Redis distribué (fallback mémoire), audit logs, CSP headers, SRI en production
 - Subscription guard middleware Edge Runtime
+- Vérification email à l'inscription (token 24h, page `/verify-email`)
 - Emails sécurité envoyés inconditionnellement (changement mot de passe, suppression RGPD), emails métier soumis aux préférences utilisateur
 
 > Documentation sécurité : [`docs/security/`](docs/security/)

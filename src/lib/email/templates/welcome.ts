@@ -36,7 +36,7 @@ export async function sendWelcomeEmail(
 ): Promise<{ success: boolean; messageId?: string; error?: string }> {
   const { firstName, email } = params
   const baseUrl = getBaseUrl()
-  const loginUrl = `${baseUrl}/connexion`
+  const loginUrl = `${baseUrl}/login`
 
   try {
     // Rendre le template React Email en HTML
