@@ -8,7 +8,7 @@
 'use client'
 
 import { useState, useCallback, useTransition, useMemo } from 'react'
-import { useSearchParams, usePathname } from 'next/navigation'
+import { useSearchParams, usePathname, useRouter } from 'next/navigation'
 import type { LeaveRequest, LeaveRequestStatus, UserRole } from '@prisma/client'
 
 // UI Components
@@ -141,6 +141,7 @@ export function LeavesPageContent({
   // URL params for filters
   const searchParams = useSearchParams()
   const pathname = usePathname()
+  const router = useRouter()
 
   // Impersonation guard
   const isImpersonating = useIsImpersonating()
@@ -341,13 +342,19 @@ export function LeavesPageContent({
     setEditingRequest(null)
     // Defer refetch to next microtask to avoid nested startTransition
     // (useCrudMutation's onSuccess runs inside its own startTransition)
-    setTimeout(() => refetchData(filters), 0)
-  }, [filters, refetchData])
+    setTimeout(() => {
+      refetchData(filters)
+      router.refresh()
+    }, 100)
+  }, [filters, refetchData, router])
 
   const handleReviewSuccess = useCallback(() => {
     setReviewingRequest(null)
-    setTimeout(() => refetchData(filters), 0)
-  }, [filters, refetchData])
+    setTimeout(() => {
+      refetchData(filters)
+      router.refresh()
+    }, 100)
+  }, [filters, refetchData, router])
 
   const handleEdit = useCallback((request: LeaveRequestWithEmployee) => {
     setEditingRequest(request)
@@ -395,8 +402,11 @@ export function LeavesPageContent({
 
   const handleManageSuccess = useCallback(() => {
     setManagingRequest(null)
-    setTimeout(() => refetchData(filters), 0)
-  }, [filters, refetchData])
+    setTimeout(() => {
+      refetchData(filters)
+      router.refresh()
+    }, 100)
+  }, [filters, refetchData, router])
 
   const handleCancel = useCallback(
     (request: LeaveRequestWithEmployee) => {
