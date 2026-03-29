@@ -15,6 +15,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { useToast } from '@/components/toast/use-toast'
 import {
   getSchedules,
+  getScheduleById,
   deleteSchedule,
   deleteRecurrenceGroup,
   updateRecurrenceGroup,
@@ -640,29 +641,32 @@ export function SchedulesPageContent({
           void (async () => {
             // Si édition récurrence "all" : appliquer les changements à toute la série
             if (editRecurrenceGroupId && selectedSchedule) {
-              // Relire le schedule mis à jour pour propager ses valeurs
-              const updatedSchedules = await getSchedules({
-                startDate: new Date(selectedSchedule.startDate),
-                endDate: new Date(selectedSchedule.endDate),
-                limit: 1,
-              })
-              const updated = updatedSchedules.success
-                ? updatedSchedules.data.schedules.find(
-                    (s) => s.id === selectedSchedule.id
-                  )
-                : null
+              // Relire le schedule mis à jour par son ID
+              const result = await getScheduleById(selectedSchedule.id)
 
-              if (updated) {
-                await updateRecurrenceGroup(editRecurrenceGroupId, {
-                  startTime: updated.startTime,
-                  endTime: updated.endTime,
-                  type: updated.type,
-                  status: updated.status,
-                  title: updated.title,
-                  description: updated.description,
-                  location: updated.location,
-                })
-                toast.success('Récurrence mise à jour')
+              if (result.success && result.data) {
+                const updated = result.data
+                const updateResult = await updateRecurrenceGroup(
+                  editRecurrenceGroupId,
+                  {
+                    startTime: updated.startTime,
+                    endTime: updated.endTime,
+                    type: updated.type,
+                    status: updated.status,
+                    title: updated.title,
+                    description: updated.description,
+                    location: updated.location,
+                  }
+                )
+                if (updateResult.success) {
+                  toast.success(
+                    `${updateResult.data.updatedCount} créneaux mis à jour`
+                  )
+                } else {
+                  toast.error(
+                    updateResult.error ?? 'Erreur mise à jour récurrence'
+                  )
+                }
               }
             }
 
