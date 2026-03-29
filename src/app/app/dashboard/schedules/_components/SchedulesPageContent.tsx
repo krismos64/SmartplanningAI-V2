@@ -25,6 +25,10 @@ import {
   type AvailabilityWithEmployee,
 } from '@/lib/actions/availabilities'
 import {
+  getTeamAbsences,
+  type LeaveRequestWithEmployee,
+} from '@/lib/actions/leaves'
+import {
   getTeamsForSelect,
   getEmployeesForSelect,
 } from '@/lib/actions/employees'
@@ -140,6 +144,11 @@ export function SchedulesPageContent({
   const [showAvailabilities] = useState(false)
   const [isLoadingAvailabilities, setIsLoadingAvailabilities] = useState(false)
 
+  // État pour les congés approuvés (overlay jour/mois)
+  const [leaveRequests, setLeaveRequests] = useState<
+    LeaveRequestWithEmployee[]
+  >([])
+
   // État pour les équipes (filtre)
   const [teams, setTeams] = useState<{ id: string; name: string }[]>([])
 
@@ -241,15 +250,35 @@ export function SchedulesPageContent({
     [companyId, showAvailabilities]
   )
 
-  // Charger les indisponibilités au changement de période ou toggle
+  // Charger les congés approuvés pour overlay jour/mois
+  const loadLeaveRequests = useCallback(
+    async (start: Date, end: Date) => {
+      if (teams.length === 0) return
+      try {
+        const results = await Promise.all(
+          teams.map((t) => getTeamAbsences(t.id, start, end))
+        )
+        const allLeaves = results.flatMap((r) =>
+          r.success ? r.data : []
+        )
+        setLeaveRequests(allLeaves)
+      } catch {
+        setLeaveRequests([])
+      }
+    },
+    [teams]
+  )
+
+  // Charger les indisponibilités et congés au changement de période
   // On utilise getTime() pour des dépendances primitives stables
   const rangeStartTime = dateRange.start.getTime()
   const rangeEndTime = dateRange.end.getTime()
 
   useEffect(() => {
     void loadAvailabilities(new Date(rangeStartTime), new Date(rangeEndTime))
+    void loadLeaveRequests(new Date(rangeStartTime), new Date(rangeEndTime))
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rangeStartTime, rangeEndTime, showAvailabilities, companyId])
+  }, [rangeStartTime, rangeEndTime, showAvailabilities, companyId, teams])
 
   // Rechargement des données
   const reloadSchedules = useCallback(
@@ -543,6 +572,8 @@ export function SchedulesPageContent({
               onRangeChange={handleRangeChange}
               teamIds={teams.map((t) => t.id)}
               companyId={companyId}
+              leaveRequests={leaveRequests}
+              showLeaves={true}
             />
           </CardContent>
         </Card>
