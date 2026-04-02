@@ -40,6 +40,7 @@ import {
 import { useCsvImport } from '@/hooks/use-csv-import'
 import { CsvPreviewTable } from '@/components/import/CsvPreviewTable'
 import { CsvImportResults } from '@/components/import/CsvImportResults'
+import { ProgressBar } from '@/components/ui/progress-bar'
 
 export default function ImportPage() {
   const {
@@ -48,6 +49,9 @@ export default function ImportPage() {
     preview,
     results,
     isLoading,
+    validationResults,
+    validRowsCount,
+    invalidRowsCount,
     processFile,
     startImport,
     reset,
@@ -358,7 +362,12 @@ export default function ImportPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <CsvPreviewTable preview={preview} />
+              <CsvPreviewTable
+                preview={preview}
+                validationResults={validationResults}
+                validRowsCount={validRowsCount}
+                invalidRowsCount={invalidRowsCount}
+              />
             </CardContent>
           </Card>
 
@@ -442,15 +451,26 @@ export default function ImportPage() {
         </>
       )}
 
-      {/* ETAPE 3 : Import en cours */}
+      {/* ETAPE 3 : Import en cours (SP-510) */}
       {step === 'importing' && (
         <Card>
-          <CardContent className="flex flex-col items-center justify-center p-12">
-            <Loader2 className="mb-4 h-10 w-10 animate-spin text-primary" />
-            <p className="text-lg font-medium">Import en cours...</p>
-            <p className="text-sm text-muted-foreground">
-              Veuillez patienter, cette opération peut prendre quelques
-              secondes.
+          <CardContent className="flex flex-col items-center justify-center gap-6 p-12">
+            <div className="text-center">
+              <p className="text-lg font-medium">Import en cours...</p>
+              <p className="text-sm text-muted-foreground">
+                Traitement de {preview?.totalRows ?? 0} collaborateur
+                {(preview?.totalRows ?? 0) > 1 ? 's' : ''} en cours...
+              </p>
+            </div>
+            <div className="w-full max-w-md">
+              <ProgressBar
+                size="md"
+                color="primary"
+                aria-label="Import des collaborateurs en cours"
+              />
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Veuillez ne pas fermer cette page.
             </p>
           </CardContent>
         </Card>

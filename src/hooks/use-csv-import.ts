@@ -1,24 +1,27 @@
 /**
  * Hook custom pour le flow d'import CSV
  *
- * @description Gere l'etat complet du flow d'import :
- * file selection → parsing → preview → import → results
+ * @description Gère l'état complet du flow d'import :
+ * file selection → parsing → validation preview → import → résultats
  *
  * Supporte .csv et .xlsx (conversion via xlsx package)
  *
- * @ticket SP-496
+ * @ticket SP-496, SP-509
  */
 
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import Papa from 'papaparse'
 import {
   normalizeHeaders,
   MAX_IMPORT_ROWS,
   PREVIEW_ROW_COUNT,
+  ACCEPTED_FIELDS,
+  type CsvField,
 } from '@/components/import/csv-import.utils'
 import { importEmployeesFromCsv } from '@/lib/actions/csv-import'
+import { csvEmployeeRowSchema } from '@/lib/validations/csv-import'
 import type {
   CsvImportResult,
   CsvImportOptions,
@@ -30,10 +33,21 @@ import type {
 
 export type ImportStep = 'upload' | 'preview' | 'importing' | 'results'
 
+export interface RowValidationError {
+  field: string
+  message: string
+}
+
+export interface RowValidationResult {
+  row: number
+  valid: boolean
+  errors: RowValidationError[]
+}
+
 export interface PreviewData {
-  /** En-tetes originaux du fichier */
+  /** En-têtes originaux du fichier */
   headers: string[]
-  /** Mapping en-tetes → champs normalises */
+  /** Mapping en-têtes → champs normalisés */
   headerMapping: Record<string, string>
   /** Colonnes non reconnues */
   unmappedHeaders: string[]
@@ -53,6 +67,56 @@ export interface ImportState {
   preview: PreviewData | null
   results: CsvImportResult | null
   isLoading: boolean
+  /** Résultats de validation Zod côté client (toutes les lignes) */
+  validationResults: RowValidationResult[]
+}
+
+// ============================================================================
+// Helpers
+// ============================================================================
+
+/**
+ * Normalise une ligne brute CSV en objet avec les champs attendus
+ * (même logique que la Server Action, pour validation côté client)
+ */
+function normalizeRow(
+  raw: Record<string, string>,
+  mapping: Record<string, string>
+): Record<string, string> {
+  const normalized: Record<string, string> = {}
+  for (const [originalHeader, value] of Object.entries(raw)) {
+    const field = mapping[originalHeader]
+    if (field && ACCEPTED_FIELDS.includes(field as CsvField)) {
+      normalized[field] = value ?? ''
+    }
+  }
+  return normalized
+}
+
+/**
+ * Valide toutes les lignes parsées avec le schéma Zod côté client
+ */
+function validateAllRows(
+  allRows: Record<string, string>[],
+  mapping: Record<string, string>
+): RowValidationResult[] {
+  return allRows.map((raw, index) => {
+    const normalized = normalizeRow(raw, mapping)
+    const result = csvEmployeeRowSchema.safeParse(normalized)
+
+    if (result.success) {
+      return { row: index + 1, valid: true, errors: [] }
+    }
+
+    return {
+      row: index + 1,
+      valid: false,
+      errors: result.error.issues.map((issue) => ({
+        field: issue.path.join('.') || 'inconnu',
+        message: issue.message,
+      })),
+    }
+  })
 }
 
 // ============================================================================
@@ -66,10 +130,21 @@ export function useCsvImport() {
     preview: null,
     results: null,
     isLoading: false,
+    validationResults: [],
   })
 
+  // Compteurs dérivés de la validation
+  const validRowsCount = useMemo(
+    () => state.validationResults.filter((r) => r.valid).length,
+    [state.validationResults]
+  )
+  const invalidRowsCount = useMemo(
+    () => state.validationResults.filter((r) => !r.valid).length,
+    [state.validationResults]
+  )
+
   /**
-   * Reset l'etat pour un nouvel import
+   * Reset l'état pour un nouvel import
    */
   const reset = useCallback(() => {
     setState({
@@ -78,6 +153,7 @@ export function useCsvImport() {
       preview: null,
       results: null,
       isLoading: false,
+      validationResults: [],
     })
   }, [])
 
@@ -86,7 +162,6 @@ export function useCsvImport() {
    */
   const excelToCsv = useCallback(
     async (buffer: ArrayBuffer): Promise<string> => {
-      // Import dynamique de xlsx (deja installe dans le projet)
       const XLSX = await import('xlsx')
       const workbook = XLSX.read(buffer, { type: 'array' })
       const firstSheet = workbook.SheetNames[0]
@@ -99,7 +174,7 @@ export function useCsvImport() {
   )
 
   /**
-   * Traite un fichier uploade (CSV ou XLSX)
+   * Traite un fichier uploadé (CSV ou XLSX)
    */
   const processFile = useCallback(
     async (file: File) => {
@@ -111,11 +186,9 @@ export function useCsvImport() {
         const ext = file.name.split('.').pop()?.toLowerCase()
 
         if (ext === 'xlsx' || ext === 'xls') {
-          // Fichier Excel → convertir en CSV
           const buffer = await file.arrayBuffer()
           csvContent = await excelToCsv(buffer)
         } else if (ext === 'csv' || ext === 'txt') {
-          // Fichier CSV → lire comme texte
           csvContent = await new Promise<string>((resolve, reject) => {
             const reader = new FileReader()
             reader.onload = (e) => resolve(e.target?.result as string)
@@ -129,12 +202,12 @@ export function useCsvImport() {
           )
         }
 
-        // Parser pour la preview (cote client)
+        // Parser toutes les lignes (côté client)
         const parseResult = Papa.parse<Record<string, string>>(csvContent, {
           header: true,
           skipEmptyLines: 'greedy',
           transformHeader: (header: string) => header.trim(),
-          preview: MAX_IMPORT_ROWS + 1, // +1 pour detecter le depassement
+          preview: MAX_IMPORT_ROWS + 1,
         })
 
         if (!parseResult.meta.fields || parseResult.meta.fields.length === 0) {
@@ -166,13 +239,16 @@ export function useCsvImport() {
           )
         }
 
+        // SP-509 : Validation Zod côté client de TOUTES les lignes
+        const validationResults = validateAllRows(parseResult.data, mapping)
+
         setState({
           step: 'preview',
           error: null,
           preview: {
             headers: rawHeaders,
             headerMapping: mapping,
-            unmappedHeaders: unmappedHeaders,
+            unmappedHeaders,
             rows: parseResult.data.slice(0, PREVIEW_ROW_COUNT),
             totalRows,
             csvContent,
@@ -180,6 +256,7 @@ export function useCsvImport() {
           },
           results: null,
           isLoading: false,
+          validationResults,
         })
       } catch (err) {
         setState((prev) => ({
@@ -197,7 +274,7 @@ export function useCsvImport() {
   )
 
   /**
-   * Lance l'import en envoyant le CSV brut a la Server Action
+   * Lance l'import en envoyant le CSV brut à la Server Action
    */
   const startImport = useCallback(
     async (options: CsvImportOptions) => {
@@ -245,6 +322,8 @@ export function useCsvImport() {
 
   return {
     ...state,
+    validRowsCount,
+    invalidRowsCount,
     processFile,
     startImport,
     reset,
