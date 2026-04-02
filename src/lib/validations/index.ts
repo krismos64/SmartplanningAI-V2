@@ -43,3 +43,6 @@ export * from './preferences'
 
 // Stripe schemas (SP-349)
 export * from './stripe'
+
+// CSV Import schemas (SP-496)
+export * from './csv-import'

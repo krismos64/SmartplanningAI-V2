@@ -242,8 +242,11 @@ describe('AdminRecentCompanies', () => {
     })
 
     it('devrait afficher Il y a X jours', async () => {
-      const fiveDaysAgo = new Date()
-      fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5)
+      // Fixer la date pour eviter les decalages horaires entre test et composant
+      vi.useFakeTimers()
+      vi.setSystemTime(new Date('2026-04-02T12:00:00Z'))
+
+      const fiveDaysAgo = new Date('2026-03-28T12:00:00Z')
 
       const oldCompany = [
         {
@@ -258,11 +261,15 @@ describe('AdminRecentCompanies', () => {
       await renderAdminRecentCompanies(oldCompany)
 
       expect(screen.getByText('Il y a 5 jours')).toBeInTheDocument()
+
+      vi.useRealTimers()
     })
 
     it('devrait afficher Il y a X sem pour plus de 7 jours', async () => {
-      const twoWeeksAgo = new Date()
-      twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14)
+      vi.useFakeTimers()
+      vi.setSystemTime(new Date('2026-04-02T12:00:00Z'))
+
+      const twoWeeksAgo = new Date('2026-03-19T12:00:00Z')
 
       const oldCompany = [
         {
@@ -277,6 +284,8 @@ describe('AdminRecentCompanies', () => {
       await renderAdminRecentCompanies(oldCompany)
 
       expect(screen.getByText('Il y a 2 sem.')).toBeInTheDocument()
+
+      vi.useRealTimers()
     })
   })
 

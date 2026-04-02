@@ -1,0 +1,5 @@
+﻿Prénom (obligatoire);Nom (obligatoire);Email (facultatif);Téléphone (facultatif);Poste (facultatif);Département (facultatif);Équipe (facultatif);Heures/semaine (facultatif);Date d'embauche (facultatif);Rôle (facultatif);Compétences (facultatif)
+Marie;Dupont;marie.dupont@email.com;06 12 34 56 78;Caissière;Support;Caisse;35;15/01/2024;Employé;caisse,accueil
+Pierre;Martin;pierre.martin@email.com;;Chef de rayon;Logistique;Rayon frais;39;01/06/2022;Manager;frais,commande
+Sophie;Bernard;;;Vendeuse;Commercial;Textile;28;10/03/2025;Employé;
+Luc;Moreau;luc.moreau@email.com;07 98 76 54 32;Technicien;Technique;Maintenance;35;22/09/2023;Employé;électricité,plomberie

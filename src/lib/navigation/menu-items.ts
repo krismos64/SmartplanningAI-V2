@@ -11,7 +11,6 @@
 import {
   Home,
   Calendar,
-  Brain,
   Plane,
   ClipboardList,
   Users,
@@ -31,6 +30,7 @@ import {
   Plus,
   UserPlus,
   CalendarPlus,
+  Upload,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -73,9 +73,12 @@ export interface HelpItem {
 
 /**
  * Items de navigation principale
+ *
+ * Source unique de verite pour la Sidebar et la CommandPalette.
+ * L'ordre definit ici est l'ordre d'affichage dans la Sidebar.
  */
 export const navigationItems: NavigationItem[] = [
-  // Dashboard standard
+  // Dashboard standard (tous sauf SYSTEM_ADMIN)
   {
     id: 'dashboard',
     label: 'Dashboard',
@@ -103,12 +106,28 @@ export const navigationItems: NavigationItem[] = [
     keywords: ['company', 'entreprise', 'organisation'],
   },
   {
+    id: 'admin-users',
+    label: 'Utilisateurs',
+    icon: Users,
+    href: '/app/admin/users',
+    roles: ['SYSTEM_ADMIN'],
+    keywords: ['user', 'utilisateur', 'compte'],
+  },
+  {
     id: 'monitoring',
     label: 'Monitoring',
     icon: Activity,
     href: '/app/admin/monitoring',
     roles: ['SYSTEM_ADMIN'],
     keywords: ['monitor', 'surveillance', 'performance'],
+  },
+  {
+    id: 'admin-stats',
+    label: 'Statistiques',
+    icon: BarChart,
+    href: '/app/admin/stats',
+    roles: ['SYSTEM_ADMIN'],
+    keywords: ['statistic', 'statistique', 'rapport', 'analytics'],
   },
   {
     id: 'logs',
@@ -129,6 +148,14 @@ export const navigationItems: NavigationItem[] = [
     shortcut: 'G E',
   },
   {
+    id: 'import',
+    label: 'Import',
+    icon: Upload,
+    href: '/app/dashboard/import',
+    roles: ['SYSTEM_ADMIN', 'DIRECTOR'],
+    keywords: ['import', 'csv', 'excel', 'importer', 'données'],
+  },
+  {
     id: 'teams',
     label: 'Équipes',
     icon: UsersRound,
@@ -136,15 +163,6 @@ export const navigationItems: NavigationItem[] = [
     roles: ['DIRECTOR'],
     keywords: ['team', 'équipe', 'groupe'],
     shortcut: 'G T',
-  },
-  {
-    id: 'billing',
-    label: 'Facturation',
-    icon: CreditCard,
-    href: '/app/dashboard/billing',
-    roles: ['DIRECTOR'],
-    keywords: ['billing', 'facturation', 'abonnement', 'paiement', 'stripe'],
-    shortcut: 'G B',
   },
   // Common items
   {
@@ -175,14 +193,6 @@ export const navigationItems: NavigationItem[] = [
     shortcut: 'G N',
   },
   {
-    id: 'stats',
-    label: 'Statistiques',
-    icon: BarChart,
-    href: '/stats',
-    roles: ['DIRECTOR', 'MANAGER'],
-    keywords: ['statistic', 'statistique', 'rapport', 'analytics'],
-  },
-  {
     id: 'incidents',
     label: 'Incidents',
     icon: AlertCircle,
@@ -192,19 +202,20 @@ export const navigationItems: NavigationItem[] = [
     shortcut: 'G I',
   },
   {
-    id: 'ai-planning',
-    label: 'IA Planning',
-    icon: Brain,
-    href: '/ai-planning',
-    roles: ['DIRECTOR', 'MANAGER'],
-    keywords: ['ia', 'ai', 'intelligence', 'artificielle', 'automatique'],
+    id: 'billing',
+    label: 'Facturation',
+    icon: CreditCard,
+    href: '/app/dashboard/billing',
+    roles: ['DIRECTOR'],
+    keywords: ['billing', 'facturation', 'abonnement', 'paiement', 'stripe'],
+    shortcut: 'G B',
   },
   {
     id: 'settings',
     label: 'Paramètres',
     icon: Settings,
-    href: '/settings',
-    roles: ['DIRECTOR'],
+    href: '/app/settings',
+    roles: 'ALL',
     keywords: ['setting', 'paramètre', 'configuration', 'préférence'],
   },
 ]

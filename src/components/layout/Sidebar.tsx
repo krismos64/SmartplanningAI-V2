@@ -3,20 +3,6 @@
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import {
-  Home,
-  Calendar,
-  Plane,
-  ClipboardList,
-  Users,
-  UsersRound,
-  CreditCard,
-  Settings,
-  Building,
-  Activity,
-  AlertCircle,
-  BarChart3,
-} from 'lucide-react'
 
 import {
   Sidebar as SidebarPrimitive,
@@ -28,8 +14,11 @@ import {
   SidebarMenuItem,
 } from '@/components/ui/sidebar'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-
-type UserRole = 'SYSTEM_ADMIN' | 'DIRECTOR' | 'MANAGER' | 'EMPLOYEE'
+import {
+  getNavigationItemsByRole,
+  getRoleLabel,
+  type UserRole,
+} from '@/lib/navigation/menu-items'
 
 /**
  * Variantes de style pour la sidebar
@@ -52,130 +41,6 @@ interface SidebarProps {
   variant?: SidebarVariant
 }
 
-interface MenuItem {
-  id: string
-  label: string
-  icon: typeof Home
-  href: string
-  roles: UserRole[] | 'ALL'
-}
-
-const menuItems: MenuItem[] = [
-  {
-    id: 'dashboard',
-    label: 'Dashboard',
-    icon: Home,
-    href: '/app/dashboard',
-    roles: ['DIRECTOR', 'MANAGER', 'EMPLOYEE'],
-  },
-  // SYSTEM_ADMIN specific items
-  {
-    id: 'admin-dashboard',
-    label: 'Dashboard SaaS',
-    icon: Activity,
-    href: '/app/admin/dashboard',
-    roles: ['SYSTEM_ADMIN'],
-  },
-  {
-    id: 'companies',
-    label: 'Entreprises',
-    icon: Building,
-    href: '/app/admin/companies',
-    roles: ['SYSTEM_ADMIN'],
-  },
-  {
-    id: 'admin-users',
-    label: 'Utilisateurs',
-    icon: Users,
-    href: '/app/admin/users',
-    roles: ['SYSTEM_ADMIN'],
-  },
-  {
-    id: 'monitoring',
-    label: 'Monitoring',
-    icon: Activity,
-    href: '/app/admin/monitoring',
-    roles: ['SYSTEM_ADMIN'],
-  },
-  {
-    id: 'stats',
-    label: 'Statistiques',
-    icon: BarChart3,
-    href: '/app/admin/stats',
-    roles: ['SYSTEM_ADMIN'],
-  },
-  {
-    id: 'logs',
-    label: 'Logs système',
-    icon: AlertCircle,
-    href: '/app/admin/logs',
-    roles: ['SYSTEM_ADMIN'],
-  },
-  // DIRECTOR items
-  {
-    id: 'employees',
-    label: 'Collaborateurs',
-    icon: Users,
-    href: '/app/dashboard/employees',
-    roles: ['DIRECTOR', 'MANAGER'],
-  },
-  {
-    id: 'teams',
-    label: 'Équipes',
-    icon: UsersRound,
-    href: '/app/director/teams',
-    roles: ['DIRECTOR'],
-  },
-  {
-    id: 'schedules',
-    label: 'Plannings',
-    icon: Calendar,
-    href: '/app/dashboard/schedules',
-    roles: ['DIRECTOR', 'MANAGER', 'EMPLOYEE'],
-  },
-  {
-    id: 'leaves',
-    label: 'Congés',
-    icon: Plane,
-    href: '/app/dashboard/leaves',
-    roles: ['DIRECTOR', 'MANAGER', 'EMPLOYEE'],
-  },
-  {
-    id: 'tasks',
-    label: 'Notes perso',
-    icon: ClipboardList,
-    href: '/app/dashboard/tasks',
-    roles: 'ALL',
-  },
-  {
-    id: 'incidents',
-    label: 'Incidents',
-    icon: AlertCircle,
-    href: '/app/dashboard/incidents',
-    roles: ['DIRECTOR', 'MANAGER', 'EMPLOYEE'],
-  },
-  {
-    id: 'billing',
-    label: 'Facturation',
-    icon: CreditCard,
-    href: '/app/dashboard/billing',
-    roles: ['DIRECTOR'],
-  },
-  {
-    id: 'settings',
-    label: 'Paramètres',
-    icon: Settings,
-    href: '/app/settings',
-    roles: 'ALL',
-  },
-]
-
-function getMenuItemsByRole(role: UserRole): MenuItem[] {
-  return menuItems.filter(
-    (item) => item.roles === 'ALL' || item.roles.includes(role)
-  )
-}
-
 /**
  * Mapping des variantes vers les classes CSS
  */
@@ -188,7 +53,7 @@ const variantClasses: Record<SidebarVariant, string> = {
 
 export function Sidebar({ user, variant = 'neon' }: SidebarProps) {
   const pathname = usePathname()
-  const filteredMenuItems = getMenuItemsByRole(user.role)
+  const filteredMenuItems = getNavigationItemsByRole(user.role)
   const userInitials = user.name
     .split(' ')
     .map((n) => n[0])
@@ -289,17 +154,3 @@ export function Sidebar({ user, variant = 'neon' }: SidebarProps) {
   )
 }
 
-function getRoleLabel(role: UserRole): string {
-  switch (role) {
-    case 'SYSTEM_ADMIN':
-      return 'Super Administrateur'
-    case 'DIRECTOR':
-      return 'Directeur'
-    case 'MANAGER':
-      return 'Manager'
-    case 'EMPLOYEE':
-      return 'Employé'
-    default:
-      return 'Utilisateur'
-  }
-}
