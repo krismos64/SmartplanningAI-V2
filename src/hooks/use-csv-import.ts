@@ -19,7 +19,10 @@ import {
   PREVIEW_ROW_COUNT,
 } from '@/components/import/csv-import.utils'
 import { importEmployeesFromCsv } from '@/lib/actions/csv-import'
-import type { CsvImportResult, CsvImportOptions } from '@/lib/validations/csv-import'
+import type {
+  CsvImportResult,
+  CsvImportOptions,
+} from '@/lib/validations/csv-import'
 
 // ============================================================================
 // Types
@@ -81,140 +84,164 @@ export function useCsvImport() {
   /**
    * Convertit un fichier Excel en CSV string
    */
-  const excelToCsv = useCallback(async (buffer: ArrayBuffer): Promise<string> => {
-    // Import dynamique de xlsx (deja installe dans le projet)
-    const XLSX = await import('xlsx')
-    const workbook = XLSX.read(buffer, { type: 'array' })
-    const firstSheet = workbook.SheetNames[0]
-    if (!firstSheet) throw new Error('Le fichier Excel est vide')
-    const worksheet = workbook.Sheets[firstSheet]
-    if (!worksheet) throw new Error('Feuille de calcul introuvable')
-    return XLSX.utils.sheet_to_csv(worksheet, { FS: ';' })
-  }, [])
+  const excelToCsv = useCallback(
+    async (buffer: ArrayBuffer): Promise<string> => {
+      // Import dynamique de xlsx (deja installe dans le projet)
+      const XLSX = await import('xlsx')
+      const workbook = XLSX.read(buffer, { type: 'array' })
+      const firstSheet = workbook.SheetNames[0]
+      if (!firstSheet) throw new Error('Le fichier Excel est vide')
+      const worksheet = workbook.Sheets[firstSheet]
+      if (!worksheet) throw new Error('Feuille de calcul introuvable')
+      return XLSX.utils.sheet_to_csv(worksheet, { FS: ';' })
+    },
+    []
+  )
 
   /**
    * Traite un fichier uploade (CSV ou XLSX)
    */
-  const processFile = useCallback(async (file: File) => {
-    setState((prev) => ({ ...prev, isLoading: true, error: null }))
+  const processFile = useCallback(
+    async (file: File) => {
+      setState((prev) => ({ ...prev, isLoading: true, error: null }))
 
-    try {
-      let csvContent: string
+      try {
+        let csvContent: string
 
-      const ext = file.name.split('.').pop()?.toLowerCase()
+        const ext = file.name.split('.').pop()?.toLowerCase()
 
-      if (ext === 'xlsx' || ext === 'xls') {
-        // Fichier Excel → convertir en CSV
-        const buffer = await file.arrayBuffer()
-        csvContent = await excelToCsv(buffer)
-      } else if (ext === 'csv' || ext === 'txt') {
-        // Fichier CSV → lire comme texte
-        csvContent = await new Promise<string>((resolve, reject) => {
-          const reader = new FileReader()
-          reader.onload = (e) => resolve(e.target?.result as string)
-          reader.onerror = () => reject(new Error('Erreur de lecture du fichier'))
-          reader.readAsText(file, 'UTF-8')
+        if (ext === 'xlsx' || ext === 'xls') {
+          // Fichier Excel → convertir en CSV
+          const buffer = await file.arrayBuffer()
+          csvContent = await excelToCsv(buffer)
+        } else if (ext === 'csv' || ext === 'txt') {
+          // Fichier CSV → lire comme texte
+          csvContent = await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader()
+            reader.onload = (e) => resolve(e.target?.result as string)
+            reader.onerror = () =>
+              reject(new Error('Erreur de lecture du fichier'))
+            reader.readAsText(file, 'UTF-8')
+          })
+        } else {
+          throw new Error(
+            'Format de fichier non supporté. Utilisez .csv, .xlsx ou .xls'
+          )
+        }
+
+        // Parser pour la preview (cote client)
+        const parseResult = Papa.parse<Record<string, string>>(csvContent, {
+          header: true,
+          skipEmptyLines: 'greedy',
+          transformHeader: (header: string) => header.trim(),
+          preview: MAX_IMPORT_ROWS + 1, // +1 pour detecter le depassement
         })
-      } else {
-        throw new Error('Format de fichier non supporté. Utilisez .csv, .xlsx ou .xls')
+
+        if (!parseResult.meta.fields || parseResult.meta.fields.length === 0) {
+          throw new Error('Impossible de détecter les colonnes du fichier')
+        }
+
+        const rawHeaders = parseResult.meta.fields
+        const {
+          mapping,
+          unmapped: unmappedHeaders,
+          missingRequired,
+        } = normalizeHeaders(rawHeaders)
+
+        if (missingRequired.length > 0) {
+          throw new Error(
+            `Colonnes obligatoires manquantes : ${missingRequired.join(', ')}. Téléchargez le template CSV pour le format attendu.`
+          )
+        }
+
+        const totalRows = parseResult.data.length
+
+        if (totalRows === 0) {
+          throw new Error('Le fichier ne contient aucune ligne de données')
+        }
+
+        if (totalRows > MAX_IMPORT_ROWS) {
+          throw new Error(
+            `Le fichier contient ${totalRows} lignes. Maximum autorisé : ${MAX_IMPORT_ROWS}.`
+          )
+        }
+
+        setState({
+          step: 'preview',
+          error: null,
+          preview: {
+            headers: rawHeaders,
+            headerMapping: mapping,
+            unmappedHeaders: unmappedHeaders,
+            rows: parseResult.data.slice(0, PREVIEW_ROW_COUNT),
+            totalRows,
+            csvContent,
+            fileName: file.name,
+          },
+          results: null,
+          isLoading: false,
+        })
+      } catch (err) {
+        setState((prev) => ({
+          ...prev,
+          step: 'upload',
+          error:
+            err instanceof Error
+              ? err.message
+              : 'Erreur lors du traitement du fichier',
+          isLoading: false,
+        }))
       }
-
-      // Parser pour la preview (cote client)
-      const parseResult = Papa.parse<Record<string, string>>(csvContent, {
-        header: true,
-        skipEmptyLines: 'greedy',
-        transformHeader: (header: string) => header.trim(),
-        preview: MAX_IMPORT_ROWS + 1, // +1 pour detecter le depassement
-      })
-
-      if (!parseResult.meta.fields || parseResult.meta.fields.length === 0) {
-        throw new Error('Impossible de détecter les colonnes du fichier')
-      }
-
-      const rawHeaders = parseResult.meta.fields
-      const { mapping, unmapped: unmappedHeaders, missingRequired } = normalizeHeaders(rawHeaders)
-
-      if (missingRequired.length > 0) {
-        throw new Error(
-          `Colonnes obligatoires manquantes : ${missingRequired.join(', ')}. Téléchargez le template CSV pour le format attendu.`
-        )
-      }
-
-      const totalRows = parseResult.data.length
-
-      if (totalRows === 0) {
-        throw new Error('Le fichier ne contient aucune ligne de données')
-      }
-
-      if (totalRows > MAX_IMPORT_ROWS) {
-        throw new Error(
-          `Le fichier contient ${totalRows} lignes. Maximum autorisé : ${MAX_IMPORT_ROWS}.`
-        )
-      }
-
-      setState({
-        step: 'preview',
-        error: null,
-        preview: {
-          headers: rawHeaders,
-          headerMapping: mapping,
-          unmappedHeaders: unmappedHeaders,
-          rows: parseResult.data.slice(0, PREVIEW_ROW_COUNT),
-          totalRows,
-          csvContent,
-          fileName: file.name,
-        },
-        results: null,
-        isLoading: false,
-      })
-    } catch (err) {
-      setState((prev) => ({
-        ...prev,
-        step: 'upload',
-        error: err instanceof Error ? err.message : 'Erreur lors du traitement du fichier',
-        isLoading: false,
-      }))
-    }
-  }, [excelToCsv])
+    },
+    [excelToCsv]
+  )
 
   /**
    * Lance l'import en envoyant le CSV brut a la Server Action
    */
-  const startImport = useCallback(async (options: CsvImportOptions) => {
-    if (!state.preview) return
+  const startImport = useCallback(
+    async (options: CsvImportOptions) => {
+      if (!state.preview) return
 
-    setState((prev) => ({ ...prev, step: 'importing', isLoading: true, error: null }))
+      setState((prev) => ({
+        ...prev,
+        step: 'importing',
+        isLoading: true,
+        error: null,
+      }))
 
-    try {
-      const result = await importEmployeesFromCsv(
-        state.preview.csvContent,
-        options
-      )
+      try {
+        const result = await importEmployeesFromCsv(
+          state.preview.csvContent,
+          options
+        )
 
-      if (result.success) {
-        setState((prev) => ({
-          ...prev,
-          step: 'results',
-          results: result.data,
-          isLoading: false,
-        }))
-      } else {
+        if (result.success) {
+          setState((prev) => ({
+            ...prev,
+            step: 'results',
+            results: result.data,
+            isLoading: false,
+          }))
+        } else {
+          setState((prev) => ({
+            ...prev,
+            step: 'preview',
+            error: result.error,
+            isLoading: false,
+          }))
+        }
+      } catch (err) {
         setState((prev) => ({
           ...prev,
           step: 'preview',
-          error: result.error,
+          error: err instanceof Error ? err.message : "Erreur lors de l'import",
           isLoading: false,
         }))
       }
-    } catch (err) {
-      setState((prev) => ({
-        ...prev,
-        step: 'preview',
-        error: err instanceof Error ? err.message : "Erreur lors de l'import",
-        isLoading: false,
-      }))
-    }
-  }, [state.preview])
+    },
+    [state.preview]
+  )
 
   return {
     ...state,

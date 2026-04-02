@@ -12,8 +12,15 @@
 'use client'
 
 import { useCallback, useRef, useState } from 'react'
+import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
 import {
@@ -69,7 +76,7 @@ export default function ImportPage() {
       e.preventDefault()
       setIsDragOver(false)
       const file = e.dataTransfer.files[0]
-      if (file) processFile(file)
+      if (file) void processFile(file)
     },
     [processFile]
   )
@@ -77,7 +84,7 @@ export default function ImportPage() {
   const handleFileChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0]
-      if (file) processFile(file)
+      if (file) void processFile(file)
       // Reset input pour permettre de re-selectionner le meme fichier
       if (fileInputRef.current) fileInputRef.current.value = ''
     },
@@ -85,14 +92,16 @@ export default function ImportPage() {
   )
 
   const handleStartImport = useCallback(() => {
-    startImport({ skipDuplicates, autoCreateTeams })
+    void startImport({ skipDuplicates, autoCreateTeams })
   }, [startImport, skipDuplicates, autoCreateTeams])
 
   return (
     <div className="container mx-auto max-w-4xl space-y-6 p-6">
       {/* Titre */}
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Import de collaborateurs</h1>
+        <h1 className="text-2xl font-bold tracking-tight">
+          Import de collaborateurs
+        </h1>
         <p className="text-muted-foreground">
           Ajoutez rapidement vos collaborateurs depuis un fichier CSV ou Excel
         </p>
@@ -117,9 +126,12 @@ export default function ImportPage() {
           {/* Guide explicatif */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Comment ça fonctionne ?</CardTitle>
+              <CardTitle className="text-base">
+                Comment ça fonctionne ?
+              </CardTitle>
               <CardDescription>
-                En 3 étapes, importez tous vos collaborateurs depuis un simple fichier Excel ou CSV.
+                En 3 étapes, importez tous vos collaborateurs depuis un simple
+                fichier Excel ou CSV.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -129,7 +141,9 @@ export default function ImportPage() {
                     1
                   </div>
                   <div>
-                    <p className="text-sm font-medium">Préparez votre fichier</p>
+                    <p className="text-sm font-medium">
+                      Préparez votre fichier
+                    </p>
                     <p className="text-xs text-muted-foreground">
                       Téléchargez notre modèle, remplissez-le avec vos données.
                       Seuls le prénom et le nom sont obligatoires.
@@ -141,7 +155,9 @@ export default function ImportPage() {
                     2
                   </div>
                   <div>
-                    <p className="text-sm font-medium">Vérifiez l&apos;aperçu</p>
+                    <p className="text-sm font-medium">
+                      Vérifiez l&apos;aperçu
+                    </p>
                     <p className="text-xs text-muted-foreground">
                       Déposez votre fichier ici. Vous verrez un aperçu de vos
                       données avant de lancer l&apos;import.
@@ -155,8 +171,8 @@ export default function ImportPage() {
                   <div>
                     <p className="text-sm font-medium">Lancez l&apos;import</p>
                     <p className="text-xs text-muted-foreground">
-                      Confirmez et vos collaborateurs sont créés
-                      instantanément. Un rapport détaillé s&apos;affiche à la fin.
+                      Confirmez et vos collaborateurs sont créés instantanément.
+                      Un rapport détaillé s&apos;affiche à la fin.
                     </p>
                   </div>
                 </div>
@@ -172,9 +188,9 @@ export default function ImportPage() {
                 <div>
                   <p className="text-sm font-medium">Facturation automatique</p>
                   <p className="text-xs text-muted-foreground">
-                    Votre abonnement est mis à jour automatiquement.
-                    Chaque collaborateur importé est comptabilisé dans votre
-                    forfait (2,90 &euro; HT/mois par collaborateur actif).
+                    Votre abonnement est mis à jour automatiquement. Chaque
+                    collaborateur importé est comptabilisé dans votre forfait
+                    (2,90 &euro; HT/mois par collaborateur actif).
                   </p>
                 </div>
               </CardContent>
@@ -185,8 +201,8 @@ export default function ImportPage() {
                 <div>
                   <p className="text-sm font-medium">Détection des doublons</p>
                   <p className="text-xs text-muted-foreground">
-                    Si un collaborateur existe déjà (même email ou même nom),
-                    il est automatiquement ignoré. Pas de risque de doublon.
+                    Si un collaborateur existe déjà (même email ou même nom), il
+                    est automatiquement ignoré. Pas de risque de doublon.
                   </p>
                 </div>
               </CardContent>
@@ -210,8 +226,8 @@ export default function ImportPage() {
                   <p className="text-sm font-medium">Rapport détaillé</p>
                   <p className="text-xs text-muted-foreground">
                     À la fin de l&apos;import, un rapport vous indique
-                    exactement combien de collaborateurs ont été créés,
-                    ignorés ou en erreur.
+                    exactement combien de collaborateurs ont été créés, ignorés
+                    ou en erreur.
                   </p>
                 </div>
               </CardContent>
@@ -223,7 +239,8 @@ export default function ImportPage() {
             <CardHeader>
               <CardTitle>Déposez votre fichier</CardTitle>
               <CardDescription>
-                Formats acceptés : .csv, .xlsx, .xls — jusqu&apos;à 1 000 collaborateurs par import
+                Formats acceptés : .csv, .xlsx, .xls — jusqu&apos;à 1 000
+                collaborateurs par import
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -296,8 +313,14 @@ export default function ImportPage() {
                   <p className="text-sm font-medium">Colonnes du fichier</p>
                 </div>
                 <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-xs text-muted-foreground sm:grid-cols-3">
-                  <span><strong className="text-foreground">Prénom</strong> — obligatoire</span>
-                  <span><strong className="text-foreground">Nom</strong> — obligatoire</span>
+                  <span>
+                    <strong className="text-foreground">Prénom</strong> —
+                    obligatoire
+                  </span>
+                  <span>
+                    <strong className="text-foreground">Nom</strong> —
+                    obligatoire
+                  </span>
                   <span>Email — facultatif</span>
                   <span>Téléphone — facultatif</span>
                   <span>Poste — facultatif</span>
@@ -358,7 +381,8 @@ export default function ImportPage() {
                     Ignorer les doublons
                   </Label>
                   <p className="text-xs text-muted-foreground">
-                    Les collaborateurs déjà présents (même email ou même nom) seront ignorés
+                    Les collaborateurs déjà présents (même email ou même nom)
+                    seront ignorés
                   </p>
                 </div>
               </div>
@@ -375,7 +399,8 @@ export default function ImportPage() {
                     Créer les équipes automatiquement
                   </Label>
                   <p className="text-xs text-muted-foreground">
-                    Si une équipe mentionnée dans le fichier n&apos;existe pas, elle sera créée
+                    Si une équipe mentionnée dans le fichier n&apos;existe pas,
+                    elle sera créée
                   </p>
                 </div>
               </div>
@@ -387,10 +412,13 @@ export default function ImportPage() {
             <CardContent className="flex items-start gap-3 p-4">
               <CreditCard className="mt-0.5 h-5 w-5 shrink-0 text-blue-500" />
               <div>
-                <p className="text-sm font-medium">Impact sur votre abonnement</p>
+                <p className="text-sm font-medium">
+                  Impact sur votre abonnement
+                </p>
                 <p className="text-xs text-muted-foreground">
-                  Les {preview.totalRows} collaborateur{preview.totalRows > 1 ? 's' : ''} de
-                  ce fichier seront ajoutés à votre effectif. Votre abonnement sera ajusté
+                  Les {preview.totalRows} collaborateur
+                  {preview.totalRows > 1 ? 's' : ''} de ce fichier seront
+                  ajoutés à votre effectif. Votre abonnement sera ajusté
                   automatiquement à 2,90 &euro; HT/mois par collaborateur actif.
                   Les doublons ignorés ne sont pas comptabilisés.
                 </p>
@@ -400,11 +428,7 @@ export default function ImportPage() {
 
           {/* Bouton lancer */}
           <div className="flex justify-end">
-            <Button
-              onClick={handleStartImport}
-              disabled={isLoading}
-              size="lg"
-            >
+            <Button onClick={handleStartImport} disabled={isLoading} size="lg">
               {isLoading ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : (
@@ -425,9 +449,9 @@ export default function ImportPage() {
             <Loader2 className="mb-4 h-10 w-10 animate-spin text-primary" />
             <p className="text-lg font-medium">Import en cours...</p>
             <p className="text-sm text-muted-foreground">
-              Veuillez patienter, cette opération peut prendre quelques secondes.
+              Veuillez patienter, cette opération peut prendre quelques
+              secondes.
             </p>
-
           </CardContent>
         </Card>
       )}
@@ -443,9 +467,7 @@ export default function ImportPage() {
               Nouvel import
             </Button>
             <Button asChild variant="outline">
-              <a href="/app/dashboard/employees">
-                Voir les employés
-              </a>
+              <Link href="/app/dashboard/employees">Voir les employés</Link>
             </Button>
           </div>
         </>

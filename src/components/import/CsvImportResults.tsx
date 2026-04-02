@@ -57,7 +57,9 @@ export function CsvImportResults({ results }: CsvImportResultsProps) {
               <CheckCircle2 className="h-5 w-5 text-success" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-success">{created.length}</p>
+              <p className="text-2xl font-bold text-success">
+                {created.length}
+              </p>
               <p className="text-xs text-muted-foreground">Créés</p>
             </div>
           </CardContent>
@@ -68,7 +70,9 @@ export function CsvImportResults({ results }: CsvImportResultsProps) {
               <SkipForward className="h-5 w-5 text-warning" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-warning">{skipped.length}</p>
+              <p className="text-2xl font-bold text-warning">
+                {skipped.length}
+              </p>
               <p className="text-xs text-muted-foreground">Ignorés</p>
             </div>
           </CardContent>
@@ -97,9 +101,7 @@ export function CsvImportResults({ results }: CsvImportResultsProps) {
             : `${(durationMs / 1000).toFixed(1)} s`}
         </span>
         {teamsCreated.length > 0 && (
-          <span>
-            Équipes créées : {teamsCreated.join(', ')}
-          </span>
+          <span>Équipes créées : {teamsCreated.join(', ')}</span>
         )}
       </div>
 

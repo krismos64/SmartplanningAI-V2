@@ -24,7 +24,10 @@ import { revalidatePath } from 'next/cache'
 import Papa from 'papaparse'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/lib/auth'
-import { getEffectiveSessionData, assertNotImpersonating } from '@/lib/impersonation'
+import {
+  getEffectiveSessionData,
+  assertNotImpersonating,
+} from '@/lib/impersonation'
 import { validateData, handlePrismaError } from './crud-helpers'
 import { logAuditAction } from '@/lib/services/audit'
 import { syncEmployeeCountToStripe } from '@/lib/services/stripe/subscription-sync.service'
@@ -72,7 +75,10 @@ export async function importEmployeesFromCsv(
   // ------------------------------------------------------------------
   const session = await auth()
   if (!session?.user?.id) {
-    return { success: false, error: 'Vous devez être connecté pour effectuer cette action' }
+    return {
+      success: false,
+      error: 'Vous devez être connecté pour effectuer cette action',
+    }
   }
 
   // ------------------------------------------------------------------
@@ -90,7 +96,10 @@ export async function importEmployeesFromCsv(
   const companyId = effective.companyId
 
   if (role !== 'SYSTEM_ADMIN' && role !== 'DIRECTOR') {
-    return { success: false, error: "Vous n'avez pas les permissions pour importer des employés" }
+    return {
+      success: false,
+      error: "Vous n'avez pas les permissions pour importer des employés",
+    }
   }
 
   // DIRECTOR doit avoir un companyId
@@ -100,13 +109,19 @@ export async function importEmployeesFromCsv(
 
   // Pour SYSTEM_ADMIN sans companyId, on ne peut pas importer (il faudrait specifier la company)
   if (!companyId) {
-    return { success: false, error: 'Veuillez sélectionner une entreprise avant d\'importer' }
+    return {
+      success: false,
+      error: "Veuillez sélectionner une entreprise avant d'importer",
+    }
   }
 
   // ------------------------------------------------------------------
   // 4. VALIDATION DU PAYLOAD
   // ------------------------------------------------------------------
-  const payloadValidation = validateData(csvImportPayloadSchema, { csvContent, options })
+  const payloadValidation = validateData(csvImportPayloadSchema, {
+    csvContent,
+    options,
+  })
   if (!payloadValidation.success) {
     return { success: false, error: payloadValidation.error }
   }
@@ -227,7 +242,10 @@ export async function importEmployeesFromCsv(
         if (emp.email) {
           emailMap.set(emp.email.toLowerCase(), emp.id)
         }
-        nameMap.set(`${emp.firstName.toLowerCase()}|${emp.lastName.toLowerCase()}`, emp.id)
+        nameMap.set(
+          `${emp.firstName.toLowerCase()}|${emp.lastName.toLowerCase()}`,
+          emp.id
+        )
       }
 
       // 10b. Resoudre/creer les equipes
@@ -397,6 +415,9 @@ export async function importEmployeesFromCsv(
   } catch (error) {
     console.error('[importEmployeesFromCsv] Transaction error:', error)
     const prismaError = handlePrismaError(error)
-    return { success: false, error: `Erreur lors de l'import : ${prismaError.error}` }
+    return {
+      success: false,
+      error: `Erreur lors de l'import : ${prismaError.error}`,
+    }
   }
 }

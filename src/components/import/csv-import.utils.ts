@@ -135,7 +135,7 @@ function removeAccents(str: string): string {
 export function normalizeHeader(header: string): string | null {
   const cleaned = removeAccents(header.trim().toLowerCase())
     .replace(/\s*\(.*?\)\s*/g, '') // Supprime les annotations entre parentheses ex: "(obligatoire)"
-    .replace(/\s*\*\s*/g, '')      // Supprime les asterisques ex: "Prénom *"
+    .replace(/\s*\*\s*/g, '') // Supprime les asterisques ex: "Prénom *"
     .replace(/[_\-\s]+/g, ' ')
     .trim()
 
@@ -219,7 +219,9 @@ export function parseDateFlexible(
   const frMatch = trimmed.match(/^(\d{1,2})[/\-.](\d{1,2})[/\-.](\d{4})$/)
   if (frMatch) {
     const [, day, month, year] = frMatch
-    const d = new Date(`${year}-${month!.padStart(2, '0')}-${day!.padStart(2, '0')}`)
+    const d = new Date(
+      `${year}-${month!.padStart(2, '0')}-${day!.padStart(2, '0')}`
+    )
     if (!isNaN(d.getTime())) return d.toISOString().split('T')[0] ?? null
   }
 
@@ -289,7 +291,9 @@ const DEPARTMENT_ALIASES: Record<string, string> = {
  *
  * @returns La valeur enum ou null si non reconnu
  */
-export function matchDepartment(value: string | null | undefined): string | null {
+export function matchDepartment(
+  value: string | null | undefined
+): string | null {
   if (!value || value.trim() === '') return null
 
   const cleaned = removeAccents(value.trim().toLowerCase())
@@ -300,7 +304,10 @@ export function matchDepartment(value: string | null | undefined): string | null
 
   // Match partiel : chercher si le cleaned contient un alias
   for (const [alias, dept] of Object.entries(DEPARTMENT_ALIASES)) {
-    if (cleaned.includes(removeAccents(alias)) || removeAccents(alias).includes(cleaned)) {
+    if (
+      cleaned.includes(removeAccents(alias)) ||
+      removeAccents(alias).includes(cleaned)
+    ) {
       return dept
     }
   }
@@ -319,8 +326,8 @@ const ROLE_ALIASES: Record<string, string> = {
   collaborateur: 'EMPLOYEE',
   manager: 'MANAGER',
   responsable: 'MANAGER',
-  'chef d\'equipe': 'MANAGER',
-  'chef d\'équipe': 'MANAGER',
+  "chef d'equipe": 'MANAGER',
+  "chef d'équipe": 'MANAGER',
   director: 'DIRECTOR',
   directeur: 'DIRECTOR',
   directrice: 'DIRECTOR',

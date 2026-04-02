@@ -4,6 +4,8 @@
  * @ticket SP-497
  */
 
+/* eslint-disable @typescript-eslint/no-unsafe-return, @typescript-eslint/no-explicit-any */
+
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 // Mock prisma — vi.hoisted pour eviter le probleme de hoisting
@@ -34,7 +36,10 @@ vi.mock('@/lib/cache', () => ({
 }))
 
 import { auth } from '@/lib/auth'
-import { getEffectiveSessionData, assertNotImpersonating } from '@/lib/impersonation'
+import {
+  getEffectiveSessionData,
+  assertNotImpersonating,
+} from '@/lib/impersonation'
 import { importEmployeesFromCsv } from '../csv-import'
 
 // ============================================================================
@@ -158,7 +163,7 @@ marie@test.com;0612345678`
 Marie;Dupont;marie@test.com`
 
       // Mock transaction
-      mockTransaction.mockImplementation(async (fn: any) => {
+      mockTransaction.mockImplementation((fn: (tx: any) => any) => {
         const tx = {
           employee: {
             findMany: vi.fn().mockResolvedValue([]),
@@ -183,7 +188,7 @@ Marie;Dupont;marie@test.com`
       const csvTemplate = `Prénom (obligatoire);Nom (obligatoire);Email (facultatif);Téléphone (facultatif);Poste (facultatif);Département (facultatif);Équipe (facultatif);Heures/semaine (facultatif);Date d'embauche (facultatif);Rôle (facultatif);Compétences (facultatif)
 Marie;Dupont;marie@test.com;0612345678;Caissière;Support;Caisse;35;15/01/2024;Employé;caisse,accueil`
 
-      mockTransaction.mockImplementation(async (fn: any) => {
+      mockTransaction.mockImplementation((fn: (tx: any) => any) => {
         const tx = {
           employee: {
             findMany: vi.fn().mockResolvedValue([]),
@@ -216,17 +221,19 @@ Marie;Dupont;marie@test.com;0612345678;Caissière;Support;Caisse;35;15/01/2024;E
     it('cree les employes avec succes', async () => {
       mockSession('DIRECTOR', 'company-1')
 
-      mockTransaction.mockImplementation(async (fn: any) => {
+      mockTransaction.mockImplementation((fn: (tx: any) => any) => {
         const tx = {
           employee: {
             findMany: vi.fn().mockResolvedValue([]),
-            create: vi.fn()
+            create: vi
+              .fn()
               .mockResolvedValueOnce({ id: 'emp-1' })
               .mockResolvedValueOnce({ id: 'emp-2' }),
           },
           team: {
             findMany: vi.fn().mockResolvedValue([]),
-            create: vi.fn()
+            create: vi
+              .fn()
               .mockResolvedValueOnce({ id: 'team-1', name: 'Caisse' })
               .mockResolvedValueOnce({ id: 'team-2', name: 'Tech' }),
           },
@@ -247,11 +254,16 @@ Marie;Dupont;marie@test.com;0612345678;Caissière;Support;Caisse;35;15/01/2024;E
     it('skippe les doublons par email', async () => {
       mockSession('DIRECTOR', 'company-1')
 
-      mockTransaction.mockImplementation(async (fn: any) => {
+      mockTransaction.mockImplementation((fn: (tx: any) => any) => {
         const tx = {
           employee: {
             findMany: vi.fn().mockResolvedValue([
-              { id: 'existing-1', firstName: 'Marie', lastName: 'Dupont', email: 'marie@test.com' },
+              {
+                id: 'existing-1',
+                firstName: 'Marie',
+                lastName: 'Dupont',
+                email: 'marie@test.com',
+              },
             ]),
             create: vi.fn().mockResolvedValue({ id: 'emp-2' }),
           },
@@ -279,7 +291,7 @@ Marie;Dupont;marie@test.com;0612345678;Caissière;Support;Caisse;35;15/01/2024;E
       const csvInvalid = `firstName;lastName;email
 M;Dupont;pas-un-email`
 
-      mockTransaction.mockImplementation(async (fn: any) => {
+      mockTransaction.mockImplementation((fn: (tx: any) => any) => {
         const tx = {
           employee: { findMany: vi.fn().mockResolvedValue([]) },
           team: { findMany: vi.fn().mockResolvedValue([]) },
