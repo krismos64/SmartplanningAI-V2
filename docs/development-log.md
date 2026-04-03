@@ -803,7 +803,18 @@ npm run a11y:audit    # Audit Lighthouse
 
 - 10 tests unitaires Server Actions (auth, RBAC, impersonation, CRUD, pagination, idempotence)
 - Total suite : 156 fichiers, 2 767 tests, 0 regressions
-- 23 bugs corriges lors de 3 sessions de test en direct
+- 24 bugs corriges lors de 4 sessions de test en direct
+
+### Administration de groupe (3 avril 2026)
+
+Ameliorations post-livraison suite aux tests en direct :
+
+- **Badge ADMIN** : etoile doree (amber-500) sur l'avatar des administrateurs de groupe dans le header, avec tooltip "Admin"
+- **Renommer un groupe** (ADMIN) : icone Pencil a cote du nom, input inline au clic, Enter/Escape/blur, Server Action `renameGroupConversation` avec validation 2-100 chars
+- **Avatar de groupe** (ADMIN) : upload restreint a l'admin cote serveur (403 si non-admin) et cote client (badge Camera masque)
+- **Ajouter un membre** (ADMIN) : bouton "+" en cercle pointille dans la rangee d'avatars, ouvre un Dialog avec recherche parmi les collaborateurs de l'entreprise non encore dans le groupe
+- **Retirer un membre** (ADMIN) : bouton X rouge au hover sur l'avatar d'un membre non-admin, appelle `removeGroupMember`, protection : impossible de retirer soi-meme ou un autre admin
+- **Fix liste conversations vide** : le refetch SWR via `mutate()` imbrique etait silencieusement ignore, remplace par `{ revalidate: true }` pour toujours revalider apres un SSE `new_message`
 
 ---
 
@@ -990,4 +1001,4 @@ Tests desktop sur Chromium. Tous les tests E2E couvrent des workflows critiques.
 
 ---
 
-*Derniere mise a jour : 3 avril 2026*
+*Derniere mise a jour : 3 avril 2026 (admin groupe, fix liste conversations)*
