@@ -40,33 +40,37 @@ export function useConversations() {
   // Écouter les nouveaux messages SSE pour mettre à jour la liste
   useEffect(() => {
     const unsubscribe = onNewMessage((event: NewMessageEventDetail) => {
-      void mutate((current) => {
-        if (!current) return current
+      void mutate(
+        (current) => {
+          if (!current) return current
 
-        const convIndex = current.findIndex(
-          (c) => c.id === event.conversationId
-        )
+          const convIndex = current.findIndex(
+            (c) => c.id === event.conversationId
+          )
 
-        if (convIndex === -1) {
-          // Conversation inconnue → refetch complet
-          void mutate()
-          return current
-        }
+          if (convIndex === -1) {
+            // Conversation inconnue → on retourne current tel quel
+            // et on déclenche un refetch séparé (voir revalidate: true)
+            return current
+          }
 
-        // Remonter la conversation en tête et mettre à jour preview
-        const updated = [...current]
-        const conv = { ...updated[convIndex]! }
-        const senderName = event.message.sender?.name ?? 'Utilisateur supprimé'
-        conv.lastMessageAt = event.message.createdAt
-        conv.lastMessagePreview = event.message.content
-          ? `${senderName}: ${event.message.content.slice(0, 150)}`
-          : `${senderName} a envoyé une pièce jointe`
-        conv.unreadCount = (conv.unreadCount || 0) + 1
+          // Remonter la conversation en tête et mettre à jour preview
+          const updated = [...current]
+          const conv = { ...updated[convIndex]! }
+          const senderName =
+            event.message.sender?.name ?? 'Utilisateur supprimé'
+          conv.lastMessageAt = event.message.createdAt
+          conv.lastMessagePreview = event.message.content
+            ? `${senderName}: ${event.message.content.slice(0, 150)}`
+            : `${senderName} a envoyé une pièce jointe`
+          conv.unreadCount = (conv.unreadCount || 0) + 1
 
-        updated.splice(convIndex, 1)
-        updated.unshift(conv)
-        return updated
-      }, false)
+          updated.splice(convIndex, 1)
+          updated.unshift(conv)
+          return updated
+        },
+        { revalidate: true } // Toujours revalider pour récupérer les nouvelles conversations
+      )
     })
 
     return unsubscribe
