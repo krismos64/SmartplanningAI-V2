@@ -14,11 +14,33 @@ import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Separator } from '@/components/ui/separator'
-import { ArrowLeft, Loader2, Lock, Camera, Star, Pencil } from 'lucide-react'
+import {
+  ArrowLeft,
+  Loader2,
+  Lock,
+  Camera,
+  Star,
+  Pencil,
+  UserPlus,
+  X,
+} from 'lucide-react'
 import { MessageBubble } from './MessageBubble'
 import { MessageInput } from './MessageInput'
 import { getGroupAvatarColor, getGroupInitials } from './utils'
-import { renameGroupConversation } from '@/lib/actions/messaging'
+import {
+  renameGroupConversation,
+  addGroupMember,
+  removeGroupMember,
+  getCompanyUsersForMessaging,
+} from '@/lib/actions/messaging'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { ScrollArea } from '@/components/ui/scroll-area'
 import {
   Tooltip,
   TooltipContent,
@@ -98,6 +120,49 @@ export function MessagePanel({
     conversation.members.some(
       (m) => m.userId === currentUserId && m.role === 'ADMIN'
     )
+
+  // Gestion des membres (ADMIN uniquement)
+  const [showAddMember, setShowAddMember] = useState(false)
+  const [addMemberSearch, setAddMemberSearch] = useState('')
+  const [availableUsers, setAvailableUsers] = useState<
+    { id: string; name: string | null; image: string | null }[]
+  >([])
+  const [isLoadingUsers, setIsLoadingUsers] = useState(false)
+
+  const openAddMemberDialog = useCallback(() => {
+    setShowAddMember(true)
+    setAddMemberSearch('')
+    setIsLoadingUsers(true)
+    void getCompanyUsersForMessaging().then((result) => {
+      if (result.success) {
+        // Exclure les membres déjà dans le groupe
+        const existingIds = new Set(conversation.members.map((m) => m.userId))
+        setAvailableUsers(result.data.filter((u) => !existingIds.has(u.id)))
+      }
+      setIsLoadingUsers(false)
+    })
+  }, [conversation.members])
+
+  const handleAddMember = useCallback(
+    async (userId: string) => {
+      const result = await addGroupMember(conversation.id, userId)
+      if (result.success) {
+        setShowAddMember(false)
+        onConversationUpdated?.()
+      }
+    },
+    [conversation.id, onConversationUpdated]
+  )
+
+  const handleRemoveMember = useCallback(
+    async (userId: string) => {
+      const result = await removeGroupMember(conversation.id, userId)
+      if (result.success) {
+        onConversationUpdated?.()
+      }
+    },
+    [conversation.id, onConversationUpdated]
+  )
 
   // Inline rename state
   const [isRenaming, setIsRenaming] = useState(false)
@@ -345,11 +410,11 @@ export function MessagePanel({
         {/* Avatars des membres pour GROUP et TEAM */}
         {conversation.type !== 'DIRECT' && (
           <TooltipProvider>
-            <div className="mt-2 flex items-center gap-1 overflow-x-auto pb-1 pl-12 lg:pl-0">
+            <div className="mt-2 flex items-center gap-1.5 overflow-x-auto pb-1 pl-12 lg:pl-0">
               {conversation.members.map((member) => (
                 <Tooltip key={member.userId}>
                   <TooltipTrigger asChild>
-                    <div className="flex shrink-0 flex-col items-center gap-0.5">
+                    <div className="group/member flex shrink-0 flex-col items-center gap-0.5">
                       <div className="relative">
                         <Avatar className="h-7 w-7">
                           {member.user.image && (
@@ -372,6 +437,20 @@ export function MessagePanel({
                             <Star className="h-2 w-2 fill-white text-white" />
                           </span>
                         )}
+                        {/* Bouton retirer (ADMIN seulement, pas sur soi-même) */}
+                        {isAdmin &&
+                          member.userId !== currentUserId &&
+                          member.role !== 'ADMIN' && (
+                            <button
+                              onClick={() =>
+                                void handleRemoveMember(member.userId)
+                              }
+                              className="absolute -right-1 -top-1 hidden h-4 w-4 items-center justify-center rounded-full bg-destructive text-destructive-foreground shadow-sm group-hover/member:flex"
+                              aria-label={`Retirer ${member.user.name ?? 'membre'}`}
+                            >
+                              <X className="h-2.5 w-2.5" />
+                            </button>
+                          )}
                       </div>
                       <span className="max-w-[48px] truncate text-[9px] text-muted-foreground">
                         {member.user.name?.split(' ')[0] ?? '?'}
@@ -384,6 +463,24 @@ export function MessagePanel({
                   </TooltipContent>
                 </Tooltip>
               ))}
+
+              {/* Bouton ajouter un membre (ADMIN seulement) */}
+              {isAdmin && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={openAddMemberDialog}
+                      className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 border-dashed border-muted-foreground/30 text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+                      aria-label="Ajouter un membre"
+                    >
+                      <UserPlus className="h-3.5 w-3.5" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">
+                    Ajouter un membre
+                  </TooltipContent>
+                </Tooltip>
+              )}
             </div>
           </TooltipProvider>
         )}
@@ -511,6 +608,83 @@ export function MessagePanel({
         conversationId={conversation.id}
         disabled={isSending}
       />
+
+      {/* Dialog ajout de membre */}
+      <Dialog open={showAddMember} onOpenChange={setShowAddMember}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Ajouter un membre</DialogTitle>
+          </DialogHeader>
+
+          <div className="relative">
+            <Input
+              placeholder="Rechercher un collaborateur..."
+              value={addMemberSearch}
+              onChange={(e) => setAddMemberSearch(e.target.value)}
+            />
+          </div>
+
+          <ScrollArea className="max-h-[300px]">
+            <div className="space-y-1">
+              {isLoadingUsers ? (
+                <div className="space-y-2 p-2">
+                  {Array.from({ length: 3 }).map((_, i) => (
+                    <div key={i} className="flex items-center gap-3 px-3 py-2">
+                      <Skeleton className="h-8 w-8 rounded-full" />
+                      <Skeleton className="h-4 w-32" />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                availableUsers
+                  .filter(
+                    (u) =>
+                      !addMemberSearch.trim() ||
+                      u.name
+                        ?.toLowerCase()
+                        .includes(addMemberSearch.toLowerCase())
+                  )
+                  .map((user) => (
+                    <button
+                      key={user.id}
+                      className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors hover:bg-muted/50"
+                      onClick={() => void handleAddMember(user.id)}
+                    >
+                      <Avatar className="h-8 w-8 shrink-0">
+                        {user.image && (
+                          <AvatarImage src={user.image} alt={user.name ?? ''} />
+                        )}
+                        <AvatarFallback className="bg-primary/10 text-xs text-primary">
+                          {user.name
+                            ?.split(' ')
+                            .map((w) => w[0])
+                            .join('')
+                            .toUpperCase()
+                            .slice(0, 2) ?? '?'}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="text-sm">
+                        {user.name ?? 'Utilisateur'}
+                      </span>
+                    </button>
+                  ))
+              )}
+              {!isLoadingUsers &&
+                availableUsers.filter(
+                  (u) =>
+                    !addMemberSearch.trim() ||
+                    u.name
+                      ?.toLowerCase()
+                      .includes(addMemberSearch.toLowerCase())
+                ).length === 0 && (
+                  <p className="py-4 text-center text-sm text-muted-foreground">
+                    Aucun collaborateur disponible
+                  </p>
+                )}
+            </div>
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
