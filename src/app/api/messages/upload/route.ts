@@ -121,20 +121,8 @@ export async function POST(request: NextRequest) {
       uploadStream.end(buffer)
     })
 
-    // Pour les fichiers non-image, ajouter fl_attachment au lien
-    // pour forcer le téléchargement avec le nom original
-    let downloadUrl = result.secure_url
-    if (!isImage) {
-      // Cloudinary : ajouter fl_attachment:nom_fichier dans l'URL
-      // Format : .../upload/fl_attachment:nom_fichier/...
-      downloadUrl = result.secure_url.replace(
-        '/upload/',
-        `/upload/fl_attachment:${encodeURIComponent(originalName)}/`
-      )
-    }
-
     return NextResponse.json({
-      url: downloadUrl,
+      url: result.secure_url,
       name: originalName,
       mimeType: file.type,
       size: file.size,
