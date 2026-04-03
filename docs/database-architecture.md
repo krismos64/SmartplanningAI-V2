@@ -1,9 +1,9 @@
 # 🗄️ Architecture Base de Données - SmartPlanning V2
 
-**Dernière mise à jour** : 10 février 2026
+**Dernière mise à jour** : 3 avril 2026
 **ORM** : Prisma 6.18.0
 **Base** : PostgreSQL 16
-**Migrations** : 13 migrations appliquées
+**Migrations** : 22 migrations appliquées
 
 ---
 
@@ -11,7 +11,7 @@
 
 **Type :** Architecture **multi-tenant** avec isolation par entreprise
 **Pattern :** SaaS avec abonnements Stripe
-**Modèles :** 17 tables principales + 4 tables NextAuth
+**Modèles :** 20 tables principales + 4 tables NextAuth
 
 ---
 
@@ -56,8 +56,27 @@
 │  User ─────────────►│ Notification │                                         │
 │       │             └──────────────┘                                         │
 │       │             ┌──────────────┐                                         │
-│       └────────────►│ PersonalTask │ (100% privé)                           │
-│                     └──────────────┘                                         │
+│       ├────────────►│ PersonalTask │ (100% privé)                           │
+│       │             └──────────────┘                                         │
+│       │             ┌──────────────┐                                         │
+│       │             │ AuditLog     │ (journal d'audit)                       │
+│       │             └──────────────┘                                         │
+│       │                                                                      │
+│       │  ┌── Messagerie interne (SP-500) ──────────────────────┐            │
+│       │  │                                                      │            │
+│       │  │  ┌──────────────┐    ┌────────────────────┐         │            │
+│       ├──┼─►│Conversation  │◄──►│ConversationMember  │◄── User │            │
+│       │  │  │(DIRECT/TEAM/ │    │(lastReadAt,        │         │            │
+│       │  │  │ GROUP)       │    │ isArchived)        │         │            │
+│       │  │  └──────┬───────┘    └────────────────────┘         │            │
+│       │  │         │ 1:N                                        │            │
+│       │  │         ▼                                            │            │
+│       │  │  ┌──────────────┐                                    │            │
+│       └──┼─►│  Message     │ (senderId nullable, attachments)  │            │
+│          │  └──────────────┘                                    │            │
+│          └──────────────────────────────────────────────────────┘            │
+│                                                                              │
+│  Team ──── 1:1 optionnel ────► Conversation (type TEAM, auto-sync)          │
 │                                                                              │
 └──────────────────────────────────────────────────────────────────────────────┘
 
@@ -117,6 +136,9 @@ Relations NextAuth v5 (authentification)
 - **1:N Availability** → Disponibilités des employés
 - **1:N IncidentNote** → Notes d'incident
 - **1:N EmailLog** → Logs des emails billing (SP-368)
+- **1:N AuditLog** → Journal d'audit (SP-442)
+- **1:N Conversation** → Conversations de messagerie (SP-500)
+- **1:N Message** → Messages de messagerie (SP-500)
 
 **🔐 Sécurité :** Toutes les requêtes doivent filtrer par `companyId` pour l'isolation.
 
@@ -163,6 +185,9 @@ Relations NextAuth v5 (authentification)
 - **1:N PersonalTask** → Tâches personnelles privées
 - **1:N IncidentNote** → Notes d'incident rédigées (auteur)
 - **1:N LeaveBalance** → Mises à jour des soldes (updatedBy)
+- **1:N AuditLog** → Journal d'audit des actions
+- **1:N ConversationMember** → Participations aux conversations (SP-500)
+- **1:N Message** → Messages envoyés (senderId nullable pour RGPD) (SP-500)
 
 **🎯 Les 4 Rôles (Enum UserRole) :**
 
@@ -268,6 +293,7 @@ Employee = Métier RH (job, équipe, contrat, compétences)
 - **N:1 Employee (manager)** → Une équipe a UN manager
 - **1:N Employee (members)** → Une équipe a plusieurs membres
 - **1:N Schedule** → Une équipe peut avoir des plannings collectifs
+- **1:1 Conversation** → Conversation TEAM auto-synchronisée (SP-500, optionnelle)
 
 ---
 
@@ -605,7 +631,103 @@ Employee = Métier RH (job, équipe, contrat, compétences)
 
 ---
 
-### 1️⃣2️⃣ **Subscription** (Abonnement Stripe)
+### 1️⃣2️⃣ **AuditLog** (Journal d'Audit - SP-442)
+
+**Rôle :** Traçabilité de toutes les actions importantes dans l'application.
+
+**Champs principaux :**
+
+```prisma
+- id: String (cuid)
+- action: AuditAction              // CREATE, UPDATE, DELETE, LOGIN, EXPORT...
+- entityType: AuditEntityType      // COMPANY, EMPLOYEE, TEAM, CONVERSATION, MESSAGE...
+- entityId: String?                // ID de l'objet concerné
+- userId: String
+- companyId: String?               // Nullable (SYSTEM_ADMIN)
+- details: Json?                   // Anciennes valeurs, IP, etc.
+- createdAt: DateTime              // Pas de updatedAt (un log ne se modifie jamais)
+```
+
+---
+
+### 1️⃣3️⃣ **Conversation** (Messagerie - SP-500)
+
+**Rôle :** Conteneur de messages. Trois types : DIRECT (1:1), TEAM (auto-sync équipe), GROUP (manuel).
+
+**Champs principaux :**
+
+```prisma
+- id: String (cuid)
+- type: ConversationType           // DIRECT, TEAM, GROUP
+- name: String?                    // Null pour DIRECT, nom d'équipe/groupe sinon
+- teamId: String? (unique)         // FK vers Team (1:1, type TEAM uniquement)
+- companyId: String
+- lastMessageAt: DateTime?         // Dénormalisé pour tri optimisé de la liste
+- lastMessagePreview: String?      // "Pierre: Bonjour à tou..." (max 200 chars)
+- createdById: String?             // Null pour TEAM (créé automatiquement)
+- avatarUrl: String?               // Avatar Cloudinary custom (GROUP uniquement)
+- createdAt, updatedAt
+```
+
+**Relations :**
+
+- **N:1 Company** → Isolation multi-tenant
+- **1:1 Team** → Conversation TEAM auto-synchronisée (onDelete: SetNull)
+- **1:N ConversationMember** → Participants
+- **1:N Message** → Messages de la conversation
+
+**Index :** `[companyId, lastMessageAt DESC]`, `[teamId]`
+
+---
+
+### 1️⃣4️⃣ **ConversationMember** (Membre de Conversation - SP-500)
+
+**Rôle :** Table pivot explicite reliant User et Conversation avec métadonnées.
+
+**Champs principaux :**
+
+```prisma
+- id: String (cuid)
+- conversationId: String
+- userId: String
+- role: ConversationMemberRole     // MEMBER ou ADMIN (GROUP uniquement)
+- lastReadAt: DateTime?            // Pour calculer les non-lus
+- joinedAt: DateTime
+- isArchived: Boolean              // Masquer sans supprimer (réversible par nouveau message)
+```
+
+**Contrainte unique :** `@@unique([conversationId, userId])`
+
+---
+
+### 1️⃣5️⃣ **Message** (Message - SP-500)
+
+**Rôle :** Message texte ou pièce jointe dans une conversation.
+
+**Champs principaux :**
+
+```prisma
+- id: String (cuid)
+- conversationId: String
+- senderId: String?                // Nullable : onDelete SetNull (RGPD)
+- content: String? (Text)          // Texte du message
+- attachments: Json?               // [{url, name, mimeType, size}]
+- isDeleted: Boolean               // Soft delete ("Ce message a été supprimé")
+- companyId: String                // Defense-in-depth multi-tenant
+- createdAt, updatedAt
+```
+
+**Relations :**
+
+- **N:1 Conversation** → Un message appartient à UNE conversation (onDelete: Cascade)
+- **N:1 User (sender)** → Envoyé par UN user (onDelete: SetNull pour RGPD)
+- **N:1 Company** → Isolation multi-tenant
+
+**Index :** `[conversationId, createdAt DESC]` (pagination cursor-based), `[senderId]`, `[companyId]`
+
+---
+
+### 1️⃣6️⃣ **Subscription** (Abonnement Stripe - SP-348)
 
 **Rôle :** Gestion des abonnements SaaS via Stripe. Relation 1:1 avec Company.
 
@@ -652,7 +774,7 @@ Employee = Métier RH (job, équipe, contrat, compétences)
 
 ---
 
-### 1️⃣3️⃣ **Payment** (Paiements Stripe)
+### 1️⃣7️⃣ **Payment** (Paiements Stripe)
 
 **Rôle :** Historique des paiements liés aux abonnements.
 
@@ -700,7 +822,7 @@ Employee = Métier RH (job, équipe, contrat, compétences)
 
 ---
 
-### 1️⃣4️⃣ **EmailLog** (Logs Emails Billing - SP-368)
+### 1️⃣8️⃣ **EmailLog** (Logs Emails Billing - SP-368)
 
 **Rôle :** Traçabilité des emails transactionnels envoyés pour le billing (confirmations, relances trial, échecs paiement). Empêche les doublons via contrainte unique.
 
@@ -915,8 +1037,47 @@ enum AvailabilityType {
 ```prisma
 enum IncidentNoteVisibility {
   DIRECTOR_ONLY     // Directeurs uniquement
+  MANAGER_ONLY      // Managers uniquement
   MANAGER_DIRECTOR  // Managers + Directeurs
   ALL               // Tous (info générale)
+}
+```
+
+### AuditAction (SP-442)
+
+```prisma
+enum AuditAction {
+  CREATE, UPDATE, DELETE, LOGIN, LOGOUT,
+  EXPORT, STATUS_CHANGE, IMPERSONATE, PASSWORD_CHANGE
+}
+```
+
+### AuditEntityType (SP-442, SP-500)
+
+```prisma
+enum AuditEntityType {
+  COMPANY, EMPLOYEE, TEAM, SCHEDULE, LEAVE,
+  SUBSCRIPTION, USER, SETTINGS, INCIDENT_NOTE,
+  AVAILABILITY, CONVERSATION, MESSAGE
+}
+```
+
+### ConversationType (SP-500)
+
+```prisma
+enum ConversationType {
+  DIRECT    // 1-to-1 entre deux utilisateurs
+  TEAM      // Auto-synchronisé avec le modèle Team
+  GROUP     // Groupe manuel, membres gérés manuellement
+}
+```
+
+### ConversationMemberRole (SP-500)
+
+```prisma
+enum ConversationMemberRole {
+  MEMBER    // Participant standard
+  ADMIN     // Peut gérer les membres (GROUP uniquement)
 }
 ```
 
@@ -975,11 +1136,11 @@ enum IncidentNoteVisibility {
 
 | Métrique              | Valeur |
 | --------------------- | ------ |
-| Tables principales    | 17     |
+| Tables principales    | 20     |
 | Tables NextAuth       | 4      |
-| Enums                 | 12     |
-| Migrations appliquées | 13     |
-| Index                 | 45+    |
+| Enums                 | 16     |
+| Migrations appliquées | 19     |
+| Index                 | 55+    |
 
 ---
 
@@ -987,6 +1148,7 @@ enum IncidentNoteVisibility {
 
 | Date       | Description                                                              |
 | ---------- | ------------------------------------------------------------------------ |
+| 03/04/2026 | Ajout Messagerie : Conversation, ConversationMember, Message (SP-500) + avatarUrl + isArchived. AuditLog documenté. 17→20 tables, 12→16 enums, 16→19 migrations |
 | 10/02/2026 | Ajout EmailLog (SP-368), correction compteur 16→17 tables, mise à jour diagramme et relations Company |
 | 10/02/2026 | Correction Subscription per-seat, Payment typé, SubscriptionStatus +INCOMPLETE, diagramme Subscription→Payment |
 | 04/02/2026 | Ajout User.image (Cloudinary SP-272), mise à jour complète documentation |
