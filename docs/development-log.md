@@ -664,8 +664,330 @@ npm run a11y:audit    # Audit Lighthouse
 
 - **Entreprises** (SYSTEM_ADMIN) : Vue responsive Table desktop / Cards mobile (SP-462)
 - **Collaborateurs** (DIRECTOR, MANAGER) : Gestion complète avec permissions RBAC
-- **Équipes** (DIRECTOR) : CRUD + gestion des membres
+- **Equipes** (DIRECTOR) : CRUD + gestion des membres
 
 ---
 
-*Dernière mise à jour : 24 mars 2026*
+## Securite & Corrections (25 mars — 2 avril 2026)
+
+### Corrections securite multi-tenant (25 mars)
+
+- **SP-453/454/456** : Impersonation cookie fallback applique a tous les Server Actions RBAC et Server Components (`getEffectiveSessionData()` au lieu de `session.user` directement)
+- Deplacement `createAdminNotification` hors du fichier `'use server'` pour eviter les 503 en production (export non-async interdit)
+- Correction isolation multi-tenant sur 4 endpoints
+- Rate limiting Nginx augmente a 60r/m pour le demo multi-comptes
+
+### Corrections fonctionnelles (25 mars — 2 avril)
+
+- **Verification email** (SP-298/299) : Flow complet verification email a l'inscription, page `/verify-email`, banniere dans le dashboard, notification admin a la suppression de compte
+- **Profil** : Ajout champ weeklyHours, dropdown annee/mois dans le date picker
+- **Planning** : Correction recurrence group update, chargement overlays conges pour vues jour/mois
+- **Conges** : Ajout `router.refresh()` apres validation/creation pour forcer la mise a jour UI
+
+---
+
+## Import CSV/Excel (Sprint 11 + 11b — 2 avril 2026)
+
+### Epic SP-495 : Module Import
+
+**Objectif** : Permettre aux directeurs d'importer leurs collaborateurs depuis un fichier CSV ou Excel en une seule operation. Temps d'onboarding de 30 minutes a moins de 2 minutes.
+
+**Tickets** : SP-496 (schemas Zod + papaparse), SP-497 (Server Action), SP-498 (page UI), SP-499 (template), SP-508 (refactoring sidebar)
+
+**Architecture** :
+
+- **papaparse** pour le parsing CSV (auto-detection delimiteur, headers FR/EN, BOM UTF-8)
+- **xlsx** (existant) pour la conversion Excel → CSV cote client
+- Flow : upload client → preview avec validation Zod temps reel → envoi CSV brut au serveur → re-parse + validation + insertion `$transaction`
+- Detection doublons (email + companyId, fallback firstName + lastName)
+- Creation automatique des equipes referencees
+- Sync Stripe `syncEmployeeCountToStripe()` apres import
+
+**Fichiers crees** (9) :
+
+| Fichier | Description |
+|---|---|
+| `src/lib/validations/csv-import.ts` | Schemas Zod (csvEmployeeRowSchema, csvImportOptionsSchema) |
+| `src/lib/actions/csv-import.ts` | Server Action importEmployeesFromCsv (11 etapes) |
+| `src/components/import/csv-import.utils.ts` | Helpers : normalizeHeaders, parseDateFlexible, matchDepartment, matchRole |
+| `src/components/import/CsvPreviewTable.tsx` | Preview avec cellules colorees, tooltips erreur, compteur valides/invalides |
+| `src/components/import/CsvImportResults.tsx` | Rapport : compteurs + detail crees/ignores/erreurs avec expand/collapse donnees brutes |
+| `src/hooks/use-csv-import.ts` | Hook : processFile (CSV+XLSX), preview, validation client, startImport |
+| `src/app/app/dashboard/import/page.tsx` | Page pedagogique : guide 3 etapes, 4 cartes info, drag & drop, options, barre progression |
+| `public/templates/import-employees-template.csv` | Template FR pre-rempli (obligatoire/facultatif), BOM UTF-8, separateur `;` |
+| `src/lib/actions/__tests__/csv-import.test.ts` | 11 tests (auth, RBAC, validation, doublons, headers FR, template) |
+
+### Sprint 11b — Ameliorations UX Import (SP-509, SP-510, SP-511)
+
+- **SP-509** : Validation preview cote client — `csvEmployeeRowSchema.safeParse()` sur toutes les lignes, cellules invalides colorees en rouge avec tooltips, compteur badges
+- **SP-510** : Barre de progression ProgressBar (Framer Motion) en mode indetermine pendant l'import
+- **SP-511** : Donnees brutes des lignes en erreur — expand/collapse avec champ en erreur surligne
+
+### Refactoring SP-508 : Source unique navigation
+
+- Sidebar consomme `menu-items.ts` comme source unique de verite (suppression ~120 lignes hardcodees)
+- Corrections href et roles alignees entre Sidebar et CommandPalette
+
+---
+
+## Messagerie Interne Temps Reel (Sprint 12 — 2-3 avril 2026)
+
+### Epic SP-500 : Module Messagerie
+
+**Objectif** : Permettre aux collaborateurs d'une entreprise de communiquer en temps reel au sein de l'application. Trois types de conversations : DIRECT (1:1), TEAM (auto-sync equipes), GROUP (manuelles).
+
+**Tickets** : SP-501 (migration), SP-502 (types/Zod), SP-503 (Server Actions), SP-504 (SSE/upload/sync), SP-505 (hooks), SP-506 (composants), SP-507 (tests)
+
+### Backend (SP-501 a SP-504)
+
+**3 migrations Prisma** :
+- `add_messaging` : 3 tables (conversations, conversation_members, messages) + 2 enums (ConversationType, ConversationMemberRole)
+- `add_conversation_avatar` : champ avatarUrl sur Conversation
+- `add_conversation_archive` : champ isArchived sur ConversationMember
+
+**10 Server Actions** dans `messaging.ts` (1 084 lignes) :
+- getConversations, getMessages (cursor-based), sendMessage, markAsRead
+- createDirectConversation (idempotent), createGroupConversation (tous roles)
+- getOrCreateTeamConversation (lazy creation), addGroupMember, removeGroupMember
+- archiveConversation, getCompanyUsersForMessaging
+
+**SSE** : Extension du stream existant avec type `new_message`. Methode `emitRaw()` ajoutee au SSEManager. Hook client `use-notifications-stream.ts` etendu avec callback `onMessage`. Dispatch via custom events `window` pour decouplage hooks.
+
+**Sync auto TEAM** : Service `team-conversation-sync.ts` appele en fire-and-forget dans `addTeamMember` / `removeTeamMember` de `teams.ts`.
+
+**Upload** :
+- `POST /api/messages/upload` : pieces jointes Cloudinary (10 MB max, images + PDF + DOCX + XLSX)
+- `POST /api/messages/group-avatar` : avatar de groupe Cloudinary (2 MB, images, 200x200 crop fill)
+- Nom de fichier original preserve via `fl_attachment` Cloudinary
+
+**Compteurs non-lus** : `GET /api/messages/unread` avec SQL COUNT (createdAt > lastReadAt).
+
+### Frontend (SP-505, SP-506)
+
+**4 hooks** :
+- `use-conversations.ts` : SWR, refresh 60s, mise a jour temps reel SSE
+- `use-messages.ts` : pagination cursor, envoi optimistic, markAsRead, reception SSE
+- `use-message-stream.ts` : pub/sub via custom events window pour partage SSE
+- `use-unread-count.ts` : SWR, badge sidebar, increment SSE
+
+**9 composants** dans `src/components/messaging/` :
+- `ConversationList` : sidebar recherche, skeleton, etat vide
+- `ConversationItem` : avatar (photo/couleur deterministe), preview, badge non-lu, timestamp FR, menu contextuel archivage
+- `MessagePanel` : header avec avatars membres, infinite scroll ascendant, separateurs dates, bandeau confidentialite
+- `MessageBubble` : groupement messages meme auteur (<5 min), coins adaptatifs, optimistic, soft delete
+- `MessageInput` : barre integree WhatsApp-style (trombone + textarea + envoi), upload avec preview riche, bouton "Envoyer" dans la preview
+- `NewConversationDialog` : modes direct/groupe, chips membres selectionnes avec X, skeleton loading, recherche
+- `AttachmentPreview` : thumbnail image, icone fichier + taille formatee + download
+- `MessagesBadge` : badge non-lus memo-ise pour la sidebar
+- `utils.ts` : getGroupAvatarColor (12 couleurs deterministes), getGroupInitials
+
+**Page** : `src/app/app/dashboard/messages/page.tsx` — layout fixed plein ecran, split-panel responsive (liste mobile OU panneau), injection SWR optimistic a la creation, scroll auto vers le bas.
+
+### Fonctionnalites messagerie
+
+| Fonctionnalite | Detail |
+|---|---|
+| Conversations DIRECT | 1:1 idempotent (findFirst OU create) |
+| Conversations TEAM | Auto-sync membres equipe, creation lazy au premier acces |
+| Conversations GROUP | Tous roles, createur ADMIN, chips selection membres |
+| Messages texte | Max 5 000 chars, groupement meme auteur <5 min |
+| Pieces jointes | Upload Cloudinary, images + PDF + DOCX + XLSX, 10 MB max |
+| Temps reel | SSE sur le stream existant, dispatch via custom events |
+| Non-lus | SQL COUNT, badge sidebar, increment SSE |
+| Archivage | Masquer sans supprimer, desarchivage auto sur nouveau message |
+| Avatars | Photo interlocuteur (DIRECT), couleur deterministe + initiales (GROUP/TEAM), avatar custom uploadable (GROUP) |
+| RGPD | senderId nullable (onDelete SetNull), soft delete messages |
+| Multi-tenant | companyId sur Conversation + Message, verification membership |
+
+### Tests
+
+- 10 tests unitaires Server Actions (auth, RBAC, impersonation, CRUD, pagination, idempotence)
+- Total suite : 156 fichiers, 2 767 tests, 0 regressions
+- 23 bugs corriges lors de 3 sessions de test en direct
+
+---
+
+## Modele de donnees detaille
+
+### 21 modeles (17 core + 4 NextAuth)
+
+| # | Modele | Description |
+|---|--------|-------------|
+| 1 | User | Authentification (NextAuth), roles, preferences |
+| 2 | Company | Entreprises (multi-tenant) |
+| 3 | Employee | Employes lies aux utilisateurs |
+| 4 | Team | Equipes par entreprise |
+| 5 | Schedule | Plannings/shifts |
+| 6 | Availability | Indisponibilites |
+| 7 | LeaveRequest | Demandes de conges (halfDay/halfDayPeriod) |
+| 8 | LeaveBalance | Soldes conges par employe/annee |
+| 9 | PersonalTask | Taches personnelles |
+| 10 | IncidentNote | Notes d'incidents (RBAC visibility) |
+| 11 | Notification | Notifications (types metier, priorites) |
+| 12 | AuditLog | Journal d'audit (9 actions, 12 types entites) |
+| 13 | Subscription | Abonnements per-seat 1:1 Company |
+| 14 | Payment | Historique paiements Stripe |
+| 15 | EmailLog | Logs emails billing (idempotence) |
+| 16 | Conversation | Messagerie (DIRECT, TEAM, GROUP) |
+| 17 | ConversationMember | Membres conversations (lastReadAt, isArchived) |
+| 18 | Message | Messages (senderId nullable RGPD, attachments Json) |
+| 19-21 | Account, Session, VerificationToken | NextAuth v5 |
+
+### 16 enums
+
+1. **UserRole** : SYSTEM_ADMIN, DIRECTOR, MANAGER, EMPLOYEE
+2. **SubscriptionPlan** : FREE, PER_SEAT
+3. **SubscriptionStatus** : TRIAL, ACTIVE, PAST_DUE, CANCELED, EXPIRED, INCOMPLETE
+4. **ScheduleType** : WORK, MEETING, BREAK, TRAINING, REMOTE, ON_CALL, OVERTIME, REST
+5. **ScheduleStatus** : DRAFT, CONFIRMED
+6. **LeaveType** : PAID_LEAVE, RTT, SICK_LEAVE, UNPAID_LEAVE, PARENTAL_LEAVE, FAMILY_EVENT, OTHER
+7. **LeaveRequestStatus** : PENDING, APPROVED, REJECTED, CANCELLED
+8. **NotificationType** : INFO, SUCCESS, WARNING, ERROR, SYSTEM, PLANNING, LEAVE, TASK, INCIDENT
+9. **NotificationPriority** : LOW, MEDIUM, HIGH, URGENT
+10. **AvailabilityType** : UNAVAILABLE, PREFERRED, VACATION, SICK, TRAINING, OTHER
+11. **PaymentStatus** : PENDING, SUCCEEDED, FAILED, REFUNDED, REQUIRES_ACTION
+12. **IncidentNoteVisibility** : DIRECTOR_ONLY, MANAGER_ONLY, MANAGER_DIRECTOR, ALL
+13. **AuditAction** : CREATE, UPDATE, DELETE, LOGIN, LOGOUT, EXPORT, STATUS_CHANGE, IMPERSONATE, PASSWORD_CHANGE
+14. **AuditEntityType** : COMPANY, EMPLOYEE, TEAM, SCHEDULE, LEAVE, SUBSCRIPTION, USER, SETTINGS, INCIDENT_NOTE, AVAILABILITY, CONVERSATION, MESSAGE
+15. **ConversationType** : DIRECT, TEAM, GROUP
+16. **ConversationMemberRole** : MEMBER, ADMIN
+
+---
+
+## Tests detailles
+
+### Couverture Vitest (156 fichiers — 2 767 tests)
+
+> Rationalisation mars 2026 : suppression de tous les tests cosmetiques. Chaque test restant est justifiable en soutenance CDA.
+
+| Categorie | Tests |
+|-----------|-------|
+| RBAC & permissions | 62 |
+| Validations Zod (schedules, leaves, stripe, company, audit, availability, profile, messaging, csv-import) | ~200 |
+| Server Actions (CRUD complet, exports, monitoring, broadcast, messaging, csv-import) | ~570 |
+| Stripe (service, config, sync, webhooks, guard, banner, validations) | ~275 |
+| Billing (composants, emails, cron) | ~120 |
+| Conges (composants, workflow, overlay, soldes) | ~180 |
+| Plannings (actions, recurrence, conflits, export PDF/Excel) | ~90 |
+| Audit System (schema, service, injection, actions) | ~105 |
+| CRUD composants (companies, employees, teams) | ~280 |
+| Dashboard services (base, admin, director, manager, employee) | ~125 |
+| Auth (login, register, forgot/reset password, activate) | ~70 |
+| Monitoring (actions, health, charts) | ~28 |
+| Admin (MRR, health, users, broadcast, contact, trials) | ~45 |
+| Hooks (notifications, SSE, conflits, disponibilites, formulaires) | ~115 |
+| Composants metier (forms, settings, incidents, taches, profil) | ~295 |
+| Messagerie (Server Actions, auth, RBAC, pagination, idempotence) | 10 |
+| Import CSV (Server Actions, validation, doublons, headers FR) | 11 |
+
+| Priorite | Fichiers | Tests | Description |
+|----------|----------|-------|-------------|
+| **A — CRITIQUE** | ~105 | ~1 850 | Logique metier, securite, RBAC, Zod, acces donnees, API |
+| **B — UTILE** | ~51 | ~917 | Composants UI complexes, hooks, interactions |
+| **C — COSMETIQUE** | 0 | 0 | Tous supprimes |
+
+### Tests E2E Playwright (13 fichiers — 189 tests)
+
+| Suite | Tests |
+|-------|-------|
+| Auth (login/register) | 20 |
+| Auth (forgot/reset password) | 16 |
+| CRUD Companies | 18 |
+| CRUD Employees | 18 |
+| CRUD Teams | 14 |
+| Leaves (create request) | 4 |
+| Leaves (review request) | 5 |
+| Billing Subscription (SP-373) | 7 |
+| Billing Alerts | 8 |
+| Audit Logs (SP-446) | 26 |
+| Impersonation (SP-456) | 9 |
+| Cookies RGPD | 18 |
+| Middleware RBAC | 26 |
+
+Tests desktop sur Chromium. Tous les tests E2E couvrent des workflows critiques.
+
+---
+
+## SEO & Optimisation LLMs
+
+### Optimisations (SP-462)
+
+- Meta tags dynamiques (Next.js 15 Metadata API)
+- Open Graph et Twitter Cards
+- `src/app/sitemap.ts` — 8 pages publiques avec priorites hierarchisees
+- `src/app/robots.ts` — Bloque /app/, /api/ et pages auth
+- Favicon convention Next.js 15
+- Schema.org JSON-LD @graph (WebSite, Organization avec logo, SoftwareApplication, FAQPage)
+- Canonical URLs, Keywords long-tail francais, noindex dashboard
+
+### Pages optimisees SEO
+
+| Page | Meta | Canonical | Structured Data |
+|------|------|-----------|-----------------|
+| Landing | oui | oui | WebSite + Organization + SoftwareApplication + FAQPage |
+| A propos | oui | oui | AboutPage + Organization + SoftwareApplication + FAQ |
+| Tarifs | oui | oui | SoftwareApplication + FAQPage + WebPage |
+| CGU/CGV/Confidentialite/Mentions/Cookies | oui | oui | — |
+
+---
+
+## Performance & Analytics
+
+### Optimisations
+
+- Code splitting, lazy loading, images Next.js, compression gzip
+- Cache Redis TTL (ioredis 5.10 — dashboards 300s, rate limiting INCR+EXPIRE, sessions actives 24h)
+- Indexes database (55+ @@index dans le schema Prisma), React.memo, Suspense boundaries
+
+### Umami Analytics (SP-345 — janvier 2026)
+
+- Self-hosted sur VPS OVH (Docker + PostgreSQL dedie)
+- Dashboard : `https://analytics.smartplanning.fr`
+- Tracking conditionnel (consentement analytics RGPD)
+
+---
+
+## Monitoring & Admin
+
+### Page Monitoring (SP-464, SP-465)
+
+- `/app/admin/monitoring` SYSTEM_ADMIN avec Suspense + skeleton
+- Health Check DB : connexion, latence, pool Prisma, migrations
+- KPIs SaaS : entreprises, utilisateurs, MRR, churn
+- 4 graphiques Recharts : activite audit 7j, distribution abonnements, top 5 actions, croissance 30j
+
+### Ameliorations Admin (SP-468 Epic — fevrier 2026)
+
+- **SP-469** : Service MRR unifie (`mrr.service.ts`)
+- **SP-470** : Securisation /api/health — 3 niveaux d'acces (OWASP A05:2021)
+- **SP-471** : RefreshButton avec `router.refresh()` + `useTransition`
+- **SP-472** : Page utilisateurs cross-entreprises + export CSV BOM UTF-8
+- **SP-473** : Widget essais a risque — classification urgence 3 niveaux
+- **SP-474** : Email contact admin (React Email + EmailLog)
+- **SP-475** : Statistiques globales + export PDF (7 indicateurs `Promise.all`)
+- **SP-476** : Notifications SSE SYSTEM_ADMIN (4 types + 9 integrations fire-and-forget)
+- **SP-477** : Broadcast email (`Promise.allSettled` batch/10, 4 categories)
+
+---
+
+## Accessibilite WCAG 2.1
+
+### Conformite AA (SP-269 — 25 janvier 2026)
+
+- **Skip to Main Content** (WCAG 2.4.1) : Composant `SkipLink`, pattern sr-only + focus visible
+- **Touch targets** : minimum 44x44px sur tous les boutons interactifs (messagerie, import)
+- **Score moyen Lighthouse** : 100%
+
+---
+
+## CRUD Operationnels
+
+- **Entreprises** (SYSTEM_ADMIN) : Vue responsive Table desktop / Cards mobile
+- **Collaborateurs** (DIRECTOR, MANAGER) : Gestion complete avec permissions RBAC
+- **Equipes** (DIRECTOR) : CRUD + gestion des membres
+- **Import CSV/Excel** (DIRECTOR) : Import bulk employes + equipes (SP-495)
+- **Messagerie** (ALL) : Conversations DIRECT, TEAM, GROUP avec temps reel (SP-500)
+
+---
+
+*Derniere mise a jour : 3 avril 2026*
