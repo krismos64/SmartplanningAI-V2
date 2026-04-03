@@ -19,6 +19,7 @@ import {
   getRoleLabel,
   type UserRole,
 } from '@/lib/navigation/menu-items'
+import { MessagesBadge } from '@/components/messaging/MessagesBadge'
 
 /**
  * Variantes de style pour la sidebar
@@ -111,12 +112,13 @@ export function Sidebar({ user, variant = 'neon' }: SidebarProps) {
                         <Icon className="h-5 w-5" />
                       </motion.div>
                       <motion.span
-                        className="text-sm font-medium"
+                        className="flex flex-1 items-center justify-between text-sm font-medium"
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: index * 0.05 }}
                       >
                         {item.label}
+                        {item.id === 'messages' && <MessagesBadge />}
                       </motion.span>
                     </div>
                   </Link>
@@ -153,4 +155,3 @@ export function Sidebar({ user, variant = 'neon' }: SidebarProps) {
     </SidebarPrimitive>
   )
 }
-

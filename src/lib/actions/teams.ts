@@ -1031,7 +1031,7 @@ export async function addTeamMember(
     // Verifie que l'employe existe et appartient a la meme company
     const employee = await prisma.employee.findUnique({
       where: { id: employeeId },
-      select: { id: true, companyId: true, teamId: true },
+      select: { id: true, companyId: true, teamId: true, userId: true },
     })
 
     if (!employee) {
@@ -1060,6 +1060,15 @@ export async function addTeamMember(
       where: { id: employeeId },
       data: { teamId },
     })
+
+    // Sync messagerie TEAM (fire-and-forget, SP-504)
+    if (employee.userId) {
+      import('@/lib/services/team-conversation-sync')
+        .then(({ syncTeamConversationMember }) =>
+          syncTeamConversationMember(teamId, employee.userId!, 'add')
+        )
+        .catch(console.error)
+    }
 
     // Recupere l'equipe mise a jour avec tous les membres
     const team = await prisma.team.findUnique({
@@ -1213,7 +1222,7 @@ export async function removeTeamMember(
     // Verifie que l'employe fait partie de l'equipe
     const employee = await prisma.employee.findUnique({
       where: { id: employeeId },
-      select: { id: true, teamId: true },
+      select: { id: true, teamId: true, userId: true },
     })
 
     if (!employee) {
@@ -1235,6 +1244,15 @@ export async function removeTeamMember(
       where: { id: employeeId },
       data: { teamId: null },
     })
+
+    // Sync messagerie TEAM (fire-and-forget, SP-504)
+    if (employee.userId) {
+      import('@/lib/services/team-conversation-sync')
+        .then(({ syncTeamConversationMember }) =>
+          syncTeamConversationMember(teamId, employee.userId!, 'remove')
+        )
+        .catch(console.error)
+    }
 
     // Recupere l'equipe mise a jour
     const team = await prisma.team.findUnique({

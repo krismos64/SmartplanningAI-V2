@@ -20,6 +20,8 @@ const MAX_RECONNECT_ATTEMPTS = 5
 interface UseNotificationsStreamOptions {
   /** Callback appelé à chaque nouvelle notification */
   onNotification?: (notification: NotificationListItem) => void
+  /** Callback appelé à chaque nouveau message de la messagerie (SP-500) */
+  onMessage?: (data: { conversationId: string; message: unknown }) => void
   /** Activer/désactiver la connexion SSE */
   enabled?: boolean
 }
@@ -56,7 +58,7 @@ interface UseNotificationsStreamReturn {
 export function useNotificationsStream(
   options: UseNotificationsStreamOptions = {}
 ): UseNotificationsStreamReturn {
-  const { onNotification, enabled = true } = options
+  const { onNotification, onMessage, enabled = true } = options
 
   const [isConnected, setIsConnected] = useState(false)
   const [isConnecting, setIsConnecting] = useState(false)
@@ -69,11 +71,16 @@ export function useNotificationsStream(
   const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const reconnectAttemptsRef = useRef(0)
   const onNotificationRef = useRef(onNotification)
+  const onMessageRef = useRef(onMessage)
 
-  // Garder la référence du callback à jour
+  // Garder les références des callbacks à jour
   useEffect(() => {
     onNotificationRef.current = onNotification
   }, [onNotification])
+
+  useEffect(() => {
+    onMessageRef.current = onMessage
+  }, [onMessage])
 
   /**
    * Fermer la connexion existante
@@ -124,6 +131,13 @@ export function useNotificationsStream(
             if (onNotificationRef.current) {
               onNotificationRef.current(notification)
             }
+          }
+
+          // SP-500 : Messagerie — dispatch des nouveaux messages
+          if (payload.type === 'new_message' && onMessageRef.current) {
+            onMessageRef.current(
+              payload.data as { conversationId: string; message: unknown }
+            )
           }
           // Les pings sont ignorés côté client (juste du keep-alive)
         } catch {

@@ -31,6 +31,7 @@ import {
   UserPlus,
   CalendarPlus,
   Upload,
+  MessageSquare,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -200,6 +201,14 @@ export const navigationItems: NavigationItem[] = [
     roles: ['DIRECTOR', 'MANAGER', 'EMPLOYEE'],
     keywords: ['incident', 'problème', 'alerte', 'issue', 'note'],
     shortcut: 'G I',
+  },
+  {
+    id: 'messages',
+    label: 'Messages',
+    icon: MessageSquare,
+    href: '/app/dashboard/messages',
+    roles: 'ALL',
+    keywords: ['messages', 'chat', 'conversation', 'messagerie', 'discussion'],
   },
   {
     id: 'billing',

@@ -32,7 +32,21 @@ export interface SSEPingPayload {
   timestamp: number
 }
 
-export type SSEPayload = SSENotificationPayload | SSEPingPayload
+/**
+ * Payload d'un nouveau message (messagerie SP-500)
+ */
+export interface SSENewMessagePayload {
+  type: 'new_message'
+  data: {
+    conversationId: string
+    message: unknown
+  }
+}
+
+export type SSEPayload =
+  | SSENotificationPayload
+  | SSEPingPayload
+  | SSENewMessagePayload
 
 /**
  * Classe singleton pour gérer les connexions SSE
@@ -130,6 +144,32 @@ class NotificationSSEManager {
     }
 
     // Nettoyer les connexions mortes
+    for (const controller of toRemove) {
+      this.removeConnection(userId, controller)
+    }
+  }
+
+  /**
+   * Émettre un payload brut à un utilisateur (pour la messagerie et autres)
+   */
+  emitRaw(userId: string, payload: SSEPayload): void {
+    const userConnections = this.connections.get(userId)
+    if (!userConnections || userConnections.length === 0) return
+
+    const data = `data: ${JSON.stringify(payload)}\n\n`
+    const encoder = new TextEncoder()
+    const encoded = encoder.encode(data)
+
+    const toRemove: ReadableStreamDefaultController<Uint8Array>[] = []
+
+    for (const connection of userConnections) {
+      try {
+        connection.controller.enqueue(encoded)
+      } catch {
+        toRemove.push(connection.controller)
+      }
+    }
+
     for (const controller of toRemove) {
       this.removeConnection(userId, controller)
     }

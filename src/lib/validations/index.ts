@@ -46,3 +46,6 @@ export * from './stripe'
 
 // CSV Import schemas (SP-496)
 export * from './csv-import'
+
+// Messaging schemas (SP-502)
+export * from './messaging'

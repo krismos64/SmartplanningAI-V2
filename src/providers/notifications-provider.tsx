@@ -19,7 +19,9 @@ import { useRouter } from 'next/navigation'
 import { useNotificationsStream } from '@/hooks/use-notifications-stream'
 import { useNotificationsCount } from '@/hooks/use-notifications-count'
 import { showNotificationToast } from '@/components/notifications/NotificationToast'
+import { dispatchNewMessageEvent } from '@/hooks/use-message-stream'
 import type { NotificationListItem } from '@/types/notification'
+import type { MessageWithSender } from '@/types/messaging'
 
 interface NotificationsContextValue {
   /** True si connecté au stream SSE */
@@ -100,6 +102,17 @@ export function NotificationsProvider({
     [mutateCount, router]
   )
 
+  // Callback quand un message arrive via SSE (SP-500)
+  const handleMessage = useCallback(
+    (data: { conversationId: string; message: unknown }) => {
+      dispatchNewMessageEvent({
+        conversationId: data.conversationId,
+        message: data.message as MessageWithSender,
+      })
+    },
+    []
+  )
+
   // Hook pour le stream SSE
   // L'authentification est vérifiée côté serveur (401 si non authentifié)
   const {
@@ -110,6 +123,7 @@ export function NotificationsProvider({
     reconnect,
   } = useNotificationsStream({
     onNotification: handleNotification,
+    onMessage: handleMessage,
     enabled,
   })
 

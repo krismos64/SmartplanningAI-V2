@@ -119,6 +119,10 @@ model User {
   // (connexion, création, modification, suppression, export, etc.)
   auditLogs AuditLog[]
 
+  // Messagerie interne (SP-500)
+  conversationMembers ConversationMember[]
+  sentMessages        Message[]
+
   // Sécurité et état du compte
   isActive        Boolean   @default(true) // Permet de désactiver un compte sans le supprimer
   isEmailVerified Boolean   @default(false) // Passe à true après clic sur le lien d'activation reçu par email
@@ -246,6 +250,8 @@ model Company {
   incidentNotes  IncidentNote[]
   emailLogs      EmailLog[]
   auditLogs      AuditLog[]
+  conversations  Conversation[]
+  messages       Message[]
 
   isActive  Boolean  @default(true) // Permet de désactiver une entreprise sans supprimer ses données
   createdAt DateTime @default(now())
@@ -444,6 +450,9 @@ model Team {
   company   Company    @relation(fields: [companyId], references: [id], onDelete: Cascade)
   employees Employee[] @relation("TeamMembers")
   schedules Schedule[]
+
+  // Messagerie interne : conversation TEAM auto-synchronisée (SP-500)
+  conversation Conversation?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -975,4 +984,122 @@ enum AuditEntityType {
   SETTINGS // Action sur les paramètres
   INCIDENT_NOTE // Action sur une note d'incident
   AVAILABILITY // Action sur une déclaration de disponibilité
+  CONVERSATION // Action sur une conversation (messagerie)
+  MESSAGE // Action sur un message (messagerie)
+}
+
+// ============================================================================
+// MESSAGERIE INTERNE (SP-500)
+// ============================================================================
+// Système de messagerie temps réel intégré à l'application.
+// Trois types de conversations : DIRECT (1-to-1), TEAM (auto-sync
+// avec le modèle Team), GROUP (groupe manuel créé par un Manager+).
+// Les messages sont envoyés via Server Actions et distribués en
+// temps réel via le SSE existant (NotificationSSEManager).
+// ============================================================================
+
+// Type de conversation
+enum ConversationType {
+  DIRECT // Conversation 1-to-1 entre deux utilisateurs
+  TEAM   // Conversation d'équipe, membres synchronisés avec Team
+  GROUP  // Groupe personnalisé, membres gérés manuellement
+}
+
+// Rôle d'un membre dans une conversation GROUP
+enum ConversationMemberRole {
+  MEMBER // Participant standard (peut envoyer/lire)
+  ADMIN  // Peut ajouter/retirer des membres (GROUP uniquement)
+}
+
+model Conversation {
+  id                 String             @id @default(cuid())
+  type               ConversationType
+
+  // Nom de la conversation (null pour DIRECT, nom d'équipe pour TEAM, nom custom pour GROUP)
+  name               String?
+
+  // Lien avec Team pour le type TEAM. @unique car une équipe n'a qu'une seule conversation.
+  // onDelete SetNull : si l'équipe est supprimée, la conversation survit (historique préservé).
+  teamId             String?            @unique
+  team               Team?              @relation(fields: [teamId], references: [id], onDelete: SetNull)
+
+  companyId          String
+  company            Company            @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  // Champs dénormalisés pour optimiser l'affichage de la liste des conversations.
+  // Mis à jour à chaque nouveau message (fire-and-forget).
+  lastMessageAt      DateTime?
+  lastMessagePreview String?            @db.VarChar(200)
+
+  createdById        String?            // Null pour TEAM (créé automatiquement)
+  avatarUrl          String?            // URL Cloudinary de l'avatar custom du groupe
+
+  members            ConversationMember[]
+  messages           Message[]
+
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  @@index([companyId, lastMessageAt(sort: Desc)])
+  @@index([teamId])
+  @@map("conversations")
+}
+
+model ConversationMember {
+  id             String                 @id @default(cuid())
+
+  conversationId String
+  conversation   Conversation           @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  userId         String
+  user           User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Rôle dans la conversation (ADMIN peut gérer les membres dans un GROUP)
+  role           ConversationMemberRole @default(MEMBER)
+
+  // Date du dernier message lu par ce membre.
+  // Les messages avec createdAt > lastReadAt sont considérés non-lus.
+  lastReadAt     DateTime?
+
+  joinedAt       DateTime               @default(now())
+
+  // Archivage : masque la conversation de la liste sans supprimer l'historique.
+  // Remis à false automatiquement quand un nouveau message arrive.
+  isArchived     Boolean                @default(false)
+
+  // Un utilisateur ne peut être membre qu'une seule fois par conversation
+  @@unique([conversationId, userId])
+  @@index([userId, conversationId])
+  @@map("conversation_members")
+}
+
+model Message {
+  id             String       @id @default(cuid())
+
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  // senderId nullable : si l'utilisateur est supprimé (RGPD), ses messages restent
+  // avec senderId = null. L'UI affiche "Utilisateur supprimé".
+  senderId       String?
+  sender         User?        @relation(fields: [senderId], references: [id], onDelete: SetNull)
+
+  content        String?      @db.Text    // Texte du message (null si pièce jointe seule)
+
+  // Pièces jointes en JSON : [{ url, name, mimeType, size }]
+  attachments    Json?
+
+  // Soft delete : le message reste en base mais est masqué dans l'UI
+  isDeleted      Boolean      @default(false)
+
+  companyId      String
+  company        Company      @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([conversationId, createdAt(sort: Desc)])
+  @@index([senderId])
+  @@index([companyId])
+  @@map("messages")
 }
