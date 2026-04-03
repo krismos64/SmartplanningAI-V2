@@ -7,7 +7,7 @@ Plateforme SaaS multi-tenant de gestion intelligente des plannings et des ressou
 
 - **Production** : https://smartplanning.fr
 - **Version** : 2.0
-- **Jira** : préfixe `SP`
+- **Jira** : prefixe `SP`
 
 ## Stack technique
 
@@ -15,36 +15,39 @@ Plateforme SaaS multi-tenant de gestion intelligente des plannings et des ressou
 | --------------- | ----------------------------------------------------------------------------- |
 | Frontend        | Next.js 15.5.9 (App Router), React 19, TypeScript 5.7.2, Tailwind + Shadcn/ui |
 | Backend         | NextAuth v5 (Auth.js), Prisma 6.18.0, Zod, Stripe v20.3.1                     |
-| Base de données | PostgreSQL 16, Redis 7 (ioredis 5.10)                                         |
+| Base de donnees | PostgreSQL 16, Redis 7 (ioredis 5.10)                                         |
 | Emails          | React Email (30 templates), Nodemailer SMTP                                    |
+| Temps reel      | Server-Sent Events (SSE) — notifications + messagerie sur un stream unique     |
 | DevOps          | Docker, GitHub Actions (CI/CD), VPS OVH (Ubuntu 24.04), Nginx, Let's Encrypt  |
 
-## Fonctionnalités
+## Fonctionnalites
 
-- **Authentification** : Multi-rôles (SYSTEM_ADMIN, DIRECTOR, MANAGER, EMPLOYEE), vérification email à l'inscription, invitation par email, activation de compte
-- **Dashboards** : 4 tableaux de bord par rôle avec KPIs, graphiques Recharts, animations Framer Motion
-- **Planning** : Calendrier Schedule-X (drag & drop, récurrence, conflits, exports PDF/Excel/CSV), vues jour/semaine/mois
-- **Congés** : Workflow validation (PENDING → APPROVED/REJECTED), soldes CP/RTT, overlay calendrier, demi-journées
-- **Billing** : Abonnement per-seat Stripe (2,90€/employé/mois), portail client, webhooks, sync employés auto
-- **Notifications** : Temps réel SSE, 30 emails transactionnels (React Email), préférences par catégorie/canal respectées avant chaque envoi
-- **Redis** : Rate limiting distribué (INCR+EXPIRE), sessions actives (TTL 24h), cache dashboards (TTL 300s), fallback mémoire si indisponible
-- **CRUD** : Entreprises, employés, équipes avec RBAC et multi-tenant strict
+- **Authentification** : Multi-roles (SYSTEM_ADMIN, DIRECTOR, MANAGER, EMPLOYEE), verification email, invitation par email, activation de compte
+- **Dashboards** : 4 tableaux de bord par role avec KPIs, graphiques Recharts, animations Framer Motion
+- **Planning** : Calendrier Schedule-X (drag & drop, recurrence, conflits, exports PDF/Excel/CSV), vues jour/semaine/mois
+- **Conges** : Workflow validation (PENDING -> APPROVED/REJECTED), soldes CP/RTT, overlay calendrier, demi-journees
+- **Messagerie interne** : Conversations DIRECT (1:1), TEAM (auto-sync equipes) et GROUP (manuelles). Messages texte + pieces jointes (PDF, images via Cloudinary, max 10 Mo). Reception temps reel via SSE. Groupement de messages, scroll infini cursor-based, optimistic updates. Archivage de conversations avec desarchivage automatique sur nouveau message. Avatars de groupe personnalisables.
+- **Import CSV/Excel** : Import bulk d'employes depuis fichier CSV ou Excel (.xlsx). Validation Zod temps reel cote client avec cellules colorees. Support headers FR/EN avec normalisation. Detection des doublons, creation auto des equipes, sync Stripe. Modele telecharger pre-rempli.
+- **Billing** : Abonnement per-seat Stripe (2,90 euros/employe/mois), portail client, webhooks, sync employes auto
+- **Notifications** : Temps reel SSE, 30 emails transactionnels (React Email), preferences par categorie/canal
+- **Redis** : Rate limiting distribue (INCR+EXPIRE), sessions actives (TTL 24h), cache dashboards (TTL 300s), fallback memoire
+- **CRUD** : Entreprises, employes, equipes avec RBAC et multi-tenant strict
 - **Audit** : Journal d'audit complet, export CSV, protection anti-injection
 - **Impersonation** : Mode support SYSTEM_ADMIN lecture seule avec audit trail
-- **Monitoring** : Health check DB + Redis (PING/PONG), KPIs SaaS, graphiques admin, service MRR unifié
-- **Admin** : Page utilisateurs cross-tenant, essais à risque, broadcast email, stats + export PDF
-- **Profil** : Avatar Cloudinary, RGPD (export données, suppression compte), préférences affichage
-- **Settings** : Apparence, notifications, entreprise (jours travaillés, horaires)
-- **Notes & Incidents** : Tâches personnelles, notes d'incidents avec visibilité RBAC
-- **SEO** : Metadata API, JSON-LD Schema.org, sitemap, robots.txt, optimisation LLMs
-- **Landing** : Design "Cyber Glass 3D", simulateur tarifs, FAQ, pages légales RGPD
-- **Accessibilité** : WCAG 2.1 AA, Lighthouse 100%
+- **Monitoring** : Health check DB + Redis (PING/PONG), KPIs SaaS, graphiques admin, service MRR unifie
+- **Admin** : Page utilisateurs cross-tenant, essais a risque, broadcast email, stats + export PDF
+- **Profil** : Avatar Cloudinary, RGPD (export donnees, suppression compte), preferences affichage
+- **Settings** : Apparence, notifications, entreprise (jours travailles, horaires)
+- **Notes & Incidents** : Taches personnelles (drag & drop), notes d'incidents avec visibilite RBAC
+- **SEO** : Metadata API, JSON-LD Schema.org, sitemap, robots.txt
+- **Landing** : Design "Cyber Glass 3D", simulateur tarifs, FAQ, pages legales RGPD
+- **Accessibilite** : WCAG 2.1 AA, touch targets 44px, Lighthouse 100%
 
-> Historique détaillé du développement : [`docs/development-log.md`](docs/development-log.md)
+> Historique detaille du developpement : [`docs/development-log.md`](docs/development-log.md)
 
-## Prérequis
+## Prerequis
 
-| Outil      | Version minimale | Vérification          |
+| Outil      | Version minimale | Verification          |
 | ---------- | ---------------- | --------------------- |
 | Node.js    | >= 20.0.0        | `node -v`             |
 | npm        | >= 10.0.0        | `npm -v`              |
@@ -61,7 +64,7 @@ cp .env.example .env.local    # Configurer les variables
 docker-compose up -d           # PostgreSQL + Redis + Adminer
 npx prisma migrate dev
 npx prisma generate
-npm run db:seed                # Données de démonstration
+npm run db:seed                # Donnees de demonstration
 npm run dev
 ```
 
@@ -71,21 +74,21 @@ Copier `.env.example` vers `.env.local` et renseigner au minimum :
 
 | Variable | Description | Obligatoire |
 | -------- | ----------- | :---------: |
-| `DATABASE_URL` | URL PostgreSQL (pré-rempli pour Docker local) | Oui |
-| `AUTH_SECRET` | Clé JWT — `openssl rand -base64 32` | Oui |
+| `DATABASE_URL` | URL PostgreSQL (pre-rempli pour Docker local) | Oui |
+| `AUTH_SECRET` | Cle JWT — `openssl rand -base64 32` | Oui |
 | `AUTH_URL` | URL de l'app (`http://localhost:3000`) | Oui |
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD` | Config SMTP pour emails transactionnels | Oui |
-| `STRIPE_SECRET_KEY`, `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Clés API Stripe (mode test en dev) | Oui |
+| `STRIPE_SECRET_KEY`, `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Cles API Stripe (mode test en dev) | Oui |
 | `STRIPE_WEBHOOK_SECRET` | Webhook Stripe — `stripe listen --forward-to localhost:3000/api/webhooks/stripe` | Oui |
 | `STRIPE_PRICE_ID` | Price ID du tarif per-seat | Oui |
-| `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` | Upload avatars | Oui |
-| `REDIS_URL` | URL Redis (pré-rempli pour Docker local) | Oui |
+| `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` | Upload avatars + pieces jointes messagerie | Oui |
+| `REDIS_URL` | URL Redis (pre-rempli pour Docker local) | Oui |
 | `CRON_SECRET` | Secret routes cron — `openssl rand -base64 32` | Oui |
 | `HEALTH_API_KEY` | Secret endpoint `/api/health` | Oui |
 
-Voir `.env.example` pour la liste complète et les variables optionnelles (Umami, Sentry, OpenAI).
+Voir `.env.example` pour la liste complete et les variables optionnelles (Umami, Sentry, OpenAI).
 
-### Accès locaux
+### Acces locaux
 
 | Service     | URL                   | Identifiants                                              |
 | ----------- | --------------------- | --------------------------------------------------------- |
@@ -94,17 +97,17 @@ Voir `.env.example` pour la liste complète et les variables optionnelles (Umami
 | PostgreSQL  | localhost:5433        | —                                                         |
 | Redis       | localhost:6380        | —                                                         |
 
-> Tous les comptes du seed partagent le mot de passe `Password123!`. Voir `prisma/seed.ts` pour la liste complète.
+> Tous les comptes du seed partagent le mot de passe `Password123!`. Voir `prisma/seed.ts` pour la liste complete.
 
 ## Scripts
 
 ```bash
-npm run dev              # Développement
+npm run dev              # Developpement
 npm run build            # Build production
 npm run lint             # ESLint
 npm run db:migrate       # Migrations Prisma
 npm run db:studio        # Prisma Studio
-npm run db:seed          # Seed base de données
+npm run db:seed          # Seed base de donnees
 npm run test             # Tests unitaires (watch)
 npm run test -- --run    # Tests unitaires (single run)
 npm run test:e2e         # Tests E2E Playwright
@@ -114,41 +117,52 @@ npm run test:e2e         # Tests E2E Playwright
 
 ```
 src/
-├── app/              # Next.js 15 App Router (53 pages, 5 layouts)
+├── app/              # Next.js 15 App Router (56 pages, 5 layouts)
 │   ├── (auth)/       # Login, register, verify-email, activate-account
-│   ├── (about)/      # À propos, tarifs
+│   ├── (about)/      # A propos, tarifs
 │   ├── (landing)/    # Landing page
-│   ├── (legal)/      # Pages légales RGPD
-│   ├── app/          # Routes protégées par rôle
-│   └── api/          # API Routes (avatar, webhooks, health, SSE...)
-├── components/       # 190 composants React
-├── lib/              # Actions (38), services (18), validations Zod (23), animations, email (30 templates)
-├── hooks/            # 19 hooks custom
+│   ├── (legal)/      # Pages legales RGPD
+│   ├── app/          # Routes protegees par role
+│   └── api/          # API Routes (avatar, webhooks, health, SSE, messages...)
+├── components/       # 200 composants React
+│   ├── messaging/    # Messagerie (9 composants)
+│   ├── import/       # Import CSV (4 composants)
+│   └── ui/           # Shadcn/ui (34 composants)
+├── lib/              # Actions (28), services (20), validations Zod (22), email (30 templates)
+├── hooks/            # 23 hooks custom (SSE, SWR, messagerie, import CSV)
 ├── types/            # Types TypeScript globaux
-└── styles/           # Design tokens centralisés
+└── styles/           # Design tokens centralises
 ```
 
-## Base de données
+## Base de donnees
 
-18 modèles Prisma (14 core + 4 NextAuth), 14 enums, 54 index, 16 migrations.
+21 modeles Prisma (17 core + 4 NextAuth), 16 enums, 55+ index, 19 migrations.
 
-Voir [`docs/database-architecture.md`](docs/database-architecture.md) pour le détail complet.
+| Categorie | Modeles |
+|---|---|
+| Auth (NextAuth) | User, Account, Session, VerificationToken |
+| Core | Company, Employee, Team |
+| Planning | Schedule, Availability |
+| Conges | LeaveRequest, LeaveBalance |
+| Notes | PersonalTask, IncidentNote |
+| Messagerie | Conversation, ConversationMember, Message |
+| Systeme | Notification, Subscription, Payment, AuditLog, EmailLog |
+
+Voir [`docs/database-architecture.md`](docs/database-architecture.md) pour le detail complet.
 
 ## Tests
 
 | Type      | Framework  | Fichiers | Tests     |
 | --------- | ---------- | -------- | --------- |
-| Unitaires | Vitest     | 154      | 2 746     |
+| Unitaires | Vitest     | 156      | 2 767     |
 | E2E       | Playwright | 13       | 189       |
-| **Total** |            | **167**  | **2 935** |
+| **Total** |            | **169**  | **2 956** |
 
-Rationalisation mars 2026 : focus sur la logique métier critique (RBAC, Zod, Server Actions, Stripe, workflows E2E). Zéro test cosmétique.
+Focus sur la logique metier critique : RBAC, Zod, Server Actions, Stripe, workflows E2E, messagerie, import CSV.
 
-> Détail des tests par catégorie : [`docs/development-log.md`](docs/development-log.md#tests-détaillés)
+## Deploiement
 
-## Déploiement
-
-| Élément    | Valeur                                         |
+| Element    | Valeur                                         |
 | ---------- | ---------------------------------------------- |
 | URL        | https://smartplanning.fr                       |
 | Serveur    | VPS OVH (4 vCores, 8GB RAM)                    |
@@ -159,48 +173,57 @@ Rationalisation mars 2026 : focus sur la logique métier critique (RBAC, Zod, Se
 
 ### CI/CD Pipeline
 
-| Trigger          | Tests                   | Déploiement | Temps      |
+```
+Push main → CI (lint + tests + build) → CD (Docker build → deploy VPS → Prisma migrate)
+```
+
+| Trigger          | Tests                   | Deploiement | Temps      |
 | ---------------- | ----------------------- | ----------- | ---------- |
 | Push feature     | Unitaires               | Non         | ~3-5 min   |
 | PR vers main     | Unitaires + E2E prod    | Non         | ~15-20 min |
-| Merge main       | Unitaires               | Oui         | ~8-10 min  |
+| Merge main       | Unitaires               | Oui (auto)  | ~8-10 min  |
 | Nightly (2h UTC) | Unitaires + E2E complet | Non         | ~45-60 min |
+
+Les migrations Prisma sont executees automatiquement dans le conteneur Docker apres le deploiement.
 
 > Guide complet : [`docs/deployment.md`](docs/deployment.md)
 
-## Sécurité
+## Securite
 
 - RBAC 4 niveaux avec `checkPermission()` sur chaque Server Action
-- Isolation multi-tenant par `companyId` sur chaque requête Prisma (defense-in-depth)
-- Validation Zod aux frontières, protection CSRF (NextAuth)
+- Isolation multi-tenant par `companyId` sur chaque requete Prisma (defense-in-depth)
+- Validation Zod aux frontieres, protection CSRF (NextAuth)
 - Cookies httpOnly + secure + sameSite, hashage bcrypt
-- Rate limiting Redis distribué (fallback mémoire), audit logs, CSP headers, SRI en production
+- Rate limiting Redis distribue (fallback memoire), audit logs, CSP headers, SRI en production
 - Subscription guard middleware Edge Runtime
-- Vérification email à l'inscription (token 24h, page `/verify-email`)
-- Emails sécurité envoyés inconditionnellement (changement mot de passe, suppression RGPD), emails métier soumis aux préférences utilisateur
+- Verification email a l'inscription (token 24h, page `/verify-email`)
+- Emails securite envoyes inconditionnellement (changement mot de passe, suppression RGPD)
+- Messagerie : messages prives par conversation, isolation multi-tenant, verification membership sur chaque action
 
-> Documentation sécurité : [`docs/security/`](docs/security/)
+> Documentation securite : [`docs/security/`](docs/security/)
 
 ### Scores Lighthouse
 
-| Performance | SEO  | Accessibilité | Best Practices |
+| Performance | SEO  | Accessibilite | Best Practices |
 | ----------- | ---- | ------------- | -------------- |
 | 91%         | 100% | 100%          | 96%            |
 
 ## Documentation
 
-- [`docs/deployment.md`](docs/deployment.md) — Guide de déploiement VPS
-- [`docs/database-architecture.md`](docs/database-architecture.md) — Architecture BDD
-- [`docs/development-log.md`](docs/development-log.md) — Journal de développement détaillé
+- [`docs/deployment.md`](docs/deployment.md) — Guide de deploiement VPS
+- [`docs/database-architecture.md`](docs/database-architecture.md) — Architecture BDD (21 modeles, 16 enums)
+- [`docs/development-log.md`](docs/development-log.md) — Journal de developpement detaille
+- [`docs/audit-technique-v2.md`](docs/audit-technique-v2.md) — Audit technique complet du projet
+- [`docs/plan-messagerie-interne.md`](docs/plan-messagerie-interne.md) — Plan architecture messagerie
 - [`docs/analytics.md`](docs/analytics.md) — Configuration Umami
-- [`docs/security/`](docs/security/) — Plan de sécurisation, incidents, hardening
+- [`docs/security/`](docs/security/) — Plan de securisation, incidents, hardening
 
 ## Auteur
 
-**Christophe Mostefaoui** — Développeur full-stack freelance
+**Christophe Mostefaoui** — Developpeur full-stack freelance
 
-Projet réalisé dans le cadre du titre professionnel **Concepteur Développeur d'Applications** (CDA).
+Projet realise dans le cadre du titre professionnel **Concepteur Developpeur d'Applications** (CDA).
 
 ## Licence
 
-Ce projet est propriétaire. Tous droits réservés.
+Ce projet est proprietaire. Tous droits reserves.
