@@ -14,10 +14,17 @@ import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Separator } from '@/components/ui/separator'
-import { ArrowLeft, Loader2, Lock, Camera } from 'lucide-react'
+import { ArrowLeft, Loader2, Lock, Camera, Star, Pencil } from 'lucide-react'
 import { MessageBubble } from './MessageBubble'
 import { MessageInput } from './MessageInput'
 import { getGroupAvatarColor, getGroupInitials } from './utils'
+import { renameGroupConversation } from '@/lib/actions/messaging'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import type {
   ConversationListItem,
   MessageWithSender,
@@ -85,6 +92,18 @@ export function MessagePanel({
   const [groupAvatar, setGroupAvatar] = useState(conversation.avatarUrl)
   const avatarInputRef = useRef<HTMLInputElement>(null)
 
+  // Admin check
+  const isAdmin =
+    conversation.type === 'GROUP' &&
+    conversation.members.some(
+      (m) => m.userId === currentUserId && m.role === 'ADMIN'
+    )
+
+  // Inline rename state
+  const [isRenaming, setIsRenaming] = useState(false)
+  const [renameValue, setRenameValue] = useState(name)
+  const renameInputRef = useRef<HTMLInputElement>(null)
+
   // Reset group avatar quand la conversation change
   useEffect(() => {
     setGroupAvatar(conversation.avatarUrl)
@@ -122,6 +141,31 @@ export function MessagePanel({
     },
     [conversation.id, onConversationUpdated]
   )
+
+  const handleRenameSubmit = useCallback(async () => {
+    const trimmed = renameValue.trim()
+    if (!trimmed || trimmed === name || trimmed.length < 2) {
+      setIsRenaming(false)
+      setRenameValue(name)
+      return
+    }
+
+    setIsRenaming(false)
+    const result = await renameGroupConversation(conversation.id, trimmed)
+    if (result.success) {
+      onConversationUpdated?.()
+    } else {
+      setRenameValue(name) // Rollback
+    }
+  }, [renameValue, name, conversation.id, onConversationUpdated])
+
+  // Focus l'input de rename quand il apparaît
+  useEffect(() => {
+    if (isRenaming && renameInputRef.current) {
+      renameInputRef.current.focus()
+      renameInputRef.current.select()
+    }
+  }, [isRenaming])
 
   // IntersectionObserver pour l'infinite scroll ascendant
   useEffect(() => {
@@ -213,11 +257,9 @@ export function MessagePanel({
           </Button>
           <div className="relative shrink-0">
             <Avatar
-              className={`h-9 w-9 ${conversation.type === 'GROUP' ? 'cursor-pointer' : ''}`}
+              className={`h-9 w-9 ${isAdmin ? 'cursor-pointer' : ''}`}
               onClick={
-                conversation.type === 'GROUP'
-                  ? () => avatarInputRef.current?.click()
-                  : undefined
+                isAdmin ? () => avatarInputRef.current?.click() : undefined
               }
             >
               {(groupAvatar || avatarImage) && (
@@ -240,7 +282,7 @@ export function MessagePanel({
                       .slice(0, 2)}
               </AvatarFallback>
             </Avatar>
-            {conversation.type === 'GROUP' && (
+            {isAdmin && (
               <button
                 onClick={() => avatarInputRef.current?.click()}
                 className="absolute -bottom-0.5 -right-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm"
@@ -258,7 +300,40 @@ export function MessagePanel({
             />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium">{name}</p>
+            {/* Nom du groupe — inline rename pour ADMIN */}
+            {isRenaming ? (
+              <input
+                ref={renameInputRef}
+                value={renameValue}
+                onChange={(e) => setRenameValue(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') void handleRenameSubmit()
+                  if (e.key === 'Escape') {
+                    setIsRenaming(false)
+                    setRenameValue(name)
+                  }
+                }}
+                onBlur={() => void handleRenameSubmit()}
+                className="w-full rounded border bg-muted/50 px-2 py-0.5 text-sm font-medium outline-none focus:border-primary"
+                maxLength={100}
+              />
+            ) : (
+              <div className="flex items-center gap-1">
+                <p className="truncate text-sm font-medium">{name}</p>
+                {isAdmin && (
+                  <button
+                    onClick={() => {
+                      setRenameValue(name)
+                      setIsRenaming(true)
+                    }}
+                    className="shrink-0 text-muted-foreground transition-colors hover:text-foreground"
+                    aria-label="Renommer le groupe"
+                  >
+                    <Pencil className="h-3 w-3" />
+                  </button>
+                )}
+              </div>
+            )}
             {conversation.type !== 'DIRECT' && (
               <p className="text-xs text-muted-foreground">
                 {getMemberCountText(conversation)}
@@ -269,35 +344,48 @@ export function MessagePanel({
 
         {/* Avatars des membres pour GROUP et TEAM */}
         {conversation.type !== 'DIRECT' && (
-          <div className="mt-2 flex items-center gap-1 overflow-x-auto pb-1 pl-12 lg:pl-0">
-            {conversation.members.map((member) => (
-              <div
-                key={member.userId}
-                className="flex shrink-0 flex-col items-center gap-0.5"
-                title={member.user.name ?? 'Utilisateur'}
-              >
-                <Avatar className="h-7 w-7">
-                  {member.user.image && (
-                    <AvatarImage
-                      src={member.user.image}
-                      alt={member.user.name ?? ''}
-                    />
-                  )}
-                  <AvatarFallback className="bg-muted text-[9px]">
-                    {member.user.name
-                      ?.split(' ')
-                      .map((w) => w[0])
-                      .join('')
-                      .toUpperCase()
-                      .slice(0, 2) ?? '?'}
-                  </AvatarFallback>
-                </Avatar>
-                <span className="max-w-[48px] truncate text-[9px] text-muted-foreground">
-                  {member.user.name?.split(' ')[0] ?? '?'}
-                </span>
-              </div>
-            ))}
-          </div>
+          <TooltipProvider>
+            <div className="mt-2 flex items-center gap-1 overflow-x-auto pb-1 pl-12 lg:pl-0">
+              {conversation.members.map((member) => (
+                <Tooltip key={member.userId}>
+                  <TooltipTrigger asChild>
+                    <div className="flex shrink-0 flex-col items-center gap-0.5">
+                      <div className="relative">
+                        <Avatar className="h-7 w-7">
+                          {member.user.image && (
+                            <AvatarImage
+                              src={member.user.image}
+                              alt={member.user.name ?? ''}
+                            />
+                          )}
+                          <AvatarFallback className="bg-muted text-[9px]">
+                            {member.user.name
+                              ?.split(' ')
+                              .map((w) => w[0])
+                              .join('')
+                              .toUpperCase()
+                              .slice(0, 2) ?? '?'}
+                          </AvatarFallback>
+                        </Avatar>
+                        {member.role === 'ADMIN' && (
+                          <span className="absolute -bottom-0.5 -right-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-amber-500 shadow-sm">
+                            <Star className="h-2 w-2 fill-white text-white" />
+                          </span>
+                        )}
+                      </div>
+                      <span className="max-w-[48px] truncate text-[9px] text-muted-foreground">
+                        {member.user.name?.split(' ')[0] ?? '?'}
+                      </span>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">
+                    {member.user.name ?? 'Utilisateur'}
+                    {member.role === 'ADMIN' && ' — Admin'}
+                  </TooltipContent>
+                </Tooltip>
+              ))}
+            </div>
+          </TooltipProvider>
         )}
       </div>
 

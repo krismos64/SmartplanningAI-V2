@@ -1082,3 +1082,101 @@ export async function archiveConversation(
     return { success: false, error: handlePrismaError(error).error }
   }
 }
+
+/**
+ * Renomme une conversation GROUP (ADMIN uniquement)
+ */
+export async function renameGroupConversation(
+  conversationId: string,
+  newName: string
+): Promise<CrudActionResult<ConversationWithDetails>> {
+  const session = await auth()
+  if (!session?.user?.id) {
+    return { success: false, error: 'Vous devez être connecté' }
+  }
+
+  const impersonationBlock = await assertNotImpersonating()
+  if (impersonationBlock) return impersonationBlock
+
+  const effective = await getEffectiveSessionData(session)
+  const userId = effective.userId
+
+  const trimmed = newName.trim()
+  if (trimmed.length < 2 || trimmed.length > 100) {
+    return {
+      success: false,
+      error: 'Le nom doit contenir entre 2 et 100 caractères',
+    }
+  }
+
+  try {
+    const conversation = await prisma.conversation.findUnique({
+      where: { id: conversationId },
+      include: {
+        members: {
+          include: {
+            user: { select: { id: true, name: true, image: true } },
+          },
+        },
+      },
+    })
+
+    if (!conversation) {
+      return { success: false, error: 'Conversation introuvable' }
+    }
+
+    if (conversation.type !== 'GROUP') {
+      return {
+        success: false,
+        error: 'Seuls les groupes peuvent être renommés',
+      }
+    }
+
+    const myMembership = conversation.members.find((m) => m.userId === userId)
+    if (!myMembership || myMembership.role !== 'ADMIN') {
+      return {
+        success: false,
+        error: "Seul l'administrateur peut renommer le groupe",
+      }
+    }
+
+    const updated = await prisma.conversation.update({
+      where: { id: conversationId },
+      data: { name: trimmed },
+      include: {
+        members: {
+          include: {
+            user: { select: { id: true, name: true, image: true } },
+          },
+        },
+      },
+    })
+
+    revalidatePath('/app/dashboard/messages')
+
+    return {
+      success: true,
+      data: {
+        id: updated.id,
+        type: updated.type,
+        name: updated.name,
+        teamId: updated.teamId,
+        avatarUrl: updated.avatarUrl ?? null,
+        lastMessageAt: updated.lastMessageAt,
+        lastMessagePreview: updated.lastMessagePreview,
+        members: updated.members.map((m) => ({
+          userId: m.userId,
+          user: m.user,
+          role: m.role,
+        })),
+        unreadCount: 0,
+        createdAt: updated.createdAt,
+        companyId: updated.companyId,
+        createdById: updated.createdById,
+      },
+    }
+  } catch (error) {
+    console.error('[renameGroupConversation] Error:', error)
+    return { success: false, error: handlePrismaError(error).error }
+  }
+}

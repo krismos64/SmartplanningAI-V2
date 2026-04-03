@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
     // Vérifier que c'est un GROUP et que l'utilisateur est membre
     const conversation = await prisma.conversation.findUnique({
       where: { id: conversationId },
-      select: { type: true, members: { select: { userId: true } } },
+      select: { type: true, members: { select: { userId: true, role: true } } },
     })
 
     if (!conversation) {
@@ -76,10 +76,17 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const isMember = conversation.members.some((m) => m.userId === userId)
-    if (!isMember) {
+    const myMembership = conversation.members.find((m) => m.userId === userId)
+    if (!myMembership) {
       return NextResponse.json(
         { error: "Vous n'êtes pas membre de ce groupe" },
+        { status: 403 }
+      )
+    }
+
+    if (myMembership.role !== 'ADMIN') {
+      return NextResponse.json(
+        { error: "Seul l'administrateur peut modifier l'avatar du groupe" },
         { status: 403 }
       )
     }
