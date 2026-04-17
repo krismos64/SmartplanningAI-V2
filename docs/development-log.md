@@ -740,6 +740,28 @@ npm run a11y:audit    # Audit Lighthouse
 - **Planning** : Correction recurrence group update, chargement overlays conges pour vues jour/mois
 - **Conges** : Ajout `router.refresh()` apres validation/creation pour forcer la mise a jour UI
 
+### Corrections admin & UX (17 avril 2026)
+
+**Fix changement statut abonnement sans Stripe :**
+
+L'admin ne pouvait pas passer manuellement une entreprise de FREE/TRIAL à ACTIVE — erreur 404 après sauvegarde et statut non mis à jour en base.
+
+- `updateCompanySchema` enrichi avec `subscriptionPlan` et `subscriptionStatus` (absents du schéma de validation)
+- Server Action `updateCompany` : mise à jour de la table `Subscription` via `prisma.subscription.updateMany()` avant la mise à jour `Company`
+- Correction du redirect post-sauvegarde : `/admin/companies` → `/app/admin/companies` (préfixe `/app` manquant causait le 404)
+- Correction de tous les `revalidatePath` dans `companies.ts` (idem, préfixe `/app` manquant)
+- L'admin peut désormais activer gratuitement une entreprise sans passer par Stripe
+
+**Bannières abonnement adaptées au rôle :**
+
+Les MANAGER et EMPLOYEE voyaient un bouton "Mettre à jour l'abonnement" ou "S'abonner" alors que seul le DIRECTOR a accès à la page billing.
+
+- `getSubscriptionBannerConfig()` dans `subscription-banner.ts` reçoit désormais `isDirector: boolean`
+- DIRECTOR : messages et CTA inchangés (lien `/app/dashboard/billing`)
+- MANAGER / EMPLOYEE : message adapté ("Contactez votre directeur pour renouveler / régulariser"), CTA supprimé
+- Applicable sur les 2 types : TRIAL (3 paliers info/warning/urgent) et PAST_DUE
+- 45 tests existants passent sans régression
+
 ---
 
 ## Import CSV/Excel (Sprint 11 + 11b — 2 avril 2026)
