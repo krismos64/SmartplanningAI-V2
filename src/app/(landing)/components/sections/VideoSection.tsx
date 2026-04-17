@@ -119,7 +119,7 @@ export function VideoSection() {
               ) : (
                 /* YouTube Embed - Code officiel YouTube */
                 <iframe
-                  src="https://www.youtube.com/embed/jSdnkoMc8gU?autoplay=1"
+                  src="https://www.youtube.com/embed/Drd2_9te5LM?autoplay=1"
                   title="Smartplanning"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                   referrerPolicy="strict-origin-when-cross-origin"
