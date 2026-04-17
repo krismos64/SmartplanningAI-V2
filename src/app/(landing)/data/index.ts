@@ -6,7 +6,6 @@
 import {
   Calendar,
   Users,
-  Users2,
   Palmtree,
   LayoutDashboard,
   LayoutGrid,
@@ -20,11 +19,11 @@ import {
   UserCog,
   Sparkles,
   ShieldCheck,
-  Monitor,
-  Headphones,
   FolderX,
   MessageSquare,
   TrendingUp,
+  Upload,
+  MessagesSquare,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -155,17 +154,17 @@ export const features: Feature[] = [
     color: 'from-green-500 to-emerald-400',
   },
   {
-    icon: Monitor,
-    title: 'Interface multi-appareils',
+    icon: MessagesSquare,
+    title: 'Messagerie interne',
     description:
-      'Gérez vos plannings depuis ordinateur, tablette ou smartphone. Synchronisation en temps réel sur tous vos appareils.',
+      "Conversations en direct, par équipe ou en groupe. Envoyez des fichiers et images sans quitter l'outil. Zéro email interne.",
     color: 'from-sky-500 to-blue-400',
   },
   {
-    icon: Headphones,
-    title: 'Support réactif France',
+    icon: Upload,
+    title: 'Import CSV / Excel',
     description:
-      'Assistance en France avec réponse garantie sous 24h. Équipe dédiée pour résoudre vos problèmes rapidement.',
+      "Importez vos employés en masse depuis un fichier CSV ou Excel. Prévisualisation, validation en temps réel et rapport d'import détaillé inclus.",
     color: 'from-pink-500 to-rose-400',
   },
   {
@@ -228,9 +227,9 @@ export const faqs: FAQ[] = [
       "L'essai gratuit de 21 jours vous donne accès à toutes les fonctionnalités, sans restriction et sans carte bancaire.",
   },
   {
-    question: 'Puis-je importer mes données existantes ?',
+    question: 'Puis-je importer mes employés existants ?',
     answer:
-      "Oui ! SmartPlanning supporte l'import Excel, CSV et propose des intégrations avec les principaux outils RH du marché.",
+      "Oui ! SmartPlanning intègre un outil d'import CSV et Excel complet : prévisualisez vos données, corrigez les erreurs en temps réel, puis importez tous vos employés en un clic. Un modèle de fichier est fourni pour vous guider.",
   },
   {
     question: "Combien d'utilisateurs puis-je ajouter ?",
@@ -306,10 +305,10 @@ export const benefits: Benefit[] = [
   },
   {
     id: 'communication',
-    icon: Users2,
-    title: 'Communication fluide',
+    icon: MessageSquare,
+    title: 'Communication intégrée',
     description:
-      'Managers et équipes connectés en temps réel, notifications instantanées.',
+      'Messagerie interne par équipe ou en groupe, notifications instantanées. Finis les WhatsApp et emails professionnels dispersés.',
     color: 'from-purple-500 to-violet-400',
   },
   {
@@ -345,12 +344,12 @@ export const videoFeatures: VideoFeature[] = [
   {
     id: 'intuitive',
     title: 'Interface intuitive',
-    description: 'Découvrez la simplicité de notre dashboard',
+    description: 'Dashboard clair, prise en main immédiate',
   },
   {
     id: 'key-features',
-    title: 'Fonctionnalités clés',
-    description: 'Plannings, congés, équipes en un clic',
+    title: 'Tout en un',
+    description: 'Plannings, congés, messagerie et imports centralisés',
   },
   {
     id: 'results',

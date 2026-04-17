@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   title: 'SmartPlanning — Logiciel de gestion de planning pour entreprises',
 
   description:
-    'Simplifiez la gestion des plannings de votre équipe. Solution SaaS française pour TPE et PME. Essai gratuit 21 jours, à partir de 2,90\u00a0\u20ac/employé/mois.',
+    'Simplifiez la gestion des plannings, congés et communication de vos équipes. Messagerie interne, import CSV/Excel. Solution SaaS française pour TPE et PME. Essai gratuit 21 jours, à partir de 2,90\u00a0\u20ac/employé/mois.',
 
   keywords: [
     'logiciel gestion planning entreprise',
@@ -31,6 +31,8 @@ export const metadata: Metadata = {
     'planning employés en ligne',
     'gestion horaires équipe',
     'solution planning cloud',
+    'messagerie interne entreprise',
+    'import employés CSV Excel',
   ],
 
   robots: {
@@ -53,9 +55,9 @@ export const metadata: Metadata = {
   },
 
   openGraph: {
-    title: 'SmartPlanning — Gestion de planning simplifiée pour entreprises',
+    title: 'SmartPlanning — Plannings, messagerie et RH pour entreprises',
     description:
-      'Gérez les plannings de votre équipe en quelques clics. Solution SaaS française, essai gratuit 21 jours.',
+      'Gérez les plannings, congés et la communication de vos équipes. Messagerie interne, import CSV/Excel. Solution SaaS française, essai gratuit 21 jours.',
     type: 'website',
     url: baseUrl,
     siteName: 'SmartPlanning',

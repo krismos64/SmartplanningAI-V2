@@ -19,18 +19,20 @@ export function TopBanner() {
         transition={marqueeTransition}
         className="flex whitespace-nowrap"
       >
-        {Array.from({ length: 10 }).map((_, i) => (
+        {Array.from({ length: 8 }).map((_, i) => (
           <span
             key={i}
             className="mx-8 inline-flex items-center gap-3 text-sm font-semibold tracking-wide text-white"
           >
             <span className="h-1.5 w-1.5 rounded-full bg-white/80" />
-            <span className="font-light">Bienvenue sur</span>
+            <span className="rounded-full bg-white/20 px-2 py-0.5 text-xs font-bold uppercase tracking-wider">
+              Nouveau
+            </span>
+            <span className="font-light">Messagerie interne &amp; Import CSV / Excel</span>
+            <span className="font-light">•</span>
             <span className="bg-gradient-to-r from-white to-cyan-100 bg-clip-text font-bold text-transparent">
               smartplanning.fr
             </span>
-            <span className="font-light">•</span>
-            <span className="font-light">La planification intelligente</span>
             <span className="h-1.5 w-1.5 rounded-full bg-white/80" />
           </span>
         ))}

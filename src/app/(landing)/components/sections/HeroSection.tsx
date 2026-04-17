@@ -117,9 +117,9 @@ export function HeroSection() {
               variants={fadeInUp}
               className="mx-auto max-w-xl text-lg text-muted-foreground sm:text-xl lg:mx-0"
             >
-              La solution SaaS qui révolutionne la gestion des plannings
-              d&apos;entreprise. Automatisez, optimisez et simplifiez votre
-              organisation.
+              Plannings, congés, messagerie interne et imports CSV — tout en un.
+              La solution SaaS française pour simplifier la gestion de vos
+              équipes.
             </motion.p>
 
             {/* CTA Buttons - Desktop only (inside text block) */}

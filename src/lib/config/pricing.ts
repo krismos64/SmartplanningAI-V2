@@ -77,6 +77,8 @@ export const INCLUDED_FEATURES = [
   'Export PDF et Excel',
   'Notes personnelles et incidents',
   'Multi-équipes illimité',
+  'Messagerie interne (direct, équipe, groupe)',
+  'Import employés CSV et Excel',
   'Support email réactif',
   'Hébergement sécurisé en France',
   '100 % conforme RGPD',
