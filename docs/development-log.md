@@ -13,6 +13,8 @@ Historique détaillé du développement de SmartPlanning V2, organisé par phase
 - [Landing Page & Pages publiques](#landing-page--pages-publiques)
 - [Stripe & Billing](#stripe--billing)
 - [Phases de développement](#phases-de-développement)
+- [Import CSV / Excel en masse](#import-csv--excel-en-masse-epic-sp-495--avril-2026)
+- [Messagerie interne](#messagerie-interne-epic-sp-500--avril-2026)
 - [Modèle de données détaillé](#modèle-de-données-détaillé)
 - [Tests détaillés](#tests-détaillés)
 - [SEO & Optimisation LLMs](#seo--optimisation-llms)
@@ -469,6 +471,60 @@ Le `FormDatePicker` utilisait `react-day-picker` v9 en mode navigation mois par 
 - Plage : 1970 à aujourd'hui + 5 ans
 - Fichier modifié : `src/components/forms/FormDatePicker.tsx`
 - Impact : tous les formulaires utilisant `FormDatePicker` (profil, employés, disponibilités)
+
+### Import CSV / Excel en masse (Epic SP-495 — avril 2026)
+
+Import bulk d'employés depuis fichier CSV ou Excel (.xlsx) :
+
+- **Parsing** : papaparse (CSV, auto-détection délimiteur, BOM UTF-8) + xlsx (conversion Excel → CSV côté client)
+- **Flow** : upload client → prévisualisation avec validation Zod temps réel (cellules colorées rouge/vert) → envoi CSV brut au serveur → re-parse + validation + insertion `$transaction`
+- **Headers normalisés** : support FR et EN (`firstName`/`Prénom`, `lastName`/`Nom`, etc.), champs obligatoires et facultatifs
+- **Gestion doublons** : détection par email + companyId, fallback prénom + nom + companyId
+- **Intégrations** : création automatique des équipes référencées, sync Stripe `syncEmployeeCountToStripe()` après import
+- **UX** : page pédagogique `/app/dashboard/import` avec guide 3 étapes, barre de progression, rapport détaillé expand/collapse, template CSV téléchargeable pré-rempli avec colonnes FR (obligatoire)/(facultatif)
+- **RBAC** : SYSTEM_ADMIN et DIRECTOR uniquement
+- **Composants** : `ImportPage`, `FileUpload`, `ImportPreview`, `ImportReport` dans `src/components/import/`
+- **Tickets** : SP-495 à SP-499, SP-508, SP-509 à SP-511
+
+### Messagerie interne (Epic SP-500 — avril 2026)
+
+Système de messagerie complet intégré à la plateforme :
+
+- **Types de conversations** : DIRECT (1:1), TEAM (auto-sync équipes), GROUP (manuelles, tous rôles peuvent créer)
+- **Messages** : texte max 5 000 chars + pièces jointes Cloudinary (images, PDF, DOCX, XLSX — max 10 Mo)
+- **Temps réel** : réception via SSE existant (type `new_message` ajouté au stream), dispatch via custom events `window` (`smartplanning:new_message`) pour découplage des hooks
+- **Pagination** : cursor-based (`createdAt DESC`, 30 messages/page), scroll infini
+- **Optimistic updates** : id temporaire `temp-XXX`, rollback automatique si erreur serveur
+- **Non-lus** : compteurs SQL COUNT (`createdAt > lastReadAt`), badge sidebar mémoïsé
+- **Archivage** : `isArchived` sur `ConversationMember`, désarchivage auto sur nouveau message
+- **Avatars** : photo interlocuteur (DIRECT), couleur déterministe 12 couleurs + initiales (GROUP/TEAM), avatar custom uploadable Cloudinary (GROUP)
+- **Admin groupe** : renommer (inline edit, 2-100 chars), modifier avatar, ajouter/retirer membres (Dialog + bouton X au hover). Badge étoile dorée sur avatar admin. Contrôles réservés à l'admin du groupe.
+- **Sync auto TEAM** : `syncTeamConversationMember()` fire-and-forget dans `addTeamMember`/`removeTeamMember`
+- **RGPD** : `Message.senderId` nullable avec `onDelete: SetNull` (messages conservés si user supprimé)
+- **Multi-tenant** : `Message.companyId` pour defense-in-depth
+- **Page** : `/app/dashboard/messages`, layout fixed plein écran, split-panel responsive
+- **Fichiers clés** : `emit-message.ts` (helper SSE), `team-conversation-sync.ts` (service sans `'use server'`)
+- **Tickets** : SP-500 à SP-507
+
+### Correction URL Cloudinary pièces jointes (17 avril 2026)
+
+Les URLs de téléchargement des pièces jointes retournaient une erreur 400 Cloudinary. Cause : le paramètre `fl_attachment` était appliqué aux URLs raw (PDF, DOCX, XLSX) qui n'acceptent pas les transformations Cloudinary.
+
+- Suppression de `fl_attachment` sur les URLs raw — le navigateur gère nativement le téléchargement
+- Fichier modifié : composant d'affichage des pièces jointes (`MessageAttachment`)
+
+### Mise à jour landing page — nouvelles fonctionnalités (17 avril 2026)
+
+Refonte du contenu marketing pour refléter les features livrées depuis janvier 2026 :
+
+- **Features** : remplacement de 2 cards génériques (Interface multi-appareils, Support réactif France) par **Messagerie interne** et **Import CSV / Excel**
+- **Benefit** : "Communication fluide" → "Communication intégrée" avec mention explicite de la messagerie interne
+- **FAQ** : réponse import mise à jour avec description du flux réel (prévisualisation, template, validation temps réel)
+- **TopBanner** : badge "Nouveau" + annonce "Messagerie interne & Import CSV / Excel"
+- **Hero** : sous-titre enrichi ("Plannings, congés, messagerie interne et imports CSV — tout en un")
+- **SEO** : `description`, `openGraph`, keywords (+2 : "messagerie interne entreprise", "import employés CSV Excel")
+- **JSON-LD** : `INCLUDED_FEATURES` dans `pricing.ts` mis à jour → propagé automatiquement dans le schema `SoftwareApplication`
+- **VideoSection** : point "Fonctionnalités clés" mis à jour pour mentionner messagerie et imports
 
 ### Phase 8+ : Fonctionnalités avancées (à venir)
 
