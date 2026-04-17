@@ -1,6 +1,6 @@
 # Guide de Déploiement SmartPlanning V2
 
-**Dernière mise à jour** : 12 mars 2026
+**Dernière mise à jour** : 17 avril 2026
 **Version** : 2.0.0
 **Environnement** : Production
 **URL** : https://smartplanning.fr
@@ -460,6 +460,7 @@ docker pull ghcr.io/krismos64/smartplanningai-v2:latest
 | 2026-02-04 | 2.1     | Ajout Cloudinary pour upload avatars (SP-272) |
 | 2026-02-10 | 2.2     | Variables Stripe activées                                                  |
 | 2026-03-12 | 2.3     | Compteurs tests mis à jour après rationalisation (~2814 unit / ~189 E2E)   |
+| 2026-04-17 | 2.4     | Fix admin : changement statut abonnement sans Stripe, correction redirects 404 |
 
 ---
 
