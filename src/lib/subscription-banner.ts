@@ -135,14 +135,16 @@ export function getSubscriptionBannerConfig(
     return HIDDEN
   }
 
+  const isDirector = role === 'DIRECTOR'
+
   // 4. TRIAL : bannière progressive
   if (subscriptionStatus === 'TRIAL') {
-    return getTrialBannerConfig(trialEndsAt)
+    return getTrialBannerConfig(trialEndsAt, isDirector)
   }
 
   // 5. PAST_DUE : bannière pendant la période de grâce
   if (subscriptionStatus === 'PAST_DUE') {
-    return getPastDueBannerConfig(currentPeriodEnd)
+    return getPastDueBannerConfig(currentPeriodEnd, isDirector)
   }
 
   // 6. Statut inconnu : pas de bannière (bloqué par SP-440)
@@ -160,7 +162,8 @@ export function getSubscriptionBannerConfig(
  * @returns Configuration de la bannière
  */
 function getTrialBannerConfig(
-  trialEndsAt: string | null
+  trialEndsAt: string | null,
+  isDirector: boolean
 ): SubscriptionBannerConfig {
   // Trial illimité (config manuelle admin)
   if (!trialEndsAt) {
@@ -180,14 +183,18 @@ function getTrialBannerConfig(
     return HIDDEN
   }
 
+  const suffix = daysRemaining > 1 ? 's' : ''
+
   // 1-3 jours → urgent (non dismissable)
   if (daysRemaining <= TRIAL_BANNER_THRESHOLDS.URGENT) {
     return {
       show: true,
       tier: 'urgent',
-      message: `Votre essai expire dans ${daysRemaining} jour${daysRemaining > 1 ? 's' : ''} !`,
-      ctaLabel: "S'abonner maintenant",
-      ctaHref: '/app/dashboard/billing',
+      message: isDirector
+        ? `Votre essai expire dans ${daysRemaining} jour${suffix} !`
+        : `Essai expirant dans ${daysRemaining} jour${suffix} — Contactez votre directeur pour renouveler`,
+      ctaLabel: isDirector ? "S'abonner maintenant" : undefined,
+      ctaHref: isDirector ? '/app/dashboard/billing' : undefined,
       dismissable: false,
       daysRemaining,
       type: 'trial',
@@ -199,9 +206,11 @@ function getTrialBannerConfig(
     return {
       show: true,
       tier: 'warning',
-      message: `Plus que ${daysRemaining} jours d'essai — Abonnez-vous maintenant`,
-      ctaLabel: "S'abonner",
-      ctaHref: '/app/dashboard/billing',
+      message: isDirector
+        ? `Plus que ${daysRemaining} jours d'essai — Abonnez-vous maintenant`
+        : `Plus que ${daysRemaining} jours d'essai — Contactez votre directeur pour renouveler`,
+      ctaLabel: isDirector ? "S'abonner" : undefined,
+      ctaHref: isDirector ? '/app/dashboard/billing' : undefined,
       dismissable: true,
       daysRemaining,
       type: 'trial',
@@ -212,9 +221,11 @@ function getTrialBannerConfig(
   return {
     show: true,
     tier: 'info',
-    message: `Essai gratuit : ${daysRemaining} jours restants`,
-    ctaLabel: 'Voir les offres',
-    ctaHref: '/app/dashboard/billing',
+    message: isDirector
+      ? `Essai gratuit : ${daysRemaining} jours restants`
+      : `Essai gratuit : ${daysRemaining} jours restants`,
+    ctaLabel: isDirector ? 'Voir les offres' : undefined,
+    ctaHref: isDirector ? '/app/dashboard/billing' : undefined,
     dismissable: true,
     daysRemaining,
     type: 'trial',
@@ -228,16 +239,21 @@ function getTrialBannerConfig(
  * @returns Configuration de la bannière
  */
 function getPastDueBannerConfig(
-  currentPeriodEnd: string | null
+  currentPeriodEnd: string | null,
+  isDirector: boolean
 ): SubscriptionBannerConfig {
+  const message = isDirector
+    ? 'Paiement en retard — Mettez à jour votre moyen de paiement'
+    : 'Paiement en retard — Contactez votre directeur pour régulariser'
+
   // Pas de date de référence → bannière générique
   if (!currentPeriodEnd) {
     return {
       show: true,
       tier: 'warning',
-      message: 'Paiement en retard — Mettez à jour votre moyen de paiement',
-      ctaLabel: 'Mettre à jour',
-      ctaHref: '/app/dashboard/billing',
+      message,
+      ctaLabel: isDirector ? 'Mettre à jour' : undefined,
+      ctaHref: isDirector ? '/app/dashboard/billing' : undefined,
       dismissable: false,
       type: 'payment',
     }
@@ -256,9 +272,9 @@ function getPastDueBannerConfig(
   return {
     show: true,
     tier: 'warning',
-    message: 'Paiement en retard — Mettez à jour votre moyen de paiement',
-    ctaLabel: 'Mettre à jour',
-    ctaHref: '/app/dashboard/billing',
+    message,
+    ctaLabel: isDirector ? 'Mettre à jour' : undefined,
+    ctaHref: isDirector ? '/app/dashboard/billing' : undefined,
     dismissable: false,
     daysRemaining: daysLeft,
     type: 'payment',
