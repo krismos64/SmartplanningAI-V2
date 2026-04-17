@@ -393,7 +393,7 @@ export async function createCompany(
     }).catch(console.error)
 
     // Revalide le cache
-    revalidatePath('/admin/companies')
+    revalidatePath('/app/admin/companies')
 
     return company
   }) as Promise<CrudActionResult<CompanyDetail>>
@@ -422,7 +422,8 @@ export async function updateCompany(
       throw new Error(validation.error)
     }
 
-    const { id, ...updateData } = validation.data
+    const { id, subscriptionPlan, subscriptionStatus, ...updateData } =
+      validation.data
 
     // Vérifie que la Company existe
     const existing = await prisma.company.findUnique({
@@ -438,6 +439,17 @@ export async function updateCompany(
     let newSlug: string | undefined
     if (updateData.name && updateData.name !== existing.name) {
       newSlug = await generateUniqueSlug(updateData.name)
+    }
+
+    // Met à jour plan/statut de la Subscription si fournis
+    if (subscriptionPlan !== undefined || subscriptionStatus !== undefined) {
+      await prisma.subscription.updateMany({
+        where: { companyId: id },
+        data: {
+          ...(subscriptionPlan !== undefined && { plan: subscriptionPlan }),
+          ...(subscriptionStatus !== undefined && { status: subscriptionStatus }),
+        },
+      })
     }
 
     // Mise à jour en base
@@ -496,8 +508,8 @@ export async function updateCompany(
     }).catch(console.error)
 
     // Revalide le cache
-    revalidatePath('/admin/companies')
-    revalidatePath(`/admin/companies/${id}`)
+    revalidatePath('/app/admin/companies')
+    revalidatePath(`/app/admin/companies/${id}`)
 
     return company
   }) as Promise<CrudActionResult<CompanyDetail>>
@@ -552,7 +564,7 @@ export async function deleteCompany(id: string): Promise<DeleteActionResult> {
       }).catch(console.error)
 
       // Revalide le cache
-      revalidatePath('/admin/companies')
+      revalidatePath('/app/admin/companies')
 
       return { deleted: true }
     })
@@ -637,8 +649,8 @@ export async function toggleCompanyStatus(
       details: { from: !isActive, to: isActive },
     }).catch(console.error)
 
-    revalidatePath('/admin/companies')
-    revalidatePath(`/admin/companies/${id}`)
+    revalidatePath('/app/admin/companies')
+    revalidatePath(`/app/admin/companies/${id}`)
 
     return company
   }) as Promise<CrudActionResult<CompanyDetail>>

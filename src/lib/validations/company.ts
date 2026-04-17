@@ -116,6 +116,12 @@ export const updateCompanySchema = companyBaseSchema.partial().extend({
 
   /** Statut actif/inactif */
   isActive: z.boolean().optional(),
+
+  /** Plan d'abonnement (modifiable manuellement par SYSTEM_ADMIN) */
+  subscriptionPlan: subscriptionPlanEnum.optional(),
+
+  /** Statut d'abonnement (modifiable manuellement par SYSTEM_ADMIN) */
+  subscriptionStatus: subscriptionStatusEnum.optional(),
 })
 
 export type UpdateCompanyInput = z.infer<typeof updateCompanySchema>
