@@ -443,7 +443,12 @@ export async function createDirectConversation(
   // Vérifier que le target existe (et appartient à la même company pour les non-admins)
   const targetUser = await prisma.user.findUnique({
     where: { id: targetUserId },
-    select: { id: true, companyId: true },
+    select: {
+      id: true,
+      name: true,
+      companyId: true,
+      company: { select: { name: true } },
+    },
   })
 
   // 2b — guard cross-tenant : autorisé pour SYSTEM_ADMIN
@@ -538,6 +543,23 @@ export async function createDirectConversation(
         },
       },
     })
+
+    // Audit trail — uniquement pour les conversations admin cross-tenant (fire-and-forget)
+    if (isAdmin && targetUser.companyId !== null) {
+      logAuditAction({
+        action: 'CREATE',
+        entityType: 'CONVERSATION',
+        entityId: conversation.id,
+        userId,
+        details: {
+          crossTenant: true,
+          targetUserId: targetUser.id,
+          targetUserName: targetUser.name,
+          targetCompanyId: targetUser.companyId,
+          targetCompanyName: targetUser.company?.name ?? null,
+        },
+      }).catch(console.error)
+    }
 
     return {
       success: true,
