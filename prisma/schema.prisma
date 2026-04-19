@@ -1023,8 +1023,9 @@ model Conversation {
   teamId             String?            @unique
   team               Team?              @relation(fields: [teamId], references: [id], onDelete: SetNull)
 
-  companyId          String
-  company            Company            @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  // nullable : les conversations créées par SYSTEM_ADMIN cross-tenant n'appartiennent à aucune company
+  companyId          String?
+  company            Company?           @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   // Champs dénormalisés pour optimiser l'affichage de la liste des conversations.
   // Mis à jour à chaque nouveau message (fire-and-forget).
@@ -1092,8 +1093,9 @@ model Message {
   // Soft delete : le message reste en base mais est masqué dans l'UI
   isDeleted      Boolean      @default(false)
 
-  companyId      String
-  company        Company      @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  // nullable : les messages dans une conversation cross-tenant admin n'ont pas de company
+  companyId      String?
+  company        Company?     @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt

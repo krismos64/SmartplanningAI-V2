@@ -308,13 +308,10 @@ export function logActivity(
  */
 export function canAccessCompanyEntity(
   userCompanyId: string | null,
-  entityCompanyId: string
+  entityCompanyId: string | null
 ): boolean {
-  // SYSTEM_ADMIN n'a pas de companyId mais a acces a tout
-  if (userCompanyId === null) {
-    return true
-  }
-
+  if (userCompanyId === null) return true  // SYSTEM_ADMIN accède à tout
+  if (entityCompanyId === null) return false // conv admin cross-tenant : autres rôles refusés
   return userCompanyId === entityCompanyId
 }
 
@@ -323,7 +320,7 @@ export function canAccessCompanyEntity(
  */
 export function checkCompanyAccess(
   userCompanyId: string | null,
-  entityCompanyId: string
+  entityCompanyId: string | null
 ): CrudActionResult<true> {
   if (!canAccessCompanyEntity(userCompanyId, entityCompanyId)) {
     return {

@@ -146,10 +146,12 @@ export function useMessages(conversationId: string | null): UseMessagesReturn {
           )
         } else {
           // Rollback
+          console.error('[useMessages] sendMessage failed:', result.error)
           setMessages((prev) => prev.filter((m) => m.id !== tempId))
         }
-      } catch {
+      } catch (err) {
         // Rollback
+        console.error('[useMessages] sendMessage error:', err)
         setMessages((prev) => prev.filter((m) => m.id !== tempId))
       } finally {
         setIsSending(false)

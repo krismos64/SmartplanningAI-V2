@@ -4,7 +4,7 @@
  * @ticket SP-502
  */
 
-import type { ConversationType, ConversationMemberRole } from '@prisma/client'
+import type { ConversationType, ConversationMemberRole, UserRole } from '@prisma/client'
 
 // ============================================================================
 // Message
@@ -62,7 +62,7 @@ export interface ConversationListItem {
 }
 
 export interface ConversationWithDetails extends ConversationListItem {
-  companyId: string
+  companyId: string | null
   createdById: string | null
 }
 
@@ -84,5 +84,24 @@ export interface SSENewMessagePayload {
 
 export interface MessagesPage {
   messages: MessageWithSender[]
+  hasMore: boolean
+}
+
+// ============================================================================
+// Admin — recherche cross-tenant (SP-515)
+// ============================================================================
+
+export interface UserForMessagingAdmin {
+  id: string
+  name: string | null
+  image: string | null
+  role: UserRole
+  companyId: string | null
+  companyName: string | null
+}
+
+export interface SearchUsersForAdminResult {
+  users: UserForMessagingAdmin[]
+  total: number
   hasMore: boolean
 }
