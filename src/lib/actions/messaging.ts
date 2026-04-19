@@ -28,7 +28,9 @@ import {
   conversationFiltersSchema,
   addGroupMemberSchema,
   removeGroupMemberSchema,
+  searchUsersForAdminSchema,
 } from '@/lib/validations/messaging'
+import type { SearchUsersForAdminInput } from '@/lib/validations/messaging'
 import type { CrudActionResult } from '@/types'
 import type {
   MessageWithSender,
@@ -36,6 +38,8 @@ import type {
   ConversationWithDetails,
   MessagesPage,
   AttachmentData,
+  UserForMessagingAdmin,
+  SearchUsersForAdminResult,
 } from '@/types/messaging'
 
 // ============================================================================
@@ -1252,6 +1256,98 @@ export async function renameGroupConversation(
     }
   } catch (error) {
     console.error('[renameGroupConversation] Error:', error)
+    return { success: false, error: handlePrismaError(error).error }
+  }
+}
+
+/**
+ * Recherche paginée de tous les utilisateurs de l'application (SYSTEM_ADMIN uniquement)
+ *
+ * Filtres composables : nom/email, entreprise, rôle.
+ * Pagination offset-based : 10 résultats/page.
+ *
+ * @ticket SP-515
+ */
+const PAGE_SIZE = 10
+
+export async function searchAllUsersForAdmin(
+  input: SearchUsersForAdminInput
+): Promise<CrudActionResult<SearchUsersForAdminResult>> {
+  const session = await auth()
+  if (!session?.user?.id) {
+    return { success: false, error: 'Vous devez être connecté' }
+  }
+
+  const effective = await getEffectiveSessionData(session)
+  const userId = effective.userId
+
+  // RBAC strict : SYSTEM_ADMIN uniquement
+  if (effective.role !== 'SYSTEM_ADMIN') {
+    return { success: false, error: 'Accès refusé' }
+  }
+
+  // Validation Zod
+  const validation = searchUsersForAdminSchema.safeParse(input)
+  if (!validation.success) {
+    return {
+      success: false,
+      error: validation.error.errors[0]?.message ?? 'Données invalides',
+    }
+  }
+
+  const { search, companyId, role, page } = validation.data
+
+  const where = {
+    isActive: true,
+    id: { not: userId },
+    ...(companyId ? { companyId } : {}),
+    ...(role ? { role } : {}),
+    ...(search
+      ? {
+          OR: [
+            { name: { contains: search, mode: 'insensitive' as const } },
+            { email: { contains: search, mode: 'insensitive' as const } },
+          ],
+        }
+      : {}),
+  }
+
+  try {
+    const skip = (page - 1) * PAGE_SIZE
+
+    const [rawUsers, total] = await Promise.all([
+      prisma.user.findMany({
+        where,
+        select: {
+          id: true,
+          name: true,
+          image: true,
+          role: true,
+          companyId: true,
+          company: { select: { name: true } },
+        },
+        orderBy: [{ company: { name: 'asc' } }, { name: 'asc' }],
+        skip,
+        take: PAGE_SIZE + 1, // +1 pour détecter hasMore
+      }),
+      prisma.user.count({ where }),
+    ])
+
+    const hasMore = rawUsers.length > PAGE_SIZE
+    const users: UserForMessagingAdmin[] = rawUsers
+      .slice(0, PAGE_SIZE)
+      .map((u) => ({
+        id: u.id,
+        name: u.name,
+        image: u.image,
+        role: u.role,
+        companyId: u.companyId,
+        companyName: u.company?.name ?? null,
+      }))
+
+    return { success: true, data: { users, total, hasMore } }
+  } catch (error) {
+    console.error('[searchAllUsersForAdmin] Error:', error)
     return { success: false, error: handlePrismaError(error).error }
   }
 }
