@@ -107,9 +107,10 @@ export async function getConversations(filters?: {
   const effective = await getEffectiveSessionData(session)
   const userId = effective.userId
   const companyId = effective.companyId
+  const isAdmin = effective.role === 'SYSTEM_ADMIN'
 
-  // SYSTEM_ADMIN sans companyId : pas de conversations métier
-  if (!companyId) {
+  // Non-admin sans companyId : pas de conversations
+  if (!companyId && !isAdmin) {
     return { success: true, data: [] }
   }
 
@@ -118,10 +119,14 @@ export async function getConversations(filters?: {
       ? conversationFiltersSchema.safeParse(filters)
       : null
 
+    // SYSTEM_ADMIN voit toutes ses conversations sans filtre companyId
+    const whereClause = isAdmin
+      ? { members: { some: { userId, isArchived: false } } }
+      : { companyId: companyId!, members: { some: { userId, isArchived: false } } }
+
     const conversations = await prisma.conversation.findMany({
       where: {
-        companyId,
-        members: { some: { userId, isArchived: false } },
+        ...whereClause,
         ...(validFilters?.success && validFilters.data.search
           ? {
               OR: [
@@ -417,8 +422,10 @@ export async function createDirectConversation(
   const effective = await getEffectiveSessionData(session)
   const userId = effective.userId
   const companyId = effective.companyId
+  const isAdmin = effective.role === 'SYSTEM_ADMIN'
 
-  if (!companyId) {
+  // 2a — guard anticipé : bloquer uniquement les non-admins sans companyId
+  if (!companyId && !isAdmin) {
     return { success: false, error: 'Entreprise non définie' }
   }
 
@@ -429,19 +436,21 @@ export async function createDirectConversation(
     return { success: false, error: validation.error }
   }
 
-  // Vérifier que le target est dans la même company
+  // Vérifier que le target existe (et appartient à la même company pour les non-admins)
   const targetUser = await prisma.user.findUnique({
     where: { id: targetUserId },
     select: { id: true, companyId: true },
   })
 
-  if (!targetUser || targetUser.companyId !== companyId) {
+  // 2b — guard cross-tenant : autorisé pour SYSTEM_ADMIN
+  if (!targetUser || (!isAdmin && targetUser.companyId !== companyId)) {
     return {
       success: false,
       error: 'Utilisateur introuvable dans votre entreprise',
     }
   }
 
+  // 2e — guard self-conversation : conservé
   if (targetUserId === userId) {
     return {
       success: false,
@@ -449,17 +458,31 @@ export async function createDirectConversation(
     }
   }
 
+  // 2d — companyId de la conversation : null si admin contacte une autre company
+  const convCompanyId =
+    isAdmin && targetUser.companyId !== companyId ? null : companyId
+
   try {
-    // Chercher une conversation DIRECT existante entre les deux users
+    // 2c — recherche conversation existante : sans filtre companyId pour l'admin
+    const existingConvWhere = isAdmin
+      ? {
+          type: 'DIRECT' as const,
+          AND: [
+            { members: { some: { userId } } },
+            { members: { some: { userId: targetUserId } } },
+          ],
+        }
+      : {
+          type: 'DIRECT' as const,
+          companyId: companyId!,
+          AND: [
+            { members: { some: { userId } } },
+            { members: { some: { userId: targetUserId } } },
+          ],
+        }
+
     const existing = await prisma.conversation.findFirst({
-      where: {
-        type: 'DIRECT',
-        companyId,
-        AND: [
-          { members: { some: { userId } } },
-          { members: { some: { userId: targetUserId } } },
-        ],
-      },
+      where: existingConvWhere,
       include: {
         members: {
           include: {
@@ -493,11 +516,11 @@ export async function createDirectConversation(
       }
     }
 
-    // Créer la conversation
+    // Créer la conversation (companyId null si admin cross-tenant)
     const conversation = await prisma.conversation.create({
       data: {
         type: 'DIRECT',
-        companyId,
+        companyId: convCompanyId,
         createdById: userId,
         members: {
           create: [{ userId }, { userId: targetUserId }],
@@ -835,13 +858,22 @@ export async function addGroupMember(
       }
     }
 
-    // Vérifier que le nouveau membre est dans la même company
+    // Vérifier que le nouveau membre est autorisé
     const newUser = await prisma.user.findUnique({
       where: { id: newUserId },
       select: { companyId: true },
     })
 
-    if (!newUser || newUser.companyId !== conversation.companyId) {
+    if (!newUser) {
+      return { success: false, error: "L'utilisateur est introuvable" }
+    }
+
+    if (conversation.companyId === null) {
+      // Conversation admin cross-tenant : seul le SYSTEM_ADMIN peut ajouter des membres
+      if (effective.role !== 'SYSTEM_ADMIN') {
+        return { success: false, error: 'Action non autorisée' }
+      }
+    } else if (newUser.companyId !== conversation.companyId) {
       return {
         success: false,
         error: "L'utilisateur ne fait pas partie de votre entreprise",
@@ -1016,7 +1048,16 @@ export async function removeGroupMember(
  * Exclut l'utilisateur courant.
  */
 export async function getCompanyUsersForMessaging(): Promise<
-  CrudActionResult<{ id: string; name: string | null; image: string | null }[]>
+  CrudActionResult<
+    {
+      id: string
+      name: string | null
+      image: string | null
+      role?: string
+      companyId?: string | null
+      companyName?: string | null
+    }[]
+  >
 > {
   const session = await auth()
   if (!session?.user?.id) {
@@ -1026,6 +1067,40 @@ export async function getCompanyUsersForMessaging(): Promise<
   const effective = await getEffectiveSessionData(session)
   const userId = effective.userId
   const companyId = effective.companyId
+  const isAdmin = effective.role === 'SYSTEM_ADMIN'
+
+  // SYSTEM_ADMIN : retourne tous les utilisateurs actifs de l'appli avec infos company
+  if (isAdmin) {
+    try {
+      const users = await prisma.user.findMany({
+        where: { isActive: true, id: { not: userId } },
+        select: {
+          id: true,
+          name: true,
+          image: true,
+          role: true,
+          companyId: true,
+          company: { select: { name: true } },
+        },
+        orderBy: [{ company: { name: 'asc' } }, { name: 'asc' }],
+      })
+
+      return {
+        success: true,
+        data: users.map((u) => ({
+          id: u.id,
+          name: u.name,
+          image: u.image,
+          role: u.role,
+          companyId: u.companyId,
+          companyName: u.company?.name ?? null,
+        })),
+      }
+    } catch (error) {
+      console.error('[getCompanyUsersForMessaging/admin] Error:', error)
+      return { success: false, error: handlePrismaError(error).error }
+    }
+  }
 
   if (!companyId) {
     return { success: true, data: [] }
