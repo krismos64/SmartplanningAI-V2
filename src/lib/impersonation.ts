@@ -154,10 +154,18 @@ type ImpersonationBlockResult = { success: false; error: string }
  * if (impersonationBlock) return impersonationBlock
  * ```
  *
+ * Utilise le même guard que getEffectiveSessionData : si le JWT indique
+ * explicitement isImpersonating=false, le cookie est résiduel → pas de blocage.
+ *
  * @returns null si pas d'impersonation, { success: false, error } sinon
  * @ticket SP-447, SP-454
  */
-export async function assertNotImpersonating(): Promise<ImpersonationBlockResult | null> {
+export async function assertNotImpersonating(
+  sessionIsImpersonating?: boolean | null
+): Promise<ImpersonationBlockResult | null> {
+  // Si le JWT dit explicitement "pas d'impersonation", le cookie est résiduel → ignorer
+  if (sessionIsImpersonating === false) return null
+
   const context = await getImpersonationContextFromHeaders()
   if (context) {
     return {
