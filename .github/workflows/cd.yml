@@ -6,7 +6,8 @@
 # 1. Build l'image Docker de production
 # 2. Push l'image sur GitHub Container Registry (ghcr.io)
 # 3. Se connecte au VPS OVH via SSH
-# 4. Pull la nouvelle image et redémarre les conteneurs
+# 4. Applique les migrations Prisma (nouvelle image, conteneur éphémère)
+# 5. Redémarre le conteneur app avec la nouvelle image
 #
 # DÉCLENCHEUR : Après succès du CI sur la branche main
 # TEMPS D'EXÉCUTION ESTIMÉ : ~5-8 minutes
@@ -158,15 +159,80 @@ jobs:
         run: echo "Image digest ${{ steps.build.outputs.digest }}"
 
   # ============================================
-  # JOB 2 : DÉPLOIEMENT SUR VPS
+  # JOB 2 : MIGRATIONS DB
   # ============================================
-  # Se connecte au VPS et met à jour l'application
+  # Exécute prisma migrate deploy AVANT le redémarrage du conteneur app.
+  #
+  # POURQUOI AVANT LE DEPLOY ?
+  # L'ancien ordre (deploy → migrate) créait une fenêtre où le nouveau code
+  # tournait avec l'ancien schéma. Si une future migration ajoute une colonne
+  # NOT NULL sans valeur par défaut, l'app crasherait immédiatement.
+  # L'ordre correct est : schéma à jour d'abord, nouveau code ensuite.
+  #
+  # POURQUOI docker run --rm ET PAS exec SUR L'ANCIEN CONTENEUR ?
+  # Les fichiers prisma/migrations/ sont embarqués dans l'image Docker.
+  # L'ancien conteneur ne connaît pas les nouvelles migrations (elles n'y sont
+  # pas). On pull la nouvelle image et on l'utilise en conteneur éphémère
+  # (--rm) pour appliquer les migrations sur la DB, sans toucher au conteneur
+  # running. Le service app continue de servir les requêtes pendant ce temps.
+  #
+  # POURQUOI workflow_run ET PAS workflow_dispatch ?
+  # - workflow_run : déclenché automatiquement après CI → migrations auto
+  # - workflow_dispatch : déploiement manuel → pas de migrations auto
+  #   (évite d'exécuter des migrations non prévues lors d'un redéploiement manuel)
+  migrate:
+    name: Run Database Migrations
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    if: ${{ github.event_name == 'workflow_run' }}
+    # N'exécute pas les migrations sur workflow_dispatch manuel
+    # Car un déploiement manuel est souvent un rollback ou un redémarrage
+
+    steps:
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VPS_SSH_KEY }}" | base64 -d > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Run Prisma migrations via SSH
+        timeout-minutes: 5
+        run: |
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no -o ServerAliveInterval=30 -o ServerAliveCountMax=10 -o ConnectTimeout=30 -p ${{ secrets.VPS_SSH_PORT || 22 }} ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'MIGRATE_SCRIPT'
+          set -e
+          echo "🗄️ Pull de la nouvelle image pour les migrations..."
+          cd /var/www/smartplanning
+          docker pull --quiet ghcr.io/krismos64/smartplanningai-v2:latest
+
+          echo "🗄️ Exécution des migrations Prisma (conteneur éphémère)..."
+          # On utilise la nouvelle image via docker run --rm (pas exec sur l'ancien conteneur)
+          # car les fichiers prisma/migrations/ sont dans la nouvelle image, pas l'ancienne.
+          # --network host permet d'atteindre PostgreSQL sur le réseau Docker Compose.
+          DATABASE_URL=$(grep -oP 'DATABASE_URL=\K.*' .env)
+          docker run --rm \
+            --network host \
+            -e DATABASE_URL="$DATABASE_URL" \
+            ghcr.io/krismos64/smartplanningai-v2:latest \
+            npx prisma migrate deploy
+          echo "✅ Migrations terminées !"
+          MIGRATE_SCRIPT
+
+  # ============================================
+  # JOB 3 : DÉPLOIEMENT SUR VPS
+  # ============================================
+  # Se connecte au VPS et redémarre le conteneur app avec la nouvelle image.
+  # Les migrations sont déjà appliquées (job migrate) : le nouveau code démarre
+  # avec un schéma déjà à jour — aucune fenêtre de mismatch.
   deploy:
     name: Deploy to VPS
     runs-on: ubuntu-latest
-    needs: build-and-push
-    # Attend que l'image soit buildée et pushée
-    # NOTE: Les secrets sont définis au niveau repository (pas environment)
+    needs: [build-and-push, migrate]
+    # Attend toujours build-and-push.
+    # Attend migrate quand il tourne (workflow_run). GitHub considère un job
+    # skippé (if: false) comme résultat "skipped", pas "failure" — deploy
+    # n'est donc pas bloqué lors d'un workflow_dispatch manuel.
+    if: ${{ always() && needs.build-and-push.result == 'success' && (needs.migrate.result == 'success' || needs.migrate.result == 'skipped') }}
 
     steps:
       # Connexion SSH au VPS et exécution des commandes
@@ -186,7 +252,7 @@ jobs:
           echo "🚀 Début du déploiement SmartPlanning..."
           cd /var/www/smartplanning
 
-          echo "📦 Pull de la nouvelle image (avant arrêt = zero-downtime)..."
+          echo "📦 Pull de la nouvelle image (déjà en cache si migrate a tourné)..."
           docker pull --quiet ghcr.io/krismos64/smartplanningai-v2:latest
           echo "📋 Image digest:"
           docker images ghcr.io/krismos64/smartplanningai-v2:latest --format "{{.ID}} {{.CreatedAt}}"
@@ -237,43 +303,6 @@ jobs:
           echo "**Digest:** ${{ needs.build-and-push.outputs.image_digest }}" >> $GITHUB_STEP_SUMMARY
           echo "**URL:** https://smartplanning.fr" >> $GITHUB_STEP_SUMMARY
 
-  # ============================================
-  # JOB 3 : MIGRATIONS DB (si nécessaire)
-  # ============================================
-  # Exécute les migrations Prisma après le déploiement
-  # Séparé pour pouvoir être désactivé si pas de changements DB
-  #
-  # POURQUOI workflow_run ET PAS workflow_dispatch ?
-  # - workflow_run : déclenché automatiquement après CI → migrations auto
-  # - workflow_dispatch : déploiement manuel → pas de migrations auto
-  #   (évite d'exécuter des migrations non prévues lors d'un redéploiement manuel)
-  migrate:
-    name: Run Database Migrations
-    runs-on: ubuntu-latest
-    needs: deploy
-    if: ${{ github.event_name == 'workflow_run' }}
-    # N'exécute pas les migrations sur workflow_dispatch manuel
-    # Car un déploiement manuel est souvent un rollback ou un redémarrage
-
-    steps:
-      - name: Setup SSH key
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.VPS_SSH_KEY }}" | base64 -d > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
-
-      - name: Run Prisma migrations via SSH
-        timeout-minutes: 5
-        run: |
-          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no -o ServerAliveInterval=30 -o ServerAliveCountMax=10 -o ConnectTimeout=30 -p ${{ secrets.VPS_SSH_PORT || 22 }} ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'MIGRATE_SCRIPT'
-          set -e
-          echo "🗄️ Exécution des migrations Prisma..."
-          cd /var/www/smartplanning
-          docker compose --env-file .env exec -T app npx prisma migrate deploy
-          echo "✅ Migrations terminées !"
-          MIGRATE_SCRIPT
-
 # ==============================================
 # RÉSUMÉ DU PIPELINE CD
 # ==============================================
@@ -293,8 +322,8 @@ jobs:
 # ┌─────────────────────────────────────────────────────────────────────┐
 # │                        PIPELINE CD                                   │
 # │  ┌─────────────────┐     ┌─────────────┐     ┌───────────┐         │
-# │  │  BUILD & PUSH   │ ──► │   DEPLOY    │ ──► │  MIGRATE  │         │
-# │  │  (Docker Image) │     │  (VPS SSH)  │     │  (Prisma) │         │
+# │  │  BUILD & PUSH   │ ──► │   MIGRATE   │ ──► │   DEPLOY  │         │
+# │  │  (Docker Image) │     │  (Prisma)   │     │  (VPS)    │         │
 # │  └─────────────────┘     └─────────────┘     └───────────┘         │
 # └─────────────────────────────────────────────────────────────────────┘
 #
