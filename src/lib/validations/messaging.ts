@@ -8,6 +8,7 @@
  */
 
 import { z } from 'zod'
+import { UserRole } from '@prisma/client'
 
 // ============================================================================
 // Pièces jointes
@@ -121,3 +122,16 @@ export const conversationFiltersSchema = z.object({
 })
 
 export type ConversationFiltersInput = z.infer<typeof conversationFiltersSchema>
+
+// ============================================================================
+// Recherche admin cross-tenant (SP-515)
+// ============================================================================
+
+export const searchUsersForAdminSchema = z.object({
+  search: z.string().max(100).optional(),
+  companyId: z.string().cuid('ID entreprise invalide').optional(),
+  role: z.nativeEnum(UserRole).optional(),
+  page: z.number().int().min(1).default(1),
+})
+
+export type SearchUsersForAdminInput = z.infer<typeof searchUsersForAdminSchema>
