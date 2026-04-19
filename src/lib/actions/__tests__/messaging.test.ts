@@ -37,12 +37,16 @@ const { mockPrisma } = vi.hoisted(() => ({
     user: {
       findUnique: vi.fn(),
       findMany: vi.fn(),
+      count: vi.fn(),
     },
     employee: {
       findFirst: vi.fn(),
     },
     team: {
       findUnique: vi.fn(),
+    },
+    company: {
+      findMany: vi.fn(),
     },
   },
 }))
@@ -72,6 +76,8 @@ import {
   createDirectConversation,
   createGroupConversation,
   markAsRead,
+  getConversations,
+  searchAllUsersForAdmin,
 } from '../messaging'
 
 // ============================================================================
@@ -82,6 +88,8 @@ const USER_1 = 'cl000000000000000000user1'
 const USER_2 = 'cl000000000000000000user2'
 const CONV_1 = 'cl000000000000000000conv1'
 const COMP_1 = 'cl000000000000000000comp1'
+const COMP_2 = 'cl000000000000000000comp2'
+const ADMIN_USER = 'cl00000000000000000admin1'
 
 // ============================================================================
 // Helpers
@@ -362,6 +370,274 @@ describe('Messaging Server Actions', () => {
         },
         data: { lastReadAt: expect.any(Date) },
       })
+    })
+  })
+
+  // ------------------------------------------------------------------
+  // SP-520 — createDirectConversation : cas admin cross-tenant
+  // ------------------------------------------------------------------
+
+  describe('createDirectConversation — SP-520 admin cross-tenant', () => {
+    it('SYSTEM_ADMIN crée une conv cross-tenant avec companyId null', async () => {
+      mockSession('SYSTEM_ADMIN', null, ADMIN_USER)
+      // targetUser dans COMP_2 (autre company)
+      mockPrisma.user.findUnique.mockResolvedValue({
+        id: USER_2,
+        name: 'User Two',
+        companyId: COMP_2,
+        company: { name: 'Entreprise B' },
+      })
+      // Pas de conversation existante
+      mockPrisma.conversation.findFirst.mockResolvedValue(null)
+      mockPrisma.conversation.create.mockResolvedValue({
+        id: CONV_1,
+        type: 'DIRECT',
+        name: null,
+        teamId: null,
+        avatarUrl: null,
+        companyId: null,
+        createdById: ADMIN_USER,
+        lastMessageAt: null,
+        lastMessagePreview: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        members: [
+          { userId: ADMIN_USER, user: { id: ADMIN_USER, name: 'Admin', image: null }, role: 'MEMBER' },
+          { userId: USER_2, user: { id: USER_2, name: 'User Two', image: null }, role: 'MEMBER' },
+        ],
+      })
+
+      const result = await createDirectConversation(USER_2)
+
+      expect(result.success).toBe(true)
+      expect(mockPrisma.conversation.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ companyId: null }),
+        })
+      )
+    })
+
+    it('SYSTEM_ADMIN contactant un autre admin (companyId null) conserve companyId null', async () => {
+      mockSession('SYSTEM_ADMIN', null, ADMIN_USER)
+      // targetUser est aussi un SYSTEM_ADMIN (companyId null)
+      mockPrisma.user.findUnique.mockResolvedValue({
+        id: USER_2,
+        name: 'Admin 2',
+        companyId: null,
+        company: null,
+      })
+      mockPrisma.conversation.findFirst.mockResolvedValue(null)
+      mockPrisma.conversation.create.mockResolvedValue({
+        id: CONV_1,
+        type: 'DIRECT',
+        name: null,
+        teamId: null,
+        avatarUrl: null,
+        companyId: null,
+        createdById: ADMIN_USER,
+        lastMessageAt: null,
+        lastMessagePreview: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        members: [
+          { userId: ADMIN_USER, user: { id: ADMIN_USER, name: 'Admin', image: null }, role: 'MEMBER' },
+          { userId: USER_2, user: { id: USER_2, name: 'Admin 2', image: null }, role: 'MEMBER' },
+        ],
+      })
+
+      const result = await createDirectConversation(USER_2)
+
+      expect(result.success).toBe(true)
+      expect(mockPrisma.conversation.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ companyId: null }),
+        })
+      )
+    })
+
+    it('non-admin ne peut pas créer une conv cross-tenant', async () => {
+      mockSession('MANAGER', COMP_1, USER_1)
+      // targetUser dans une autre company
+      mockPrisma.user.findUnique.mockResolvedValue({
+        id: USER_2,
+        name: 'User Two',
+        companyId: COMP_2,
+        company: { name: 'Entreprise B' },
+      })
+
+      const result = await createDirectConversation(USER_2)
+
+      expect(result.success).toBe(false)
+      if (!result.success) expect(result.error).toContain('entreprise')
+      expect(mockPrisma.conversation.create).not.toHaveBeenCalled()
+    })
+
+    it('non-admin peut créer une conv intra-company', async () => {
+      mockSession('MANAGER', COMP_1, USER_1)
+      mockPrisma.user.findUnique.mockResolvedValue({
+        id: USER_2,
+        name: 'User Two',
+        companyId: COMP_1,
+        company: { name: 'Entreprise A' },
+      })
+      mockPrisma.conversation.findFirst.mockResolvedValue(null)
+      mockPrisma.conversation.create.mockResolvedValue({
+        id: CONV_1,
+        type: 'DIRECT',
+        name: null,
+        teamId: null,
+        avatarUrl: null,
+        companyId: COMP_1,
+        createdById: USER_1,
+        lastMessageAt: null,
+        lastMessagePreview: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        members: [
+          { userId: USER_1, user: { id: USER_1, name: 'User One', image: null }, role: 'MEMBER' },
+          { userId: USER_2, user: { id: USER_2, name: 'User Two', image: null }, role: 'MEMBER' },
+        ],
+      })
+
+      const result = await createDirectConversation(USER_2)
+
+      expect(result.success).toBe(true)
+    })
+
+    it('self-conversation toujours bloquée (admin)', async () => {
+      mockSession('SYSTEM_ADMIN', null, ADMIN_USER)
+      mockPrisma.user.findUnique.mockResolvedValue({
+        id: ADMIN_USER,
+        name: 'Admin',
+        companyId: null,
+        company: null,
+      })
+
+      const result = await createDirectConversation(ADMIN_USER)
+
+      expect(result.success).toBe(false)
+      if (!result.success) expect(result.error).toContain('vous-même')
+      expect(mockPrisma.conversation.create).not.toHaveBeenCalled()
+    })
+
+    it('self-conversation toujours bloquée (non-admin)', async () => {
+      mockSession('EMPLOYEE', COMP_1, USER_1)
+      mockPrisma.user.findUnique.mockResolvedValue({
+        id: USER_1,
+        name: 'User One',
+        companyId: COMP_1,
+        company: { name: 'Entreprise A' },
+      })
+
+      const result = await createDirectConversation(USER_1)
+
+      expect(result.success).toBe(false)
+      if (!result.success) expect(result.error).toContain('vous-même')
+      expect(mockPrisma.conversation.create).not.toHaveBeenCalled()
+    })
+  })
+
+  // ------------------------------------------------------------------
+  // SP-520 — getConversations : bypass companyId pour SYSTEM_ADMIN
+  // ------------------------------------------------------------------
+
+  describe('getConversations — SP-520 admin bypass', () => {
+    it('SYSTEM_ADMIN appelle findMany sans filtre companyId', async () => {
+      mockSession('SYSTEM_ADMIN', null, ADMIN_USER)
+      mockPrisma.conversation.findMany.mockResolvedValue([])
+
+      await getConversations()
+
+      expect(mockPrisma.conversation.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.not.objectContaining({ companyId: expect.anything() }),
+        })
+      )
+    })
+
+    it('MANAGER appelle findMany avec filtre companyId', async () => {
+      mockSession('MANAGER', COMP_1, USER_1)
+      mockPrisma.conversation.findMany.mockResolvedValue([])
+
+      await getConversations()
+
+      expect(mockPrisma.conversation.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ companyId: COMP_1 }),
+        })
+      )
+    })
+  })
+
+  // ------------------------------------------------------------------
+  // SP-520 — searchAllUsersForAdmin : pagination, filtres, RBAC
+  // ------------------------------------------------------------------
+
+  describe('searchAllUsersForAdmin — SP-520', () => {
+    it('retourne une erreur pour un rôle non-admin', async () => {
+      mockSession('MANAGER', COMP_1, USER_1)
+
+      const result = await searchAllUsersForAdmin({ page: 1 })
+
+      expect(result.success).toBe(false)
+      if (!result.success) expect(result.error).toContain('refusé')
+    })
+
+    it('retourne la page 1 avec hasMore quand 11 résultats (take=11)', async () => {
+      mockSession('SYSTEM_ADMIN', null, ADMIN_USER)
+      const fakeUsers = Array.from({ length: 11 }, (_, i) => ({
+        id: `cl0000000000000000000usr${String(i).padStart(2, '0')}`,
+        name: `User ${i}`,
+        image: null,
+        role: 'EMPLOYEE',
+        companyId: COMP_1,
+        company: { name: 'Entreprise A' },
+      }))
+      mockPrisma.user.findMany.mockResolvedValue(fakeUsers)
+      mockPrisma.user.count.mockResolvedValue(25)
+
+      const result = await searchAllUsersForAdmin({ page: 1 })
+
+      expect(result.success).toBe(true)
+      if (result.success) {
+        expect(result.data.users.length).toBe(10)
+        expect(result.data.hasMore).toBe(true)
+        expect(result.data.total).toBe(25)
+      }
+    })
+
+    it('transmet le filtre search dans le where Prisma', async () => {
+      mockSession('SYSTEM_ADMIN', null, ADMIN_USER)
+      mockPrisma.user.findMany.mockResolvedValue([])
+      mockPrisma.user.count.mockResolvedValue(0)
+
+      await searchAllUsersForAdmin({ search: 'Martin', page: 1 })
+
+      const callArgs = mockPrisma.user.findMany.mock.calls[0][0] as any
+      expect(callArgs.where.OR).toBeDefined()
+      expect(JSON.stringify(callArgs.where.OR)).toContain('Martin')
+    })
+
+    it('transmet le filtre companyId dans le where Prisma', async () => {
+      mockSession('SYSTEM_ADMIN', null, ADMIN_USER)
+      mockPrisma.user.findMany.mockResolvedValue([])
+      mockPrisma.user.count.mockResolvedValue(0)
+
+      await searchAllUsersForAdmin({ companyId: COMP_1, page: 1 })
+
+      const callArgs = mockPrisma.user.findMany.mock.calls[0][0] as any
+      expect(callArgs.where.companyId).toBe(COMP_1)
+    })
+
+    it("exclut l'admin courant des résultats", async () => {
+      mockSession('SYSTEM_ADMIN', null, ADMIN_USER)
+      mockPrisma.user.findMany.mockResolvedValue([])
+      mockPrisma.user.count.mockResolvedValue(0)
+
+      await searchAllUsersForAdmin({ page: 1 })
+
+      const callArgs = mockPrisma.user.findMany.mock.calls[0][0] as any
+      expect(callArgs.where.id).toEqual({ not: ADMIN_USER })
     })
   })
 })
