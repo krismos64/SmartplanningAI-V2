@@ -62,7 +62,7 @@ export interface ConversationListItem {
 }
 
 export interface ConversationWithDetails extends ConversationListItem {
-  companyId: string
+  companyId: string | null
   createdById: string | null
 }
 
