@@ -1,9 +1,9 @@
 # 🗄️ Architecture Base de Données - SmartPlanning V2
 
-**Dernière mise à jour** : 3 avril 2026
+**Dernière mise à jour** : 19 avril 2026
 **ORM** : Prisma 6.18.0
 **Base** : PostgreSQL 16
-**Migrations** : 22 migrations appliquées
+**Migrations** : 23 migrations appliquées
 
 ---
 
@@ -661,7 +661,7 @@ Employee = Métier RH (job, équipe, contrat, compétences)
 - type: ConversationType           // DIRECT, TEAM, GROUP
 - name: String?                    // Null pour DIRECT, nom d'équipe/groupe sinon
 - teamId: String? (unique)         // FK vers Team (1:1, type TEAM uniquement)
-- companyId: String
+- companyId: String?               // Null pour les conversations SYSTEM_ADMIN cross-tenant (SP-513)
 - lastMessageAt: DateTime?         // Dénormalisé pour tri optimisé de la liste
 - lastMessagePreview: String?      // "Pierre: Bonjour à tou..." (max 200 chars)
 - createdById: String?             // Null pour TEAM (créé automatiquement)
@@ -713,7 +713,7 @@ Employee = Métier RH (job, équipe, contrat, compétences)
 - content: String? (Text)          // Texte du message
 - attachments: Json?               // [{url, name, mimeType, size}]
 - isDeleted: Boolean               // Soft delete ("Ce message a été supprimé")
-- companyId: String                // Defense-in-depth multi-tenant
+- companyId: String?               // Nullable : hérité de la conversation admin cross-tenant (SP-513)
 - createdAt, updatedAt
 ```
 
@@ -1139,7 +1139,7 @@ enum ConversationMemberRole {
 | Tables principales    | 20     |
 | Tables NextAuth       | 4      |
 | Enums                 | 16     |
-| Migrations appliquées | 19     |
+| Migrations appliquées | 23     |
 | Index                 | 55+    |
 
 ---
@@ -1148,6 +1148,7 @@ enum ConversationMemberRole {
 
 | Date       | Description                                                              |
 | ---------- | ------------------------------------------------------------------------ |
+| 19/04/2026 | Sprint 13 — `companyId` nullable sur Conversation et Message (SP-513). Messagerie SYSTEM_ADMIN cross-tenant. 22→23 migrations |
 | 03/04/2026 | Ajout Messagerie : Conversation, ConversationMember, Message (SP-500) + avatarUrl + isArchived. AuditLog documenté. 17→20 tables, 12→16 enums, 16→19 migrations |
 | 10/02/2026 | Ajout EmailLog (SP-368), correction compteur 16→17 tables, mise à jour diagramme et relations Company |
 | 10/02/2026 | Correction Subscription per-seat, Payment typé, SubscriptionStatus +INCOMPLETE, diagramme Subscription→Payment |
