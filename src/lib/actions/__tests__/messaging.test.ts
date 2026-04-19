@@ -613,7 +613,7 @@ describe('Messaging Server Actions', () => {
 
       await searchAllUsersForAdmin({ search: 'Martin', page: 1 })
 
-      const callArgs = mockPrisma.user.findMany.mock.calls[0][0] as any
+      const callArgs = (mockPrisma.user.findMany.mock.calls as any[][])[0]?.[0] as any
       expect(callArgs.where.OR).toBeDefined()
       expect(JSON.stringify(callArgs.where.OR)).toContain('Martin')
     })
@@ -625,7 +625,7 @@ describe('Messaging Server Actions', () => {
 
       await searchAllUsersForAdmin({ companyId: COMP_1, page: 1 })
 
-      const callArgs = mockPrisma.user.findMany.mock.calls[0][0] as any
+      const callArgs = (mockPrisma.user.findMany.mock.calls as any[][])[0]?.[0] as any
       expect(callArgs.where.companyId).toBe(COMP_1)
     })
 
@@ -636,7 +636,7 @@ describe('Messaging Server Actions', () => {
 
       await searchAllUsersForAdmin({ page: 1 })
 
-      const callArgs = mockPrisma.user.findMany.mock.calls[0][0] as any
+      const callArgs = (mockPrisma.user.findMany.mock.calls as any[][])[0]?.[0] as any
       expect(callArgs.where.id).toEqual({ not: ADMIN_USER })
     })
   })
