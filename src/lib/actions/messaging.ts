@@ -46,11 +46,14 @@ import type {
 // Helpers internes
 // ============================================================================
 
-/** Vérifie que l'utilisateur est membre d'une conversation */
+/** Vérifie que l'utilisateur est membre d'une conversation
+ *  SYSTEM_ADMIN passe toujours (accès cross-tenant) */
 async function checkMembership(
   conversationId: string,
-  userId: string
+  userId: string,
+  role?: string
 ): Promise<boolean> {
+  if (role === 'SYSTEM_ADMIN') return true
   const member = await prisma.conversationMember.findUnique({
     where: { conversationId_userId: { conversationId, userId } },
   })
@@ -227,9 +230,10 @@ export async function getMessages(
 
   const effective = await getEffectiveSessionData(session)
   const userId = effective.userId
+  const role = effective.role
 
-  // Vérifier membership
-  const isMember = await checkMembership(conversationId, userId)
+  // Vérifier membership (SYSTEM_ADMIN bypass)
+  const isMember = await checkMembership(conversationId, userId, role)
   if (!isMember) {
     return {
       success: false,
@@ -291,11 +295,12 @@ export async function sendMessage(input: {
     return { success: false, error: 'Vous devez être connecté' }
   }
 
-  const impersonationBlock = await assertNotImpersonating()
+  const impersonationBlock = await assertNotImpersonating(session.user.isImpersonating)
   if (impersonationBlock) return impersonationBlock
 
   const effective = await getEffectiveSessionData(session)
   const userId = effective.userId
+  const role = effective.role
 
   // Validation Zod
   const validation = validateData(sendMessageSchema, input)
@@ -305,8 +310,8 @@ export async function sendMessage(input: {
 
   const { conversationId, content, attachments } = validation.data
 
-  // Vérifier membership
-  const isMember = await checkMembership(conversationId, userId)
+  // Vérifier membership (SYSTEM_ADMIN bypass)
+  const isMember = await checkMembership(conversationId, userId, role)
   if (!isMember) {
     return {
       success: false,
@@ -420,7 +425,7 @@ export async function createDirectConversation(
     return { success: false, error: 'Vous devez être connecté' }
   }
 
-  const impersonationBlock = await assertNotImpersonating()
+  const impersonationBlock = await assertNotImpersonating(session.user.isImpersonating)
   if (impersonationBlock) return impersonationBlock
 
   const effective = await getEffectiveSessionData(session)
@@ -600,7 +605,7 @@ export async function createGroupConversation(input: {
     return { success: false, error: 'Vous devez être connecté' }
   }
 
-  const impersonationBlock = await assertNotImpersonating()
+  const impersonationBlock = await assertNotImpersonating(session.user.isImpersonating)
   if (impersonationBlock) return impersonationBlock
 
   const effective = await getEffectiveSessionData(session)
@@ -837,7 +842,7 @@ export async function addGroupMember(
     return { success: false, error: 'Vous devez être connecté' }
   }
 
-  const impersonationBlock = await assertNotImpersonating()
+  const impersonationBlock = await assertNotImpersonating(session.user.isImpersonating)
   if (impersonationBlock) return impersonationBlock
 
   const effective = await getEffectiveSessionData(session)
@@ -967,7 +972,7 @@ export async function removeGroupMember(
     return { success: false, error: 'Vous devez être connecté' }
   }
 
-  const impersonationBlock = await assertNotImpersonating()
+  const impersonationBlock = await assertNotImpersonating(session.user.isImpersonating)
   if (impersonationBlock) return impersonationBlock
 
   const effective = await getEffectiveSessionData(session)
@@ -1196,7 +1201,7 @@ export async function renameGroupConversation(
     return { success: false, error: 'Vous devez être connecté' }
   }
 
-  const impersonationBlock = await assertNotImpersonating()
+  const impersonationBlock = await assertNotImpersonating(session.user.isImpersonating)
   if (impersonationBlock) return impersonationBlock
 
   const effective = await getEffectiveSessionData(session)
