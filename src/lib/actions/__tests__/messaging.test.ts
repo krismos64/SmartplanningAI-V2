@@ -613,9 +613,10 @@ describe('Messaging Server Actions', () => {
 
       await searchAllUsersForAdmin({ search: 'Martin', page: 1 })
 
-      const callArgs = (mockPrisma.user.findMany.mock.calls as any[][])[0]?.[0] as any
-      expect(callArgs.where.OR).toBeDefined()
-      expect(JSON.stringify(callArgs.where.OR)).toContain('Martin')
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const callArgs = mockPrisma.user.findMany.mock.calls[0]?.[0] as unknown as Record<string, any>
+      expect((callArgs.where as Record<string, unknown>).OR).toBeDefined()
+      expect(JSON.stringify((callArgs.where as Record<string, unknown>).OR)).toContain('Martin')
     })
 
     it('transmet le filtre companyId dans le where Prisma', async () => {
@@ -625,8 +626,9 @@ describe('Messaging Server Actions', () => {
 
       await searchAllUsersForAdmin({ companyId: COMP_1, page: 1 })
 
-      const callArgs = (mockPrisma.user.findMany.mock.calls as any[][])[0]?.[0] as any
-      expect(callArgs.where.companyId).toBe(COMP_1)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const callArgs = mockPrisma.user.findMany.mock.calls[0]?.[0] as unknown as Record<string, any>
+      expect((callArgs.where as Record<string, unknown>).companyId).toBe(COMP_1)
     })
 
     it("exclut l'admin courant des résultats", async () => {
@@ -636,8 +638,9 @@ describe('Messaging Server Actions', () => {
 
       await searchAllUsersForAdmin({ page: 1 })
 
-      const callArgs = (mockPrisma.user.findMany.mock.calls as any[][])[0]?.[0] as any
-      expect(callArgs.where.id).toEqual({ not: ADMIN_USER })
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const callArgs = mockPrisma.user.findMany.mock.calls[0]?.[0] as unknown as Record<string, any>
+      expect((callArgs.where as Record<string, unknown>).id).toEqual({ not: ADMIN_USER })
     })
   })
 })
