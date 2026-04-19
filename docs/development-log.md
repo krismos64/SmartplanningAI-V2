@@ -582,7 +582,7 @@ Refonte du contenu marketing pour refléter les features livrées depuis janvier
 
 ### Couverture Vitest (157 fichiers — 2 785 tests)
 
-> Rationalisation mars 2026 : suppression de tous les tests cosmétiques (rendu pur, attributs SVG, props passthrough). Nettoyage code mort 22/03/2026 : suppression tests `error-logger` et `with-loading` (fichiers sources supprimés). Sprint 13 avril 2026 : +2 fichiers, +18 tests messagerie admin cross-tenant. Chaque test restant est justifiable en soutenance CDA.
+> Rationalisation mars 2026 : suppression de tous les tests cosmétiques (rendu pur, attributs SVG, props passthrough). Nettoyage code mort 22/03/2026 : suppression tests `error-logger` et `with-loading` (fichiers sources supprimés). Sprint 13 avril 2026 : +2 fichiers, +18 tests messagerie admin cross-tenant. Post-Sprint 13 : +1 test SP-524 (visibility destinataire cross-tenant). Chaque test restant est justifiable en soutenance CDA.
 
 | Catégorie | Tests |
 |-----------|-------|
@@ -1166,4 +1166,53 @@ Chaque conversation admin cross-tenant créée déclenche un `logAuditAction` fi
 
 ---
 
-*Dernière mise à jour : 19 avril 2026 (Sprint 13 — messagerie admin cross-tenant SP-512 à SP-520)*
+## Post-Sprint 13 — Hotfixes & CI/CD (19 avril 2026)
+
+### SP-523 — Fix pipeline CI/CD : ordre migrate → deploy
+
+**Problème identifié** : l'ancien ordre `deploy → migrate` créait une fenêtre où le nouveau code tournait avec l'ancien schéma. Inoffensif pour les migrations `DROP NOT NULL`, mais risque de crash immédiat si une future migration ajoutait une colonne `NOT NULL` sans valeur par défaut.
+
+**Fix** : inversion de l'ordre dans `.github/workflows/cd.yml` — le job `migrate` s'exécute désormais avant `deploy`.
+
+**Point technique clé** : `prisma migrate deploy` ne peut pas tourner via `docker compose exec` sur l'ancien conteneur (les nouveaux fichiers `prisma/migrations/` ne s'y trouvent pas). Solution : `docker run --rm` avec la nouvelle image en conteneur éphémère, accès DB via `--network host`, pendant que l'ancienne app continue de servir les requêtes.
+
+Condition du job `deploy` :
+```yaml
+if: always() && needs.build-and-push.result == 'success' && (needs.migrate.result == 'success' || needs.migrate.result == 'skipped')
+```
+Si `migrate` échoue → `deploy` bloqué → production jamais mise à jour avec un schéma cassé. Cas `workflow_dispatch` manuel : `migrate` skippé, `deploy` s'exécute quand même.
+
+Merge commit `190b175`.
+
+---
+
+### SP-524 — Hotfix production : destinataire non-admin ne voyait pas la conversation admin
+
+**Symptôme** : le DIRECTOR recevait la notification SSE (badge sur l'onglet Messages) mais la conversation était absente de sa liste — message invisible.
+
+**Cause** : `getConversations()` filtrait strictement `WHERE companyId = 'company-A'`. Les conversations cross-tenant admin ont `companyId: null` → elles ne passaient pas ce filtre.
+
+**Fix** dans `src/lib/actions/messaging.ts` :
+
+```typescript
+// Avant
+{ companyId: companyId!, members: { some: { userId, isArchived: false } } }
+
+// Après — inclut les conversations admin cross-tenant (companyId: null)
+{
+  OR: [{ companyId: companyId! }, { companyId: null }],
+  members: { some: { userId, isArchived: false } },
+}
+```
+
+**Test ajouté** dans `messaging.test.ts` (describe `getConversations — SP-520`) :
+- `non-admin recipient sees admin cross-tenant conversation in their list` — vérifie que le `WHERE` passé à Prisma contient `OR: [{ companyId }, { companyId: null }]`
+- Test existant `MANAGER appelle findMany avec filtre companyId` mis à jour pour refléter le nouvel OR
+
+**Résultat** : 157 fichiers / **2 786 tests**, 0 régression, TypeScript OK.
+
+Merge commit `f17821e`.
+
+---
+
+*Dernière mise à jour : 19 avril 2026 (Post-Sprint 13 — SP-523 fix CI/CD + SP-524 hotfix visibility)*
