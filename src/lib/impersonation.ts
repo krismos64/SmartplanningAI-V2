@@ -119,12 +119,18 @@ export async function getEffectiveSessionData(session: {
   }
 
   // Cas 2 : JWT pas encore mis à jour, fallback cookie
-  const ctx = await getImpersonationContextFromHeaders()
-  if (ctx) {
-    return {
-      userId: ctx.targetUserId,
-      role: ctx.targetRole,
-      companyId: ctx.targetCompanyId,
+  // Guard : n'appliquer le cookie que si le JWT SYSTEM_ADMIN n'a pas encore
+  // reflété l'arrêt d'impersonation (race condition session.update()).
+  // Si isImpersonating est explicitement false, le cookie est résiduel → ignorer.
+  const jwtSaysNotImpersonating = session.user.isImpersonating === false
+  if (!jwtSaysNotImpersonating) {
+    const ctx = await getImpersonationContextFromHeaders()
+    if (ctx) {
+      return {
+        userId: ctx.targetUserId,
+        role: ctx.targetRole,
+        companyId: ctx.targetCompanyId,
+      }
     }
   }
 
