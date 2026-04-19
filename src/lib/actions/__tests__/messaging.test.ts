@@ -555,17 +555,40 @@ describe('Messaging Server Actions', () => {
       )
     })
 
-    it('MANAGER appelle findMany avec filtre companyId', async () => {
+    it('MANAGER appelle findMany avec OR [companyId, null] pour inclure les convs admin', async () => {
       mockSession('MANAGER', COMP_1, USER_1)
       mockPrisma.conversation.findMany.mockResolvedValue([])
 
       await getConversations()
 
-      expect(mockPrisma.conversation.findMany).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: expect.objectContaining({ companyId: COMP_1 }),
-        })
-      )
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const callArgs = mockPrisma.conversation.findMany.mock.calls[0]?.[0] as unknown as Record<string, any>
+      const where = callArgs.where as Record<string, unknown>
+      const orClause = where.OR as Array<Record<string, unknown>>
+      expect(Array.isArray(orClause)).toBe(true)
+      expect(orClause).toContainEqual({ companyId: COMP_1 })
+      expect(orClause).toContainEqual({ companyId: null })
+    })
+
+    it('non-admin recipient sees admin cross-tenant conversation in their list', async () => {
+      mockSession('DIRECTOR', COMP_1, USER_1)
+      mockPrisma.conversation.findMany.mockResolvedValue([])
+
+      await getConversations()
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const callArgs = mockPrisma.conversation.findMany.mock.calls[0]?.[0] as unknown as Record<string, any>
+      const where = callArgs.where as Record<string, unknown>
+
+      // Le where doit contenir OR: [{ companyId: COMP_1 }, { companyId: null }]
+      // pour inclure les conversations cross-tenant admin (companyId: null)
+      const orClause = where.OR as Array<Record<string, unknown>>
+      expect(Array.isArray(orClause)).toBe(true)
+      expect(orClause).toContainEqual({ companyId: COMP_1 })
+      expect(orClause).toContainEqual({ companyId: null })
+
+      // ET le filtre membres doit toujours être présent
+      expect(where.members).toBeDefined()
     })
   })
 

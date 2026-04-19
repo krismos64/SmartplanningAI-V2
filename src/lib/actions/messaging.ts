@@ -126,10 +126,16 @@ export async function getConversations(filters?: {
       ? conversationFiltersSchema.safeParse(filters)
       : null
 
-    // SYSTEM_ADMIN voit toutes ses conversations sans filtre companyId
+    // SYSTEM_ADMIN voit toutes ses conversations sans filtre companyId.
+    // Non-admin : ses conversations métier (companyId) ET les conversations
+    // cross-tenant initiées par un admin (companyId: null) dont il est membre.
+    const memberFilter = { members: { some: { userId, isArchived: false } } }
     const whereClause = isAdmin
-      ? { members: { some: { userId, isArchived: false } } }
-      : { companyId: companyId!, members: { some: { userId, isArchived: false } } }
+      ? memberFilter
+      : {
+          OR: [{ companyId: companyId! }, { companyId: null }],
+          ...memberFilter,
+        }
 
     const conversations = await prisma.conversation.findMany({
       where: {
