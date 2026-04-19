@@ -15,6 +15,7 @@ Historique détaillé du développement de SmartPlanning V2, organisé par phase
 - [Phases de développement](#phases-de-développement)
 - [Import CSV / Excel en masse](#import-csv--excel-en-masse-epic-sp-495--avril-2026)
 - [Messagerie interne](#messagerie-interne-epic-sp-500--avril-2026)
+- [Messagerie admin cross-tenant](#messagerie-admin-cross-tenant-sprint-13--19-avril-2026)
 - [Modèle de données détaillé](#modèle-de-données-détaillé)
 - [Tests détaillés](#tests-détaillés)
 - [SEO & Optimisation LLMs](#seo--optimisation-llms)
@@ -579,9 +580,9 @@ Refonte du contenu marketing pour refléter les features livrées depuis janvier
 
 ## Tests détaillés
 
-### Couverture Vitest (154 fichiers — 2 746 tests)
+### Couverture Vitest (157 fichiers — 2 785 tests)
 
-> Rationalisation mars 2026 : suppression de tous les tests cosmétiques (rendu pur, attributs SVG, props passthrough). Nettoyage code mort 22/03/2026 : suppression tests `error-logger` et `with-loading` (fichiers sources supprimés). Chaque test restant est justifiable en soutenance CDA.
+> Rationalisation mars 2026 : suppression de tous les tests cosmétiques (rendu pur, attributs SVG, props passthrough). Nettoyage code mort 22/03/2026 : suppression tests `error-logger` et `with-loading` (fichiers sources supprimés). Sprint 13 avril 2026 : +2 fichiers, +18 tests messagerie admin cross-tenant. Chaque test restant est justifiable en soutenance CDA.
 
 | Catégorie | Tests |
 |-----------|-------|
@@ -1079,4 +1080,90 @@ Tests desktop sur Chromium. Tous les tests E2E couvrent des workflows critiques.
 
 ---
 
-*Derniere mise a jour : 3 avril 2026 (admin groupe, fix liste conversations)*
+## Messagerie Admin Cross-Tenant (Sprint 13 — 19 avril 2026)
+
+### Epic SP-512 : SYSTEM_ADMIN peut contacter n'importe quel utilisateur
+
+**Objectif** : Permettre au SYSTEM_ADMIN d'envoyer un message direct à tout utilisateur de l'application, quelle que soit son entreprise, sans casser l'isolation multi-tenant des autres rôles.
+
+**Tickets** : SP-513 (migration Prisma), SP-514 (bypass admin Server Actions), SP-515 (types et validations), SP-517 (canAccessCompanyEntity nullable), SP-518 (dialog admin), SP-519 (audit trail cross-tenant), SP-520 (tests)
+
+### SP-513 — Migration Prisma : companyId nullable
+
+- `Conversation.companyId` et `Message.companyId` passent de `String` à `String?`
+- Migration non-destructive : `ALTER COLUMN DROP NOT NULL` uniquement
+- Conversations admin cross-tenant créées avec `companyId: null` pour ne pas polluer les espaces multi-tenant
+- Fichier : `prisma/migrations/20260419155352_.../migration.sql`
+
+### SP-514 — Bypass SYSTEM_ADMIN dans les Server Actions messagerie
+
+**`checkMembership` bypass** : `if (role === 'SYSTEM_ADMIN') return true` — l'admin peut toujours lire et envoyer des messages même si la conversation a été créée dans une session antérieure avec un userId incorrect (résilience).
+
+**`assertNotImpersonating` guard amélioré** : accepte désormais `sessionIsImpersonating?: boolean | null`. Si le JWT indique explicitement `isImpersonating = false`, le cookie résiduel `sp-impersonation` est ignoré — empêche le blocage silencieux des mutations admin après arrêt d'impersonation.
+
+**`getEffectiveSessionData` guard** : `jwtSaysNotImpersonating = session.user.isImpersonating === false` — si `false` (admin normal), le cookie n'est jamais consulté.
+
+**`createDirectConversation`** enrichi :
+- Guard cross-tenant (2b) : autorisé pour SYSTEM_ADMIN, bloqué pour les autres rôles
+- Recherche conversation existante (2c) : sans filtre `companyId` pour l'admin
+- `convCompanyId = null` si l'admin contacte une autre entreprise (2d)
+- Self-conversation toujours bloquée (2e)
+
+**`getConversations`** : whereClause sans `companyId` pour SYSTEM_ADMIN (voit toutes ses conversations cross-tenant).
+
+**Log diagnostic** : `console.error` dans le rollback silencieux de `useMessages` pour tracer les erreurs invisibles.
+
+### SP-515 / SP-517 — Types, validations et canAccessCompanyEntity
+
+**`src/types/messaging.ts`** : ajout de `UserForMessagingAdmin` (id, name, image, role, companyId, companyName) et `SearchUsersForAdminResult` (users, total, hasMore).
+
+**`src/lib/validations/messaging.ts`** : ajout de `searchUsersForAdminSchema` avec filtres composables (search, companyId, role UserRole, page).
+
+**`canAccessCompanyEntity`** dans `crud-helpers.ts` : signature mise à jour pour accepter `string | null` sur les deux paramètres. Règle : `userCompanyId = null` → SYSTEM_ADMIN → `true`. `entityCompanyId = null` → conversation admin → `false` pour les non-admins.
+
+### SP-518 — Dialog admin NewConversationDialog
+
+Refonte complète du `NewConversationDialog` avec deux modes :
+
+**Mode admin** (détecté via `session.user.role === 'SYSTEM_ADMIN'`) :
+- Select entreprise (toutes les entreprises via `getCompaniesForAdmin()`)
+- Select rôle (DIRECTOR, MANAGER, EMPLOYEE)
+- Input recherche debounced 300ms (useRef + setTimeout, sans hook externe)
+- Pagination « Charger plus » avec compteur restants
+- Badge rôle sur chaque ligne de résultat
+- `sm:max-w-lg` au lieu de `sm:max-w-md`
+
+**Mode standard** : UI inchangée — aucune régression pour les rôles non-admin.
+
+**`searchAllUsersForAdmin`** : Server Action RBAC strict (SYSTEM_ADMIN uniquement), pagination offset-based PAGE_SIZE=10, `take+1` pour hasMore, `Promise.all([findMany, count])`.
+
+**`getCompaniesForAdmin`** : Server Action RBAC strict retournant `{id, name}[]`.
+
+### SP-519 — Audit trail cross-tenant
+
+Chaque conversation admin cross-tenant créée déclenche un `logAuditAction` fire-and-forget avec `details.crossTenant: true`, `targetUserId`, `targetCompanyId`, `targetCompanyName`. Tracé uniquement quand l'admin contacte un utilisateur d'une autre entreprise (pas les conversations entre admins).
+
+### SP-520 — Tests
+
+**`messaging.test.ts`** — 13 nouveaux tests en 3 blocs :
+- `createDirectConversation` cross-tenant : SYSTEM_ADMIN crée avec `companyId: null`, admin contactant admin conserve null, non-admin bloqué cross-tenant, intra-company autorisé, self-conversation bloquée (admin et non-admin)
+- `getConversations` bypass : SYSTEM_ADMIN sans filtre companyId, MANAGER avec filtre
+- `searchAllUsersForAdmin` : RBAC refusé pour non-admin, hasMore sur 11 résultats, transmission filtres search/companyId, exclusion admin courant
+
+**`crud-helpers-company-access.test.ts`** — nouveau fichier, 5 tests couvrant les 5 cas de `canAccessCompanyEntity` (null/null, null/string, string/null, match, mismatch).
+
+**Fix ESLint CI** : remplacement des casts `as any[][]` par `as unknown as Record<string, any>` + `eslint-disable` ciblés pour passer la vérification `@typescript-eslint/no-unnecessary-type-assertion`.
+
+### Nettoyage DB — conversation corrompue
+
+1 conversation `DIRECT / companyId: null` créée avant les fixes (membres incorrects : userId de l'utilisateur impersonné au lieu de l'admin réel) supprimée via script temporaire `cleanup-corrupted-admin-conversations.ts`.
+
+### Merge Sprint 13
+
+6 branches feature mergées sur main en `--no-ff` : `feat(sprint-13): messagerie admin cross-tenant — SYSTEM_ADMIN peut contacter n'importe quel utilisateur (SP-512)` — commit `65feece`.
+
+**Total tests après Sprint 13 : 157 fichiers / 2 785 tests Vitest, 0 régression, TypeScript OK, CI vert.**
+
+---
+
+*Dernière mise à jour : 19 avril 2026 (Sprint 13 — messagerie admin cross-tenant SP-512 à SP-520)*
