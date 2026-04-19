@@ -137,7 +137,7 @@ jobs:
       # Le cache accélère les builds suivants (~50% plus rapide)
       - name: Build and push Docker image
         id: build
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: ./docker/Dockerfile
@@ -211,7 +211,7 @@ jobs:
           # --network host permet d'atteindre PostgreSQL sur le réseau Docker Compose.
           DATABASE_URL=$(grep -oP 'DATABASE_URL=\K.*' .env)
           docker run --rm \
-            --network host \
+            --network smartplanning-network \
             -e DATABASE_URL="$DATABASE_URL" \
             ghcr.io/krismos64/smartplanningai-v2:latest \
             npx prisma migrate deploy
