@@ -1351,3 +1351,34 @@ export async function searchAllUsersForAdmin(
     return { success: false, error: handlePrismaError(error).error }
   }
 }
+
+/**
+ * Liste toutes les entreprises pour le filtre admin dans NewConversationDialog
+ *
+ * @ticket SP-518
+ */
+export async function getCompaniesForAdmin(): Promise<
+  CrudActionResult<{ id: string; name: string }[]>
+> {
+  const session = await auth()
+  if (!session?.user?.id) {
+    return { success: false, error: 'Vous devez être connecté' }
+  }
+
+  const effective = await getEffectiveSessionData(session)
+
+  if (effective.role !== 'SYSTEM_ADMIN') {
+    return { success: false, error: 'Accès refusé' }
+  }
+
+  try {
+    const companies = await prisma.company.findMany({
+      select: { id: true, name: true },
+      orderBy: { name: 'asc' },
+    })
+    return { success: true, data: companies }
+  } catch (error) {
+    console.error('[getCompaniesForAdmin] Error:', error)
+    return { success: false, error: handlePrismaError(error).error }
+  }
+}
