@@ -206,16 +206,13 @@ jobs:
           docker pull --quiet ghcr.io/krismos64/smartplanningai-v2:latest
 
           echo "🗄️ Exécution des migrations Prisma (conteneur éphémère)..."
-          # On utilise la nouvelle image via docker run --rm (pas exec sur l'ancien conteneur)
-          # car les fichiers prisma/migrations/ sont dans la nouvelle image, pas l'ancienne.
-          # --network host permet d'atteindre PostgreSQL sur le réseau Docker Compose.
-          DATABASE_URL=$(grep -oP 'DATABASE_URL=\K.*' .env)
-          # Récupère le réseau Docker du conteneur postgres pour y joindre
-          # le conteneur éphémère — évite de hardcoder le nom préfixé par Compose.
+          # --env-file passe toutes les variables du .env sans parser manuellement DATABASE_URL
+          # (le grep précédent échouait sur les URLs avec caractères spéciaux).
+          # --network récupéré depuis le conteneur postgres running pour résoudre l'hostname DB.
           DB_NETWORK=$(docker inspect smartplanning-postgres --format '{{range $k, $v := .NetworkSettings.Networks}}{{$k}}{{end}}')
           docker run --rm \
             --network "$DB_NETWORK" \
-            -e DATABASE_URL="$DATABASE_URL" \
+            --env-file .env \
             ghcr.io/krismos64/smartplanningai-v2:latest \
             npx prisma migrate deploy
           echo "✅ Migrations terminées !"
