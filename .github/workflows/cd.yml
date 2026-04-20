@@ -206,13 +206,13 @@ jobs:
           docker pull --quiet ghcr.io/krismos64/smartplanningai-v2:latest
 
           echo "🗄️ Exécution des migrations Prisma (conteneur éphémère)..."
-          # --env-file passe toutes les variables du .env sans parser manuellement DATABASE_URL
-          # (le grep précédent échouait sur les URLs avec caractères spéciaux).
-          # --network récupéré depuis le conteneur postgres running pour résoudre l'hostname DB.
+          # Lire DATABASE_URL depuis le conteneur app running (environnement déjà résolu,
+          # sans guillemets ni commentaires — plus fiable que parser le .env brut).
           DB_NETWORK=$(docker inspect smartplanning-postgres --format '{{range $k, $v := .NetworkSettings.Networks}}{{$k}}{{end}}')
+          DATABASE_URL=$(docker exec smartplanning-app printenv DATABASE_URL)
           docker run --rm \
             --network "$DB_NETWORK" \
-            --env-file .env \
+            -e DATABASE_URL="$DATABASE_URL" \
             ghcr.io/krismos64/smartplanningai-v2:latest \
             npx prisma migrate deploy
           echo "✅ Migrations terminées !"
