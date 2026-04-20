@@ -210,8 +210,11 @@ jobs:
           # car les fichiers prisma/migrations/ sont dans la nouvelle image, pas l'ancienne.
           # --network host permet d'atteindre PostgreSQL sur le réseau Docker Compose.
           DATABASE_URL=$(grep -oP 'DATABASE_URL=\K.*' .env)
+          # Récupère le réseau Docker du conteneur postgres pour y joindre
+          # le conteneur éphémère — évite de hardcoder le nom préfixé par Compose.
+          DB_NETWORK=$(docker inspect smartplanning-postgres --format '{{range $k, $v := .NetworkSettings.Networks}}{{$k}}{{end}}')
           docker run --rm \
-            --network smartplanning-network \
+            --network "$DB_NETWORK" \
             -e DATABASE_URL="$DATABASE_URL" \
             ghcr.io/krismos64/smartplanningai-v2:latest \
             npx prisma migrate deploy
