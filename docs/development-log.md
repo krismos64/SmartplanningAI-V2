@@ -1215,4 +1215,22 @@ Merge commit `f17821e`.
 
 ---
 
-*Dernière mise à jour : 19 avril 2026 (Post-Sprint 13 — SP-523 fix CI/CD + SP-524 hotfix visibility)*
+### Corrections pipeline CI/CD — 20 avril 2026
+
+Trois itérations de correction du job `migrate` après l'inversion d'ordre (SP-523) :
+
+**Problème 1 — exit code 1** : `grep -oP 'DATABASE_URL=\K.*'` tronquait l'URL à cause des caractères spéciaux → Prisma recevait une URL sans `postgresql://`.
+
+**Problème 2 — exit code 125** : `--network smartplanning-network` hardcodé ne correspondait pas au nom réel créé par Docker Compose (`smartplanning_smartplanning-network`) → Docker refusait de démarrer le conteneur.
+
+**Problème 3 — exit code 1 persistant** : `--env-file .env` passait les guillemets littéraux du fichier (`"postgresql://..."`) → Prisma recevait la valeur avec les guillemets.
+
+**Fix final** : `DATABASE_URL=$(docker exec smartplanning-app printenv DATABASE_URL)` — lit la valeur directement depuis l'environnement du conteneur app running, propre, sans guillemets, sans parsing. Réseau résolu dynamiquement via `docker inspect smartplanning-postgres`.
+
+**CD vert confirmé** — build `SO5SOD`, digest `sha256:f7804b...`, déployé sur https://smartplanning.fr.
+
+**VPS** — deux variables ajoutées au `.env` prod : `NEXT_PUBLIC_APP_URL` et `IMAGE_TAG`. Certificats SSL valides : `smartplanning.fr` jusqu'au 05/06/2026, `analytics.smartplanning.fr` jusqu'au 15/06/2026.
+
+---
+
+*Dernière mise à jour : 20 avril 2026 (corrections pipeline CI/CD migrate + vérification VPS)*
