@@ -98,6 +98,15 @@ export const navigationItems: NavigationItem[] = [
     roles: ['SYSTEM_ADMIN'],
     keywords: ['admin', 'saas', 'tableau de bord'],
   },
+  // Messages — 2e position pour tous les rôles (usage quotidien)
+  {
+    id: 'messages',
+    label: 'Messages',
+    icon: MessageSquare,
+    href: '/app/dashboard/messages',
+    roles: 'ALL',
+    keywords: ['messages', 'chat', 'conversation', 'messagerie', 'discussion'],
+  },
   {
     id: 'companies',
     label: 'Entreprises',
@@ -201,14 +210,6 @@ export const navigationItems: NavigationItem[] = [
     roles: ['DIRECTOR', 'MANAGER', 'EMPLOYEE'],
     keywords: ['incident', 'problème', 'alerte', 'issue', 'note'],
     shortcut: 'G I',
-  },
-  {
-    id: 'messages',
-    label: 'Messages',
-    icon: MessageSquare,
-    href: '/app/dashboard/messages',
-    roles: 'ALL',
-    keywords: ['messages', 'chat', 'conversation', 'messagerie', 'discussion'],
   },
   {
     id: 'billing',
