@@ -35,6 +35,9 @@ prisma/*.db
 prisma/*.db-journal
 prisma/migrations/*.sql
 
+# Local seeds (peuvent contenir des hashs bcrypt / données sensibles)
+scripts/seed-*.sql
+
 # ============================================
 # Logs & Debug
 # ============================================
