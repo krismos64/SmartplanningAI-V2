@@ -15,7 +15,7 @@
  */
 
 import { PRICING, INCLUDED_FEATURES } from '@/lib/config/pricing'
-import { faqs } from './(landing)/data'
+import { faqs, roleDemos } from './(landing)/data'
 
 const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://smartplanning.fr'
 
@@ -95,6 +95,27 @@ export const softwareAppSchema = {
   },
 }
 
+// Convertit "2:45" en duration ISO 8601 (PT2M45S)
+function durationToIso(duration: string): string {
+  const [minutes, seconds] = duration.split(':').map(Number)
+  return `PT${minutes}M${seconds}S`
+}
+
+// VideoObject Schemas (3 démos par rôle) — boost rich snippets vidéo Google
+export const videoSchemas = roleDemos.map((demo) => ({
+  '@type': 'VideoObject',
+  '@id': `${baseUrl}/#video-${demo.id}`,
+  name: `Démo SmartPlanning — Espace ${demo.label}`,
+  description: demo.description,
+  thumbnailUrl: `${baseUrl}/images/logo-sp.png`,
+  uploadDate: demo.uploadDate,
+  duration: durationToIso(demo.duration),
+  contentUrl: `https://www.youtube.com/watch?v=${demo.videoId}`,
+  embedUrl: `https://www.youtube.com/embed/${demo.videoId}`,
+  publisher: { '@id': `${baseUrl}/#organization` },
+  inLanguage: 'fr-FR',
+}))
+
 // FAQPage Schema (depuis les donnees de la landing page)
 export const faqPageSchema = {
   '@type': 'FAQPage',
@@ -115,6 +136,7 @@ export function StructuredData() {
       webSiteSchema,
       organizationSchema,
       softwareAppSchema,
+      ...videoSchemas,
       faqPageSchema,
     ],
   }

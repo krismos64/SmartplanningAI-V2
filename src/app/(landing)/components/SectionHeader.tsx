@@ -47,6 +47,12 @@ export const SECTION_COLORS = {
     text: 'text-cyan-400',
     gradient: 'from-cyan-400 to-blue-400',
   },
+  violet: {
+    border: 'border-violet-500/20',
+    bg: 'bg-violet-500/10',
+    text: 'text-violet-400',
+    gradient: 'from-violet-400 to-fuchsia-400',
+  },
 } as const
 
 export type SectionColor = keyof typeof SECTION_COLORS

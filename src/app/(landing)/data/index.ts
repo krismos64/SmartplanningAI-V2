@@ -24,6 +24,9 @@ import {
   TrendingUp,
   Upload,
   MessagesSquare,
+  Briefcase,
+  UserSquare2,
+  User,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -72,12 +75,27 @@ export interface VideoFeature {
   description: string
 }
 
+export interface RoleDemo {
+  id: 'director' | 'manager' | 'employee'
+  icon: LucideIcon
+  label: string
+  tagline: string
+  videoId: string
+  duration: string
+  uploadDate: string
+  description: string
+  highlights: string[]
+  color: string
+  badgeColor: 'violet' | 'cyan' | 'emerald'
+}
+
 // ============================================================================
 // NAV LINKS
 // ============================================================================
 
 export const navLinks = [
   { href: '#demo', label: 'Démo' },
+  { href: '#role-demos', label: 'Par rôle' },
   { href: '#features', label: 'Fonctionnalités' },
   { href: '#how-it-works', label: 'Comment ça marche' },
   { href: '#benefits', label: 'Avantages' },
@@ -333,6 +351,73 @@ export const benefits: Benefit[] = [
     title: 'Productivité accrue',
     description: "Concentrez-vous sur l'essentiel, l'outil gère la complexité.",
     color: 'from-indigo-500 to-blue-400',
+  },
+]
+
+// ============================================================================
+// ROLE DEMOS (Démos vidéo par rôle utilisateur)
+// ============================================================================
+
+export const roleDemos: RoleDemo[] = [
+  {
+    id: 'director',
+    icon: Briefcase,
+    label: 'Directeur',
+    tagline: 'Pilotage global',
+    videoId: 'K4bidIhB-LI',
+    duration: '2:45',
+    uploadDate: '2026-05-11',
+    description:
+      "Découvrez l'espace directeur de SmartPlanning : vue 360° de l'entreprise, pilotage multi-équipes, statistiques temps réel et gestion de la facturation.",
+    highlights: [
+      "Vue 360° de l'entreprise et de toutes les équipes",
+      'Statistiques RH temps réel et tableaux de bord',
+      'Gestion de la facturation per-seat automatique',
+      "Configuration de l'entreprise et des managers",
+      'Audit logs complets et conformité RGPD',
+    ],
+    color: 'from-violet-500 to-fuchsia-500',
+    badgeColor: 'violet',
+  },
+  {
+    id: 'manager',
+    icon: UserSquare2,
+    label: 'Manager',
+    tagline: 'Pilotage équipe',
+    videoId: 'TODO_MANAGER_VIDEO_ID',
+    duration: '2:30',
+    uploadDate: '2026-05-11',
+    description:
+      "Découvrez l'espace manager de SmartPlanning : création de plannings, validation de congés, messagerie interne et import CSV des employés.",
+    highlights: [
+      'Création et publication des plannings drag & drop',
+      'Validation des demandes de congés en un clic',
+      'Import CSV/Excel pour ajouter vos employés en masse',
+      'Messagerie interne avec votre équipe',
+      'Suivi des incidents et notes employés',
+    ],
+    color: 'from-cyan-500 to-blue-500',
+    badgeColor: 'cyan',
+  },
+  {
+    id: 'employee',
+    icon: User,
+    label: 'Employé',
+    tagline: 'Mon quotidien',
+    videoId: 'TODO_EMPLOYEE_VIDEO_ID',
+    duration: '2:15',
+    uploadDate: '2026-05-11',
+    description:
+      "Découvrez l'espace employé de SmartPlanning : consultation du planning, demandes de congés, notes personnelles et messagerie interne.",
+    highlights: [
+      'Consultation du planning personnel en temps réel',
+      'Demande de congés en quelques clics',
+      'Todolist privée pour organiser ses tâches',
+      'Messagerie interne avec collègues et manager',
+      'Export PDF du planning pour consultation offline',
+    ],
+    color: 'from-emerald-500 to-teal-500',
+    badgeColor: 'emerald',
   },
 ]
 
