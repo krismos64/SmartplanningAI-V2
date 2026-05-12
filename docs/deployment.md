@@ -1,6 +1,6 @@
 # Guide de Déploiement SmartPlanning V2
 
-**Dernière mise à jour** : 17 avril 2026
+**Dernière mise à jour** : 12 mai 2026
 **Version** : 2.0.0
 **Environnement** : Production
 **URL** : https://smartplanning.fr
@@ -78,7 +78,7 @@
 | ------------------ | -------------------------------------------- |
 | Application        | https://smartplanning.fr                     |
 | Analytics          | https://analytics.smartplanning.fr           |
-| Repository GitHub  | https://github.com/krismos64/SmartplanningAI |
+| Repository GitHub  | https://github.com/krismos64/SmartplanningAI-V2 |
 | Container Registry | ghcr.io/krismos64/smartplanningai-v2         |
 
 ---
@@ -138,7 +138,6 @@ Le fichier `.env` sur le VPS doit contenir :
 ```bash
 # ==============================================
 # SMARTPLANNING V2 - PRODUCTION ENVIRONMENT
-# Dernière mise à jour : 10 février 2026
 # ==============================================
 
 # ----------------------------------------------
@@ -256,8 +255,8 @@ Les secrets suivants doivent être configurés dans GitHub (Settings → Secrets
 | Job        | Description                    | Condition                     |
 | ---------- | ------------------------------ | ----------------------------- |
 | `lint`     | ESLint + TypeScript            | Tous les push                 |
-| `test`     | Tests unitaires Vitest (~2814) | Tous les push                 |
-| `test-e2e` | Tests E2E Playwright (~189)    | PR vers main OU push sur main |
+| `test`     | Tests unitaires Vitest (~2 785, 157 fichiers) | Tous les push                 |
+| `test-e2e` | Tests E2E Playwright (~189, 13 fichiers)      | PR vers main OU push sur main |
 | `build`    | Build Next.js                  | Tous les push                 |
 
 ### CD Pipeline (`.github/workflows/cd.yml`)
@@ -267,18 +266,34 @@ Les secrets suivants doivent être configurés dans GitHub (Settings → Secrets
 - Après succès du CI sur `main`
 - Déclenchement manuel (`workflow_dispatch`)
 
-**Jobs** :
+**Jobs (ordre important — SP-523)** :
 
-| Job              | Description                    |
-| ---------------- | ------------------------------ |
-| `build-and-push` | Build image Docker → Push GHCR |
-| `deploy`         | SSH → Pull image → Restart     |
-| `migrate`        | Prisma migrate deploy          |
+| Ordre | Job              | Description                                                      |
+| ----- | ---------------- | ---------------------------------------------------------------- |
+| 1     | `build-and-push` | Build image Docker → Push GHCR                                   |
+| 2     | `migrate`        | Prisma migrate deploy (conteneur éphémère avec la nouvelle image) |
+| 3     | `deploy`         | SSH → Pull image → Restart conteneur app                          |
+
+**Pourquoi `migrate` AVANT `deploy` (SP-523)** : l'ancien ordre `deploy → migrate` créait une fenêtre où le nouveau code tournait avec l'ancien schéma. Inoffensif pour `DROP NOT NULL`, mais une future migration `ADD COLUMN ... NOT NULL` sans valeur par défaut crasherait l'app immédiatement. Avec l'ordre actuel, si `migrate` échoue → `deploy` bloqué → la prod n'est jamais mise à jour avec un schéma cassé.
+
+**Point technique clé** : `prisma migrate deploy` ne peut pas tourner via `docker compose exec` sur l'ancien conteneur (les nouveaux fichiers `prisma/migrations/` ne s'y trouvent pas). Solution : `docker run --rm` avec la nouvelle image en conteneur éphémère, accès DB via le réseau Docker du compose. Pendant cette opération, l'ancienne app continue de servir les requêtes.
+
+**Lecture de `DATABASE_URL`** : ne PAS parser le fichier `.env` (caractères spéciaux + guillemets cassent Prisma). Lire directement depuis l'environnement du conteneur app running :
+```bash
+DATABASE_URL=$(docker exec smartplanning-app printenv DATABASE_URL)
+```
+Le nom du réseau Docker est résolu dynamiquement via `docker inspect smartplanning-postgres` (le nom réel est préfixé par le projet : `smartplanning_smartplanning-network`).
+
+**Condition du job `deploy`** :
+```yaml
+if: always() && needs.build-and-push.result == 'success' && (needs.migrate.result == 'success' || needs.migrate.result == 'skipped')
+```
+Cas `workflow_dispatch` manuel : `migrate` skippé, `deploy` s'exécute quand même.
 
 ### Flux complet
 
 ```
-Push main → CI (Lint + Tests + E2E + Build) → CD (Docker Build → Deploy VPS → Migrate)
+Push main → CI (Lint + Tests + E2E + Build) → CD (Build & Push → Migrate → Deploy)
 ```
 
 ---
@@ -447,6 +462,80 @@ docker pull ghcr.io/krismos64/smartplanningai-v2:latest
 
 3. Vérifier les permissions du fichier SSH key (doit être en base64)
 
+### Le job `migrate` échoue dans le CD
+
+Symptômes typiques et solutions (20 avril 2026) :
+
+| Exit code | Cause | Fix |
+| --------- | ----- | --- |
+| 1 — Prisma ne reçoit pas l'URL | `grep -oP 'DATABASE_URL=\K.*'` tronquait l'URL à cause des caractères spéciaux | Lire depuis l'env du conteneur : `docker exec smartplanning-app printenv DATABASE_URL` |
+| 125 — Docker refuse de démarrer | `--network smartplanning-network` hardcodé ≠ nom réel `smartplanning_smartplanning-network` | Résoudre dynamiquement : `docker inspect -f '{{range $n,$_ := .NetworkSettings.Networks}}{{$n}}{{end}}' smartplanning-postgres` |
+| 1 — Prisma reçoit l'URL avec guillemets | `--env-file .env` propage les guillemets littéraux | Ne pas utiliser `--env-file`, passer la variable via `-e DATABASE_URL=$DATABASE_URL` |
+
+### La 1re visite de smartplanning.fr renvoie des 503 sur les chunks JS (12 mai 2026)
+
+**Symptôme** : sur une 1re visite (cache navigateur vide), plusieurs chunks JS reçoivent un 503 et la page reste figée. Un reload manuel la débloque.
+
+**Cause** : `limit_conn conn_limit 10` était appliqué globalement dans `nginx/smartplanning.conf`. En HTTP/2, Nginx 1.24 compte **chaque stream multiplexé** individuellement contre `limit_conn`, alors qu'une seule connexion TCP est ouverte. Une landing Next.js qui charge 30+ chunks en parallèle dépasse trivialement le seuil.
+
+**Diagnostic rapide** :
+```bash
+ssh deploy@51.77.146.72
+sudo tail -200 /var/log/nginx/smartplanning-error.log | grep "limiting connections"
+```
+Si tu vois des entrées `client: <ton-IP>`, c'est ce bug.
+
+**Fix appliqué** dans `nginx/smartplanning.conf` :
+- Retrait de `limit_conn` global du server block
+- Ajout de `limit_conn conn_limit 100` uniquement sur `location /` et `location /api/`
+- `/_next/static/*`, fonts et images exempts (cachés par `proxy_cache nextjs_cache`)
+- `limit_req_status 429` + `limit_conn_status 429` (au lieu de 503) → monitoring plus précis
+
+**Validation post-fix** :
+```bash
+# 31 chunks HTTP/2 multiplexés doivent tous renvoyer 200
+CHUNKS=$(curl -s https://smartplanning.fr | grep -oE '/_next/static/chunks/[^"]+\.js' | sort -u)
+TMPFILE=$(mktemp)
+echo "$CHUNKS" | sed 's|^|url = "https://smartplanning.fr|;s|$|"|' > "$TMPFILE"
+curl --http2 --parallel --parallel-max 50 -s -o /dev/null \
+  -w 'CODE=%{http_code}\n' --config "$TMPFILE" | sort | uniq -c
+rm "$TMPFILE"
+```
+
+### Dette de configuration Nginx (repo vs VPS)
+
+**Attention** : la config Nginx du VPS peut diverger du repo si des modifs sont appliquées en urgence directement en SSH. À chaque édition `/etc/nginx/sites-available/smartplanning.conf`, **backporter dans `nginx/smartplanning.conf` du repo** et commit.
+
+**Vérifier le drift** :
+```bash
+ssh deploy@51.77.146.72 'sudo cat /etc/nginx/sites-available/smartplanning.conf' > /tmp/vps.conf
+diff nginx/smartplanning.conf /tmp/vps.conf
+```
+
+Drift connus déjà backportés (12 mai 2026) :
+- `proxy_cache nextjs_cache` sur `/_next/static/`
+- `include /etc/nginx/snippets/umami-location.conf`
+
+### Procédure : push d'une nouvelle config Nginx vers le VPS
+
+```bash
+# 1. Modifier nginx/smartplanning.conf localement + commit
+# 2. Copier sur le VPS
+scp nginx/smartplanning.conf deploy@51.77.146.72:/tmp/smartplanning-new.conf
+
+# 3. Backup + remplacement + validation + reload
+ssh deploy@51.77.146.72 '
+sudo cp /etc/nginx/sites-available/smartplanning.conf \
+        /etc/nginx/sites-available/smartplanning.conf.bak.$(date +%Y%m%d_%H%M%S)
+sudo mv /tmp/smartplanning-new.conf /etc/nginx/sites-available/smartplanning.conf
+sudo chown root:root /etc/nginx/sites-available/smartplanning.conf
+sudo chmod 644 /etc/nginx/sites-available/smartplanning.conf
+sudo nginx -t && sudo systemctl reload nginx
+'
+```
+
+Le `reload` n'interrompt pas les connexions en cours.
+
 ---
 
 ## Historique des mises à jour
@@ -459,14 +548,16 @@ docker pull ghcr.io/krismos64/smartplanningai-v2:latest
 | 2026-01-19 | 2.0     | Configuration SMTP + refonte documentation    |
 | 2026-02-04 | 2.1     | Ajout Cloudinary pour upload avatars (SP-272) |
 | 2026-02-10 | 2.2     | Variables Stripe activées                                                  |
-| 2026-03-12 | 2.3     | Compteurs tests mis à jour après rationalisation (~2814 unit / ~189 E2E)   |
+| 2026-03-12 | 2.3     | Compteurs tests mis à jour après rationalisation (~2 785 unit / ~189 E2E)  |
 | 2026-04-17 | 2.4     | Fix admin : changement statut abonnement sans Stripe, correction redirects 404 |
+| 2026-04-20 | 2.5     | CI/CD : ordre `migrate → deploy` inversé (SP-523), pattern `docker run --rm` avec image éphémère, lecture `DATABASE_URL` depuis `docker exec printenv` (sans parse `.env`) |
+| 2026-05-12 | 2.6     | Fix Nginx HTTP/2 : `limit_conn` 10 → 100 sur `location /` et `/api/`, exempt sur `/_next/static/*`, codes 429 au lieu de 503. Backport repo des additions VPS (`proxy_cache`, include Umami). Procédure de push config Nginx documentée. |
 
 ---
 
 ## Contacts et ressources
 
-- **Repository** : https://github.com/krismos64/SmartplanningAI
+- **Repository** : https://github.com/krismos64/SmartplanningAI-V2
 - **Documentation Next.js** : https://nextjs.org/docs
 - **Documentation Prisma** : https://www.prisma.io/docs
 - **Documentation Docker** : https://docs.docker.com
