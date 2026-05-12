@@ -7,7 +7,7 @@
  * @description Section contact sur la landing page
  */
 
-import { Mail, Clock, MapPin } from 'lucide-react'
+import { Mail, Clock, MapPin, Linkedin } from 'lucide-react'
 import { SectionHeader } from '../SectionHeader'
 import { ContactForm } from '@/components/public/ContactForm'
 import { motion, fadeInUp, staggerContainer } from '@/lib/animations'
@@ -107,6 +107,26 @@ export function ContactSection() {
                 répondons généralement sous 24h ouvrées
               </p>
             </motion.div>
+
+            {/* LinkedIn */}
+            <motion.a
+              variants={fadeInUp}
+              href="https://www.linkedin.com/company/smartplanning-fr"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Suivez SmartPlanning sur LinkedIn"
+              className="group flex items-center gap-4 rounded-2xl border border-border/50 bg-card/50 p-4 backdrop-blur-sm transition-all duration-300 hover:border-[#0A66C2]/40 hover:bg-card"
+            >
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-[#0A66C2]/20 to-[#0077B5]/20 transition-transform duration-300 group-hover:scale-110">
+                <Linkedin className="h-6 w-6 text-[#0A66C2]" />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm text-muted-foreground">Suivez-nous</p>
+                <p className="text-lg font-medium text-foreground transition-colors group-hover:text-[#0A66C2]">
+                  SmartPlanning sur LinkedIn
+                </p>
+              </div>
+            </motion.a>
           </motion.div>
 
           {/* Right: Contact Form */}

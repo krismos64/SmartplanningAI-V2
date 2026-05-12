@@ -366,7 +366,7 @@ export const roleDemos: RoleDemo[] = [
     tagline: 'Pilotage global',
     videoId: 'K4bidIhB-LI',
     duration: '2:45',
-    uploadDate: '2026-05-11',
+    uploadDate: '2026-05-11T10:00:00+02:00',
     description:
       "Découvrez l'espace directeur de SmartPlanning : vue 360° de l'entreprise, pilotage multi-équipes, statistiques temps réel et gestion de la facturation.",
     highlights: [
@@ -386,7 +386,7 @@ export const roleDemos: RoleDemo[] = [
     tagline: 'Pilotage équipe',
     videoId: 'sy3ffTIj0ig',
     duration: '2:30',
-    uploadDate: '2026-05-11',
+    uploadDate: '2026-05-11T10:15:00+02:00',
     description:
       "Découvrez l'espace manager de SmartPlanning : création de plannings, validation de congés, messagerie interne et import CSV des employés.",
     highlights: [
@@ -406,7 +406,7 @@ export const roleDemos: RoleDemo[] = [
     tagline: 'Mon quotidien',
     videoId: '8wJgk8i1uzQ',
     duration: '2:15',
-    uploadDate: '2026-05-11',
+    uploadDate: '2026-05-11T10:30:00+02:00',
     description:
       "Découvrez l'espace employé de SmartPlanning : consultation du planning, demandes de congés, notes personnelles et messagerie interne.",
     highlights: [

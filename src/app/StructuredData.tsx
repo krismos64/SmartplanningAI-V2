@@ -52,7 +52,7 @@ export const organizationSchema = {
     name: 'France',
   },
   sameAs: [
-    'https://www.linkedin.com/company/smartplanning',
+    'https://www.linkedin.com/company/smartplanning-fr',
     'https://twitter.com/smartplanning',
   ],
 }

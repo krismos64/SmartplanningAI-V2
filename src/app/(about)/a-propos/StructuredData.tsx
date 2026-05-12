@@ -54,7 +54,7 @@ export const organizationSchema = {
     'Logiciel RH',
   ],
   sameAs: [
-    'https://www.linkedin.com/company/smartplanning',
+    'https://www.linkedin.com/company/smartplanning-fr',
     'https://twitter.com/smartplanning',
   ],
 }

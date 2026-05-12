@@ -66,7 +66,9 @@ export function LandingFooter() {
             </p>
             <div className="flex gap-4">
               <a
-                href="#"
+                href="https://www.linkedin.com/company/smartplanning-fr"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="rounded-lg bg-card/50 p-2 text-muted-foreground transition-colors hover:bg-card hover:text-foreground"
                 aria-label="LinkedIn"
               >
