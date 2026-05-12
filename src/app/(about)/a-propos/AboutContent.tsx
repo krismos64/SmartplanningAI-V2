@@ -18,7 +18,7 @@
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowRight, Target } from 'lucide-react'
+import { ArrowRight, Target, Linkedin, Youtube } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { motion, fadeInUp, staggerContainer, scaleIn } from '@/lib/animations'
 import {
@@ -311,6 +311,85 @@ export function AboutContent() {
                 </div>
               </div>
             </motion.aside>
+          </div>
+        </section>
+
+        {/* Social Section - LinkedIn & YouTube */}
+        <section
+          aria-labelledby="social-title"
+          className="pb-24 lg:pb-32"
+        >
+          <div className="container-custom">
+            <SectionHeader
+              badge="Suivez-nous"
+              badgeIcon={
+                <span className="text-lg" aria-hidden="true">
+                  👋
+                </span>
+              }
+              color="cyan"
+              title="Restons"
+              titleHighlight="connectés"
+              titleId="social-title"
+              description="Retrouvez SmartPlanning sur nos réseaux pour suivre les nouveautés, démos produit et conseils RH."
+            />
+
+            <motion.ul
+              variants={staggerContainer}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              className="mx-auto grid max-w-3xl gap-6 sm:grid-cols-2"
+              role="list"
+              aria-label="Réseaux sociaux SmartPlanning"
+            >
+              <li>
+                <motion.a
+                  variants={fadeInUp}
+                  href="https://www.linkedin.com/company/smartplanning-fr"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Suivez SmartPlanning sur LinkedIn (nouvel onglet)"
+                  className="group flex h-full items-center gap-4 rounded-2xl border border-border/50 bg-card/50 p-6 backdrop-blur-sm transition-all duration-300 hover:border-[#0A66C2]/40 hover:bg-card"
+                >
+                  <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#0A66C2]/20 to-[#0077B5]/20 transition-transform duration-300 group-hover:scale-110">
+                    <Linkedin className="h-7 w-7 text-[#0A66C2]" aria-hidden="true" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm text-muted-foreground">LinkedIn</p>
+                    <p className="text-lg font-medium text-foreground transition-colors group-hover:text-[#0A66C2]">
+                      SmartPlanning
+                    </p>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      Actualités produit et conseils RH
+                    </p>
+                  </div>
+                </motion.a>
+              </li>
+              <li>
+                <motion.a
+                  variants={fadeInUp}
+                  href="https://www.youtube.com/@SmartPlanning-x2c"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Abonnez-vous à SmartPlanning sur YouTube (nouvel onglet)"
+                  className="group flex h-full items-center gap-4 rounded-2xl border border-border/50 bg-card/50 p-6 backdrop-blur-sm transition-all duration-300 hover:border-[#FF0000]/40 hover:bg-card"
+                >
+                  <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#FF0000]/20 to-[#CC0000]/20 transition-transform duration-300 group-hover:scale-110">
+                    <Youtube className="h-7 w-7 text-[#FF0000]" aria-hidden="true" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm text-muted-foreground">YouTube</p>
+                    <p className="text-lg font-medium text-foreground transition-colors group-hover:text-[#FF0000]">
+                      @SmartPlanning
+                    </p>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      Démos produit et tutoriels vidéo
+                    </p>
+                  </div>
+                </motion.a>
+              </li>
+            </motion.ul>
           </div>
         </section>
       </main>
