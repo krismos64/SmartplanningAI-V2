@@ -7,7 +7,7 @@
  * @description Section contact sur la landing page
  */
 
-import { Mail, Clock, MapPin, Linkedin } from 'lucide-react'
+import { Mail, Clock, MapPin, Linkedin, Youtube } from 'lucide-react'
 import { SectionHeader } from '../SectionHeader'
 import { ContactForm } from '@/components/public/ContactForm'
 import { motion, fadeInUp, staggerContainer } from '@/lib/animations'
@@ -124,6 +124,26 @@ export function ContactSection() {
                 <p className="text-sm text-muted-foreground">Suivez-nous</p>
                 <p className="text-lg font-medium text-foreground transition-colors group-hover:text-[#0A66C2]">
                   SmartPlanning sur LinkedIn
+                </p>
+              </div>
+            </motion.a>
+
+            {/* YouTube */}
+            <motion.a
+              variants={fadeInUp}
+              href="https://www.youtube.com/@SmartPlanning-x2c"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Abonnez-vous à SmartPlanning sur YouTube"
+              className="group flex items-center gap-4 rounded-2xl border border-border/50 bg-card/50 p-4 backdrop-blur-sm transition-all duration-300 hover:border-[#FF0000]/40 hover:bg-card"
+            >
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-[#FF0000]/20 to-[#CC0000]/20 transition-transform duration-300 group-hover:scale-110">
+                <Youtube className="h-6 w-6 text-[#FF0000]" />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm text-muted-foreground">Abonnez-vous</p>
+                <p className="text-lg font-medium text-foreground transition-colors group-hover:text-[#FF0000]">
+                  SmartPlanning sur YouTube
                 </p>
               </div>
             </motion.a>

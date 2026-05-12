@@ -55,6 +55,7 @@ export const organizationSchema = {
   ],
   sameAs: [
     'https://www.linkedin.com/company/smartplanning-fr',
+    'https://www.youtube.com/@SmartPlanning-x2c',
     'https://twitter.com/smartplanning',
   ],
 }

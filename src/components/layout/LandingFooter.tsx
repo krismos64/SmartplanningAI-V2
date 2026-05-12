@@ -9,7 +9,7 @@
  */
 
 import Link from 'next/link'
-import { Calendar, Mail, Linkedin, Instagram } from 'lucide-react'
+import { Calendar, Mail, Linkedin, Instagram, Youtube } from 'lucide-react'
 import { CookieSettingsButton } from '@/components/cookies'
 
 // Footer links
@@ -73,6 +73,15 @@ export function LandingFooter() {
                 aria-label="LinkedIn"
               >
                 <Linkedin className="h-5 w-5" />
+              </a>
+              <a
+                href="https://www.youtube.com/@SmartPlanning-x2c"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-lg bg-card/50 p-2 text-muted-foreground transition-colors hover:bg-card hover:text-foreground"
+                aria-label="YouTube"
+              >
+                <Youtube className="h-5 w-5" />
               </a>
               <a
                 href="#"
