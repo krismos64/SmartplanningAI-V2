@@ -39,7 +39,11 @@ import {
   MAX_TOTAL_SCHEDULES,
   type RecurrenceRule,
 } from '@/lib/utils/recurrence'
-import { assertNotImpersonating, getEffectiveSessionData } from '@/lib/impersonation'
+import {
+  assertNotImpersonating,
+  getEffectiveSessionData,
+} from '@/lib/impersonation'
+import { invalidateDashboardCache } from '@/lib/cache'
 
 // ============================================================================
 // Types
@@ -1088,6 +1092,9 @@ export async function createSchedule(
 
     revalidatePath('/app/schedules')
     revalidatePath('/app/dashboard')
+    revalidatePath('/app/manager/dashboard')
+    revalidatePath('/app/director/dashboard')
+    invalidateDashboardCache(validated.companyId).catch(console.error)
 
     return {
       success: true,
@@ -1267,6 +1274,9 @@ export async function updateSchedule(
     revalidatePath('/app/schedules')
     revalidatePath(`/app/schedules/${validated.id}`)
     revalidatePath('/app/dashboard')
+    revalidatePath('/app/manager/dashboard')
+    revalidatePath('/app/director/dashboard')
+    invalidateDashboardCache(existing.companyId).catch(console.error)
 
     return { success: true, data: updated as ScheduleWithRelations }
   } catch (error) {
@@ -1362,6 +1372,9 @@ export async function deleteSchedule(id: string): Promise<DeleteActionResult> {
 
     revalidatePath('/app/schedules')
     revalidatePath('/app/dashboard')
+    revalidatePath('/app/manager/dashboard')
+    revalidatePath('/app/director/dashboard')
+    invalidateDashboardCache(schedule.companyId).catch(console.error)
 
     return { success: true }
   } catch (error) {
@@ -1451,6 +1464,12 @@ export async function deleteScheduleGroup(
 
     revalidatePath('/app/schedules')
     revalidatePath('/app/dashboard')
+    revalidatePath('/app/manager/dashboard')
+    revalidatePath('/app/director/dashboard')
+    const groupCompanyId = schedules[0]?.companyId
+    if (groupCompanyId) {
+      invalidateDashboardCache(groupCompanyId).catch(console.error)
+    }
 
     return { success: true, data: { deletedCount: result.count } }
   } catch (error) {
@@ -1524,6 +1543,12 @@ export async function deleteRecurrenceGroup(
 
     revalidatePath('/app/schedules')
     revalidatePath('/app/dashboard')
+    revalidatePath('/app/manager/dashboard')
+    revalidatePath('/app/director/dashboard')
+    const recurrenceCompanyId = schedules[0]?.companyId
+    if (recurrenceCompanyId) {
+      invalidateDashboardCache(recurrenceCompanyId).catch(console.error)
+    }
 
     return { success: true, data: { deletedCount: result.count } }
   } catch (error) {
@@ -1630,6 +1655,12 @@ export async function updateRecurrenceGroup(
 
     revalidatePath('/app/schedules')
     revalidatePath('/app/dashboard')
+    revalidatePath('/app/manager/dashboard')
+    revalidatePath('/app/director/dashboard')
+    const updatedRecurrenceCompanyId = schedules[0]?.companyId
+    if (updatedRecurrenceCompanyId) {
+      invalidateDashboardCache(updatedRecurrenceCompanyId).catch(console.error)
+    }
 
     return { success: true, data: { updatedCount: result.count } }
   } catch (error) {
@@ -1781,6 +1812,9 @@ export async function duplicateSchedule(
 
     revalidatePath('/app/schedules')
     revalidatePath('/app/dashboard')
+    revalidatePath('/app/manager/dashboard')
+    revalidatePath('/app/director/dashboard')
+    invalidateDashboardCache(original.companyId).catch(console.error)
 
     return { success: true, data: duplicates as ScheduleWithRelations[] }
   } catch (error) {
@@ -1854,6 +1888,9 @@ export async function updateScheduleStatus(
     revalidatePath('/app/schedules')
     revalidatePath(`/app/schedules/${id}`)
     revalidatePath('/app/dashboard')
+    revalidatePath('/app/manager/dashboard')
+    revalidatePath('/app/director/dashboard')
+    invalidateDashboardCache(schedule.companyId).catch(console.error)
 
     return { success: true, data: updated as ScheduleWithRelations }
   } catch (error) {
@@ -2198,6 +2235,9 @@ export async function deleteRecurringSchedules(
 
     revalidatePath('/app/schedules')
     revalidatePath('/app/dashboard')
+    revalidatePath('/app/manager/dashboard')
+    revalidatePath('/app/director/dashboard')
+    invalidateDashboardCache(schedule.companyId).catch(console.error)
 
     return { success: true, data: { deletedCount } }
   } catch (error) {
@@ -2396,6 +2436,9 @@ export async function updateRecurringSchedules(
 
     revalidatePath('/app/schedules')
     revalidatePath('/app/dashboard')
+    revalidatePath('/app/manager/dashboard')
+    revalidatePath('/app/director/dashboard')
+    invalidateDashboardCache(schedule.companyId).catch(console.error)
 
     return { success: true, data: { updatedCount } }
   } catch (error) {
