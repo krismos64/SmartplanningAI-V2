@@ -384,7 +384,7 @@ export const roleDemos: RoleDemo[] = [
     icon: UserSquare2,
     label: 'Manager',
     tagline: 'Pilotage équipe',
-    videoId: 'TODO_MANAGER_VIDEO_ID',
+    videoId: 'sy3ffTIj0ig',
     duration: '2:30',
     uploadDate: '2026-05-11',
     description:
