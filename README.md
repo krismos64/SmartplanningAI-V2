@@ -33,14 +33,14 @@ Plateforme SaaS multi-tenant de gestion intelligente des plannings et des ressou
 - **Redis** : Rate limiting distribue (INCR+EXPIRE), sessions actives (TTL 24h), cache dashboards (TTL 300s), fallback memoire
 - **CRUD** : Entreprises, employes, equipes avec RBAC et multi-tenant strict
 - **Audit** : Journal d'audit complet, export CSV, protection anti-injection
-- **Impersonation** : Mode support SYSTEM_ADMIN lecture seule avec audit trail
+- **Impersonation** : Mode support SYSTEM_ADMIN "Voir espace client" lecture seule (cookie `sp-impersonation` TTL 1h, audit trail start/stop, billing accessible en lecture, fallback cookie pour race condition JWT)
 - **Monitoring** : Health check DB + Redis (PING/PONG), KPIs SaaS, graphiques admin, service MRR unifie
 - **Admin** : Page utilisateurs cross-tenant, essais a risque, broadcast email, stats + export PDF
 - **Profil** : Avatar Cloudinary, RGPD (export donnees, suppression compte), preferences affichage
 - **Settings** : Apparence, notifications, entreprise (jours travailles, horaires)
 - **Notes & Incidents** : Taches personnelles (drag & drop), notes d'incidents avec visibilite RBAC
 - **SEO** : Metadata API, JSON-LD Schema.org, sitemap, robots.txt
-- **Landing** : Design "Cyber Glass 3D", simulateur tarifs, FAQ, pages legales RGPD
+- **Landing** : Design "Cyber Glass 3D", simulateur tarifs, FAQ, pages legales RGPD, demos video par role (Directeur/Manager/Employe) avec onglets et JSON-LD VideoObject
 - **Accessibilite** : WCAG 2.1 AA, touch targets 44px, Lighthouse 100%
 
 > Historique detaille du developpement : [`docs/development-log.md`](docs/development-log.md)

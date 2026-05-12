@@ -22,6 +22,7 @@ Historique détaillé du développement de SmartPlanning V2, organisé par phase
 - [Performance & Analytics](#performance--analytics)
 - [Monitoring & Admin](#monitoring--admin)
 - [Accessibilité WCAG 2.1](#accessibilité-wcag-21)
+- [Optimisations production & Infra (12 mai 2026)](#optimisations-production--infra-12-mai-2026)
 
 ---
 
@@ -1233,4 +1234,83 @@ Trois itérations de correction du job `migrate` après l'inversion d'ordre (SP-
 
 ---
 
-*Dernière mise à jour : 20 avril 2026 (corrections pipeline CI/CD migrate + vérification VPS)*
+## Optimisations production & Infra (12 mai 2026)
+
+### Fix dashboard manager : graphique « Heures travaillées » non mis à jour
+
+**Symptôme** : après création/modification/suppression d'un planning, le graphique du dashboard manager continuait d'afficher l'ancienne donnée jusqu'à 5 minutes.
+
+**Cause** : les 10 Server Actions mutatives de `src/lib/actions/schedules.ts` (createSchedule, updateSchedule, deleteSchedule, deleteScheduleGroup, deleteRecurrenceGroup, updateRecurrenceGroup, duplicateSchedule, updateScheduleStatus, deleteRecurringSchedules, updateRecurringSchedules) appelaient seulement `revalidatePath('/app/dashboard')` mais ne purgeaient pas le cache Redis `dashboard:manager:{companyId}:{managerId}` (TTL 300s, SP-480). De plus, le path revalidé ne couvrait ni `/app/manager/dashboard` ni `/app/director/dashboard`. Particulièrement bloquant pour `updateScheduleStatus` puisque `getTeamPerformance` filtre sur `status: 'CONFIRMED'`.
+
+**Fix** : ajout sur les 10 call sites de `invalidateDashboardCache(companyId)` (fire-and-forget) + `revalidatePath('/app/manager/dashboard')` + `revalidatePath('/app/director/dashboard')`.
+
+Commit `b477087`.
+
+### Migration `reviewLeaveRequest` vers `after()` Next.js 15
+
+**Constat** : l'action `reviewLeaveRequest` faisait `await sendLeaveApprovedEmail()` / `await sendLeaveRejectedEmail()`, bloquant la réponse du manager pendant le roundtrip SMTP Hostinger (200 ms à plusieurs secondes). Pattern incohérent avec le reste du codebase (audit logs, SSE, autres emails métier) qui utilisent du fire-and-forget.
+
+**Fix** ✅ Via Context7 (Next.js 15 docs) : utilisation de l'API `after()` de `next/server`. L'action retourne immédiatement, le mail part en arrière-plan avec la garantie `waitUntil` (sur serverless) ou l'event loop Node (sur VPS Docker).
+
+```typescript
+import { after } from 'next/server'
+
+after(async () => {
+  try {
+    if (data.status === LeaveRequestStatus.APPROVED) {
+      await sendLeaveApprovedEmail(emailData)
+    } else if (data.status === LeaveRequestStatus.REJECTED) {
+      await sendLeaveRejectedEmail({ ...emailData, rejectionReason: data.reviewComment ?? '' })
+    }
+  } catch (err) {
+    console.error('[reviewLeaveRequest] Email error:', err)
+  }
+})
+```
+
+**Tests** : ajout d'un mock `next/server` dans `leaves.test.ts` qui exécute le callback `after()` de façon asynchrone immédiate (sinon Next.js lève « after was called outside a request scope » en environnement Vitest). 48/48 tests passent.
+
+Commit `2e22695`.
+
+### Activation vidéo démo Manager sur la landing
+
+Remplacement du placeholder `TODO_MANAGER_VIDEO_ID` par l'ID YouTube `sy3ffTIj0ig` dans `src/app/(landing)/data/index.ts`. Le JSON-LD `VideoObject` Schema.org se met à jour automatiquement (lecture dynamique depuis `roleDemos`). Reste à fournir : vidéo Employé.
+
+Commit `bbdbd5e`.
+
+### Fix infrastructure Nginx : 503 sur le 1er chargement de la landing
+
+**Symptôme reporté** : la page d'accueil `smartplanning.fr` restait apparemment figée sur la 1re visite (cache vide). Un reload manuel la débloquait.
+
+**Diagnostic** (via SSH VPS + analyse Nginx logs) :
+- 31 chunks JS référencés par la landing chargés en parallèle HTTP/2
+- Nginx 1.24 retournait 503 « limiting connections by zone conn_limit » sur ~10-15 d'entre eux
+- Les chunks réussis étaient mis en cache navigateur → 2e visite OK → impression de « ça marche au reload »
+- Confirmé empiriquement : `curl --http2 --parallel-max 15` reproduit exactement 4 chunks en 503 sur 15
+
+**Cause root** : `limit_conn conn_limit 10` appliqué globalement sur le `server { }` HTTPS dans `nginx/smartplanning.conf`. Avec HTTP/2 multiplexing, Nginx 1.24 décompte chaque stream individuellement contre `limit_conn`, alors qu'une seule connexion TCP est ouverte côté navigateur. Une landing Next.js qui charge 30+ ressources en parallèle dépasse trivialement le seuil.
+
+**Bonus diagnostic** : la config du VPS divergeait du repo Git — `proxy_cache nextjs_cache` (sur `/_next/static/`) et l'include Umami `/etc/nginx/snippets/umami-location.conf` avaient été ajoutés manuellement sur le VPS sans backport. Le cache Nginx fonctionnait correctement (`X-Cache-Status: HIT` confirmé), donc Node n'était pas en cause.
+
+**Fix** dans `nginx/smartplanning.conf` :
+- Retrait de `limit_conn` global du server block
+- Application de `limit_conn conn_limit 100` uniquement sur `location /` (pages HTML/RSC) et `location /api/`
+- Les assets statiques (`/_next/static/`, fonts, images) sont désormais exempts — protégés par `proxy_cache` et inutiles à rate-limiter
+- `limit_req` zone `general` : burst 20 → 50 (pour le 1er chargement)
+- Ajout de `limit_req_status 429` + `limit_conn_status 429` (au lieu du 503 générique) → monitoring plus précis
+- Backport dans Git des additions manuelles VPS (proxy_cache, Umami include) → repo et prod désormais synchronisés
+
+**Déploiement** : backup créé sur le VPS (`smartplanning.conf.bak.20260512_092514`), `sudo nginx -t` OK, `systemctl reload nginx` zero-downtime.
+
+**Validation** :
+- 31 chunks HTTP/2 multiplexés × 3 rounds = **93/93 en 200** (vs ~10 en 503 avant fix)
+- Test anti-abus 200 req parallèles → 51 en 200 + 149 en **429** (jamais de 503, protection DoS intacte via `limit_req`)
+- Container Node toujours à 0 % CPU, 143 MB / 1 GB → aucun impact backend
+
+**Effet secondaire bénéfique** : les RSC payloads `/app/dashboard/*?_rsc=...` qui retournaient parfois 503 (visible dans les logs) sont désormais OK. Les navigations internes après login devraient aussi être plus fluides.
+
+Commit `e50d51b`.
+
+---
+
+*Dernière mise à jour : 12 mai 2026 (fix dashboard manager + after() emails + fix Nginx HTTP/2 503)*
