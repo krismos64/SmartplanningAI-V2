@@ -404,7 +404,7 @@ export const roleDemos: RoleDemo[] = [
     icon: User,
     label: 'Employé',
     tagline: 'Mon quotidien',
-    videoId: 'TODO_EMPLOYEE_VIDEO_ID',
+    videoId: 'h59D5To5WpM',
     duration: '2:15',
     uploadDate: '2026-05-11',
     description:
