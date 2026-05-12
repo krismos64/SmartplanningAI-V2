@@ -13,6 +13,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import { after } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import {
   LeaveRequestStatus,
@@ -48,7 +49,10 @@ import {
   sendLeaveRejectedEmail,
 } from '@/lib/email/templates/leave-decision'
 import { sendLeaveRequestedEmail } from '@/lib/email/templates/leave-requested'
-import { assertNotImpersonating, getEffectiveSessionData } from '@/lib/impersonation'
+import {
+  assertNotImpersonating,
+  getEffectiveSessionData,
+} from '@/lib/impersonation'
 import { invalidateDashboardCache, invalidateLeavesCache } from '@/lib/cache'
 import {
   sendLeaveRevokedEmail,
@@ -823,15 +827,18 @@ export async function reviewLeaveRequest(
       return result
     })
 
-    // Envoi email hors transaction (non bloquant, respecte les préférences SP-480)
-    try {
-      const employeeEmail = leaveRequest.employee.email ?? ''
-      const canSend =
-        employeeEmail && leaveRequest.employee.userId
-          ? await canSendEmailToUser(leaveRequest.employee.userId, 'leaves')
-          : true
+    // Envoi email après la réponse (Next.js 15 after API)
+    // L'action retourne immédiatement ; l'email part en arrière-plan.
+    after(async () => {
+      try {
+        const employeeEmail = leaveRequest.employee.email ?? ''
+        const canSend =
+          employeeEmail && leaveRequest.employee.userId
+            ? await canSendEmailToUser(leaveRequest.employee.userId, 'leaves')
+            : true
 
-      if (canSend && employeeEmail) {
+        if (!canSend || !employeeEmail) return
+
         const emailData: LeaveEmailData = {
           firstName: leaveRequest.employee.firstName,
           email: employeeEmail,
@@ -848,11 +855,10 @@ export async function reviewLeaveRequest(
             rejectionReason: data.reviewComment ?? '',
           })
         }
+      } catch (emailError) {
+        console.error('[reviewLeaveRequest] Email error:', emailError)
       }
-    } catch (emailError) {
-      console.error('[reviewLeaveRequest] Email error:', emailError)
-      // Ne pas bloquer l'action si l'email échoue
-    }
+    })
 
     // SSE : Notifier l'employé de la décision (fire-and-forget)
     if (leaveRequest.employee.userId) {

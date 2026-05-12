@@ -57,6 +57,14 @@ vi.mock('next/cache', () => ({
   revalidatePath: vi.fn(),
 }))
 
+vi.mock('next/server', () => ({
+  // En test, exécuter immédiatement le callback de after() pour simuler
+  // l'exécution post-réponse (le runtime Next.js gère waitUntil en prod).
+  after: vi.fn((cb: () => void | Promise<void>) => {
+    void Promise.resolve().then(() => cb())
+  }),
+}))
+
 vi.mock('@/lib/email/templates/leave-decision', () => ({
   sendLeaveApprovedEmail: vi.fn().mockResolvedValue({ success: true }),
   sendLeaveRejectedEmail: vi.fn().mockResolvedValue({ success: true }),
