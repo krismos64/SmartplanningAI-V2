@@ -143,21 +143,17 @@ export function RoleDemosSection() {
                 <div className="relative aspect-video w-full">
                   {!isPlaying ? (
                     <>
-                      {/* Thumbnail dégradé + logo */}
-                      <div
-                        className={cn(
-                          'absolute inset-0 bg-gradient-to-br',
-                          activeRole.color
-                        )}
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-br from-[#0a0a1a]/80 via-[#0f0f2a]/70 to-[#1a1a3a]/80" />
+                      {/* Miniature spécifique au rôle */}
                       <Image
-                        src="/images/logo-sp.png"
+                        src={activeRole.thumbnail}
                         alt={`SmartPlanning — Démo ${activeRole.label}`}
-                        width={400}
-                        height={260}
-                        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 object-contain opacity-90 drop-shadow-2xl sm:w-[360px] md:w-[420px]"
+                        fill
+                        sizes="(min-width: 1024px) 60vw, 100vw"
+                        priority={activeRole.id === 'director'}
+                        className="absolute inset-0 h-full w-full object-cover"
                       />
+                      {/* Overlay pour lisibilité du bouton play */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-black/30" />
 
                       {/* Badge rôle */}
                       <div className="absolute left-4 top-4 z-10">

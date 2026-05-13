@@ -87,6 +87,7 @@ export interface RoleDemo {
   highlights: string[]
   color: string
   badgeColor: 'violet' | 'cyan' | 'emerald'
+  thumbnail: string
 }
 
 // ============================================================================
@@ -378,6 +379,7 @@ export const roleDemos: RoleDemo[] = [
     ],
     color: 'from-violet-500 to-fuchsia-500',
     badgeColor: 'violet',
+    thumbnail: '/images/demo-directeur.png',
   },
   {
     id: 'manager',
@@ -398,6 +400,7 @@ export const roleDemos: RoleDemo[] = [
     ],
     color: 'from-cyan-500 to-blue-500',
     badgeColor: 'cyan',
+    thumbnail: '/images/demo-manager.png',
   },
   {
     id: 'employee',
@@ -418,6 +421,7 @@ export const roleDemos: RoleDemo[] = [
     ],
     color: 'from-emerald-500 to-teal-500',
     badgeColor: 'emerald',
+    thumbnail: '/images/demo-employe.png',
   },
 ]
 

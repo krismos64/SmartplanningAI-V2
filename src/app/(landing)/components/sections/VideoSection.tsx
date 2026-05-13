@@ -60,18 +60,18 @@ export function VideoSection() {
               {!isPlaying ? (
                 /* Thumbnail with Play Button */
                 <>
-                  {/* Custom Thumbnail - Logo SmartPlanning */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-[#0a0a1a] via-[#0f0f2a] to-[#1a1a3a]" />
+                  {/* Miniature vidéo promotionnelle */}
                   <Image
-                    src="/images/logo-sp.png"
+                    src="/images/video-promotionnelle.png"
                     alt="SmartPlanning - Vidéo de présentation"
-                    width={600}
-                    height={390}
-                    className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 object-contain drop-shadow-2xl sm:w-[500px] md:w-[600px] lg:w-[700px]"
+                    fill
+                    sizes="(min-width: 1024px) 80vw, 100vw"
+                    priority
+                    className="absolute inset-0 h-full w-full object-cover"
                   />
 
-                  {/* Overlay Gradient */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-black/10" />
+                  {/* Overlay Gradient pour lisibilité du bouton play */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-black/30" />
 
                   {/* Play Button */}
                   <button
