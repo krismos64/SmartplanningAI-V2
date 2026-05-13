@@ -5,24 +5,24 @@
  * Main hero section with headline, CTA, and illustration
  */
 
-import { useRef } from 'react'
-import Link from 'next/link'
-import Image from 'next/image'
-import { ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
-  motion,
-  useScroll,
-  useTransform,
   fadeInUp,
-  staggerContainer,
-  scaleIn,
   floatAnimationValue,
   floatTransition,
   glowPulse,
   glowPulseTransition,
+  motion,
+  scaleIn,
+  staggerContainer,
+  useScroll,
+  useTransform,
 } from '@/lib/animations'
-import { ScrollIndicator, FloatingCheck, FloatingBell } from '../index'
+import { ArrowRight } from 'lucide-react'
+import Image from 'next/image'
+import Link from 'next/link'
+import { useRef } from 'react'
+import { FloatingBell, FloatingCheck, ScrollIndicator } from '../index'
 
 export function HeroSection() {
   const heroRef = useRef(null)
@@ -117,7 +117,7 @@ export function HeroSection() {
               variants={fadeInUp}
               className="mx-auto max-w-xl text-lg text-muted-foreground sm:text-xl lg:mx-0"
             >
-              Plannings, congés, messagerie interne et imports CSV — tout en un.
+              Plannings, congés, messagerie interne et imports CSV : tout en un.
               La solution SaaS française pour simplifier la gestion de vos
               équipes.
             </motion.p>

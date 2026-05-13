@@ -21,6 +21,7 @@ import { cn } from '@/lib/utils'
 // Navigation links for landing page
 const navLinks = [
   { href: '/#demo', label: 'Démo' },
+  { href: '/#role-demos', label: 'Démos par rôle' },
   { href: '/#features', label: 'Fonctionnalités' },
   { href: '/#how-it-works', label: 'Comment ça marche' },
   { href: '/#benefits', label: 'Avantages' },
