@@ -25,13 +25,8 @@ SmartPlanning est une application web de gestion de plannings d'equipe developpe
 - Theme clair et sombre
 - Banniere cookies RGPD
 - Systeme de facturation Stripe integre (per-seat billing)
-
-### Comparaison tarifaire
-Pour une entreprise de 20 employes :
-- SmartPlanning : 58 EUR/mois (20 x 2,90 EUR)
-- Combo : 60 EUR/mois (par etablissement)
-- Skello : 79 EUR/mois (par etablissement)
-- Factorial : 90 EUR/mois (estime)
+- Messagerie interne (conversations 1:1, equipe, groupes)
+- Import bulk d'employes via CSV ou Excel
 
 ### Cible
 - TPE (5-10 employes) : restaurants, commerces, artisans
@@ -41,6 +36,7 @@ Pour une entreprise de 20 employes :
 ### Stack technique
 - Frontend : Next.js 15, React 19, TypeScript, Tailwind CSS
 - Backend : Next.js Server Actions, Prisma ORM, PostgreSQL
+- Cache : Redis 7 (sessions, rate limiting, dashboards)
 - Paiement : Stripe (per-seat billing)
 - Hebergement : VPS OVH (France), Docker, Nginx, SSL Let's Encrypt
 - CI/CD : GitHub Actions
@@ -54,6 +50,81 @@ Pour une entreprise de 20 employes :
 - Politique cookies avec consentement explicite
 - Banniere RGPD conforme
 - Analytics Umami (RGPD-friendly, pas de cookies tracking)
+
+## Cas d'usage par secteur
+
+### Restauration / hotellerie
+Gestion des shifts en coupure (matin/soir), rotations week-end, remplacements de derniere minute. SmartPlanning gere les plannings par service, les heures supplementaires et les conges payes des saisonniers. Vue jour pour la brigade en cuisine, vue semaine pour la salle et l'accueil.
+
+### Commerce et retail
+Plannings hebdomadaires multi-rayons avec gestion des pauses dejeuner et des heures d'affluence (week-ends, soldes, fetes). Affectation par equipe (caisse, rayon frais, textile), notifications email lors d'un changement de planning, exports PDF pour affichage en back-office.
+
+### Securite / gardiennage
+Plannings 24/7 avec rotations 3x8, gestion des vacations de nuit et des jours feries majores. Suivi des heures travaillees par agent, exports Excel pour la paie, alertes en cas de chevauchement ou de depassement des plafonds legaux.
+
+### Sante et aide a domicile
+Plannings d'interventions au domicile des beneficiaires, gestion des tournees soignants et aides a domicile, suivi des temps de trajet. Workflow d'approbation des conges pour assurer la continuite de service, multi-equipes par secteur geographique.
+
+### BTP et chantiers
+Affectation des compagnons par chantier, gestion des conges intemperies, suivi des heures par projet. Roles Manager (chef de chantier) et Employe (compagnon), notes d'incidents pour signaler accidents ou retards, exports pour facturation client.
+
+## Comparaison fonctionnelle
+
+Comparaison basee sur les informations publiquement disponibles sur les sites officiels des editeurs (donnees indicatives, susceptibles d'evoluer).
+
+| Fonctionnalite                  | SmartPlanning | Skello       | Combo        | Eurecia      |
+|---------------------------------|---------------|--------------|--------------|--------------|
+| Modele tarifaire                | Per-seat 2,90 EUR | Per-etablissement | Per-etablissement | Per-module + per-user |
+| Essai gratuit                   | 21 jours      | 14 jours     | 14 jours     | Variable     |
+| Plannings drag and drop         | Oui           | Oui          | Oui          | Oui          |
+| Gestion conges                  | Oui (inclus)  | Oui          | Oui          | Oui (module dedie) |
+| Multi-etablissements            | Oui           | Oui          | Oui          | Oui          |
+| Messagerie interne              | Oui           | Oui          | Oui          | Partiel      |
+| Import CSV/Excel employes       | Oui           | Oui          | Oui          | Oui          |
+| Pointeuse / badgeuse            | Non           | Oui (option) | Oui          | Oui (module) |
+| Module paie integre             | Non           | Partiel      | Partiel      | Oui          |
+| Hebergement France              | Oui (OVH)     | Oui          | Oui          | Oui          |
+| Conformite RGPD                 | Oui           | Oui          | Oui          | Oui          |
+| Langue interface                | Francais      | Multi-langues | Francais     | Multi-langues |
+| Support francais                | Oui           | Oui          | Oui          | Oui          |
+| API publique                    | Non (roadmap) | Oui          | Oui          | Oui          |
+| Cible principale                | TPE/PME 5-250 | Restauration/retail | Restauration/retail | PME/ETI generaliste |
+
+Positionnement : SmartPlanning est le plus simple et le plus abordable pour les TPE/PME generalistes qui veulent un planning + conges + messagerie sans modules a la carte ni engagement. Skello et Combo sont plus matures sur les fonctions metier restauration/retail (pointeuse, integration caisse). Eurecia est plus complet en RH globale (paie, formation, entretiens) mais plus complexe a deployer.
+
+## Glossaire
+
+- **Planning hebdomadaire** : organisation des horaires de travail d'une equipe sur une semaine type, generalement du lundi au dimanche.
+- **Conges payes (CP)** : jours de repos remuneres acquis par le salarie (2,5 jours ouvrables par mois travaille en France, soit 5 semaines par an).
+- **RTT (Reduction du Temps de Travail)** : jours de repos compensant les heures travaillees au-dela de 35h/semaine pour un temps plein.
+- **Solde de conges** : nombre de jours de conges acquis et restants pour un salarie sur une periode donnee (annee de reference ou annee civile).
+- **Workflow d'approbation** : circuit de validation hierarchique d'une demande (par exemple : Employe soumet -> Manager valide ou refuse -> Notification automatique).
+- **Multi-tenant** : architecture logicielle ou plusieurs entreprises (tenants) partagent la meme instance applicative tout en ayant leurs donnees strictement isolees.
+- **RBAC (Role-Based Access Control)** : controle d'acces base sur les roles. SmartPlanning utilise 4 niveaux : Super Admin, Directeur, Manager, Employe.
+- **Badgeuse** : dispositif materiel ou logiciel permettant aux salaries de pointer leur arrivee et leur depart pour le suivi du temps de travail.
+
+## Tarification detaillee
+
+### Modele per-seat
+SmartPlanning facture **2,90 EUR HT par employe et par mois**, sans engagement, avec essai gratuit de 21 jours sans carte bancaire. Toutes les fonctionnalites sont incluses dans ce prix unique : plannings, conges, messagerie, exports, support.
+
+### Exemples chiffres
+- 5 employes : 14,50 EUR HT/mois (174 EUR HT/an)
+- 10 employes : 29 EUR HT/mois (348 EUR HT/an)
+- 20 employes : 58 EUR HT/mois (696 EUR HT/an)
+- 50 employes : 145 EUR HT/mois (1 740 EUR HT/an)
+
+### Comparaison cout pour 20 employes (estimations)
+- SmartPlanning : 58 EUR/mois (per-seat 20 x 2,90 EUR)
+- Combo : a partir de 60 EUR/mois (forfait etablissement)
+- Skello : a partir de 79 EUR/mois (forfait etablissement)
+- Eurecia : a partir de 90 EUR/mois (combinaison de modules)
+
+### Avantages du per-seat
+- Cout proportionnel a la taille reelle de l'equipe
+- Ideal pour les TPE qui demarrent (pas de minimum mensuel eleve)
+- Mise a jour automatique du tarif lors d'embauches ou departs
+- Pas de cout cache : aucune option payante, aucun module supplementaire
 
 ## Pages publiques
 
