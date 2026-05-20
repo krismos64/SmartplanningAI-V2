@@ -8,10 +8,6 @@
 import { Button } from '@/components/ui/button'
 import {
   fadeInUp,
-  floatAnimationValue,
-  floatTransition,
-  glowPulse,
-  glowPulseTransition,
   motion,
   scaleIn,
   staggerContainer,
@@ -57,12 +53,8 @@ export function HeroSection() {
             {/* Glow Effect */}
             <div className="absolute inset-0 rounded-3xl bg-blue-600/10 dark:bg-blue-400/10 blur-3xl" />
 
-            {/* Welcome Image */}
-            <motion.div
-              animate={floatAnimationValue}
-              transition={floatTransition}
-              className="relative"
-            >
+            {/* Welcome Image (static, no infinite float) */}
+            <div className="relative">
               <Image
                 src="/images/logo-smartplanning.webp"
                 alt="Bienvenue sur SmartPlanning - Illustration avec personnage et robot IA"
@@ -71,7 +63,7 @@ export function HeroSection() {
                 className="relative z-10 drop-shadow-2xl"
                 priority
               />
-            </motion.div>
+            </div>
 
             {/* Floating Elements */}
             <FloatingCheck />
@@ -160,25 +152,16 @@ export function HeroSection() {
           </motion.div>
         </div>
 
-        {/* Centered Logo at bottom of Hero */}
+        {/* Centered Logo at bottom of Hero - apparition au scroll, pas de boucle */}
         <motion.div
-          initial={false}
+          initial={{ opacity: 0, scale: 0.9, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.6, ease: 'easeOut' }}
           className="mt-16 flex justify-center lg:mt-24"
         >
-          <motion.div
-            className="relative"
-            animate={{ y: [0, -8, 0] }}
-            transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-            whileHover={{ scale: 1.05 }}
-          >
-            {/* Glow effect */}
-            <motion.div
-              className="absolute inset-0 rounded-3xl bg-blue-600/15 dark:bg-blue-400/15 blur-3xl"
-              animate={glowPulse}
-              transition={glowPulseTransition}
-            />
+          <motion.div className="relative" whileHover={{ scale: 1.05 }}>
+            {/* Glow effect statique */}
+            <div className="absolute inset-0 rounded-3xl bg-blue-600/15 blur-3xl dark:bg-blue-400/15" />
             <Image
               src="/images/logo-sp.png"
               alt="SmartPlanning"

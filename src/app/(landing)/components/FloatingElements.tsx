@@ -2,11 +2,12 @@
 
 /**
  * FloatingElements Component
- * Animated floating icons around content
+ * Badges décoratifs (Check ✓ + Bell 🔔) positionnés autour de l'image hero.
+ * Apparition one-shot au mount (fade + slide), pas d'animation en boucle.
  */
 
 import { Check, Bell, type LucideIcon } from 'lucide-react'
-import { motion, floatingElement1, floatingElement2 } from '@/lib/animations'
+import { motion } from '@/lib/animations'
 
 interface FloatingElementProps {
   icon: LucideIcon
@@ -23,15 +24,25 @@ function FloatingElement({
   background,
   shadowColor,
 }: FloatingElementProps) {
-  const animation =
-    position === 'top-right' ? floatingElement1 : floatingElement2
   const positionClasses =
     position === 'top-right' ? '-right-2 top-4' : '-left-2 bottom-4'
 
+  // Apparition one-shot : depuis sa position originale (decalée + rotation)
+  // vers son état final stable. Pas de répétition.
+  const initial =
+    position === 'top-right'
+      ? { opacity: 0, y: -10, rotate: 5 }
+      : { opacity: 0, y: 10, rotate: -5 }
+
   return (
     <motion.div
-      animate={animation.animate}
-      transition={animation.transition}
+      initial={initial}
+      animate={{ opacity: 1, y: 0, rotate: 0 }}
+      transition={{
+        duration: 0.6,
+        delay: position === 'top-right' ? 0.5 : 1,
+        ease: 'easeOut',
+      }}
       className={`absolute ${positionClasses} rounded-2xl ${background} p-4 shadow-xl ${shadowColor}`}
     >
       <Icon className="h-6 w-6 text-white" />

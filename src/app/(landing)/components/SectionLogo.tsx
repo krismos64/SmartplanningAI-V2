@@ -2,18 +2,12 @@
 
 /**
  * SectionLogo Component
- * Animated logo displayed at the bottom of each section
+ * Logo displayed at the bottom of each section.
+ * Apparition au scroll uniquement (whileInView), pas d'animation en boucle.
  */
 
 import Image from 'next/image'
-import {
-  motion,
-  floatSmall,
-  floatSmallTransition,
-  glowPulse,
-  glowPulseTransition,
-  hoverScale,
-} from '@/lib/animations'
+import { motion, hoverScale } from '@/lib/animations'
 
 export function SectionLogo() {
   return (
@@ -24,18 +18,9 @@ export function SectionLogo() {
       transition={{ duration: 0.8, ease: 'easeOut' }}
       className="mt-16 flex justify-center lg:mt-20"
     >
-      <motion.div
-        className="relative"
-        animate={floatSmall}
-        transition={floatSmallTransition}
-        whileHover={hoverScale}
-      >
-        {/* Glow effect */}
-        <motion.div
-          className="absolute inset-0 rounded-3xl bg-blue-600/15 dark:bg-blue-400/15 blur-3xl"
-          animate={glowPulse}
-          transition={glowPulseTransition}
-        />
+      <motion.div className="relative" whileHover={hoverScale}>
+        {/* Glow effect statique */}
+        <div className="absolute inset-0 rounded-3xl bg-blue-600/15 blur-3xl dark:bg-blue-400/15" />
         <Image
           src="/images/logo-sp.png"
           alt="SmartPlanning"

@@ -82,16 +82,7 @@ export {
   // Landing page specific (compatibility with old system)
   fadeInUp,
   scaleIn,
-  // Continuous / Looping animations
-  floatAnimation,
-  floatAnimationValue,
-  floatTransition,
-  floatSmallAnimation,
-  floatSmall,
-  floatSmallTransition,
-  glowPulseAnimation,
-  glowPulse,
-  glowPulseTransition,
+  // Continuous / Looping animations (conservés : usage fonctionnel uniquement)
   marqueeAnimation,
   marqueeAnimationValue,
   marqueeTransition,
@@ -99,11 +90,7 @@ export {
   bounceAnimationValue,
   bounceTransition,
   pulseAnimation,
-  orbitAnimation,
-  // Floating elements presets
-  floatingElement1,
-  floatingElement2,
-  // Illustration variants (with initial/animate states)
+  // Illustration variants (with initial/animate states) - NotFoundIllustration
   illustrationContainer,
   floatVariants,
   orbitVariants,
