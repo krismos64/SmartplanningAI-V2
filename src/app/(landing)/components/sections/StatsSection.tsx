@@ -22,8 +22,8 @@ export function StatsSection() {
         >
           {stats.map((stat, i) => (
             <motion.div key={i} variants={fadeInUp} className="text-center">
-              <stat.icon className="mx-auto mb-4 h-8 w-8 text-cyan-400" />
-              <div className="mb-2 bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-4xl font-bold text-transparent lg:text-5xl">
+              <stat.icon className="mx-auto mb-4 h-8 w-8 text-blue-600 dark:text-blue-400" />
+              <div className="mb-2 text-4xl font-bold text-foreground lg:text-5xl">
                 <AnimatedCounter value={stat.value} suffix={stat.suffix} />
               </div>
               <p className="text-muted-foreground">{stat.label}</p>

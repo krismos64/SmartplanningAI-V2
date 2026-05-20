@@ -34,7 +34,7 @@ export function BenefitsSection() {
             transition={{ duration: 0.6 }}
             className="relative"
           >
-            <div className="absolute inset-0 rounded-3xl bg-gradient-to-r from-amber-500/20 to-orange-500/20 blur-3xl" />
+            <div className="absolute inset-0 rounded-3xl bg-blue-600/10 dark:bg-blue-400/10 blur-3xl" />
             <Image
               src="/images/avant-après-sp.png"
               alt="Avant et après SmartPlanning - Comparaison visuelle"
@@ -56,12 +56,10 @@ export function BenefitsSection() {
               <motion.div
                 key={benefit.id}
                 variants={fadeInUp}
-                className="group flex gap-4 rounded-xl border border-border/50 bg-card/50 p-4 transition-all hover:border-primary/30 hover:bg-card"
+                className="group flex gap-4 rounded-xl border border-border/50 bg-card/50 p-4 transition-all hover:border-blue-600/30 dark:hover:border-blue-400/30 hover:bg-card"
               >
-                <div
-                  className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${benefit.color}`}
-                >
-                  <benefit.icon className="h-6 w-6 text-white" />
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-blue-600/10 ring-1 ring-blue-600/15 dark:bg-blue-400/15 dark:ring-blue-400/15">
+                  <benefit.icon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                 </div>
                 <div>
                   <h3 className="mb-1 font-semibold">{benefit.title}</h3>

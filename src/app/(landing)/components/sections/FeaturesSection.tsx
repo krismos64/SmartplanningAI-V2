@@ -61,44 +61,34 @@ export function FeaturesSection() {
               variants={fadeInUp}
               whileHover={{ y: -5, transition: { duration: 0.2 } }}
               className={cn(
-                'group relative overflow-hidden rounded-2xl border bg-card/50 p-8 transition-all hover:border-primary/30',
+                'group relative overflow-hidden rounded-2xl border bg-card/50 p-8 transition-all hover:border-blue-600/30 dark:hover:border-blue-400/30',
                 feature.comingSoon
-                  ? 'border-violet-500/30 bg-violet-500/5'
+                  ? 'border-blue-600/30 dark:border-blue-400/30 bg-blue-600/5 dark:bg-blue-400/5'
                   : 'border-border/50'
               )}
             >
               {/* Coming Soon Badge */}
               {feature.comingSoon && (
-                <div className="absolute right-4 top-4 rounded-full bg-gradient-to-r from-violet-500 to-purple-500 px-3 py-1 text-xs font-semibold text-white">
+                <div className="absolute right-4 top-4 rounded-full bg-blue-600 px-3 py-1 text-xs font-semibold text-white">
                   À venir
                 </div>
               )}
 
               {/* Icon */}
-              <div
-                className={cn(
-                  'mb-6 inline-flex rounded-xl bg-gradient-to-br p-3',
-                  feature.color
-                )}
-              >
-                <feature.icon className="h-6 w-6 text-white" />
+              <div className="mb-6 inline-flex rounded-xl bg-blue-600/10 p-3 ring-1 ring-blue-600/15 dark:bg-blue-400/15 dark:ring-blue-400/15">
+                <feature.icon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
               </div>
 
               {/* Content */}
               <h3 className="mb-3 text-xl font-semibold">{feature.title}</h3>
               <p className="text-muted-foreground">{feature.description}</p>
 
-              {/* Hover Gradient */}
-              <div
-                className={cn(
-                  'absolute inset-0 -z-10 opacity-0 transition-opacity group-hover:opacity-10',
-                  `bg-gradient-to-br ${feature.color}`
-                )}
-              />
+              {/* Hover Tint */}
+              <div className="absolute inset-0 -z-10 bg-blue-600/5 dark:bg-blue-400/5 opacity-0 transition-opacity group-hover:opacity-100" />
 
               {/* Hover Arrow */}
               <div className="absolute bottom-8 right-8 opacity-0 transition-opacity group-hover:opacity-100">
-                <ChevronRight className="h-5 w-5 text-cyan-400" />
+                <ChevronRight className="h-5 w-5 text-blue-600 dark:text-blue-400" />
               </div>
             </motion.div>
           ))}

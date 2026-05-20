@@ -55,7 +55,7 @@ export function HeroSection() {
             className="relative flex items-center justify-center lg:order-2"
           >
             {/* Glow Effect */}
-            <div className="absolute inset-0 rounded-3xl bg-gradient-to-r from-blue-500/20 to-cyan-500/20 blur-3xl" />
+            <div className="absolute inset-0 rounded-3xl bg-blue-600/10 dark:bg-blue-400/10 blur-3xl" />
 
             {/* Welcome Image */}
             <motion.div
@@ -87,10 +87,10 @@ export function HeroSection() {
           >
             {/* Badge */}
             <motion.div variants={fadeInUp} className="mb-6 inline-block">
-              <span className="inline-flex items-center gap-2 rounded-full border border-blue-500/20 bg-blue-500/10 px-4 py-2 text-sm text-blue-400">
+              <span className="inline-flex items-center gap-2 rounded-full border border-blue-600/20 dark:border-blue-400/20 bg-blue-600/10 dark:bg-blue-400/10 px-4 py-2 text-sm text-blue-600 dark:text-blue-400">
                 <span className="relative flex h-2 w-2">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-blue-400 opacity-75" />
-                  <span className="relative inline-flex h-2 w-2 rounded-full bg-blue-400" />
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-blue-600 opacity-75 dark:bg-blue-400" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-blue-600 dark:bg-blue-400" />
                 </span>
                 Nouvelle version disponible
               </span>
@@ -103,10 +103,10 @@ export function HeroSection() {
             >
               Planifiez{' '}
               <span className="relative">
-                <span className="relative z-10 bg-gradient-to-r from-blue-400 via-cyan-400 to-emerald-400 bg-clip-text text-transparent">
+                <span className="relative z-10 text-blue-600 dark:text-blue-400">
                   intelligemment
                 </span>
-                <span className="absolute bottom-2 left-0 h-3 w-full -rotate-1 bg-gradient-to-r from-blue-500/30 to-cyan-500/30" />
+                <span className="absolute bottom-2 left-0 h-3 w-full -rotate-1 bg-blue-600/20 dark:bg-blue-400/20" />
               </span>
               <br />
               votre équipe
@@ -129,7 +129,7 @@ export function HeroSection() {
             >
               <Button
                 size="lg"
-                className="h-14 border-0 bg-gradient-to-r from-blue-500 to-cyan-400 px-8 text-base text-white shadow-xl shadow-blue-500/25 hover:from-blue-600 hover:to-cyan-500"
+                className="h-14 bg-blue-600 px-8 text-base font-semibold text-white shadow-lg shadow-blue-600/25 hover:bg-blue-700"
                 asChild
               >
                 <Link href="/register">
@@ -149,7 +149,7 @@ export function HeroSection() {
           >
             <Button
               size="lg"
-              className="h-14 w-full border-0 bg-gradient-to-r from-blue-500 to-cyan-400 px-8 text-base text-white shadow-xl shadow-blue-500/25 hover:from-blue-600 hover:to-cyan-500"
+              className="h-14 w-full bg-blue-600 px-8 text-base font-semibold text-white shadow-lg shadow-blue-600/25 hover:bg-blue-700"
               asChild
             >
               <Link href="/register">
@@ -175,7 +175,7 @@ export function HeroSection() {
           >
             {/* Glow effect */}
             <motion.div
-              className="absolute inset-0 rounded-3xl bg-gradient-to-r from-blue-500/30 via-cyan-400/30 to-purple-500/30 blur-3xl"
+              className="absolute inset-0 rounded-3xl bg-blue-600/15 dark:bg-blue-400/15 blur-3xl"
               animate={glowPulse}
               transition={glowPulseTransition}
             />
