@@ -18,34 +18,32 @@ export function CTASection() {
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-600 via-blue-700 to-purple-700 p-12 lg:p-20"
+          className="relative overflow-hidden rounded-3xl bg-blue-700 p-12 lg:p-20"
         >
-          {/* Background Elements */}
+          {/* Background dot pattern */}
           <div
-            className="absolute inset-0 opacity-30"
+            className="absolute inset-0 opacity-20"
             style={{
               backgroundImage:
                 'radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px)',
               backgroundSize: '24px 24px',
             }}
           />
-          <div className="absolute right-0 top-0 h-96 w-96 rounded-full bg-cyan-400/20 blur-[120px]" />
-          <div className="absolute bottom-0 left-0 h-96 w-96 rounded-full bg-purple-400/20 blur-[120px]" />
 
           <div className="relative z-10 text-center text-white">
-            <h2 className="mb-6 text-3xl font-bold text-white sm:text-4xl lg:text-5xl">
+            <h2 className="mb-6 text-3xl font-bold sm:text-4xl lg:text-5xl">
               Prêt à transformer
               <br />
               votre gestion des plannings ?
             </h2>
-            <p className="mx-auto mb-10 max-w-2xl text-lg text-white/80">
+            <p className="mx-auto mb-10 max-w-2xl text-lg text-white/90">
               Commencez dès maintenant à simplifier votre organisation avec
               SmartPlanning. Essai gratuit, sans engagement.
             </p>
             <div className="flex flex-col justify-center gap-4 sm:flex-row">
               <Button
                 size="lg"
-                className="h-14 bg-white px-8 text-base font-semibold text-blue-600 hover:bg-white/90"
+                className="h-14 bg-white px-8 text-base font-semibold text-blue-700 hover:bg-white/90"
                 asChild
               >
                 <Link href="/register">
@@ -55,7 +53,8 @@ export function CTASection() {
               </Button>
               <Button
                 size="lg"
-                className="h-14 border-2 border-white bg-transparent px-8 text-base font-semibold text-white hover:bg-white hover:text-blue-600"
+                variant="outline"
+                className="h-14 border-2 border-white bg-transparent px-8 text-base font-semibold text-white hover:bg-white hover:text-blue-700"
                 asChild
               >
                 <Link href="#contact">Besoin de renseignements</Link>

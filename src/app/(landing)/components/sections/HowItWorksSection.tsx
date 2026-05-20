@@ -14,7 +14,7 @@ export function HowItWorksSection() {
   return (
     <section
       id="how-it-works"
-      className="bg-gradient-to-b from-transparent via-blue-950/20 to-transparent py-24 lg:py-32"
+      className="bg-gradient-to-b from-transparent via-blue-600/5 dark:via-blue-400/5 to-transparent py-24 lg:py-32"
     >
       <div className="container-custom">
         {/* Section Header - Using reusable component */}
@@ -42,14 +42,14 @@ export function HowItWorksSection() {
             >
               {/* Connector Line */}
               {index < steps.length - 1 && (
-                <div className="absolute left-1/2 top-16 hidden h-0.5 w-full bg-gradient-to-r from-purple-500/50 to-transparent md:block" />
+                <div className="absolute left-1/2 top-16 hidden h-0.5 w-full bg-gradient-to-r from-blue-600/40 dark:from-blue-400/40 to-transparent md:block" />
               )}
 
               {/* Step Number */}
               <div className="relative mx-auto mb-6 flex h-32 w-32 items-center justify-center">
-                <div className="absolute inset-0 rounded-full bg-gradient-to-br from-purple-500/20 to-pink-500/20 blur-xl" />
-                <div className="relative flex h-24 w-24 items-center justify-center rounded-full border border-purple-500/30 bg-background">
-                  <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-4xl font-bold text-transparent">
+                <div className="absolute inset-0 rounded-full bg-blue-600/15 dark:bg-blue-400/15 blur-xl" />
+                <div className="relative flex h-24 w-24 items-center justify-center rounded-full border border-blue-600/30 dark:border-blue-400/30 bg-background">
+                  <span className="text-4xl font-bold text-blue-600 dark:text-blue-400">
                     {step.number}
                   </span>
                 </div>

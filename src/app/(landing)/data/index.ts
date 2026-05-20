@@ -38,7 +38,6 @@ export interface Feature {
   icon: LucideIcon
   title: string
   description: string
-  color: string
   comingSoon?: boolean
 }
 
@@ -66,7 +65,6 @@ export interface Benefit {
   icon: LucideIcon
   title: string
   description: string
-  color: string
 }
 
 export interface VideoFeature {
@@ -115,83 +113,71 @@ export const features: Feature[] = [
     title: 'Espaces dédiés',
     description:
       'Connexion sécurisée avec espaces personnalisés pour managers, employés et directeurs.',
-    color: 'from-blue-500 to-cyan-400',
   },
   {
     icon: Users,
     title: 'Multi-équipes',
     description:
       'Gérez plusieurs équipes et sites depuis une interface unifiée et intuitive.',
-    color: 'from-purple-500 to-pink-400',
   },
   {
     icon: Palmtree,
     title: 'Congés simplifiés',
     description:
       'Demandes et validations de congés en quelques clics avec workflow automatisé.',
-    color: 'from-emerald-500 to-teal-400',
   },
   {
     icon: LayoutDashboard,
     title: 'Tableaux de bord',
     description: 'Dashboards personnalisés par rôle avec métriques temps réel.',
-    color: 'from-orange-500 to-amber-400',
   },
   {
     icon: CheckSquare,
     title: 'Gestion des tâches',
     description:
       'Todolist intégrée pour organiser et suivre les tâches de chaque employé.',
-    color: 'from-cyan-500 to-blue-400',
   },
   {
     icon: AlertTriangle,
     title: 'Suivi des incidents',
     description:
       'Tracez et gérez les incidents employés avec historique complet et rapports.',
-    color: 'from-rose-500 to-red-400',
   },
   {
     icon: FileDown,
     title: 'Exports PDF',
     description:
       'Exportez vos plannings et congés en PDF pour une consultation hors ligne.',
-    color: 'from-indigo-500 to-violet-400',
   },
   {
     icon: Bell,
     title: 'Notifications temps réel',
     description:
       'Alertes instantanées pour les changements de planning et événements importants.',
-    color: 'from-amber-500 to-orange-400',
   },
   {
     icon: ShieldCheck,
     title: 'Sécurité des données RH',
     description:
       'Données cryptées et protégées. Conformité RGPD stricte, hébergement sécurisé en France. Confidentialité garantie.',
-    color: 'from-green-500 to-emerald-400',
   },
   {
     icon: MessagesSquare,
     title: 'Messagerie interne',
     description:
       "Conversations en direct, par équipe ou en groupe. Envoyez des fichiers et images sans quitter l'outil. Zéro email interne.",
-    color: 'from-sky-500 to-blue-400',
   },
   {
     icon: Upload,
     title: 'Import CSV / Excel',
     description:
       "Importez vos employés en masse depuis un fichier CSV ou Excel. Prévisualisation, validation en temps réel et rapport d'import détaillé inclus.",
-    color: 'from-pink-500 to-rose-400',
   },
   {
     icon: Sparkles,
     title: 'Plannings IA',
     description:
       'Création intelligente de plannings optimisés grâce à notre algorithme IA avancé.',
-    color: 'from-violet-500 to-purple-400',
     comingSoon: true,
   },
 ]
@@ -312,7 +298,6 @@ export const benefits: Benefit[] = [
     title: 'Gain de temps',
     description:
       'Créez vos plannings en quelques clics au lieu de plusieurs heures.',
-    color: 'from-blue-500 to-cyan-400',
   },
   {
     id: 'no-excel',
@@ -320,7 +305,6 @@ export const benefits: Benefit[] = [
     title: 'Fini les fichiers Excel',
     description:
       'Plus de tableaux complexes à gérer, tout est automatisé et centralisé.',
-    color: 'from-rose-500 to-pink-400',
   },
   {
     id: 'communication',
@@ -328,7 +312,6 @@ export const benefits: Benefit[] = [
     title: 'Communication intégrée',
     description:
       'Messagerie interne par équipe ou en groupe, notifications instantanées. Finis les WhatsApp et emails professionnels dispersés.',
-    color: 'from-purple-500 to-violet-400',
   },
   {
     id: 'centralized',
@@ -336,7 +319,6 @@ export const benefits: Benefit[] = [
     title: 'Tout centralisé',
     description:
       'Plannings, congés, tâches et incidents sur une seule plateforme.',
-    color: 'from-emerald-500 to-teal-400',
   },
   {
     id: 'coordination',
@@ -344,14 +326,12 @@ export const benefits: Benefit[] = [
     title: 'Meilleure coordination',
     description:
       'Visibilité totale sur les équipes pour une organisation optimale.',
-    color: 'from-amber-500 to-orange-400',
   },
   {
     id: 'productivity',
     icon: TrendingUp,
     title: 'Productivité accrue',
     description: "Concentrez-vous sur l'essentiel, l'outil gère la complexité.",
-    color: 'from-indigo-500 to-blue-400',
   },
 ]
 

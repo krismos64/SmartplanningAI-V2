@@ -37,7 +37,7 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { cn } from '@/lib/utils'
-import { GRADIENT_BUTTON_CLASSES } from '@/app/(landing)/components'
+import { PRIMARY_BUTTON_CLASSES } from '@/app/(landing)/components'
 
 /**
  * ForgotPasswordForm Component
@@ -181,7 +181,7 @@ export function ForgotPasswordForm() {
         {/* Submit Button */}
         <Button
           type="submit"
-          className={cn('w-full', GRADIENT_BUTTON_CLASSES)}
+          className={cn('w-full', PRIMARY_BUTTON_CLASSES)}
           disabled={isLoading}
         >
           {isLoading ? (

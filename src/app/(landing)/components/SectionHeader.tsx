@@ -9,50 +9,20 @@
 import { cn } from '@/lib/utils'
 import { motion, fadeInUp, staggerContainer } from '@/lib/animations'
 
-// Color variants for badges and gradients
+const PRIMARY_VARIANT = {
+  border: 'border-blue-600/20 dark:border-blue-400/20',
+  bg: 'bg-blue-600/10 dark:bg-blue-400/10',
+  text: 'text-blue-600 dark:text-blue-400',
+} as const
+
 export const SECTION_COLORS = {
-  blue: {
-    border: 'border-blue-500/20',
-    bg: 'bg-blue-500/10',
-    text: 'text-blue-400',
-    gradient: 'from-blue-400 to-cyan-400',
-  },
-  purple: {
-    border: 'border-purple-500/20',
-    bg: 'bg-purple-500/10',
-    text: 'text-purple-400',
-    gradient: 'from-purple-400 to-pink-400',
-  },
-  emerald: {
-    border: 'border-emerald-500/20',
-    bg: 'bg-emerald-500/10',
-    text: 'text-emerald-400',
-    gradient: 'from-emerald-400 to-cyan-400',
-  },
-  red: {
-    border: 'border-red-500/20',
-    bg: 'bg-red-500/10',
-    text: 'text-red-400',
-    gradient: 'from-red-400 to-pink-400',
-  },
-  amber: {
-    border: 'border-amber-500/20',
-    bg: 'bg-amber-500/10',
-    text: 'text-amber-400',
-    gradient: 'from-amber-400 to-orange-400',
-  },
-  cyan: {
-    border: 'border-cyan-500/20',
-    bg: 'bg-cyan-500/10',
-    text: 'text-cyan-400',
-    gradient: 'from-cyan-400 to-blue-400',
-  },
-  violet: {
-    border: 'border-violet-500/20',
-    bg: 'bg-violet-500/10',
-    text: 'text-violet-400',
-    gradient: 'from-violet-400 to-fuchsia-400',
-  },
+  blue: PRIMARY_VARIANT,
+  purple: PRIMARY_VARIANT,
+  emerald: PRIMARY_VARIANT,
+  red: PRIMARY_VARIANT,
+  amber: PRIMARY_VARIANT,
+  cyan: PRIMARY_VARIANT,
+  violet: PRIMARY_VARIANT,
 } as const
 
 export type SectionColor = keyof typeof SECTION_COLORS
@@ -112,12 +82,7 @@ export function SectionHeader({
         className="mb-4 text-3xl font-bold sm:text-4xl lg:text-5xl"
       >
         {title}{' '}
-        <span
-          className={cn(
-            'bg-gradient-to-r bg-clip-text text-transparent',
-            colors.gradient
-          )}
-        >
+        <span className="text-blue-600 dark:text-blue-400">
           {titleHighlight}
         </span>
       </motion.h2>

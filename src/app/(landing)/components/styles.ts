@@ -6,18 +6,18 @@
  */
 
 /**
- * Primary CTA button with gradient (blue to cyan)
- * Used in: HeroSection, CTASection, AboutContent, Auth pages
+ * Primary CTA button — solid blue-600 for WCAG AA contrast on white text
+ * (token --primary at HSL 217 91% 60% = #5593f7 fails AA 4.5:1 with white text).
+ * Used in: HeroSection, CTASection, AboutContent, Auth pages.
  */
-export const GRADIENT_BUTTON_CLASSES =
-  'h-14 border-0 bg-gradient-to-r from-blue-500 to-cyan-400 px-8 text-base text-white shadow-xl shadow-blue-500/25 hover:from-blue-600 hover:to-cyan-500'
+export const PRIMARY_BUTTON_CLASSES =
+  'h-14 bg-blue-600 px-8 text-base font-semibold text-white shadow-lg shadow-blue-600/25 hover:bg-blue-700'
 
 /**
- * Gradient text (cyan to blue) for highlighted words
- * Adapts to light/dark mode
+ * Highlight text — blue-600 in light / blue-400 in dark for WCAG AA contrast.
+ * Used in titles to emphasize a keyword.
  */
-export const GRADIENT_TEXT_CLASSES =
-  'bg-gradient-to-r from-cyan-500 to-blue-500 bg-clip-text text-transparent dark:from-cyan-400 dark:to-blue-400'
+export const HIGHLIGHT_TEXT_CLASSES = 'text-blue-600 dark:text-blue-400'
 
 /**
  * Badge styles for section headers

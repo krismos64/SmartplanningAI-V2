@@ -29,8 +29,8 @@ import {
   AnimatedBackground,
   TopBanner,
   FAQItem,
-  GRADIENT_BUTTON_CLASSES,
-  GRADIENT_TEXT_CLASSES,
+  PRIMARY_BUTTON_CLASSES,
+  HIGHLIGHT_TEXT_CLASSES,
 } from '@/app/(landing)/components'
 import { LandingHeader } from '@/components/layout/LandingHeader'
 import { LandingFooter } from '@/components/layout/LandingFooter'
@@ -99,7 +99,7 @@ export function PricingPageContent() {
                 className="mb-6 text-4xl font-bold leading-tight sm:text-5xl lg:text-6xl"
               >
                 Un tarif unique,{' '}
-                <span className={GRADIENT_TEXT_CLASSES}>
+                <span className={HIGHLIGHT_TEXT_CLASSES}>
                   simple et transparent
                 </span>
               </motion.h1>
@@ -294,13 +294,13 @@ export function PricingPageContent() {
                   className="mb-4 text-3xl font-bold sm:text-4xl lg:text-5xl"
                 >
                   Prêt à{' '}
-                  <span className={GRADIENT_TEXT_CLASSES}>simplifier</span> vos
+                  <span className={HIGHLIGHT_TEXT_CLASSES}>simplifier</span> vos
                   plannings ?
                 </h2>
                 <p className="mx-auto mb-8 max-w-2xl text-lg text-muted-foreground">
                   Inscription en 2 minutes. Sans engagement.
                 </p>
-                <Button size="lg" className={GRADIENT_BUTTON_CLASSES} asChild>
+                <Button size="lg" className={PRIMARY_BUTTON_CLASSES} asChild>
                   <Link
                     href="/register"
                     aria-label="Démarrer l'essai gratuit de 21 jours sans carte bancaire"

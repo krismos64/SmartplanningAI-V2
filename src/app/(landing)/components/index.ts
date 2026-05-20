@@ -17,7 +17,7 @@ export { FloatingCheck, FloatingBell } from './FloatingElements'
 
 // Shared styles constants
 export {
-  GRADIENT_BUTTON_CLASSES,
-  GRADIENT_TEXT_CLASSES,
+  PRIMARY_BUTTON_CLASSES,
+  HIGHLIGHT_TEXT_CLASSES,
   BADGE_BASE_CLASSES,
 } from './styles'

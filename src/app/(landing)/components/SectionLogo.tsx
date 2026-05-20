@@ -32,7 +32,7 @@ export function SectionLogo() {
       >
         {/* Glow effect */}
         <motion.div
-          className="absolute inset-0 rounded-3xl bg-gradient-to-r from-blue-500/30 via-cyan-400/30 to-purple-500/30 blur-3xl"
+          className="absolute inset-0 rounded-3xl bg-blue-600/15 dark:bg-blue-400/15 blur-3xl"
           animate={glowPulse}
           transition={glowPulseTransition}
         />

@@ -76,7 +76,7 @@ export function RoleDemosSection() {
                   'group relative flex flex-1 items-center gap-3 rounded-xl border bg-card/50 p-4 text-left transition-all',
                   isActive
                     ? 'border-transparent shadow-lg'
-                    : 'border-border/50 hover:border-primary/30'
+                    : 'border-border/50 hover:border-blue-600/30 dark:hover:border-blue-400/30'
                 )}
                 whileHover={{ y: -2 }}
                 whileTap={{ scale: 0.98 }}
@@ -234,14 +234,7 @@ export function RoleDemosSection() {
                 </p>
                 <h3 className="mb-4 text-2xl font-bold text-foreground sm:text-3xl">
                   Espace{' '}
-                  <span
-                    className={cn(
-                      'bg-gradient-to-r bg-clip-text text-transparent',
-                      colors.gradient
-                    )}
-                  >
-                    {activeRole.label}
-                  </span>
+                  <span className="text-blue-600 dark:text-blue-400">{activeRole.label}</span>
                 </h3>
                 <p className="text-muted-foreground">
                   {activeRole.description}

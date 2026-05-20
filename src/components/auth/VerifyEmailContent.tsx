@@ -30,7 +30,7 @@ import {
 } from '@/lib/actions/verification-actions'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { GRADIENT_BUTTON_CLASSES } from '@/app/(landing)/components'
+import { PRIMARY_BUTTON_CLASSES } from '@/app/(landing)/components'
 
 interface VerifyEmailContentProps {
   token: string
@@ -147,7 +147,7 @@ export function VerifyEmailContent({ token }: VerifyEmailContentProps) {
             secondes...
           </p>
           <Link href="/login">
-            <Button className={cn('w-full', GRADIENT_BUTTON_CLASSES)}>
+            <Button className={cn('w-full', PRIMARY_BUTTON_CLASSES)}>
               Se connecter maintenant
             </Button>
           </Link>
@@ -195,7 +195,7 @@ export function VerifyEmailContent({ token }: VerifyEmailContentProps) {
             <Button
               onClick={() => void handleResend()}
               disabled={isResending || !userEmail}
-              className={cn('w-full', GRADIENT_BUTTON_CLASSES)}
+              className={cn('w-full', PRIMARY_BUTTON_CLASSES)}
             >
               {isResending ? (
                 <>

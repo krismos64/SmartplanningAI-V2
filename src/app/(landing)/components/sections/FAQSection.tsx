@@ -50,14 +50,7 @@ export function FAQSection() {
               className="mb-6 text-3xl font-bold sm:text-4xl lg:text-5xl"
             >
               Questions{' '}
-              <span
-                className={cn(
-                  'bg-gradient-to-r bg-clip-text text-transparent',
-                  colors.gradient
-                )}
-              >
-                fréquentes
-              </span>
+              <span className="text-blue-600 dark:text-blue-400">fréquentes</span>
             </motion.h2>
             <motion.p
               variants={fadeInUp}

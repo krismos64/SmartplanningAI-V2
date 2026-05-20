@@ -43,7 +43,7 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { cn } from '@/lib/utils'
-import { GRADIENT_BUTTON_CLASSES } from '@/app/(landing)/components'
+import { PRIMARY_BUTTON_CLASSES } from '@/app/(landing)/components'
 
 interface ActivateAccountFormProps {
   /** Token d'activation recu par email */
@@ -178,7 +178,7 @@ export function ActivateAccountForm({ token }: ActivateAccountFormProps) {
             secondes...
           </p>
           <Link href="/login">
-            <Button className={cn('w-full', GRADIENT_BUTTON_CLASSES)}>
+            <Button className={cn('w-full', PRIMARY_BUTTON_CLASSES)}>
               Se connecter maintenant
             </Button>
           </Link>
@@ -216,7 +216,7 @@ export function ActivateAccountForm({ token }: ActivateAccountFormProps) {
           <Button
             onClick={() => void handleResend()}
             disabled={isResending}
-            className={cn('w-full', GRADIENT_BUTTON_CLASSES)}
+            className={cn('w-full', PRIMARY_BUTTON_CLASSES)}
           >
             {isResending ? (
               <>
@@ -342,7 +342,7 @@ export function ActivateAccountForm({ token }: ActivateAccountFormProps) {
         {/* Submit Button */}
         <Button
           type="submit"
-          className={cn('w-full', GRADIENT_BUTTON_CLASSES)}
+          className={cn('w-full', PRIMARY_BUTTON_CLASSES)}
           disabled={isLoading}
         >
           {isLoading ? (
