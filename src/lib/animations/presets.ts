@@ -516,9 +516,7 @@ export const badgeVariants: Variants = {
 // LOADING PRESETS
 // =============================================================================
 
-/**
- * Pulse animation pour loading states
- */
+/** Conservé : loader fonctionnel (skeleton states). */
 export const pulseVariants: Variants = {
   initial: { opacity: 1 },
   animate: {
@@ -531,9 +529,7 @@ export const pulseVariants: Variants = {
   },
 }
 
-/**
- * Spin animation pour loading spinners
- */
+/** Conservé : loader fonctionnel (spinner). */
 export const spinVariants: Variants = {
   animate: {
     rotate: 360,
@@ -545,9 +541,7 @@ export const spinVariants: Variants = {
   },
 }
 
-/**
- * Bounce dots pour loading
- */
+/** Conservé : loader fonctionnel (dots bouncing). */
 export const bounceDotsContainerVariants: Variants = {
   animate: {
     transition: {
@@ -571,9 +565,7 @@ export const bounceDotVariants: Variants = {
 // SKELETON PRESETS
 // =============================================================================
 
-/**
- * Skeleton shimmer effect
- */
+/** Conservé : loader fonctionnel (skeleton shimmer). */
 export const skeletonVariants: Variants = {
   animate: {
     backgroundPosition: ['200% 0', '-200% 0'],
