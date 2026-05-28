@@ -18,7 +18,7 @@ import { ArrowRight } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRef } from 'react'
-import { FloatingBell, FloatingCheck, ScrollIndicator } from '../index'
+import { ScrollIndicator } from '../index'
 
 export function HeroSection() {
   const heroRef = useRef(null)
@@ -54,20 +54,16 @@ export function HeroSection() {
             <div className="absolute inset-0 rounded-3xl bg-blue-600/10 dark:bg-blue-400/10 blur-3xl" />
 
             {/* Welcome Image (static, no infinite float) */}
-            <div className="relative">
+            <div className="relative w-full max-w-sm md:max-w-lg lg:max-w-2xl">
               <Image
                 src="/images/logo-smartplanning.webp"
                 alt="Bienvenue sur SmartPlanning - Illustration avec personnage et robot IA"
                 width={500}
                 height={400}
-                className="relative z-10 drop-shadow-2xl"
+                className="relative z-10 h-auto w-full drop-shadow-2xl"
                 priority
               />
             </div>
-
-            {/* Floating Elements */}
-            <FloatingCheck />
-            <FloatingBell />
           </motion.div>
 
           {/* Text Content - Second on mobile, first on desktop */}

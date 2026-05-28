@@ -13,7 +13,6 @@ export { FAQItem } from './FAQItem'
 export { AnimatedBackground } from './AnimatedBackground'
 export { TopBanner } from './TopBanner'
 export { ScrollIndicator } from './ScrollIndicator'
-export { FloatingCheck, FloatingBell } from './FloatingElements'
 
 // Shared styles constants
 export {
