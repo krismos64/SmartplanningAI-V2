@@ -77,17 +77,6 @@ export function HeroSection() {
             animate="visible"
             className="text-center lg:order-1 lg:text-left"
           >
-            {/* Badge */}
-            <motion.div variants={fadeInUp} className="mb-6 inline-block">
-              <span className="inline-flex items-center gap-2 rounded-full border border-blue-600/20 dark:border-blue-400/20 bg-blue-600/10 dark:bg-blue-400/10 px-4 py-2 text-sm text-blue-600 dark:text-blue-400">
-                <span className="relative flex h-2 w-2">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-blue-600 opacity-75 dark:bg-blue-400" />
-                  <span className="relative inline-flex h-2 w-2 rounded-full bg-blue-600 dark:bg-blue-400" />
-                </span>
-                Nouvelle version disponible
-              </span>
-            </motion.div>
-
             {/* Headline */}
             <motion.h1
               variants={fadeInUp}
