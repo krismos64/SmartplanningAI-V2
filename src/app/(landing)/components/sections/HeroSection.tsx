@@ -54,7 +54,7 @@ export function HeroSection() {
             <div className="absolute inset-0 rounded-3xl bg-blue-600/10 dark:bg-blue-400/10 blur-3xl" />
 
             {/* Welcome Image (static, no infinite float) */}
-            <div className="relative w-full max-w-sm md:max-w-lg lg:max-w-2xl">
+            <div className="relative w-full max-w-md md:max-w-xl lg:max-w-3xl xl:max-w-none">
               <Image
                 src="/images/logo-smartplanning.webp"
                 alt="Bienvenue sur SmartPlanning - Illustration avec personnage et robot IA"
