@@ -32,13 +32,10 @@ export function CTASection() {
 
           <div className="relative z-10 text-center text-white">
             <h2 className="mb-6 text-3xl font-bold sm:text-4xl lg:text-5xl">
-              Prêt à transformer
-              <br />
-              votre gestion des plannings ?
+              Essayez SmartPlanning gratuitement pendant 21 jours
             </h2>
             <p className="mx-auto mb-10 max-w-2xl text-lg text-white/90">
-              Commencez dès maintenant à simplifier votre organisation avec
-              SmartPlanning. Essai gratuit, sans engagement.
+              Sans carte bancaire. Toutes les fonctionnalités incluses.
             </p>
             <div className="flex flex-col justify-center gap-4 sm:flex-row">
               <Button

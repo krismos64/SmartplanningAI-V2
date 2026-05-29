@@ -8,7 +8,6 @@ export {
   SECTION_COLORS,
   type SectionColor,
 } from './SectionHeader'
-export { AnimatedCounter } from './AnimatedCounter'
 export { FAQItem } from './FAQItem'
 export { AnimatedBackground } from './AnimatedBackground'
 export { TopBanner } from './TopBanner'
