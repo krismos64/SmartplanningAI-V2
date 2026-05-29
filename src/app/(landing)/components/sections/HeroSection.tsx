@@ -54,14 +54,16 @@ export function HeroSection() {
             <div className="absolute inset-0 rounded-3xl bg-blue-600/10 dark:bg-blue-400/10 blur-3xl" />
 
             {/* Welcome Image (static, no infinite float) */}
-            <div className="relative w-full max-w-md md:max-w-xl lg:max-w-3xl xl:max-w-none">
+            <div className="relative w-full max-w-md md:max-w-xl lg:max-w-3xl xl:max-w-4xl">
               <Image
                 src="/images/logo-smartplanning.webp"
                 alt="Bienvenue sur SmartPlanning - Illustration avec personnage et robot IA"
-                width={500}
-                height={400}
+                width={1376}
+                height={768}
+                sizes="(max-width: 768px) 448px, (max-width: 1024px) 576px, (max-width: 1280px) 768px, 896px"
                 className="relative z-10 h-auto w-full drop-shadow-2xl"
                 priority
+                fetchPriority="high"
               />
             </div>
           </motion.div>
