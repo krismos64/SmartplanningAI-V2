@@ -39,7 +39,7 @@ export function HeroSection() {
     >
       <motion.div
         style={{ opacity: heroOpacity, scale: heroScale, y: heroY }}
-        className="container-custom"
+        className="mx-auto w-full max-w-screen-2xl px-4 sm:px-6 lg:px-8"
       >
         {/* Mobile: flex column (image → text → buttons) | Desktop: grid 2 cols */}
         <div className="flex flex-col items-center gap-8 lg:grid lg:grid-cols-2 lg:items-center lg:gap-20">
