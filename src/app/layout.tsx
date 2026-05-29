@@ -82,7 +82,7 @@ export const metadata: Metadata = {
     process.env.NEXT_PUBLIC_APP_URL || 'https://smartplanning.fr'
   ),
   title: {
-    default: 'SmartPlanning - Gestion intelligente des équipes',
+    default: "SmartPlanning : logiciel de gestion d'équipe",
     template: '%s | SmartPlanning',
   },
   description:

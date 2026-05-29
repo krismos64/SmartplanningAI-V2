@@ -15,7 +15,7 @@ import { StructuredData } from './StructuredData'
 const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://smartplanning.fr'
 
 export const metadata: Metadata = {
-  title: 'SmartPlanning — Logiciel de gestion de planning pour entreprises',
+  title: 'SmartPlanning : plannings, congés et RH pour entreprises',
 
   description:
     'Simplifiez la gestion des plannings, congés et communication de vos équipes. Messagerie interne, import CSV/Excel. Solution SaaS française pour TPE et PME. Essai gratuit 21 jours, à partir de 2,90\u00a0\u20ac/employé/mois.',
