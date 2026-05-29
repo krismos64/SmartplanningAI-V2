@@ -42,8 +42,8 @@ export function FeaturesSection() {
           badge="Fonctionnalités"
           color="blue"
           title="Tout ce dont vous avez besoin pour"
-          titleHighlight="planifier efficacement"
-          description="Des outils puissants conçus pour simplifier la gestion de vos équipes et optimiser votre organisation."
+          titleHighlight="gérer vos équipes"
+          description="Plannings, congés, tâches, incidents, messagerie : tous les modules pour la gestion RH d&rsquo;une TPE-PME."
           marginBottom="mb-8"
         />
 

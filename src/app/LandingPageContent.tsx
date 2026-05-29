@@ -22,7 +22,6 @@ import {
   FeaturesSection,
   HowItWorksSection,
   BenefitsSection,
-  StatsSection,
   PricingSection,
   FAQSection,
   ContactSection,
@@ -59,7 +58,6 @@ export default function LandingPageContent() {
       <FeaturesSection />
       <HowItWorksSection />
       <BenefitsSection />
-      <StatsSection />
       <PricingSection />
       <FAQSection />
       <ContactSection />

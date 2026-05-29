@@ -38,7 +38,7 @@ export function VideoSection() {
           color="red"
           title="Découvrez SmartPlanning"
           titleHighlight="en action"
-          description="Visualisez en 2 minutes comment SmartPlanning peut transformer la gestion de vos plannings au quotidien."
+          description="Visualisez en 2 minutes le fonctionnement de SmartPlanning au quotidien."
           marginBottom="mb-12 lg:mb-16"
         />
 

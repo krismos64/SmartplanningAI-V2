@@ -80,15 +80,10 @@ export function HeroSection() {
               variants={fadeInUp}
               className="mb-6 text-4xl font-bold leading-[1.1] sm:text-5xl lg:text-6xl xl:text-7xl"
             >
-              Planifiez{' '}
-              <span className="relative">
-                <span className="relative z-10 text-blue-600 dark:text-blue-400">
-                  intelligemment
-                </span>
-                <span className="absolute bottom-2 left-0 h-3 w-full -rotate-1 bg-blue-600/20 dark:bg-blue-400/20" />
+              Plannings, congés et messagerie d&rsquo;équipe.{' '}
+              <span className="text-blue-600 dark:text-blue-400">
+                Sans Excel.
               </span>
-              <br />
-              votre équipe
             </motion.h1>
 
             {/* Subheadline */}
@@ -96,9 +91,8 @@ export function HeroSection() {
               variants={fadeInUp}
               className="mx-auto max-w-xl text-lg text-muted-foreground sm:text-xl lg:mx-0"
             >
-              Plannings, congés, messagerie interne et imports CSV : tout en un.
-              La solution SaaS française pour simplifier la gestion de vos
-              équipes.
+              Le logiciel de gestion d&rsquo;équipe pour les TPE et PME. 2,90
+              €/employé/mois, essai gratuit 21 jours sans carte bancaire.
             </motion.p>
 
             {/* CTA Buttons - Desktop only (inside text block) */}

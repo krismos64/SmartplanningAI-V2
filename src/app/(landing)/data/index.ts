@@ -12,7 +12,6 @@ import {
   Bell,
   Zap,
   Clock,
-  Shield,
   FileDown,
   CheckSquare,
   AlertTriangle,
@@ -45,13 +44,6 @@ export interface Step {
   number: string
   title: string
   description: string
-  icon: LucideIcon
-}
-
-export interface Stat {
-  value: number
-  suffix: string
-  label: string
   icon: LucideIcon
 }
 
@@ -117,12 +109,11 @@ export const features: Feature[] = [
   {
     icon: Users,
     title: 'Multi-équipes',
-    description:
-      'Gérez plusieurs équipes et sites depuis une interface unifiée et intuitive.',
+    description: 'Gérez plusieurs équipes et sites dans une seule interface.',
   },
   {
     icon: Palmtree,
-    title: 'Congés simplifiés',
+    title: 'Gestion des congés',
     description:
       'Demandes et validations de congés en quelques clics avec workflow automatisé.',
   },
@@ -177,7 +168,7 @@ export const features: Feature[] = [
     icon: Sparkles,
     title: 'Plannings IA',
     description:
-      'Création intelligente de plannings optimisés grâce à notre algorithme IA avancé.',
+      'Création de plannings hebdomadaires en quelques minutes grâce à notre moteur de génération automatique.',
     comingSoon: true,
   },
 ]
@@ -203,22 +194,11 @@ export const steps: Step[] = [
   },
   {
     number: '03',
-    title: 'Simplifiez le quotidien',
+    title: 'Utilisez au quotidien',
     description:
       'Les employés consultent leur planning et font leurs demandes de congés. Tout est centralisé et accessible.',
     icon: Calendar,
   },
-]
-
-// ============================================================================
-// STATS
-// ============================================================================
-
-export const stats: Stat[] = [
-  { value: 24, suffix: 'h', label: 'Réponse support', icon: Clock },
-  { value: 3, suffix: '', label: 'Rôles distincts', icon: Users },
-  { value: 100, suffix: '%', label: 'Conforme RGPD', icon: Shield },
-  { value: 100, suffix: '%', label: 'Hébergé en France', icon: Zap },
 ]
 
 // ============================================================================
@@ -324,8 +304,7 @@ export const benefits: Benefit[] = [
     id: 'coordination',
     icon: MessageSquare,
     title: 'Meilleure coordination',
-    description:
-      'Visibilité totale sur les équipes pour une organisation optimale.',
+    description: 'Visibilité complète sur les équipes en un seul endroit.',
   },
   {
     id: 'productivity',
