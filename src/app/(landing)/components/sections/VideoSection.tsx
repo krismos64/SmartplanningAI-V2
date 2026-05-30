@@ -66,7 +66,7 @@ export function VideoSection() {
                     alt="SmartPlanning - Vidéo de présentation"
                     fill
                     sizes="(min-width: 1024px) 80vw, 100vw"
-                    priority
+                    loading="lazy"
                     className="absolute inset-0 h-full w-full object-cover"
                   />
 

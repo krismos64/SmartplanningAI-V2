@@ -149,7 +149,7 @@ export function RoleDemosSection() {
                         alt={`SmartPlanning — Démo ${activeRole.label}`}
                         fill
                         sizes="(min-width: 1024px) 60vw, 100vw"
-                        priority={activeRole.id === 'director'}
+                        loading="lazy"
                         className="absolute inset-0 h-full w-full object-cover"
                       />
                       {/* Overlay pour lisibilité du bouton play */}

@@ -249,6 +249,22 @@ export default function RootLayout({
       className={`${inter.variable} ${rajdhani.variable}`}
       suppressHydrationWarning
     >
+      <head>
+        {/*
+          Perf : anticipe la résolution DNS + handshake TLS vers le domaine
+          Umami self-hosted. Le script analytics ne se charge qu'après
+          consentement cookies (RGPD), donc un preconnect agressif serait
+          souvent inutile : dns-prefetch est le bon compromis (coût quasi nul
+          si non utilisé, gain sur le chemin critique si l'utilisateur a
+          consenti). Réduit la latence du critical path mesurée à ~1,3 s.
+        */}
+        <link rel="dns-prefetch" href="https://analytics.smartplanning.fr" />
+        <link
+          rel="preconnect"
+          href="https://analytics.smartplanning.fr"
+          crossOrigin="anonymous"
+        />
+      </head>
       <body className="min-h-screen bg-background font-rajdhani antialiased">
         {/* Skip Link - Accessibilité WCAG 2.4.1 (SP-269) */}
         <SkipLink />
