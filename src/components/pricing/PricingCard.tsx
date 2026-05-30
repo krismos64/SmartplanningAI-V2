@@ -63,6 +63,9 @@ export function PricingCard({
         <p className="mt-2 text-xs text-muted-foreground">
           Sans engagement · Sans carte bancaire
         </p>
+        <p className="mt-1 text-xs text-muted-foreground">
+          Facturé au nombre exact d&apos;employés actifs
+        </p>
       </div>
 
       {/* Features */}

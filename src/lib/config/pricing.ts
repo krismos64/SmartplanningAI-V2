@@ -77,6 +77,7 @@ export const INCLUDED_FEATURES = [
   'Export PDF et Excel',
   'Notes personnelles et incidents',
   'Multi-équipes illimité',
+  'Facturation ajustée chaque mois (à la hausse comme à la baisse)',
   'Messagerie interne (direct, équipe, groupe)',
   'Import employés CSV et Excel',
   'Support email réactif',
