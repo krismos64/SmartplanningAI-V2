@@ -23,7 +23,7 @@ export const metadata: Metadata = {
 
   // Description optimisée (155 caractères max) - riche en mots-clés
   description:
-    "SmartPlanning simplifie la gestion des plannings d'équipe pour TPE, PME et grandes entreprises. Découvrez notre mission, nos valeurs et notre solution SaaS française.",
+    "SmartPlanning simplifie la gestion des plannings d'équipe pour les TPE et PME. Découvrez notre mission, nos valeurs et notre solution SaaS française.",
 
   // Keywords pour SEO traditionnel et LLMs
   keywords: [
@@ -64,7 +64,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'À propos de SmartPlanning | Simplifier la gestion des plannings',
     description:
-      'Découvrez SmartPlanning : notre mission est de simplifier la gestion des plannings pour toutes les entreprises françaises. Solution SaaS moderne, intuitive et accessible. Valeurs : Simplicité, Proximité, Fiabilité.',
+      'Découvrez SmartPlanning : notre mission est de simplifier la gestion des plannings pour les TPE et PME françaises. Solution SaaS moderne, intuitive et accessible. Valeurs : Simplicité, Proximité, Fiabilité.',
     type: 'website',
     url: `${baseUrl}/a-propos`,
     siteName: 'SmartPlanning',
@@ -85,7 +85,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'À propos de SmartPlanning | Gestion de planning simplifiée',
     description:
-      "SmartPlanning : solution française de gestion des plannings d'équipe. Simplicité, Proximité, Fiabilité pour TPE, PME et grandes entreprises.",
+      "SmartPlanning : solution française de gestion des plannings d'équipe. Simplicité, Proximité, Fiabilité pour les TPE et PME.",
     images: [`${baseUrl}/images/og-about.png`],
     creator: '@smartplanning',
   },

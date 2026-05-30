@@ -225,10 +225,10 @@ export function AboutContent() {
                 </span>
               }
               color="purple"
-              title="SmartPlanning s'adresse à"
-              titleHighlight="toutes les entreprises"
+              title="SmartPlanning s'adresse aux"
+              titleHighlight="TPE et PME"
               titleId="targets-title"
-              description="Quelle que soit votre taille ou votre secteur, SmartPlanning s'adapte à vos besoins."
+              description="Quel que soit votre secteur, SmartPlanning s'adapte aux besoins des petites et moyennes entreprises."
             />
 
             <motion.ul
@@ -282,8 +282,8 @@ export function AboutContent() {
                   plannings ?
                 </h2>
                 <p className="mx-auto mb-8 max-w-2xl text-lg text-muted-foreground">
-                  Rejoignez les entreprises qui ont choisi SmartPlanning pour
-                  gagner du temps et améliorer leur organisation.
+                  Créez votre compte et testez SmartPlanning gratuitement
+                  pendant 21 jours, sans carte bancaire.
                 </p>
                 <div className="flex flex-col justify-center gap-4 sm:flex-row">
                   <Button size="lg" className={PRIMARY_BUTTON_CLASSES} asChild>

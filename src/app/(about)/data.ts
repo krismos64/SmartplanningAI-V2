@@ -118,7 +118,7 @@ export const targets: Target[] = [
 export const mission = {
   title: 'Notre mission',
   highlight: 'Simplifier la gestion planning',
-  subtitle: 'pour toutes les entreprises',
+  subtitle: 'pour les TPE et PME',
   description: `Nous croyons que la gestion des plannings ne devrait pas être une source de stress.
     Trop d'entreprises perdent un temps précieux avec des outils inadaptés, des fichiers Excel complexes
     ou des tableaux blancs difficiles à maintenir.`,

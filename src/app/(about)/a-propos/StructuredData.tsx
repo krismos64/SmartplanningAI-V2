@@ -21,7 +21,7 @@ export const organizationSchema = {
   name: 'SmartPlanning',
   alternateName: 'Smart Planning',
   description:
-    'SmartPlanning est un logiciel SaaS français de gestion de planning pour entreprises. Solution moderne et intuitive pour TPE, PME et grandes entreprises.',
+    'SmartPlanning est un logiciel SaaS français de gestion de planning pour entreprises. Solution moderne et intuitive pour les TPE et PME.',
   url: baseUrl,
   logo: {
     '@type': 'ImageObject',
@@ -44,7 +44,7 @@ export const organizationSchema = {
     '@type': 'Country',
     name: 'France',
   },
-  slogan: 'Simplifier la gestion des plannings pour toutes les entreprises',
+  slogan: 'Simplifier la gestion des plannings pour les TPE et PME',
   knowsAbout: [
     'Gestion de planning',
     'Planning équipe',
@@ -101,7 +101,7 @@ export const aboutPageSchema = {
   url: `${baseUrl}/a-propos`,
   name: 'À propos de SmartPlanning',
   description:
-    'Découvrez SmartPlanning : notre mission de simplifier la gestion des plannings pour toutes les entreprises. Nos valeurs : Simplicité, Proximité, Fiabilité.',
+    'Découvrez SmartPlanning : notre mission de simplifier la gestion des plannings pour les TPE et PME. Nos valeurs : Simplicité, Proximité, Fiabilité.',
   inLanguage: 'fr-FR',
   isPartOf: {
     '@type': 'WebSite',
@@ -152,7 +152,7 @@ export const faqSchema = {
       name: 'À qui SmartPlanning est-il destiné ?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'SmartPlanning est destiné à toutes les entreprises : TPE, PME, managers, responsables RH, industrie, santé, commerce et services. Quelle que soit votre taille ou votre secteur.',
+        text: 'SmartPlanning est destiné aux TPE et PME : managers, responsables RH, industrie, santé, commerce et services. Quel que soit votre secteur.',
       },
     },
     {
