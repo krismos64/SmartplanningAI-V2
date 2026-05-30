@@ -13,7 +13,7 @@ import { createPortal } from 'react-dom'
 import Link from 'next/link'
 import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Calendar, Menu, X } from 'lucide-react'
+import { Menu, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
 import { cn } from '@/lib/utils'
@@ -69,13 +69,15 @@ export function LandingHeader({
         <div className="container-custom">
           <nav className="flex items-center justify-between">
             {/* Logo */}
-            <Link href="/" className="group flex items-center gap-3">
-              <div className="relative">
-                <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-500 to-cyan-400 opacity-50 blur-lg transition-opacity group-hover:opacity-75" />
-                <div className="relative flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-cyan-400">
-                  <Calendar className="h-6 w-6 text-white" />
-                </div>
-              </div>
+            <Link href="/" className="group flex items-center gap-2">
+              <Image
+                src="/images/logo-sp.png"
+                alt="SmartPlanning"
+                width={48}
+                height={48}
+                priority
+                className="h-11 w-11 object-contain transition-transform group-hover:scale-105"
+              />
               <span className="text-xl font-bold tracking-tight text-foreground dark:text-white">
                 Smart<span className="text-cyan-400">Planning</span>
               </span>
