@@ -111,6 +111,15 @@ export function HeroSection() {
                 </Link>
               </Button>
             </motion.div>
+
+            {/* Réassurance factuelle (desktop) - faits vérifiables, sans promesse chiffrée */}
+            <motion.p
+              variants={fadeInUp}
+              className="mt-4 hidden text-sm text-muted-foreground sm:block"
+            >
+              Sans carte bancaire · Résiliable à tout moment · Données hébergées
+              en France
+            </motion.p>
           </motion.div>
 
           {/* CTA Button - Mobile only (after text) */}
@@ -130,6 +139,12 @@ export function HeroSection() {
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
             </Button>
+
+            {/* Réassurance factuelle (mobile) */}
+            <p className="text-center text-sm text-muted-foreground">
+              Sans carte bancaire · Résiliable à tout moment · Données hébergées
+              en France
+            </p>
           </motion.div>
         </div>
 

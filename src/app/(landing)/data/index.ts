@@ -20,7 +20,7 @@ import {
   ShieldCheck,
   FolderX,
   MessageSquare,
-  TrendingUp,
+  Smartphone,
   Upload,
   MessagesSquare,
   Briefcase,
@@ -301,16 +301,18 @@ export const benefits: Benefit[] = [
       'Plannings, congés, tâches et incidents sur une seule plateforme.',
   },
   {
-    id: 'coordination',
-    icon: MessageSquare,
-    title: 'Meilleure coordination',
-    description: 'Visibilité complète sur les équipes en un seul endroit.',
+    id: 'mobile-realtime',
+    icon: Smartphone,
+    title: 'Planning sur mobile',
+    description:
+      'Vos employés consultent leur planning en temps réel sur leur téléphone, partout.',
   },
   {
-    id: 'productivity',
-    icon: TrendingUp,
-    title: 'Productivité accrue',
-    description: "Concentrez-vous sur l'essentiel, l'outil gère la complexité.",
+    id: 'no-conflicts',
+    icon: AlertTriangle,
+    title: 'Zéro conflit d’horaires',
+    description:
+      'La détection automatique des chevauchements vous évite les erreurs de planification.',
   },
 ]
 
