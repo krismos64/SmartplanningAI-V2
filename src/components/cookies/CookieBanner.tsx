@@ -79,7 +79,7 @@ export function CookieBanner({ onConsentChange }: CookieBannerProps) {
               acceptez.{' '}
               <Link
                 href="/cookies"
-                className="text-primary underline underline-offset-2 hover:text-primary/80 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-slate-900"
+                className="text-blue-400 underline underline-offset-2 hover:text-blue-300 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-slate-900"
               >
                 En savoir plus
               </Link>

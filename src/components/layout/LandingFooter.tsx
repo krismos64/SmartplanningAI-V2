@@ -46,7 +46,7 @@ export function LandingFooter() {
                 <Calendar className="h-5 w-5 text-white" />
               </div>
               <span className="text-lg font-bold text-foreground">
-                Smart<span className="text-cyan-400">Planning</span>
+                Smart<span className="text-cyan-700 dark:text-cyan-400">Planning</span>
               </span>
             </Link>
             <p className="mb-6 text-sm text-muted-foreground">

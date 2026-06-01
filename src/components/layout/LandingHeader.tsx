@@ -79,7 +79,7 @@ export function LandingHeader({
                 className="h-11 w-11 object-contain transition-transform group-hover:scale-105"
               />
               <span className="text-xl font-bold tracking-tight text-foreground dark:text-white">
-                Smart<span className="text-cyan-400">Planning</span>
+                Smart<span className="text-cyan-700 dark:text-cyan-400">Planning</span>
               </span>
             </Link>
 

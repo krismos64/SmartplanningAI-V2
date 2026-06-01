@@ -13,12 +13,18 @@ const A11Y_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']
 
 test.describe('Landing — accessibilité axe-core', () => {
   test('aucune violation WCAG AA en mode clair', async ({ page }) => {
-    await page.goto('/')
-    // S'assurer qu'on est bien en light (pas de classe dark sur <html>)
-    await page.evaluate(() => {
-      document.documentElement.classList.remove('dark')
+    // Forcer le thème clair AVANT le chargement : next-themes lit cette clé
+    // au boot et applique `light`. Retirer `.dark` après coup ne suffit pas,
+    // car le provider (defaultTheme="dark") la réapplique à l'hydration.
+    await page.addInitScript(() => {
+      window.localStorage.setItem('theme', 'light')
     })
+    await page.goto('/')
     await page.waitForLoadState('networkidle')
+    // Garde-fou : vérifier qu'on est bien en mode clair avant l'audit.
+    await page.waitForFunction(
+      () => !document.documentElement.classList.contains('dark')
+    )
 
     const results = await new AxeBuilder({ page })
       .withTags(A11Y_TAGS)
@@ -36,11 +42,14 @@ test.describe('Landing — accessibilité axe-core', () => {
   })
 
   test('aucune violation WCAG AA en mode sombre', async ({ page }) => {
-    await page.goto('/')
-    await page.evaluate(() => {
-      document.documentElement.classList.add('dark')
+    await page.addInitScript(() => {
+      window.localStorage.setItem('theme', 'dark')
     })
+    await page.goto('/')
     await page.waitForLoadState('networkidle')
+    await page.waitForFunction(() =>
+      document.documentElement.classList.contains('dark')
+    )
 
     const results = await new AxeBuilder({ page })
       .withTags(A11Y_TAGS)
