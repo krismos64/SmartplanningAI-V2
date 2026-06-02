@@ -256,9 +256,8 @@ export function SubscriptionStatus({
                       ✓
                     </span>
                     <span>
-                      Si vous vous abonnez maintenant,{' '}
                       <strong>
-                        le paiement ne débutera qu&apos;à la fin de l&apos;essai
+                        Aucun prélèvement avant la fin de votre essai.
                       </strong>
                     </span>
                   </li>
