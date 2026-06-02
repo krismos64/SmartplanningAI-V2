@@ -27,6 +27,15 @@ const INVALID_USER = {
 }
 
 /**
+ * Compte seedé avec emailVerified = null (SP-526).
+ * Sert à vérifier que le verrou de vérification email bloque la connexion.
+ */
+const UNVERIFIED_USER = {
+  email: 'unverified@techcorp.com',
+  password: 'Password123!',
+}
+
+/**
  * Génère un email unique pour les tests d'inscription
  */
 function generateTestEmail(): string {
@@ -131,6 +140,29 @@ test.describe('Login Page', () => {
     await page.waitForURL(/\/app\//, {
       timeout: 30000,
     })
+  })
+
+  test('should block login for unverified email and offer to resend (SP-526)', async ({
+    page,
+  }) => {
+    // Compte seedé avec emailVerified = null (mais isActive: true)
+    await page.getByPlaceholder('vous@entreprise.com').fill(UNVERIFIED_USER.email)
+    await page.getByPlaceholder('••••••••').fill(UNVERIFIED_USER.password)
+
+    await page.getByRole('button', { name: 'Se connecter' }).click()
+
+    // L'alerte « Email non vérifié » doit s'afficher (pré-check côté client)
+    await expect(page.getByText('Email non vérifié')).toBeVisible({
+      timeout: 10000,
+    })
+
+    // Le bouton de renvoi du lien de vérification doit être proposé
+    await expect(
+      page.getByRole('button', { name: /Renvoyer l'email de vérification/i })
+    ).toBeVisible()
+
+    // On NE doit PAS avoir été redirigé vers l'espace applicatif
+    await expect(page).toHaveURL(/\/login/)
   })
 
   test('should toggle password visibility', async ({ page }) => {
@@ -274,7 +306,7 @@ test.describe('Register Page', () => {
   // car il dépend de l'état de la base de données et du temps de réponse
   // On le skip en CI pour éviter les échecs intermittents
   test.skip(!!process.env.CI, 'Skipped in CI - creates real data')
-  test('should register successfully with valid data and redirect to dashboard', async ({
+  test('should register successfully without immediate dashboard access (SP-526)', async ({
     page,
   }) => {
     const uniqueEmail = generateTestEmail()
@@ -295,8 +327,11 @@ test.describe('Register Page', () => {
     // Soumettre
     await page.getByRole('button', { name: 'Créer mon compte' }).click()
 
-    // Attendre la redirection vers le dashboard ou login
-    await page.waitForURL(/\/app\/|\/login/, { timeout: 30000 })
+    // Depuis SP-526, un compte fraîchement inscrit a emailVerified = null :
+    // il ne peut PAS accéder à /app/* tant que l'email n'est pas vérifié.
+    // On vérifie donc que l'inscription aboutit SANS donner accès au dashboard.
+    await page.waitForLoadState('networkidle')
+    await expect(page).not.toHaveURL(/\/app\//)
   })
 
   test('should toggle password visibility for both password fields', async ({
