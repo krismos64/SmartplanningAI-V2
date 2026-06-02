@@ -8,7 +8,7 @@
 
 import { motion, fadeInUp, staggerContainer } from '@/lib/animations'
 import { steps } from '../../data'
-import { SectionLogo, SectionHeader } from '../index'
+import { SectionHeader } from '../index'
 
 export function HowItWorksSection() {
   return (
@@ -63,8 +63,6 @@ export function HowItWorksSection() {
             </motion.div>
           ))}
         </motion.div>
-
-        <SectionLogo />
       </div>
     </section>
   )

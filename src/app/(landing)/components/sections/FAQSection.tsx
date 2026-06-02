@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { motion, fadeInUp, staggerContainer } from '@/lib/animations'
 import { faqs } from '../../data'
-import { FAQItem, SectionLogo, SECTION_COLORS } from '../index'
+import { FAQItem, SECTION_COLORS } from '../index'
 
 export function FAQSection() {
   const [openFAQ, setOpenFAQ] = useState<number | null>(null)
@@ -92,8 +92,6 @@ export function FAQSection() {
             ))}
           </motion.div>
         </div>
-
-        <SectionLogo />
       </div>
     </section>
   )

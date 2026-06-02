@@ -28,6 +28,7 @@ import {
   PRIMARY_BUTTON_CLASSES,
   HIGHLIGHT_TEXT_CLASSES,
 } from '@/app/(landing)/components'
+import { VideoSection } from '@/app/(landing)/components/sections/VideoSection'
 import { LandingHeader } from '@/components/layout/LandingHeader'
 import { LandingFooter } from '@/components/layout/LandingFooter'
 import { ValueCard, TargetCard } from '../components'
@@ -253,6 +254,9 @@ export function AboutContent() {
             </motion.ul>
           </div>
         </section>
+
+        {/* Video Section - Démo produit (déplacée depuis la landing, SP-527) */}
+        <VideoSection />
 
         {/* CTA Section */}
         <section aria-labelledby="cta-title" className="py-24 lg:py-32">

@@ -29,11 +29,6 @@ import { HeroSection } from './(landing)/components/sections/HeroSection'
  * Time sans toucher au SSR (ssr conservé par défaut → HTML rendu serveur
  * intact pour le SEO et zéro CLS).
  */
-const VideoSection = dynamic(() =>
-  import('./(landing)/components/sections/VideoSection').then(
-    (m) => m.VideoSection
-  )
-)
 const RoleDemosSection = dynamic(() =>
   import('./(landing)/components/sections/RoleDemosSection').then(
     (m) => m.RoleDemosSection
@@ -98,7 +93,6 @@ export default function LandingPageContent() {
 
       {/* Sections */}
       <HeroSection />
-      <VideoSection />
       <RoleDemosSection />
       <FeaturesSection />
       <HowItWorksSection />

@@ -2,7 +2,6 @@
  * Landing page components barrel file
  */
 
-export { SectionLogo } from './SectionLogo'
 export {
   SectionHeader,
   SECTION_COLORS,
