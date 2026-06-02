@@ -18,6 +18,7 @@
 import crypto from 'crypto'
 
 import { sendVerificationEmail } from '@/lib/email/templates/verification-email'
+import { verifyPassword } from '@/lib/password'
 import { prisma } from '@/lib/prisma'
 
 // =============================================================================
@@ -31,6 +32,19 @@ export type SendVerificationEmailActionResult =
 export type VerifyEmailActionResult =
   | { success: true }
   | { success: false; error: string }
+
+/**
+ * Résultat du pré-check de vérification email avant connexion (SP-526)
+ *
+ * - VERIFIED : credentials valides ET email vérifié → on peut appeler signIn()
+ * - NOT_VERIFIED : credentials valides MAIS email non vérifié → UX dédiée
+ * - INVALID_CREDENTIALS : user inconnu OU mauvais mot de passe (indifférencié
+ *   pour ne pas permettre l'énumération de comptes)
+ */
+export type CheckEmailVerificationStatusResult =
+  | { status: 'VERIFIED' }
+  | { status: 'NOT_VERIFIED' }
+  | { status: 'INVALID_CREDENTIALS' }
 
 // =============================================================================
 // CONSTANTES
@@ -254,4 +268,74 @@ export async function resendVerificationEmailAction(data: {
   email: string
 }): Promise<SendVerificationEmailActionResult> {
   return sendVerificationEmailAction(data)
+}
+
+// =============================================================================
+// CHECK EMAIL VERIFICATION STATUS (SP-526)
+// =============================================================================
+
+/**
+ * Pré-check de l'état de vérification email avant d'appeler signIn()
+ *
+ * @description
+ * NextAuth v5 normalise toute Error levée dans authorize() en
+ * 'CredentialsSignin', ce qui empêche le LoginForm de distinguer un email
+ * non vérifié d'un mauvais mot de passe. Cette action sert UNIQUEMENT à
+ * orienter l'UX : elle indique si l'utilisateur doit voir le message
+ * « email non vérifié » + le bouton « Renvoyer l'email ».
+ *
+ * Ce n'est PAS la barrière de sécurité : le vrai verrou reste
+ * `throw new Error('EmailNotVerified')` dans authorize() (src/lib/auth.ts).
+ * Même si ce pré-check était contourné côté client, authorize() refuserait
+ * la création de session. Défense en profondeur.
+ *
+ * @param data - email + password à vérifier
+ * @returns Statut VERIFIED / NOT_VERIFIED / INVALID_CREDENTIALS
+ *
+ * @security
+ * - Exige un mot de passe valide avant de révéler NOT_VERIFIED, sinon
+ *   un tiers pourrait sonder l'état de vérification d'un email arbitraire
+ *   (fuite d'information).
+ * - user inexistant et mauvais mot de passe renvoient le même statut
+ *   INVALID_CREDENTIALS → pas d'énumération de comptes.
+ * - Lecture pure : aucune écriture, aucun envoi d'email, aucun log.
+ */
+export async function checkEmailVerificationStatus(data: {
+  email: string
+  password: string
+}): Promise<CheckEmailVerificationStatusResult> {
+  try {
+    const normalizedEmail = data.email.toLowerCase().trim()
+
+    // 1. Chercher l'utilisateur (mêmes primitives que authorize())
+    const user = await prisma.user.findUnique({
+      where: { email: normalizedEmail },
+      select: { password: true, emailVerified: true },
+    })
+
+    // 2. User inexistant → indifférencié d'un mauvais mot de passe
+    if (!user) {
+      return { status: 'INVALID_CREDENTIALS' }
+    }
+
+    // 3. Vérifier le mot de passe AVANT de révéler quoi que ce soit
+    const isPasswordValid = await verifyPassword(data.password, user.password)
+    if (!isPasswordValid) {
+      return { status: 'INVALID_CREDENTIALS' }
+    }
+
+    // 4. Credentials valides : on peut révéler l'état de vérification
+    if (!user.emailVerified) {
+      return { status: 'NOT_VERIFIED' }
+    }
+
+    return { status: 'VERIFIED' }
+  } catch (error) {
+    // En cas d'erreur inattendue, on ne bloque pas l'UX : on laisse
+    // signIn() suivre son cours (authorize() reste la barrière de sécurité).
+    if (process.env.NODE_ENV === 'development') {
+      console.error('[checkEmailVerificationStatus] Error:', error)
+    }
+    return { status: 'INVALID_CREDENTIALS' }
+  }
 }

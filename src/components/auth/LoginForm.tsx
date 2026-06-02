@@ -21,7 +21,7 @@ import Link from 'next/link'
 import { signIn, getSession } from 'next-auth/react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Loader2, Eye, EyeOff } from 'lucide-react'
+import { Loader2, Eye, EyeOff, MailWarning } from 'lucide-react'
 import { toast } from 'sonner'
 
 import {
@@ -29,10 +29,15 @@ import {
   type LoginFormData,
   getAuthErrorMessage,
 } from '@/lib/validations'
+import {
+  checkEmailVerificationStatus,
+  resendVerificationEmailAction,
+} from '@/lib/actions/verification-actions'
 import { getDefaultDashboardForRole } from '@/lib/permissions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Checkbox } from '@/components/ui/checkbox'
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert'
 import {
   Form,
   FormControl,
@@ -54,6 +59,9 @@ export function LoginForm() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
+  // SP-526 : affichage de l'alerte « email non vérifié » + renvoi du lien
+  const [emailNotVerified, setEmailNotVerified] = useState(false)
+  const [isResending, setIsResending] = useState(false)
 
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -74,8 +82,26 @@ export function LoginForm() {
    */
   async function onSubmit(data: LoginFormData) {
     setIsLoading(true)
+    // Reset de l'alerte à chaque tentative
+    setEmailNotVerified(false)
 
     try {
+      // SP-526 : pré-check de l'état de vérification email.
+      // NextAuth v5 normalise les Error de authorize() en 'CredentialsSignin',
+      // donc on ne peut pas distinguer « email non vérifié » côté signIn().
+      // Ce pré-check oriente l'UX ; authorize() reste la vraie barrière.
+      const verificationStatus = await checkEmailVerificationStatus({
+        email: data.email,
+        password: data.password,
+      })
+
+      if (verificationStatus.status === 'NOT_VERIFIED') {
+        // Credentials valides mais email non vérifié : on affiche l'alerte
+        // dédiée avec le bouton « Renvoyer » et on n'appelle PAS signIn().
+        setEmailNotVerified(true)
+        return
+      }
+
       const result = await signIn('credentials', {
         email: data.email,
         password: data.password,
@@ -117,6 +143,31 @@ export function LoginForm() {
   }
 
   /**
+   * Renvoi de l'email de vérification (SP-526)
+   *
+   * Utilise l'email saisi dans le formulaire. Le message de confirmation
+   * reste neutre : on ne révèle jamais si l'email existe ou est déjà vérifié
+   * (resendVerificationEmailAction renvoie toujours un succès silencieux).
+   */
+  async function onResendVerification() {
+    const email = form.getValues('email')
+    setIsResending(true)
+    try {
+      await resendVerificationEmailAction({ email })
+      toast.success('Email envoyé', {
+        description:
+          'Si un compte existe pour cette adresse, un nouvel email de vérification vient de vous être envoyé.',
+      })
+    } catch {
+      toast.error('Erreur', {
+        description: "Impossible d'envoyer l'email. Veuillez réessayer.",
+      })
+    } finally {
+      setIsResending(false)
+    }
+  }
+
+  /**
    * Handle form submit without async promise warning
    */
   function handleFormSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -127,6 +178,36 @@ export function LoginForm() {
   return (
     <Form {...form}>
       <form onSubmit={handleFormSubmit} className="space-y-4" noValidate>
+        {/* Alerte email non vérifié (SP-526) */}
+        {emailNotVerified && (
+          <Alert>
+            <MailWarning className="h-4 w-4" />
+            <AlertTitle>Email non vérifié</AlertTitle>
+            <AlertDescription className="space-y-3">
+              <p>
+                Votre email n&apos;est pas encore vérifié. Consultez votre
+                boîte mail pour activer votre compte.
+              </p>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => void onResendVerification()}
+                disabled={isResending}
+              >
+                {isResending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Envoi en cours...
+                  </>
+                ) : (
+                  "Renvoyer l'email de vérification"
+                )}
+              </Button>
+            </AlertDescription>
+          </Alert>
+        )}
+
         {/* Email Field */}
         <FormField
           control={form.control}

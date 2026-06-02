@@ -543,6 +543,23 @@ async function main() {
     image: generateAvatarUrl('John', 'Doe'),
   })
 
+  // EMPLOYEE non vérifié (E2E — verrou email SP-526)
+  // Créé via prisma.user.create direct (pas createUserWithEmployee qui force
+  // emailVerified). isActive: true pour prouver que c'est bien emailVerified
+  // qui bloque la connexion, pas un autre contrôle. Sans Employee associé.
+  await prisma.user.create({
+    data: {
+      email: 'unverified@techcorp.com',
+      name: 'Unverified TestUser',
+      password: hashedPassword,
+      emailVerified: null,
+      role: UserRole.EMPLOYEE,
+      companyId: techcorp.id,
+      isActive: true,
+      isEmailVerified: false,
+    },
+  })
+
   // Tracking all employees for leave balances, schedules, etc.
   const allTechcorpEmployees: EmployeeRecord[] = []
 
@@ -999,6 +1016,9 @@ async function main() {
   console.log('  📧 john.doe@techcorp.com     → DIRECTOR (Directeur magasin)')
   console.log('  📧 jane.smith@techcorp.com   → MANAGER (Responsable Bazar)')
   console.log('  📧 bob.wilson@techcorp.com   → EMPLOYEE (Employé Bazar)')
+  console.log(
+    '  📧 unverified@techcorp.com   → EMPLOYEE (email non vérifié, test SP-526)'
+  )
   console.log('  📧 contact@smartplanning.fr    → SYSTEM_ADMIN\n')
 }
 
