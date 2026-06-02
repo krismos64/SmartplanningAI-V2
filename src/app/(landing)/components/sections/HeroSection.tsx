@@ -148,25 +148,6 @@ export function HeroSection() {
           </motion.div>
         </div>
 
-        {/* Centered Logo at bottom of Hero - apparition au scroll, pas de boucle */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.6, ease: 'easeOut' }}
-          className="mt-16 flex justify-center lg:mt-24"
-        >
-          <motion.div className="relative" whileHover={{ scale: 1.05 }}>
-            {/* Glow effect statique */}
-            <div className="absolute inset-0 rounded-3xl bg-blue-600/15 blur-3xl dark:bg-blue-400/15" />
-            <Image
-              src="/images/logo-sp.png"
-              alt="SmartPlanning"
-              width={220}
-              height={140}
-              className="relative z-10 drop-shadow-2xl"
-            />
-          </motion.div>
-        </motion.div>
       </motion.div>
 
       {/* Scroll Indicator */}

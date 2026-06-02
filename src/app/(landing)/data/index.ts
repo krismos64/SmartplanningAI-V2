@@ -16,7 +16,6 @@ import {
   CheckSquare,
   AlertTriangle,
   UserCog,
-  Sparkles,
   ShieldCheck,
   FolderX,
   MessageSquare,
@@ -85,7 +84,6 @@ export interface RoleDemo {
 // ============================================================================
 
 export const navLinks = [
-  { href: '#demo', label: 'Démo' },
   { href: '#role-demos', label: 'Par rôle' },
   { href: '#features', label: 'Fonctionnalités' },
   { href: '#how-it-works', label: 'Comment ça marche' },
@@ -164,13 +162,6 @@ export const features: Feature[] = [
     description:
       "Importez vos employés en masse depuis un fichier CSV ou Excel. Prévisualisation, validation en temps réel et rapport d'import détaillé inclus.",
   },
-  {
-    icon: Sparkles,
-    title: 'Plannings IA',
-    description:
-      'Création de plannings hebdomadaires en quelques minutes grâce à notre moteur de génération automatique.',
-    comingSoon: true,
-  },
 ]
 
 // ============================================================================
@@ -231,40 +222,6 @@ export const faqs: FAQ[] = [
     answer:
       'Support email inclus pour tous les utilisateurs. Nous répondons sous 24h ouvrées.',
   },
-]
-
-// ============================================================================
-// FOOTER LINKS
-// ============================================================================
-
-export const footerLinks = {
-  product: [
-    { href: '#features', label: 'Fonctionnalités' },
-    { href: '#pricing', label: 'Tarifs' },
-    { href: '#', label: 'Intégrations' },
-    { href: '#', label: 'Changelog' },
-  ],
-  company: [
-    { href: '#', label: 'À propos' },
-    { href: '#', label: 'Blog' },
-    { href: '#', label: 'Carrières' },
-    { href: '#contact', label: 'Contact' },
-  ],
-  legal: [
-    { href: '#', label: 'Confidentialité' },
-    { href: '#', label: 'CGU' },
-    { href: '#', label: 'Mentions légales' },
-  ],
-}
-
-// ============================================================================
-// SOCIAL LINKS
-// ============================================================================
-
-export const socialLinks = [
-  { href: '#', label: 'Twitter', icon: 'Twitter' },
-  { href: '#', label: 'LinkedIn', icon: 'Linkedin' },
-  { href: '#', label: 'GitHub', icon: 'Github' },
 ]
 
 // ============================================================================

@@ -11,7 +11,7 @@ import { ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { motion, fadeInUp, staggerContainer } from '@/lib/animations'
 import { features } from '../../data'
-import { SectionLogo, SectionHeader } from '../index'
+import { SectionHeader } from '../index'
 
 // Import Lottie dynamically to avoid SSR issues
 const Lottie = dynamic(() => import('lottie-react'), { ssr: false })
@@ -93,8 +93,6 @@ export function FeaturesSection() {
             </motion.div>
           ))}
         </motion.div>
-
-        <SectionLogo />
       </div>
     </section>
   )

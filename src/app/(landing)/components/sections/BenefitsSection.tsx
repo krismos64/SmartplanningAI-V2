@@ -9,7 +9,7 @@
 import Image from 'next/image'
 import { motion, fadeInUp, staggerContainer } from '@/lib/animations'
 import { benefits } from '../../data'
-import { SectionLogo, SectionHeader } from '../index'
+import { SectionHeader } from '../index'
 
 export function BenefitsSection() {
   return (
@@ -71,8 +71,6 @@ export function BenefitsSection() {
             ))}
           </motion.div>
         </div>
-
-        <SectionLogo />
       </div>
     </section>
   )

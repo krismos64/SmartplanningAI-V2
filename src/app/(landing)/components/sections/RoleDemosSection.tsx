@@ -21,7 +21,7 @@ import {
   staggerContainer,
 } from '@/lib/animations'
 import { roleDemos, type RoleDemo } from '../../data'
-import { SectionHeader, SectionLogo, SECTION_COLORS } from '../index'
+import { SectionHeader, SECTION_COLORS } from '../index'
 
 export function RoleDemosSection() {
   const [activeRoleId, setActiveRoleId] = useState<RoleDemo['id']>('director')
@@ -257,8 +257,6 @@ export function RoleDemosSection() {
             </div>
           </motion.div>
         </FramerAnimatePresence>
-
-        <SectionLogo />
       </div>
     </section>
   )

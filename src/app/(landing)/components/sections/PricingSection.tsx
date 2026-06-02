@@ -21,7 +21,7 @@ import {
 import { PricingSimulator } from '@/components/pricing/PricingSimulator'
 import { PricingCard } from '@/components/pricing/PricingCard'
 import { PRICING } from '@/lib/config/pricing'
-import { SectionLogo, SectionHeader } from '../index'
+import { SectionHeader } from '../index'
 
 const LARGE_TEAM_THRESHOLD = 50
 
@@ -126,8 +126,6 @@ export function PricingSection() {
             <ArrowRight className="h-4 w-4" aria-hidden="true" />
           </Link>
         </motion.div>
-
-        <SectionLogo />
       </div>
     </section>
   )

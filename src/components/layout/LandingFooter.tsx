@@ -145,9 +145,6 @@ export function LandingFooter() {
                 contact@smartplanning.fr
               </a>
               <p className="text-sm text-muted-foreground">
-                Support disponible 24/7
-              </p>
-              <p className="text-sm text-muted-foreground">
                 Réponse sous 24h ouvrées
               </p>
             </div>
