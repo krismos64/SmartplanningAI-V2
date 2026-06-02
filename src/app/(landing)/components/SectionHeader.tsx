@@ -30,7 +30,8 @@ export type SectionColor = keyof typeof SECTION_COLORS
 interface SectionHeaderProps {
   badge: string
   badgeIcon?: React.ReactNode
-  color: SectionColor
+  /** @deprecated Couleur ignorée — design monochrome bleu (SP-532). Conservé pour compat appelants ; nettoyage complet en SP-533. */
+  color?: SectionColor
   title: string
   titleHighlight: string
   description?: string
@@ -43,7 +44,6 @@ interface SectionHeaderProps {
 export function SectionHeader({
   badge,
   badgeIcon,
-  color,
   title,
   titleHighlight,
   description,
@@ -51,7 +51,7 @@ export function SectionHeader({
   marginBottom = 'mb-16',
   titleId,
 }: SectionHeaderProps) {
-  const colors = SECTION_COLORS[color]
+  const colors = PRIMARY_VARIANT
 
   return (
     <motion.div

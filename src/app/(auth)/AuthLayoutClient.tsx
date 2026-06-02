@@ -64,14 +64,14 @@ export function AuthLayoutClient({ children }: AuthLayoutClientProps) {
             En continuant, vous acceptez nos{' '}
             <Link
               href="/cgu"
-              className="text-cyan-600 underline-offset-4 transition-colors hover:text-cyan-500 hover:underline dark:text-cyan-400 dark:hover:text-cyan-300"
+              className="text-blue-600 underline-offset-4 transition-colors hover:text-blue-500 hover:underline dark:text-blue-400 dark:hover:text-blue-300"
             >
               conditions d&apos;utilisation
             </Link>{' '}
             et notre{' '}
             <Link
               href="/confidentialite"
-              className="text-cyan-600 underline-offset-4 transition-colors hover:text-cyan-500 hover:underline dark:text-cyan-400 dark:hover:text-cyan-300"
+              className="text-blue-600 underline-offset-4 transition-colors hover:text-blue-500 hover:underline dark:text-blue-400 dark:hover:text-blue-300"
             >
               politique de confidentialité
             </Link>

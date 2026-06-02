@@ -141,7 +141,7 @@ export function LegalPageLayout({
                             item.level === 2 && 'pl-4',
                             item.level === 3 && 'pl-8',
                             activeSection === item.id
-                              ? 'text-cyan-500 dark:text-cyan-400'
+                              ? 'text-blue-600 dark:text-blue-400'
                               : 'text-muted-foreground hover:text-foreground'
                           )}
                         >
@@ -182,7 +182,7 @@ export function LegalPageLayout({
                 {/* Métadonnées */}
                 <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground/70">
                   <span className="flex items-center gap-2">
-                    <span className="h-1.5 w-1.5 rounded-full bg-cyan-500 dark:bg-cyan-400" />
+                    <span className="h-1.5 w-1.5 rounded-full bg-blue-600 dark:bg-blue-400" />
                     Version {version}
                   </span>
                   <span className="flex items-center gap-2">
@@ -208,7 +208,7 @@ export function LegalPageLayout({
                         <button
                           key={item.id}
                           onClick={() => scrollToSection(item.id)}
-                          className="text-left text-sm text-muted-foreground hover:text-cyan-500 dark:hover:text-cyan-400"
+                          className="text-left text-sm text-muted-foreground hover:text-blue-600 dark:hover:text-blue-400"
                         >
                           {item.title}
                         </button>
@@ -238,7 +238,7 @@ export function LegalPageLayout({
         animate={{ opacity: showScrollTop ? 1 : 0 }}
         onClick={scrollToTop}
         className={cn(
-          'fixed bottom-8 right-8 z-40 flex h-12 w-12 items-center justify-center rounded-full border border-border bg-background/90 text-muted-foreground shadow-lg backdrop-blur-sm transition-all hover:border-cyan-500/50 hover:bg-cyan-500/20 hover:text-cyan-500 dark:hover:text-cyan-400',
+          'fixed bottom-8 right-8 z-40 flex h-12 w-12 items-center justify-center rounded-full border border-border bg-background/90 text-muted-foreground shadow-lg backdrop-blur-sm transition-all hover:border-blue-600/50 hover:bg-blue-600/20 hover:text-blue-600 dark:hover:text-blue-400',
           !showScrollTop && 'pointer-events-none'
         )}
         aria-label="Retour en haut"

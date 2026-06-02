@@ -78,7 +78,7 @@ export function LandingHeader({
                 className="h-11 w-11 object-contain transition-transform group-hover:scale-105"
               />
               <span className="text-xl font-bold tracking-tight text-foreground dark:text-white">
-                Smart<span className="text-cyan-700 dark:text-cyan-400">Planning</span>
+                Smart<span className="text-blue-600 dark:text-blue-400">Planning</span>
               </span>
             </Link>
 
@@ -110,7 +110,7 @@ export function LandingHeader({
                 <Link href="/login">Connexion</Link>
               </Button>
               <Button
-                className="border-0 bg-gradient-to-r from-blue-500 to-cyan-400 text-white shadow-lg shadow-blue-500/25 hover:from-blue-600 hover:to-cyan-500"
+                className="bg-blue-600 text-white shadow-lg shadow-blue-600/25 hover:bg-blue-700"
                 asChild
               >
                 <Link href="/register">Essai gratuit</Link>
@@ -234,7 +234,7 @@ export function LandingHeader({
                     </Button>
                     <Button
                       size="default"
-                      className="h-10 w-full bg-gradient-to-r from-blue-500 to-cyan-400 text-sm font-semibold text-white shadow-lg shadow-blue-500/25"
+                      className="h-10 w-full bg-blue-600 text-sm font-semibold text-white shadow-lg shadow-blue-600/25"
                       asChild
                     >
                       <Link
