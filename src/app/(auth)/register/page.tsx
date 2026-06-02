@@ -40,7 +40,7 @@ export default function RegisterPage() {
         Vous avez déjà un compte ?{' '}
         <Link
           href="/login"
-          className="font-medium text-cyan-600 transition-colors hover:text-cyan-500 hover:underline dark:text-cyan-400 dark:hover:text-cyan-300"
+          className="font-medium text-blue-600 transition-colors hover:text-blue-500 hover:underline dark:text-blue-400 dark:hover:text-blue-300"
         >
           Se connecter
         </Link>
