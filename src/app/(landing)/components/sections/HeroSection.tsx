@@ -80,9 +80,9 @@ export function HeroSection() {
               variants={fadeInUp}
               className="mb-6 text-4xl font-bold leading-[1.1] sm:text-5xl lg:text-6xl xl:text-7xl"
             >
-              Plannings, congés et messagerie d&rsquo;équipe.{' '}
+              Gérez plannings, congés et équipes{' '}
               <span className="text-blue-600 dark:text-blue-400">
-                Sans Excel.
+                au même endroit
               </span>
             </motion.h1>
 
@@ -91,8 +91,9 @@ export function HeroSection() {
               variants={fadeInUp}
               className="mx-auto max-w-xl text-lg text-muted-foreground sm:text-xl lg:mx-0"
             >
-              Le logiciel de gestion d&rsquo;équipe pour les TPE et PME. 2,90
-              €/employé/mois, essai gratuit 21 jours sans carte bancaire.
+              Planifiez, validez les congés et communiquez avec vos équipes
+              depuis une seule application pensée pour les TPE et PME
+              françaises.
             </motion.p>
 
             {/* CTA Buttons - Desktop only (inside text block) */}

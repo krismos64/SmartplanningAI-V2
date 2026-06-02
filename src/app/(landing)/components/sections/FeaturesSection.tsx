@@ -41,8 +41,8 @@ export function FeaturesSection() {
         <SectionHeader
           badge="Fonctionnalités"
           color="blue"
-          title="Tout ce dont vous avez besoin pour"
-          titleHighlight="gérer vos équipes"
+          title="Tous vos outils RH"
+          titleHighlight="réunis au même endroit"
           description="Plannings, congés, tâches, incidents, messagerie : tous les modules pour la gestion RH d&rsquo;une TPE-PME."
           marginBottom="mb-8"
         />

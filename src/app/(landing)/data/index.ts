@@ -239,16 +239,16 @@ export const benefits: Benefit[] = [
   {
     id: 'no-excel',
     icon: FolderX,
-    title: 'Fini les fichiers Excel',
+    title: 'Tout automatisé',
     description:
-      'Plus de tableaux complexes à gérer, tout est automatisé et centralisé.',
+      'Vos plannings se construisent et se mettent à jour automatiquement, sans saisie manuelle.',
   },
   {
     id: 'communication',
     icon: MessageSquare,
     title: 'Communication intégrée',
     description:
-      'Messagerie interne par équipe ou en groupe, notifications instantanées. Finis les WhatsApp et emails professionnels dispersés.',
+      'Messagerie interne par équipe ou en groupe, avec notifications instantanées. Échangez directement dans l’outil.',
   },
   {
     id: 'centralized',

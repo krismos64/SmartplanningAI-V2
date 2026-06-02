@@ -19,9 +19,9 @@ export function BenefitsSection() {
         <SectionHeader
           badge="Pourquoi SmartPlanning ?"
           color="amber"
-          title="Gérez vos équipes"
-          titleHighlight="au quotidien"
-          description="Dites adieu aux méthodes chronophages et découvrez une nouvelle façon de gérer vos équipes."
+          title="Ce que SmartPlanning"
+          titleHighlight="change pour vous"
+          description="Gagnez du temps et offrez à vos équipes une organisation claire."
         />
 
         {/* Content Grid: Image + Benefits */}

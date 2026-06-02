@@ -45,8 +45,8 @@ export function RoleDemosSection() {
         <SectionHeader
           badge="Démos par rôle"
           color="violet"
-          title="Voyez SmartPlanning"
-          titleHighlight="selon votre rôle"
+          title="SmartPlanning s'adapte"
+          titleHighlight="à chaque rôle"
           description="Trois démonstrations courtes pour comprendre concrètement ce que SmartPlanning vous apporte au quotidien, selon votre poste dans l'entreprise."
           marginBottom="mb-12 lg:mb-16"
         />
