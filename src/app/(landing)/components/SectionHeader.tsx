@@ -9,29 +9,15 @@
 import { cn } from '@/lib/utils'
 import { motion, fadeInUp, staggerContainer } from '@/lib/animations'
 
-const PRIMARY_VARIANT = {
+export const SECTION_VARIANT = {
   border: 'border-blue-600/20 dark:border-blue-400/20',
   bg: 'bg-blue-600/10 dark:bg-blue-400/10',
   text: 'text-blue-600 dark:text-blue-400',
 } as const
 
-export const SECTION_COLORS = {
-  blue: PRIMARY_VARIANT,
-  purple: PRIMARY_VARIANT,
-  emerald: PRIMARY_VARIANT,
-  red: PRIMARY_VARIANT,
-  amber: PRIMARY_VARIANT,
-  cyan: PRIMARY_VARIANT,
-  violet: PRIMARY_VARIANT,
-} as const
-
-export type SectionColor = keyof typeof SECTION_COLORS
-
 interface SectionHeaderProps {
   badge: string
   badgeIcon?: React.ReactNode
-  /** @deprecated Couleur ignorée — design monochrome bleu (SP-532). Conservé pour compat appelants ; nettoyage complet en SP-533. */
-  color?: SectionColor
   title: string
   titleHighlight: string
   description?: string
@@ -51,7 +37,7 @@ export function SectionHeader({
   marginBottom = 'mb-16',
   titleId,
 }: SectionHeaderProps) {
-  const colors = PRIMARY_VARIANT
+  const colors = SECTION_VARIANT
 
   return (
     <motion.div

@@ -37,7 +37,6 @@ export function PricingSection() {
         {/* Section Header */}
         <SectionHeader
           badge="Tarification"
-          color="emerald"
           title="Un tarif simple et"
           titleHighlight="transparent"
           description="2,90 € par employé par mois. Toutes les fonctionnalités incluses, sans engagement."

@@ -40,7 +40,6 @@ export function FeaturesSection() {
         {/* Section Header - Using reusable component */}
         <SectionHeader
           badge="Fonctionnalités"
-          color="blue"
           title="Tous vos outils RH"
           titleHighlight="réunis au même endroit"
           description="Plannings, congés, tâches, incidents, messagerie : tous les modules pour la gestion RH d&rsquo;une TPE-PME."

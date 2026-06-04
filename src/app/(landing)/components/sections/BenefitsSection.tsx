@@ -18,7 +18,6 @@ export function BenefitsSection() {
         {/* Section Header - Using reusable component */}
         <SectionHeader
           badge="Pourquoi SmartPlanning ?"
-          color="amber"
           title="Ce que SmartPlanning"
           titleHighlight="change pour vous"
           description="Gagnez du temps et offrez à vos équipes une organisation claire."

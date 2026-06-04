@@ -42,7 +42,7 @@ export function LandingFooter() {
           {/* Brand */}
           <div className="col-span-2 md:col-span-4 lg:col-span-1">
             <Link href="/" className="mb-6 flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-cyan-400">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-blue-400">
                 <Calendar className="h-5 w-5 text-white" />
               </div>
               <span className="text-lg font-bold text-foreground">
@@ -139,7 +139,7 @@ export function LandingFooter() {
             <div className="space-y-3">
               <a
                 href="mailto:contact@smartplanning.fr"
-                className="flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-cyan-400"
+                className="flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-blue-500"
               >
                 <Mail className="h-4 w-4" />
                 contact@smartplanning.fr

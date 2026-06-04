@@ -75,7 +75,6 @@ export interface RoleDemo {
   description: string
   highlights: string[]
   color: string
-  badgeColor: 'violet' | 'cyan' | 'emerald'
   thumbnail: string
 }
 
@@ -295,8 +294,7 @@ export const roleDemos: RoleDemo[] = [
       "Configuration de l'entreprise et des managers",
       'Audit logs complets et conformité RGPD',
     ],
-    color: 'from-violet-500 to-fuchsia-500',
-    badgeColor: 'violet',
+    color: 'from-blue-600 to-blue-500',
     thumbnail: '/images/demo-directeur.png',
   },
   {
@@ -316,8 +314,7 @@ export const roleDemos: RoleDemo[] = [
       'Messagerie interne avec votre équipe',
       'Suivi des incidents et notes employés',
     ],
-    color: 'from-cyan-500 to-blue-500',
-    badgeColor: 'cyan',
+    color: 'from-blue-500 to-blue-400',
     thumbnail: '/images/demo-manager.png',
   },
   {
@@ -337,8 +334,7 @@ export const roleDemos: RoleDemo[] = [
       'Messagerie interne avec collègues et manager',
       'Export PDF du planning pour consultation offline',
     ],
-    color: 'from-emerald-500 to-teal-500',
-    badgeColor: 'emerald',
+    color: 'from-blue-400 to-blue-300',
     thumbnail: '/images/demo-employe.png',
   },
 ]

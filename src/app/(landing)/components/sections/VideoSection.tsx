@@ -35,7 +35,6 @@ export function VideoSection() {
         <SectionHeader
           badge="Vidéo de présentation"
           badgeIcon={<YoutubeIcon className="h-4 w-4" />}
-          color="red"
           title="Découvrez SmartPlanning"
           titleHighlight="en action"
           description="Visualisez en 2 minutes le fonctionnement de SmartPlanning au quotidien."

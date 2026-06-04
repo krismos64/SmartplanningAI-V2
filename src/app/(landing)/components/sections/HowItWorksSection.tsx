@@ -20,7 +20,6 @@ export function HowItWorksSection() {
         {/* Section Header - Using reusable component */}
         <SectionHeader
           badge="Comment ça marche"
-          color="purple"
           title="Démarrez en"
           titleHighlight="3 étapes simples"
           marginBottom="mb-16 lg:mb-24"

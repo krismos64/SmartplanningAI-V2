@@ -39,7 +39,7 @@ export function ContactSection() {
     <section id="contact" className="relative py-24 lg:py-32">
       {/* Background decorations */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -left-40 top-0 h-[500px] w-[500px] rounded-full bg-cyan-500/5 blur-[120px]" />
+        <div className="absolute -left-40 top-0 h-[500px] w-[500px] rounded-full bg-blue-600/5 blur-[120px]" />
         <div className="absolute -right-40 bottom-0 h-[500px] w-[500px] rounded-full bg-blue-500/5 blur-[120px]" />
       </div>
 
@@ -48,7 +48,6 @@ export function ContactSection() {
         <SectionHeader
           badge="Contact"
           badgeIcon={<Mail className="h-4 w-4" />}
-          color="cyan"
           title="Une question ?"
           titleHighlight="Contactez-nous"
           description="Notre équipe est à votre écoute pour répondre à toutes vos questions et vous accompagner dans la mise en place de SmartPlanning."
@@ -70,10 +69,10 @@ export function ContactSection() {
                 <motion.div
                   key={item.label}
                   variants={fadeInUp}
-                  className="group rounded-2xl border border-border/50 bg-card/50 p-6 backdrop-blur-sm transition-all duration-300 hover:border-cyan-500/30 hover:bg-card"
+                  className="group rounded-2xl border border-border/50 bg-card/50 p-6 backdrop-blur-sm transition-all duration-300 hover:border-blue-500/30 hover:bg-card"
                 >
-                  <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-500/20">
-                    <item.icon className="h-6 w-6 text-cyan-400" />
+                  <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600/20 to-blue-500/20">
+                    <item.icon className="h-6 w-6 text-blue-500" />
                   </div>
                   <p className="mb-1 text-sm text-muted-foreground">
                     {item.label}
@@ -81,7 +80,7 @@ export function ContactSection() {
                   {item.href ? (
                     <a
                       href={item.href}
-                      className="text-lg font-medium text-foreground transition-colors hover:text-cyan-400"
+                      className="text-lg font-medium text-foreground transition-colors hover:text-blue-500"
                     >
                       {item.value}
                     </a>

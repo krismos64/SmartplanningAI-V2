@@ -2,11 +2,7 @@
  * Landing page components barrel file
  */
 
-export {
-  SectionHeader,
-  SECTION_COLORS,
-  type SectionColor,
-} from './SectionHeader'
+export { SectionHeader, SECTION_VARIANT } from './SectionHeader'
 export { FAQItem } from './FAQItem'
 export { AnimatedBackground } from './AnimatedBackground'
 export { TopBanner } from './TopBanner'

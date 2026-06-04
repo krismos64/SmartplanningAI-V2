@@ -21,7 +21,7 @@ import {
   staggerContainer,
 } from '@/lib/animations'
 import { roleDemos, type RoleDemo } from '../../data'
-import { SectionHeader, SECTION_COLORS } from '../index'
+import { SectionHeader, SECTION_VARIANT } from '../index'
 
 export function RoleDemosSection() {
   const [activeRoleId, setActiveRoleId] = useState<RoleDemo['id']>('director')
@@ -29,7 +29,7 @@ export function RoleDemosSection() {
 
   const activeRole = (roleDemos.find((demo) => demo.id === activeRoleId) ??
     roleDemos[0]) as RoleDemo
-  const colors = SECTION_COLORS[activeRole.badgeColor]
+  const colors = SECTION_VARIANT
 
   const handleRoleChange = (id: RoleDemo['id']) => {
     setActiveRoleId(id)
@@ -44,7 +44,6 @@ export function RoleDemosSection() {
       <div className="container-custom">
         <SectionHeader
           badge="Démos par rôle"
-          color="violet"
           title="SmartPlanning s'adapte"
           titleHighlight="à chaque rôle"
           description="Trois démonstrations courtes pour comprendre concrètement ce que SmartPlanning vous apporte au quotidien, selon votre poste dans l'entreprise."

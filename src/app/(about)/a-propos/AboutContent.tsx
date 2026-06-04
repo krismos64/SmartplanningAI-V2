@@ -61,7 +61,7 @@ export function AboutContent() {
       {/* Skip to main content link for accessibility */}
       <a
         href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-cyan-500 focus:px-4 focus:py-2 focus:text-white"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-blue-600 focus:px-4 focus:py-2 focus:text-white"
       >
         Aller au contenu principal
       </a>
@@ -87,7 +87,7 @@ export function AboutContent() {
                   className="mb-6 inline-block"
                   aria-hidden="true"
                 >
-                  <span className="inline-flex items-center gap-2 rounded-full border border-cyan-500/30 bg-cyan-500/10 px-4 py-2 text-sm text-cyan-600 dark:border-cyan-500/20 dark:text-cyan-400">
+                  <span className="inline-flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/10 px-4 py-2 text-sm text-blue-600 dark:border-blue-500/20 dark:text-blue-400">
                     <Target className="h-4 w-4" aria-hidden="true" />
                     Notre histoire
                   </span>
@@ -149,7 +149,7 @@ export function AboutContent() {
               >
                 {/* Glow Effect - Decorative */}
                 <div
-                  className="absolute inset-0 rounded-3xl bg-gradient-to-r from-cyan-500/20 to-blue-500/20 blur-3xl"
+                  className="absolute inset-0 rounded-3xl bg-gradient-to-r from-blue-600/20 to-blue-500/20 blur-3xl"
                   aria-hidden="true"
                 />
 
@@ -184,7 +184,6 @@ export function AboutContent() {
                   💎
                 </span>
               }
-              color="cyan"
               title="Nos"
               titleHighlight="valeurs"
               titleId="values-title"
@@ -225,7 +224,6 @@ export function AboutContent() {
                   🎯
                 </span>
               }
-              color="purple"
               title="SmartPlanning s'adresse aux"
               titleHighlight="TPE et PME"
               titleId="targets-title"
@@ -266,13 +264,13 @@ export function AboutContent() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
-              className="relative overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-blue-500/10 via-cyan-500/10 to-purple-500/10 p-12 text-center lg:p-20"
+              className="relative overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-blue-600/10 via-blue-500/10 to-blue-400/10 p-12 text-center lg:p-20"
               role="complementary"
               aria-label="Appel à l'action pour essayer SmartPlanning"
             >
               {/* Background glow - Decorative */}
               <div
-                className="absolute inset-0 bg-gradient-to-r from-blue-500/5 via-transparent to-cyan-500/5"
+                className="absolute inset-0 bg-gradient-to-r from-blue-600/5 via-transparent to-blue-400/5"
                 aria-hidden="true"
               />
 
@@ -331,7 +329,6 @@ export function AboutContent() {
                   👋
                 </span>
               }
-              color="cyan"
               title="Restons"
               titleHighlight="connectés"
               titleId="social-title"
