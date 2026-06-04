@@ -153,7 +153,7 @@ export function LandingHeader({
                   initial={{ opacity: 0, rotate: -90 }}
                   animate={{ opacity: 1, rotate: 0 }}
                   transition={{ duration: 0.3, delay: 0.1 }}
-                  className="absolute right-4 top-4 z-10 flex h-12 min-h-[44px] w-12 min-w-[44px] touch-manipulation items-center justify-center rounded-full border border-border bg-background text-foreground transition-all hover:border-cyan-400/50 hover:bg-cyan-400/20 hover:text-cyan-400 dark:border-white/20 dark:bg-[#030712] dark:text-white"
+                  className="absolute right-4 top-4 z-10 flex h-12 min-h-[44px] w-12 min-w-[44px] touch-manipulation items-center justify-center rounded-full border border-border bg-background text-foreground transition-all hover:border-blue-400/50 hover:bg-blue-400/20 hover:text-blue-400 dark:border-white/20 dark:bg-[#030712] dark:text-white"
                   onClick={() => setIsMobileMenuOpen(false)}
                   aria-label="Fermer le menu"
                   data-testid="landing-mobile-menu-close"
@@ -187,7 +187,7 @@ export function LandingHeader({
                         initial={{ opacity: 0, y: 15 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: index * 0.05 }}
-                        className="text-[15px] font-medium text-foreground transition-colors hover:text-cyan-400 dark:text-white"
+                        className="text-[15px] font-medium text-foreground transition-colors hover:text-blue-400 dark:text-white"
                         onClick={() => setIsMobileMenuOpen(false)}
                       >
                         {link.label}

@@ -122,7 +122,6 @@ export function PricingPageContent() {
           <div className="container-custom">
             <SectionHeader
               badge="Calculez votre tarif"
-              color="cyan"
               title="Simulateur"
               titleHighlight="interactif"
               titleId="simulator-title"
@@ -183,7 +182,6 @@ export function PricingPageContent() {
           <div className="container-custom">
             <SectionHeader
               badge="Tout inclus"
-              color="emerald"
               title="Ce qui est"
               titleHighlight="inclus"
               titleId="features-title"
@@ -241,7 +239,6 @@ export function PricingPageContent() {
           <div className="container-custom">
             <SectionHeader
               badge="Questions fréquentes"
-              color="blue"
               title="Vos questions sur les"
               titleHighlight="tarifs"
               titleId="faq-title"

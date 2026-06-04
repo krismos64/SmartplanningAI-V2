@@ -46,7 +46,7 @@ export const values: Value[] = [
     title: 'Simplicité',
     description:
       'Une interface intuitive qui permet une prise en main rapide. Pas besoin de formation, commencez à planifier en quelques minutes.',
-    gradient: 'from-blue-500 to-cyan-400',
+    gradient: 'from-blue-600 to-blue-500',
   },
   {
     id: 'proximite',
@@ -54,7 +54,7 @@ export const values: Value[] = [
     title: 'Proximité',
     description:
       "Un support réactif et à l'écoute de vos besoins. Nous construisons SmartPlanning avec nos utilisateurs, pour nos utilisateurs.",
-    gradient: 'from-pink-500 to-rose-400',
+    gradient: 'from-blue-500 to-blue-400',
   },
   {
     id: 'fiabilite',
@@ -62,7 +62,7 @@ export const values: Value[] = [
     title: 'Fiabilité',
     description:
       'Sécurité des données garantie et disponibilité maximale du service. Vos plannings sont accessibles quand vous en avez besoin.',
-    gradient: 'from-emerald-500 to-teal-400',
+    gradient: 'from-blue-400 to-blue-300',
   },
 ]
 
@@ -77,7 +77,7 @@ export const targets: Target[] = [
     title: 'TPE / PME',
     description:
       'Entreprises de 5 à 250 salariés cherchant à optimiser leur organisation',
-    color: 'bg-blue-500/20',
+    color: 'bg-blue-600/20',
   },
   {
     id: 'managers',
@@ -85,7 +85,7 @@ export const targets: Target[] = [
     title: 'Managers & RH',
     description:
       "Responsables d'équipes et professionnels des ressources humaines",
-    color: 'bg-purple-500/20',
+    color: 'bg-blue-500/20',
   },
   {
     id: 'industrie',
@@ -93,21 +93,21 @@ export const targets: Target[] = [
     title: 'Industrie',
     description:
       'Usines, ateliers et sites de production avec des équipes en rotation',
-    color: 'bg-amber-500/20',
+    color: 'bg-blue-400/20',
   },
   {
     id: 'sante',
     icon: Stethoscope,
     title: 'Santé',
     description: 'Cliniques, cabinets médicaux et établissements de soins',
-    color: 'bg-emerald-500/20',
+    color: 'bg-blue-300/20',
   },
   {
     id: 'commerce',
     icon: ShoppingBag,
     title: 'Commerce & Services',
     description: 'Boutiques, restaurants, hôtels et entreprises de services',
-    color: 'bg-rose-500/20',
+    color: 'bg-blue-200/20',
   },
 ]
 

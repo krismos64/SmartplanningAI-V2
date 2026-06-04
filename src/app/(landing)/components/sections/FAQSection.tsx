@@ -3,7 +3,7 @@
 /**
  * FAQSection Component
  * Frequently asked questions with accordion
- * Refactored to use centralized SECTION_COLORS
+ * Refactored to use centralized SECTION_VARIANT
  */
 
 import { useState } from 'react'
@@ -13,11 +13,11 @@ import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { motion, fadeInUp, staggerContainer } from '@/lib/animations'
 import { faqs } from '../../data'
-import { FAQItem, SECTION_COLORS } from '../index'
+import { FAQItem, SECTION_VARIANT } from '../index'
 
 export function FAQSection() {
   const [openFAQ, setOpenFAQ] = useState<number | null>(null)
-  const colors = SECTION_COLORS.cyan
+  const colors = SECTION_VARIANT
 
   return (
     <section
@@ -61,7 +61,7 @@ export function FAQSection() {
             </motion.p>
             <motion.div variants={fadeInUp}>
               <Button
-                className="bg-gradient-to-r from-cyan-500 to-blue-500"
+                className="bg-gradient-to-r from-blue-600 to-blue-500"
                 asChild
               >
                 <Link href="#contact">
