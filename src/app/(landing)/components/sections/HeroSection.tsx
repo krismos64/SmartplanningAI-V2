@@ -35,7 +35,7 @@ export function HeroSection() {
   return (
     <section
       ref={heroRef}
-      className="relative flex min-h-screen items-center pb-20 pt-40"
+      className="relative flex min-h-screen items-center pb-20 pt-32"
     >
       <motion.div
         style={{ opacity: heroOpacity, scale: heroScale, y: heroY }}

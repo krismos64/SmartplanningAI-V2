@@ -24,7 +24,6 @@ import { motion, fadeInUp, staggerContainer, scaleIn } from '@/lib/animations'
 import {
   SectionHeader,
   AnimatedBackground,
-  TopBanner,
   PRIMARY_BUTTON_CLASSES,
   HIGHLIGHT_TEXT_CLASSES,
 } from '@/app/(landing)/components'
@@ -47,9 +46,6 @@ export function AboutContent() {
 
   return (
     <div className="relative min-h-screen bg-background text-foreground">
-      {/* Top Banner - Animated marquee */}
-      <TopBanner />
-
       {/* Background Effects - Decorative, hidden from screen readers */}
       <div aria-hidden="true">
         <AnimatedBackground />
@@ -70,7 +66,7 @@ export function AboutContent() {
         {/* Hero Section - Article principal */}
         <article
           aria-labelledby="hero-title"
-          className="relative flex min-h-[70vh] items-center pb-16 pt-32"
+          className="relative flex min-h-[70vh] items-center pb-16 pt-24"
         >
           <div className="container-custom">
             <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">

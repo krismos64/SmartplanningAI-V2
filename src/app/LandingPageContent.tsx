@@ -16,7 +16,7 @@ import { useEffect, useState } from 'react'
 // Composants above-the-fold : import statique direct (pas via le barrel) pour
 // un rendu immédiat du LCP sans tirer le code des sections below-the-fold.
 import { LandingHeader as Header } from '@/components/layout/LandingHeader'
-import { AnimatedBackground, TopBanner } from './(landing)/components'
+import { AnimatedBackground } from './(landing)/components'
 import { HeroSection } from './(landing)/components/sections/HeroSection'
 
 /**
@@ -84,9 +84,6 @@ export default function LandingPageContent() {
     <div className="min-h-screen overflow-x-hidden bg-background text-foreground">
       {/* Background */}
       <AnimatedBackground />
-
-      {/* Top Banner */}
-      <TopBanner />
 
       {/* Header */}
       <Header isScrolled={isScrolled} />
