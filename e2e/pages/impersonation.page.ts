@@ -188,18 +188,41 @@ export class ImpersonationPage {
     // On attend d'abord le load complet, puis le champ.
     await this.page.waitForLoadState('load').catch(() => {})
     const emailField = this.page.getByPlaceholder('vous@entreprise.com')
-    await emailField.waitFor({ state: 'visible', timeout: 45000 })
+    await emailField.waitFor({ state: 'visible', timeout: 30000 })
 
     // 5. Re-login admin directement (on est deja sur /login avec le champ visible,
-    // evite le double goto('/login') que ferait loginAs)
+    // evite le double goto('/login') que ferait loginAs).
+    //
+    // Robustesse CI nightly (flaky recurrent depuis le 3 juin 2026) : le POST
+    // credentials NextAuth + redirection est le point de timeout le plus
+    // frequent. Deux mesures :
+    // - waitUntil: 'commit' : on valide la redirection des qu'elle commence,
+    //   sans attendre l'event 'load' (Framer Motion + chunks JS le retardent de
+    //   plusieurs dizaines de secondes sur le serveur dev lent du nightly).
+    // - retry du submit (meme pattern que le goto('/login') ci-dessus) : absorbe
+    //   le cas ou le premier submit ne declenche pas la redirection.
     const admin = TEST_USERS.SYSTEM_ADMIN
     await emailField.fill(admin.email)
     await this.page.getByPlaceholder('••••••••').fill(admin.password)
-    await this.page.getByRole('button', { name: 'Se connecter' }).click()
-    await this.page.waitForURL(
-      /\/app\/(dashboard|director|manager|admin|employee|settings|billing)/,
-      { timeout: 60000 }
-    )
+
+    const appUrlPattern =
+      /\/app\/(dashboard|director|manager|admin|employee|settings|billing)/
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        await this.page.getByRole('button', { name: 'Se connecter' }).click()
+        await this.page.waitForURL(appUrlPattern, {
+          timeout: 30000,
+          waitUntil: 'commit',
+        })
+        break
+      } catch {
+        if (attempt === 1)
+          throw new Error('Re-login admin failed: no redirect to /app after 2 attempts')
+        // Le champ peut s'etre vide ou la page rehydratee : re-remplir avant retry
+        await emailField.fill(admin.email)
+        await this.page.getByPlaceholder('••••••••').fill(admin.password)
+      }
+    }
 
     // 6. Naviguer vers /app/admin/companies
     await this.page.goto('/app/admin/companies', {

@@ -19,8 +19,12 @@ const TARGET_COMPANY = 'TechCorp'
 // Timeout etendu pour tous les tests d'impersonation :
 // Le flow complet (login admin → start → navigate → stop → re-login → navigate)
 // implique 4+ navigations avec attentes de session NextAuth.
-// En CI nightly (serveur dev lent), 60s est insuffisant.
-test.setTimeout(90_000)
+// En CI nightly (serveur dev lent), le seul stopImpersonation (DELETE +
+// clearCookies + goto /login avec retry + attente hydration + re-login avec
+// retry) peut consommer ~90s : on porte le budget global a 150s pour laisser
+// de la marge au flow complet, sinon le test timeout avant meme le retry
+// Playwright (cause du flaky recurrent depuis le 3 juin 2026 sur :79).
+test.setTimeout(150_000)
 
 // Execution serie obligatoire : tous les tests d'impersonation partagent
 // le meme serveur Next.js et la meme session admin. En parallele, les
