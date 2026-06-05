@@ -27,7 +27,6 @@ import {
 import {
   SectionHeader,
   AnimatedBackground,
-  TopBanner,
   FAQItem,
   PRIMARY_BUTTON_CLASSES,
   HIGHLIGHT_TEXT_CLASSES,
@@ -57,8 +56,6 @@ export function PricingPageContent() {
 
   return (
     <div className="relative min-h-screen bg-background text-foreground">
-      <TopBanner />
-
       <div aria-hidden="true">
         <AnimatedBackground />
       </div>
@@ -76,7 +73,7 @@ export function PricingPageContent() {
         {/* Section 1 — Hero prix */}
         <section
           aria-labelledby="pricing-hero-title"
-          className="relative pb-16 pt-32 lg:pb-24 lg:pt-40"
+          className="relative pb-16 pt-24 lg:pb-24 lg:pt-32"
         >
           <div className="container-custom">
             <motion.div

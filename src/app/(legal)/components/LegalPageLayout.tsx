@@ -6,7 +6,6 @@
  *
  * @description Fournit une structure cohérente avec la landing page :
  * - Header fixe avec navigation (LandingHeader)
- * - TopBanner animé
  * - Background animé
  * - Table des matières interactive
  * - Footer standard
@@ -18,7 +17,7 @@
 import { useState, useEffect } from 'react'
 import { ChevronUp, FileText } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { AnimatedBackground, TopBanner } from '@/app/(landing)/components'
+import { AnimatedBackground } from '@/app/(landing)/components'
 import { LandingHeader } from '@/components/layout/LandingHeader'
 import { LandingFooter } from '@/components/layout/LandingFooter'
 import { motion, fadeInUp, staggerContainer } from '@/lib/animations'
@@ -103,9 +102,6 @@ export function LegalPageLayout({
 
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-background text-foreground">
-      {/* Top Banner - Animated marquee */}
-      <TopBanner />
-
       {/* Background animé - Decorative, hidden from screen readers */}
       <div aria-hidden="true">
         <AnimatedBackground />
@@ -115,7 +111,7 @@ export function LegalPageLayout({
       <LandingHeader isScrolled={isScrolled} />
 
       {/* Contenu principal */}
-      <main className="relative pb-20 pt-32">
+      <main className="relative pb-20 pt-24">
         <div className="container-custom">
           <div className="flex flex-col lg:flex-row lg:gap-12">
             {/* Sidebar - Table des matières (desktop) */}

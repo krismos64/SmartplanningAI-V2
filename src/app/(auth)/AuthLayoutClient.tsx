@@ -4,7 +4,6 @@
  * AuthLayoutClient - Client component for auth layout
  *
  * @description Layout réutilisant les composants landing avec :
- * - TopBanner animé
  * - Header/Footer de la landing
  * - Animations Framer Motion
  * - Background animé
@@ -15,7 +14,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { LandingHeader } from '@/components/layout/LandingHeader'
 import { LandingFooter } from '@/components/layout/LandingFooter'
-import { AnimatedBackground, TopBanner } from '../(landing)/components'
+import { AnimatedBackground } from '../(landing)/components'
 import { motion, fadeInUp } from '@/lib/animations'
 
 interface AuthLayoutClientProps {
@@ -35,9 +34,6 @@ export function AuthLayoutClient({ children }: AuthLayoutClientProps) {
 
   return (
     <div className="relative flex min-h-screen flex-col overflow-x-hidden bg-background text-foreground">
-      {/* Top Banner - Animated marquee */}
-      <TopBanner />
-
       {/* Background animé - Decorative */}
       <div aria-hidden="true">
         <AnimatedBackground />
@@ -47,7 +43,7 @@ export function AuthLayoutClient({ children }: AuthLayoutClientProps) {
       <LandingHeader isScrolled={isScrolled} showNavLinks={false} />
 
       {/* Main Content - Centré avec espace pour le header fixe */}
-      <main className="relative z-10 flex flex-1 items-center justify-center px-4 py-32">
+      <main className="relative z-10 flex flex-1 items-center justify-center px-4 py-24">
         <motion.div
           initial="hidden"
           animate="visible"

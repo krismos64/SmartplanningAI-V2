@@ -59,7 +59,7 @@ export function LandingHeader({
         transition={{ duration: 0.6, ease: 'easeOut' }}
         className={cn(
           'left-0 right-0 z-50 transition-all duration-500',
-          isFixed ? 'fixed top-8' : 'relative top-0',
+          isFixed ? 'fixed top-0' : 'relative top-0',
           isScrolled || !isFixed
             ? 'border-b border-border/10 bg-background/80 py-4 backdrop-blur-xl dark:border-white/5 dark:bg-[#030712]/80'
             : 'bg-transparent py-6'
