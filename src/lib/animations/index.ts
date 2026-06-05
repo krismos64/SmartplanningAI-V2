@@ -83,9 +83,6 @@ export {
   fadeInUp,
   scaleIn,
   // Continuous / Looping animations (conservés : usage fonctionnel uniquement)
-  marqueeAnimation,
-  marqueeAnimationValue,
-  marqueeTransition,
   bounceAnimation,
   bounceAnimationValue,
   bounceTransition,

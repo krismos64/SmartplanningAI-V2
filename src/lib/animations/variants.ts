@@ -741,27 +741,6 @@ export const scaleIn: Variants = {
 // CONTINUOUS / LOOPING ANIMATIONS
 // =============================================================================
 
-/** Conservé : bandeau marketing défilant, signal attentionnel volontaire. À arbitrer étape 4 (copy). */
-export const marqueeAnimation = {
-  animate: {
-    x: [0, -1000],
-  },
-  transition: {
-    x: {
-      repeat: Infinity,
-      repeatType: 'loop' as const,
-      duration: 20,
-      ease: 'linear' as const,
-    },
-  },
-}
-
-/** Legacy: valeur d'animation pour marquee (utiliser avec marqueeTransition) */
-export const marqueeAnimationValue = marqueeAnimation.animate
-
-/** Legacy: transition pour marquee */
-export const marqueeTransition = marqueeAnimation.transition
-
 /** Conservé : signal UX wayfinding "scroll down" (ScrollIndicator). Disparaît au scroll via heroOpacity. */
 export const bounceAnimation = {
   animate: {
