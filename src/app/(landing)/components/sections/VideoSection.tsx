@@ -50,7 +50,7 @@ export function VideoSection() {
           className="relative mx-auto max-w-5xl"
         >
           {/* Glow Effect */}
-          <div className="absolute -inset-4 rounded-3xl bg-gradient-to-r from-red-500/20 via-pink-500/20 to-purple-500/20 blur-2xl" />
+          <div className="absolute -inset-4 rounded-3xl bg-gradient-to-r from-blue-500/20 via-blue-600/20 to-blue-700/20 blur-2xl" />
 
           {/* Video Frame */}
           <div className="relative overflow-hidden rounded-2xl border border-border bg-card shadow-2xl">
@@ -84,11 +84,11 @@ export function VideoSection() {
                       className="relative"
                     >
                       {/* Pulsing Ring */}
-                      <div className="absolute inset-0 animate-ping rounded-full bg-red-500/30" />
-                      <div className="absolute -inset-4 rounded-full bg-red-500/20 blur-xl transition-all group-hover:bg-red-500/40" />
+                      <div className="absolute inset-0 animate-ping rounded-full bg-blue-500/30" />
+                      <div className="absolute -inset-4 rounded-full bg-blue-500/20 blur-xl transition-all group-hover:bg-blue-500/40" />
 
                       {/* Play Icon */}
-                      <div className="relative flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-red-500 to-pink-500 shadow-lg shadow-red-500/50 transition-all group-hover:shadow-xl group-hover:shadow-red-500/60 sm:h-24 sm:w-24">
+                      <div className="relative flex h-20 w-20 items-center justify-center rounded-full bg-red-600 shadow-lg shadow-red-600/50 transition-all group-hover:bg-red-700 group-hover:shadow-xl group-hover:shadow-red-600/60 sm:h-24 sm:w-24">
                         <Play className="h-8 w-8 fill-white text-white sm:h-10 sm:w-10" />
                       </div>
                     </motion.div>
@@ -107,7 +107,7 @@ export function VideoSection() {
                           repeat: Infinity,
                           ease: 'easeInOut',
                         }}
-                        className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-red-500 to-pink-500 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-red-500/30"
+                        className="inline-flex items-center gap-2 rounded-full bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-600/30"
                       >
                         <YoutubeIcon className="h-4 w-4" />
                         Regarder la vidéo
@@ -130,8 +130,8 @@ export function VideoSection() {
           </div>
 
           {/* Decorative Elements */}
-          <div className="absolute -left-8 -top-8 h-32 w-32 rounded-full bg-red-500/10 blur-3xl" />
-          <div className="absolute -bottom-8 -right-8 h-32 w-32 rounded-full bg-pink-500/10 blur-3xl" />
+          <div className="absolute -left-8 -top-8 h-32 w-32 rounded-full bg-blue-500/10 blur-3xl" />
+          <div className="absolute -bottom-8 -right-8 h-32 w-32 rounded-full bg-blue-600/10 blur-3xl" />
         </motion.div>
 
         {/* Video Features - Using centralized data */}
