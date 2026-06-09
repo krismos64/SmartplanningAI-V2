@@ -12,21 +12,10 @@
  * @ticket SP-456
  */
 
-import { Page, Locator, Cookie, expect } from '@playwright/test'
-import { TEST_USERS } from '../fixtures/auth.fixture'
-import { setConsentCookie } from '../fixtures/consent.fixture'
+import { Page, Locator, expect } from '@playwright/test'
 
 export class ImpersonationPage {
   readonly page: Page
-
-  /**
-   * Snapshot des cookies du context admin (JWT SYSTEM_ADMIN) capture juste
-   * avant le demarrage de l'impersonation. Permet de restaurer la session
-   * admin dans stopImpersonation() sans repasser par un re-login UI complet
-   * (cause racine du flaky nightly recurrent depuis le 3 juin 2026 : le
-   * goto('/login') + submit + waitForURL timeout sur le serveur dev lent du CI).
-   */
-  private adminCookies: Cookie[] = []
 
   // ==========================================================================
   // Locators
@@ -107,11 +96,6 @@ export class ImpersonationPage {
     })
     await expect(impersonateItem).toBeVisible({ timeout: 5000 })
 
-    // Capturer les cookies admin (JWT SYSTEM_ADMIN valide) AVANT que l'API
-    // impersonate ne mute la session. stopImpersonation() les reinjecte pour
-    // restaurer la session admin sans re-login UI (cf. champ adminCookies).
-    this.adminCookies = await this.page.context().cookies()
-
     // Intercepter la reponse API et cliquer en parallele
     const [apiResponse] = await Promise.all([
       this.page.waitForResponse(
@@ -141,19 +125,18 @@ export class ImpersonationPage {
   }
 
   /**
-   * Arrete l'impersonation via l'API DELETE + re-login admin.
+   * Arrete l'impersonation via l'API DELETE, puis retourne cote admin.
    *
-   * Le bouton UI a des problemes de timing avec updateSession() (NextAuth v5
-   * ClientFetchError), donc on utilise l'API DELETE directement, puis on
-   * restaure la session admin en reinjectant les cookies SYSTEM_ADMIN captures
-   * dans startImpersonation() (voir champ adminCookies).
+   * Pas de re-login : le DELETE ne supprime que le cookie sp-impersonation,
+   * le JWT NextAuth SYSTEM_ADMIN de base reste valide. On supprime aussi le
+   * cookie impersonation cote browser (au cas ou il persiste apres la reponse
+   * API qui passe par un contexte request separe), puis on navigue vers
+   * /app/admin/companies — accessible directement avec la session admin.
    *
-   * Cette restauration par cookies remplace l'ancien re-login UI complet
-   * (goto('/login') + submit + waitForURL), qui etait la cause racine du flaky
-   * nightly recurrent : sur le serveur dev lent du CI, le POST credentials
-   * NextAuth + redirection timeoutait (~1.3 min observees). Reinjecter le JWT
-   * deja valide est instantane et deterministe. Le re-login UI reste disponible
-   * en fallback (reloginAdminViaUI) si aucun cookie n'a ete capture.
+   * Cette version remplace l'ancien re-login UI (goto('/login') + submit +
+   * waitForURL), cause racine du flaky nightly recurrent : sur le serveur dev
+   * lent du CI, le POST credentials NextAuth timeoutait (~1.3 min observees).
+   * Re-login inutile ici puisque la session admin n'a jamais ete detruite.
    */
   async stopImpersonation(): Promise<void> {
     // 1. Appeler l'API DELETE (supprime le cookie impersonation + audit log)
@@ -162,88 +145,16 @@ export class ImpersonationPage {
       throw new Error(`DELETE impersonation failed: ${deleteResp.status()}`)
     }
 
-    // 2. Supprimer TOUS les cookies du browser context.
-    // clearCookies() supprime les HttpOnly cookies (JWT impersonation inclus).
+    // 2. Supprimer le cookie sp-impersonation cote browser. Le DELETE est passe
+    // par page.request (contexte API separe) : on s'assure que le cookie est
+    // bien retire du context du navigateur. On ne touche PAS aux autres cookies
+    // (le JWT admin doit rester pour acceder a /app/admin/companies).
+    const cookies = await this.page.context().cookies()
+    const adminCookies = cookies.filter((c) => c.name !== 'sp-impersonation')
     await this.page.context().clearCookies()
-    await setConsentCookie(this.page.context())
+    await this.page.context().addCookies(adminCookies)
 
-    // 3. Restaurer la session admin en reinjectant les cookies SYSTEM_ADMIN
-    // captures avant l'impersonation. Pas de re-login UI : on remet le JWT
-    // d'origine, deja valide et SYSTEM_ADMIN propre.
-    if (this.adminCookies.length === 0) {
-      // Securite : aucun snapshot (startImpersonation pas appelee ?) → fallback UI
-      await this.reloginAdminViaUI()
-      return
-    }
-
-    // Filtrer le cookie impersonation residuel s'il etait present dans le
-    // snapshot (ne devrait pas l'etre, capture avant le start, mais defensif).
-    const cookiesToRestore = this.adminCookies.filter(
-      (c) => c.name !== 'sp-impersonation'
-    )
-    await this.page.context().addCookies(cookiesToRestore)
-
-    // 4. Naviguer vers /app/admin/companies avec la session admin restauree.
-    await this.page.goto('/app/admin/companies', {
-      waitUntil: 'domcontentloaded',
-    })
-    await expect(this.companiesTitle).toBeVisible({ timeout: 15000 })
-  }
-
-  /**
-   * Fallback : re-login admin via le formulaire UI.
-   *
-   * Conserve uniquement comme filet de securite si stopImpersonation() n'a pas
-   * de snapshot de cookies a restaurer. Le chemin nominal passe par la
-   * reinjection des cookies (cf. stopImpersonation), bien plus stable en CI.
-   */
-  private async reloginAdminViaUI(): Promise<void> {
-    // Naviguer vers /login avec retry (serveur dev lent en CI nightly)
-    for (let attempt = 0; attempt < 3; attempt++) {
-      try {
-        await this.page.goto('/login', {
-          timeout: 30000,
-          waitUntil: 'domcontentloaded',
-        })
-        await this.page.waitForURL(/\/login/, { timeout: 10000 })
-        break
-      } catch {
-        if (attempt === 2)
-          throw new Error('Failed to navigate to /login after 3 attempts')
-        await this.page.context().clearCookies()
-        await setConsentCookie(this.page.context())
-        await this.page.waitForTimeout(2000)
-      }
-    }
-
-    await this.page.waitForLoadState('load').catch(() => {})
-    const emailField = this.page.getByPlaceholder('vous@entreprise.com')
-    await emailField.waitFor({ state: 'visible', timeout: 30000 })
-
-    const admin = TEST_USERS.SYSTEM_ADMIN
-    await emailField.fill(admin.email)
-    await this.page.getByPlaceholder('••••••••').fill(admin.password)
-
-    const appUrlPattern =
-      /\/app\/(dashboard|director|manager|admin|employee|settings|billing)/
-    for (let attempt = 0; attempt < 2; attempt++) {
-      try {
-        await this.page.getByRole('button', { name: 'Se connecter' }).click()
-        await this.page.waitForURL(appUrlPattern, {
-          timeout: 30000,
-          waitUntil: 'commit',
-        })
-        break
-      } catch {
-        if (attempt === 1)
-          throw new Error(
-            'Re-login admin failed: no redirect to /app after 2 attempts'
-          )
-        await emailField.fill(admin.email)
-        await this.page.getByPlaceholder('••••••••').fill(admin.password)
-      }
-    }
-
+    // 3. Retourner sur la liste des entreprises (session admin toujours valide).
     await this.page.goto('/app/admin/companies', {
       waitUntil: 'domcontentloaded',
     })
