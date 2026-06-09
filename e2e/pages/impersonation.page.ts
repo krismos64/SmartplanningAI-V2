@@ -12,12 +12,21 @@
  * @ticket SP-456
  */
 
-import { Page, Locator, expect } from '@playwright/test'
+import { Page, Locator, Cookie, expect } from '@playwright/test'
 import { TEST_USERS } from '../fixtures/auth.fixture'
 import { setConsentCookie } from '../fixtures/consent.fixture'
 
 export class ImpersonationPage {
   readonly page: Page
+
+  /**
+   * Snapshot des cookies du context admin (JWT SYSTEM_ADMIN) capture juste
+   * avant le demarrage de l'impersonation. Permet de restaurer la session
+   * admin dans stopImpersonation() sans repasser par un re-login UI complet
+   * (cause racine du flaky nightly recurrent depuis le 3 juin 2026 : le
+   * goto('/login') + submit + waitForURL timeout sur le serveur dev lent du CI).
+   */
+  private adminCookies: Cookie[] = []
 
   // ==========================================================================
   // Locators
@@ -98,6 +107,11 @@ export class ImpersonationPage {
     })
     await expect(impersonateItem).toBeVisible({ timeout: 5000 })
 
+    // Capturer les cookies admin (JWT SYSTEM_ADMIN valide) AVANT que l'API
+    // impersonate ne mute la session. stopImpersonation() les reinjecte pour
+    // restaurer la session admin sans re-login UI (cf. champ adminCookies).
+    this.adminCookies = await this.page.context().cookies()
+
     // Intercepter la reponse API et cliquer en parallele
     const [apiResponse] = await Promise.all([
       this.page.waitForResponse(
@@ -130,77 +144,82 @@ export class ImpersonationPage {
    * Arrete l'impersonation via l'API DELETE + re-login admin.
    *
    * Le bouton UI a des problemes de timing avec updateSession() (NextAuth v5
-   * ClientFetchError), donc on utilise l'API directement puis on re-logue
-   * l'admin pour obtenir un JWT SYSTEM_ADMIN propre.
+   * ClientFetchError), donc on utilise l'API DELETE directement, puis on
+   * restaure la session admin en reinjectant les cookies SYSTEM_ADMIN captures
+   * dans startImpersonation() (voir champ adminCookies).
+   *
+   * Cette restauration par cookies remplace l'ancien re-login UI complet
+   * (goto('/login') + submit + waitForURL), qui etait la cause racine du flaky
+   * nightly recurrent : sur le serveur dev lent du CI, le POST credentials
+   * NextAuth + redirection timeoutait (~1.3 min observees). Reinjecter le JWT
+   * deja valide est instantane et deterministe. Le re-login UI reste disponible
+   * en fallback (reloginAdminViaUI) si aucun cookie n'a ete capture.
    */
   async stopImpersonation(): Promise<void> {
     // 1. Appeler l'API DELETE (supprime le cookie impersonation + audit log)
-    const deleteResp = await this.page.request.delete(
-      '/api/admin/impersonate'
-    )
+    const deleteResp = await this.page.request.delete('/api/admin/impersonate')
     if (!deleteResp.ok()) {
       throw new Error(`DELETE impersonation failed: ${deleteResp.status()}`)
     }
 
-    // 2. Supprimer TOUS les cookies du browser context AVANT le signout.
-    // clearCookies() supprime les HttpOnly cookies (JWT NextAuth inclus).
-    // C'est la seule methode fiable car :
-    // - page.request.post est un contexte API separe (cookies non propages au browser)
-    // - page.evaluate(fetch) avec redirect:'manual' ignore les Set-Cookie des 302
-    // - page.goto('/api/auth/signout') provoque une navigation impredictible
+    // 2. Supprimer TOUS les cookies du browser context.
+    // clearCookies() supprime les HttpOnly cookies (JWT impersonation inclus).
     await this.page.context().clearCookies()
     await setConsentCookie(this.page.context())
 
-    // 3. Verifier que tous les cookies auth sont bien supprimes
-    const remainingCookies = await this.page.context().cookies()
-    const authCookies = remainingCookies.filter(
-      (c) => c.name.includes('session') || c.name.includes('csrf') || c.name.includes('callback')
-    )
-    if (authCookies.length > 0) {
-      // Force une seconde suppression si des cookies persistent
-      await this.page.context().clearCookies()
-      await setConsentCookie(this.page.context())
+    // 3. Restaurer la session admin en reinjectant les cookies SYSTEM_ADMIN
+    // captures avant l'impersonation. Pas de re-login UI : on remet le JWT
+    // d'origine, deja valide et SYSTEM_ADMIN propre.
+    if (this.adminCookies.length === 0) {
+      // Securite : aucun snapshot (startImpersonation pas appelee ?) → fallback UI
+      await this.reloginAdminViaUI()
+      return
     }
 
-    // 4. Naviguer vers /login et attendre que la page soit prete.
-    // En CI nightly, le serveur Next.js peut etre lent a servir la page
-    // apres clearCookies(). On fait un goto explicite avec retry pour
-    // s'assurer que la page de login est chargee avant loginAs().
-    // Apres clearCookies(), le middleware peut rediriger vers /login ou
-    // servir la page directement — on attend que l'URL contienne /login.
+    // Filtrer le cookie impersonation residuel s'il etait present dans le
+    // snapshot (ne devrait pas l'etre, capture avant le start, mais defensif).
+    const cookiesToRestore = this.adminCookies.filter(
+      (c) => c.name !== 'sp-impersonation'
+    )
+    await this.page.context().addCookies(cookiesToRestore)
+
+    // 4. Naviguer vers /app/admin/companies avec la session admin restauree.
+    await this.page.goto('/app/admin/companies', {
+      waitUntil: 'domcontentloaded',
+    })
+    await expect(this.companiesTitle).toBeVisible({ timeout: 15000 })
+  }
+
+  /**
+   * Fallback : re-login admin via le formulaire UI.
+   *
+   * Conserve uniquement comme filet de securite si stopImpersonation() n'a pas
+   * de snapshot de cookies a restaurer. Le chemin nominal passe par la
+   * reinjection des cookies (cf. stopImpersonation), bien plus stable en CI.
+   */
+  private async reloginAdminViaUI(): Promise<void> {
+    // Naviguer vers /login avec retry (serveur dev lent en CI nightly)
     for (let attempt = 0; attempt < 3; attempt++) {
       try {
-        await this.page.goto('/login', { timeout: 30000, waitUntil: 'domcontentloaded' })
-        // Verifier qu'on est bien sur /login (le middleware peut rediriger)
+        await this.page.goto('/login', {
+          timeout: 30000,
+          waitUntil: 'domcontentloaded',
+        })
         await this.page.waitForURL(/\/login/, { timeout: 10000 })
         break
       } catch {
-        if (attempt === 2) throw new Error('Failed to navigate to /login after 3 attempts')
-        // Force un second clearCookies en cas de cookie residuel qui redirect
+        if (attempt === 2)
+          throw new Error('Failed to navigate to /login after 3 attempts')
         await this.page.context().clearCookies()
         await setConsentCookie(this.page.context())
         await this.page.waitForTimeout(2000)
       }
     }
 
-    // Attendre que le champ email soit visible (hydration React lente en CI)
-    // En CI nightly, React peut mettre du temps a s'hydrater apres clearCookies.
-    // On attend d'abord le load complet, puis le champ.
     await this.page.waitForLoadState('load').catch(() => {})
     const emailField = this.page.getByPlaceholder('vous@entreprise.com')
     await emailField.waitFor({ state: 'visible', timeout: 30000 })
 
-    // 5. Re-login admin directement (on est deja sur /login avec le champ visible,
-    // evite le double goto('/login') que ferait loginAs).
-    //
-    // Robustesse CI nightly (flaky recurrent depuis le 3 juin 2026) : le POST
-    // credentials NextAuth + redirection est le point de timeout le plus
-    // frequent. Deux mesures :
-    // - waitUntil: 'commit' : on valide la redirection des qu'elle commence,
-    //   sans attendre l'event 'load' (Framer Motion + chunks JS le retardent de
-    //   plusieurs dizaines de secondes sur le serveur dev lent du nightly).
-    // - retry du submit (meme pattern que le goto('/login') ci-dessus) : absorbe
-    //   le cas ou le premier submit ne declenche pas la redirection.
     const admin = TEST_USERS.SYSTEM_ADMIN
     await emailField.fill(admin.email)
     await this.page.getByPlaceholder('••••••••').fill(admin.password)
@@ -217,14 +236,14 @@ export class ImpersonationPage {
         break
       } catch {
         if (attempt === 1)
-          throw new Error('Re-login admin failed: no redirect to /app after 2 attempts')
-        // Le champ peut s'etre vide ou la page rehydratee : re-remplir avant retry
+          throw new Error(
+            'Re-login admin failed: no redirect to /app after 2 attempts'
+          )
         await emailField.fill(admin.email)
         await this.page.getByPlaceholder('••••••••').fill(admin.password)
       }
     }
 
-    // 6. Naviguer vers /app/admin/companies
     await this.page.goto('/app/admin/companies', {
       waitUntil: 'domcontentloaded',
     })

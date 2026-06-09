@@ -17,13 +17,13 @@ import { ImpersonationPage } from '../../pages/impersonation.page'
 const TARGET_COMPANY = 'TechCorp'
 
 // Timeout etendu pour tous les tests d'impersonation :
-// Le flow complet (login admin → start → navigate → stop → re-login → navigate)
-// implique 4+ navigations avec attentes de session NextAuth.
-// En CI nightly (serveur dev lent), le seul stopImpersonation (DELETE +
-// clearCookies + goto /login avec retry + attente hydration + re-login avec
-// retry) peut consommer ~90s : on porte le budget global a 150s pour laisser
-// de la marge au flow complet, sinon le test timeout avant meme le retry
-// Playwright (cause du flaky recurrent depuis le 3 juin 2026 sur :79).
+// Le flow complet (login admin → start → navigate → stop → navigate) implique
+// plusieurs navigations avec attentes de session NextAuth, lentes en CI nightly.
+// Depuis le refactor storageState, stopImpersonation() restaure la session admin
+// par reinjection de cookies (plus de re-login UI), ce qui a elimine le flaky
+// recurrent du 3 juin 2026 (POST credentials NextAuth qui timeoutait sur le
+// serveur dev lent). On conserve un budget large par prudence : startImpersonation
+// reste la phase la plus lente (table companies + dropdown Radix + reload).
 test.setTimeout(150_000)
 
 // Execution serie obligatoire : tous les tests d'impersonation partagent
@@ -36,9 +36,7 @@ test.describe.configure({ mode: 'serial' })
 // ============================================================================
 
 test.describe('Impersonation - parcours nominal', () => {
-  test('demarre impersonation, navigue, puis arrete', async ({
-    adminPage,
-  }) => {
+  test('demarre impersonation, navigue, puis arrete', async ({ adminPage }) => {
     const impersonation = new ImpersonationPage(adminPage)
 
     // Demarrer l'impersonation sur TechCorp
@@ -60,7 +58,7 @@ test.describe('Impersonation - parcours nominal', () => {
     await expect(adminPage).toHaveURL(/\/app\/admin\/companies/)
   })
 
-  test('la banniere affiche le bon email de l\'utilisateur impersonne', async ({
+  test("la banniere affiche le bon email de l'utilisateur impersonne", async ({
     adminPage,
   }) => {
     const impersonation = new ImpersonationPage(adminPage)
@@ -92,9 +90,11 @@ test.describe('Impersonation - restrictions securite', () => {
     // net::ERR_ABORTED — on absorbe cette erreur attendue.
     // En mode impersonation TechCorp (director), la redirection peut aller vers
     // /app/dashboard ou /app/director/dashboard selon le role du tenant.
-    await adminPage.goto('/app/admin/companies', {
-      waitUntil: 'domcontentloaded',
-    }).catch(() => {})
+    await adminPage
+      .goto('/app/admin/companies', {
+        waitUntil: 'domcontentloaded',
+      })
+      .catch(() => {})
     await adminPage.waitForURL(/\/app\/(dashboard|director|manager|employee)/, {
       timeout: 15000,
       waitUntil: 'domcontentloaded',
@@ -189,7 +189,7 @@ test.describe('Impersonation - cas limites', () => {
     await impersonation.expectBannerHidden()
   })
 
-  test('l\'impersonation d\'un SYSTEM_ADMIN est bloquee', async ({
+  test("l'impersonation d'un SYSTEM_ADMIN est bloquee", async ({
     adminPage,
   }) => {
     // Naviguer vers la liste des entreprises
