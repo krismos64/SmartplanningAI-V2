@@ -68,6 +68,34 @@ const nextConfig: NextConfig = {
     formats: ['image/webp', 'image/avif'], // Formats modernes pour la performance
   },
 
+  // Redirections 301 permanentes pour les anciennes URLs / variantes
+  // indexées par Google (Search Console : "Introuvable 404").
+  // Récupère le jus SEO des backlinks vers ces URLs historiques.
+  async redirects() {
+    return [
+      {
+        source: '/connexion',
+        destination: '/login',
+        permanent: true,
+      },
+      {
+        source: '/inscription',
+        destination: '/register',
+        permanent: true,
+      },
+      {
+        source: '/about',
+        destination: '/a-propos',
+        permanent: true,
+      },
+      {
+        source: '/politique-de-confidentialite',
+        destination: '/confidentialite',
+        permanent: true,
+      },
+    ]
+  },
+
   // Headers de sécurité (bonnes pratiques)
   async headers() {
     // Content Security Policy - Protection contre XSS, injection de code, clickjacking
