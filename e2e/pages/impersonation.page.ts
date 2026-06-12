@@ -12,10 +12,19 @@
  * @ticket SP-456
  */
 
-import { Page, Locator, expect } from '@playwright/test'
+import { Page, Locator, expect, Cookie } from '@playwright/test'
 
 export class ImpersonationPage {
   readonly page: Page
+
+  /**
+   * Snapshot des cookies de la session admin (JWT SYSTEM_ADMIN propre),
+   * capture AVANT le demarrage de l'impersonation — donc avant que
+   * session.update() ne mute le token NextAuth (isImpersonating=true,
+   * id/companyId = entreprise cible). Reinjecte dans stopImpersonation()
+   * pour restaurer un JWT admin sain. Voir le commentaire de stopImpersonation.
+   */
+  private adminSessionCookies: Cookie[] = []
 
   // ==========================================================================
   // Locators
@@ -65,6 +74,13 @@ export class ImpersonationPage {
    * sur le dropdown et en interceptant le lien de detail.
    */
   async startImpersonation(companyName: string): Promise<void> {
+    // Capturer les cookies de la session admin AVANT toute mutation.
+    // A ce stade le JWT NextAuth est un SYSTEM_ADMIN propre (isImpersonating
+    // absent). L'appel POST /api/admin/impersonate declenche un session.update()
+    // qui reecrit ce token (id/companyId = entreprise cible, isImpersonating=true).
+    // On garde donc un snapshot sain pour le restaurer dans stopImpersonation().
+    this.adminSessionCookies = await this.page.context().cookies()
+
     // Naviguer vers la liste des entreprises
     await this.page.goto('/app/admin/companies', {
       waitUntil: 'domcontentloaded',
@@ -125,36 +141,46 @@ export class ImpersonationPage {
   }
 
   /**
-   * Arrete l'impersonation via l'API DELETE, puis retourne cote admin.
+   * Arrete l'impersonation et restaure la session SYSTEM_ADMIN d'origine.
    *
-   * Pas de re-login : le DELETE ne supprime que le cookie sp-impersonation,
-   * le JWT NextAuth SYSTEM_ADMIN de base reste valide. On supprime aussi le
-   * cookie impersonation cote browser (au cas ou il persiste apres la reponse
-   * API qui passe par un contexte request separe), puis on navigue vers
-   * /app/admin/companies — accessible directement avec la session admin.
+   * Point cle (cause racine du fail nightly deterministe depuis le 10 juin) :
+   * il ne suffit PAS de supprimer le cookie sp-impersonation. Le demarrage de
+   * l'impersonation a aussi mute le JWT NextAuth via session.update() :
+   * `token.isImpersonating = true`, `token.id`/`token.companyId` pointent vers
+   * l'entreprise cible (cf. auth.config.ts, branche `if (token.isImpersonating
+   * && token.impersonatedCompanyId)`). Tant que ce JWT est en place, le layout
+   * affiche la banniere "Mode support" et le middleware redirige /app/admin/*
+   * vers le dashboard tenant — d'ou le `companiesTitle` jamais visible.
    *
-   * Cette version remplace l'ancien re-login UI (goto('/login') + submit +
-   * waitForURL), cause racine du flaky nightly recurrent : sur le serveur dev
-   * lent du CI, le POST credentials NextAuth timeoutait (~1.3 min observees).
-   * Re-login inutile ici puisque la session admin n'a jamais ete detruite.
+   * On restaure donc le snapshot des cookies admin capture dans
+   * startImpersonation() (JWT SYSTEM_ADMIN propre), ce qui ecrase a la fois le
+   * JWT impersonne ET supprime le cookie sp-impersonation en une seule passe.
+   * Pas de re-login UI : evite le POST credentials NextAuth (~1.3 min sur le
+   * serveur dev lent du CI), ancienne source de flaky.
    */
   async stopImpersonation(): Promise<void> {
-    // 1. Appeler l'API DELETE (supprime le cookie impersonation + audit log)
+    // 1. Appeler l'API DELETE (supprime le cookie impersonation cote serveur +
+    // audit log). Le cookie sp-impersonation est retire, mais le JWT NextAuth
+    // reste impersonne — on le corrige a l'etape 2.
     const deleteResp = await this.page.request.delete('/api/admin/impersonate')
     if (!deleteResp.ok()) {
       throw new Error(`DELETE impersonation failed: ${deleteResp.status()}`)
     }
 
-    // 2. Supprimer le cookie sp-impersonation cote browser. Le DELETE est passe
-    // par page.request (contexte API separe) : on s'assure que le cookie est
-    // bien retire du context du navigateur. On ne touche PAS aux autres cookies
-    // (le JWT admin doit rester pour acceder a /app/admin/companies).
-    const cookies = await this.page.context().cookies()
-    const adminCookies = cookies.filter((c) => c.name !== 'sp-impersonation')
+    // 2. Restaurer le snapshot admin : on remplace integralement le cookie jar
+    // par les cookies SYSTEM_ADMIN sains captures avant le demarrage. Cela
+    // reinstalle le JWT non-impersonne et garantit l'absence du cookie
+    // sp-impersonation (le snapshot a ete pris quand il n'existait pas).
+    if (this.adminSessionCookies.length === 0) {
+      throw new Error(
+        'stopImpersonation: snapshot des cookies admin vide — ' +
+          'startImpersonation() doit etre appelee avant stopImpersonation()'
+      )
+    }
     await this.page.context().clearCookies()
-    await this.page.context().addCookies(adminCookies)
+    await this.page.context().addCookies(this.adminSessionCookies)
 
-    // 3. Retourner sur la liste des entreprises (session admin toujours valide).
+    // 3. Retourner sur la liste des entreprises (session admin restauree).
     await this.page.goto('/app/admin/companies', {
       waitUntil: 'domcontentloaded',
     })
