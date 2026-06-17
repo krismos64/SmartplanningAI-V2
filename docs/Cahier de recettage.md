@@ -14,7 +14,7 @@ Ce document trace l'historique complet des tests réalisés sur SmartPlanning. I
 | Pipeline CI/CD       | GitHub Actions                                         |
 | Responsable          | Christophe Mostefaoui                                  |
 | Date de création     | 4 décembre 2025                                        |
-| Dernière mise à jour | 9 mars 2026 (2 passes de rationalisation : 156 fichiers Vitest / 2 814 tests unitaires + 13 fichiers E2E / 189 tests = 3 003 total) |
+| Dernière mise à jour | 17 juin 2026 (158 fichiers Vitest / 2 795 tests unitaires + 14 fichiers E2E / 187 tests = 2 982 total) |
 
 ---
 
@@ -34,8 +34,8 @@ Dans le cadre du diplôme **CDA**, ce cahier démontre ma capacité à :
 | Métrique              | Objectif  | Atteint  |
 | --------------------- | --------- | -------- |
 | Couverture globale    | ≥ 70%     | ✅ ~86%   |
-| Tests unitaires       | ≥ 500     | ✅ 2 814 (156 fichiers) |
-| Tests E2E             | ≥ 50      | ✅ 189 (13 fichiers, workflows critiques) |
+| Tests unitaires       | ≥ 500     | ✅ 2 795 (158 fichiers) |
+| Tests E2E             | ≥ 50      | ✅ 187 (14 fichiers, workflows critiques) |
 | Score Lighthouse A11y | ≥ 90%     | ✅ 95%   |
 | Anomalies critiques   | 0 en prod | ✅ 0     |
 
@@ -123,9 +123,21 @@ Dans le cadre du diplôme **CDA**, ce cahier démontre ma capacité à :
 | Bundle size    | 12.7kb                  | 8.5kb                 | React Hook Form |
 | Validation Zod | ⚠️ Config manuelle      | ✅ zodResolver natif  | React Hook Form |
 
-### Pourquoi un Rate Limiter en mémoire plutôt que Redis ?
+### Pourquoi Redis (ioredis) avec fallback mémoire ? (SP-480)
 
-Pour le MVP avec une seule instance VPS, un rate limiter en mémoire est suffisant et évite la complexité d'un service externe. Migration vers Redis/Upstash possible si besoin de scaling horizontal.
+Le rate limiter était initialement en mémoire (suffisant pour un MVP mono-instance). Avec la montée en charge, Redis 7 a été intégré pour trois usages distincts (préfixes de clés isolés) :
+
+| Usage | Implémentation Redis | Fallback si Redis down |
+| ------------------------ | -------------------------------------------- | --------------------------- |
+| Rate limiting | `MULTI/EXEC` → `INCR` + `EXPIRE` + `TTL` atomique | ✅ Map mémoire |
+| Sessions actives | `SET session:{userId}` TTL 24h + `SCAN` (dashboard admin) | ⚠️ Dégradé (pas de liste) |
+| Cache dashboards | `withCache()` cache-aside TTL 300s, invalidation `SCAN`+`DEL` | ✅ Calcul direct DB |
+
+**Choix techniques** :
+- Client singleton (même pattern `globalThis` que Prisma) + `lazyConnect` + backoff exponentiel
+- `MULTI/EXEC` garantit l'atomicité du compteur de rate limit (pas de race condition)
+- Health check `PING/PONG` dans `/api/health` → statut **"degraded"** (pas "unhealthy") si Redis down : l'app reste fonctionnelle grâce aux fallbacks
+- **Conclusion** : ioredis offre un fallback gracieux. La résilience (l'app ne tombe pas si Redis tombe) est privilégiée sur la performance pure.
 
 ### Pourquoi le Pattern Page Object pour les tests E2E ?
 
@@ -219,6 +231,54 @@ await loginPage.login('user@test.com', 'password')
 
 **Solution** : Signout via API CSRF (`POST /api/auth/signout`), injection forcée cookie consentement, mode série obligatoire (`test.describe.configure({ mode: 'serial' })`), timeout 90s.
 
+### Difficulté 8 : Exports non-async dans un fichier `'use server'` → 503 en production
+
+**Symptôme** : Une Server Action provoquait un `503 Service Unavailable` en production uniquement (OK en dev) (ANO-034).
+
+**Cause** : Un fichier avec la directive `'use server'` ne doit exporter **que des fonctions async**. Un export d'interface, type, constante ou schéma Zod casse le bundle serveur en production.
+
+**Solution** : Extraction des schémas/types/constantes dans des fichiers séparés (ex: `admin-contact.schemas.ts`). Règle posée : pour les fonctions appelées via `import()` dynamique (routes API, services), créer des fichiers service **sans** `'use server'` (ex: `admin-notification.service.ts`, `team-conversation-sync.ts`).
+
+### Difficulté 9 : Race condition `session.update()` en impersonation (SP-456/513)
+
+**Symptôme** : Après le démarrage de l'impersonation, `session.user` reflétait encore l'admin (userId/role/companyId) le temps que le JWT se propage → données erronées au rendu serveur (ANO-035).
+
+**Cause** : `session.update()` de NextAuth v5 est asynchrone et n'a pas toujours pris effet avant le rendu du Server Component.
+
+**Solution** : `getEffectiveSessionData()` dans `impersonation.ts` résout userId/role/companyId avec **fallback sur le cookie `sp-impersonation`** quand le JWT n'est pas à jour. Toutes les API routes et Server Actions utilisent `getEffectiveSessionData(session)` plutôt que `session.user` directement. Inversement, `assertNotImpersonating()` ignore le cookie résiduel quand le JWT indique `isImpersonating: false`.
+
+### Difficulté 10 : Vérification email obligatoire et testabilité de `authorize()` (SP-526)
+
+**Symptôme** : Besoin de bloquer l'accès à `/app/*` tant que l'email n'est pas vérifié, sans casser les tests unitaires d'`authorize()` (ANO-036).
+
+**Cause** : Le callback `authorize()` de NextAuth v5 est difficile à tester unitairement car enfoui dans la config du provider.
+
+**Solution** : Extraction de la logique dans `authorizeCredentials()` exportée et testable. Vérification `emailVerified` (accès bloqué si `null`) + pré-check `checkEmailVerificationStatus()` pour un message UX clair sur `/login`. **Séquencement sûr** : backfill `emailVerified` sur les comptes prod existants **avant** de merger le verrou bloquant.
+
+### Difficulté 11 : Multi-tenant et SYSTEM_ADMIN cross-tenant en messagerie (SP-513→520)
+
+**Symptôme** : Le SYSTEM_ADMIN devait pouvoir contacter n'importe quel utilisateur, mais le filtre `companyId` strict empêchait toute conversation cross-entreprise (ANO-037).
+
+**Cause** : L'isolation multi-tenant par `companyId` (defense-in-depth) s'appliquait aussi au SYSTEM_ADMIN dont `companyId` est `null`.
+
+**Solution** : `Message.companyId` rendu nullable (`null` pour les conversations SYSTEM_ADMIN cross-tenant). `checkMembership()` bypass pour SYSTEM_ADMIN (pas de lookup `ConversationMember`). Isolation préservée pour tous les autres rôles. RGPD : `Message.senderId` nullable avec `onDelete: SetNull` (les messages survivent à la suppression d'un compte).
+
+### Difficulté 12 : Side-effects après réponse avec `after()` Next.js 15
+
+**Symptôme** : L'envoi d'email après validation/refus d'un congé devait s'exécuter de façon garantie sans bloquer la réponse de la Server Action (ANO-038).
+
+**Cause** : Un `await` bloque la réponse ; un fire-and-forget classique (`.catch()`) peut être coupé si la requête se termine trop tôt.
+
+**Solution** : `after()` de `next/server` exécute le callback **après** l'envoi de la réponse (ex: `reviewLeaveRequest`). En tests Vitest, mocker `next/server` car `after()` lève une erreur hors d'un request scope.
+
+### Difficulté 13 : 503 Nginx HTTP/2 sur premier chargement landing
+
+**Symptôme** : Le premier chargement de la landing renvoyait des 503 intermittents sur certains chunks JS (ANO-039).
+
+**Cause** : Nginx 1.24 compte **chaque stream HTTP/2** contre `limit_conn`, pas par connexion TCP. Avec 30+ chunks chargés en parallèle, une limite basse (10) saturait.
+
+**Solution** : `limit_conn` relevé à 100 sur `location /` et `/api/`, exempté sur `/_next/static/*`. `limit_req_status 429` + `limit_conn_status 429` pour distinguer un rate-limit d'une vraie panne 503.
+
 ---
 
 ## Historique des campagnes de test
@@ -248,8 +308,14 @@ await loginPage.login('user@test.com', 'password')
 | 02/03/2026   | Sprint 20 | Stabilisation  | 5914          | 584        | ~86%   | ✅ PASS | Audit billing, i18n FR, fix E2E flaky |
 | 07/03/2026   | —         | Rationalisation| ~2910         | ~221       | ~86%   | ✅ PASS | 1re passe : suppression ~208 fichiers cosmétiques |
 | 09/03/2026   | —         | SP-494         | 2 814         | 189        | ~86%   | ✅ PASS | 2e passe : -96 tests (8 fichiers), architecture fixes, kebab-case hooks |
+| 20/03/2026   | Sprint 21 | SP-468→477     | 2 850         | 189        | ~86%   | ✅ PASS | Admin Améliorations (MRR unifié, /api/health sécurisé, users cross-tenant, essais à risque, broadcast email, stats+PDF) |
+| 05/04/2026   | Sprint 22 | SP-480         | 2 790         | 189        | ~86%   | ✅ PASS | Redis (rate limiting atomique, sessions actives, cache dashboards) + fallback mémoire, health check PING/PONG |
+| 25/04/2026   | Sprint 23 | SP-495→511     | 2 740         | 189        | ~86%   | ✅ PASS | Import CSV/Excel bulk employés (papaparse + xlsx, preview Zod temps réel, détection doublons, sync Stripe) |
+| 18/05/2026   | Sprint 24 | SP-500→520     | 2 770         | 189        | ~86%   | ✅ PASS | Messagerie interne (DIRECT/TEAM/GROUP, SSE, pièces jointes Cloudinary, SYSTEM_ADMIN cross-tenant) |
+| 02/06/2026   | Sprint 25 | SP-526         | 2 795         | 187        | ~86%   | ✅ PASS | Verrou email vérifié (authorizeCredentials testable), backfill prod avant merge |
+| 17/06/2026   | Sprint 26 | SP-527→535     | 2 795         | 187        | ~86%   | ✅ PASS | Landing bleu monochrome, SEO (301 redirects, llms.txt), stabilisation E2E impersonation nightly |
 
-**Graphique d'évolution** : 27 tests (04/12) → pic 6 498 (02/03) → rationalisation 3 003 (09/03). La rationalisation supprime les tests cosmétiques pour ne conserver que les tests à forte valeur métier.
+**Graphique d'évolution** : 27 tests (04/12) → pic 6 498 (02/03) → rationalisation 3 003 (09/03) → stabilisation 2 982 (17/06). Le total reste volontairement autour de ~3 000 tests à forte valeur métier malgré l'ajout de Redis, Import CSV/Excel et Messagerie : chaque nouvelle feature ajoute ses tests critiques sans réintroduire de tests cosmétiques.
 
 ---
 
@@ -267,27 +333,30 @@ await loginPage.login('user@test.com', 'password')
 | **Validations Zod** | ~10 | ~200 | Schemas auth, schedule, leave, stripe, common |
 | **Hooks + UI** | ~20 | ~350 | Hooks complexes, composants avec logique conditionnelle |
 | **Plannings** | ~15 | ~350 | Calendrier, récurrence, conflits, exports PDF/Excel |
-| **Total Vitest** | **156** | **2 814** | |
+| **Redis (cache/rate limit/sessions)** | ~5 | ~80 | Atomicité MULTI/EXEC, fallback mémoire, withCache, health check |
+| **Import CSV/Excel** | ~6 | ~120 | Parsing papaparse, validation Zod, doublons, $transaction |
+| **Messagerie** | ~8 | ~150 | Conversations DIRECT/TEAM/GROUP, RBAC, cross-tenant, SSE |
+| **Total Vitest** | **158** | **2 795** | |
 
 ### Tests E2E — workflows critiques uniquement
 
 | Fichier spec | Tests | Description |
 |-------------|-------|-------------|
-| auth-flow.spec.ts | 21 | Login, register, mot de passe oublié, activation |
-| crud-employees.spec.ts | 18 | CRUD employés avec RBAC |
-| crud-teams.spec.ts | 16 | CRUD équipes avec affectation membres |
-| schedules.spec.ts | 16 | Plannings : création, calendrier, exports |
-| leaves.spec.ts | 14 | Congés : workflow PENDING→APPROVED/REJECTED |
-| billing-subscription.spec.ts | 20 | Stripe : checkout, portail, annulation |
-| audit-logs.spec.ts | 15 | Journal d'audit admin, filtres, export |
-| impersonation-flow.spec.ts | 9 | Mode support SYSTEM_ADMIN complet |
-| accessibility.spec.ts | 14 | WCAG 2.1 AA, skip link, axe-core |
-| company-settings.spec.ts | 21 | Paramètres entreprise, presets |
-| not-found.spec.ts | 8 | Page 404 responsive |
-| server-error.spec.ts | 8 | Page 500 responsive |
-| error-boundary.spec.ts | 5 | Error boundary React |
-| Mobile (5 specs) | 4 | Navigation, touch targets (skip partiel) |
-| **Total E2E** | **189** | |
+| middleware-rbac.spec.ts | 27 | RBAC par rôle, redirections, callbackUrl, sessions |
+| audit-logs.spec.ts | 26 | Journal d'audit admin, filtres, export, anti-injection |
+| auth.spec.ts | 21 | Login, register, vérification email, activation |
+| crud/companies.spec.ts | 18 | CRUD entreprises avec RBAC |
+| crud/employees.spec.ts | 18 | CRUD employés avec RBAC |
+| cookies.spec.ts | 18 | Consentement RGPD, bannière, gestion préférences |
+| auth/forgot-reset-password.spec.ts | 16 | Mot de passe oublié, réinitialisation par token |
+| crud/teams.spec.ts | 14 | CRUD équipes avec affectation membres |
+| billing/billing-alerts.spec.ts | 8 | Bannières trial / PAST_DUE progressives |
+| billing/billing-subscription.spec.ts | 7 | Stripe : checkout, portail, annulation |
+| leaves/review-request.spec.ts | 5 | Congés : décision manager (APPROVED/REJECTED) |
+| leaves/create-request.spec.ts | 4 | Congés : création demande, validation |
+| impersonation/impersonation-flow.spec.ts | 3 | Mode support SYSTEM_ADMIN (start/stop, audit) |
+| landing/a11y.spec.ts | 2 | WCAG 2.1 AA landing, axe-core |
+| **Total E2E** | **187** | |
 
 ---
 
@@ -328,6 +397,14 @@ await loginPage.login('user@test.com', 'password')
 | ANO-031 | 28/02/2026 | Sidebar collapse toggle nécessitant refresh | Mineure | Suppression toggle, navigation toujours étendue |
 | ANO-032 | 28/02/2026 | Plannings à horaires affichés comme all-day | Mineure | Correction mapping événements isAllDay vs horaires |
 | ANO-033 | 02/03/2026 | Tests E2E impersonation flaky en CI nightly | Majeure | Signout API CSRF, mode série, injection cookie consentement |
+| ANO-034 | 20/03/2026 | Export non-async dans fichier `'use server'` → 503 prod | Majeure | Extraction schémas/types dans fichiers séparés, services sans `'use server'` pour import dynamique |
+| ANO-035 | 22/03/2026 | Race condition `session.update()` en impersonation | Majeure | `getEffectiveSessionData()` avec fallback cookie `sp-impersonation` |
+| ANO-036 | 02/06/2026 | `authorize()` NextAuth non testable unitairement | Mineure | Extraction `authorizeCredentials()` exportée + check emailVerified (SP-526) |
+| ANO-037 | 18/05/2026 | Filtre `companyId` bloque messagerie SYSTEM_ADMIN cross-tenant | Majeure | `Message.companyId` nullable, bypass `checkMembership()` pour SYSTEM_ADMIN (SP-513) |
+| ANO-038 | 28/04/2026 | Email congé coupé par fin de requête (fire-and-forget) | Mineure | `after()` Next.js 15, mock `next/server` en tests Vitest |
+| ANO-039 | 10/04/2026 | 503 Nginx HTTP/2 sur 1er chargement landing (chunks parallèles) | Majeure | `limit_conn` 100, exempt `/_next/static/*`, `limit_conn_status 429` |
+| ANO-040 | 05/04/2026 | Import CSV : doublons non détectés sur emails dupliqués | Mineure | Détection email+companyId (fallback firstName+lastName+companyId) avant `$transaction` |
+| ANO-041 | 25/04/2026 | Import Excel : délimiteur CSV non auto-détecté (`;` FR vs `,`) | Mineure | papaparse auto-detection délimiteur + headers FR/EN normalisés + BOM UTF-8 |
 
 ---
 
@@ -451,11 +528,11 @@ Audit approfondi des 4 fonctionnalités clés pour préparer les explications or
 
 | # | Compétence CDA | Implémentation |
 |---|---------------|----------------|
-| 1 | Développer des composants d'accès aux données SQL | Prisma ORM, 18 modèles, transactions ACID |
-| 2 | Développer des composants métier | Server Actions RBAC, validation Zod |
-| 3 | Contribuer à la mise en production | CI/CD GitHub Actions, Docker, VPS OVH |
-| 4 | Développer une application en couches | Architecture App Router (page/layout/loading/error) |
+| 1 | Développer des composants d'accès aux données SQL | Prisma ORM, 21 modèles (17 core + 4 NextAuth), transactions ACID, cache Redis |
+| 2 | Développer des composants métier | Server Actions RBAC, validation Zod, import bulk CSV/Excel, messagerie temps réel SSE |
+| 3 | Contribuer à la mise en production | CI/CD GitHub Actions, Docker, VPS OVH, Nginx HTTP/2 tuning |
+| 4 | Développer une application en couches | Architecture App Router (page/layout/loading/error), `after()` side-effects |
 | 5 | Mettre en place une solution de gestion de projet | Jira SP-XXX, Confluence, GitHub |
 | 6 | Spécifier les besoins techniques | CLAUDE.md, docs/, cahier de recettage |
-| 7 | Implémenter une solution sécurisée | RBAC 4 niveaux, OWASP, CSRF, rate limiting |
-| 8 | Tests et validation | Vitest + Playwright, 3 003 tests, couverture ~86% |
+| 7 | Implémenter une solution sécurisée | RBAC 4 niveaux, OWASP, CSRF, rate limiting Redis atomique, isolation multi-tenant, vérification email obligatoire |
+| 8 | Tests et validation | Vitest + Playwright, 2 982 tests, couverture ~86% |
