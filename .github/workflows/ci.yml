@@ -131,7 +131,7 @@ jobs:
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
-        if: always()
+        if: failure()
         with:
           name: coverage-report
           path: coverage/
@@ -338,14 +338,6 @@ jobs:
           NEXTAUTH_SECRET: 'build-secret'
           NEXTAUTH_URL: 'http://localhost:3000'
 
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: nextjs-build
-          path: |
-            .next/
-            !.next/cache/
-          retention-days: 1
 
 # ==============================================
 # RÉSUMÉ DU PIPELINE CI OPTIMISÉ (SP-333)
