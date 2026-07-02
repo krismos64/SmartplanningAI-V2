@@ -24,9 +24,16 @@ export interface BackfillCompanyInput {
   name: string
   trialEndsAt: Date | null
   directorEmail: string | null
+  /** Garde défensive : une company qui a déjà sa ligne Subscription ne doit
+   *  jamais être backfillée, même si la requête amont laissait passer. */
+  hasSubscription?: boolean
 }
 
-export type BackfillSkipReason = 'no_trial_end' | 'no_director_email'
+export type BackfillSkipReason =
+  | 'no_trial_end'
+  | 'no_director_email'
+  | 'already_has_subscription'
+  | 'excluded'
 
 export interface BackfillPlanItem {
   companyId: string
@@ -49,39 +56,59 @@ export interface BackfillPlan {
   skipped: BackfillSkippedItem[]
 }
 
+export interface BackfillOptions {
+  /** Companies explicitement hors périmètre (décision opérateur), quel que
+   *  soit leur état — ex : suppression commerciale prévue. */
+  excludedCompanyIds?: readonly string[]
+}
+
 /**
  * Construit le plan de backfill à partir des companies SANS ligne Subscription.
  *
  * Le filtre « pas de Subscription » est fait en amont par la requête Prisma
  * (where: { subscription: null }) ; cette fonction décide quoi créer et
  * écarte les cas non exploitables :
+ * - excludedCompanyIds : hors périmètre par décision opérateur
+ * - hasSubscription : garde défensive, ne jamais écraser une ligne existante
  * - trialEndsAt null : aucune base pour dater l'essai → intervention manuelle
  * - pas d'email de DIRECTOR : impossible de créer le customer Stripe
  *   (l'email est requis par la convention createCheckoutSession)
  */
 export function planTrialSubscriptionBackfill(
   companies: BackfillCompanyInput[],
-  now: Date = new Date()
+  now: Date = new Date(),
+  options: BackfillOptions = {}
 ): BackfillPlan {
+  const excluded = new Set(options.excludedCompanyIds ?? [])
   const items: BackfillPlanItem[] = []
   const skipped: BackfillSkippedItem[] = []
 
   for (const company of companies) {
-    if (!company.trialEndsAt) {
+    const skip = (reason: BackfillSkipReason): void => {
       skipped.push({
         companyId: company.id,
         companyName: company.name,
-        reason: 'no_trial_end',
+        reason,
       })
+    }
+
+    if (excluded.has(company.id)) {
+      skip('excluded')
+      continue
+    }
+
+    if (company.hasSubscription) {
+      skip('already_has_subscription')
+      continue
+    }
+
+    if (!company.trialEndsAt) {
+      skip('no_trial_end')
       continue
     }
 
     if (!company.directorEmail) {
-      skipped.push({
-        companyId: company.id,
-        companyName: company.name,
-        reason: 'no_director_email',
-      })
+      skip('no_director_email')
       continue
     }
 

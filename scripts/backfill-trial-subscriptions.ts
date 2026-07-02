@@ -31,6 +31,12 @@ import {
 // résolution de l'alias @/) — ne pas modifier sans synchroniser les deux.
 const METADATA_COMPANY_ID = 'smartplanning_company_id'
 
+// Hors périmètre par décision opérateur (validé le 02/07/2026) :
+// - sofreba : suppression commerciale prévue, ne pas backfiller ni notifier
+const EXCLUDED_COMPANY_IDS = [
+  'cmpglgx420000rx01467b8jhc', // sofreba
+] as const
+
 const APPLY = process.argv.includes('--apply')
 
 async function main(): Promise<void> {
@@ -75,7 +81,9 @@ async function main(): Promise<void> {
         name: c.name,
         trialEndsAt: c.trialEndsAt,
         directorEmail: c.users[0]?.email ?? null,
-      }))
+      })),
+      new Date(),
+      { excludedCompanyIds: EXCLUDED_COMPANY_IDS }
     )
 
     console.log(`\nCompanies sans Subscription : ${companies.length}`)
