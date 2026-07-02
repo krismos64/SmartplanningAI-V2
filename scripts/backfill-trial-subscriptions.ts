@@ -2,34 +2,31 @@
  * Backfill des lignes subscriptions manquantes (audit du 02/07/2026)
  *
  * Pour chaque Company SANS ligne Subscription mais avec trialEndsAt :
- * 1. Réutilise ou crée le customer Stripe (recherche par metadata
- *    smartplanning_company_id pour éviter les doublons — cf. doublon
- *    Distri Shop constaté à l'audit)
- * 2. Upsert la ligne Subscription (plan FREE, status TRIAL), même pattern
- *    que createCheckoutSession → idempotent, ré-exécutable sans risque
+ * Upsert la ligne Subscription (plan FREE, status TRIAL, stripeCustomerId NULL).
+ * Le Customer Stripe sera créé au premier checkout volontaire via
+ * createCheckoutSession (qui teste déjà `if (!customerId)` avant de créer).
+ * Comportement identique à une inscription normale — aucune divergence introduite.
+ *
+ * Aucun appel Stripe, aucun moyen de paiement attaché, aucun abonnement créé.
+ *
+ * Pré-requis : migration 20260702000000_make_subscription_stripe_customer_id_nullable
+ * déjà appliquée (rend stripeCustomerId nullable en base).
  *
  * USAGE (depuis le conteneur app en production, env déjà chargé) :
  *   node backfill-trial-subscriptions.js           # DRY-RUN (aucune écriture)
- *   node backfill-trial-subscriptions.js --apply   # écrit Stripe + DB
+ *   node backfill-trial-subscriptions.js --apply   # écrit en DB uniquement
  *
  * En local : npx tsx scripts/backfill-trial-subscriptions.ts [--apply]
  *
- * Le dry-run n'effectue AUCUNE écriture (ni Stripe, ni DB) : uniquement
- * des SELECT Prisma et une recherche customers Stripe en lecture.
+ * Le dry-run n'effectue AUCUNE écriture : uniquement des SELECT Prisma.
+ * L'opération est idempotente (upsert) : ré-exécutable sans risque.
  */
 
 import { PrismaClient } from '@prisma/client'
-import Stripe from 'stripe'
 
 import {
   planTrialSubscriptionBackfill,
-  type BackfillPlanItem,
 } from '../src/lib/services/stripe/trial-backfill'
-
-// Même clé que STRIPE_METADATA_KEYS.COMPANY_ID (src/lib/stripe/stripe-config.ts).
-// Littéral volontaire : le script doit rester autonome (bundle esbuild sans
-// résolution de l'alias @/) — ne pas modifier sans synchroniser les deux.
-const METADATA_COMPANY_ID = 'smartplanning_company_id'
 
 // Hors périmètre par décision opérateur (validé le 02/07/2026) :
 // - sofreba : suppression commerciale prévue, ne pas backfiller ni notifier
@@ -41,20 +38,12 @@ const APPLY = process.argv.includes('--apply')
 
 async function main(): Promise<void> {
   const prisma = new PrismaClient()
-  const secretKey = process.env.STRIPE_SECRET_KEY
-  if (!secretKey) {
-    throw new Error('STRIPE_SECRET_KEY manquante dans l’environnement')
-  }
-  const stripe = new Stripe(secretKey, {
-    apiVersion: '2026-01-28.clover',
-    typescript: true,
-  })
-  const keyMode = secretKey.startsWith('sk_live_') ? 'LIVE' : 'TEST'
 
   console.log('='.repeat(72))
   console.log(
-    `Backfill subscriptions manquantes — mode ${APPLY ? 'APPLY (écritures réelles)' : 'DRY-RUN (aucune écriture)'} — Stripe ${keyMode}`
+    `Backfill subscriptions manquantes — mode ${APPLY ? 'APPLY (écritures DB)' : 'DRY-RUN (aucune écriture)'}`
   )
+  console.log('Aucun appel Stripe — stripeCustomerId laissé à null')
   console.log('='.repeat(72))
 
   try {
@@ -95,7 +84,10 @@ async function main(): Promise<void> {
         : ''
       console.log(
         `  [CREATE] ${item.companyName} (${item.companyId})\n` +
-          `           director: ${item.directorEmail} | trialEndsAt: ${item.trialEndsAt.toISOString()} | status: ${item.status}${expiredFlag ? '\n' + expiredFlag : ''}`
+        `           director: ${item.directorEmail}\n` +
+        `           trialEndsAt: ${item.trialEndsAt.toISOString()}\n` +
+        `           → subscriptions row : plan=FREE status=TRIAL stripeCustomerId=null stripeSubscriptionId=null` +
+        (expiredFlag ? '\n' + expiredFlag : '')
       )
     }
     for (const s of plan.skipped) {
@@ -104,7 +96,7 @@ async function main(): Promise<void> {
 
     if (!APPLY) {
       console.log(
-        '\nDRY-RUN terminé. Relancer avec --apply pour créer les customers Stripe + lignes subscriptions.'
+        '\nDRY-RUN terminé. Relancer avec --apply pour écrire les lignes subscriptions en DB.'
       )
       return
     }
@@ -114,20 +106,19 @@ async function main(): Promise<void> {
     let failed = 0
     for (const item of plan.items) {
       try {
-        const customerId = await getOrCreateCustomer(stripe, item)
         await prisma.subscription.upsert({
           where: { companyId: item.companyId },
           create: {
             companyId: item.companyId,
-            stripeCustomerId: customerId,
+            stripeCustomerId: null,
             plan: 'FREE',
             status: 'TRIAL',
           },
-          // Ligne apparue entre-temps : ne rien écraser
+          // Ligne apparue entre-temps (ex : checkout concurrent) : ne rien écraser
           update: {},
         })
         created++
-        console.log(`  ✅ ${item.companyName} → customer ${customerId}, subscription upsertée`)
+        console.log(`  ✅ ${item.companyName} — subscription créée (stripeCustomerId=null)`)
       } catch (error) {
         failed++
         const message = error instanceof Error ? error.message : String(error)
@@ -142,31 +133,6 @@ async function main(): Promise<void> {
   } finally {
     await prisma.$disconnect()
   }
-}
-
-/**
- * Réutilise le customer Stripe existant (recherche par metadata companyId,
- * fallback par email exact) ou en crée un — même convention que
- * createCheckoutSession (email + name + metadata smartplanning_company_id).
- */
-async function getOrCreateCustomer(
-  stripe: Stripe,
-  item: BackfillPlanItem
-): Promise<string> {
-  const search = await stripe.customers.search({
-    query: `metadata['${METADATA_COMPANY_ID}']:'${item.companyId}'`,
-    limit: 1,
-  })
-  if (search.data[0]) {
-    return search.data[0].id
-  }
-
-  const customer = await stripe.customers.create({
-    email: item.directorEmail,
-    name: item.companyName,
-    metadata: { [METADATA_COMPANY_ID]: item.companyId },
-  })
-  return customer.id
 }
 
 main().catch((error: unknown) => {

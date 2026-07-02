@@ -283,7 +283,7 @@ model Subscription {
   // Identifiants Stripe pour faire le lien avec leur système.
   // On les stocke pour pouvoir appeler l'API Stripe (modifier l'abonnement,
   // ouvrir le portail client, annuler, etc.)
-  stripeCustomerId     String  @unique // Chaque entreprise est un "Customer" chez Stripe
+  stripeCustomerId     String? @unique // Chaque entreprise est un "Customer" chez Stripe (nullable : créé au 1er checkout, pas à l'inscription)
   stripeSubscriptionId String? @unique // L'id de l'abonnement actif (null si pas encore abonné)
   stripePriceId        String? // L'id du tarif appliqué chez Stripe
   stripeProductId      String? // L'id du produit Stripe

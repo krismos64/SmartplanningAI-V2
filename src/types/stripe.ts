@@ -79,7 +79,7 @@ export interface BillingData {
     cancelAtPeriodEnd: boolean
     canceledAt: Date | null
     createdAt: Date
-    stripeCustomerId: string
+    stripeCustomerId: string | null
   } | null
   payments: {
     id: string
