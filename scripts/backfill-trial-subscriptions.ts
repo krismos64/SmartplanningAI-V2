@@ -109,7 +109,7 @@ async function main(): Promise<void> {
         await prisma.subscription.upsert({
           where: { companyId: item.companyId },
           create: {
-            companyId: item.companyId,
+            company: { connect: { id: item.companyId } },
             stripeCustomerId: null,
             plan: 'FREE',
             status: 'TRIAL',
