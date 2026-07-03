@@ -33,6 +33,10 @@ import {
   sendTrialEndingSoonEmail,
 } from '@/lib/email/templates/billing'
 import { sendEmail } from '@/lib/email/send'
+import {
+  decideInvoicePayment,
+  extractPaymentIntentId,
+} from '@/lib/services/stripe/invoice-payment'
 import type { ServiceResult } from '@/lib/services/dashboard/types'
 import type {
   CreateCheckoutSessionInput,
@@ -57,11 +61,7 @@ function getSubscriptionIdFromInvoice(invoice: Stripe.Invoice): string | null {
 
 /** Extrait le payment intent ID depuis un Invoice (SDK v20 : payments.data[].payment) */
 function getPaymentIntentIdFromInvoice(invoice: Stripe.Invoice): string | null {
-  const invoicePayment = invoice.payments?.data?.[0]
-  if (!invoicePayment) return null
-  const pi = invoicePayment.payment?.payment_intent
-  if (!pi) return null
-  return typeof pi === 'string' ? pi : pi.id
+  return extractPaymentIntentId(invoice)
 }
 
 /**
@@ -957,31 +957,35 @@ async function handleInvoicePaid(
     }
   }
 
-  const paymentIntentId = getPaymentIntentIdFromInvoice(invoice)
+  // Décision de traitement (logique pure testée dans invoice-payment.test.ts) :
+  // - facture à 0 € (essai en cours) → rien à enregistrer
+  // - sinon → clé d'idempotence = payment_intent, ou ID de facture en fallback
+  //   (le payment_intent est absent du payload webhook non expandé)
+  const decision = decideInvoicePayment(invoice)
 
-  if (!paymentIntentId) {
+  if (decision.kind !== 'record_payment') {
     return {
       success: true,
       data: {
         handled: false,
         eventType: 'invoice.paid',
-        action: 'no_payment_intent',
+        action: decision.kind,
       },
     }
   }
 
-  const amountPaid = invoice.amount_paid ?? 0
+  const { paymentKey, amountPaid } = decision
 
   // Stocker l'URL de facture Stripe dans les metadata pour l'affichage dans InvoiceHistory
   const invoiceUrl = invoice.hosted_invoice_url ?? null
   const paymentMetadata = invoiceUrl ? { invoiceUrl } : undefined
 
   await prisma.payment.upsert({
-    where: { stripePaymentId: paymentIntentId },
+    where: { stripePaymentId: paymentKey },
     create: {
       companyId: dbSub.companyId,
       subscriptionId: dbSub.id,
-      stripePaymentId: paymentIntentId,
+      stripePaymentId: paymentKey,
       stripeInvoiceId: invoice.id,
       amount: amountPaid,
       currency: (invoice.currency ?? 'eur').toUpperCase(),
