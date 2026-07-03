@@ -44,11 +44,19 @@ export async function sendBillingEmail(
     companyId,
     subscriptionId,
     emailType,
+    dedupeSuffix,
     recipientEmail,
     subject,
     html,
     metadata,
   } = params
+
+  // emailType effectif utilisé pour le stockage ET la déduplication.
+  // Le suffixe (ex: ID de facture) rend la clé unique par occurrence pour les
+  // emails récurrents comme PAYMENT_CONFIRMED, tout en restant idempotent.
+  const effectiveEmailType = dedupeSuffix
+    ? `${emailType}:${dedupeSuffix}`
+    : emailType
 
   // 1. Vérifier les doublons si subscriptionId est fourni
   if (subscriptionId) {
@@ -57,7 +65,7 @@ export async function sendBillingEmail(
         where: {
           subscriptionId_emailType: {
             subscriptionId,
-            emailType,
+            emailType: effectiveEmailType,
           },
         },
       })
@@ -65,7 +73,7 @@ export async function sendBillingEmail(
       if (existing) {
         // eslint-disable-next-line no-console
         console.info('[BillingEmail] Doublon détecté, email ignoré:', {
-          emailType,
+          emailType: effectiveEmailType,
           subscriptionId,
           existingLogId: existing.id,
         })
@@ -101,7 +109,7 @@ export async function sendBillingEmail(
       data: {
         companyId,
         subscriptionId: subscriptionId ?? null,
-        emailType,
+        emailType: effectiveEmailType,
         recipientEmail,
         status: emailResult.success ? 'SENT' : 'FAILED',
         metadata: metadata

@@ -202,8 +202,9 @@ export async function createCheckoutSession(
           [STRIPE_METADATA_KEYS.COMPANY_ID]: companyId,
         },
       },
-      success_url: successUrl || `${baseUrl}/app/billing?success=true`,
-      cancel_url: cancelUrl || `${baseUrl}/app/billing?canceled=true`,
+      success_url:
+        successUrl || `${baseUrl}/app/dashboard/billing?success=true`,
+      cancel_url: cancelUrl || `${baseUrl}/app/dashboard/billing?canceled=true`,
       metadata: {
         [STRIPE_METADATA_KEYS.COMPANY_ID]: companyId,
       },
@@ -1018,6 +1019,8 @@ async function handleInvoicePaid(
         sendPaymentConfirmedEmail({
           companyId: dbSub.companyId,
           subscriptionId: subscriptionId,
+          // Dédup par facture : chaque prélèvement mensuel envoie son email.
+          invoiceId: invoice.id,
           recipientEmail: director.email,
           firstName: director.firstName,
           companyName: director.companyName,

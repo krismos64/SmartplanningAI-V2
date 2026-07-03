@@ -48,6 +48,16 @@ export interface SendBillingEmailParams {
   subscriptionId?: string
   /** Type d'email billing */
   emailType: BillingEmailType
+  /**
+   * Discriminant de déduplication pour les emails récurrents (ex: ID de
+   * facture Stripe). Sans lui, la dédup est faite sur (subscriptionId,
+   * emailType) → un seul envoi par abonnement, ce qui est correct pour les
+   * événements uniques (activation, annulation) mais bloquerait les envois
+   * mensuels de PAYMENT_CONFIRMED. Quand fourni, il est concaténé à emailType
+   * pour rendre la clé unique par facture tout en gardant l'idempotence
+   * (rejeu du même webhook = même clé, donc pas de doublon).
+   */
+  dedupeSuffix?: string
   /** Adresse email du destinataire */
   recipientEmail: string
   /** Sujet de l'email */

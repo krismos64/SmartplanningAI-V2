@@ -14,6 +14,13 @@ import { PaymentConfirmedEmail } from '../../../../../emails/templates/PaymentCo
 export interface SendPaymentConfirmedEmailParams {
   companyId: string
   subscriptionId: string
+  /**
+   * ID de la facture Stripe. Sert de discriminant de déduplication : chaque
+   * facture mensuelle déclenche son propre email (sinon seul le 1er paiement
+   * de l'abonnement serait envoyé, les prélèvements suivants étant vus comme
+   * doublons sur (subscriptionId, PAYMENT_CONFIRMED)).
+   */
+  invoiceId?: string
   recipientEmail: string
   firstName: string
   companyName: string
@@ -29,6 +36,7 @@ export async function sendPaymentConfirmedEmail(
   const {
     companyId,
     subscriptionId,
+    invoiceId,
     recipientEmail,
     firstName,
     companyName,
@@ -54,6 +62,8 @@ export async function sendPaymentConfirmedEmail(
       companyId,
       subscriptionId,
       emailType: BillingEmailType.PAYMENT_CONFIRMED,
+      // Dédup par facture : chaque prélèvement mensuel a son propre email.
+      dedupeSuffix: invoiceId,
       recipientEmail,
       subject: 'Paiement confirmé — SmartPlanning',
       html,
