@@ -30,6 +30,7 @@ import {
   sendPaymentConfirmedEmail,
   sendPaymentFailedEmail,
   sendSubscriptionCanceledEmail,
+  sendTrialEndingSoonEmail,
 } from '@/lib/email/templates/billing'
 import { sendEmail } from '@/lib/email/send'
 import type { ServiceResult } from '@/lib/services/dashboard/types'
@@ -497,6 +498,9 @@ export async function handleWebhookEvent(
       case 'customer.subscription.updated':
         return handleSubscriptionUpdated(event.data.object, event.type)
 
+      case 'customer.subscription.trial_will_end':
+        return handleTrialWillEnd(event.data.object)
+
       case 'customer.subscription.deleted':
         return handleSubscriptionDeleted(event.data.object)
 
@@ -819,6 +823,105 @@ async function handleSubscriptionDeleted(
       handled: true,
       eventType: 'customer.subscription.deleted',
       action: 'subscription_canceled',
+    },
+  }
+}
+
+/**
+ * Traite customer.subscription.trial_will_end :
+ * Envoie un rappel de fin d'essai au dirigeant (3 jours avant la bascule du
+ * trial Stripe vers la facturation, cf. doc Stripe — Via Context7).
+ *
+ * Contexte : quand un dirigeant lance un checkout PENDANT son essai
+ * SmartPlanning, createCheckoutSession pose un `trial_end` Stripe aligné sur
+ * `trialEndsAt`. Stripe émet alors cet événement ~3 jours avant. Il tombait
+ * jusqu'ici dans le `default` du switch (ignoré, 200) : le client n'était pas
+ * prévenu de la bascule imminente en paiement.
+ *
+ * Sécurité doublon : l'email passe par sendTrialEndingSoonEmail →
+ * sendBillingEmail, dédoublonné par la contrainte unique (subscriptionId,
+ * emailType) dans EmailLog. Le cron /api/cron/trial-emails partage la même
+ * clé, donc aucun email en double si le rappel J-3 a déjà été envoyé.
+ *
+ * Reco Stripe : vérifier le statut avant d'envoyer un rappel. On n'envoie que
+ * si la subscription est encore en `trialing` (un trial écourté peut émettre
+ * l'événement alors que la subscription est déjà active/annulée).
+ */
+async function handleTrialWillEnd(
+  subscription: Stripe.Subscription
+): Promise<ServiceResult<WebhookHandlerResult>> {
+  const companyId = subscription.metadata?.[STRIPE_METADATA_KEYS.COMPANY_ID]
+
+  if (!companyId) {
+    return {
+      success: false,
+      error: 'companyId manquant dans metadata subscription',
+    }
+  }
+
+  // Reco Stripe : ne pas envoyer de rappel si le trial n'est plus actif
+  if (subscription.status !== 'trialing') {
+    return {
+      success: true,
+      data: {
+        handled: true,
+        eventType: 'customer.subscription.trial_will_end',
+        action: 'skipped_not_trialing',
+      },
+    }
+  }
+
+  // Détails DB pour le montant estimé et la clé de déduplication
+  const dbSub = await prisma.subscription.findUnique({
+    where: { companyId },
+    select: {
+      id: true,
+      stripeSubscriptionId: true,
+      quantity: true,
+      pricePerEmployee: true,
+    },
+  })
+
+  const quantity = subscription.items.data[0]?.quantity ?? dbSub?.quantity ?? 0
+  const pricePerEmployee =
+    dbSub?.pricePerEmployee ?? STRIPE_PRICING.UNIT_AMOUNT_CENTS
+  const estimatedMonthlyPrice = formatAmountEuros(quantity * pricePerEmployee)
+
+  // Jours restants jusqu'à la fin du trial Stripe (trial_end en secondes Unix)
+  const daysRemaining = subscription.trial_end
+    ? Math.max(
+        0,
+        Math.ceil(
+          (subscription.trial_end * 1000 - Date.now()) / (24 * 60 * 60 * 1000)
+        )
+      )
+    : 3
+
+  // Fire-and-forget : rappel de fin d'essai (dédoublonné via EmailLog)
+  getCompanyDirector(companyId)
+    .then((director) => {
+      if (!director) return
+      sendTrialEndingSoonEmail({
+        companyId,
+        subscriptionId: dbSub?.stripeSubscriptionId ?? subscription.id,
+        recipientEmail: director.email,
+        firstName: director.firstName,
+        companyName: director.companyName,
+        daysRemaining,
+        employeeCount: quantity,
+        estimatedMonthlyPrice,
+      }).catch((err) =>
+        console.error('[Webhook] Email TrialEndingSoon failed:', err)
+      )
+    })
+    .catch((err) => console.error('[Webhook] Director lookup failed:', err))
+
+  return {
+    success: true,
+    data: {
+      handled: true,
+      eventType: 'customer.subscription.trial_will_end',
+      action: 'trial_ending_reminder_sent',
     },
   }
 }

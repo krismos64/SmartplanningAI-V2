@@ -68,11 +68,16 @@ vi.mock('@/lib/email/billing/format', () => ({
     `${(cents / 100).toFixed(2).replace('.', ',')} €`,
 }))
 
+const mockSendTrialEndingSoonEmail = vi.hoisted(() =>
+  vi.fn().mockResolvedValue({ success: true })
+)
+
 vi.mock('@/lib/email/templates/billing', () => ({
   sendSubscriptionActivatedEmail: vi.fn().mockResolvedValue({ success: true }),
   sendPaymentConfirmedEmail: vi.fn().mockResolvedValue({ success: true }),
   sendPaymentFailedEmail: vi.fn().mockResolvedValue({ success: true }),
   sendSubscriptionCanceledEmail: vi.fn().mockResolvedValue({ success: true }),
+  sendTrialEndingSoonEmail: mockSendTrialEndingSoonEmail,
 }))
 
 // ============================================================================
@@ -748,6 +753,142 @@ describe('Stripe Service', () => {
 
         expect(result.success).toBe(false)
         expect(result.error).toContain('companyId')
+      })
+    })
+
+    // ========================================================================
+    // customer.subscription.trial_will_end
+    // ========================================================================
+    describe('customer.subscription.trial_will_end', () => {
+      // Flush les microtasks pour laisser le fire-and-forget email s'exécuter
+      const flushMicrotasks = () =>
+        new Promise<void>((resolve) => setImmediate(resolve))
+
+      function makeTrialSubscription(overrides: Record<string, unknown> = {}) {
+        return makeStripeSubscription({
+          status: 'trialing',
+          trial_end: Math.floor(Date.now() / 1000) + 3 * 24 * 60 * 60,
+          ...overrides,
+        })
+      }
+
+      it('envoie le rappel de fin d essai et retourne action trial_ending_reminder_sent', async () => {
+        const sub = makeTrialSubscription()
+        const event = makeStripeEvent(
+          'customer.subscription.trial_will_end',
+          sub
+        )
+
+        prismaMock.subscription.findUnique.mockResolvedValue({
+          id: 'db-sub-1',
+          stripeSubscriptionId: 'sub_test123',
+          quantity: 5,
+          pricePerEmployee: 290,
+        } as never)
+        // getCompanyDirector : company avec un DIRECTOR
+        prismaMock.company.findUnique.mockResolvedValue({
+          name: 'Test Corp',
+          users: [{ email: 'director@test.fr', name: 'Jean Dupont' }],
+        } as never)
+
+        const result = await handleWebhookEvent(event as never)
+        await flushMicrotasks()
+
+        expect(result.success).toBe(true)
+        expect(result.data?.action).toBe('trial_ending_reminder_sent')
+        expect(mockSendTrialEndingSoonEmail).toHaveBeenCalledOnce()
+        expect(mockSendTrialEndingSoonEmail).toHaveBeenCalledWith(
+          expect.objectContaining({
+            companyId: 'company-1',
+            subscriptionId: 'sub_test123',
+            recipientEmail: 'director@test.fr',
+            daysRemaining: 3,
+            employeeCount: 5,
+          })
+        )
+      })
+
+      it('ne fait rien (skipped) si la subscription n est plus en trialing', async () => {
+        const sub = makeTrialSubscription({ status: 'active' })
+        const event = makeStripeEvent(
+          'customer.subscription.trial_will_end',
+          sub
+        )
+
+        const result = await handleWebhookEvent(event as never)
+        await flushMicrotasks()
+
+        expect(result.success).toBe(true)
+        expect(result.data?.action).toBe('skipped_not_trialing')
+        expect(mockSendTrialEndingSoonEmail).not.toHaveBeenCalled()
+        // Aucune lecture DB inutile
+        expect(prismaMock.subscription.findUnique).not.toHaveBeenCalled()
+      })
+
+      it('retourne une erreur si companyId manquant', async () => {
+        const sub = makeTrialSubscription({ metadata: {} })
+        const event = makeStripeEvent(
+          'customer.subscription.trial_will_end',
+          sub
+        )
+
+        const result = await handleWebhookEvent(event as never)
+
+        expect(result.success).toBe(false)
+        expect(result.error).toContain('companyId')
+        expect(mockSendTrialEndingSoonEmail).not.toHaveBeenCalled()
+      })
+
+      it('n envoie pas d email si aucun DIRECTOR n est trouve (fire-and-forget)', async () => {
+        const sub = makeTrialSubscription()
+        const event = makeStripeEvent(
+          'customer.subscription.trial_will_end',
+          sub
+        )
+
+        prismaMock.subscription.findUnique.mockResolvedValue({
+          id: 'db-sub-1',
+          stripeSubscriptionId: 'sub_test123',
+          quantity: 5,
+          pricePerEmployee: 290,
+        } as never)
+        // getCompanyDirector retourne null (pas de director)
+        prismaMock.company.findUnique.mockResolvedValue(null)
+
+        const result = await handleWebhookEvent(event as never)
+        await flushMicrotasks()
+
+        // Le webhook réussit quand même (non bloquant), mais aucun email envoyé
+        expect(result.success).toBe(true)
+        expect(result.data?.action).toBe('trial_ending_reminder_sent')
+        expect(mockSendTrialEndingSoonEmail).not.toHaveBeenCalled()
+      })
+
+      it('reste ignoré si trial_end absent : fallback daysRemaining = 3', async () => {
+        const sub = makeTrialSubscription({ trial_end: null })
+        const event = makeStripeEvent(
+          'customer.subscription.trial_will_end',
+          sub
+        )
+
+        prismaMock.subscription.findUnique.mockResolvedValue({
+          id: 'db-sub-1',
+          stripeSubscriptionId: 'sub_test123',
+          quantity: 2,
+          pricePerEmployee: 290,
+        } as never)
+        prismaMock.company.findUnique.mockResolvedValue({
+          name: 'Test Corp',
+          users: [{ email: 'director@test.fr', name: 'Jean Dupont' }],
+        } as never)
+
+        const result = await handleWebhookEvent(event as never)
+        await flushMicrotasks()
+
+        expect(result.success).toBe(true)
+        expect(mockSendTrialEndingSoonEmail).toHaveBeenCalledWith(
+          expect.objectContaining({ daysRemaining: 3 })
+        )
       })
     })
 
