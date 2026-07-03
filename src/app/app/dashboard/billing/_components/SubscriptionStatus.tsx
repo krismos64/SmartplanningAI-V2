@@ -48,7 +48,7 @@ export interface SerializedSubscription {
   cancelAtPeriodEnd: boolean
   canceledAt: string | null
   createdAt: string
-  stripeCustomerId: string
+  stripeCustomerId: string | null
 }
 
 export interface SubscriptionStatusProps {
