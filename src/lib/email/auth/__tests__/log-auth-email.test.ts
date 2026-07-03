@@ -6,6 +6,10 @@
  * non-bloquante (une erreur Prisma ne doit jamais remonter).
  */
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 import { logAuthEmail, AuthEmailType } from '../log-auth-email'
@@ -17,7 +21,7 @@ const { mockEmailLogCreate } = vi.hoisted(() => ({
 vi.mock('@/lib/prisma', () => ({
   prisma: {
     emailLog: {
-      create: (...args: unknown[]) => mockEmailLogCreate(...args),
+      create: (...args: any[]) => mockEmailLogCreate(...args),
     },
   },
 }))

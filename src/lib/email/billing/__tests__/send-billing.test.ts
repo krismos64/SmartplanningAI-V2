@@ -7,6 +7,11 @@
  * Le paramètre `dedupeSuffix` (ID de facture) rend la clé unique par facture.
  */
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 import { sendBillingEmail } from '../send-billing'
@@ -21,14 +26,14 @@ const { mockFindUnique, mockCreate, mockSendEmail } = vi.hoisted(() => ({
 vi.mock('@/lib/prisma', () => ({
   prisma: {
     emailLog: {
-      findUnique: (...args: unknown[]) => mockFindUnique(...args),
-      create: (...args: unknown[]) => mockCreate(...args),
+      findUnique: (...args: any[]) => mockFindUnique(...args),
+      create: (...args: any[]) => mockCreate(...args),
     },
   },
 }))
 
 vi.mock('@/lib/email/send', () => ({
-  sendEmail: (...args: unknown[]) => mockSendEmail(...args),
+  sendEmail: (...args: any[]) => mockSendEmail(...args),
 }))
 
 const BASE = {
