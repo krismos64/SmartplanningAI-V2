@@ -19,8 +19,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unsafe-return */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { registerAction } from '../auth-actions'
@@ -152,18 +150,29 @@ const FAKE_EMPLOYEE = { id: 'cl000000000000000000empl1' }
 // Helper — transaction qui execute le callback avec un tx complet
 // ============================================================================
 
+/** Forme minimale de l'argument passe a tx.subscription.create() qu'on inspecte */
+interface SubscriptionCreateArg {
+  data: {
+    plan: string
+    status: string
+    stripeCustomerId: string | null
+    company: { connect: { id: string } }
+  }
+}
+
+type TxCallback = (tx: Record<string, unknown>) => unknown
+
 function setupSuccessfulTransaction() {
   const txSubscriptionCreate = vi.fn().mockResolvedValue({ id: 'sub_fake' })
 
-  mockTransaction.mockImplementation(
-    async (cb: (tx: Record<string, any>) => unknown) =>
-      cb({
-        company: { create: vi.fn().mockResolvedValue(FAKE_COMPANY) },
-        user: { create: vi.fn().mockResolvedValue(FAKE_USER) },
-        employee: { create: vi.fn().mockResolvedValue(FAKE_EMPLOYEE) },
-        leaveBalance: { create: vi.fn().mockResolvedValue({}) },
-        subscription: { create: txSubscriptionCreate },
-      })
+  mockTransaction.mockImplementation((cb: TxCallback) =>
+    cb({
+      company: { create: vi.fn().mockResolvedValue(FAKE_COMPANY) },
+      user: { create: vi.fn().mockResolvedValue(FAKE_USER) },
+      employee: { create: vi.fn().mockResolvedValue(FAKE_EMPLOYEE) },
+      leaveBalance: { create: vi.fn().mockResolvedValue({}) },
+      subscription: { create: txSubscriptionCreate },
+    })
   )
 
   return { txSubscriptionCreate }
@@ -192,14 +201,10 @@ describe("registerAction — creation de Subscription a l'inscription", () => {
 
     expect(result.success).toBe(true)
     expect(txSubscriptionCreate).toHaveBeenCalledOnce()
-    expect(txSubscriptionCreate).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: expect.objectContaining({
-          plan: 'FREE',
-          status: 'TRIAL',
-        }),
-      })
-    )
+
+    const arg = txSubscriptionCreate.mock.calls[0]?.[0] as SubscriptionCreateArg
+    expect(arg.data.plan).toBe('FREE')
+    expect(arg.data.status).toBe('TRIAL')
   })
 
   it('cree la Subscription avec stripeCustomerId null (aucun appel Stripe)', async () => {
@@ -207,8 +212,8 @@ describe("registerAction — creation de Subscription a l'inscription", () => {
 
     await registerAction(VALID_INPUT)
 
-    const arg = txSubscriptionCreate.mock.calls[0]?.[0] as any
-    expect(arg?.data?.stripeCustomerId).toBeNull()
+    const arg = txSubscriptionCreate.mock.calls[0]?.[0] as SubscriptionCreateArg
+    expect(arg.data.stripeCustomerId).toBeNull()
   })
 
   it('rattache la Subscription a la Company via company.connect.id', async () => {
@@ -216,8 +221,8 @@ describe("registerAction — creation de Subscription a l'inscription", () => {
 
     await registerAction(VALID_INPUT)
 
-    const arg = txSubscriptionCreate.mock.calls[0]?.[0] as any
-    expect(arg?.data?.company?.connect?.id).toBe(FAKE_COMPANY_ID)
+    const arg = txSubscriptionCreate.mock.calls[0]?.[0] as SubscriptionCreateArg
+    expect(arg.data.company.connect.id).toBe(FAKE_COMPANY_ID)
   })
 
   it('la Subscription est creee dans la transaction (pas en dehors)', async () => {
@@ -230,17 +235,16 @@ describe("registerAction — creation de Subscription a l'inscription", () => {
   })
 
   it('rollback atomique : si subscription.create echoue, retourne une erreur', async () => {
-    mockTransaction.mockImplementation(
-      async (cb: (tx: Record<string, any>) => unknown) =>
-        cb({
-          company: { create: vi.fn().mockResolvedValue(FAKE_COMPANY) },
-          user: { create: vi.fn().mockResolvedValue(FAKE_USER) },
-          employee: { create: vi.fn().mockResolvedValue(FAKE_EMPLOYEE) },
-          leaveBalance: { create: vi.fn().mockResolvedValue({}) },
-          subscription: {
-            create: vi.fn().mockRejectedValue(new Error('DB constraint')),
-          },
-        })
+    mockTransaction.mockImplementation((cb: TxCallback) =>
+      cb({
+        company: { create: vi.fn().mockResolvedValue(FAKE_COMPANY) },
+        user: { create: vi.fn().mockResolvedValue(FAKE_USER) },
+        employee: { create: vi.fn().mockResolvedValue(FAKE_EMPLOYEE) },
+        leaveBalance: { create: vi.fn().mockResolvedValue({}) },
+        subscription: {
+          create: vi.fn().mockRejectedValue(new Error('DB constraint')),
+        },
+      })
     )
 
     const result = await registerAction(VALID_INPUT)
