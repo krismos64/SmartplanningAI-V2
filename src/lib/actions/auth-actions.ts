@@ -200,6 +200,20 @@ export async function registerAction(
         },
       })
 
+      // Créer la ligne Subscription (plan FREE, statut TRIAL, sans customer Stripe).
+      // Le customer Stripe est créé au premier checkout volontaire via
+      // createCheckoutSession (qui teste déjà `if (!customerId)` avant de créer).
+      // Sans cette ligne, le cron /api/cron/trial-emails (filtre subscription.status
+      // = 'TRIAL') est aveugle à cette company et n'envoie aucun rappel de fin d'essai.
+      await tx.subscription.create({
+        data: {
+          company: { connect: { id: company.id } },
+          stripeCustomerId: null,
+          plan: 'FREE',
+          status: 'TRIAL',
+        },
+      })
+
       return { user, company, employee }
     })
 
