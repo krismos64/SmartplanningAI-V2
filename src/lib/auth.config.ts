@@ -141,8 +141,11 @@ export const authConfig: NextAuthConfig = {
           token.id = session.impersonatedUserId as string
         } else {
           // Arrêt : on restaure l'identité admin originale
-          // et on nettoie toutes les données d'impersonation
-          token.isImpersonating = undefined
+          // et on nettoie toutes les données d'impersonation.
+          // `false` explicite (et non `undefined`) : signale à
+          // getEffectiveSessionData que l'arrêt est confirmé par le JWT, ce qui
+          // fait ignorer un éventuel cookie sp-impersonation résiduel (SP-514).
+          token.isImpersonating = false
           token.role = 'SYSTEM_ADMIN' as import('@prisma/client').UserRole
           token.companyId = null
           token.id = (token.originalId as string) ?? token.id
@@ -247,7 +250,19 @@ export const authConfig: NextAuthConfig = {
         session.user.trialEndsAt = token.trialEndsAt as string | null
         session.user.currentPeriodEnd = token.currentPeriodEnd as string | null
         // Données impersonation pour la bannière "Vous consultez l'espace de..."
-        session.user.isImpersonating = token.isImpersonating ?? false
+        // IMPORTANT : préserver `undefined` tel quel (ne PAS forcer `false`).
+        // getEffectiveSessionData distingue trois états :
+        //   - true      → impersonation active (JWT à jour)
+        //   - undefined → soit jamais impersonné, soit JWT pas encore rafraîchi
+        //                 au démarrage (race session.update()) → le fallback
+        //                 cookie doit alors pouvoir s'appliquer
+        //   - false     → arrêt d'impersonation explicitement confirmé par le JWT
+        // Un `?? false` transformait `undefined` en `false`, ce qui faisait
+        // sauter le fallback cookie en permanence → bug "Entreprise non
+        // configurée" au démarrage de l'impersonation (SP-514 régression).
+        session.user.isImpersonating = token.isImpersonating as
+          | boolean
+          | undefined
         session.user.originalAdminId = token.originalAdminId as
           | string
           | undefined
@@ -373,8 +388,7 @@ export const authConfig: NextAuthConfig = {
       // les mutations Stripe restent bloquées par assertNotImpersonating().
       // On détecte l'impersonation via un cookie HttpOnly sécurisé
       // plutôt que via la session, car c'est plus fiable en Edge Runtime.
-      const isImpersonationBlockedRoute =
-        pathname.startsWith('/app/admin')
+      const isImpersonationBlockedRoute = pathname.startsWith('/app/admin')
       if (isLoggedIn && isImpersonationBlockedRoute) {
         try {
           const impersonationCookie = request.cookies.get(

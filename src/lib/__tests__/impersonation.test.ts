@@ -41,6 +41,7 @@ import {
   startImpersonation,
   stopImpersonation,
   assertNotImpersonating,
+  getEffectiveSessionData,
 } from '../impersonation'
 
 // ============================================================================
@@ -283,6 +284,92 @@ describe('impersonation', () => {
 
     it('IMPERSONATION_MAX_AGE vaut 3600 secondes', () => {
       expect(IMPERSONATION_MAX_AGE).toBe(3600)
+    })
+  })
+
+  // ==========================================================================
+  // getEffectiveSessionData — résolution du userId/companyId effectif
+  //
+  // Régression SP-514 (03/07/2026) : au démarrage de l'impersonation, le JWT
+  // n'est pas encore à jour (isImpersonating absent). Le callback session le
+  // transformait en `false`, ce qui faisait sauter le fallback cookie → le
+  // dashboard director tombait sur "Entreprise non configurée" de façon
+  // persistante. Ces tests verrouillent la distinction undefined/false/true.
+  // ==========================================================================
+  describe('getEffectiveSessionData', () => {
+    const ADMIN_SESSION = {
+      user: {
+        id: 'admin-123',
+        role: 'SYSTEM_ADMIN',
+        companyId: null,
+      },
+    }
+
+    function setCookie(context: ImpersonationContext | null) {
+      if (context) {
+        mockGet.mockReturnValue({ value: JSON.stringify(context) })
+      } else {
+        mockGet.mockReturnValue(undefined)
+      }
+    }
+
+    it('Cas 1 : JWT déjà à jour → utilise les données du JWT', async () => {
+      setCookie(null)
+      const result = await getEffectiveSessionData({
+        user: {
+          id: 'admin-123',
+          role: 'DIRECTOR',
+          companyId: 'company-789',
+          isImpersonating: true,
+          impersonatedUserId: 'user-456',
+          impersonatedCompanyId: 'company-789',
+        },
+      })
+      expect(result).toEqual({
+        userId: 'user-456',
+        role: 'DIRECTOR',
+        companyId: 'company-789',
+      })
+    })
+
+    it('Cas 2 (BUG SP-514) : JWT isImpersonating undefined + cookie présent → utilise le cookie', async () => {
+      // C'est le cœur du bug : au démarrage, isImpersonating n'est pas encore
+      // dans le JWT. Le fallback cookie DOIT s'appliquer.
+      setCookie(createValidContext())
+      const result = await getEffectiveSessionData(ADMIN_SESSION)
+      expect(result).toEqual({
+        userId: 'user-456',
+        role: 'DIRECTOR',
+        companyId: 'company-789',
+      })
+    })
+
+    it('Cas 3a : isImpersonating explicitement false → ignore le cookie résiduel', async () => {
+      // Après un stop confirmé par le JWT, un cookie résiduel doit être ignoré.
+      setCookie(createValidContext())
+      const result = await getEffectiveSessionData({
+        user: {
+          id: 'admin-123',
+          role: 'SYSTEM_ADMIN',
+          companyId: null,
+          isImpersonating: false,
+        },
+      })
+      expect(result).toEqual({
+        userId: 'admin-123',
+        role: 'SYSTEM_ADMIN',
+        companyId: null,
+      })
+    })
+
+    it('Cas 3b : pas de cookie ni impersonation → données de session', async () => {
+      setCookie(null)
+      const result = await getEffectiveSessionData(ADMIN_SESSION)
+      expect(result).toEqual({
+        userId: 'admin-123',
+        role: 'SYSTEM_ADMIN',
+        companyId: null,
+      })
     })
   })
 })
