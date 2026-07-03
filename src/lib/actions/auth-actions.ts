@@ -15,6 +15,7 @@ import { Prisma } from '@prisma/client'
 import { PRICING } from '@/lib/config/pricing'
 import { sendWelcomeEmail } from '@/lib/email/templates/welcome'
 import { sendNewRegistrationEmail } from '@/lib/email/templates/new-registration'
+import { logAuthEmail, AuthEmailType } from '@/lib/email/auth/log-auth-email'
 import { hashPassword } from '@/lib/password'
 import { prisma } from '@/lib/prisma'
 import { logAuditAction } from '@/lib/services/audit'
@@ -252,9 +253,18 @@ export async function registerAction(
     // L'échec de l'envoi ne doit PAS bloquer l'inscription
     try {
       const firstName = name.trim().split(' ')[0] || name.trim()
-      await sendWelcomeEmail({
+      const welcomeResult = await sendWelcomeEmail({
         firstName,
         email: email.toLowerCase(),
+      })
+      // Tracer l'envoi dans EmailLog (non bloquant)
+      await logAuthEmail({
+        companyId: result.company.id,
+        emailType: AuthEmailType.WELCOME,
+        recipientEmail: email.toLowerCase(),
+        success: welcomeResult.success,
+        messageId: welcomeResult.messageId,
+        error: welcomeResult.error,
       })
     } catch (emailError) {
       // Logger l'erreur mais ne pas bloquer l'inscription

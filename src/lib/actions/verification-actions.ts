@@ -18,6 +18,7 @@
 import crypto from 'crypto'
 
 import { sendVerificationEmail } from '@/lib/email/templates/verification-email'
+import { logAuthEmail, AuthEmailType } from '@/lib/email/auth/log-auth-email'
 import { verifyPassword } from '@/lib/password'
 import { prisma } from '@/lib/prisma'
 
@@ -85,7 +86,13 @@ export async function sendVerificationEmailAction(data: {
     // 1. Chercher l'utilisateur
     const user = await prisma.user.findUnique({
       where: { email: normalizedEmail },
-      select: { id: true, name: true, email: true, emailVerified: true },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        emailVerified: true,
+        companyId: true,
+      },
     })
 
     // Si l'utilisateur n'existe pas, on retourne succès quand même
@@ -124,12 +131,25 @@ export async function sendVerificationEmailAction(data: {
     const firstName = user.name?.split(' ')[0] || undefined
 
     try {
-      await sendVerificationEmail({
+      const verificationResult = await sendVerificationEmail({
         firstName,
         email: normalizedEmail,
         token,
         expiresIn: TOKEN_EXPIRY_TEXT,
       })
+      // Tracer l'envoi dans EmailLog (non bloquant).
+      // companyId requis (colonne NOT NULL) : on ne logge que si l'utilisateur
+      // est rattaché à une entreprise (toujours le cas pour un DIRECTOR inscrit).
+      if (user.companyId) {
+        await logAuthEmail({
+          companyId: user.companyId,
+          emailType: AuthEmailType.EMAIL_VERIFICATION,
+          recipientEmail: normalizedEmail,
+          success: verificationResult.success,
+          messageId: verificationResult.messageId,
+          error: verificationResult.error,
+        })
+      }
     } catch (emailError) {
       // Log l'erreur mais ne pas bloquer le flow
       if (process.env.NODE_ENV === 'development') {
