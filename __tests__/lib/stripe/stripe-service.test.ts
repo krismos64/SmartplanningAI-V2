@@ -93,7 +93,9 @@ import {
   handleWebhookEvent,
 } from '@/lib/services/stripe'
 
-const prismaMock = prisma as unknown as ReturnType<typeof mockDeep<PrismaClient>>
+const prismaMock = prisma as unknown as ReturnType<
+  typeof mockDeep<PrismaClient>
+>
 
 // ============================================================================
 // Helpers pour construire des données de test
@@ -561,10 +563,7 @@ describe('Stripe Service', () => {
     describe('checkout.session.completed', () => {
       it('active la subscription après checkout réussi', async () => {
         const session = makeCheckoutSession()
-        const event = makeStripeEvent(
-          'checkout.session.completed',
-          session
-        )
+        const event = makeStripeEvent('checkout.session.completed', session)
 
         mockStripe.subscriptions.retrieve.mockResolvedValue(
           makeStripeSubscription()
@@ -579,10 +578,7 @@ describe('Stripe Service', () => {
 
       it('retourne une erreur si companyId manquant dans metadata', async () => {
         const session = makeCheckoutSession({ metadata: {} })
-        const event = makeStripeEvent(
-          'checkout.session.completed',
-          session
-        )
+        const event = makeStripeEvent('checkout.session.completed', session)
 
         const result = await handleWebhookEvent(event as never)
 
@@ -592,10 +588,7 @@ describe('Stripe Service', () => {
 
       it('retourne une erreur si subscription manquante dans session', async () => {
         const session = makeCheckoutSession({ subscription: null })
-        const event = makeStripeEvent(
-          'checkout.session.completed',
-          session
-        )
+        const event = makeStripeEvent('checkout.session.completed', session)
 
         const result = await handleWebhookEvent(event as never)
 
@@ -605,10 +598,7 @@ describe('Stripe Service', () => {
 
       it('upsert la subscription avec les bonnes données', async () => {
         const session = makeCheckoutSession()
-        const event = makeStripeEvent(
-          'checkout.session.completed',
-          session
-        )
+        const event = makeStripeEvent('checkout.session.completed', session)
 
         const sub = makeStripeSubscription({ billing_cycle_anchor: 1700000000 })
         mockStripe.subscriptions.retrieve.mockResolvedValue(sub)
@@ -636,10 +626,7 @@ describe('Stripe Service', () => {
     describe('customer.subscription.updated', () => {
       it('synchronise le statut et la quantité', async () => {
         const sub = makeStripeSubscription({ status: 'active' })
-        const event = makeStripeEvent(
-          'customer.subscription.updated',
-          sub
-        )
+        const event = makeStripeEvent('customer.subscription.updated', sub)
 
         prismaMock.subscription.findUnique.mockResolvedValue({
           id: 'db-sub-1',
@@ -657,10 +644,7 @@ describe('Stripe Service', () => {
 
       it('ne modifie rien si le statut et la quantité sont identiques (idempotence)', async () => {
         const sub = makeStripeSubscription({ status: 'active' })
-        const event = makeStripeEvent(
-          'customer.subscription.updated',
-          sub
-        )
+        const event = makeStripeEvent('customer.subscription.updated', sub)
 
         prismaMock.subscription.findUnique.mockResolvedValue({
           id: 'db-sub-1',
@@ -680,10 +664,7 @@ describe('Stripe Service', () => {
         const sub = makeStripeSubscription({
           metadata: {},
         })
-        const event = makeStripeEvent(
-          'customer.subscription.updated',
-          sub
-        )
+        const event = makeStripeEvent('customer.subscription.updated', sub)
 
         const result = await handleWebhookEvent(event as never)
 
@@ -693,10 +674,7 @@ describe('Stripe Service', () => {
 
       it('mappe correctement trialing → TRIAL', async () => {
         const sub = makeStripeSubscription({ status: 'trialing' })
-        const event = makeStripeEvent(
-          'customer.subscription.created',
-          sub
-        )
+        const event = makeStripeEvent('customer.subscription.created', sub)
 
         prismaMock.subscription.findUnique.mockResolvedValue(null)
         prismaMock.subscription.upsert.mockResolvedValue({} as never)
@@ -719,10 +697,7 @@ describe('Stripe Service', () => {
     describe('customer.subscription.deleted', () => {
       it('marque la subscription comme CANCELED', async () => {
         const sub = makeStripeSubscription()
-        const event = makeStripeEvent(
-          'customer.subscription.deleted',
-          sub
-        )
+        const event = makeStripeEvent('customer.subscription.deleted', sub)
 
         prismaMock.subscription.updateMany.mockResolvedValue({
           count: 1,
@@ -744,10 +719,7 @@ describe('Stripe Service', () => {
 
       it('retourne une erreur si companyId manquant', async () => {
         const sub = makeStripeSubscription({ metadata: {} })
-        const event = makeStripeEvent(
-          'customer.subscription.deleted',
-          sub
-        )
+        const event = makeStripeEvent('customer.subscription.deleted', sub)
 
         const result = await handleWebhookEvent(event as never)
 
@@ -934,8 +906,40 @@ describe('Stripe Service', () => {
         expect(result.data?.action).toBe('subscription_not_found')
       })
 
-      it('retourne handled=false si pas de payment intent', async () => {
+      it('retombe sur l ID de facture quand le payment intent est absent du webhook', async () => {
+        // Le payload webhook brut ne contient pas invoice.payments (non
+        // expandé) : le payment_intent est introuvable. On doit quand même
+        // enregistrer le paiement en utilisant l'ID de facture comme clé.
         const invoice = makeStripeInvoice({
+          payments: { data: [] },
+        })
+        const event = makeStripeEvent('invoice.paid', invoice)
+
+        prismaMock.subscription.findFirst.mockResolvedValue({
+          id: 'db-sub-1',
+          companyId: 'company-1',
+        } as never)
+        prismaMock.payment.upsert.mockResolvedValue({} as never)
+
+        const result = await handleWebhookEvent(event as never)
+
+        expect(result.success).toBe(true)
+        // Le Payment est créé avec l'ID de facture comme stripePaymentId
+        expect(prismaMock.payment.upsert).toHaveBeenCalledWith(
+          expect.objectContaining({
+            where: { stripePaymentId: 'in_test123' },
+            create: expect.objectContaining({
+              status: 'SUCCEEDED',
+              amount: 1450,
+              stripeInvoiceId: 'in_test123',
+            }),
+          })
+        )
+      })
+
+      it('ignore une facture à 0 € (essai en cours)', async () => {
+        const invoice = makeStripeInvoice({
+          amount_paid: 0,
           payments: { data: [] },
         })
         const event = makeStripeEvent('invoice.paid', invoice)
@@ -949,7 +953,8 @@ describe('Stripe Service', () => {
 
         expect(result.success).toBe(true)
         expect(result.data?.handled).toBe(false)
-        expect(result.data?.action).toBe('no_payment_intent')
+        expect(result.data?.action).toBe('zero_amount_trial')
+        expect(prismaMock.payment.upsert).not.toHaveBeenCalled()
       })
 
       it('gère un subscription ID de type objet (expanded)', async () => {
@@ -1059,7 +1064,7 @@ describe('Stripe Service', () => {
         expect(result.data?.action).toBe('ignored')
       })
 
-      it('retourne le type d\'événement dans le résultat', async () => {
+      it("retourne le type d'événement dans le résultat", async () => {
         const event = makeStripeEvent('customer.created', {})
 
         const result = await handleWebhookEvent(event as never)
