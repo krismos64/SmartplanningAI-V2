@@ -124,6 +124,14 @@ export const navigationItems: NavigationItem[] = [
     keywords: ['user', 'utilisateur', 'compte'],
   },
   {
+    id: 'admin-subscriptions',
+    label: 'Abonnements',
+    icon: CreditCard,
+    href: '/app/admin/subscriptions',
+    roles: ['SYSTEM_ADMIN'],
+    keywords: ['subscription', 'abonnement', 'paiement', 'stripe', 'mrr'],
+  },
+  {
     id: 'monitoring',
     label: 'Monitoring',
     icon: Activity,
