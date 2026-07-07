@@ -21,6 +21,8 @@ import {
 import {
   HealthStatusBadge,
   DatabaseHealthPanel,
+  RedisHealthPanel,
+  ActiveSessionsPanel,
   MonitoringKpisGrid,
   SubscriptionBreakdownPanel,
   ActivityChart,
@@ -99,7 +101,14 @@ async function MonitoringContent() {
     return <ErrorState message={result.error} />
   }
 
-  const { health, quickStats, subscriptionBreakdown, timestamp } = result.data
+  const {
+    health,
+    redis,
+    activeSessions,
+    quickStats,
+    subscriptionBreakdown,
+    timestamp,
+  } = result.data
 
   return (
     <div className="space-y-6">
@@ -142,6 +151,15 @@ async function MonitoringContent() {
       <div className="grid gap-6 md:grid-cols-2">
         <DatabaseHealthPanel health={health} />
         <SubscriptionBreakdownPanel breakdown={subscriptionBreakdown} />
+      </div>
+
+      {/* Panneaux Redis + sessions actives — SP-544 */}
+      <div className="grid gap-6 md:grid-cols-2">
+        <RedisHealthPanel redis={redis} />
+        <ActiveSessionsPanel
+          sessions={activeSessions}
+          redisUp={redis.status === 'up'}
+        />
       </div>
 
       {/* Section Graphiques — SP-465 */}

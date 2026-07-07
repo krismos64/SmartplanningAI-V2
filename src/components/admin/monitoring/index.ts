@@ -1,5 +1,7 @@
 export { HealthStatusBadge } from './HealthStatusBadge'
 export { DatabaseHealthPanel } from './DatabaseHealthPanel'
+export { RedisHealthPanel } from './RedisHealthPanel'
+export { ActiveSessionsPanel } from './ActiveSessionsPanel'
 export { MonitoringKpisGrid } from './MonitoringKpisGrid'
 export { SubscriptionBreakdownPanel } from './SubscriptionBreakdownPanel'
 export { ActivityChart } from './ActivityChart'
