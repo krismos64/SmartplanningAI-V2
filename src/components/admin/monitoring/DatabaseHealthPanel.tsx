@@ -14,6 +14,7 @@ import { ProgressBar } from '@/components/ui/progress-bar'
 import { cn } from '@/lib/utils'
 import { Database, Zap, GitBranch, Layers } from 'lucide-react'
 import type { HealthCheckResult } from '@/lib/db-health'
+import { HEALTH_STATUS_STYLES } from './health-status-styles'
 
 export interface DatabaseHealthPanelProps {
   health: HealthCheckResult
@@ -25,21 +26,6 @@ const CHECK_META = {
   latency: { label: 'Latence', icon: Zap },
   migrations: { label: 'Schéma DB', icon: GitBranch },
   poolSize: { label: 'Pool connexions', icon: Layers },
-} as const
-
-const CHECK_STATUS_STYLES = {
-  pass: {
-    dot: 'bg-emerald-500',
-    text: 'text-emerald-700 dark:text-emerald-400',
-  },
-  warn: {
-    dot: 'bg-amber-500',
-    text: 'text-amber-700 dark:text-amber-400',
-  },
-  fail: {
-    dot: 'bg-rose-500',
-    text: 'text-rose-700 dark:text-rose-400',
-  },
 } as const
 
 function parsePoolPercentage(value?: number | string | boolean): number | null {
@@ -81,7 +67,7 @@ export function DatabaseHealthPanel({
           (key) => {
             const check = health.checks[key]
             const meta = CHECK_META[key]
-            const styles = CHECK_STATUS_STYLES[check.status]
+            const styles = HEALTH_STATUS_STYLES[check.status]
             const Icon = meta.icon
 
             return (

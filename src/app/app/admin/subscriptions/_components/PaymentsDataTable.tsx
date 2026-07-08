@@ -12,15 +12,10 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
-import {
-  Building2,
-  ChevronLeft,
-  ChevronRight,
-  ExternalLink,
-  Receipt,
-} from 'lucide-react'
+import { Building2, ExternalLink, Receipt } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
+import { ServerPagination } from '@/components/ui/server-pagination'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Card, CardContent } from '@/components/ui/card'
@@ -44,6 +39,14 @@ import {
   getPaymentsAdmin,
   type AdminPaymentRow,
 } from '@/lib/actions/admin-subscriptions'
+import {
+  PAYMENT_STATUS_CONFIG,
+  getPaymentStatusConfig,
+} from '@/lib/billing/payment-status'
+import {
+  formatCentsAsCurrency,
+  formatDateShortFr,
+} from '@/lib/utils/formatters'
 
 // ============================================================================
 // Constants
@@ -53,44 +56,21 @@ const PAGE_SIZE = 25
 
 const STATUS_OPTIONS = [
   { value: 'ALL', label: 'Tous les statuts' },
-  { value: 'SUCCEEDED', label: 'Payé' },
-  { value: 'FAILED', label: 'Échoué' },
-  { value: 'PENDING', label: 'En attente' },
-  { value: 'REFUNDED', label: 'Remboursé' },
-  { value: 'REQUIRES_ACTION', label: 'Action requise' },
+  { value: 'SUCCEEDED', label: PAYMENT_STATUS_CONFIG.SUCCEEDED.label },
+  { value: 'FAILED', label: PAYMENT_STATUS_CONFIG.FAILED.label },
+  { value: 'PENDING', label: PAYMENT_STATUS_CONFIG.PENDING.label },
+  { value: 'REFUNDED', label: PAYMENT_STATUS_CONFIG.REFUNDED.label },
+  {
+    value: 'REQUIRES_ACTION',
+    label: PAYMENT_STATUS_CONFIG.REQUIRES_ACTION.label,
+  },
 ] as const
 
 type StatusFilter = (typeof STATUS_OPTIONS)[number]['value']
 
-const STATUS_CONFIG: Record<
-  string,
-  {
-    label: string
-    variant: 'success' | 'destructive' | 'warning' | 'secondary'
-  }
-> = {
-  SUCCEEDED: { label: 'Payé', variant: 'success' },
-  FAILED: { label: 'Échoué', variant: 'destructive' },
-  PENDING: { label: 'En attente', variant: 'warning' },
-  REFUNDED: { label: 'Remboursé', variant: 'secondary' },
-  REQUIRES_ACTION: { label: 'Action requise', variant: 'warning' },
-}
-
 // ============================================================================
 // Helpers
 // ============================================================================
-
-function formatCurrency(amountInCents: number, currency: string): string {
-  return new Intl.NumberFormat('fr-FR', {
-    style: 'currency',
-    currency: currency.toUpperCase(),
-  }).format(amountInCents / 100)
-}
-
-function formatDate(date: Date | string | null): string {
-  if (!date) return '—'
-  return new Date(date).toLocaleDateString('fr-FR')
-}
 
 /**
  * Lien vers la facture dans le dashboard Stripe (côté admin, pas portail client).
@@ -115,10 +95,7 @@ function PaymentCard({
   row: AdminPaymentRow
   dashboardBaseUrl: string
 }) {
-  const config = STATUS_CONFIG[row.status] ?? {
-    label: row.status,
-    variant: 'secondary' as const,
-  }
+  const config = getPaymentStatusConfig(row.status)
 
   return (
     <Card
@@ -140,10 +117,10 @@ function PaymentCard({
 
           <div className="flex items-center justify-between text-sm">
             <span className="font-medium">
-              {formatCurrency(row.amount, row.currency)}
+              {formatCentsAsCurrency(row.amount, row.currency)}
             </span>
             <span className="text-xs text-muted-foreground">
-              {formatDate(row.paidAt ?? row.createdAt)}
+              {formatDateShortFr(row.paidAt ?? row.createdAt)}
             </span>
           </div>
 
@@ -309,14 +286,11 @@ export function PaymentsDataTable() {
               </TableRow>
             ) : (
               rows.map((row) => {
-                const config = STATUS_CONFIG[row.status] ?? {
-                  label: row.status,
-                  variant: 'secondary' as const,
-                }
+                const config = getPaymentStatusConfig(row.status)
                 return (
                   <TableRow key={row.id}>
                     <TableCell className="text-sm text-muted-foreground">
-                      {formatDate(row.paidAt ?? row.createdAt)}
+                      {formatDateShortFr(row.paidAt ?? row.createdAt)}
                     </TableCell>
                     <TableCell className="font-medium">
                       <Link
@@ -328,7 +302,7 @@ export function PaymentsDataTable() {
                       </Link>
                     </TableCell>
                     <TableCell className="text-right font-medium tabular-nums">
-                      {formatCurrency(row.amount, row.currency)}
+                      {formatCentsAsCurrency(row.amount, row.currency)}
                     </TableCell>
                     <TableCell>
                       <Badge variant={config.variant}>{config.label}</Badge>
@@ -402,35 +376,15 @@ export function PaymentsDataTable() {
         )}
       </div>
 
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between px-2">
-          <p className="text-sm text-muted-foreground">
-            Page {page} sur {totalPages} ({total} résultat
-            {total > 1 ? 's' : ''})
-          </p>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handlePrev}
-              disabled={page <= 1 || isLoading}
-            >
-              <ChevronLeft className="mr-1 h-4 w-4" />
-              Précédent
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleNext}
-              disabled={page >= totalPages || isLoading}
-            >
-              Suivant
-              <ChevronRight className="ml-1 h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      )}
+      {/* Pagination (composant partagé SP-547) */}
+      <ServerPagination
+        page={page}
+        totalPages={totalPages}
+        total={total}
+        isLoading={isLoading}
+        onPrevious={handlePrev}
+        onNext={handleNext}
+      />
     </div>
   )
 }

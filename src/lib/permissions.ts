@@ -195,6 +195,31 @@ export const ROLE_LABELS: Record<UserRole, string> = {
 } as const
 
 /**
+ * Labels courts des rôles pour les badges compacts des tables admin
+ * (SP-547 : source unique — était dupliqué dans UsersDataTable,
+ * ActiveSessionsPanel et CompanyUsersTab)
+ */
+export const ROLE_LABELS_SHORT: Record<UserRole, string> = {
+  SYSTEM_ADMIN: 'Admin',
+  DIRECTOR: 'Directeur',
+  MANAGER: 'Manager',
+  EMPLOYEE: 'Employé',
+} as const
+
+/**
+ * Variant Badge par rôle — co-localisé avec les labels (SP-547)
+ */
+export const ROLE_BADGE_VARIANTS: Record<
+  UserRole,
+  'destructive' | 'default' | 'info' | 'secondary'
+> = {
+  SYSTEM_ADMIN: 'destructive',
+  DIRECTOR: 'default',
+  MANAGER: 'info',
+  EMPLOYEE: 'secondary',
+} as const
+
+/**
  * Description des rôles pour l'aide contextuelle
  */
 export const ROLE_DESCRIPTIONS: Record<UserRole, string> = {

@@ -29,45 +29,13 @@ import {
 import {
   subscriptionPlanLabels,
   subscriptionStatusLabels,
+  subscriptionStatusBadgeVariants,
 } from '@/lib/validations/company'
-
-const STATUS_BADGE_VARIANT: Record<
-  string,
-  'default' | 'secondary' | 'destructive' | 'info' | 'success' | 'warning'
-> = {
-  ACTIVE: 'success',
-  TRIAL: 'info',
-  PAST_DUE: 'destructive',
-  CANCELED: 'secondary',
-  EXPIRED: 'secondary',
-  INCOMPLETE: 'warning',
-}
-
-const PAYMENT_STATUS_CONFIG: Record<
-  string,
-  {
-    label: string
-    variant: 'success' | 'destructive' | 'warning' | 'secondary'
-  }
-> = {
-  SUCCEEDED: { label: 'Payé', variant: 'success' },
-  FAILED: { label: 'Échoué', variant: 'destructive' },
-  PENDING: { label: 'En attente', variant: 'warning' },
-  REFUNDED: { label: 'Remboursé', variant: 'secondary' },
-  REQUIRES_ACTION: { label: 'Action requise', variant: 'warning' },
-}
-
-function formatCurrency(amountInCents: number, currency: string): string {
-  return new Intl.NumberFormat('fr-FR', {
-    style: 'currency',
-    currency: currency.toUpperCase(),
-  }).format(amountInCents / 100)
-}
-
-function formatDate(date: Date | string | null): string {
-  if (!date) return '—'
-  return new Date(date).toLocaleDateString('fr-FR')
-}
+import { getPaymentStatusConfig } from '@/lib/billing/payment-status'
+import {
+  formatCentsAsCurrency,
+  formatDateShortFr,
+} from '@/lib/utils/formatters'
 
 export interface CompanySubscriptionTabProps {
   companyId: string
@@ -106,7 +74,7 @@ export async function CompanySubscriptionTab({
                 <div className="flex flex-wrap items-center gap-1.5">
                   <Badge
                     variant={
-                      STATUS_BADGE_VARIANT[subscription.status] ?? 'secondary'
+                      subscriptionStatusBadgeVariants[subscription.status]
                     }
                   >
                     {subscriptionStatusLabels[subscription.status]}
@@ -125,7 +93,7 @@ export async function CompanySubscriptionTab({
               <div>
                 <p className="text-xs text-muted-foreground">Prix / employé</p>
                 <p className="text-sm font-medium">
-                  {formatCurrency(
+                  {formatCentsAsCurrency(
                     subscription.pricePerEmployee,
                     subscription.currency
                   )}
@@ -134,28 +102,30 @@ export async function CompanySubscriptionTab({
               <div>
                 <p className="text-xs text-muted-foreground">Début période</p>
                 <p className="text-sm">
-                  {formatDate(subscription.currentPeriodStart)}
+                  {formatDateShortFr(subscription.currentPeriodStart)}
                 </p>
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Fin période</p>
                 <p className="text-sm">
-                  {formatDate(subscription.currentPeriodEnd)}
+                  {formatDateShortFr(subscription.currentPeriodEnd)}
                 </p>
               </div>
               {subscription.canceledAt && (
                 <div>
                   <p className="text-xs text-muted-foreground">Annulé le</p>
                   <p className="text-sm">
-                    {formatDate(subscription.canceledAt)}
+                    {formatDateShortFr(subscription.canceledAt)}
                   </p>
                 </div>
               )}
               {subscription.stripeCustomerId && (
                 <div>
                   <p className="text-xs text-muted-foreground">Client Stripe</p>
+                  {/* Base mode-aware (sk_test → /test) : un customer test
+                      ouvert sur l'URL live → 404 (review PR #54) */}
                   <a
-                    href={`https://dashboard.stripe.com/customers/${subscription.stripeCustomerId}`}
+                    href={`${paymentsResult.stripeDashboardBaseUrl}/customers/${subscription.stripeCustomerId}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
@@ -195,17 +165,19 @@ export async function CompanySubscriptionTab({
                 </TableHeader>
                 <TableBody>
                   {paymentsResult.payments.map((payment) => {
-                    const config = PAYMENT_STATUS_CONFIG[payment.status] ?? {
-                      label: payment.status,
-                      variant: 'secondary' as const,
-                    }
+                    const config = getPaymentStatusConfig(payment.status)
                     return (
                       <TableRow key={payment.id}>
                         <TableCell className="text-sm text-muted-foreground">
-                          {formatDate(payment.paidAt ?? payment.createdAt)}
+                          {formatDateShortFr(
+                            payment.paidAt ?? payment.createdAt
+                          )}
                         </TableCell>
                         <TableCell className="text-right font-medium tabular-nums">
-                          {formatCurrency(payment.amount, payment.currency)}
+                          {formatCentsAsCurrency(
+                            payment.amount,
+                            payment.currency
+                          )}
                         </TableCell>
                         <TableCell>
                           <Badge variant={config.variant} size="sm">

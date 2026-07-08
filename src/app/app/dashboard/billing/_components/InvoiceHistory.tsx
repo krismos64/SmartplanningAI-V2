@@ -30,6 +30,11 @@ import {
 import { EmptyState } from '@/components/ui/empty-state'
 import { motion, fadeSlideUpVariants, useReducedMotion } from '@/lib/animations'
 import { cn } from '@/lib/utils'
+import { getPaymentStatusConfig } from '@/lib/billing/payment-status'
+import {
+  formatCentsAsCurrency,
+  formatDateMediumFr,
+} from '@/lib/utils/formatters'
 
 // =============================================================================
 // TYPES
@@ -63,38 +68,9 @@ export interface InvoiceHistoryProps {
 // CONSTANTES
 // =============================================================================
 
-const PAYMENT_STATUS_CONFIG: Record<
-  string,
-  {
-    label: string
-    variant: 'success' | 'destructive' | 'warning' | 'secondary'
-  }
-> = {
-  SUCCEEDED: { label: 'Payé', variant: 'success' },
-  FAILED: { label: 'Échoué', variant: 'destructive' },
-  PENDING: { label: 'En attente', variant: 'warning' },
-  REFUNDED: { label: 'Remboursé', variant: 'secondary' },
-  REQUIRES_ACTION: { label: 'Action requise', variant: 'warning' },
-}
-
 // =============================================================================
 // HELPERS
 // =============================================================================
-
-function formatDate(isoString: string): string {
-  return new Intl.DateTimeFormat('fr-FR', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  }).format(new Date(isoString))
-}
-
-function formatCurrency(amountInCents: number, currency: string): string {
-  return new Intl.NumberFormat('fr-FR', {
-    style: 'currency',
-    currency: currency.toUpperCase(),
-  }).format(amountInCents / 100)
-}
 
 // =============================================================================
 // COMPONENT
@@ -145,22 +121,22 @@ export function InvoiceHistory({
               </TableHeader>
               <TableBody>
                 {payments.map((payment) => {
-                  const statusConfig = PAYMENT_STATUS_CONFIG[
-                    payment.status
-                  ] ?? {
-                    label: payment.status,
-                    variant: 'secondary' as const,
-                  }
+                  const statusConfig = getPaymentStatusConfig(payment.status)
                   return (
                     <TableRow
                       key={payment.id}
                       data-testid={`payment-row-${payment.id}`}
                     >
                       <TableCell className="whitespace-nowrap">
-                        {formatDate(payment.paidAt ?? payment.createdAt)}
+                        {formatDateMediumFr(
+                          payment.paidAt ?? payment.createdAt
+                        )}
                       </TableCell>
                       <TableCell className="font-medium">
-                        {formatCurrency(payment.amount, payment.currency)}
+                        {formatCentsAsCurrency(
+                          payment.amount,
+                          payment.currency
+                        )}
                       </TableCell>
                       <TableCell className="text-muted-foreground">
                         {payment.paymentMethod ?? '—'}

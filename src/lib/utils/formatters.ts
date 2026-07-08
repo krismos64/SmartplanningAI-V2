@@ -204,3 +204,75 @@ export function formatRelativeDate(date: Date | string | null): string {
     month: 'short',
   }).format(targetDate)
 }
+
+// ============================================================================
+// Formatage monétaire billing (SP-547 — consolidation)
+// ============================================================================
+// ⚠️ Deux contrats coexistent dans le codebase : src/lib/utils.ts
+// formatCurrency() prend des CENTIMES, formatCurrency() de ce fichier prend
+// des EUROS. Les helpers ci-dessous portent l'unité dans leur nom pour
+// éliminer toute ambiguïté — à privilégier pour tout nouveau code.
+
+/**
+ * Formate un montant en CENTIMES vers une devise (style Intl currency)
+ *
+ * @example
+ * formatCentsAsCurrency(2900) // "29,00 €"
+ * formatCentsAsCurrency(2900, 'USD') // "29,00 $US"
+ */
+export function formatCentsAsCurrency(
+  amountInCents: number,
+  currency: string = 'EUR'
+): string {
+  return new Intl.NumberFormat('fr-FR', {
+    style: 'currency',
+    currency: currency.toUpperCase(),
+  }).format(amountInCents / 100)
+}
+
+/**
+ * Formate un montant en EUROS vers une devise (style Intl currency)
+ *
+ * @example
+ * formatEurosAsCurrency(145.5) // "145,50 €"
+ */
+export function formatEurosAsCurrency(
+  amount: number,
+  currency: string = 'EUR'
+): string {
+  return new Intl.NumberFormat('fr-FR', {
+    style: 'currency',
+    currency: currency.toUpperCase(),
+  }).format(amount)
+}
+
+// ============================================================================
+// Formatage de dates FR (SP-547 — consolidation)
+// ============================================================================
+
+/**
+ * Date courte française, tolérante au null ("—")
+ *
+ * @example
+ * formatDateShortFr(new Date('2026-07-08')) // "08/07/2026"
+ * formatDateShortFr(null) // "—"
+ */
+export function formatDateShortFr(date: Date | string | null): string {
+  if (!date) return '—'
+  return new Date(date).toLocaleDateString('fr-FR')
+}
+
+/**
+ * Date moyenne française (mois abrégé), tolérante au null ("—")
+ *
+ * @example
+ * formatDateMediumFr(new Date('2026-07-08')) // "8 juil. 2026"
+ */
+export function formatDateMediumFr(date: Date | string | null): string {
+  if (!date) return '—'
+  return new Intl.DateTimeFormat('fr-FR', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  }).format(new Date(date))
+}

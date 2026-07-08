@@ -14,6 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 import { Database, Zap, ShieldCheck } from 'lucide-react'
 import type { RedisHealthInfo } from '@/lib/actions/monitoring'
+import { HEALTH_STATUS_STYLES } from './health-status-styles'
 
 export interface RedisHealthPanelProps {
   redis: RedisHealthInfo
@@ -46,7 +47,9 @@ export function RedisHealthPanel({ redis, className }: RedisHealthPanelProps) {
               <span
                 className={cn(
                   'h-2 w-2 rounded-full',
-                  isUp ? 'bg-emerald-500' : 'bg-amber-500'
+                  isUp
+                    ? HEALTH_STATUS_STYLES.pass.dot
+                    : HEALTH_STATUS_STYLES.warn.dot
                 )}
                 aria-hidden="true"
               />
@@ -54,8 +57,8 @@ export function RedisHealthPanel({ redis, className }: RedisHealthPanelProps) {
                 className={cn(
                   'text-xs font-medium',
                   isUp
-                    ? 'text-emerald-700 dark:text-emerald-400'
-                    : 'text-amber-700 dark:text-amber-400'
+                    ? HEALTH_STATUS_STYLES.pass.text
+                    : HEALTH_STATUS_STYLES.warn.text
                 )}
               >
                 {isUp ? 'OK' : 'Dégradé'}

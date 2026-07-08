@@ -17,8 +17,6 @@ import {
   Search,
   Download,
   Users,
-  ChevronLeft,
-  ChevronRight,
   Building2,
   Calendar,
   Mail,
@@ -29,8 +27,10 @@ import {
 } from 'lucide-react'
 
 import { useIsImpersonating, useImpersonate } from '@/hooks'
+import { ROLE_LABELS_SHORT, ROLE_BADGE_VARIANTS } from '@/lib/permissions'
 import { useToast } from '@/components/toast/use-toast'
 import { Button } from '@/components/ui/button'
+import { ServerPagination } from '@/components/ui/server-pagination'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -90,29 +90,6 @@ const VERIFIED_OPTIONS: { value: VerifiedFilter; label: string }[] = [
 ]
 
 const ALL_COMPANIES = 'ALL'
-
-const ROLE_BADGE_VARIANT: Record<
-  string,
-  | 'default'
-  | 'secondary'
-  | 'destructive'
-  | 'outline'
-  | 'success'
-  | 'warning'
-  | 'info'
-> = {
-  SYSTEM_ADMIN: 'destructive',
-  DIRECTOR: 'default',
-  MANAGER: 'info',
-  EMPLOYEE: 'secondary',
-}
-
-const ROLE_LABELS: Record<string, string> = {
-  SYSTEM_ADMIN: 'Admin',
-  DIRECTOR: 'Directeur',
-  MANAGER: 'Manager',
-  EMPLOYEE: 'Employé',
-}
 
 interface Filters {
   search: string
@@ -283,8 +260,8 @@ function UserCard({
 
             {/* Badges: Role + vérification */}
             <div className="flex flex-wrap items-center gap-1.5">
-              <Badge variant={ROLE_BADGE_VARIANT[user.role] ?? 'secondary'}>
-                {ROLE_LABELS[user.role] ?? user.role}
+              <Badge variant={ROLE_BADGE_VARIANTS[user.role]}>
+                {ROLE_LABELS_SHORT[user.role]}
               </Badge>
               <VerifiedBadge verified={Boolean(user.emailVerified)} />
               {user.companyName && (
@@ -664,10 +641,8 @@ export function UsersDataTable() {
                     </TableCell>
                     <TableCell>{user.email}</TableCell>
                     <TableCell>
-                      <Badge
-                        variant={ROLE_BADGE_VARIANT[user.role] ?? 'secondary'}
-                      >
-                        {ROLE_LABELS[user.role] ?? user.role}
+                      <Badge variant={ROLE_BADGE_VARIANTS[user.role]}>
+                        {ROLE_LABELS_SHORT[user.role]}
                       </Badge>
                     </TableCell>
                     <TableCell>
@@ -746,35 +721,15 @@ export function UsersDataTable() {
           )}
         </div>
 
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="flex items-center justify-between px-2">
-            <p className="text-sm text-muted-foreground">
-              Page {page} sur {totalPages} ({total} résultat
-              {total > 1 ? 's' : ''})
-            </p>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handlePrev}
-                disabled={page <= 1 || isLoading}
-              >
-                <ChevronLeft className="mr-1 h-4 w-4" />
-                Précédent
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleNext}
-                disabled={page >= totalPages || isLoading}
-              >
-                Suivant
-                <ChevronRight className="ml-1 h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-        )}
+        {/* Pagination (composant partagé SP-547) */}
+        <ServerPagination
+          page={page}
+          totalPages={totalPages}
+          total={total}
+          isLoading={isLoading}
+          onPrevious={handlePrev}
+          onNext={handleNext}
+        />
       </div>
     </TooltipProvider>
   )

@@ -61,7 +61,10 @@ export function CompanyDetailTabs({
         params.set('tab', value)
       }
       const query = params.toString()
-      router.push(query ? `${pathname}?${query}` : pathname)
+      // replace (pas push) : changer d'onglet ne doit pas empiler l'historique
+      // — le bouton Retour ramène à la liste, pas à chaque onglet visité
+      // (review PR #54). Le deep-link ?tab= reste bookmarkable.
+      router.replace(query ? `${pathname}?${query}` : pathname)
     },
     [searchParams, pathname, router]
   )

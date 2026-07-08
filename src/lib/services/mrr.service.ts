@@ -51,9 +51,37 @@ export function calculateMrrFromSubscriptions(
 }
 
 /**
+ * Abonnement avec statut pour le calcul de contribution MRR
+ */
+export interface MrrSubscriptionWithStatus extends MrrSubscription {
+  /** Statut de l'abonnement (TRIAL, ACTIVE, PAST_DUE, ...) */
+  status: string
+}
+
+/**
+ * Contribution MRR d'UN abonnement — Single Source of Truth de la règle
+ * métier « seuls les abonnements ACTIVE contribuent au MRR » (SP-547).
+ *
+ * Avant, cette règle vivait en plusieurs endroits (WHERE Prisma dans
+ * getCurrentMrr, ternaire au call site de getSubscriptionsAdmin) et
+ * pouvait diverger silencieusement : le KPI global et les lignes du
+ * tableau admin n'auraient plus totalisé la même chose. Si la définition
+ * du revenu évolue (ex : PAST_DUE compte jusqu'à l'abandon Stripe),
+ * modifier UNIQUEMENT cette fonction.
+ *
+ * @returns Contribution mensuelle en euros (0 si non-ACTIVE ou FREE)
+ */
+export function mrrContribution(sub: MrrSubscriptionWithStatus): number {
+  if (sub.status !== 'ACTIVE') return 0
+  return calculateMrrFromSubscriptions([sub])
+}
+
+/**
  * Recupere le MRR courant depuis la DB (abonnements ACTIVE uniquement)
  *
  * Version legere pour le monitoring — ne charge que les champs necessaires.
+ * Le WHERE status ACTIVE est une optimisation de requête ; la règle métier
+ * est portée par mrrContribution (appliquée aussi en mémoire).
  *
  * @returns MRR en euros
  */
@@ -61,6 +89,7 @@ export async function getCurrentMrr(): Promise<number> {
   const subscriptions = await prisma.subscription.findMany({
     where: { status: 'ACTIVE' },
     select: {
+      status: true,
       plan: true,
       quantity: true,
       pricePerEmployee: true,
@@ -68,5 +97,5 @@ export async function getCurrentMrr(): Promise<number> {
     },
   })
 
-  return calculateMrrFromSubscriptions(subscriptions)
+  return subscriptions.reduce((total, sub) => total + mrrContribution(sub), 0)
 }
