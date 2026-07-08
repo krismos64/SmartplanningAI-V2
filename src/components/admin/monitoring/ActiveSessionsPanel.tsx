@@ -10,6 +10,9 @@
  * @ticket SP-544
  */
 
+import { formatDistanceToNow } from 'date-fns'
+import { fr } from 'date-fns/locale'
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
@@ -42,14 +45,13 @@ const ROLE_LABELS: Record<string, string> = {
   EMPLOYEE: 'Employé',
 }
 
-/** "il y a 3 min" / "il y a 2 h" à partir d'un ISO 8601 */
+/**
+ * "il y a 3 minutes" / "il y a 2 heures" — même helper date-fns que le reste
+ * de l'app (NotificationItem, AccountInfoCard, LeaveTimeline), au lieu d'une
+ * réimplémentation maison qui affichait « il y a 30 h » au-delà de 24 h.
+ */
 function formatRelativeTime(iso: string): string {
-  const diffMs = Date.now() - new Date(iso).getTime()
-  const minutes = Math.floor(diffMs / 60_000)
-  if (minutes < 1) return "à l'instant"
-  if (minutes < 60) return `il y a ${minutes} min`
-  const hours = Math.floor(minutes / 60)
-  return `il y a ${hours} h`
+  return formatDistanceToNow(new Date(iso), { locale: fr, addSuffix: true })
 }
 
 export function ActiveSessionsPanel({

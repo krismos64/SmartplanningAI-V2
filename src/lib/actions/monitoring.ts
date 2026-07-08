@@ -71,12 +71,30 @@ export interface MonitoringSnapshot {
 }
 
 /**
+ * Borne un appel Redis dans le temps.
+ *
+ * Le client ioredis n'a pas de commandTimeout : un Redis joignable mais
+ * muet (TCP up, PONG jamais reçu) ferait attendre indéfiniment le
+ * Promise.all du snapshot et suspendrait le rendu de la page monitoring.
+ */
+const REDIS_CHECK_TIMEOUT_MS = 2000
+
+function withTimeout<T>(promise: Promise<T>, fallback: T): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((resolve) =>
+      setTimeout(() => resolve(fallback), REDIS_CHECK_TIMEOUT_MS)
+    ),
+  ])
+}
+
+/**
  * PING Redis avec mesure de latence.
- * Jamais bloquant : down → { status: 'down', latency: null }.
+ * Jamais bloquant : down OU timeout → { status: 'down', latency: null }.
  */
 async function checkRedisHealth(): Promise<RedisHealthInfo> {
   const start = Date.now()
-  const isUp = await pingRedis()
+  const isUp = await withTimeout(pingRedis(), false)
   return {
     status: isUp ? 'up' : 'down',
     latency: isUp ? Date.now() - start : null,
@@ -100,7 +118,9 @@ export async function getMonitoringSnapshot(): Promise<
       [
         checkDatabaseHealth(),
         checkRedisHealth(),
-        getActiveSessions(),
+        // Même garde-fou que le PING : un SCAN qui ne répond pas ne doit
+        // jamais suspendre la page — fallback liste vide
+        withTimeout(getActiveSessions(), []),
         getAdminQuickStats(),
         prisma.subscription.groupBy({
           by: ['status'],
