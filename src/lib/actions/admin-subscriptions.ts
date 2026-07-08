@@ -10,11 +10,8 @@
 import { auth } from '@/lib/auth'
 import { hasRequiredRole } from '@/lib/permissions'
 import { prisma } from '@/lib/prisma'
+import { getCurrentMrr, mrrContribution } from '@/lib/services/mrr.service'
 import {
-  calculateMrrFromSubscriptions,
-  getCurrentMrr,
-} from '@/lib/services/mrr.service'
-import type {
   PaymentStatus,
   SubscriptionPlan,
   SubscriptionStatus,
@@ -26,25 +23,15 @@ import type {
 
 const MAX_PAGE_SIZE = 100
 
-/** Whitelists : les filtres arrivent du client, on ignore toute valeur inconnue */
-const SUBSCRIPTION_STATUSES: SubscriptionStatus[] = [
-  'TRIAL',
-  'ACTIVE',
-  'PAST_DUE',
-  'CANCELED',
-  'EXPIRED',
-  'INCOMPLETE',
-]
-
-const SUBSCRIPTION_PLANS: SubscriptionPlan[] = ['FREE', 'PER_SEAT']
-
-const PAYMENT_STATUSES: PaymentStatus[] = [
-  'PENDING',
-  'SUCCEEDED',
-  'FAILED',
-  'REFUNDED',
-  'REQUIRES_ACTION',
-]
+/**
+ * Whitelists : les filtres arrivent du client, on ignore toute valeur
+ * inconnue. Dérivées des enums Prisma runtime (SP-547) : un statut ajouté
+ * au schema.prisma est automatiquement filtrable — plus de liste à
+ * maintenir à la main qui divergerait silencieusement.
+ */
+const SUBSCRIPTION_STATUSES = Object.values(SubscriptionStatus)
+const SUBSCRIPTION_PLANS = Object.values(SubscriptionPlan)
+const PAYMENT_STATUSES = Object.values(PaymentStatus)
 
 // ============================================================================
 // Types
@@ -222,18 +209,9 @@ export async function getSubscriptionsAdmin(params?: {
       plan: sub.plan,
       status: sub.status,
       quantity: sub.quantity,
-      // Contribution MRR par ligne : ACTIVE uniquement, même règle que le MRR global
-      mrr:
-        sub.status === 'ACTIVE'
-          ? calculateMrrFromSubscriptions([
-              {
-                plan: sub.plan,
-                quantity: sub.quantity,
-                pricePerEmployee: sub.pricePerEmployee,
-                billingInterval: sub.billingInterval,
-              },
-            ])
-          : 0,
+      // Contribution MRR par ligne : règle ACTIVE-only portée par le
+      // service partagé (SSoT SP-547) — plus de ré-encodage au call site
+      mrr: mrrContribution(sub),
       billingInterval: sub.billingInterval,
       currentPeriodEnd: sub.currentPeriodEnd,
       cancelAtPeriodEnd: sub.cancelAtPeriodEnd,

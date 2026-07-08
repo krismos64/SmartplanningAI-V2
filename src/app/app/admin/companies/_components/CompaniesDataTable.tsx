@@ -12,7 +12,6 @@
 
 import { useCallback, useMemo, useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { useSession } from 'next-auth/react'
 import {
   useReactTable,
   getCoreRowModel,
@@ -22,7 +21,7 @@ import {
 import { Plus, Building2, RefreshCw } from 'lucide-react'
 import Link from 'next/link'
 
-import { useIsImpersonating } from '@/hooks'
+import { useIsImpersonating, useImpersonate } from '@/hooks'
 import { Button } from '@/components/ui/button'
 import {
   Table,
@@ -52,8 +51,8 @@ import type { CompanyFilters as CompanyFiltersType } from '@/lib/validations/com
 
 export function CompaniesDataTable() {
   const router = useRouter()
-  const { update: updateSession } = useSession()
   const isImpersonating = useIsImpersonating()
+  const { impersonate } = useImpersonate()
 
   // État local
   const [data, setData] = useState<CompanyWithCounts[]>([])
@@ -133,50 +132,17 @@ export function CompaniesDataTable() {
     [fetchData]
   )
 
-  // SP-447 : Impersonation — voir l'espace client
+  // SP-447 : Impersonation — flux partagé useImpersonate (SP-547)
   const handleImpersonate = useCallback(
     (company: CompanyWithCounts) => {
       void (async () => {
-        try {
-          const response = await fetch('/api/admin/impersonate', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ companyId: company.id }),
-          })
-
-          if (!response.ok) {
-            const errorData = (await response.json()) as { error?: string }
-            console.error('Erreur impersonation:', errorData.error)
-            return
-          }
-
-          const result = (await response.json()) as {
-            success: boolean
-            redirectTo: string
-            impersonation: {
-              isImpersonating: boolean
-              originalAdminId: string
-              impersonatedUserId: string
-              impersonatedCompanyId: string
-              impersonatedRole: string
-              impersonatedUserEmail: string
-              impersonatedCompanyName: string
-            }
-          }
-
-          if (result.success) {
-            // Forcer NextAuth à relire le JWT enrichi
-            await updateSession(result.impersonation)
-            // Full page reload pour que le middleware + layout Server Component
-            // se ré-exécutent avec le nouveau JWT (rôle DIRECTOR, companyId cible)
-            window.location.href = result.redirectTo
-          }
-        } catch (error) {
-          console.error('Erreur impersonation:', error)
+        const result = await impersonate(company.id)
+        if (!result.success && result.error) {
+          console.error('Erreur impersonation:', result.error)
         }
       })()
     },
-    [updateSession]
+    [impersonate]
   )
 
   // Colonnes avec actions

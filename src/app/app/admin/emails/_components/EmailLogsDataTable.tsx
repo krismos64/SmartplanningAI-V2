@@ -14,9 +14,10 @@
 import { useCallback, useState } from 'react'
 import Link from 'next/link'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
-import { Building2, ChevronLeft, ChevronRight, Eye, Mail } from 'lucide-react'
+import { Building2, Eye, Mail } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
+import { ServerPagination } from '@/components/ui/server-pagination'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import {
@@ -289,35 +290,14 @@ export function EmailLogsDataTable({ data }: EmailLogsDataTableProps) {
         )}
       </div>
 
-      {/* Pagination URL */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between px-2">
-          <p className="text-sm text-muted-foreground">
-            Page {page} sur {totalPages} ({total} résultat
-            {total > 1 ? 's' : ''})
-          </p>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => goToPage(page - 1)}
-              disabled={page <= 1}
-            >
-              <ChevronLeft className="mr-1 h-4 w-4" />
-              Précédent
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => goToPage(page + 1)}
-              disabled={page >= totalPages}
-            >
-              Suivant
-              <ChevronRight className="ml-1 h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      )}
+      {/* Pagination URL (composant partagé SP-547) */}
+      <ServerPagination
+        page={page}
+        totalPages={totalPages}
+        total={total}
+        onPrevious={() => goToPage(page - 1)}
+        onNext={() => goToPage(page + 1)}
+      />
 
       {/* Modal détail */}
       <EmailLogDetailModal

@@ -22,23 +22,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { getAllUsersAdmin } from '@/lib/actions/admin-users'
-
-const ROLE_BADGE_VARIANT: Record<
-  string,
-  'default' | 'secondary' | 'destructive' | 'info'
-> = {
-  SYSTEM_ADMIN: 'destructive',
-  DIRECTOR: 'default',
-  MANAGER: 'info',
-  EMPLOYEE: 'secondary',
-}
-
-const ROLE_LABELS: Record<string, string> = {
-  SYSTEM_ADMIN: 'Admin',
-  DIRECTOR: 'Directeur',
-  MANAGER: 'Manager',
-  EMPLOYEE: 'Employé',
-}
+import { ROLE_LABELS_SHORT, ROLE_BADGE_VARIANTS } from '@/lib/permissions'
 
 export interface CompanyUsersTabProps {
   companyId: string
@@ -83,11 +67,8 @@ export async function CompanyUsersTab({ companyId }: CompanyUsersTabProps) {
                     </TableCell>
                     <TableCell className="text-sm">{user.email}</TableCell>
                     <TableCell>
-                      <Badge
-                        variant={ROLE_BADGE_VARIANT[user.role] ?? 'secondary'}
-                        size="sm"
-                      >
-                        {ROLE_LABELS[user.role] ?? user.role}
+                      <Badge variant={ROLE_BADGE_VARIANTS[user.role]} size="sm">
+                        {ROLE_LABELS_SHORT[user.role]}
                       </Badge>
                     </TableCell>
                     <TableCell>

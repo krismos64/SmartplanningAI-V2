@@ -16,6 +16,8 @@ import { fr } from 'date-fns/locale'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
+import { ROLE_LABELS_SHORT, ROLE_BADGE_VARIANTS } from '@/lib/permissions'
+import { HEALTH_STATUS_STYLES } from './health-status-styles'
 import { Users } from 'lucide-react'
 import type { ActiveSessionInfo } from '@/lib/actions/monitoring'
 
@@ -27,23 +29,6 @@ export interface ActiveSessionsPanelProps {
 }
 
 const MAX_DISPLAYED = 8
-
-const ROLE_BADGE_VARIANT: Record<
-  string,
-  'default' | 'secondary' | 'destructive' | 'info'
-> = {
-  SYSTEM_ADMIN: 'destructive',
-  DIRECTOR: 'default',
-  MANAGER: 'info',
-  EMPLOYEE: 'secondary',
-}
-
-const ROLE_LABELS: Record<string, string> = {
-  SYSTEM_ADMIN: 'Admin',
-  DIRECTOR: 'Directeur',
-  MANAGER: 'Manager',
-  EMPLOYEE: 'Employé',
-}
 
 /**
  * "il y a 3 minutes" / "il y a 2 heures" — même helper date-fns que le reste
@@ -99,15 +84,24 @@ export function ActiveSessionsPanel({
               >
                 <div className="flex min-w-0 items-center gap-2">
                   <span
-                    className="h-2 w-2 flex-shrink-0 rounded-full bg-emerald-500"
+                    className={cn(
+                      'h-2 w-2 flex-shrink-0 rounded-full',
+                      HEALTH_STATUS_STYLES.pass.dot
+                    )}
                     aria-hidden="true"
                   />
                   <span className="truncate text-sm">{session.email}</span>
                   <Badge
-                    variant={ROLE_BADGE_VARIANT[session.role] ?? 'secondary'}
+                    variant={
+                      ROLE_BADGE_VARIANTS[
+                        session.role as keyof typeof ROLE_BADGE_VARIANTS
+                      ] ?? 'secondary'
+                    }
                     size="sm"
                   >
-                    {ROLE_LABELS[session.role] ?? session.role}
+                    {ROLE_LABELS_SHORT[
+                      session.role as keyof typeof ROLE_LABELS_SHORT
+                    ] ?? session.role}
                   </Badge>
                 </div>
                 <span className="flex-shrink-0 text-xs text-muted-foreground">

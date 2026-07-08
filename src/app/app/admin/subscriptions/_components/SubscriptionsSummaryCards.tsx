@@ -17,17 +17,11 @@ import {
 
 import { Card, CardContent } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
+import { formatEurosAsCurrency } from '@/lib/utils/formatters'
 import type { AdminSubscriptionsSummary } from '@/lib/actions/admin-subscriptions'
 
 export interface SubscriptionsSummaryCardsProps {
   summary: AdminSubscriptionsSummary
-}
-
-function formatEuro(amount: number): string {
-  return new Intl.NumberFormat('fr-FR', {
-    style: 'currency',
-    currency: 'EUR',
-  }).format(amount)
 }
 
 export function SubscriptionsSummaryCards({
@@ -36,7 +30,7 @@ export function SubscriptionsSummaryCards({
   const cards = [
     {
       label: 'MRR',
-      value: formatEuro(summary.mrr),
+      value: formatEurosAsCurrency(summary.mrr),
       icon: TrendingUp,
       alert: false,
       testId: 'kpi-mrr',

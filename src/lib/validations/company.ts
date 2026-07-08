@@ -174,3 +174,22 @@ export const subscriptionStatusLabels: Record<SubscriptionStatus, string> = {
   EXPIRED: 'Expiré',
   INCOMPLETE: 'Paiement incomplet',
 }
+
+/**
+ * Variant Badge par statut d'abonnement — co-localisé avec les labels
+ * (SP-547 : était dupliqué dans SubscriptionsDataTable et
+ * CompanySubscriptionTab). Record exhaustif : un nouveau statut Prisma
+ * casse la compilation ici plutôt que de retomber silencieusement sur
+ * un fallback.
+ */
+export const subscriptionStatusBadgeVariants: Record<
+  SubscriptionStatus,
+  'success' | 'info' | 'destructive' | 'secondary' | 'warning'
+> = {
+  TRIAL: 'info',
+  ACTIVE: 'success',
+  PAST_DUE: 'destructive',
+  CANCELED: 'secondary',
+  EXPIRED: 'secondary',
+  INCOMPLETE: 'warning',
+}

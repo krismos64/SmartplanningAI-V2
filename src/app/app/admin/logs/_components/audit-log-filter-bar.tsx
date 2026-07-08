@@ -13,6 +13,7 @@ import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { X, Search } from 'lucide-react'
 import type { AuditAction, AuditEntityType } from '@prisma/client'
 
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -87,15 +88,41 @@ export function AuditLogFilterBar({
     router.push(pathname)
   }, [pathname, router])
 
+  // companyId : filtre posé par deep-link depuis la fiche entreprise
+  // (SP-546) — pas de contrôle UI dédié, mais il doit être VISIBLE et
+  // retirable, sinon l'admin prend le journal filtré pour le journal
+  // complet (review PR #54)
+  const companyFilter = searchParams.get('companyId')
+
   const hasActiveFilters =
     searchParams.has('action') ||
     searchParams.has('entityType') ||
     searchParams.has('search') ||
     searchParams.has('dateFrom') ||
-    searchParams.has('dateTo')
+    searchParams.has('dateTo') ||
+    companyFilter !== null
 
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+      {/* Indicateur filtre entreprise (deep-link fiche entreprise SP-546) */}
+      {companyFilter && (
+        <Badge
+          variant="info"
+          className="gap-1.5"
+          data-testid="audit-company-filter-badge"
+        >
+          Filtré : une seule entreprise
+          <button
+            type="button"
+            onClick={() => updateFilter('companyId', '')}
+            aria-label="Retirer le filtre entreprise"
+            className="rounded-full hover:bg-foreground/10"
+          >
+            <X className="h-3 w-3" aria-hidden="true" />
+          </button>
+        </Badge>
+      )}
+
       {/* Recherche email/nom */}
       <div className="relative w-full sm:w-64">
         <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />

@@ -29,7 +29,11 @@ vi.mock('@/lib/prisma', () => ({
   },
 }))
 
-import { calculateMrrFromSubscriptions, getCurrentMrr } from '../mrr.service'
+import {
+  calculateMrrFromSubscriptions,
+  getCurrentMrr,
+  mrrContribution,
+} from '../mrr.service'
 import type { MrrSubscription } from '../mrr.service'
 
 // ============================================================================
@@ -158,12 +162,14 @@ describe('getCurrentMrr', () => {
   it('retourne le MRR total depuis les abonnements ACTIVE', async () => {
     mockFindMany.mockResolvedValue([
       {
+        status: 'ACTIVE',
         plan: 'PER_SEAT',
         quantity: 5,
         pricePerEmployee: 290,
         billingInterval: 'month',
       },
       {
+        status: 'ACTIVE',
         plan: 'PER_SEAT',
         quantity: 10,
         pricePerEmployee: 290,
@@ -176,6 +182,7 @@ describe('getCurrentMrr', () => {
     expect(mockFindMany).toHaveBeenCalledWith({
       where: { status: 'ACTIVE' },
       select: {
+        status: true,
         plan: true,
         quantity: true,
         pricePerEmployee: true,
@@ -192,5 +199,35 @@ describe('getCurrentMrr', () => {
     const mrr = await getCurrentMrr()
 
     expect(mrr).toBe(0)
+  })
+})
+
+describe('mrrContribution (SP-547 — SSoT règle ACTIVE-only)', () => {
+  const BASE = {
+    plan: 'PER_SEAT',
+    quantity: 10,
+    pricePerEmployee: 290,
+    billingInterval: 'month',
+  }
+
+  it('calcule la contribution mensuelle pour un abonnement ACTIVE', () => {
+    expect(mrrContribution({ ...BASE, status: 'ACTIVE' })).toBe(29)
+  })
+
+  it.each(['TRIAL', 'PAST_DUE', 'CANCELED', 'EXPIRED', 'INCOMPLETE'])(
+    'retourne 0 pour un abonnement %s',
+    (status) => {
+      expect(mrrContribution({ ...BASE, status })).toBe(0)
+    }
+  )
+
+  it('retourne 0 pour un plan FREE même ACTIVE', () => {
+    expect(mrrContribution({ ...BASE, plan: 'FREE', status: 'ACTIVE' })).toBe(0)
+  })
+
+  it('divise par 12 un abonnement annuel ACTIVE', () => {
+    expect(
+      mrrContribution({ ...BASE, billingInterval: 'year', status: 'ACTIVE' })
+    ).toBeCloseTo(29 / 12, 4)
   })
 })

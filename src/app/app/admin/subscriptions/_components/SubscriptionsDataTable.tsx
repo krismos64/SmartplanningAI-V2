@@ -12,15 +12,9 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
-import {
-  Building2,
-  Calendar,
-  ChevronLeft,
-  ChevronRight,
-  CreditCard,
-} from 'lucide-react'
+import { Building2, Calendar, CreditCard } from 'lucide-react'
 
-import { Button } from '@/components/ui/button'
+import { ServerPagination } from '@/components/ui/server-pagination'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Card, CardContent } from '@/components/ui/card'
@@ -47,7 +41,12 @@ import {
 import {
   subscriptionPlanLabels,
   subscriptionStatusLabels,
+  subscriptionStatusBadgeVariants,
 } from '@/lib/validations/company'
+import {
+  formatEurosAsCurrency,
+  formatDateShortFr,
+} from '@/lib/utils/formatters'
 
 // ============================================================================
 // Constants
@@ -74,39 +73,9 @@ const PLAN_OPTIONS = [
 type StatusFilter = (typeof STATUS_OPTIONS)[number]['value']
 type PlanFilter = (typeof PLAN_OPTIONS)[number]['value']
 
-const STATUS_BADGE_VARIANT: Record<
-  string,
-  | 'default'
-  | 'secondary'
-  | 'destructive'
-  | 'outline'
-  | 'success'
-  | 'warning'
-  | 'info'
-> = {
-  ACTIVE: 'success',
-  TRIAL: 'info',
-  PAST_DUE: 'destructive',
-  CANCELED: 'secondary',
-  EXPIRED: 'secondary',
-  INCOMPLETE: 'warning',
-}
-
 // ============================================================================
 // Helpers
 // ============================================================================
-
-function formatEuro(amount: number): string {
-  return new Intl.NumberFormat('fr-FR', {
-    style: 'currency',
-    currency: 'EUR',
-  }).format(amount)
-}
-
-function formatDate(date: Date | string | null): string {
-  if (!date) return '—'
-  return new Date(date).toLocaleDateString('fr-FR')
-}
 
 // ============================================================================
 // SubscriptionCard — Vue mobile
@@ -128,7 +97,7 @@ function SubscriptionCard({ row }: { row: AdminSubscriptionRow }) {
               <Building2 className="h-4 w-4 flex-shrink-0" aria-hidden="true" />
               <span className="truncate">{row.companyName}</span>
             </Link>
-            <Badge variant={STATUS_BADGE_VARIANT[row.status] ?? 'secondary'}>
+            <Badge variant={subscriptionStatusBadgeVariants[row.status]}>
               {subscriptionStatusLabels[row.status]}
             </Badge>
           </div>
@@ -146,12 +115,12 @@ function SubscriptionCard({ row }: { row: AdminSubscriptionRow }) {
             <span>
               {row.quantity} employé{row.quantity > 1 ? 's' : ''} —{' '}
               <span className="font-medium text-foreground">
-                {formatEuro(row.mrr)}/mois
+                {formatEurosAsCurrency(row.mrr)}/mois
               </span>
             </span>
             <div className="flex items-center gap-1.5">
               <Calendar className="h-3 w-3 flex-shrink-0" aria-hidden="true" />
-              <span>Échéance : {formatDate(row.currentPeriodEnd)}</span>
+              <span>Échéance : {formatDateShortFr(row.currentPeriodEnd)}</span>
             </div>
           </div>
         </div>
@@ -344,9 +313,7 @@ export function SubscriptionsDataTable() {
                   <TableCell>
                     <div className="flex flex-wrap items-center gap-1.5">
                       <Badge
-                        variant={
-                          STATUS_BADGE_VARIANT[row.status] ?? 'secondary'
-                        }
+                        variant={subscriptionStatusBadgeVariants[row.status]}
                       >
                         {subscriptionStatusLabels[row.status]}
                       </Badge>
@@ -361,10 +328,10 @@ export function SubscriptionsDataTable() {
                     {row.quantity}
                   </TableCell>
                   <TableCell className="text-right font-medium tabular-nums">
-                    {formatEuro(row.mrr)}
+                    {formatEurosAsCurrency(row.mrr)}
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground">
-                    {formatDate(row.currentPeriodEnd)}
+                    {formatDateShortFr(row.currentPeriodEnd)}
                   </TableCell>
                 </TableRow>
               ))
@@ -394,35 +361,15 @@ export function SubscriptionsDataTable() {
         )}
       </div>
 
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between px-2">
-          <p className="text-sm text-muted-foreground">
-            Page {page} sur {totalPages} ({total} résultat
-            {total > 1 ? 's' : ''})
-          </p>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handlePrev}
-              disabled={page <= 1 || isLoading}
-            >
-              <ChevronLeft className="mr-1 h-4 w-4" />
-              Précédent
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleNext}
-              disabled={page >= totalPages || isLoading}
-            >
-              Suivant
-              <ChevronRight className="ml-1 h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      )}
+      {/* Pagination (composant partagé SP-547) */}
+      <ServerPagination
+        page={page}
+        totalPages={totalPages}
+        total={total}
+        isLoading={isLoading}
+        onPrevious={handlePrev}
+        onNext={handleNext}
+      />
     </div>
   )
 }
