@@ -30,3 +30,4 @@ export {
 
 // Impersonation hook (SP-454)
 export { useIsImpersonating } from './use-is-impersonating'
+export { useImpersonate } from './use-impersonate'
