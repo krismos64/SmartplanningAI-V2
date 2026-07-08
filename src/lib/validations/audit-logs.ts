@@ -43,6 +43,8 @@ const auditEntityTypeValues = [
 export const auditLogFiltersSchema = z.object({
   action: z.enum(auditActionValues).optional(),
   entityType: z.enum(auditEntityTypeValues).optional(),
+  /** Filtre par entreprise — onglet Audit de la fiche entreprise (SP-546) */
+  companyId: z.string().cuid().optional(),
   search: z
     .string()
     .max(255, 'Recherche trop longue')

@@ -39,6 +39,7 @@ vi.mock('@/lib/services/mrr.service', async (importOriginal) => {
 const mockSubscriptionFindMany = vi.fn()
 const mockSubscriptionCount = vi.fn()
 const mockSubscriptionGroupBy = vi.fn()
+const mockSubscriptionFindUnique = vi.fn()
 const mockPaymentFindMany = vi.fn()
 const mockPaymentCount = vi.fn()
 
@@ -48,6 +49,7 @@ vi.mock('@/lib/prisma', () => ({
       findMany: (...args: unknown[]) => mockSubscriptionFindMany(...args),
       count: (...args: unknown[]) => mockSubscriptionCount(...args),
       groupBy: (...args: unknown[]) => mockSubscriptionGroupBy(...args),
+      findUnique: (...args: unknown[]) => mockSubscriptionFindUnique(...args),
     },
     payment: {
       findMany: (...args: unknown[]) => mockPaymentFindMany(...args),
@@ -64,6 +66,7 @@ import {
   getSubscriptionsSummaryAdmin,
   getSubscriptionsAdmin,
   getPaymentsAdmin,
+  getCompanySubscriptionDetail,
 } from '../admin-subscriptions'
 
 // ============================================================================
@@ -347,5 +350,74 @@ describe('getPaymentsAdmin', () => {
 
     expect(result.stripeDashboardBaseUrl).toBe('https://dashboard.stripe.com')
     vi.unstubAllEnvs()
+  })
+
+  it('filtre par companyId (onglet Abonnement fiche entreprise — SP-546)', async () => {
+    await getPaymentsAdmin({ companyId: 'company-001' })
+
+    const findArgs = mockPaymentFindMany.mock.calls[0]?.[0]
+    expect(findArgs.where).toEqual({ companyId: 'company-001' })
+  })
+
+  it('combine statut et companyId au WHERE', async () => {
+    await getPaymentsAdmin({ status: 'FAILED', companyId: 'company-001' })
+
+    const findArgs = mockPaymentFindMany.mock.calls[0]?.[0]
+    expect(findArgs.where).toEqual({
+      status: 'FAILED',
+      companyId: 'company-001',
+    })
+  })
+})
+
+describe('getCompanySubscriptionDetail (SP-546)', () => {
+  beforeEach(() => {
+    mockAuth.mockResolvedValue(ADMIN_SESSION)
+  })
+
+  it('rejette les non-SYSTEM_ADMIN', async () => {
+    mockAuth.mockResolvedValue(DIRECTOR_SESSION)
+    await expect(getCompanySubscriptionDetail('company-001')).rejects.toThrow(
+      'Unauthorized'
+    )
+  })
+
+  it("retourne null si l'entreprise n'a pas d'abonnement", async () => {
+    mockSubscriptionFindUnique.mockResolvedValue(null)
+
+    const result = await getCompanySubscriptionDetail('company-001')
+
+    expect(result).toBeNull()
+  })
+
+  it('retourne le détail complet incluant les identifiants Stripe', async () => {
+    mockSubscriptionFindUnique.mockResolvedValue({
+      ...SUBSCRIPTION_FIXTURE,
+      currentPeriodStart: new Date('2026-07-01'),
+      canceledAt: null,
+      stripeCustomerId: 'cus_123',
+      stripeSubscriptionId: 'sub_stripe_123',
+    })
+
+    const result = await getCompanySubscriptionDetail('company-001')
+
+    expect(result).toMatchObject({
+      id: 'sub-001',
+      plan: 'PER_SEAT',
+      status: 'ACTIVE',
+      quantity: 10,
+      stripeCustomerId: 'cus_123',
+      stripeSubscriptionId: 'sub_stripe_123',
+    })
+  })
+
+  it('interroge par companyId (relation 1:1)', async () => {
+    mockSubscriptionFindUnique.mockResolvedValue(null)
+
+    await getCompanySubscriptionDetail('company-001')
+
+    expect(mockSubscriptionFindUnique).toHaveBeenCalledWith({
+      where: { companyId: 'company-001' },
+    })
   })
 })

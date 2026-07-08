@@ -276,6 +276,30 @@ describe('getAuditLogs', () => {
     )
   })
 
+  it('filtre par companyId (onglet Audit fiche entreprise — SP-546)', async () => {
+    setupAdmin()
+    mockCount.mockResolvedValue(2)
+    mockFindMany.mockResolvedValue([SAMPLE_LOG])
+
+    await getAuditLogs({ companyId: 'cl0000000000000000company' })
+
+    expect(mockCount).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          companyId: 'cl0000000000000000company',
+        }),
+      })
+    )
+  })
+
+  it('rejette un companyId non-cuid', async () => {
+    setupAdmin()
+
+    const result = await getAuditLogs({ companyId: 'not-a-cuid' })
+
+    expect(result.success).toBe(false)
+  })
+
   it('filtre par plage de dates', async () => {
     setupAdmin()
     mockCount.mockResolvedValue(2)

@@ -1,12 +1,16 @@
 /**
- * Page édition d'une Company (SUPER_ADMIN)
+ * Page détail d'une Company (SUPER_ADMIN)
  *
- * @description Formulaire d'édition d'entreprise avec données pré-remplies.
+ * @description Fiche entreprise en onglets : Informations / Abonnement /
+ * Utilisateurs / Audit. Chaque onglet est un Suspense boundary indépendant
+ * (chargement parallèle, pas de re-fetch au changement d'onglet). L'onglet
+ * actif est piloté par `?tab=` (deep-link bookmarkable).
  *
- * @ticket SP-151
+ * @ticket SP-151, SP-546
  */
 
 import { Metadata } from 'next'
+import { Suspense } from 'react'
 import { auth } from '@/lib/auth'
 import { redirect, notFound } from 'next/navigation'
 import { hasRequiredRole } from '@/lib/permissions'
@@ -15,8 +19,13 @@ import Link from 'next/link'
 
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Skeleton } from '@/components/ui/skeleton'
 import { CompanyForm } from '@/components/admin/companies'
 import { ContactModal } from './_components/ContactModal'
+import { CompanyDetailTabs } from './_components/CompanyDetailTabs'
+import { CompanySubscriptionTab } from './_components/CompanySubscriptionTab'
+import { CompanyUsersTab } from './_components/CompanyUsersTab'
+import { CompanyAuditTab } from './_components/CompanyAuditTab'
 import { getCompany } from '@/lib/actions/companies'
 import {
   subscriptionPlanLabels,
@@ -45,6 +54,15 @@ export async function generateMetadata({
     title: `${result.data.name} | SmartPlanning`,
     description: `Modifier l'entreprise ${result.data.name}`,
   }
+}
+
+function TabSkeleton() {
+  return (
+    <div className="space-y-4" role="status" aria-label="Chargement">
+      <Skeleton className="h-32 w-full rounded-lg" />
+      <Skeleton className="h-64 w-full rounded-lg" />
+    </div>
+  )
 }
 
 export default async function EditCompanyPage({
@@ -136,10 +154,29 @@ export default async function EditCompanyPage({
         <ContactModal companyId={company.id} companyName={company.name} />
       </div>
 
-      {/* Formulaire */}
-      <div className="max-w-2xl">
-        <CompanyForm company={company} />
-      </div>
+      {/* Onglets (SP-546) */}
+      <CompanyDetailTabs
+        infos={
+          <div className="max-w-2xl">
+            <CompanyForm company={company} />
+          </div>
+        }
+        subscription={
+          <Suspense fallback={<TabSkeleton />}>
+            <CompanySubscriptionTab companyId={company.id} />
+          </Suspense>
+        }
+        users={
+          <Suspense fallback={<TabSkeleton />}>
+            <CompanyUsersTab companyId={company.id} />
+          </Suspense>
+        }
+        audit={
+          <Suspense fallback={<TabSkeleton />}>
+            <CompanyAuditTab companyId={company.id} />
+          </Suspense>
+        }
+      />
     </div>
   )
 }

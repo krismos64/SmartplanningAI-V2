@@ -64,9 +64,7 @@ export class CompanyListPage {
     // Header
     this.pageTitle = page.getByRole('heading', { name: /entreprises/i })
     this.totalCount = page.locator('text=/\\d+ entreprise/i')
-    this.newCompanyButton = page.locator(
-      'a[href="/app/admin/companies/new"]'
-    )
+    this.newCompanyButton = page.locator('a[href="/app/admin/companies/new"]')
     this.refreshButton = page.getByRole('button', { name: /actualiser/i })
 
     // Filtres
@@ -157,7 +155,9 @@ export class CompanyListPage {
     await expect(this.newCompanyButton).toBeVisible({ timeout: 15000 })
     // Cliquer puis attendre la navigation (plus stable en CI que Promise.all)
     await this.newCompanyButton.click()
-    await this.page.waitForURL(/\/app\/admin\/companies\/new/, { timeout: 30000 })
+    await this.page.waitForURL(/\/app\/admin\/companies\/new/, {
+      timeout: 30000,
+    })
   }
 
   /**
@@ -195,12 +195,18 @@ export class CompanyListPage {
 
   /**
    * Clique sur une entreprise pour voir les details
+   *
+   * Depuis SP-447 (impersonation), le menu contient 2 items matchant /voir/i
+   * ("Voir détails" et "Voir espace client") : on cible "Voir détails"
+   * précisément pour lever l'ambiguïté strict-mode Playwright.
    */
   async viewCompany(companyName: string): Promise<void> {
     const row = this.page.locator('table tbody tr', { hasText: companyName })
     await row.getByRole('button', { name: /voir|actions/i }).click()
     // Si menu dropdown
-    const viewOption = this.page.getByRole('menuitem', { name: /voir/i })
+    const viewOption = this.page.getByRole('menuitem', {
+      name: 'Voir détails',
+    })
     if (await viewOption.isVisible()) {
       await viewOption.click()
     }

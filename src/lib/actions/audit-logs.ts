@@ -67,6 +67,7 @@ const AUDIT_LOG_SELECT = {
 function buildWhereClause(filters: {
   action?: string
   entityType?: string
+  companyId?: string
   search?: string
   dateFrom?: string
   dateTo?: string
@@ -80,6 +81,10 @@ function buildWhereClause(filters: {
   if (filters.entityType) {
     where.entityType =
       filters.entityType as Prisma.AuditLogWhereInput['entityType']
+  }
+
+  if (filters.companyId) {
+    where.companyId = filters.companyId
   }
 
   if (filters.search) {
