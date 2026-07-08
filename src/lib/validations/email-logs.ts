@@ -16,23 +16,51 @@ import { z } from 'zod'
 /** Statuts possibles d'un EmailLog (colonne String en base) */
 export const EMAIL_LOG_STATUSES = ['SENT', 'FAILED', 'BOUNCED'] as const
 
-export const emailLogFiltersSchema = z.object({
-  /** Filtre par type — matche aussi les types suffixés `TYPE:dedupe` */
-  emailType: z.string().max(100).optional(),
-  companyId: z.string().cuid().optional(),
-  status: z.enum(EMAIL_LOG_STATUSES).optional(),
-  /** Bornes de dates au format YYYY-MM-DD */
-  dateFrom: z
-    .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/)
-    .optional(),
-  dateTo: z
-    .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/)
-    .optional(),
-  page: z.coerce.number().int().min(1).default(1),
-  pageSize: z.coerce.number().int().min(1).max(100).default(25),
-})
+/**
+ * Valide qu'une chaîne YYYY-MM-DD est une date calendaire réelle
+ * (le regex seul laisse passer '2026-13-45').
+ *
+ * Comparaison sur les composantes locales (pas toISOString, qui convertit
+ * en UTC et décale la date selon le fuseau horaire du serveur).
+ */
+function isValidCalendarDate(value: string): boolean {
+  const [year, month, day] = value.split('-').map(Number)
+  if (year === undefined || month === undefined || day === undefined) {
+    return false
+  }
+  const date = new Date(year, month - 1, day)
+  return (
+    date.getFullYear() === year &&
+    date.getMonth() === month - 1 &&
+    date.getDate() === day
+  )
+}
+
+const dateStringSchema = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/)
+  .refine(isValidCalendarDate, { message: 'Date invalide' })
+  .optional()
+
+export const emailLogFiltersSchema = z
+  .object({
+    /** Filtre par type — matche aussi les types suffixés `TYPE:dedupe` */
+    emailType: z.string().max(100).optional(),
+    companyId: z.string().cuid().optional(),
+    status: z.enum(EMAIL_LOG_STATUSES).optional(),
+    /** Bornes de dates au format YYYY-MM-DD */
+    dateFrom: dateStringSchema,
+    dateTo: dateStringSchema,
+    page: z.coerce.number().int().min(1).default(1),
+    pageSize: z.coerce.number().int().min(1).max(100).default(25),
+  })
+  .refine(
+    (data) => !data.dateFrom || !data.dateTo || data.dateFrom <= data.dateTo,
+    {
+      message: 'dateFrom doit être antérieure ou égale à dateTo',
+      path: ['dateTo'],
+    }
+  )
 
 export type EmailLogFiltersInput = z.input<typeof emailLogFiltersSchema>
 export type EmailLogFilters = z.output<typeof emailLogFiltersSchema>

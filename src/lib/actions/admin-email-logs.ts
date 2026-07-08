@@ -39,6 +39,37 @@ export interface AdminEmailLogRow {
   metadata: unknown
 }
 
+/**
+ * Clés de metadata jamais exposées à l'admin : les erreurs SMTP brutes
+ * (Nodemailer) peuvent contenir host/port/utilisateur d'authentification.
+ * Whitelist plutôt que blacklist — toute nouvelle clé future est masquée
+ * par défaut tant qu'elle n'est pas explicitement autorisée.
+ */
+const METADATA_ALLOWED_KEYS = new Set(['messageId'])
+
+/**
+ * Sanitise les metadata avant exposition dans l'UI admin : ne garde que les
+ * clés whitelistées (ex: messageId), remplace le reste par un indicateur
+ * de présence sans le contenu (ex: error → '[masqué]').
+ */
+function sanitizeMetadata(metadata: unknown): unknown {
+  if (
+    metadata === null ||
+    typeof metadata !== 'object' ||
+    Array.isArray(metadata)
+  ) {
+    return metadata
+  }
+
+  const sanitized: Record<string, unknown> = {}
+  for (const [key, value] of Object.entries(
+    metadata as Record<string, unknown>
+  )) {
+    sanitized[key] = METADATA_ALLOWED_KEYS.has(key) ? value : '[masqué]'
+  }
+  return sanitized
+}
+
 export interface GetEmailLogsAdminResult {
   logs: AdminEmailLogRow[]
   total: number
@@ -142,7 +173,7 @@ export async function getEmailLogsAdmin(
           companyId: log.companyId,
           companyName: log.company.name,
           subscriptionId: log.subscriptionId,
-          metadata: log.metadata,
+          metadata: sanitizeMetadata(log.metadata),
         })),
         total,
         page,

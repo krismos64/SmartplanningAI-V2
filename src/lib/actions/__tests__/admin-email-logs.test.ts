@@ -184,6 +184,44 @@ describe('getEmailLogsAdmin', () => {
     const findArgs = mockEmailLogFindMany.mock.calls[0]?.[0]
     expect(findArgs.orderBy).toEqual({ sentAt: 'desc' })
   })
+
+  it('rejette une date calendaire invalide (regex seul ne suffit pas — review)', async () => {
+    const result = await getEmailLogsAdmin({ dateFrom: '2026-13-45' })
+
+    expect(result.success).toBe(false)
+    expect(mockEmailLogFindMany).not.toHaveBeenCalled()
+  })
+
+  it('rejette une plage de dates inversée (review)', async () => {
+    const result = await getEmailLogsAdmin({
+      dateFrom: '2026-07-07',
+      dateTo: '2026-07-01',
+    })
+
+    expect(result.success).toBe(false)
+    expect(mockEmailLogFindMany).not.toHaveBeenCalled()
+  })
+
+  it('masque les clés de metadata non whitelistées (review — erreurs SMTP brutes)', async () => {
+    mockEmailLogFindMany.mockResolvedValue([
+      {
+        ...EMAIL_LOG_FIXTURE,
+        metadata: {
+          messageId: 'smtp-123',
+          error:
+            'Invalid login: 535 5.7.8 authentication failed for smtp-user@hostinger.com',
+        },
+      },
+    ])
+
+    const result = await getEmailLogsAdmin()
+
+    expect(result.success).toBe(true)
+    if (!result.success) return
+    const metadata = result.data.logs[0]?.metadata as Record<string, unknown>
+    expect(metadata.messageId).toBe('smtp-123')
+    expect(metadata.error).toBe('[masqué]')
+  })
 })
 
 describe('getEmailLogsKpisAdmin', () => {
