@@ -59,7 +59,6 @@ export function CompaniesDataTable() {
   const [data, setData] = useState<CompanyWithCounts[]>([])
   const [totalCount, setTotalCount] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
-  const [, setIsImpersonating] = useState(false)
   const [filters, setFilters] = useState<CompanyFiltersType>({})
   const [deleteCompany, setDeleteCompany] = useState<CompanyWithCounts | null>(
     null
@@ -138,7 +137,6 @@ export function CompaniesDataTable() {
   const handleImpersonate = useCallback(
     (company: CompanyWithCounts) => {
       void (async () => {
-        setIsImpersonating(true)
         try {
           const response = await fetch('/api/admin/impersonate', {
             method: 'POST',
@@ -175,12 +173,10 @@ export function CompaniesDataTable() {
           }
         } catch (error) {
           console.error('Erreur impersonation:', error)
-        } finally {
-          setIsImpersonating(false)
         }
       })()
     },
-    [router, updateSession]
+    [updateSession]
   )
 
   // Colonnes avec actions
