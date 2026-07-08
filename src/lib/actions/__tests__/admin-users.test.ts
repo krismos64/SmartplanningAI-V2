@@ -72,6 +72,7 @@ import {
   getCompanyOptionsAdmin,
   resendVerificationEmailAdmin,
   toggleUserStatusAdmin,
+  exportUsersCsvAdmin,
 } from '../admin-users'
 
 // ============================================================================
@@ -370,5 +371,61 @@ describe('toggleUserStatusAdmin — audit trail (review PR #50)', () => {
         details: expect.objectContaining({ operation: 'admin_activate_user' }),
       })
     )
+  })
+})
+
+describe('exportUsersCsvAdmin (SP-541)', () => {
+  beforeEach(() => {
+    mockAuth.mockResolvedValue(ADMIN_SESSION)
+    mockUserFindMany.mockResolvedValue([USER_ROW_DB])
+  })
+
+  it('rejette les non-SYSTEM_ADMIN', async () => {
+    mockAuth.mockResolvedValue(DIRECTOR_SESSION)
+    await expect(exportUsersCsvAdmin()).rejects.toThrow('Unauthorized')
+  })
+
+  it('exporte le dataset complet filtré (pas de pagination, limite 10 000)', async () => {
+    await exportUsersCsvAdmin({ verified: 'UNVERIFIED', role: 'EMPLOYEE' })
+
+    const findArgs = mockUserFindMany.mock.calls[0]?.[0]
+    expect(findArgs.skip).toBeUndefined()
+    expect(findArgs.take).toBe(10_000)
+    expect(findArgs.where.emailVerified).toBeNull()
+    expect(findArgs.where.role).toBe('EMPLOYEE')
+  })
+
+  it('génère un CSV avec en-tête et lignes échappées', async () => {
+    mockUserFindMany.mockResolvedValue([
+      {
+        ...USER_ROW_DB,
+        name: 'Jean "JD" Dupont',
+        company: { name: 'Acme "Corp"' },
+      },
+    ])
+
+    const result = await exportUsersCsvAdmin()
+
+    expect(result.success).toBe(true)
+    if (!result.success) return
+    const [header, row] = result.data.split('\n')
+    expect(header).toBe(
+      'ID,Email,Nom,Rôle,Entreprise,Email vérifié,Statut,Inscription'
+    )
+    // Les guillemets sont doublés (échappement CSV)
+    expect(row).toContain('Jean ""JD"" Dupont')
+    expect(row).toContain('Acme ""Corp""')
+    expect(row).toContain('"Oui"') // emailVerified non null
+    expect(row).toContain('"Actif"')
+  })
+
+  it("retourne une erreur propre en cas d'échec DB", async () => {
+    mockUserFindMany.mockRejectedValue(new Error('DB down'))
+
+    const result = await exportUsersCsvAdmin()
+
+    expect(result.success).toBe(false)
+    if (result.success) return
+    expect(result.error).toMatch(/export/i)
   })
 })
