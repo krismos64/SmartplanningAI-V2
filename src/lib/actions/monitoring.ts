@@ -6,12 +6,14 @@
  * Collecte les données de santé et métriques de la plateforme.
  * Réservé au SYSTEM_ADMIN.
  *
- * @ticket SP-464, SP-465
+ * @ticket SP-464, SP-465, SP-544
  */
 
 import { checkPermission } from './crud-utils'
 import { checkDatabaseHealth } from '@/lib/db-health'
 import { getAdminQuickStats } from '@/lib/services/dashboard/admin-stats.service'
+import { pingRedis } from '@/lib/redis'
+import { getActiveSessions } from '@/lib/session-store'
 import { prisma } from '@/lib/prisma'
 import type { HealthCheckResult } from '@/lib/db-health'
 import type { SubscriptionStatus } from '@prisma/client'
@@ -26,10 +28,38 @@ export interface SubscriptionBreakdownItem {
 }
 
 /**
+ * Santé Redis (SP-544)
+ *
+ * Statut "down" = mode dégradé, pas une panne : rate limiting en mémoire,
+ * cache désactivé, sessions non tracées. L'application reste fonctionnelle.
+ */
+export interface RedisHealthInfo {
+  status: 'up' | 'down'
+  /** Latence du PING en ms, null si Redis est down */
+  latency: number | null
+}
+
+/**
+ * Session active (SP-544) — métadonnées d'affichage uniquement.
+ * ip et userAgent sont volontairement exclus de l'UI (minimisation RGPD),
+ * ils restent disponibles dans Redis pour investigation sécurité.
+ */
+export interface ActiveSessionInfo {
+  userId: string
+  email: string
+  role: string
+  companyId: string | null
+  loginAt: string
+  lastSeenAt: string
+}
+
+/**
  * Snapshot complet du monitoring
  */
 export interface MonitoringSnapshot {
   health: HealthCheckResult
+  redis: RedisHealthInfo
+  activeSessions: ActiveSessionInfo[]
   quickStats: {
     companies: number
     users: number
@@ -38,6 +68,37 @@ export interface MonitoringSnapshot {
   }
   subscriptionBreakdown: SubscriptionBreakdownItem[]
   timestamp: number
+}
+
+/**
+ * Borne un appel Redis dans le temps.
+ *
+ * Le client ioredis n'a pas de commandTimeout : un Redis joignable mais
+ * muet (TCP up, PONG jamais reçu) ferait attendre indéfiniment le
+ * Promise.all du snapshot et suspendrait le rendu de la page monitoring.
+ */
+const REDIS_CHECK_TIMEOUT_MS = 2000
+
+function withTimeout<T>(promise: Promise<T>, fallback: T): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((resolve) =>
+      setTimeout(() => resolve(fallback), REDIS_CHECK_TIMEOUT_MS)
+    ),
+  ])
+}
+
+/**
+ * PING Redis avec mesure de latence.
+ * Jamais bloquant : down OU timeout → { status: 'down', latency: null }.
+ */
+async function checkRedisHealth(): Promise<RedisHealthInfo> {
+  const start = Date.now()
+  const isUp = await withTimeout(pingRedis(), false)
+  return {
+    status: isUp ? 'up' : 'down',
+    latency: isUp ? Date.now() - start : null,
+  }
 }
 
 /**
@@ -53,14 +114,20 @@ export async function getMonitoringSnapshot(): Promise<
   if (!authResult.success) return authResult
 
   try {
-    const [health, statsResult, breakdown] = await Promise.all([
-      checkDatabaseHealth(),
-      getAdminQuickStats(),
-      prisma.subscription.groupBy({
-        by: ['status'],
-        _count: true,
-      }),
-    ])
+    const [health, redis, sessions, statsResult, breakdown] = await Promise.all(
+      [
+        checkDatabaseHealth(),
+        checkRedisHealth(),
+        // Même garde-fou que le PING : un SCAN qui ne répond pas ne doit
+        // jamais suspendre la page — fallback liste vide
+        withTimeout(getActiveSessions(), []),
+        getAdminQuickStats(),
+        prisma.subscription.groupBy({
+          by: ['status'],
+          _count: true,
+        }),
+      ]
+    )
 
     const quickStats =
       statsResult.success && statsResult.data
@@ -74,10 +141,27 @@ export async function getMonitoringSnapshot(): Promise<
       })
     )
 
+    // Sessions triées par activité récente, sans ip/userAgent (RGPD)
+    const activeSessions: ActiveSessionInfo[] = sessions
+      .map((s) => ({
+        userId: s.userId,
+        email: s.email,
+        role: s.role,
+        companyId: s.companyId,
+        loginAt: s.loginAt,
+        lastSeenAt: s.lastSeenAt,
+      }))
+      .sort(
+        (a, b) =>
+          new Date(b.lastSeenAt).getTime() - new Date(a.lastSeenAt).getTime()
+      )
+
     return {
       success: true,
       data: {
         health,
+        redis,
+        activeSessions,
         quickStats,
         subscriptionBreakdown,
         timestamp: Date.now(),

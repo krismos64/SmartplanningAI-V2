@@ -48,6 +48,17 @@ vi.mock('@/lib/prisma', () => ({
   },
 }))
 
+// SP-544 : Redis + sessions actives
+const mockPingRedis = vi.fn()
+vi.mock('@/lib/redis', () => ({
+  pingRedis: () => mockPingRedis(),
+}))
+
+const mockGetActiveSessions = vi.fn()
+vi.mock('@/lib/session-store', () => ({
+  getActiveSessions: () => mockGetActiveSessions(),
+}))
+
 // ============================================================================
 // Import après mocks
 // ============================================================================
@@ -111,6 +122,9 @@ const BREAKDOWN_RAW = [
 describe('getMonitoringSnapshot', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    // SP-544 : Redis up + aucune session par défaut
+    mockPingRedis.mockResolvedValue(true)
+    mockGetActiveSessions.mockResolvedValue([])
   })
 
   // RBAC ------------------------------------------------------------------
@@ -184,6 +198,92 @@ describe('getMonitoringSnapshot', () => {
     // timestamp
     expect(typeof result.data.timestamp).toBe('number')
     expect(result.data.timestamp).toBeGreaterThan(0)
+  })
+
+  // Redis + sessions actives (SP-544) ---------------------------------------
+
+  it('retourne le statut Redis up avec latence mesurée', async () => {
+    mockAuth.mockResolvedValueOnce(ADMIN_SESSION)
+    mockCheckDatabaseHealth.mockResolvedValueOnce(HEALTHY_RESULT)
+    mockGetAdminQuickStats.mockResolvedValueOnce(QUICK_STATS)
+    mockGroupBy.mockResolvedValueOnce(BREAKDOWN_RAW)
+
+    const result = await getMonitoringSnapshot()
+
+    expect(result.success).toBe(true)
+    if (!result.success) return
+    expect(result.data.redis.status).toBe('up')
+    expect(typeof result.data.redis.latency).toBe('number')
+  })
+
+  it('retourne redis down avec latence null si le PING échoue', async () => {
+    mockAuth.mockResolvedValueOnce(ADMIN_SESSION)
+    mockCheckDatabaseHealth.mockResolvedValueOnce(HEALTHY_RESULT)
+    mockGetAdminQuickStats.mockResolvedValueOnce(QUICK_STATS)
+    mockGroupBy.mockResolvedValueOnce(BREAKDOWN_RAW)
+    mockPingRedis.mockResolvedValueOnce(false)
+
+    const result = await getMonitoringSnapshot()
+
+    expect(result.success).toBe(true)
+    if (!result.success) return
+    expect(result.data.redis).toEqual({ status: 'down', latency: null })
+  })
+
+  it('mappe les sessions actives sans ip/userAgent, triées par activité', async () => {
+    mockAuth.mockResolvedValueOnce(ADMIN_SESSION)
+    mockCheckDatabaseHealth.mockResolvedValueOnce(HEALTHY_RESULT)
+    mockGetAdminQuickStats.mockResolvedValueOnce(QUICK_STATS)
+    mockGroupBy.mockResolvedValueOnce(BREAKDOWN_RAW)
+    mockGetActiveSessions.mockResolvedValueOnce([
+      {
+        userId: 'u1',
+        email: 'ancien@test.fr',
+        role: 'EMPLOYEE',
+        companyId: 'c1',
+        loginAt: '2026-07-07T08:00:00.000Z',
+        lastSeenAt: '2026-07-07T08:30:00.000Z',
+        ip: '1.2.3.4',
+        userAgent: 'Mozilla/5.0',
+      },
+      {
+        userId: 'u2',
+        email: 'recent@test.fr',
+        role: 'DIRECTOR',
+        companyId: 'c2',
+        loginAt: '2026-07-07T10:00:00.000Z',
+        lastSeenAt: '2026-07-07T11:00:00.000Z',
+        ip: '5.6.7.8',
+        userAgent: 'Mozilla/5.0',
+      },
+    ])
+
+    const result = await getMonitoringSnapshot()
+
+    expect(result.success).toBe(true)
+    if (!result.success) return
+
+    expect(result.data.activeSessions).toHaveLength(2)
+    // Tri : session la plus récente en premier
+    expect(result.data.activeSessions[0]?.email).toBe('recent@test.fr')
+    // Minimisation RGPD : ip et userAgent exclus du snapshot
+    expect(result.data.activeSessions[0]).not.toHaveProperty('ip')
+    expect(result.data.activeSessions[0]).not.toHaveProperty('userAgent')
+  })
+
+  it('sessions vides quand Redis est down (liste vide, pas une erreur)', async () => {
+    mockAuth.mockResolvedValueOnce(ADMIN_SESSION)
+    mockCheckDatabaseHealth.mockResolvedValueOnce(HEALTHY_RESULT)
+    mockGetAdminQuickStats.mockResolvedValueOnce(QUICK_STATS)
+    mockGroupBy.mockResolvedValueOnce(BREAKDOWN_RAW)
+    mockPingRedis.mockResolvedValueOnce(false)
+    mockGetActiveSessions.mockResolvedValueOnce([])
+
+    const result = await getMonitoringSnapshot()
+
+    expect(result.success).toBe(true)
+    if (!result.success) return
+    expect(result.data.activeSessions).toEqual([])
   })
 
   it('retourne des quickStats à zéro si le service échoue', async () => {
