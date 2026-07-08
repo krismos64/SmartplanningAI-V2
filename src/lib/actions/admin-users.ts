@@ -13,7 +13,7 @@ import { auth } from '@/lib/auth'
 import { hasRequiredRole } from '@/lib/permissions'
 import { prisma } from '@/lib/prisma'
 import { checkRateLimit } from '@/lib/rate-limit'
-import { sendVerificationEmailAction } from '@/lib/actions/verification-actions'
+import { sendVerificationEmailCore } from '@/lib/services/verification.service'
 import { logAuditAction } from '@/lib/services/audit/audit.service'
 import type { UserRole } from '@prisma/client'
 
@@ -129,7 +129,8 @@ export async function getAllUsersAdmin(params?: {
 
 /**
  * Active/désactive un utilisateur (toggle isActive).
- * Log dans AuditLog via le caller si nécessaire.
+ * Tracé dans AuditLog (STATUS_CHANGE) — désactiver un compte cross-company
+ * est plus sensible qu'un renvoi d'email, il doit être traçable (SP-543).
  */
 export async function toggleUserStatusAdmin(
   userId: string,
@@ -140,10 +141,24 @@ export async function toggleUserStatusAdmin(
     throw new Error('Unauthorized')
   }
 
-  await prisma.user.update({
+  const updated = await prisma.user.update({
     where: { id: userId },
     data: { isActive: active },
+    select: { id: true, email: true, companyId: true },
   })
+
+  // Audit trail — fire-and-forget, jamais bloquant
+  logAuditAction({
+    action: 'STATUS_CHANGE',
+    entityType: 'USER',
+    entityId: updated.id,
+    userId: session.user.id,
+    ...(updated.companyId && { companyId: updated.companyId }),
+    details: {
+      operation: active ? 'admin_activate_user' : 'admin_deactivate_user',
+      targetEmail: updated.email,
+    },
+  }).catch(console.error)
 
   return { success: true }
 }
@@ -232,8 +247,11 @@ export async function resendVerificationEmailAdmin(
     }
   }
 
-  // Envoi (invalide l'ancien token, crée un token 24h, trace dans EmailLog)
-  await sendVerificationEmailAction({ email: user.email })
+  // Envoi via le service cœur (invalide l'ancien token, crée un token 24h,
+  // trace dans EmailLog). Contrairement au flux public anti-énumération,
+  // l'admin reçoit l'outcome RÉEL : un échec SMTP silencieux laisserait
+  // l'utilisateur bloqué avec un toast de succès mensonger.
+  const outcome = await sendVerificationEmailCore(user.email)
 
   // Audit trail — fire-and-forget, jamais bloquant
   logAuditAction({
@@ -245,8 +263,19 @@ export async function resendVerificationEmailAdmin(
     details: {
       operation: 'admin_resend_verification_email',
       targetEmail: user.email,
+      outcome: outcome.status,
     },
   }).catch(console.error)
+
+  if (outcome.status !== 'SENT') {
+    return {
+      success: false,
+      error:
+        outcome.status === 'SEND_FAILED'
+          ? "L'envoi de l'email a échoué (SMTP) — réessayez dans quelques minutes"
+          : "L'utilisateur n'est plus éligible au renvoi",
+    }
+  }
 
   return { success: true }
 }

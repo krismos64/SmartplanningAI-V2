@@ -15,10 +15,7 @@
 
 'use server'
 
-import crypto from 'crypto'
-
-import { sendVerificationEmail } from '@/lib/email/templates/verification-email'
-import { logAuthEmail, AuthEmailType } from '@/lib/email/auth/log-auth-email'
+import { sendVerificationEmailCore } from '@/lib/services/verification.service'
 import { verifyPassword } from '@/lib/password'
 import { prisma } from '@/lib/prisma'
 
@@ -51,12 +48,6 @@ export type CheckEmailVerificationStatusResult =
 // CONSTANTES
 // =============================================================================
 
-/** Durée de validité du token en millisecondes (24 heures) */
-const TOKEN_EXPIRY_MS = 24 * 60 * 60 * 1000
-
-/** Durée de validité en texte pour l'email */
-const TOKEN_EXPIRY_TEXT = '24 heures'
-
 /** Préfixe pour distinguer les tokens de vérification des tokens de reset */
 const VERIFICATION_TOKEN_PREFIX = 'verify_'
 
@@ -67,99 +58,23 @@ const VERIFICATION_TOKEN_PREFIX = 'verify_'
 /**
  * Server Action pour envoyer un email de vérification
  *
- * @param data - Objet contenant l'email (et optionnellement le userId pour un utilisateur connecté)
- * @returns SendVerificationEmailActionResult - Succès ou erreur
+ * Wrapper anti-énumération de sendVerificationEmailCore (verification.service) :
+ * quel que soit l'outcome réel (utilisateur inconnu, déjà vérifié, échec SMTP),
+ * on retourne success pour ne rien révéler à un appelant non authentifié.
+ * Le flux admin (SP-543) appelle le service directement pour avoir la vérité.
+ *
+ * @param data - Objet contenant l'email
+ * @returns SendVerificationEmailActionResult - Toujours succès (by design)
  *
  * @security
- * - Vérifie que l'utilisateur existe
- * - Ne révèle pas si l'email est déjà vérifié (protection énumération)
- * - Génère un token sécurisé avec crypto.randomUUID
- * - Supprime les anciens tokens avant d'en créer un nouveau
+ * - Ne révèle ni l'existence du compte ni l'état de vérification
+ * - Token sécurisé crypto.randomUUID, 24h, un seul actif (via le service)
  */
 export async function sendVerificationEmailAction(data: {
   email: string
 }): Promise<SendVerificationEmailActionResult> {
   try {
-    const { email } = data
-    const normalizedEmail = email.toLowerCase().trim()
-
-    // 1. Chercher l'utilisateur
-    const user = await prisma.user.findUnique({
-      where: { email: normalizedEmail },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        emailVerified: true,
-        companyId: true,
-      },
-    })
-
-    // Si l'utilisateur n'existe pas, on retourne succès quand même
-    // pour ne pas révéler l'existence du compte
-    if (!user) {
-      return { success: true }
-    }
-
-    // Si l'email est déjà vérifié, on retourne succès silencieusement
-    if (user.emailVerified) {
-      return { success: true }
-    }
-
-    // 2. Supprimer les anciens tokens de vérification pour cet email
-    await prisma.verificationToken.deleteMany({
-      where: {
-        identifier: normalizedEmail,
-        token: { startsWith: VERIFICATION_TOKEN_PREFIX },
-      },
-    })
-
-    // 3. Générer un nouveau token sécurisé
-    const token = `${VERIFICATION_TOKEN_PREFIX}${crypto.randomUUID()}`
-    const expires = new Date(Date.now() + TOKEN_EXPIRY_MS)
-
-    // 4. Sauvegarder le token en base
-    await prisma.verificationToken.create({
-      data: {
-        identifier: normalizedEmail,
-        token,
-        expires,
-      },
-    })
-
-    // 5. Envoyer l'email de vérification
-    const firstName = user.name?.split(' ')[0] || undefined
-
-    try {
-      const verificationResult = await sendVerificationEmail({
-        firstName,
-        email: normalizedEmail,
-        token,
-        expiresIn: TOKEN_EXPIRY_TEXT,
-      })
-      // Tracer l'envoi dans EmailLog (non bloquant).
-      // companyId requis (colonne NOT NULL) : on ne logge que si l'utilisateur
-      // est rattaché à une entreprise (toujours le cas pour un DIRECTOR inscrit).
-      if (user.companyId) {
-        await logAuthEmail({
-          companyId: user.companyId,
-          emailType: AuthEmailType.EMAIL_VERIFICATION,
-          recipientEmail: normalizedEmail,
-          success: verificationResult.success,
-          messageId: verificationResult.messageId,
-          error: verificationResult.error,
-        })
-      }
-    } catch (emailError) {
-      // Log l'erreur mais ne pas bloquer le flow
-      if (process.env.NODE_ENV === 'development') {
-        console.error(
-          '[sendVerificationEmailAction] Email send failed:',
-          emailError
-        )
-      }
-    }
-
+    await sendVerificationEmailCore(data.email)
     return { success: true }
   } catch (error) {
     // Log l'erreur en développement

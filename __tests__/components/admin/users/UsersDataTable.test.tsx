@@ -51,8 +51,10 @@ vi.mock('next-auth/react', () => ({
   }),
 }))
 
+const mockImpersonate = vi.fn()
 vi.mock('@/hooks', () => ({
   useIsImpersonating: () => false,
+  useImpersonate: () => ({ impersonate: mockImpersonate }),
 }))
 
 const mockToastSuccess = vi.fn()

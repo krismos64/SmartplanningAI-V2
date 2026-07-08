@@ -13,7 +13,6 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
-import { useSession } from 'next-auth/react'
 import {
   Search,
   Download,
@@ -29,7 +28,7 @@ import {
   BadgeX,
 } from 'lucide-react'
 
-import { useIsImpersonating } from '@/hooks'
+import { useIsImpersonating, useImpersonate } from '@/hooks'
 import { useToast } from '@/components/toast/use-toast'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -216,9 +215,10 @@ function RowActions({
       {canResend && (
         <Tooltip>
           <TooltipTrigger asChild>
+            {/* touch-icon : cible 44px (WCAG 2.5.5) pour les boutons icône */}
             <Button
               variant="ghost"
-              size="sm"
+              size="touch-icon"
               onClick={() => onResend(user)}
               disabled={resendingId === user.id}
               data-testid="resend-verification-btn"
@@ -235,7 +235,7 @@ function RowActions({
           <TooltipTrigger asChild>
             <Button
               variant="ghost"
-              size="sm"
+              size="touch-icon"
               onClick={() => onImpersonate(user)}
               disabled={isImpersonating}
               data-testid="impersonate-user-btn"
@@ -354,8 +354,8 @@ function UserCard({
 // ============================================================================
 
 export function UsersDataTable() {
-  const { update: updateSession } = useSession()
   const isImpersonating = useIsImpersonating()
+  const { impersonate } = useImpersonate()
   const { success: toastSuccess, error: toastError } = useToast()
 
   const [users, setUsers] = useState<AdminUserRow[]>([])
@@ -365,6 +365,7 @@ export function UsersDataTable() {
   const [companies, setCompanies] = useState<CompanyOption[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [isInitialLoad, setIsInitialLoad] = useState(true)
+  const [hasError, setHasError] = useState(false)
   const [resendingId, setResendingId] = useState<string | null>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -375,6 +376,7 @@ export function UsersDataTable() {
   // --------------------------------------------------
   const fetchUsers = useCallback(async (p: number, f: Filters) => {
     setIsLoading(true)
+    setHasError(false)
     try {
       const result = await getAllUsersAdmin({
         page: p,
@@ -386,6 +388,13 @@ export function UsersDataTable() {
       })
       setUsers(result.users)
       setTotal(result.total)
+    } catch (error) {
+      // Sans catch, une erreur serveur (session expirée, DB down) serait
+      // maquillée en « Aucun utilisateur trouvé » — on affiche un état d'erreur
+      console.error('[UsersDataTable] Erreur chargement:', error)
+      setHasError(true)
+      setUsers([])
+      setTotal(0)
     } finally {
       setIsLoading(false)
       setIsInitialLoad(false)
@@ -405,6 +414,9 @@ export function UsersDataTable() {
   // --------------------------------------------------
   const applyFilters = useCallback(
     (next: Filters) => {
+      // Annuler un fetch de recherche débouncé en attente : il capturait un
+      // snapshot de filtres périmé et écraserait ce résultat 300 ms plus tard
+      if (debounceRef.current) clearTimeout(debounceRef.current)
       setFilters(next)
       setPage(1)
       void fetchUsers(1, next)
@@ -461,45 +473,19 @@ export function UsersDataTable() {
   )
 
   // --------------------------------------------------
-  // Impersonation directe (SP-543) — même flux que CompaniesDataTable
+  // Impersonation directe (SP-543) — flux partagé useImpersonate
   // --------------------------------------------------
   const handleImpersonate = useCallback(
     (user: AdminUserRow) => {
       if (!user.companyId) return
       void (async () => {
-        try {
-          const response = await fetch('/api/admin/impersonate', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ companyId: user.companyId }),
-          })
-
-          if (!response.ok) {
-            const errorData = (await response.json()) as { error?: string }
-            toastError(errorData.error ?? "Échec de l'impersonation")
-            return
-          }
-
-          const result = (await response.json()) as {
-            success: boolean
-            redirectTo: string
-            impersonation: Record<string, unknown>
-          }
-
-          if (result.success) {
-            // Forcer NextAuth à relire le JWT enrichi
-            await updateSession(result.impersonation)
-            // Full page reload pour que le middleware + layout Server Component
-            // se ré-exécutent avec le nouveau JWT (rôle DIRECTOR, companyId cible)
-            window.location.href = result.redirectTo
-          }
-        } catch (error) {
-          console.error('Erreur impersonation:', error)
-          toastError("Échec de l'impersonation")
+        const result = await impersonate(user.companyId as string)
+        if (!result.success && result.error) {
+          toastError(result.error)
         }
       })()
     },
-    [updateSession, toastError]
+    [impersonate, toastError]
   )
 
   // --------------------------------------------------
@@ -641,6 +627,16 @@ export function UsersDataTable() {
                     </div>
                   </TableCell>
                 </TableRow>
+              ) : hasError ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={8}
+                    className="h-24 text-center text-destructive"
+                  >
+                    Erreur de chargement des utilisateurs — modifiez un filtre
+                    pour réessayer
+                  </TableCell>
+                </TableRow>
               ) : users.length === 0 ? (
                 <TableRow>
                   <TableCell
@@ -717,6 +713,11 @@ export function UsersDataTable() {
               <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
               Chargement...
             </div>
+          ) : hasError ? (
+            <p className="py-12 text-center text-destructive">
+              Erreur de chargement des utilisateurs — modifiez un filtre pour
+              réessayer
+            </p>
           ) : users.length > 0 ? (
             users.map((user) => (
               <UserCard

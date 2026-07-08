@@ -52,10 +52,10 @@ vi.mock('@/lib/rate-limit', () => ({
   checkRateLimit: (...args: unknown[]) => mockCheckRateLimit(...args),
 }))
 
-const mockSendVerificationEmailAction = vi.fn()
-vi.mock('@/lib/actions/verification-actions', () => ({
-  sendVerificationEmailAction: (...args: unknown[]) =>
-    mockSendVerificationEmailAction(...args),
+const mockSendVerificationEmailCore = vi.fn()
+vi.mock('@/lib/services/verification.service', () => ({
+  sendVerificationEmailCore: (...args: unknown[]) =>
+    mockSendVerificationEmailCore(...args),
 }))
 
 const mockLogAuditAction = vi.fn()
@@ -71,6 +71,7 @@ import {
   getAllUsersAdmin,
   getCompanyOptionsAdmin,
   resendVerificationEmailAdmin,
+  toggleUserStatusAdmin,
 } from '../admin-users'
 
 // ============================================================================
@@ -128,8 +129,13 @@ beforeEach(() => {
     remaining: 2,
     resetAt: Date.now() + 3600_000,
   })
-  mockSendVerificationEmailAction.mockResolvedValue({ success: true })
+  mockSendVerificationEmailCore.mockResolvedValue({ status: 'SENT' })
   mockLogAuditAction.mockResolvedValue(undefined)
+  mockUserUpdate.mockResolvedValue({
+    id: TARGET_USER_ID,
+    email: 'jean@acme.fr',
+    companyId: 'cl0000000000000000company',
+  })
 })
 
 describe('RBAC — les actions rejettent les non-SYSTEM_ADMIN', () => {
@@ -238,7 +244,7 @@ describe('resendVerificationEmailAdmin', () => {
 
     expect(result.success).toBe(false)
     expect(result.error).toMatch(/introuvable/i)
-    expect(mockSendVerificationEmailAction).not.toHaveBeenCalled()
+    expect(mockSendVerificationEmailCore).not.toHaveBeenCalled()
   })
 
   it("refuse si l'email est déjà vérifié", async () => {
@@ -251,7 +257,7 @@ describe('resendVerificationEmailAdmin', () => {
 
     expect(result.success).toBe(false)
     expect(result.error).toMatch(/déjà vérifié/i)
-    expect(mockSendVerificationEmailAction).not.toHaveBeenCalled()
+    expect(mockSendVerificationEmailCore).not.toHaveBeenCalled()
   })
 
   it('refuse si le compte est désactivé', async () => {
@@ -264,7 +270,7 @@ describe('resendVerificationEmailAdmin', () => {
 
     expect(result.success).toBe(false)
     expect(result.error).toMatch(/désactivé/i)
-    expect(mockSendVerificationEmailAction).not.toHaveBeenCalled()
+    expect(mockSendVerificationEmailCore).not.toHaveBeenCalled()
   })
 
   it('refuse au-delà du rate limit (3/h par cible)', async () => {
@@ -278,7 +284,7 @@ describe('resendVerificationEmailAdmin', () => {
 
     expect(result.success).toBe(false)
     expect(result.error).toMatch(/limite/i)
-    expect(mockSendVerificationEmailAction).not.toHaveBeenCalled()
+    expect(mockSendVerificationEmailCore).not.toHaveBeenCalled()
 
     // La clé du rate limit isole par utilisateur cible
     expect(mockCheckRateLimit).toHaveBeenCalledWith(
@@ -291,9 +297,7 @@ describe('resendVerificationEmailAdmin', () => {
     const result = await resendVerificationEmailAdmin(TARGET_USER_ID)
 
     expect(result.success).toBe(true)
-    expect(mockSendVerificationEmailAction).toHaveBeenCalledWith({
-      email: 'jean@acme.fr',
-    })
+    expect(mockSendVerificationEmailCore).toHaveBeenCalledWith('jean@acme.fr')
   })
 
   it("trace l'action dans l'audit trail avec l'admin comme acteur", async () => {
@@ -308,6 +312,7 @@ describe('resendVerificationEmailAdmin', () => {
       details: {
         operation: 'admin_resend_verification_email',
         targetEmail: 'jean@acme.fr',
+        outcome: 'SENT',
       },
     })
   })
@@ -318,5 +323,52 @@ describe('resendVerificationEmailAdmin', () => {
     const result = await resendVerificationEmailAdmin(TARGET_USER_ID)
 
     expect(result.success).toBe(true)
+  })
+  it("retourne une erreur honnête si l'envoi SMTP échoue (pas de toast vert mensonger)", async () => {
+    mockSendVerificationEmailCore.mockResolvedValue({ status: 'SEND_FAILED' })
+
+    const result = await resendVerificationEmailAdmin(TARGET_USER_ID)
+
+    expect(result.success).toBe(false)
+    expect(result.error).toMatch(/SMTP/i)
+    // L'échec est quand même tracé dans l'audit avec l'outcome réel
+    expect(mockLogAuditAction).toHaveBeenCalledWith(
+      expect.objectContaining({
+        details: expect.objectContaining({ outcome: 'SEND_FAILED' }),
+      })
+    )
+  })
+})
+
+describe('toggleUserStatusAdmin — audit trail (review PR #50)', () => {
+  beforeEach(() => {
+    mockAuth.mockResolvedValue(ADMIN_SESSION)
+  })
+
+  it("trace l'activation/désactivation dans l'audit (STATUS_CHANGE)", async () => {
+    const result = await toggleUserStatusAdmin(TARGET_USER_ID, false)
+
+    expect(result.success).toBe(true)
+    expect(mockLogAuditAction).toHaveBeenCalledWith({
+      action: 'STATUS_CHANGE',
+      entityType: 'USER',
+      entityId: TARGET_USER_ID,
+      userId: ADMIN_SESSION.user.id,
+      companyId: 'cl0000000000000000company',
+      details: {
+        operation: 'admin_deactivate_user',
+        targetEmail: 'jean@acme.fr',
+      },
+    })
+  })
+
+  it("distingue activation et désactivation dans l'opération", async () => {
+    await toggleUserStatusAdmin(TARGET_USER_ID, true)
+
+    expect(mockLogAuditAction).toHaveBeenCalledWith(
+      expect.objectContaining({
+        details: expect.objectContaining({ operation: 'admin_activate_user' }),
+      })
+    )
   })
 })
