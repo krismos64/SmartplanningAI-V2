@@ -16,6 +16,7 @@ import { checkRateLimit } from '@/lib/rate-limit'
 import { sendVerificationEmailCore } from '@/lib/services/verification.service'
 import { logAuditAction } from '@/lib/services/audit/audit.service'
 import type { UserRole } from '@prisma/client'
+import type { CrudActionResult } from '@/types'
 
 // ============================================================================
 // Types
@@ -60,33 +61,24 @@ const RESEND_RATE_LIMIT = { maxRequests: 3, windowMs: 60 * 60 * 1000 }
 
 const userIdSchema = z.string().cuid()
 
-// ============================================================================
-// Actions
-// ============================================================================
+/** Nombre maximum de lignes pour l'export CSV (pattern exportAuditLogsCsv) */
+const MAX_EXPORT_ROWS = 10_000
 
-/**
- * Récupère tous les utilisateurs de toutes les entreprises.
- * Supporte recherche, filtrage par rôle, entreprise et statut de
- * vérification email, pagination.
- */
-export async function getAllUsersAdmin(params?: {
+/** Filtres communs liste + export */
+interface UsersFilterParams {
   search?: string
   role?: UserRole | 'ALL'
   companyId?: string
   verified?: VerifiedFilter
-  page?: number
-  pageSize?: number
-}): Promise<GetAllUsersAdminResult> {
-  const session = await auth()
-  if (!session?.user || !hasRequiredRole(session.user.role, 'SYSTEM_ADMIN')) {
-    throw new Error('Unauthorized')
-  }
+}
 
-  const page = params?.page ?? 1
-  const pageSize = params?.pageSize ?? 50
-  const skip = (page - 1) * pageSize
-
-  const where = {
+/**
+ * Construit la clause WHERE Prisma à partir des filtres — partagée entre
+ * getAllUsersAdmin et exportUsersCsvAdmin pour garantir que l'export
+ * contient exactement le dataset affiché (SP-541).
+ */
+function buildUsersWhere(params?: UsersFilterParams) {
+  return {
     ...(params?.search && {
       OR: [
         { email: { contains: params.search, mode: 'insensitive' as const } },
@@ -98,6 +90,33 @@ export async function getAllUsersAdmin(params?: {
     ...(params?.verified === 'VERIFIED' && { emailVerified: { not: null } }),
     ...(params?.verified === 'UNVERIFIED' && { emailVerified: null }),
   }
+}
+
+// ============================================================================
+// Actions
+// ============================================================================
+
+/**
+ * Récupère tous les utilisateurs de toutes les entreprises.
+ * Supporte recherche, filtrage par rôle, entreprise et statut de
+ * vérification email, pagination.
+ */
+export async function getAllUsersAdmin(
+  params?: UsersFilterParams & {
+    page?: number
+    pageSize?: number
+  }
+): Promise<GetAllUsersAdminResult> {
+  const session = await auth()
+  if (!session?.user || !hasRequiredRole(session.user.role, 'SYSTEM_ADMIN')) {
+    throw new Error('Unauthorized')
+  }
+
+  const page = params?.page ?? 1
+  const pageSize = params?.pageSize ?? 50
+  const skip = (page - 1) * pageSize
+
+  const where = buildUsersWhere(params)
 
   const [users, total] = await Promise.all([
     prisma.user.findMany({
@@ -278,4 +297,58 @@ export async function resendVerificationEmailAdmin(
   }
 
   return { success: true }
+}
+
+/**
+ * Exporte en CSV le dataset COMPLET des utilisateurs correspondant aux
+ * filtres (pas seulement la page affichée) — fix SP-541.
+ *
+ * Généré côté serveur (pattern exportAuditLogsCsv) : le client ajoute le
+ * BOM UTF-8 au moment du Blob. Limite de sécurité 10 000 lignes.
+ */
+export async function exportUsersCsvAdmin(
+  params?: UsersFilterParams
+): Promise<CrudActionResult<string>> {
+  const session = await auth()
+  if (!session?.user || !hasRequiredRole(session.user.role, 'SYSTEM_ADMIN')) {
+    throw new Error('Unauthorized')
+  }
+
+  try {
+    const where = buildUsersWhere(params)
+
+    const users = await prisma.user.findMany({
+      where,
+      include: { company: { select: { name: true } } },
+      orderBy: { createdAt: 'desc' },
+      take: MAX_EXPORT_ROWS,
+    })
+
+    const escape = (value: string) => value.replace(/"/g, '""')
+
+    const header =
+      'ID,Email,Nom,Rôle,Entreprise,Email vérifié,Statut,Inscription'
+    const rows = users.map((u) =>
+      [
+        u.id,
+        escape(u.email),
+        escape(u.name ?? ''),
+        u.role,
+        escape(u.company?.name ?? ''),
+        u.emailVerified ? 'Oui' : 'Non',
+        u.isActive ? 'Actif' : 'Inactif',
+        u.createdAt.toISOString().split('T')[0],
+      ]
+        .map((cell) => `"${cell}"`)
+        .join(',')
+    )
+
+    return { success: true, data: [header, ...rows].join('\n') }
+  } catch (error) {
+    console.error('[exportUsersCsvAdmin] Error:', error)
+    return {
+      success: false,
+      error: "Erreur lors de l'export des utilisateurs",
+    }
+  }
 }

@@ -23,12 +23,15 @@ const mockGetAllUsersAdmin = vi.fn()
 const mockGetCompanyOptionsAdmin = vi.fn()
 const mockResendVerificationEmailAdmin = vi.fn()
 
+const mockExportUsersCsvAdmin = vi.fn()
+
 vi.mock('@/lib/actions/admin-users', () => ({
   getAllUsersAdmin: (...args: unknown[]) => mockGetAllUsersAdmin(...args),
   getCompanyOptionsAdmin: (...args: unknown[]) =>
     mockGetCompanyOptionsAdmin(...args),
   resendVerificationEmailAdmin: (...args: unknown[]) =>
     mockResendVerificationEmailAdmin(...args),
+  exportUsersCsvAdmin: (...args: unknown[]) => mockExportUsersCsvAdmin(...args),
 }))
 
 vi.mock('next/navigation', () => ({
@@ -212,10 +215,21 @@ describe('UsersDataTable (SP-472)', () => {
       expect(screen.getAllByText('Alice Martin').length).toBeGreaterThan(0)
     })
 
+    mockExportUsersCsvAdmin.mockResolvedValue({
+      success: true,
+      data: 'ID,Email\n"u1","alice@acme.com"',
+    })
+
     const exportButton = screen.getByRole('button', { name: /export csv/i })
     fireEvent.click(exportButton)
 
-    expect(mockCreateObjectURL).toHaveBeenCalledOnce()
+    // L'export est asynchrone (Server Action, dataset complet — SP-541)
+    await waitFor(() => {
+      expect(mockExportUsersCsvAdmin).toHaveBeenCalledOnce()
+    })
+    await waitFor(() => {
+      expect(mockCreateObjectURL).toHaveBeenCalledOnce()
+    })
     expect(mockAnchorClick).toHaveBeenCalledOnce()
     expect(mockRevokeObjectURL).toHaveBeenCalledOnce()
 

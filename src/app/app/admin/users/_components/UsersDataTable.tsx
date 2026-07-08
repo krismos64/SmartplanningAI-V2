@@ -61,6 +61,7 @@ import {
   getAllUsersAdmin,
   getCompanyOptionsAdmin,
   resendVerificationEmailAdmin,
+  exportUsersCsvAdmin,
   type AdminUserRow,
   type CompanyOption,
   type VerifiedFilter,
@@ -128,33 +129,11 @@ const DEFAULT_FILTERS: Filters = {
 }
 
 // ============================================================================
-// CSV Export
+// CSV Export — le CSV est généré côté serveur (dataset complet filtré,
+// pas seulement la page affichée — SP-541), le client ajoute le BOM UTF-8
 // ============================================================================
 
-function exportCsv(users: AdminUserRow[]) {
-  const headers = [
-    'ID',
-    'Email',
-    'Nom',
-    'Rôle',
-    'Entreprise',
-    'Email vérifié',
-    'Inscription',
-  ]
-  const rows = users.map((u) => [
-    u.id,
-    u.email,
-    u.name ?? '',
-    u.role,
-    u.companyName ?? '',
-    u.emailVerified ? 'Oui' : 'Non',
-    new Date(u.createdAt).toISOString().split('T')[0],
-  ])
-  const csv = [headers, ...rows]
-    .map((r) =>
-      r.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(',')
-    )
-    .join('\n')
+function downloadCsv(csv: string) {
   const blob = new Blob([`\uFEFF${csv}`], {
     type: 'text/csv;charset=utf-8;',
   })
@@ -367,6 +346,7 @@ export function UsersDataTable() {
   const [isInitialLoad, setIsInitialLoad] = useState(true)
   const [hasError, setHasError] = useState(false)
   const [resendingId, setResendingId] = useState<string | null>(null)
+  const [isExporting, setIsExporting] = useState(false)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const totalPages = Math.ceil(total / PAGE_SIZE)
@@ -449,6 +429,35 @@ export function UsersDataTable() {
   }
 
   // --------------------------------------------------
+  // Export CSV serveur (SP-541) — dataset complet filtré
+  // --------------------------------------------------
+  const handleExport = useCallback(() => {
+    void (async () => {
+      setIsExporting(true)
+      try {
+        const result = await exportUsersCsvAdmin({
+          search: filters.search || undefined,
+          role: filters.role === 'ALL' ? undefined : filters.role,
+          companyId:
+            filters.companyId === ALL_COMPANIES ? undefined : filters.companyId,
+          verified: filters.verified === 'ALL' ? undefined : filters.verified,
+        })
+        if (result.success && result.data) {
+          downloadCsv(result.data)
+        } else {
+          toastError(
+            (!result.success && result.error) || "Échec de l'export CSV"
+          )
+        }
+      } catch {
+        toastError("Échec de l'export CSV")
+      } finally {
+        setIsExporting(false)
+      }
+    })()
+  }, [filters, toastError])
+
+  // --------------------------------------------------
   // Renvoi email de vérification (SP-543)
   // --------------------------------------------------
   const handleResend = useCallback(
@@ -517,11 +526,12 @@ export function UsersDataTable() {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => exportCsv(users)}
-            disabled={users.length === 0}
+            onClick={handleExport}
+            disabled={total === 0 || isExporting}
+            data-testid="users-export-csv"
           >
             <Download className="mr-2 h-4 w-4" aria-hidden="true" />
-            Export CSV
+            {isExporting ? 'Export en cours…' : 'Export CSV'}
           </Button>
         </div>
 
