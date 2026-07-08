@@ -32,6 +32,7 @@ import {
   CalendarPlus,
   Upload,
   MessageSquare,
+  MailCheck,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -130,6 +131,14 @@ export const navigationItems: NavigationItem[] = [
     href: '/app/admin/subscriptions',
     roles: ['SYSTEM_ADMIN'],
     keywords: ['subscription', 'abonnement', 'paiement', 'stripe', 'mrr'],
+  },
+  {
+    id: 'admin-emails',
+    label: 'Emails',
+    icon: MailCheck,
+    href: '/app/admin/emails',
+    roles: ['SYSTEM_ADMIN'],
+    keywords: ['email', 'mail', 'délivrabilité', 'smtp', 'journal', 'log'],
   },
   {
     id: 'monitoring',
