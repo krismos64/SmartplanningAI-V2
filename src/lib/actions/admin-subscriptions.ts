@@ -245,10 +245,12 @@ export async function getSubscriptionsAdmin(params?: {
 
 /**
  * Liste cross-tenant des paiements, du plus récent au plus ancien.
- * Filtre statut (accès direct aux échecs pour le support).
+ * Filtre statut (accès direct aux échecs pour le support) et/ou
+ * entreprise (onglet Abonnement de la fiche entreprise — SP-546).
  */
 export async function getPaymentsAdmin(params?: {
   status?: PaymentStatus | 'ALL'
+  companyId?: string
   page?: number
   pageSize?: number
 }): Promise<GetPaymentsAdminResult> {
@@ -263,6 +265,7 @@ export async function getPaymentsAdmin(params?: {
 
   const where = {
     ...(status && { status }),
+    ...(params?.companyId && { companyId: params.companyId }),
   }
 
   const [payments, total] = await Promise.all([
@@ -291,5 +294,63 @@ export async function getPaymentsAdmin(params?: {
     })),
     total,
     stripeDashboardBaseUrl: getStripeDashboardBaseUrl(),
+  }
+}
+
+// ============================================================================
+// Détail abonnement d'une entreprise (onglet Abonnement — SP-546)
+// ============================================================================
+
+export interface CompanySubscriptionDetail {
+  id: string
+  plan: SubscriptionPlan
+  status: SubscriptionStatus
+  quantity: number
+  pricePerEmployee: number
+  planPrice: number
+  currency: string
+  billingInterval: string | null
+  currentPeriodStart: Date | null
+  currentPeriodEnd: Date | null
+  cancelAtPeriodEnd: boolean
+  canceledAt: Date | null
+  stripeCustomerId: string | null
+  stripeSubscriptionId: string | null
+  createdAt: Date
+}
+
+/**
+ * Détail complet de l'abonnement d'UNE entreprise (Stripe IDs inclus) pour
+ * l'onglet Abonnement de la fiche entreprise. Distinct de getSubscriptionsAdmin
+ * (liste cross-tenant allégée) : ici on veut aussi les identifiants Stripe
+ * pour construire le lien portail/dashboard.
+ */
+export async function getCompanySubscriptionDetail(
+  companyId: string
+): Promise<CompanySubscriptionDetail | null> {
+  await assertSystemAdmin()
+
+  const subscription = await prisma.subscription.findUnique({
+    where: { companyId },
+  })
+
+  if (!subscription) return null
+
+  return {
+    id: subscription.id,
+    plan: subscription.plan,
+    status: subscription.status,
+    quantity: subscription.quantity,
+    pricePerEmployee: subscription.pricePerEmployee,
+    planPrice: subscription.planPrice,
+    currency: subscription.currency,
+    billingInterval: subscription.billingInterval,
+    currentPeriodStart: subscription.currentPeriodStart,
+    currentPeriodEnd: subscription.currentPeriodEnd,
+    cancelAtPeriodEnd: subscription.cancelAtPeriodEnd,
+    canceledAt: subscription.canceledAt,
+    stripeCustomerId: subscription.stripeCustomerId,
+    stripeSubscriptionId: subscription.stripeSubscriptionId,
+    createdAt: subscription.createdAt,
   }
 }
