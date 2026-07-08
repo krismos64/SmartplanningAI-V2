@@ -112,10 +112,9 @@ test.describe('Admin Subscriptions — Navigation quick actions', () => {
   }) => {
     await adminPage.goto('/app/admin/dashboard')
 
-    await adminPage
-      .getByRole('link', { name: /abonnements/i })
-      .first()
-      .click()
+    // testid dédié : la sidebar contient aussi un lien "Abonnements",
+    // on veut couvrir le bouton quick action (fix SP-540), pas la nav.
+    await adminPage.getByTestId('quick-action-subscriptions').click()
 
     await expect(adminPage).toHaveURL(/\/app\/admin\/subscriptions/)
     await expect(

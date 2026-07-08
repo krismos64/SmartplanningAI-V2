@@ -328,4 +328,24 @@ describe('getPaymentsAdmin', () => {
     expect(findArgs.skip).toBe(0)
     expect(findArgs.take).toBe(100)
   })
+
+  it('retourne la base URL dashboard Stripe en mode test (sk_test)', async () => {
+    vi.stubEnv('STRIPE_SECRET_KEY', 'sk_test_abc123')
+
+    const result = await getPaymentsAdmin()
+
+    expect(result.stripeDashboardBaseUrl).toBe(
+      'https://dashboard.stripe.com/test'
+    )
+    vi.unstubAllEnvs()
+  })
+
+  it('retourne la base URL dashboard Stripe live (sk_live)', async () => {
+    vi.stubEnv('STRIPE_SECRET_KEY', 'sk_live_abc123')
+
+    const result = await getPaymentsAdmin()
+
+    expect(result.stripeDashboardBaseUrl).toBe('https://dashboard.stripe.com')
+    vi.unstubAllEnvs()
+  })
 })

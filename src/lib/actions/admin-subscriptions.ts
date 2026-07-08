@@ -86,6 +86,11 @@ export interface AdminPaymentRow {
 export interface GetPaymentsAdminResult {
   payments: AdminPaymentRow[]
   total: number
+  /**
+   * Base URL du dashboard Stripe, résolue côté serveur selon le mode de la
+   * clé API (sk_test → /test). Une facture test ouverte sur l'URL live → 404.
+   */
+  stripeDashboardBaseUrl: string
 }
 
 export interface AdminSubscriptionsSummary {
@@ -107,6 +112,16 @@ async function assertSystemAdmin(): Promise<void> {
   if (!session?.user || !hasRequiredRole(session.user.role, 'SYSTEM_ADMIN')) {
     throw new Error('Unauthorized')
   }
+}
+
+/**
+ * Les IDs Stripe vivent dans des espaces séparés test/live : le dashboard
+ * exige le segment /test pour les objets créés avec une clé sk_test.
+ */
+function getStripeDashboardBaseUrl(): string {
+  return process.env.STRIPE_SECRET_KEY?.startsWith('sk_test')
+    ? 'https://dashboard.stripe.com/test'
+    : 'https://dashboard.stripe.com'
 }
 
 function sanitizePagination(page?: number, pageSize?: number) {
@@ -275,5 +290,6 @@ export async function getPaymentsAdmin(params?: {
       failureMessage: payment.failureMessage,
     })),
     total,
+    stripeDashboardBaseUrl: getStripeDashboardBaseUrl(),
   }
 }

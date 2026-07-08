@@ -116,6 +116,7 @@ export function AdminQuickActions({
             <Link
               href="/app/admin/subscriptions"
               className="flex items-center gap-2"
+              data-testid="quick-action-subscriptions"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"

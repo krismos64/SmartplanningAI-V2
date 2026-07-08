@@ -92,16 +92,29 @@ function formatDate(date: Date | string | null): string {
   return new Date(date).toLocaleDateString('fr-FR')
 }
 
-/** Lien vers la facture dans le dashboard Stripe (côté admin, pas portail client) */
-function stripeInvoiceUrl(invoiceId: string): string {
-  return `https://dashboard.stripe.com/invoices/${invoiceId}`
+/**
+ * Lien vers la facture dans le dashboard Stripe (côté admin, pas portail client).
+ * La base est résolue côté serveur selon le mode de la clé (live vs /test) —
+ * une facture test ouverte sur l'URL live renvoie un 404.
+ */
+function stripeInvoiceUrl(baseUrl: string, invoiceId: string): string {
+  return `${baseUrl}/invoices/${invoiceId}`
 }
+
+/** Fallback avant la première réponse serveur */
+const DEFAULT_DASHBOARD_BASE_URL = 'https://dashboard.stripe.com'
 
 // ============================================================================
 // PaymentCard — Vue mobile
 // ============================================================================
 
-function PaymentCard({ row }: { row: AdminPaymentRow }) {
+function PaymentCard({
+  row,
+  dashboardBaseUrl,
+}: {
+  row: AdminPaymentRow
+  dashboardBaseUrl: string
+}) {
   const config = STATUS_CONFIG[row.status] ?? {
     label: row.status,
     variant: 'secondary' as const,
@@ -140,7 +153,7 @@ function PaymentCard({ row }: { row: AdminPaymentRow }) {
 
           {row.stripeInvoiceId && (
             <a
-              href={stripeInvoiceUrl(row.stripeInvoiceId)}
+              href={stripeInvoiceUrl(dashboardBaseUrl, row.stripeInvoiceId)}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
@@ -166,11 +179,16 @@ export function PaymentsDataTable() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('ALL')
   const [isLoading, setIsLoading] = useState(false)
   const [isInitialLoad, setIsInitialLoad] = useState(true)
+  const [hasError, setHasError] = useState(false)
+  const [dashboardBaseUrl, setDashboardBaseUrl] = useState(
+    DEFAULT_DASHBOARD_BASE_URL
+  )
 
   const totalPages = Math.ceil(total / PAGE_SIZE)
 
   const fetchRows = useCallback(async (p: number, status: StatusFilter) => {
     setIsLoading(true)
+    setHasError(false)
     try {
       const result = await getPaymentsAdmin({
         page: p,
@@ -179,6 +197,14 @@ export function PaymentsDataTable() {
       })
       setRows(result.payments)
       setTotal(result.total)
+      setDashboardBaseUrl(result.stripeDashboardBaseUrl)
+    } catch (error) {
+      // Sans catch, une erreur serveur (session expirée, DB down) serait
+      // maquillée en « Aucun paiement trouvé » — on affiche un état d'erreur
+      console.error('[PaymentsDataTable] Erreur chargement:', error)
+      setHasError(true)
+      setRows([])
+      setTotal(0)
     } finally {
       setIsLoading(false)
       setIsInitialLoad(false)
@@ -262,6 +288,16 @@ export function PaymentsDataTable() {
                   </div>
                 </TableCell>
               </TableRow>
+            ) : hasError ? (
+              <TableRow>
+                <TableCell
+                  colSpan={6}
+                  className="h-24 text-center text-destructive"
+                >
+                  Erreur de chargement des paiements — modifiez un filtre pour
+                  réessayer
+                </TableCell>
+              </TableRow>
             ) : rows.length === 0 ? (
               <TableRow>
                 <TableCell
@@ -313,7 +349,10 @@ export function PaymentsDataTable() {
                       {row.stripeInvoiceId ? (
                         <Button asChild variant="ghost" size="sm">
                           <a
-                            href={stripeInvoiceUrl(row.stripeInvoiceId)}
+                            href={stripeInvoiceUrl(
+                              dashboardBaseUrl,
+                              row.stripeInvoiceId
+                            )}
                             target="_blank"
                             rel="noopener noreferrer"
                           >
@@ -343,8 +382,19 @@ export function PaymentsDataTable() {
             <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
             Chargement...
           </div>
+        ) : hasError ? (
+          <p className="py-12 text-center text-destructive">
+            Erreur de chargement des paiements — modifiez un filtre pour
+            réessayer
+          </p>
         ) : rows.length > 0 ? (
-          rows.map((row) => <PaymentCard key={row.id} row={row} />)
+          rows.map((row) => (
+            <PaymentCard
+              key={row.id}
+              row={row}
+              dashboardBaseUrl={dashboardBaseUrl}
+            />
+          ))
         ) : (
           <p className="py-12 text-center text-muted-foreground">
             Aucun paiement trouvé

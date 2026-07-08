@@ -172,12 +172,14 @@ export function SubscriptionsDataTable() {
   const [planFilter, setPlanFilter] = useState<PlanFilter>('ALL')
   const [isLoading, setIsLoading] = useState(false)
   const [isInitialLoad, setIsInitialLoad] = useState(true)
+  const [hasError, setHasError] = useState(false)
 
   const totalPages = Math.ceil(total / PAGE_SIZE)
 
   const fetchRows = useCallback(
     async (p: number, status: StatusFilter, plan: PlanFilter) => {
       setIsLoading(true)
+      setHasError(false)
       try {
         const result = await getSubscriptionsAdmin({
           page: p,
@@ -187,6 +189,13 @@ export function SubscriptionsDataTable() {
         })
         setRows(result.subscriptions)
         setTotal(result.total)
+      } catch (error) {
+        // Sans catch, une erreur serveur (session expirée, DB down) serait
+        // maquillée en « Aucun abonnement trouvé » — on affiche un état d'erreur
+        console.error('[SubscriptionsDataTable] Erreur chargement:', error)
+        setHasError(true)
+        setRows([])
+        setTotal(0)
       } finally {
         setIsLoading(false)
         setIsInitialLoad(false)
@@ -296,6 +305,16 @@ export function SubscriptionsDataTable() {
                   </div>
                 </TableCell>
               </TableRow>
+            ) : hasError ? (
+              <TableRow>
+                <TableCell
+                  colSpan={6}
+                  className="h-24 text-center text-destructive"
+                >
+                  Erreur de chargement des abonnements — modifiez un filtre pour
+                  réessayer
+                </TableCell>
+              </TableRow>
             ) : rows.length === 0 ? (
               <TableRow>
                 <TableCell
@@ -361,6 +380,11 @@ export function SubscriptionsDataTable() {
             <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
             Chargement...
           </div>
+        ) : hasError ? (
+          <p className="py-12 text-center text-destructive">
+            Erreur de chargement des abonnements — modifiez un filtre pour
+            réessayer
+          </p>
         ) : rows.length > 0 ? (
           rows.map((row) => <SubscriptionCard key={row.id} row={row} />)
         ) : (
