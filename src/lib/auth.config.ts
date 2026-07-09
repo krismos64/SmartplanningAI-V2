@@ -122,10 +122,20 @@ export const authConfig: NextAuthConfig = {
       // session.update() avec les données de l'entreprise cible.
       if (trigger === 'update' && session?.isImpersonating !== undefined) {
         if (session.isImpersonating === true) {
-          // Démarrage : on sauvegarde l'identité admin originale
-          // puis on override le token avec l'identité de l'utilisateur cible
+          // Démarrage (ou switch direct vers une autre entreprise cible sans
+          // stop intermédiaire) : on sauvegarde l'identité admin originale
+          // puis on override le token avec l'identité de l'utilisateur cible.
+          // Si une impersonation est DÉJÀ active (token.isImpersonating true),
+          // token.id/token.originalId contiennent déjà l'identité impersonnée
+          // précédente, pas l'admin — on ne doit surtout pas les réécraser,
+          // sinon l'admin d'origine est perdu (bug "Entreprise non configurée"
+          // au prochain stop, l'ancien utilisateur impersonné étant restauré
+          // à la place de l'admin).
+          const wasAlreadyImpersonating = token.isImpersonating === true
           token.isImpersonating = true
-          token.originalAdminId = session.originalAdminId as string
+          token.originalAdminId = wasAlreadyImpersonating
+            ? (token.originalAdminId as string)
+            : (session.originalAdminId as string)
           token.impersonatedUserId = session.impersonatedUserId as string
           token.impersonatedCompanyId = session.impersonatedCompanyId as string
           token.impersonatedUserEmail = session.impersonatedUserEmail as string
@@ -137,7 +147,9 @@ export const authConfig: NextAuthConfig = {
           token.role =
             session.impersonatedRole as import('@prisma/client').UserRole
           token.companyId = session.impersonatedCompanyId as string
-          token.originalId = token.id
+          if (!wasAlreadyImpersonating) {
+            token.originalId = token.id
+          }
           token.id = session.impersonatedUserId as string
         } else {
           // Arrêt : on restaure l'identité admin originale
