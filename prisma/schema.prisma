@@ -354,6 +354,12 @@ model Payment {
   @@index([companyId, createdAt(sort: Desc)])
   @@index([subscriptionId])
   @@index([status])
+  // Vue admin cross-tenant /app/admin/subscriptions (SP-547) : le tri
+  // "tous les paiements, du plus récent au plus ancien" ne peut pas utiliser
+  // [companyId, createdAt] sans companyId en WHERE. Volume croissant
+  // (append-only) — sans ces index, tri complet en mémoire à chaque page.
+  @@index([createdAt(sort: Desc)])
+  @@index([status, createdAt(sort: Desc)])
   @@map("payments")
 }
 
