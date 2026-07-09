@@ -22,11 +22,24 @@ export interface ImpersonateResult {
   error?: string
 }
 
+// Verrou module-level (pas de state React) : empêche deux appels concurrents
+// (double-clic, ou clic sur une deuxième ligne avant le reload) de déclencher
+// deux POST /api/admin/impersonate en parallèle. Sans ce verrou, le JWT
+// SYSTEM_ADMIN n'a pas encore été rafraîchi par le premier session.update()
+// quand le second démarre, ce qui écrase l'admin d'origine dans le token
+// (cf. auth.config.ts, garde `wasAlreadyImpersonating`).
+let impersonateInFlight = false
+
 export function useImpersonate() {
   const { update: updateSession } = useSession()
 
   const impersonate = useCallback(
     async (companyId: string): Promise<ImpersonateResult> => {
+      if (impersonateInFlight) {
+        return { success: false, error: 'Impersonation déjà en cours' }
+      }
+      impersonateInFlight = true
+      let redirecting = false
       try {
         const response = await fetch('/api/admin/impersonate', {
           method: 'POST',
@@ -52,7 +65,9 @@ export function useImpersonate() {
           // Forcer NextAuth à relire le JWT enrichi
           await updateSession(result.impersonation)
           // Full page reload : middleware + layout Server Component
-          // se ré-exécutent avec le nouveau JWT
+          // se ré-exécutent avec le nouveau JWT. Le module JS (et donc le
+          // verrou) est réinitialisé par le reload, pas besoin de le libérer.
+          redirecting = true
           window.location.href = result.redirectTo
         }
 
@@ -60,6 +75,10 @@ export function useImpersonate() {
       } catch (error) {
         console.error('Erreur impersonation:', error)
         return { success: false, error: "Échec de l'impersonation" }
+      } finally {
+        if (!redirecting) {
+          impersonateInFlight = false
+        }
       }
     },
     [updateSession]
