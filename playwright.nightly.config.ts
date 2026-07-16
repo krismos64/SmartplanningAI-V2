@@ -5,10 +5,12 @@
  * Permet de détecter les régressions sans bloquer les PR.
  *
  * Stratégie :
- * - Desktop : Chromium, TOUS les tests sauf mobile
- * - Mobile : 5 devices identiques à la config locale
- *   (iPhone SE, iPhone 14 Pro, Pixel 7, iPad Mini, iPad Pro 11")
- *   Seuls les fichiers *mobile*.spec.ts sont exécutés sur ces devices
+ * - Desktop : Chromium, TOUS les tests (~213 tests, 19 specs)
+ * - Mobile : les 5 projets devices (iPhone SE, iPhone 14 Pro, Pixel 7,
+ *   iPad Mini, iPad Pro 11") ont été retirés en juillet 2026 : les specs
+ *   *mobile*.spec.ts ont été supprimées lors de la rationalisation de
+ *   mars 2026, les projets tournaient donc à vide. Récupérables dans
+ *   l'historique git si des specs mobile sont réintroduites.
  *
  * @ticket SP-333
  */
@@ -56,7 +58,6 @@ export default defineConfig({
   },
 
   // === PROJETS ===
-  // Alignés avec playwright.config.ts pour couverture identique
 
   projects: [
     // ==================== DESKTOP ====================
@@ -68,68 +69,9 @@ export default defineConfig({
           args: ['--disable-dev-shm-usage'],
         },
       },
+      // Garde-fou : si des specs *mobile* réapparaissent, elles ne doivent
+      // pas tourner en viewport desktop par accident
       testIgnore: /.*mobile.*\.spec\.ts/,
-    },
-
-    // ==================== MOBILE - SMARTPHONES ====================
-    // Note: Tous les projets mobiles utilisent Chromium (pas WebKit)
-    // car WebKit sur Linux CI upgrade http://localhost en https://
-    {
-      name: 'mobile-iphone-se',
-      use: {
-        viewport: { width: 320, height: 568 },
-        deviceScaleFactor: 2,
-        isMobile: true,
-        hasTouch: true,
-        userAgent:
-          'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1',
-      },
-      testMatch: /.*mobile.*\.spec\.ts/,
-    },
-    {
-      name: 'mobile-iphone-14-pro',
-      use: {
-        viewport: { width: 393, height: 852 },
-        deviceScaleFactor: 3,
-        isMobile: true,
-        hasTouch: true,
-        userAgent:
-          'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1',
-      },
-      testMatch: /.*mobile.*\.spec\.ts/,
-    },
-    {
-      name: 'mobile-pixel-7',
-      use: {
-        ...devices['Pixel 7'],
-      },
-      testMatch: /.*mobile.*\.spec\.ts/,
-    },
-
-    // ==================== MOBILE - TABLETS ====================
-    {
-      name: 'tablet-ipad-mini',
-      use: {
-        viewport: { width: 768, height: 1024 },
-        deviceScaleFactor: 2,
-        isMobile: true,
-        hasTouch: true,
-        userAgent:
-          'Mozilla/5.0 (iPad; CPU OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1',
-      },
-      testMatch: /.*mobile.*\.spec\.ts/,
-    },
-    {
-      name: 'tablet-ipad-pro-11',
-      use: {
-        viewport: { width: 834, height: 1194 },
-        deviceScaleFactor: 2,
-        isMobile: true,
-        hasTouch: true,
-        userAgent:
-          'Mozilla/5.0 (iPad; CPU OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1',
-      },
-      testMatch: /.*mobile.*\.spec\.ts/,
     },
   ],
 
