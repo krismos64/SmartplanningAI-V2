@@ -3,10 +3,12 @@
 # ==============================================
 #
 # Suite COMPLÈTE des tests exécutée chaque nuit :
-# 1. Tests unitaires Vitest (~2 746 tests)
-# 2. Tests E2E Playwright desktop (189 tests, 13 specs)
+# 1. Tests unitaires Vitest (~2 795 tests)
+# 2. Tests E2E Playwright desktop (~213 tests, 19 specs)
 #
 # Permet de détecter les régressions sans bloquer les PR.
+# En cas d'échec, une issue GitHub (label nightly-failure) est
+# créée ou commentée pour éviter les échecs silencieux.
 #
 # Exécution : tous les jours à 2h00 UTC (3h00 Paris)
 # Peut aussi être lancé manuellement depuis GitHub.
@@ -82,14 +84,17 @@ jobs:
   # ============================================
   # JOB 2 : TESTS E2E COMPLETS (Playwright)
   # ============================================
-  # Lance TOUS les tests E2E desktop (189 tests, 13 specs)
+  # Lance TOUS les tests E2E desktop (~213 tests, 19 specs)
   # Chromium uniquement, pas de tests mobile actuellement
   e2e-tests:
     name: Full E2E Suite
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    # Run réel ~16 min (build ~5 min + tests ~10 min)
+    timeout-minutes: 40
 
-    # Service container PostgreSQL
+    # Service containers PostgreSQL + Redis
+    # Redis est requis : le panneau sessions actives du monitoring admin
+    # (SP-544) ne s'affiche que si Redis est up, comme en production.
     services:
       postgres:
         image: postgres:15
@@ -101,6 +106,15 @@ jobs:
           - 5432:5432
         options: >-
           --health-cmd "pg_isready -U test -d smartplanning_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
@@ -129,6 +143,7 @@ jobs:
       - name: Setup database environment
         run: |
           echo "DATABASE_URL=postgresql://test:test@localhost:5432/smartplanning_test" > .env
+          echo "REDIS_URL=redis://localhost:6379" >> .env
           echo "NEXTAUTH_SECRET=test-secret-for-nightly" >> .env
           echo "NEXTAUTH_URL=http://localhost:3000" >> .env
           echo "AUTH_URL=http://localhost:3000" >> .env
@@ -161,6 +176,7 @@ jobs:
         run: npm run build
         env:
           DATABASE_URL: postgresql://test:test@localhost:5432/smartplanning_test
+          REDIS_URL: redis://localhost:6379
           NEXTAUTH_SECRET: test-secret-for-nightly
           NEXTAUTH_URL: http://localhost:3000
           AUTH_URL: http://localhost:3000
@@ -173,6 +189,7 @@ jobs:
         env:
           CI: true
           DATABASE_URL: postgresql://test:test@localhost:5432/smartplanning_test
+          REDIS_URL: redis://localhost:6379
           NEXTAUTH_SECRET: test-secret-for-nightly
           NEXTAUTH_URL: http://localhost:3000
           AUTH_URL: http://localhost:3000
@@ -194,3 +211,45 @@ jobs:
           name: nightly-test-results-${{ github.run_number }}
           path: test-results/
           retention-days: 7
+
+  # ============================================
+  # JOB 3 : NOTIFICATION EN CAS D'ÉCHEC
+  # ============================================
+  # Le nightly tourne sans surveillance : sans notification, un échec
+  # peut passer inaperçu pendant des jours (vécu : 8 jours en juillet 2026).
+  # Crée une issue GitHub (label nightly-failure) ou commente celle
+  # déjà ouverte pour regrouper les échecs consécutifs.
+  notify-failure:
+    name: Notify Failure
+    runs-on: ubuntu-latest
+    needs: [unit-tests, e2e-tests]
+    if: failure()
+    permissions:
+      issues: write
+    steps:
+      - name: Create or comment tracking issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          gh label create nightly-failure \
+            --repo "$REPO" \
+            --description "Échec des tests nightly" \
+            --color B60205 --force
+
+          existing=$(gh issue list --repo "$REPO" \
+            --label nightly-failure --state open \
+            --json number --jq '.[0].number // empty')
+
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --repo "$REPO" \
+              --body "🔴 Nouvel échec nightly le $(date -u +%F) : $RUN_URL"
+          else
+            gh issue create --repo "$REPO" \
+              --label nightly-failure \
+              --title "🔴 Nightly tests en échec ($(date -u +%F))" \
+              --body "La suite nightly a échoué. Run : $RUN_URL
+
+          Fermer cette issue une fois la cause corrigée — les échecs suivants seront ajoutés en commentaire tant qu'elle reste ouverte."
+          fi

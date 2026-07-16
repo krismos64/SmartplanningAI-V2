@@ -1,13 +1,16 @@
 /**
  * Configuration Playwright optimisée pour la CI
  *
- * Stratégie : Tests critiques uniquement (~163 tests, 12 specs)
- * - Smoke tests
- * - Authentification & RBAC
+ * Stratégie : Tests critiques uniquement (~122 tests, 8 specs)
+ * - Authentification (login + reset password) & RBAC
  * - CRUD principaux
- * - Fonctionnalités métier critiques
+ * - Workflow congés complet (création + validation)
  *
- * Les tests complets sont exécutés dans le workflow nightly.
+ * Les tests complets (~213 tests, 19 specs) sont exécutés dans le
+ * workflow nightly. ATTENTION : testMatch est une whitelist explicite —
+ * un fichier renommé/supprimé ne fait PAS échouer la config, il disparaît
+ * silencieusement de la CI. Vérifier cette liste après chaque
+ * ajout/suppression de spec (audit juillet 2026 : 6 entrées mortes).
  *
  * @ticket SP-333
  */
@@ -42,29 +45,21 @@ export default defineConfig({
 
   // === TESTS CRITIQUES UNIQUEMENT ===
 
-  // Whitelist explicite des tests critiques
+  // Whitelist explicite des tests critiques (fichiers existants uniquement)
   testMatch: [
-    // 🔴 CRITIQUE : Smoke & Auth
-    'smoke.spec.ts',
+    // 🔴 CRITIQUE : Auth & Sécurité
     'auth.spec.ts',
+    'auth/forgot-reset-password.spec.ts',
     'middleware-rbac.spec.ts',
-    'forbidden.spec.ts',
-
-    // 🔴 CRITIQUE : Protection dashboards
-    'dashboard/rbac-protection.spec.ts',
 
     // 🟡 IMPORTANT : CRUD
     'crud/employees.spec.ts',
     'crud/teams.spec.ts',
     'crud/companies.spec.ts',
 
-    // 🟡 IMPORTANT : Métier
-    'schedules/schedules.spec.ts',
-    'leaves/navigation.spec.ts',
+    // 🟡 IMPORTANT : Workflow congés (création + validation manager)
     'leaves/create-request.spec.ts',
-
-    // 🟡 IMPORTANT : Profil (tests stables uniquement)
-    'profile/profile-display.spec.ts',
+    'leaves/review-request.spec.ts',
   ],
 
   // === CONFIGURATION GLOBALE ===

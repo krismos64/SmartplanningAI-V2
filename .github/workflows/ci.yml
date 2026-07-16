@@ -8,14 +8,18 @@
 # 3. Lance les tests E2E (Playwright) - sur PR vers main OU push direct sur main
 # 4. Vérifie que le build fonctionne
 #
-# STRATÉGIE D'OPTIMISATION (SP-113) :
+# STRATÉGIE D'OPTIMISATION (SP-113, révisée juillet 2026) :
 # ┌─────────────────────────────────────────────────────────────────┐
 # │ Scénario              │ Unit Tests │ E2E Tests │ Temps estimé  │
 # ├─────────────────────────────────────────────────────────────────┤
-# │ Push feature branch   │     ✅     │    ❌     │   ~3-5 min    │
-# │ PR vers main          │     ✅     │    ✅     │   ~8-10 min   │
-# │ Push direct main      │     ✅     │    ✅     │   ~8-10 min   │
+# │ PR vers main          │     ✅     │    ✅     │  ~15-18 min   │
+# │ Push direct main      │     ✅     │    ✅     │  ~15-18 min   │
 # └─────────────────────────────────────────────────────────────────┘
+#
+# Le push sur une feature branch SANS PR ne déclenche plus le CI :
+# avant juillet 2026, chaque push sur une branche avec PR ouverte
+# lançait DEUX runs complets (événements push + pull_request) pour le
+# même commit. Ouvrir une PR (éventuellement draft) donne le feedback CI.
 #
 # POURQUOI E2E SUR PUSH DIRECT MAIN ?
 # - Sécurité : même sans PR, les tests E2E valident le code avant déploiement
@@ -37,11 +41,20 @@ name: CI - Lint, Test & Build
 on:
   push:
     branches:
-      - '**' # Tous les push sur toutes les branches
+      - main # Push direct main uniquement (les branches passent par PR)
   pull_request:
     branches:
-      - main # PR vers main uniquement (déclenche les tests E2E)
+      - main # PR vers main (déclenche aussi les tests E2E)
   workflow_dispatch: # Permet le déclenchement manuel depuis GitHub UI
+
+# ----------------------------------------------
+# CONCURRENCE
+# ----------------------------------------------
+# Annule le run précédent quand un nouveau push arrive sur la même PR
+# (jamais sur main : chaque commit mergé doit être validé avant le CD)
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 # ----------------------------------------------
 # PERMISSIONS
@@ -140,16 +153,17 @@ jobs:
   # ============================================
   # JOB 3 : TESTS E2E (Critical - Optimisé)
   # ============================================
-  # OPTIMISATION SP-333 : Tests critiques uniquement (~163 tests, 12 specs)
-  # - Réduit le temps de 40min à ~10-12min
-  # - Suite complète exécutée chaque nuit (nightly-e2e.yml)
+  # OPTIMISATION SP-333 : Tests critiques uniquement (~122 tests, 8 specs)
+  # - Whitelist dans playwright.ci.config.ts
+  # - Suite complète (~213 tests, 19 specs) exécutée chaque nuit (nightly-e2e.yml)
   #
   # Exécuté sur :
   # - Pull Request vers main (validation avant merge)
   # - Push direct sur main (sécurité avant déploiement)
   #
-  # Tests inclus : smoke, auth, RBAC, CRUD, schedules, leaves
-  # Tests exclus : mobile, navigation, analytics, a11y (nightly)
+  # Tests inclus : auth (+ reset password), RBAC middleware, CRUD, congés
+  # Tests exclus (nightly) : admin-*, audit-logs, billing, cookies,
+  #                          impersonation, landing/a11y
   test-e2e:
     name: E2E Tests (Critical)
     runs-on: ubuntu-latest
@@ -160,7 +174,10 @@ jobs:
     # Timeout ajusté : build (~5min) + tests E2E (~10-12min)
     timeout-minutes: 30
 
-    # Service container PostgreSQL pour les tests E2E
+    # Service containers PostgreSQL + Redis pour les tests E2E
+    # Redis aligne l'environnement de test sur la prod (sessions actives,
+    # rate limiting, cache dashboards) — sans lui, l'app bascule en
+    # fallback mémoire et certains panneaux admin ne s'affichent pas.
     services:
       postgres:
         image: postgres:15
@@ -172,6 +189,15 @@ jobs:
           - 5432:5432
         options: >-
           --health-cmd "pg_isready -U test -d smartplanning_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
@@ -204,6 +230,7 @@ jobs:
       - name: Setup database environment
         run: |
           echo "DATABASE_URL=postgresql://test:test@localhost:5432/smartplanning_test" > .env
+          echo "REDIS_URL=redis://localhost:6379" >> .env
           echo "NEXTAUTH_SECRET=test-secret-for-ci" >> .env
           echo "NEXTAUTH_URL=http://localhost:3000" >> .env
           echo "AUTH_URL=http://localhost:3000" >> .env
@@ -277,6 +304,7 @@ jobs:
         env:
           CI: true
           DATABASE_URL: postgresql://test:test@localhost:5432/smartplanning_test
+          REDIS_URL: redis://localhost:6379
           NEXTAUTH_SECRET: test-secret-for-ci
           NEXTAUTH_URL: http://localhost:3000
           AUTH_URL: http://localhost:3000
@@ -340,29 +368,12 @@ jobs:
 
 
 # ==============================================
-# RÉSUMÉ DU PIPELINE CI OPTIMISÉ (SP-333)
+# RÉSUMÉ DU PIPELINE CI OPTIMISÉ (SP-333, révisé juillet 2026)
 # ==============================================
 #
 # STRATÉGIE E2E OPTIMISÉE :
-# - CI : Tests critiques uniquement (~163 tests, 12 specs, ~10-12 min)
-# - Nightly : Suite complète (~2 746 unitaires + 189 E2E desktop, chaque nuit à 2h00 UTC)
-#
-# FLUX D'EXÉCUTION (Push sur feature branch) :
-#
-#                    ┌──────────────────┐
-#                    │       LINT       │
-#                    └────────┬─────────┘
-#                             │
-#                             ▼
-#                    ┌────────────────┐
-#                    │  TEST (Unit)   │
-#                    └────────┬───────┘
-#                             │
-#                             ▼
-#                    ┌─────────────────┐
-#                    │      BUILD      │
-#                    └─────────────────┘
-#                    ~5 min | E2E: non
+# - CI : Tests critiques uniquement (~122 tests, 8 specs, ~12-14 min)
+# - Nightly : Suite complète (~2 795 unitaires + ~213 E2E desktop, chaque nuit à 2h00 UTC)
 #
 # FLUX D'EXÉCUTION (PR vers main OU Push direct main) :
 #
@@ -384,15 +395,13 @@ jobs:
 #                    ~10-12 min | E2E: oui
 #
 # TESTS CI (playwright.ci.config.ts) :
-# - smoke, auth, middleware-rbac, forbidden
-# - dashboard/rbac-protection
-# - crud/employees, teams, companies
-# - schedules, leaves/navigation, leaves/create-request
-# - profile/profile-display
+# - auth, auth/forgot-reset-password, middleware-rbac
+# - crud/employees, crud/teams, crud/companies
+# - leaves/create-request, leaves/review-request
 #
 # TESTS NIGHTLY (nightly-e2e.yml) :
-# - Tests unitaires Vitest (~2 746 tests)
-# - Tests E2E desktop Chromium (189 tests, 13 specs)
+# - Tests unitaires Vitest (~2 795 tests)
+# - Tests E2E desktop Chromium (~213 tests, 19 specs)
 # - Exécuté chaque nuit à 2h00 UTC
 #
 # SÉCURITÉ DU DÉPLOIEMENT :
