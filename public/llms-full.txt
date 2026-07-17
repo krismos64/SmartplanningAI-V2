@@ -65,6 +65,7 @@ Page dédiée : https://smartplanning.fr/solutions/planning-restaurant
 
 ### Commerce et retail
 Plannings hebdomadaires multi-rayons avec gestion des pauses déjeuner et des heures d'affluence (week-ends, soldes, fêtes). Affectation par équipe (caisse, rayon frais, textile), notifications email lors d'un changement de planning, exports PDF pour affichage en back-office.
+Page dédiée : https://smartplanning.fr/solutions/planning-commerce
 
 ### Sécurité / gardiennage
 Plannings 24/7 avec rotations 3x8, gestion des vacations de nuit et des jours fériés majorés. Suivi des heures travaillées par agent, exports Excel pour la paie, alertes en cas de chevauchement ou de dépassement des plafonds légaux.
@@ -108,6 +109,7 @@ SmartPlanning facture **2,90 EUR HT par employé et par mois**, sans engagement,
 - Accueil : https://smartplanning.fr
 - Tarifs : https://smartplanning.fr/tarifs
 - Planning restauration et hôtellerie : https://smartplanning.fr/solutions/planning-restaurant
+- Planning commerce et retail : https://smartplanning.fr/solutions/planning-commerce
 - À propos : https://smartplanning.fr/a-propos
 - CGU : https://smartplanning.fr/cgu
 - CGV : https://smartplanning.fr/cgv

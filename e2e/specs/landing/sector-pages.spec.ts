@@ -103,6 +103,33 @@ test.describe('Page secteur restauration', () => {
     expect(response?.status()).toBe(404)
   })
 
+  test('la page commerce est servie avec son H1 et sa FAQ JSON-LD', async ({
+    page,
+  }) => {
+    await page.goto('/solutions/planning-commerce')
+
+    await expect(page).toHaveTitle(
+      /Logiciel de planning pour commerce et retail/
+    )
+    await expect(
+      page.getByRole('heading', { level: 1, name: /commerce et le retail/ })
+    ).toBeVisible()
+
+    const jsonLd = await page
+      .locator('script[type="application/ld+json"]')
+      .first()
+      .textContent()
+    const graph = JSON.parse(jsonLd as string)['@graph'] as Array<{
+      '@type': string
+    }>
+    expect(graph.map((node) => node['@type'])).toContain('FAQPage')
+
+    // Maillage : le footer de la page commerce référence les deux secteurs
+    await expect(
+      page.locator('footer').getByRole('link', { name: /Planning commerce/ })
+    ).toHaveAttribute('href', '/solutions/planning-commerce')
+  })
+
   test('aucune violation WCAG AA sur la page secteur', async ({ page }) => {
     await page.addInitScript(() => {
       window.localStorage.setItem('theme', 'light')

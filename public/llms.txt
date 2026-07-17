@@ -9,6 +9,7 @@ SmartPlanning simplifie la gestion des plannings d'équipe, des congés et des r
 - [Accueil](https://smartplanning.fr): Page principale du logiciel de planning
 - [Tarifs](https://smartplanning.fr/tarifs): 2,90 EUR HT par employé par mois, essai gratuit 21 jours
 - [Planning restauration et hôtellerie](https://smartplanning.fr/solutions/planning-restaurant): Logiciel de planning pour restaurants et hôtels : coupures, extras, congés des saisonniers
+- [Planning commerce et retail](https://smartplanning.fr/solutions/planning-commerce): Logiciel de planning pour boutiques et enseignes : amplitude 7j/7, temps partiels, rotation des samedis
 - [À propos](https://smartplanning.fr/a-propos): Mission, valeurs et cible de SmartPlanning
 - [CGU](https://smartplanning.fr/cgu): Conditions générales d'utilisation
 - [CGV](https://smartplanning.fr/cgv): Conditions générales de vente
