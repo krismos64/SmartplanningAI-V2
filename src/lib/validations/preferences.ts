@@ -74,6 +74,17 @@ export const notificationPreferencesSchema = z.object({
 })
 
 // ============================================================================
+// PRÉFÉRENCES ONBOARDING
+// ============================================================================
+
+/**
+ * Schéma pour les préférences d'onboarding
+ */
+export const onboardingPreferencesSchema = z.object({
+  hasSeenWelcome: z.boolean().default(false),
+})
+
+// ============================================================================
 // PRÉFÉRENCES UTILISATEUR COMPLÈTES
 // ============================================================================
 
@@ -86,6 +97,7 @@ export const notificationPreferencesSchema = z.object({
 export const userPreferencesSchema = z.object({
   display: displayPreferencesSchema.optional(),
   notifications: notificationPreferencesSchema.optional(),
+  onboarding: onboardingPreferencesSchema.optional(),
 })
 
 // ============================================================================
@@ -123,11 +135,20 @@ export const updateNotificationPreferencesSchema = z.object({
 })
 
 /**
+ * Schéma pour la mise à jour des préférences d'onboarding
+ * Tous les champs sont optionnels
+ */
+export const updateOnboardingPreferencesSchema = z.object({
+  hasSeenWelcome: z.boolean().optional(),
+})
+
+/**
  * Schéma pour la mise à jour complète des préférences
  */
 export const updateUserPreferencesSchema = z.object({
   display: updateDisplayPreferencesSchema.optional(),
   notifications: updateNotificationPreferencesSchema.optional(),
+  onboarding: updateOnboardingPreferencesSchema.optional(),
 })
 
 // ============================================================================
@@ -141,6 +162,9 @@ export type NotificationChannelPreferencesInput = z.infer<
 export type NotificationPreferencesInput = z.infer<
   typeof notificationPreferencesSchema
 >
+export type OnboardingPreferencesInput = z.infer<
+  typeof onboardingPreferencesSchema
+>
 export type UserPreferencesInput = z.infer<typeof userPreferencesSchema>
 
 export type UpdateDisplayPreferencesInput = z.infer<
@@ -148,6 +172,9 @@ export type UpdateDisplayPreferencesInput = z.infer<
 >
 export type UpdateNotificationPreferencesInput = z.infer<
   typeof updateNotificationPreferencesSchema
+>
+export type UpdateOnboardingPreferencesInput = z.infer<
+  typeof updateOnboardingPreferencesSchema
 >
 export type UpdateUserPreferencesInput = z.infer<
   typeof updateUserPreferencesSchema

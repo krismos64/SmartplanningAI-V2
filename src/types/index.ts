@@ -157,12 +157,14 @@ export type {
   DisplayPreferences,
   NotificationChannelPreferences,
   NotificationPreferences,
+  OnboardingPreferences,
   UserPreferences,
 } from './preferences'
 export {
   DEFAULT_DISPLAY_PREFERENCES,
   DEFAULT_NOTIFICATION_CHANNEL_PREFERENCES,
   DEFAULT_NOTIFICATION_PREFERENCES,
+  DEFAULT_ONBOARDING_PREFERENCES,
   DEFAULT_USER_PREFERENCES,
   THEME_OPTIONS,
   DATE_FORMAT_OPTIONS,

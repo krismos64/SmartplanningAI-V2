@@ -75,6 +75,18 @@ export interface NotificationPreferences {
 }
 
 // ============================================================================
+// PRÉFÉRENCES ONBOARDING
+// ============================================================================
+
+/**
+ * Préférences liées au parcours de découverte du produit
+ */
+export interface OnboardingPreferences {
+  /** L'écran de bienvenue affiché à la première connexion a-t-il été vu ? */
+  hasSeenWelcome: boolean
+}
+
+// ============================================================================
 // PRÉFÉRENCES UTILISATEUR COMPLÈTES
 // ============================================================================
 
@@ -88,6 +100,8 @@ export interface UserPreferences {
   display?: DisplayPreferences
   /** Préférences de notifications */
   notifications?: NotificationPreferences
+  /** Préférences liées au parcours de découverte du produit */
+  onboarding?: OnboardingPreferences
 }
 
 // ============================================================================
@@ -124,11 +138,19 @@ export const DEFAULT_NOTIFICATION_PREFERENCES: NotificationPreferences = {
 }
 
 /**
+ * Valeurs par défaut pour les préférences d'onboarding
+ */
+export const DEFAULT_ONBOARDING_PREFERENCES: OnboardingPreferences = {
+  hasSeenWelcome: false,
+}
+
+/**
  * Valeurs par défaut complètes pour les préférences utilisateur
  */
 export const DEFAULT_USER_PREFERENCES: UserPreferences = {
   display: { ...DEFAULT_DISPLAY_PREFERENCES },
   notifications: { ...DEFAULT_NOTIFICATION_PREFERENCES },
+  onboarding: { ...DEFAULT_ONBOARDING_PREFERENCES },
 }
 
 // ============================================================================
