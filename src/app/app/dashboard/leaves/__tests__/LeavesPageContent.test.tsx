@@ -6,9 +6,11 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import '@testing-library/jest-dom'
 import { LeavesPageContent } from '../_components/LeavesPageContent'
 import { UserRole, LeaveRequestStatus, LeaveType } from '@prisma/client'
+import { getTeamAbsences } from '@/lib/actions/leaves'
 
 // Mock next/navigation
 vi.mock('next/navigation', () => ({
@@ -275,6 +277,42 @@ describe('LeavesPageContent', () => {
 
       const calendarTab = screen.getByRole('tab', { name: /Calendrier/i })
       expect(calendarTab).toBeInTheDocument()
+    })
+
+    it('fetches absences for every team, not just the first one', async () => {
+      const user = userEvent.setup()
+      render(
+        <LeavesPageContent
+          {...defaultProps}
+          teams={[
+            { id: 'team-1', name: 'Équipe 1' },
+            { id: 'team-2', name: 'Équipe 2' },
+            { id: 'team-3', name: 'Équipe 3' },
+          ]}
+        />
+      )
+
+      const calendarTab = screen.getByRole('tab', { name: /Calendrier/i })
+      await user.click(calendarTab)
+
+      expect(getTeamAbsences).toHaveBeenCalledWith(
+        'team-1',
+        expect.any(Date),
+        expect.any(Date),
+        undefined
+      )
+      expect(getTeamAbsences).toHaveBeenCalledWith(
+        'team-2',
+        expect.any(Date),
+        expect.any(Date),
+        undefined
+      )
+      expect(getTeamAbsences).toHaveBeenCalledWith(
+        'team-3',
+        expect.any(Date),
+        expect.any(Date),
+        undefined
+      )
     })
   })
 })
