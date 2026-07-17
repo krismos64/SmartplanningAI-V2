@@ -12,6 +12,7 @@ import { describe, expect, it } from 'vitest'
 
 import sitemap from '../sitemap'
 import { getAllSectors } from '../(sectors)/solutions/data'
+import { getAllGuides } from '../(guides)/guides/data'
 
 const TEST_START = new Date()
 
@@ -25,6 +26,10 @@ describe('sitemap', () => {
       'https://smartplanning.fr/tarifs',
       ...getAllSectors().map(
         (sector) => `https://smartplanning.fr/solutions/${sector.slug}`
+      ),
+      'https://smartplanning.fr/guides',
+      ...getAllGuides().map(
+        (guide) => `https://smartplanning.fr/guides/${guide.slug}`
       ),
       'https://smartplanning.fr/a-propos',
       'https://smartplanning.fr/cgu',
@@ -48,6 +53,28 @@ describe('sitemap', () => {
       expect(entry?.priority).toBe(0.8)
       expect((entry?.lastModified as Date).getTime()).toBe(
         new Date(sector.lastModified).getTime()
+      )
+    }
+  })
+
+  it('inclut le hub guides et chaque guide avec sa date propre', () => {
+    const entries = sitemap()
+
+    const hub = entries.find((e) => e.url === 'https://smartplanning.fr/guides')
+    expect(hub?.priority).toBe(0.7)
+    const newestGuide = Math.max(
+      ...getAllGuides().map((guide) => new Date(guide.lastModified).getTime())
+    )
+    expect((hub?.lastModified as Date).getTime()).toBe(newestGuide)
+
+    for (const guide of getAllGuides()) {
+      const entry = entries.find(
+        (e) => e.url === `https://smartplanning.fr/guides/${guide.slug}`
+      )
+      expect(entry).toBeDefined()
+      expect(entry?.priority).toBe(0.7)
+      expect((entry?.lastModified as Date).getTime()).toBe(
+        new Date(guide.lastModified).getTime()
       )
     }
   })

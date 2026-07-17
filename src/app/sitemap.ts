@@ -13,6 +13,7 @@
 import type { MetadataRoute } from 'next'
 
 import { getAllSectors } from '@/app/(sectors)/solutions/data'
+import { getAllGuides } from '@/app/(guides)/guides/data'
 
 const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://smartplanning.fr'
 
@@ -41,6 +42,26 @@ const sectorEntries: MetadataRoute.Sitemap = getAllSectors().map((sector) => ({
   priority: 0.8,
 }))
 
+// Guides /guides/[slug] : chaque guide porte sa propre date,
+// le hub prend la date du guide le plus récent
+const guideEntries: MetadataRoute.Sitemap = getAllGuides().map((guide) => ({
+  url: `${baseUrl}/guides/${guide.slug}`,
+  lastModified: new Date(guide.lastModified),
+  changeFrequency: 'monthly',
+  priority: 0.7,
+}))
+
+const guidesHubEntry: MetadataRoute.Sitemap[number] = {
+  url: `${baseUrl}/guides`,
+  lastModified: new Date(
+    Math.max(
+      ...getAllGuides().map((guide) => new Date(guide.lastModified).getTime())
+    )
+  ),
+  changeFrequency: 'weekly',
+  priority: 0.7,
+}
+
 export default function sitemap(): MetadataRoute.Sitemap {
   return [
     {
@@ -56,6 +77,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.9,
     },
     ...sectorEntries,
+    guidesHubEntry,
+    ...guideEntries,
     {
       url: `${baseUrl}/a-propos`,
       lastModified: PAGE_LAST_MODIFIED.aPropos,

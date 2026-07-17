@@ -76,6 +76,14 @@ Plannings d'interventions au domicile des bénéficiaires, gestion des tournées
 ### BTP et chantiers
 Affectation des compagnons par chantier, gestion des congés intempéries, suivi des heures par projet. Rôles Manager (chef de chantier) et Employé (compagnon), notes d'incidents pour signaler accidents ou retards, exports pour facturation client.
 
+## Guides pratiques
+
+SmartPlanning publie des guides pratiques vérifiés (références légales du Code du travail datées) :
+
+- Comment faire un planning d'équipe : méthode en 6 étapes : https://smartplanning.fr/guides/faire-un-planning-equipe
+- Gérer les congés payés en TPE/PME (acquisition, validation, refus, report) : https://smartplanning.fr/guides/gerer-conges-payes-tpe-pme
+- Hub des guides : https://smartplanning.fr/guides
+
 ## Glossaire
 
 - **Planning hebdomadaire** : organisation des horaires de travail d'une équipe sur une semaine type, généralement du lundi au dimanche.
@@ -110,6 +118,9 @@ SmartPlanning facture **2,90 EUR HT par employé et par mois**, sans engagement,
 - Tarifs : https://smartplanning.fr/tarifs
 - Planning restauration et hôtellerie : https://smartplanning.fr/solutions/planning-restaurant
 - Planning commerce et retail : https://smartplanning.fr/solutions/planning-commerce
+- Guides pratiques : https://smartplanning.fr/guides
+- Guide planning d'équipe : https://smartplanning.fr/guides/faire-un-planning-equipe
+- Guide congés payés : https://smartplanning.fr/guides/gerer-conges-payes-tpe-pme
 - À propos : https://smartplanning.fr/a-propos
 - CGU : https://smartplanning.fr/cgu
 - CGV : https://smartplanning.fr/cgv
