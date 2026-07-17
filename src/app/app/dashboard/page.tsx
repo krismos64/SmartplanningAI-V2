@@ -171,11 +171,20 @@ export default async function EmployeeDashboardPage() {
 
       {/* Charts en 2 colonnes */}
       <div className="grid gap-6 md:grid-cols-2">
-        <EmployeeSchedule weeklySchedule={stats.weeklySchedule} />
+        <EmployeeSchedule
+          weeklySchedule={stats.weeklySchedule}
+          className="glass-strong border-none"
+        />
         {leaveBalanceResult.success && leaveBalanceResult.data ? (
-          <LeaveBalanceCard balance={leaveBalanceResult.data} />
+          <LeaveBalanceCard
+            balance={leaveBalanceResult.data}
+            className="glass-strong border-none"
+          />
         ) : (
-          <EmployeeLeaveBalance leaveBalance={stats.leaveBalance} />
+          <EmployeeLeaveBalance
+            leaveBalance={stats.leaveBalance}
+            className="glass-strong border-none"
+          />
         )}
       </div>
 
