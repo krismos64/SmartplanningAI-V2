@@ -106,7 +106,7 @@ function durationToIso(duration: string): string {
 export const videoSchemas = roleDemos.map((demo) => ({
   '@type': 'VideoObject',
   '@id': `${baseUrl}/#video-${demo.id}`,
-  name: `Démo SmartPlanning — Espace ${demo.label}`,
+  name: `Démo SmartPlanning : Espace ${demo.label}`,
   description: demo.description,
   thumbnailUrl: `${baseUrl}/images/logo-sp.png`,
   uploadDate: demo.uploadDate,

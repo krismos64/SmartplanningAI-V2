@@ -808,7 +808,7 @@ export function ScheduleCalendarDesktop({
       return {
         id: schedule.id,
         title: isRest
-          ? `🛌 ${schedule.title || 'Repos'} — ${employeeName}`
+          ? `🛌 ${schedule.title || 'Repos'} : ${employeeName}`
           : schedule.title || employeeName || 'Sans titre',
         start: isRest
           ? Temporal.PlainDate.from(startDateStr)

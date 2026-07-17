@@ -102,7 +102,7 @@ export function ContactSection() {
                 <Clock className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
               </div>
               <p className="text-sm text-emerald-700 dark:text-emerald-300">
-                <span className="font-medium">Réponse rapide</span> — Nous
+                <span className="font-medium">Réponse rapide</span> : nous
                 répondons généralement sous 24h ouvrées
               </p>
             </motion.div>

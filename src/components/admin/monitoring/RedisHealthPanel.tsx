@@ -68,7 +68,7 @@ export function RedisHealthPanel({ redis, className }: RedisHealthPanelProps) {
           <p className="text-xs text-muted-foreground">
             {isUp
               ? `PONG reçu en ${redis.latency}ms`
-              : 'Redis injoignable — mode dégradé actif'}
+              : 'Redis injoignable : mode dégradé actif'}
           </p>
         </div>
 

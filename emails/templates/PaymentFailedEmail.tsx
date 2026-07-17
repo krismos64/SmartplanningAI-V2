@@ -33,7 +33,7 @@ export function PaymentFailedEmail({
   updatePaymentUrl,
 }: PaymentFailedEmailProps) {
   return (
-    <Layout preview={`Échec de paiement pour ${companyName} — Action requise`}>
+    <Layout preview={`Échec de paiement pour ${companyName} : action requise`}>
       <Text style={presetStyles.heading1}>
         Échec de paiement
       </Text>

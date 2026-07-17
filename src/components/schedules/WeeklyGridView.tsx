@@ -521,7 +521,7 @@ function ScheduleCell({
           {schedule.employee?.firstName} {schedule.employee?.lastName}
         </p>
         <p>
-          {s.label} —{' '}
+          {s.label} :{' '}
           {schedule.type === 'REST'
             ? 'Journée entière'
             : `${schedule.startTime} – ${schedule.endTime}`}

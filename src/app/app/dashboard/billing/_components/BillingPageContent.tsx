@@ -274,7 +274,7 @@ export function BillingPageContent({
             </h3>
             <p className="text-xs text-muted-foreground">
               Votre abonnement est renouvelé automatiquement chaque mois. Vous
-              pouvez annuler à tout moment depuis cette page — l&apos;accès
+              pouvez annuler à tout moment depuis cette page, l&apos;accès
               reste actif jusqu&apos;à la fin de la période en cours.
             </p>
           </div>

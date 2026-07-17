@@ -145,7 +145,7 @@ export function RoleDemosSection() {
                       {/* Miniature spécifique au rôle */}
                       <Image
                         src={activeRole.thumbnail}
-                        alt={`SmartPlanning — Démo ${activeRole.label}`}
+                        alt={`SmartPlanning : Démo ${activeRole.label}`}
                         fill
                         sizes="(min-width: 1024px) 60vw, 100vw"
                         loading="lazy"
@@ -209,7 +209,7 @@ export function RoleDemosSection() {
                   ) : (
                     <iframe
                       src={`https://www.youtube.com/embed/${activeRole.videoId}?autoplay=1`}
-                      title={`Démo SmartPlanning — Espace ${activeRole.label}`}
+                      title={`Démo SmartPlanning : Espace ${activeRole.label}`}
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                       referrerPolicy="strict-origin-when-cross-origin"
                       allowFullScreen

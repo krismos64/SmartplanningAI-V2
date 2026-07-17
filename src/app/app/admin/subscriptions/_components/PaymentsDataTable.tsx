@@ -271,7 +271,7 @@ export function PaymentsDataTable() {
                   colSpan={6}
                   className="h-24 text-center text-destructive"
                 >
-                  Erreur de chargement des paiements — modifiez un filtre pour
+                  Erreur de chargement des paiements, modifiez un filtre pour
                   réessayer
                 </TableCell>
               </TableRow>
@@ -358,7 +358,7 @@ export function PaymentsDataTable() {
           </div>
         ) : hasError ? (
           <p className="py-12 text-center text-destructive">
-            Erreur de chargement des paiements — modifiez un filtre pour
+            Erreur de chargement des paiements, modifiez un filtre pour
             réessayer
           </p>
         ) : rows.length > 0 ? (

@@ -33,7 +33,7 @@ export function TrialExpiredEmail({
   subscribeUrl,
 }: TrialExpiredEmailProps) {
   return (
-    <Layout preview={`Votre essai gratuit SmartPlanning est terminé — ${companyName}`} showUnsubscribe>
+    <Layout preview={`Votre essai gratuit SmartPlanning est terminé : ${companyName}`} showUnsubscribe>
       <Text style={presetStyles.heading1}>
         Votre essai gratuit est terminé
       </Text>
