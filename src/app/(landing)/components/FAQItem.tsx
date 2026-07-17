@@ -5,7 +5,7 @@
  * Expandable FAQ item with animation
  */
 
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { ChevronDown } from 'lucide-react'
 
 interface FAQItemProps {
@@ -30,19 +30,17 @@ export function FAQItem({ question, answer, isOpen, onClick }: FAQItemProps) {
           <ChevronDown className="h-5 w-5 text-muted-foreground" />
         </motion.div>
       </div>
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="overflow-hidden"
-          >
-            <p className="mt-4 text-muted-foreground">{answer}</p>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Reponse toujours presente dans le DOM (SSR/SEO), animee par height.
+          Un montage conditionnel la rendrait invisible aux crawlers (SP-552). */}
+      <motion.div
+        initial={false}
+        animate={{ height: isOpen ? 'auto' : 0, opacity: isOpen ? 1 : 0 }}
+        transition={{ duration: 0.2 }}
+        className="overflow-hidden"
+        aria-hidden={!isOpen}
+      >
+        <p className="mt-4 text-muted-foreground">{answer}</p>
+      </motion.div>
     </div>
   )
 }

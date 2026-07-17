@@ -15,6 +15,11 @@
 
 import { defineConfig, devices } from '@playwright/test'
 
+// Port paramétrable : `PORT=3001 npx playwright test` si le port 3000 est
+// occupé par un autre projet (next dev respecte nativement PORT)
+const PORT = process.env.PORT ?? '3000'
+const BASE_URL = `http://localhost:${PORT}`
+
 export default defineConfig({
   /**
    * Dossier contenant les tests E2E
@@ -69,7 +74,7 @@ export default defineConfig({
     /**
      * URL de base pour page.goto('/')
      */
-    baseURL: 'http://localhost:3000',
+    baseURL: BASE_URL,
 
     /**
      * Trace : enregistrée uniquement au premier retry
@@ -205,7 +210,7 @@ export default defineConfig({
    */
   webServer: {
     command: 'npm run dev',
-    url: 'http://localhost:3000',
+    url: BASE_URL,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
     // Le webServer hérite automatiquement des env vars du process parent
