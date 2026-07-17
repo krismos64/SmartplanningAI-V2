@@ -6,60 +6,77 @@
  * - Pages principales (haute priorite) pour favoriser les sitelinks Google
  * - Pages legales (basse priorite) pour eviter leur apparition dans les SERP
  *
- * @ticket SP-462
+ * @ticket SP-462, SP-550
  */
 
 import type { MetadataRoute } from 'next'
 
 const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://smartplanning.fr'
 
+/**
+ * Dates reelles de derniere modification du CONTENU de chaque page.
+ * A mettre a jour manuellement dans toute PR qui modifie le contenu
+ * d'une page publique (un lastmod qui change a chaque requete est
+ * ignore par Google).
+ */
+const PAGE_LAST_MODIFIED = {
+  home: new Date('2026-07-17'),
+  tarifs: new Date('2026-07-17'),
+  aPropos: new Date('2026-06-05'),
+  cgu: new Date('2026-02-19'),
+  cgv: new Date('2026-02-11'),
+  confidentialite: new Date('2026-02-11'),
+  mentionsLegales: new Date('2026-02-11'),
+  cookies: new Date('2026-02-11'),
+} as const
+
 export default function sitemap(): MetadataRoute.Sitemap {
   return [
     {
       url: baseUrl,
-      lastModified: new Date(),
+      lastModified: PAGE_LAST_MODIFIED.home,
       changeFrequency: 'weekly',
       priority: 1.0,
     },
     {
       url: `${baseUrl}/tarifs`,
-      lastModified: new Date(),
+      lastModified: PAGE_LAST_MODIFIED.tarifs,
       changeFrequency: 'monthly',
       priority: 0.9,
     },
     {
       url: `${baseUrl}/a-propos`,
-      lastModified: new Date(),
+      lastModified: PAGE_LAST_MODIFIED.aPropos,
       changeFrequency: 'monthly',
       priority: 0.8,
     },
     {
       url: `${baseUrl}/cgu`,
-      lastModified: new Date(),
+      lastModified: PAGE_LAST_MODIFIED.cgu,
       changeFrequency: 'yearly',
       priority: 0.3,
     },
     {
       url: `${baseUrl}/cgv`,
-      lastModified: new Date(),
+      lastModified: PAGE_LAST_MODIFIED.cgv,
       changeFrequency: 'yearly',
       priority: 0.3,
     },
     {
       url: `${baseUrl}/confidentialite`,
-      lastModified: new Date(),
+      lastModified: PAGE_LAST_MODIFIED.confidentialite,
       changeFrequency: 'yearly',
       priority: 0.3,
     },
     {
       url: `${baseUrl}/mentions-legales`,
-      lastModified: new Date(),
+      lastModified: PAGE_LAST_MODIFIED.mentionsLegales,
       changeFrequency: 'yearly',
       priority: 0.3,
     },
     {
       url: `${baseUrl}/cookies`,
-      lastModified: new Date(),
+      lastModified: PAGE_LAST_MODIFIED.cookies,
       changeFrequency: 'yearly',
       priority: 0.3,
     },
