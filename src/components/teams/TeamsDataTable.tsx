@@ -10,6 +10,7 @@
 'use client'
 
 import { useState, useMemo, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import {
   type ColumnDef,
   type ColumnFiltersState,
@@ -61,6 +62,7 @@ import {
   getFullName,
 } from '@/lib/validations/team'
 import { useIsImpersonating } from '@/hooks'
+import { EmptyState } from '@/components/ui/empty-state'
 import { TeamCard } from './TeamCard'
 
 // ============================================================================
@@ -288,6 +290,7 @@ export function TeamsDataTable({
   isDeleting: _isDeleting = false,
   showCreateButton = true,
 }: TeamsDataTableProps) {
+  const router = useRouter()
   const isImpersonating = useIsImpersonating()
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
@@ -417,35 +420,30 @@ export function TeamsDataTable({
               ))
             ) : (
               <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
-                  <div className="flex flex-col items-center justify-center gap-2">
-                    <Users className="h-8 w-8 text-muted-foreground" />
-                    <p className="text-muted-foreground">
-                      Aucune équipe trouvée
-                    </p>
-                    {showCreateButton &&
-                      (isImpersonating ? (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          disabled
-                          title="Non disponible en mode support"
-                        >
-                          <Plus className="mr-2 h-4 w-4" />
-                          Créer une équipe
-                        </Button>
-                      ) : (
-                        <Button variant="outline" size="sm" asChild>
-                          <Link href="/app/director/teams/new">
-                            <Plus className="mr-2 h-4 w-4" />
-                            Créer une équipe
-                          </Link>
-                        </Button>
-                      ))}
-                  </div>
+                <TableCell colSpan={columns.length} className="p-0">
+                  <EmptyState
+                    variant={globalFilter ? 'search' : 'default'}
+                    size="sm"
+                    title={
+                      globalFilter
+                        ? 'Aucune équipe ne correspond'
+                        : 'Aucune équipe pour le moment'
+                    }
+                    description={
+                      globalFilter
+                        ? 'Essayez de modifier votre recherche'
+                        : 'Créez votre première équipe pour regrouper vos employés'
+                    }
+                    action={
+                      showCreateButton && !globalFilter && !isImpersonating
+                        ? {
+                            label: 'Créer une équipe',
+                            variant: 'outline',
+                            onClick: () => router.push('/app/director/teams/new'),
+                          }
+                        : undefined
+                    }
+                  />
                 </TableCell>
               </TableRow>
             )}
@@ -467,29 +465,29 @@ export function TeamsDataTable({
               />
             ))
         ) : (
-          <div className="flex flex-col items-center justify-center gap-2 py-12">
-            <Users className="h-8 w-8 text-muted-foreground" />
-            <p className="text-muted-foreground">Aucune équipe trouvée</p>
-            {showCreateButton &&
-              (isImpersonating ? (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled
-                  title="Non disponible en mode support"
-                >
-                  <Plus className="mr-2 h-4 w-4" />
-                  Créer une équipe
-                </Button>
-              ) : (
-                <Button variant="outline" size="sm" asChild>
-                  <Link href="/app/director/teams/new">
-                    <Plus className="mr-2 h-4 w-4" />
-                    Créer une équipe
-                  </Link>
-                </Button>
-              ))}
-          </div>
+          <EmptyState
+            variant={globalFilter ? 'search' : 'default'}
+            size="sm"
+            title={
+              globalFilter
+                ? 'Aucune équipe ne correspond'
+                : 'Aucune équipe pour le moment'
+            }
+            description={
+              globalFilter
+                ? 'Essayez de modifier votre recherche'
+                : 'Créez votre première équipe pour regrouper vos employés'
+            }
+            action={
+              showCreateButton && !globalFilter && !isImpersonating
+                ? {
+                    label: 'Créer une équipe',
+                    variant: 'outline',
+                    onClick: () => router.push('/app/director/teams/new'),
+                  }
+                : undefined
+            }
+          />
         )}
       </div>
 
