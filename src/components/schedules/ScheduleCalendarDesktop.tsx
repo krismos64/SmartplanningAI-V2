@@ -1031,6 +1031,20 @@ export function ScheduleCalendarDesktop({
     plugins
   )
 
+  // Resynchroniser les events avec Schedule-X après le montage initial.
+  // useNextCalendarApp ne réagit pas aux changements de la prop `events` une
+  // fois le calendrier rendu (cf. doc Schedule-X : toute mise à jour post-mount
+  // doit passer par l'events service plugin). Sans ce useEffect, les events
+  // qui arrivent après le premier rendu (congés, indisponibilités : chargés
+  // dans un second temps, dépendants de `teams` résolu de façon asynchrone)
+  // ne s'affichaient jamais tant que le calendrier n'était pas totalement
+  // recréé (changement de vue jour/semaine/mois).
+  useEffect(() => {
+    if (!eventsServiceRef.current) return
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+    eventsServiceRef.current.set(events)
+  }, [events])
+
   // Sauvegarder les events originaux pour rollback après drag & drop
   useEffect(() => {
     if (!calendar) return

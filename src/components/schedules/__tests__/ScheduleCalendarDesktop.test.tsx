@@ -83,6 +83,7 @@ vi.mock('@schedule-x/events-service', () => ({
     add: vi.fn(),
     remove: vi.fn(),
     update: vi.fn(),
+    set: vi.fn(),
   })),
 }))
 
