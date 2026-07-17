@@ -444,6 +444,7 @@ function TimeGridEventWithAvatar({
   const employeeName = (calendarEvent._employeeName as string) ?? ''
   const scheduleTime = (calendarEvent._scheduleTime as string) ?? ''
   const calendarId = (calendarEvent.calendarId as string) ?? 'work'
+  const canEdit = Boolean(calendarEvent._canEdit)
   const initials = employeeName
     .split(' ')
     .map((n: string) => n[0])
@@ -459,7 +460,7 @@ function TimeGridEventWithAvatar({
 
   return (
     <div
-      className="flex h-full items-start gap-2 overflow-hidden rounded-sm px-1.5 py-1"
+      className="group flex h-full items-start gap-2 overflow-hidden rounded-sm px-1.5 py-1"
       style={{
         backgroundColor,
         color: textColor,
@@ -498,6 +499,16 @@ function TimeGridEventWithAvatar({
           </div>
         )}
       </div>
+
+      {/* Affordance drag & drop : visible en permanence (opacité réduite au
+          repos, pleine au hover) pour signaler que l'événement est
+          déplaçable sans avoir à lire le texte d'aide sous le calendrier */}
+      {canEdit && (
+        <GripVertical
+          className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 opacity-40 transition-opacity group-hover:opacity-90"
+          aria-hidden="true"
+        />
+      )}
     </div>
   )
 }
@@ -815,9 +826,11 @@ export function ScheduleCalendarDesktop({
         _employeeImage: schedule.employee?.user?.image ?? null,
         _employeeName: employeeName,
         _scheduleTime: `${schedule.startTime} - ${schedule.endTime}`,
+        // Affordance drag & drop visible au repos (pas seulement au hover)
+        _canEdit: canEdit,
       }
     })
-  }, [schedules])
+  }, [schedules, canEdit])
 
   // Convertir les availabilities en events Schedule-X (SP-402)
   const availabilityEvents = useMemo(() => {
