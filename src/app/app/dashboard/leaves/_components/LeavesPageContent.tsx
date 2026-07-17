@@ -240,8 +240,7 @@ export function LeavesPageContent({
   // Helper : charger les absences du calendrier pour un mois donné
   const fetchCalendarAbsences = useCallback(
     (targetMonth: Date, statusFilter?: LeaveRequestStatus) => {
-      const firstTeamId = teams[0]?.id
-      if (!firstTeamId) return
+      if (teams.length === 0) return
       startTransition(async () => {
         const startOfMonth = new Date(
           targetMonth.getFullYear(),
@@ -253,15 +252,13 @@ export function LeavesPageContent({
           targetMonth.getMonth() + 1,
           0
         )
-        const result = await getTeamAbsences(
-          firstTeamId,
-          startOfMonth,
-          endOfMonth,
-          statusFilter
+        const results = await Promise.all(
+          teams.map((team) =>
+            getTeamAbsences(team.id, startOfMonth, endOfMonth, statusFilter)
+          )
         )
-        if (result.success) {
-          setCalendarAbsencesRaw(result.data)
-        }
+        const allAbsences = results.flatMap((r) => (r.success ? r.data : []))
+        setCalendarAbsencesRaw(allAbsences)
       })
     },
     [teams]
