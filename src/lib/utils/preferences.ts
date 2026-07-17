@@ -16,12 +16,14 @@ import type {
   DisplayPreferences,
   NotificationPreferences,
   NotificationChannelPreferences,
+  OnboardingPreferences,
 } from '@/types/preferences'
 import {
   DEFAULT_USER_PREFERENCES,
   DEFAULT_DISPLAY_PREFERENCES,
   DEFAULT_NOTIFICATION_PREFERENCES,
   DEFAULT_NOTIFICATION_CHANNEL_PREFERENCES,
+  DEFAULT_ONBOARDING_PREFERENCES,
 } from '@/types/preferences'
 import { userPreferencesSchema } from '@/lib/validations/preferences'
 
@@ -173,6 +175,7 @@ type DeepPartialUserPreferences = {
     email?: Partial<NotificationChannelPreferences>
     inApp?: Partial<NotificationChannelPreferences>
   }
+  onboarding?: Partial<OnboardingPreferences>
 }
 
 /**
@@ -198,6 +201,10 @@ export function mergePreferencesWithDefaults(
         ...DEFAULT_NOTIFICATION_CHANNEL_PREFERENCES,
         ...partial.notifications?.inApp,
       },
+    },
+    onboarding: {
+      ...DEFAULT_ONBOARDING_PREFERENCES,
+      ...partial.onboarding,
     },
   }
 }

@@ -12,8 +12,11 @@ import { prisma } from '@/lib/prisma'
 import { hasRequiredRole } from '@/lib/permissions'
 import { getDirectorStats } from '@/lib/services/dashboard'
 import { getEffectiveSessionData } from '@/lib/impersonation'
+import { parseUserPreferences } from '@/lib/utils/preferences'
 
 import { DirectorWelcome } from './_components/DirectorWelcome'
+import { WelcomeDialog } from './_components/WelcomeDialog'
+import { OnboardingChecklist } from './_components/OnboardingChecklist'
 import { DirectorStats } from './_components/DirectorStats'
 import { DirectorTeamsChart } from './_components/DirectorTeamsChart'
 import { DirectorTrendsChart } from './_components/DirectorTrendsChart'
@@ -129,6 +132,12 @@ export default async function DirectorDashboardPage() {
     },
   })
 
+  // Afficher l'ecran de bienvenue une seule fois (premiere connexion)
+  // Jamais pendant une session d'impersonation (support SYSTEM_ADMIN)
+  const userPrefs = parseUserPreferences(user?.preferences)
+  const shouldShowWelcome =
+    !userPrefs.onboarding?.hasSeenWelcome && !session.user.isImpersonating
+
   // Verifier que l'utilisateur a une entreprise assignee
   if (!user?.company) {
     return <NoCompanyAssigned />
@@ -146,6 +155,11 @@ export default async function DirectorDashboardPage() {
   }
 
   const stats = statsResult.data
+
+  // Checklist de demarrage : au moins un planning a-t-il ete cree ?
+  const scheduleCount = await prisma.schedule.count({
+    where: { companyId: user.company.id },
+  })
 
   // Recuperer les 5 derniers conges en attente pour la liste
   const pendingLeaves = await prisma.leaveRequest.findMany({
@@ -195,12 +209,22 @@ export default async function DirectorDashboardPage() {
 
   return (
     <div className="space-y-6">
+      {/* Ecran de bienvenue premiere connexion */}
+      <WelcomeDialog open={shouldShowWelcome} userName={displayName} />
+
       {/* Message de bienvenue */}
       <DirectorWelcome
         userName={displayName}
         companyName={user.company.name}
         pendingLeaves={stats.pendingLeaveRequests}
         attendanceRate={stats.averageAttendanceRate}
+      />
+
+      {/* Checklist de demarrage tant que la configuration est incomplete */}
+      <OnboardingChecklist
+        hasTeam={stats.totalTeams > 0}
+        hasEmployee={stats.totalEmployees > 0}
+        hasSchedule={scheduleCount > 0}
       />
 
       {/* Grille de 6 KPIs */}

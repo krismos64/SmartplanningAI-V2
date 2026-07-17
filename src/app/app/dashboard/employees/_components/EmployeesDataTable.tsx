@@ -58,6 +58,7 @@ import {
   exportEmployeesCsv,
 } from '@/lib/actions/employees'
 import { ExportCsvButton, ExportPdfButton } from '@/components/exports'
+import { EmptyState } from '@/components/ui/empty-state'
 import type {
   EmployeeWithCounts,
   EmployeeFilters as EmployeeFiltersType,
@@ -103,6 +104,12 @@ export function EmployeesDataTable({ userRole }: EmployeesDataTableProps) {
   const [sorting, setSorting] = useState<SortingState>([
     { id: 'lastName', desc: false },
   ])
+
+  // Un filtre est-il actif ? distingue "aucun employe du tout" de
+  // "aucun resultat pour cette recherche/ce filtre"
+  const hasActiveFilters = Object.values(filters).some(
+    (value) => value !== undefined && value !== ''
+  )
 
   // Chargement des equipes pour les filtres
   useEffect(() => {
@@ -438,11 +445,30 @@ export function EmployeesDataTable({ userRole }: EmployeesDataTableProps) {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell
-                    colSpan={columns.length}
-                    className="h-24 text-center"
-                  >
-                    Aucun employé trouvé.
+                  <TableCell colSpan={columns.length} className="p-0">
+                    <EmptyState
+                      variant={hasActiveFilters ? 'search' : 'default'}
+                      size="sm"
+                      title={
+                        hasActiveFilters
+                          ? 'Aucun employé ne correspond'
+                          : 'Aucun employé pour le moment'
+                      }
+                      description={
+                        hasActiveFilters
+                          ? 'Essayez de modifier vos filtres ou votre recherche'
+                          : 'Ajoutez votre premier employé pour commencer à construire vos équipes et plannings'
+                      }
+                      action={
+                        !hasActiveFilters && !isImpersonating
+                          ? {
+                              label: 'Ajouter un employé',
+                              onClick: () =>
+                                router.push('/app/dashboard/employees/new'),
+                            }
+                          : undefined
+                      }
+                    />
                   </TableCell>
                 </TableRow>
               )}
@@ -466,10 +492,28 @@ export function EmployeesDataTable({ userRole }: EmployeesDataTableProps) {
               />
             ))
           ) : (
-            <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
-              <Users className="mb-3 h-10 w-10 opacity-40" />
-              <p className="text-sm">Aucun employé trouvé</p>
-            </div>
+            <EmptyState
+              variant={hasActiveFilters ? 'search' : 'default'}
+              size="sm"
+              title={
+                hasActiveFilters
+                  ? 'Aucun employé ne correspond'
+                  : 'Aucun employé pour le moment'
+              }
+              description={
+                hasActiveFilters
+                  ? 'Essayez de modifier vos filtres ou votre recherche'
+                  : 'Ajoutez votre premier employé pour commencer à construire vos équipes et plannings'
+              }
+              action={
+                !hasActiveFilters && !isImpersonating
+                  ? {
+                      label: 'Ajouter un employé',
+                      onClick: () => router.push('/app/dashboard/employees/new'),
+                    }
+                  : undefined
+              }
+            />
           )}
         </div>
 

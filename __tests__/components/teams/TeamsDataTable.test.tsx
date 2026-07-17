@@ -10,6 +10,12 @@ import userEvent from '@testing-library/user-event'
 import { TeamsDataTable } from '@/components/teams/TeamsDataTable'
 import type { TeamWithCounts } from '@/lib/validations/team'
 
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+  }),
+}))
+
 // ============================================================================
 // Fixtures
 // ============================================================================
@@ -185,7 +191,9 @@ describe('TeamsDataTable', () => {
     it('affiche le message quand aucune équipe', () => {
       render(<TeamsDataTable teams={[]} />)
       // Le message apparaît 2 fois (table + mobile)
-      expect(screen.getAllByText('Aucune équipe trouvée').length).toBeGreaterThanOrEqual(1)
+      expect(
+        screen.getAllByText('Aucune équipe pour le moment').length
+      ).toBeGreaterThanOrEqual(1)
     })
 
     it('affiche les boutons Créer une équipe en état vide', () => {
