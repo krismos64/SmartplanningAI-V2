@@ -34,7 +34,7 @@ export function QuantityUpdatedEmail({
   const isIncrease = newQuantity > oldQuantity
 
   return (
-    <Layout preview={`Mise à jour de votre abonnement — ${companyName}`}>
+    <Layout preview={`Mise à jour de votre abonnement : ${companyName}`}>
       <Text style={presetStyles.heading1}>
         Abonnement mis à jour
       </Text>

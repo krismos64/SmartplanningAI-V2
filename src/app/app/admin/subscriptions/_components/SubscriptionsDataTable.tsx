@@ -113,7 +113,7 @@ function SubscriptionCard({ row }: { row: AdminSubscriptionRow }) {
 
           <div className="flex flex-col gap-1 pt-1 text-xs text-muted-foreground">
             <span>
-              {row.quantity} employé{row.quantity > 1 ? 's' : ''} —{' '}
+              {row.quantity} employé{row.quantity > 1 ? 's' : ''} :{' '}
               <span className="font-medium text-foreground">
                 {formatEurosAsCurrency(row.mrr)}/mois
               </span>
@@ -280,7 +280,7 @@ export function SubscriptionsDataTable() {
                   colSpan={6}
                   className="h-24 text-center text-destructive"
                 >
-                  Erreur de chargement des abonnements — modifiez un filtre pour
+                  Erreur de chargement des abonnements, modifiez un filtre pour
                   réessayer
                 </TableCell>
               </TableRow>
@@ -349,7 +349,7 @@ export function SubscriptionsDataTable() {
           </div>
         ) : hasError ? (
           <p className="py-12 text-center text-destructive">
-            Erreur de chargement des abonnements — modifiez un filtre pour
+            Erreur de chargement des abonnements, modifiez un filtre pour
             réessayer
           </p>
         ) : rows.length > 0 ? (

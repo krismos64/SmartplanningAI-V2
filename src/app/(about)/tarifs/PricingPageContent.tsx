@@ -300,7 +300,7 @@ export function PricingPageContent() {
                     aria-label="Démarrer l'essai gratuit de 21 jours sans carte bancaire"
                     data-testid="cta-register"
                   >
-                    Démarrer l&apos;essai gratuit — {PRICING.TRIAL_DAYS} jours
+                    Démarrer l&apos;essai gratuit, {PRICING.TRIAL_DAYS} jours
                     sans carte bancaire
                     <ArrowRight className="ml-2 h-5 w-5" aria-hidden="true" />
                   </Link>

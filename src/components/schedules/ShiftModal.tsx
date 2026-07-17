@@ -980,7 +980,7 @@ export function ShiftModal({
                       className="rounded-md border border-amber-200 bg-white/50 px-2 py-1.5 text-xs dark:border-amber-800 dark:bg-amber-950/50"
                     >
                       <span className="font-medium">{c.employeeName}</span>
-                      {' — '}
+                      {' : '}
                       {c.details}
                     </li>
                   ))}

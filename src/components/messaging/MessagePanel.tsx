@@ -459,7 +459,7 @@ export function MessagePanel({
                   </TooltipTrigger>
                   <TooltipContent side="bottom">
                     {member.user.name ?? 'Utilisateur'}
-                    {member.role === 'ADMIN' && ' — Admin'}
+                    {member.role === 'ADMIN' && ' : Admin'}
                   </TooltipContent>
                 </Tooltip>
               ))}

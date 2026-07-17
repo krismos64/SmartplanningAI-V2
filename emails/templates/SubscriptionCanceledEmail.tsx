@@ -31,7 +31,7 @@ export function SubscriptionCanceledEmail({
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://smartplanning.fr'
 
   return (
-    <Layout preview={`Confirmation de résiliation — ${companyName}`}>
+    <Layout preview={`Confirmation de résiliation : ${companyName}`}>
       <Text style={presetStyles.heading1}>
         Résiliation confirmée
       </Text>

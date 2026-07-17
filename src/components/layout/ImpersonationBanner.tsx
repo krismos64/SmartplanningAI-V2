@@ -87,7 +87,7 @@ export function ImpersonationBanner({
 
       {/* Message */}
       <p className="flex-1 font-medium" data-testid="impersonation-banner-text">
-        Mode support — Vous visualisez l&apos;espace de{' '}
+        Mode support : vous visualisez l&apos;espace de{' '}
         <strong>{companyName}</strong> ({userEmail})
       </p>
 

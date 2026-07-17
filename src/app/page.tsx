@@ -55,7 +55,7 @@ export const metadata: Metadata = {
   },
 
   openGraph: {
-    title: 'SmartPlanning — Plannings, messagerie et RH pour entreprises',
+    title: 'SmartPlanning - Plannings, messagerie et RH pour entreprises',
     description:
       'Gérez les plannings, congés et la communication de vos équipes. Messagerie interne, import CSV/Excel. Solution SaaS française, essai gratuit 21 jours.',
     type: 'website',
@@ -75,7 +75,7 @@ export const metadata: Metadata = {
 
   twitter: {
     card: 'summary_large_image',
-    title: 'SmartPlanning — Gestion de planning pour entreprises',
+    title: 'SmartPlanning - Gestion de planning pour entreprises',
     description:
       'Solution SaaS française de gestion des plannings. Essai gratuit 21 jours.',
     creator: '@smartplanning',

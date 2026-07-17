@@ -67,7 +67,7 @@ export function ActiveSessionsPanel({
       <CardContent>
         {!redisUp ? (
           <p className="py-6 text-center text-sm text-muted-foreground">
-            Indisponible — Redis est en mode dégradé, le suivi des sessions est
+            Indisponible : Redis est en mode dégradé, le suivi des sessions est
             suspendu
           </p>
         ) : displayed.length === 0 ? (

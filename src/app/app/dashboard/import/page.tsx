@@ -243,7 +243,7 @@ export default function ImportPage() {
             <CardHeader>
               <CardTitle>Déposez votre fichier</CardTitle>
               <CardDescription>
-                Formats acceptés : .csv, .xlsx, .xls — jusqu&apos;à 1 000
+                Formats acceptés : .csv, .xlsx, .xls, jusqu&apos;à 1 000
                 collaborateurs par import
               </CardDescription>
             </CardHeader>
@@ -318,22 +318,22 @@ export default function ImportPage() {
                 </div>
                 <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-xs text-muted-foreground sm:grid-cols-3">
                   <span>
-                    <strong className="text-foreground">Prénom</strong> —
+                    <strong className="text-foreground">Prénom</strong> :
                     obligatoire
                   </span>
                   <span>
-                    <strong className="text-foreground">Nom</strong> —
+                    <strong className="text-foreground">Nom</strong> :
                     obligatoire
                   </span>
-                  <span>Email — facultatif</span>
-                  <span>Téléphone — facultatif</span>
-                  <span>Poste — facultatif</span>
-                  <span>Département — facultatif</span>
-                  <span>Équipe — facultatif</span>
-                  <span>Heures/semaine — défaut 35h</span>
-                  <span>Date d&apos;embauche — facultatif</span>
-                  <span>Rôle — défaut Employé</span>
-                  <span>Compétences — facultatif</span>
+                  <span>Email : facultatif</span>
+                  <span>Téléphone : facultatif</span>
+                  <span>Poste : facultatif</span>
+                  <span>Département : facultatif</span>
+                  <span>Équipe : facultatif</span>
+                  <span>Heures/semaine : défaut 35h</span>
+                  <span>Date d&apos;embauche : facultatif</span>
+                  <span>Rôle : défaut Employé</span>
+                  <span>Compétences : facultatif</span>
                 </div>
               </div>
             </CardContent>
@@ -350,7 +350,7 @@ export default function ImportPage() {
                 <div>
                   <CardTitle>Aperçu des données</CardTitle>
                   <CardDescription>
-                    Fichier : {preview.fileName} — {preview.totalRows} ligne
+                    Fichier : {preview.fileName}, {preview.totalRows} ligne
                     {preview.totalRows > 1 ? 's' : ''} détectée
                     {preview.totalRows > 1 ? 's' : ''}
                   </CardDescription>

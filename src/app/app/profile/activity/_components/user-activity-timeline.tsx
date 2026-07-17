@@ -68,9 +68,9 @@ function getDescription(entry: AuditLogEntry): string {
     case 'DELETE':
       return `${entityLabel} supprimé(e)`
     case 'STATUS_CHANGE':
-      return `Changement de statut — ${entityLabel}`
+      return `Changement de statut : ${entityLabel}`
     case 'EXPORT':
-      return `Export de données — ${entityLabel}`
+      return `Export de données : ${entityLabel}`
     case 'IMPERSONATE':
       return 'Impersonation de compte'
     default:

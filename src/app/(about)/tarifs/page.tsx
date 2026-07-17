@@ -15,7 +15,7 @@ import { StructuredData } from './StructuredData'
 const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://smartplanning.fr'
 
 export const metadata: Metadata = {
-  title: 'Tarifs SmartPlanning — 2,90\u00a0\u20ac par employé par mois',
+  title: 'Tarifs SmartPlanning - 2,90\u00a0\u20ac par employé par mois',
 
   description:
     'Tarif unique et transparent : 2,90\u00a0\u20ac HT par employé par mois. Toutes les fonctionnalités incluses, sans engagement. Essai gratuit 21 jours sans carte bancaire.',
@@ -51,7 +51,7 @@ export const metadata: Metadata = {
   },
 
   openGraph: {
-    title: 'SmartPlanning — 2,90\u00a0\u20ac/employé/mois, tout inclus',
+    title: 'SmartPlanning - 2,90\u00a0\u20ac/employé/mois, tout inclus',
     description:
       'Gérez les plannings de votre équipe à partir de 2,90\u00a0\u20ac par employé. Sans engagement, essai gratuit 21 jours.',
     type: 'website',
@@ -62,7 +62,7 @@ export const metadata: Metadata = {
 
   twitter: {
     card: 'summary_large_image',
-    title: 'SmartPlanning — 2,90\u00a0\u20ac/employé/mois',
+    title: 'SmartPlanning - 2,90\u00a0\u20ac/employé/mois',
     description:
       'Tarif unique, toutes fonctionnalités incluses. Essai gratuit 21 jours.',
     creator: '@smartplanning',

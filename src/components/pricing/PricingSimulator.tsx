@@ -137,7 +137,7 @@ export function PricingSimulator({
       >
         <div className="flex items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1.5 text-xs font-medium text-emerald-400">
           <Gift className="h-3.5 w-3.5" aria-hidden="true" />
-          {PRICING.TRIAL_DAYS} jours gratuits — sans carte bancaire
+          {PRICING.TRIAL_DAYS} jours gratuits, sans carte bancaire
         </div>
         <div className="flex items-center gap-1.5 rounded-full border border-cyan-500/20 bg-cyan-500/10 px-3 py-1.5 text-xs font-medium text-cyan-400">
           <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />

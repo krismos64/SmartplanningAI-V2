@@ -209,7 +209,7 @@ export function SubscriptionStatus({
                     aria-hidden="true"
                   />
                   <h3 className="text-lg font-semibold text-emerald-800 dark:text-emerald-300">
-                    Essai gratuit — {trialDaysNoSub} jour
+                    Essai gratuit : {trialDaysNoSub} jour
                     {trialDaysNoSub > 1 ? 's' : ''} restant
                     {trialDaysNoSub > 1 ? 's' : ''}
                   </h3>
@@ -244,7 +244,7 @@ export function SubscriptionStatus({
                       ✓
                     </span>
                     <span>
-                      <strong>Sans engagement</strong> — aucune mauvaise
+                      <strong>Sans engagement</strong> : aucune mauvaise
                       surprise
                     </span>
                   </li>
@@ -345,7 +345,7 @@ export function SubscriptionStatus({
                 />
                 <div>
                   <p className="font-semibold text-emerald-800 dark:text-emerald-300">
-                    Vous êtes abonné — essai gratuit en cours
+                    Vous êtes abonné, essai gratuit en cours
                   </p>
                   <p className="mt-1 text-sm text-emerald-700 dark:text-emerald-300/90">
                     Il vous reste {trialDays} jour{trialDays > 1 ? 's' : ''}{' '}

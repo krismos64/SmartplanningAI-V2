@@ -35,7 +35,7 @@ export function PaymentConfirmedEmail({
   nextBillingDate,
 }: PaymentConfirmedEmailProps) {
   return (
-    <Layout preview={`Paiement confirmé pour ${companyName} — ${amount}`}>
+    <Layout preview={`Paiement confirmé pour ${companyName} : ${amount}`}>
       <Text style={presetStyles.heading1}>
         Paiement confirmé
       </Text>
