@@ -2,14 +2,17 @@
  * sitemap.ts - Plan du site pour les moteurs de recherche
  *
  * @description Fichier Metadata API Next.js 15 generant /sitemap.xml
- * 8 pages publiques avec priorites differenciees :
+ * Pages publiques avec priorites differenciees :
  * - Pages principales (haute priorite) pour favoriser les sitelinks Google
+ * - Pages secteur /solutions/* (0.8) alimentees par le registre (sectors)
  * - Pages legales (basse priorite) pour eviter leur apparition dans les SERP
  *
- * @ticket SP-462, SP-550
+ * @ticket SP-462, SP-550, SP-552
  */
 
 import type { MetadataRoute } from 'next'
+
+import { getAllSectors } from '@/app/(sectors)/solutions/data'
 
 const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://smartplanning.fr'
 
@@ -30,6 +33,14 @@ const PAGE_LAST_MODIFIED = {
   cookies: new Date('2026-02-11'),
 } as const
 
+// Pages secteur /solutions/[slug] : chaque secteur porte sa propre date
+const sectorEntries: MetadataRoute.Sitemap = getAllSectors().map((sector) => ({
+  url: `${baseUrl}/solutions/${sector.slug}`,
+  lastModified: new Date(sector.lastModified),
+  changeFrequency: 'monthly',
+  priority: 0.8,
+}))
+
 export default function sitemap(): MetadataRoute.Sitemap {
   return [
     {
@@ -44,6 +55,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'monthly',
       priority: 0.9,
     },
+    ...sectorEntries,
     {
       url: `${baseUrl}/a-propos`,
       lastModified: PAGE_LAST_MODIFIED.aPropos,

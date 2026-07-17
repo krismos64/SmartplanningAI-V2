@@ -61,6 +61,7 @@ Pour éviter toute confusion, voici ce que SmartPlanning ne propose pas à ce jo
 
 ### Restauration / hôtellerie
 Gestion des shifts en coupure (matin/soir), rotations week-end, remplacements de dernière minute. SmartPlanning gère les plannings par service, les heures supplémentaires et les congés payés des saisonniers. Vue jour pour la brigade en cuisine, vue semaine pour la salle et l'accueil.
+Page dédiée : https://smartplanning.fr/solutions/planning-restaurant
 
 ### Commerce et retail
 Plannings hebdomadaires multi-rayons avec gestion des pauses déjeuner et des heures d'affluence (week-ends, soldes, fêtes). Affectation par équipe (caisse, rayon frais, textile), notifications email lors d'un changement de planning, exports PDF pour affichage en back-office.
@@ -106,6 +107,7 @@ SmartPlanning facture **2,90 EUR HT par employé et par mois**, sans engagement,
 
 - Accueil : https://smartplanning.fr
 - Tarifs : https://smartplanning.fr/tarifs
+- Planning restauration et hôtellerie : https://smartplanning.fr/solutions/planning-restaurant
 - À propos : https://smartplanning.fr/a-propos
 - CGU : https://smartplanning.fr/cgu
 - CGV : https://smartplanning.fr/cgv

@@ -11,12 +11,20 @@
 import Link from 'next/link'
 import { Calendar, Mail, Linkedin, Youtube } from 'lucide-react'
 import { CookieSettingsButton } from '@/components/cookies'
+import { getAllSectors } from '@/app/(sectors)/solutions/data'
+
+// Pages secteur /solutions/* (maillage interne SEO, SP-552)
+const sectorLinks = getAllSectors().map((sector) => ({
+  href: `/solutions/${sector.slug}`,
+  label: `Planning ${sector.shortName}`,
+}))
 
 // Footer links
 const footerLinks = {
   product: [
     { href: '/#features', label: 'Fonctionnalités' },
     { href: '/tarifs', label: 'Tarifs' },
+    ...sectorLinks,
   ],
   company: [
     { href: '/a-propos', label: 'À propos' },
@@ -46,7 +54,10 @@ export function LandingFooter() {
                 <Calendar className="h-5 w-5 text-white" />
               </div>
               <span className="text-lg font-bold text-foreground">
-                Smart<span className="text-blue-600 dark:text-blue-400">Planning</span>
+                Smart
+                <span className="text-blue-600 dark:text-blue-400">
+                  Planning
+                </span>
               </span>
             </Link>
             <p className="mb-6 text-sm text-muted-foreground">

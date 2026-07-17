@@ -12,7 +12,9 @@ import { motion, fadeInUp, staggerContainer } from '@/lib/animations'
 export const SECTION_VARIANT = {
   border: 'border-blue-600/20 dark:border-blue-400/20',
   bg: 'bg-blue-600/10 dark:bg-blue-400/10',
-  text: 'text-blue-600 dark:text-blue-400',
+  // blue-700 en clair : blue-600 tombe a 4.1:1 (< 4.5 WCAG AA) sur le fond
+  // teinte de l'AnimatedBackground pour du texte 14px (audit axe SP-552)
+  text: 'text-blue-700 dark:text-blue-400',
 } as const
 
 interface SectionHeaderProps {
