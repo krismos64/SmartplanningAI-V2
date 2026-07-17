@@ -7,6 +7,7 @@ import { LeaveType } from '@prisma/client'
 import {
   createLeaveRequestSchema,
   leaveTypeOptions,
+  LEAVE_TYPE_DESCRIPTIONS,
 } from '@/lib/validations/leave'
 import type { z } from 'zod'
 
@@ -22,6 +23,7 @@ import { useIsImpersonating } from '@/hooks'
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -167,6 +169,12 @@ export function LeaveRequestForm({
                   </SelectContent>
                 </Select>
               </FormControl>
+              {field.value &&
+                LEAVE_TYPE_DESCRIPTIONS[field.value as LeaveType] && (
+                  <FormDescription>
+                    {LEAVE_TYPE_DESCRIPTIONS[field.value as LeaveType]}
+                  </FormDescription>
+                )}
               <FormMessage />
             </FormItem>
           )}

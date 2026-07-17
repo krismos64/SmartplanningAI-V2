@@ -220,6 +220,18 @@ export const LEAVE_TYPE_LABELS: Record<LeaveType, string> = {
   OTHER: 'Autre',
 }
 
+/**
+ * Descriptions courtes pour les types de congé les moins évidents
+ * pour un utilisateur non-RH (affichées en tooltip)
+ */
+export const LEAVE_TYPE_DESCRIPTIONS: Partial<Record<LeaveType, string>> = {
+  PAID_LEAVE: 'Jours de congés annuels payés par l’employeur',
+  RTT: 'Jour de repos accordé en compensation d’heures travaillées au-delà de 35h/semaine',
+  UNPAID_LEAVE: 'Absence non rémunérée, accordée par l’employeur',
+  FAMILY_EVENT: 'Mariage, naissance, décès… (congés légaux liés à un événement familial)',
+  PARENTAL_LEAVE: 'Congé lié à la naissance ou l’adoption d’un enfant',
+}
+
 export const LEAVE_STATUS_LABELS: Record<LeaveRequestStatus, string> = {
   PENDING: 'En attente',
   APPROVED: 'Approuvé',

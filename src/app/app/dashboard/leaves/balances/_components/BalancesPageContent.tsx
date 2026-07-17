@@ -28,11 +28,48 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Label } from '@/components/ui/label'
-import { Pencil, ChevronLeft, ChevronRight, Calculator } from 'lucide-react'
+import {
+  Pencil,
+  ChevronLeft,
+  ChevronRight,
+  Calculator,
+  Info,
+} from 'lucide-react'
 import { toast } from 'sonner'
 import { LeaveBalanceEditDialog } from '@/components/leaves'
 import { getAllLeaveBalances } from '@/lib/actions/leaves'
 import { cn } from '@/lib/utils'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
+
+/** En-tête de colonne avec tooltip explicatif */
+function ColumnHeaderWithTooltip({
+  label,
+  description,
+}: {
+  label: string
+  description: string
+}) {
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span className="inline-flex cursor-help items-center gap-1">
+            {label}
+            <Info className="h-3 w-3 text-muted-foreground" />
+          </span>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p className="max-w-xs">{description}</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  )
+}
 
 type LeaveBalanceWithEmployee = LeaveBalance & {
   employee: {
@@ -194,10 +231,20 @@ export function BalancesPageContent({
                   <TableRow>
                     <TableHead>Employé</TableHead>
                     <TableHead>Équipe</TableHead>
-                    <TableHead className="text-center">CP Total</TableHead>
+                    <TableHead className="text-center">
+                      <ColumnHeaderWithTooltip
+                        label="CP Total"
+                        description="Congés payés : nombre total de jours acquis pour l'année"
+                      />
+                    </TableHead>
                     <TableHead className="text-center">CP Utilisés</TableHead>
                     <TableHead className="text-center">CP Restants</TableHead>
-                    <TableHead className="text-center">RTT Total</TableHead>
+                    <TableHead className="text-center">
+                      <ColumnHeaderWithTooltip
+                        label="RTT Total"
+                        description="Réduction du Temps de Travail : jours de repos accordés en compensation d'heures travaillées au-delà de 35h/semaine"
+                      />
+                    </TableHead>
                     <TableHead className="text-center">RTT Utilisés</TableHead>
                     <TableHead className="text-center">RTT Restants</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
