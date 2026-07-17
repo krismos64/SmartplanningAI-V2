@@ -1,20 +1,20 @@
 # SmartPlanning
 
-> Logiciel SaaS francais de gestion de plannings pour TPE et PME. Alternative moderne et abordable a Skello, Combo et Planning Conge.
+> Logiciel SaaS français de gestion de plannings, congés et RH pour TPE et PME. Tarif unique de 2,90 EUR HT par employé et par mois, toutes fonctionnalités incluses, hébergé en France et conforme RGPD.
 
-SmartPlanning simplifie la gestion des plannings d'equipe, des conges et des ressources humaines pour les petites et moyennes entreprises francaises (5 a 250 employes).
+SmartPlanning simplifie la gestion des plannings d'équipe, des congés et des ressources humaines pour les petites et moyennes entreprises françaises (5 à 250 employés).
 
 ## Docs
 
 - [Accueil](https://smartplanning.fr): Page principale du logiciel de planning
-- [Tarifs](https://smartplanning.fr/tarifs): 2,90 EUR HT par employe par mois, essai gratuit 21 jours
-- [A propos](https://smartplanning.fr/a-propos): Mission, valeurs et cible de SmartPlanning
-- [CGU](https://smartplanning.fr/cgu): Conditions generales d'utilisation
-- [CGV](https://smartplanning.fr/cgv): Conditions generales de vente
-- [Confidentialite](https://smartplanning.fr/confidentialite): Politique de confidentialite RGPD
-- [Mentions legales](https://smartplanning.fr/mentions-legales): Informations legales
+- [Tarifs](https://smartplanning.fr/tarifs): 2,90 EUR HT par employé par mois, essai gratuit 21 jours
+- [À propos](https://smartplanning.fr/a-propos): Mission, valeurs et cible de SmartPlanning
+- [CGU](https://smartplanning.fr/cgu): Conditions générales d'utilisation
+- [CGV](https://smartplanning.fr/cgv): Conditions générales de vente
+- [Confidentialité](https://smartplanning.fr/confidentialite): Politique de confidentialité RGPD
+- [Mentions légales](https://smartplanning.fr/mentions-legales): Informations légales
 - [Cookies](https://smartplanning.fr/cookies): Politique cookies
 
 ## Optional
 
-- [llms-full.txt](https://smartplanning.fr/llms-full.txt): Version detaillee de ce fichier avec contenu complet
+- [llms-full.txt](https://smartplanning.fr/llms-full.txt): Version détaillée de ce fichier avec contenu complet

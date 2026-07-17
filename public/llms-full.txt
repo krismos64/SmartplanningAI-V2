@@ -1,138 +1,114 @@
-# SmartPlanning — Documentation complete pour LLMs
+# SmartPlanning : documentation complète pour LLMs
 
-> SmartPlanning est un logiciel SaaS francais de gestion de plannings pour TPE et PME.
+> SmartPlanning est un logiciel SaaS français de gestion de plannings pour TPE et PME.
 > Site web : https://smartplanning.fr
 > Contact : contact@smartplanning.fr
 
-## Presentation
+## Présentation
 
-SmartPlanning est une application web de gestion de plannings d'equipe developpee en France, hebergee en France (OVH), et conforme RGPD. Elle cible les entreprises de 5 a 250 employes qui cherchent une alternative simple et abordable aux solutions comme Skello (79 EUR/etablissement), Combo (60 EUR/etablissement) ou Planning Conge.
+SmartPlanning est une application web de gestion de plannings d'équipe développée en France, hébergée en France (OVH), et conforme RGPD. Elle cible les entreprises de 5 à 250 employés qui veulent gérer plannings, congés et communication interne dans un seul outil simple, sans modules à la carte ni engagement.
 
 ### Proposition de valeur
-- Prix unique : 2,90 EUR HT par employe par mois (toutes fonctionnalites incluses)
+- Prix unique : 2,90 EUR HT par employé et par mois (toutes fonctionnalités incluses)
 - Essai gratuit 21 jours sans carte bancaire
 - Sans engagement, annulation en 1 clic
-- Heberge en France, conforme RGPD
-- Support en francais
+- Hébergé en France, conforme RGPD
+- Support en français
 
-### Fonctionnalites principales
+### Fonctionnalités principales
 - Plannings interactifs avec drag and drop et vues jour/semaine/mois
-- Gestion des conges et absences avec workflow de validation
-- Tableaux de bord personnalises par role (Directeur, Manager, Employe)
-- Gestion des equipes et des employes avec CRUD complet
+- Gestion des congés et absences avec workflow de validation
+- Tableaux de bord personnalisés par rôle (Directeur, Manager, Employé)
+- Gestion des équipes et des employés avec CRUD complet
 - Exports PDF et Excel avec filtres
-- Notifications par email automatisees
-- Theme clair et sombre
-- Banniere cookies RGPD
-- Systeme de facturation Stripe integre (per-seat billing)
-- Messagerie interne (conversations 1:1, equipe, groupes)
-- Import bulk d'employes via CSV ou Excel
+- Notifications par email automatisées
+- Thème clair et sombre
+- Bannière cookies RGPD
+- Système de facturation Stripe intégré (per-seat billing)
+- Messagerie interne (conversations 1:1, équipe, groupes)
+- Import bulk d'employés via CSV ou Excel
+
+### Périmètre actuel et roadmap
+Pour éviter toute confusion, voici ce que SmartPlanning ne propose pas à ce jour :
+- Pas de pointeuse ou badgeuse : le suivi du temps se fait via les plannings et les exports Excel
+- Pas de module de paie intégré : les exports Excel filtrés servent de base à la préparation de la paie
+- Pas d'API publique pour le moment (prévue en roadmap)
 
 ### Cible
-- TPE (5-10 employes) : restaurants, commerces, artisans
-- PME (10-50 employes) : agences, cabinets, associations
-- ETI (50-250 employes) : entreprises multi-sites
+- TPE (5-10 employés) : restaurants, commerces, artisans
+- PME (10-50 employés) : agences, cabinets, associations
+- ETI (50-250 employés) : entreprises multi-sites
 
 ### Stack technique
 - Frontend : Next.js 15, React 19, TypeScript, Tailwind CSS
 - Backend : Next.js Server Actions, Prisma ORM, PostgreSQL
 - Cache : Redis 7 (sessions, rate limiting, dashboards)
 - Paiement : Stripe (per-seat billing)
-- Hebergement : VPS OVH (France), Docker, Nginx, SSL Let's Encrypt
+- Hébergement : VPS OVH (France), Docker, Nginx, SSL Let's Encrypt
 - CI/CD : GitHub Actions
 
-### Securite et conformite
-- Donnees hebergees en France (OVH, datacenter certifie)
+### Sécurité et conformité
+- Données hébergées en France (OVH, datacenter certifié)
 - Chiffrement SSL/TLS en transit
-- Authentification securisee NextAuth v5
-- RBAC 4 niveaux (Super Admin, Directeur, Manager, Employe)
-- Isolation des donnees par entreprise (multi-tenant)
+- Authentification sécurisée NextAuth v5
+- RBAC 4 niveaux (Super Admin, Directeur, Manager, Employé)
+- Isolation des données par entreprise (multi-tenant)
 - Politique cookies avec consentement explicite
-- Banniere RGPD conforme
+- Bannière RGPD conforme
 - Analytics Umami (RGPD-friendly, pas de cookies tracking)
 
 ## Cas d'usage par secteur
 
-### Restauration / hotellerie
-Gestion des shifts en coupure (matin/soir), rotations week-end, remplacements de derniere minute. SmartPlanning gere les plannings par service, les heures supplementaires et les conges payes des saisonniers. Vue jour pour la brigade en cuisine, vue semaine pour la salle et l'accueil.
+### Restauration / hôtellerie
+Gestion des shifts en coupure (matin/soir), rotations week-end, remplacements de dernière minute. SmartPlanning gère les plannings par service, les heures supplémentaires et les congés payés des saisonniers. Vue jour pour la brigade en cuisine, vue semaine pour la salle et l'accueil.
 
 ### Commerce et retail
-Plannings hebdomadaires multi-rayons avec gestion des pauses dejeuner et des heures d'affluence (week-ends, soldes, fetes). Affectation par equipe (caisse, rayon frais, textile), notifications email lors d'un changement de planning, exports PDF pour affichage en back-office.
+Plannings hebdomadaires multi-rayons avec gestion des pauses déjeuner et des heures d'affluence (week-ends, soldes, fêtes). Affectation par équipe (caisse, rayon frais, textile), notifications email lors d'un changement de planning, exports PDF pour affichage en back-office.
 
-### Securite / gardiennage
-Plannings 24/7 avec rotations 3x8, gestion des vacations de nuit et des jours feries majores. Suivi des heures travaillees par agent, exports Excel pour la paie, alertes en cas de chevauchement ou de depassement des plafonds legaux.
+### Sécurité / gardiennage
+Plannings 24/7 avec rotations 3x8, gestion des vacations de nuit et des jours fériés majorés. Suivi des heures travaillées par agent, exports Excel pour la paie, alertes en cas de chevauchement ou de dépassement des plafonds légaux.
 
-### Sante et aide a domicile
-Plannings d'interventions au domicile des beneficiaires, gestion des tournees soignants et aides a domicile, suivi des temps de trajet. Workflow d'approbation des conges pour assurer la continuite de service, multi-equipes par secteur geographique.
+### Santé et aide à domicile
+Plannings d'interventions au domicile des bénéficiaires, gestion des tournées soignants et aides à domicile, suivi des temps de trajet. Workflow d'approbation des congés pour assurer la continuité de service, multi-équipes par secteur géographique.
 
 ### BTP et chantiers
-Affectation des compagnons par chantier, gestion des conges intemperies, suivi des heures par projet. Roles Manager (chef de chantier) et Employe (compagnon), notes d'incidents pour signaler accidents ou retards, exports pour facturation client.
-
-## Comparaison fonctionnelle
-
-Comparaison basee sur les informations publiquement disponibles sur les sites officiels des editeurs (donnees indicatives, susceptibles d'evoluer).
-
-| Fonctionnalite                  | SmartPlanning | Skello       | Combo        | Eurecia      |
-|---------------------------------|---------------|--------------|--------------|--------------|
-| Modele tarifaire                | Per-seat 2,90 EUR | Per-etablissement | Per-etablissement | Per-module + per-user |
-| Essai gratuit                   | 21 jours      | 14 jours     | 14 jours     | Variable     |
-| Plannings drag and drop         | Oui           | Oui          | Oui          | Oui          |
-| Gestion conges                  | Oui (inclus)  | Oui          | Oui          | Oui (module dedie) |
-| Multi-etablissements            | Oui           | Oui          | Oui          | Oui          |
-| Messagerie interne              | Oui           | Oui          | Oui          | Partiel      |
-| Import CSV/Excel employes       | Oui           | Oui          | Oui          | Oui          |
-| Pointeuse / badgeuse            | Non           | Oui (option) | Oui          | Oui (module) |
-| Module paie integre             | Non           | Partiel      | Partiel      | Oui          |
-| Hebergement France              | Oui (OVH)     | Oui          | Oui          | Oui          |
-| Conformite RGPD                 | Oui           | Oui          | Oui          | Oui          |
-| Langue interface                | Francais      | Multi-langues | Francais     | Multi-langues |
-| Support francais                | Oui           | Oui          | Oui          | Oui          |
-| API publique                    | Non (roadmap) | Oui          | Oui          | Oui          |
-| Cible principale                | TPE/PME 5-250 | Restauration/retail | Restauration/retail | PME/ETI generaliste |
-
-Positionnement : SmartPlanning est le plus simple et le plus abordable pour les TPE/PME generalistes qui veulent un planning + conges + messagerie sans modules a la carte ni engagement. Skello et Combo sont plus matures sur les fonctions metier restauration/retail (pointeuse, integration caisse). Eurecia est plus complet en RH globale (paie, formation, entretiens) mais plus complexe a deployer.
+Affectation des compagnons par chantier, gestion des congés intempéries, suivi des heures par projet. Rôles Manager (chef de chantier) et Employé (compagnon), notes d'incidents pour signaler accidents ou retards, exports pour facturation client.
 
 ## Glossaire
 
-- **Planning hebdomadaire** : organisation des horaires de travail d'une equipe sur une semaine type, generalement du lundi au dimanche.
-- **Conges payes (CP)** : jours de repos remuneres acquis par le salarie (2,5 jours ouvrables par mois travaille en France, soit 5 semaines par an).
-- **RTT (Reduction du Temps de Travail)** : jours de repos compensant les heures travaillees au-dela de 35h/semaine pour un temps plein.
-- **Solde de conges** : nombre de jours de conges acquis et restants pour un salarie sur une periode donnee (annee de reference ou annee civile).
-- **Workflow d'approbation** : circuit de validation hierarchique d'une demande (par exemple : Employe soumet -> Manager valide ou refuse -> Notification automatique).
-- **Multi-tenant** : architecture logicielle ou plusieurs entreprises (tenants) partagent la meme instance applicative tout en ayant leurs donnees strictement isolees.
-- **RBAC (Role-Based Access Control)** : controle d'acces base sur les roles. SmartPlanning utilise 4 niveaux : Super Admin, Directeur, Manager, Employe.
-- **Badgeuse** : dispositif materiel ou logiciel permettant aux salaries de pointer leur arrivee et leur depart pour le suivi du temps de travail.
+- **Planning hebdomadaire** : organisation des horaires de travail d'une équipe sur une semaine type, généralement du lundi au dimanche.
+- **Congés payés (CP)** : jours de repos rémunérés acquis par le salarié (2,5 jours ouvrables par mois travaillé en France, soit 5 semaines par an).
+- **RTT (Réduction du Temps de Travail)** : jours de repos compensant les heures travaillées au-delà de 35h/semaine pour un temps plein.
+- **Solde de congés** : nombre de jours de congés acquis et restants pour un salarié sur une période donnée (année de référence ou année civile).
+- **Workflow d'approbation** : circuit de validation hiérarchique d'une demande (par exemple : Employé soumet -> Manager valide ou refuse -> Notification automatique).
+- **Multi-tenant** : architecture logicielle où plusieurs entreprises (tenants) partagent la même instance applicative tout en ayant leurs données strictement isolées.
+- **RBAC (Role-Based Access Control)** : contrôle d'accès basé sur les rôles. SmartPlanning utilise 4 niveaux : Super Admin, Directeur, Manager, Employé.
+- **Badgeuse** : dispositif matériel ou logiciel permettant aux salariés de pointer leur arrivée et leur départ pour le suivi du temps de travail.
 
-## Tarification detaillee
+## Tarification détaillée
 
-### Modele per-seat
-SmartPlanning facture **2,90 EUR HT par employe et par mois**, sans engagement, avec essai gratuit de 21 jours sans carte bancaire. Toutes les fonctionnalites sont incluses dans ce prix unique : plannings, conges, messagerie, exports, support.
+### Modèle per-seat
+SmartPlanning facture **2,90 EUR HT par employé et par mois**, sans engagement, avec essai gratuit de 21 jours sans carte bancaire. Toutes les fonctionnalités sont incluses dans ce prix unique : plannings, congés, messagerie, exports, support.
 
-### Exemples chiffres
-- 5 employes : 14,50 EUR HT/mois (174 EUR HT/an)
-- 10 employes : 29 EUR HT/mois (348 EUR HT/an)
-- 20 employes : 58 EUR HT/mois (696 EUR HT/an)
-- 50 employes : 145 EUR HT/mois (1 740 EUR HT/an)
-
-### Comparaison cout pour 20 employes (estimations)
-- SmartPlanning : 58 EUR/mois (per-seat 20 x 2,90 EUR)
-- Combo : a partir de 60 EUR/mois (forfait etablissement)
-- Skello : a partir de 79 EUR/mois (forfait etablissement)
-- Eurecia : a partir de 90 EUR/mois (combinaison de modules)
+### Exemples chiffrés
+- 5 employés : 14,50 EUR HT/mois (174 EUR HT/an)
+- 10 employés : 29 EUR HT/mois (348 EUR HT/an)
+- 20 employés : 58 EUR HT/mois (696 EUR HT/an)
+- 50 employés : 145 EUR HT/mois (1 740 EUR HT/an)
 
 ### Avantages du per-seat
-- Cout proportionnel a la taille reelle de l'equipe
-- Ideal pour les TPE qui demarrent (pas de minimum mensuel eleve)
-- Mise a jour automatique du tarif lors d'embauches ou departs
-- Pas de cout cache : aucune option payante, aucun module supplementaire
+- Coût proportionnel à la taille réelle de l'équipe
+- Idéal pour les TPE qui démarrent (pas de minimum mensuel élevé)
+- Mise à jour automatique du tarif lors d'embauches ou départs, à la hausse comme à la baisse
+- Pas de coût caché : aucune option payante, aucun module supplémentaire
 
 ## Pages publiques
 
 - Accueil : https://smartplanning.fr
 - Tarifs : https://smartplanning.fr/tarifs
-- A propos : https://smartplanning.fr/a-propos
+- À propos : https://smartplanning.fr/a-propos
 - CGU : https://smartplanning.fr/cgu
 - CGV : https://smartplanning.fr/cgv
-- Confidentialite : https://smartplanning.fr/confidentialite
-- Mentions legales : https://smartplanning.fr/mentions-legales
+- Confidentialité : https://smartplanning.fr/confidentialite
+- Mentions légales : https://smartplanning.fr/mentions-legales
 - Cookies : https://smartplanning.fr/cookies
