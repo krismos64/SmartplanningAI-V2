@@ -75,6 +75,7 @@ Plannings d'interventions au domicile des bénéficiaires, gestion des tournées
 
 ### BTP et chantiers
 Affectation des compagnons par chantier, gestion des congés intempéries, suivi des heures par projet. Rôles Manager (chef de chantier) et Employé (compagnon), notes d'incidents pour signaler accidents ou retards, exports pour facturation client.
+Page dédiée : https://smartplanning.fr/solutions/planning-btp
 
 ## Guides pratiques
 
@@ -118,6 +119,7 @@ SmartPlanning facture **2,90 EUR HT par employé et par mois**, sans engagement,
 - Tarifs : https://smartplanning.fr/tarifs
 - Planning restauration et hôtellerie : https://smartplanning.fr/solutions/planning-restaurant
 - Planning commerce et retail : https://smartplanning.fr/solutions/planning-commerce
+- Planning BTP et chantiers : https://smartplanning.fr/solutions/planning-btp
 - Guides pratiques : https://smartplanning.fr/guides
 - Guide planning d'équipe : https://smartplanning.fr/guides/faire-un-planning-equipe
 - Guide congés payés : https://smartplanning.fr/guides/gerer-conges-payes-tpe-pme

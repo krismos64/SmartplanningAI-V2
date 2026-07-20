@@ -26,6 +26,8 @@ import {
   ChevronRight,
   Clock,
   FileDown,
+  HardHat,
+  MapPin,
   MessagesSquare,
   Scale,
   Smartphone,
@@ -66,6 +68,8 @@ const SECTOR_ICONS: Record<SectorIconName, LucideIcon> = {
   'user-plus': UserPlus,
   store: Store,
   sun: Sun,
+  'hard-hat': HardHat,
+  'map-pin': MapPin,
 }
 
 interface SectorContentProps {

@@ -12,10 +12,15 @@
 import type { SectorData } from './types'
 import { restaurationSector } from './restauration'
 import { commerceSector } from './commerce'
+import { btpSector } from './btp'
 
 export type { SectorData, SectorFaq, SectorIconName } from './types'
 
-const SECTORS: readonly SectorData[] = [restaurationSector, commerceSector]
+const SECTORS: readonly SectorData[] = [
+  restaurationSector,
+  commerceSector,
+  btpSector,
+]
 
 export function getAllSectors(): readonly SectorData[] {
   return SECTORS

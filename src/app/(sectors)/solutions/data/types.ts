@@ -23,6 +23,8 @@ export type SectorIconName =
   | 'user-plus'
   | 'store'
   | 'sun'
+  | 'hard-hat'
+  | 'map-pin'
 
 export interface SectorFaq {
   question: string
