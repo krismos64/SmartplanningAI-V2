@@ -36,11 +36,11 @@ export const btpSector: SectorData = {
   h1Highlight: 'BTP et les chantiers',
 
   directAnswer:
-    "SmartPlanning permet aux entreprises du BTP d'affecter leurs compagnons par chantier en quelques minutes : plannings multi-chantiers, congés intempéries, suivi des heures par projet et notes d'incidents pour signaler un accident ou un retard. Chaque compagnon consulte son planning depuis son téléphone et le chef de chantier ajuste les affectations par glisser-déposer. Le tarif est de 2,90 € HT par employé et par mois, toutes fonctionnalités incluses, avec un essai gratuit de 21 jours sans carte bancaire.",
+    "SmartPlanning permet aux entreprises du BTP d'affecter leurs compagnons par chantier en quelques minutes : plannings multi-chantiers, congés intempéries, export des heures par créneau (durée et lieu) et notes d'incidents pour tracer un accident ou un retard. Chaque compagnon consulte son planning depuis son téléphone et le chef de chantier ajuste les affectations par glisser-déposer. Le tarif est de 2,90 € HT par employé et par mois, toutes fonctionnalités incluses, avec un essai gratuit de 21 jours sans carte bancaire.",
 
   intro: [
     "Sur un chantier, le planning ne s'arrête jamais à une seule adresse. Une entreprise du bâtiment ou des travaux publics doit répartir ses compagnons sur plusieurs chantiers en parallèle, ajuster les affectations au jour le jour selon l'avancement, et composer avec les arrêts intempéries qui décalent tout le calendrier. Beaucoup d'entreprises jonglent encore entre un tableur, des appels le matin et des feuilles d'heures papier récupérées en fin de semaine, avec le risque d'oublier un compagnon sur le mauvais chantier ou de perdre la trace d'un incident.",
-    "SmartPlanning centralise l'affectation des compagnons par chantier dans un planning en ligne partagé : le chef de chantier organise les équipes par glisser-déposer, chaque compagnon consulte ses affectations du jour depuis son téléphone, et les congés intempéries se gèrent avec le même workflow d'approbation que les congés payés classiques. Les notes d'incidents et les exports d'heures par chantier complètent l'outil pour la facturation client et le suivi de projet.",
+    "SmartPlanning centralise l'affectation des compagnons par chantier dans un planning en ligne partagé : le chef de chantier organise les équipes par glisser-déposer, chaque compagnon consulte ses affectations du jour depuis son téléphone, et les congés intempéries se gèrent avec le même workflow d'approbation que les congés payés classiques. Les notes d'incidents et l'export Excel des créneaux (durée et lieu de chaque intervention) complètent l'outil pour la facturation client et le suivi de projet.",
   ],
 
   challenges: [
@@ -93,13 +93,13 @@ export const btpSector: SectorData = {
       icon: 'scale',
       feature: 'Notes d\'incidents horodatées',
       benefit:
-        "Signalez un accident, un retard ou un incident de sécurité directement depuis l'espace de l'employé ou du manager, avec visibilité RBAC adaptée au rôle (compagnon, chef de chantier, direction).",
+        "Le chef de chantier ou la direction consigne un accident, un retard ou un incident de sécurité dans une note horodatée, avec une visibilité RBAC adaptée au rôle : la note reste réservée à la direction ou devient visible par le compagnon concerné.",
     },
     {
       icon: 'file-down',
       feature: 'Exports Excel pour la facturation client',
       benefit:
-        "Filtrez les heures travaillées par chantier et par compagnon pour préparer la facturation client ou les situations de travaux, sans ressaisie manuelle.",
+        "Renseignez le chantier dans le lieu de chaque créneau : l'export Excel liste chaque intervention avec sa durée, son lieu et le compagnon, une base directement exploitable dans un tableur pour ventiler les heures par chantier et préparer la facturation client.",
     },
     {
       icon: 'user-plus',
@@ -130,12 +130,12 @@ export const btpSector: SectorData = {
     {
       question: "Peut-on suivre les heures travaillées par chantier ?",
       answer:
-        "Oui. L'export Excel filtré par chantier et par compagnon donne le détail des heures affectées à chaque projet, une base directement exploitable pour la facturation client ou la préparation de la paie.",
+        "Oui. Indiquez le chantier dans le champ « lieu » de chaque créneau : l'export Excel détaille alors, pour chaque intervention, la durée, le lieu et le compagnon. Vous ventilez ensuite les heures par chantier dans votre tableur pour la facturation client ou la préparation de la paie. L'export se filtre par équipe, par employé et par période.",
     },
     {
       question: 'Comment signaler un incident sur un chantier ?',
       answer:
-        "Le compagnon ou le chef de chantier crée une note d'incident depuis son espace, avec une visibilité adaptée au rôle : le manager et la direction sont informés selon les règles RBAC définies pour l'entreprise.",
+        "Le chef de chantier (manager) ou la direction crée une note d'incident depuis son espace, avec une visibilité adaptée au rôle : selon les règles RBAC définies, la note reste réservée à la direction ou devient visible par le compagnon concerné, qui la retrouve alors dans son espace personnel.",
     },
     {
       question: 'Combien coûte SmartPlanning pour une équipe de 15 compagnons ?',
@@ -150,5 +150,5 @@ export const btpSector: SectorData = {
     },
   ],
 
-  lastModified: '2026-07-20',
+  lastModified: '2026-07-21',
 }

@@ -68,13 +68,13 @@ Plannings hebdomadaires multi-rayons avec gestion des pauses déjeuner et des he
 Page dédiée : https://smartplanning.fr/solutions/planning-commerce
 
 ### Sécurité / gardiennage
-Plannings 24/7 avec rotations 3x8, gestion des vacations de nuit et des jours fériés majorés. Suivi des heures travaillées par agent, exports Excel pour la paie, alertes en cas de chevauchement ou de dépassement des plafonds légaux.
+Plannings 24/7 avec rotations 3x8, gestion des vacations de nuit et des jours fériés majorés. Suivi des heures travaillées par agent, exports Excel pour la paie, détection des chevauchements de créneaux et des conflits avec un congé posé lors de la création d'un planning.
 
 ### Santé et aide à domicile
 Plannings d'interventions au domicile des bénéficiaires, gestion des tournées soignants et aides à domicile, suivi des temps de trajet. Workflow d'approbation des congés pour assurer la continuité de service, multi-équipes par secteur géographique.
 
 ### BTP et chantiers
-Affectation des compagnons par chantier, gestion des congés intempéries, suivi des heures par projet. Rôles Manager (chef de chantier) et Employé (compagnon), notes d'incidents pour signaler accidents ou retards, exports pour facturation client.
+Affectation des compagnons par chantier, gestion des congés intempéries, export Excel des créneaux (durée et lieu de chaque intervention) pour ventiler les heures par chantier. Rôles Manager (chef de chantier) et Employé (compagnon) ; les notes d'incidents (accident, retard) sont créées par le chef de chantier ou la direction, avec une visibilité RBAC réglable (direction seule ou visible par le compagnon concerné). Exports pour la facturation client.
 Page dédiée : https://smartplanning.fr/solutions/planning-btp
 
 ## Guides pratiques

@@ -10,7 +10,7 @@ SmartPlanning simplifie la gestion des plannings d'équipe, des congés et des r
 - [Tarifs](https://smartplanning.fr/tarifs): 2,90 EUR HT par employé par mois, essai gratuit 21 jours
 - [Planning restauration et hôtellerie](https://smartplanning.fr/solutions/planning-restaurant): Logiciel de planning pour restaurants et hôtels : coupures, extras, congés des saisonniers
 - [Planning commerce et retail](https://smartplanning.fr/solutions/planning-commerce): Logiciel de planning pour boutiques et enseignes : amplitude 7j/7, temps partiels, rotation des samedis
-- [Planning BTP et chantiers](https://smartplanning.fr/solutions/planning-btp): Logiciel de planning pour le BTP : affectation multi-chantiers, congés intempéries, heures par projet
+- [Planning BTP et chantiers](https://smartplanning.fr/solutions/planning-btp): Logiciel de planning pour le BTP : affectation multi-chantiers, congés intempéries, export des heures par créneau
 - [Guides pratiques](https://smartplanning.fr/guides): Hub des guides planning et RH pour TPE/PME
 - [Guide : faire un planning d'équipe](https://smartplanning.fr/guides/faire-un-planning-equipe): Méthode en 6 étapes avec les règles légales du Code du travail
 - [Guide : gérer les congés payés](https://smartplanning.fr/guides/gerer-conges-payes-tpe-pme): Acquisition, validation, refus et report des congés payés en TPE/PME
