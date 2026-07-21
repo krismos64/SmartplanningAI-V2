@@ -214,7 +214,7 @@ export const faqs: FAQ[] = [
   {
     question: 'Mes données sont-elles sécurisées ?',
     answer:
-      'Absolument. Nous utilisons un chiffrement AES-256, hébergement certifié ISO 27001 et conformité RGPD totale.',
+      'Absolument. Vos données sont chiffrées en transit (HTTPS/TLS), hébergées en France chez OVHcloud (datacenters certifiés ISO 27001) et traitées en conformité totale avec le RGPD : hébergement souverain, export et suppression de vos données à tout moment.',
   },
   {
     question: 'Quel support est disponible ?',
