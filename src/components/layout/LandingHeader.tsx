@@ -26,12 +26,21 @@ import { Button } from '@/components/ui/button'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
 import { cn } from '@/lib/utils'
 
-// Flat navigation kept for the mobile menu
+// Flat navigation kept for the mobile menu.
+// Inclut les pages secteur et le hub des guides : sans elles, les pages de
+// contenu SEO/GEO n'étaient atteignables que par le footer sur mobile.
 const mobileNavLinks = [
   { href: '/#role-demos', label: 'Démos par rôle' },
   { href: '/#features', label: 'Fonctionnalités' },
   { href: '/#how-it-works', label: 'Comment ça marche' },
   { href: '/#benefits', label: 'Avantages' },
+  {
+    href: '/solutions/planning-restaurant',
+    label: 'Restauration et hôtellerie',
+  },
+  { href: '/solutions/planning-commerce', label: 'Commerce et retail' },
+  { href: '/solutions/planning-btp', label: 'BTP et chantiers' },
+  { href: '/guides', label: 'Guides pratiques' },
   { href: '/tarifs', label: 'Tarifs' },
   { href: '/#faq', label: 'FAQ' },
   { href: '/#contact', label: 'Contact' },
@@ -361,19 +370,43 @@ export function LandingHeader({
                 {/* Menu content centered */}
                 <div className="flex flex-1 flex-col items-center justify-center gap-1.5 px-6 py-1">
                   {showNavLinks &&
-                    mobileNavLinks.map((link, index) => (
-                      <motion.a
-                        key={link.href}
-                        href={link.href}
-                        initial={{ opacity: 0, y: 15 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.05 }}
-                        className="text-[15px] font-medium text-foreground transition-colors hover:text-blue-400 dark:text-white"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                      >
-                        {link.label}
-                      </motion.a>
-                    ))}
+                    mobileNavLinks.map((link, index) => {
+                      // Les ancres (/#section) restent en <a> natif : la
+                      // navigation par fragment n'a pas besoin du routeur.
+                      // Les vraies pages passent par Link (navigation client,
+                      // préchargement) plutôt que par un rechargement complet.
+                      const isAnchor = link.href.startsWith('/#')
+                      const className =
+                        'text-[15px] font-medium text-foreground transition-colors hover:text-blue-400 dark:text-white'
+                      const closeMenu = () => setIsMobileMenuOpen(false)
+
+                      return (
+                        <motion.div
+                          key={link.href}
+                          initial={{ opacity: 0, y: 15 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: index * 0.05 }}
+                        >
+                          {isAnchor ? (
+                            <a
+                              href={link.href}
+                              className={className}
+                              onClick={closeMenu}
+                            >
+                              {link.label}
+                            </a>
+                          ) : (
+                            <Link
+                              href={link.href}
+                              className={className}
+                              onClick={closeMenu}
+                            >
+                              {link.label}
+                            </Link>
+                          )}
+                        </motion.div>
+                      )
+                    })}
 
                   {/* Theme Toggle Mobile */}
                   <motion.div

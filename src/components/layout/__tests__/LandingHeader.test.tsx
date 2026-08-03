@@ -248,6 +248,31 @@ describe('LandingHeader - navbar desktop (disclosure)', () => {
         screen.getByTestId('landing-mobile-menu-button')
       ).toBeInTheDocument()
     })
+
+    it('donne accès aux pages secteur et aux guides depuis le menu mobile', async () => {
+      const user = userEvent.setup()
+      render(<LandingHeader />)
+
+      await user.click(screen.getByTestId('landing-mobile-menu-button'))
+
+      // Les pages de contenu SEO/GEO ne doivent pas être joignables
+      // uniquement par le footer sur mobile.
+      const mobileLinks = [
+        ['Restauration et hôtellerie', '/solutions/planning-restaurant'],
+        ['Commerce et retail', '/solutions/planning-commerce'],
+        ['BTP et chantiers', '/solutions/planning-btp'],
+        ['Guides pratiques', '/guides'],
+      ] as const
+
+      for (const [label, href] of mobileLinks) {
+        const links = screen.getAllByRole('link', {
+          name: new RegExp(`^${label}$`, 'i'),
+        })
+        expect(links.some((link) => link.getAttribute('href') === href)).toBe(
+          true
+        )
+      }
+    })
   })
 
   describe('Pages auth (showNavLinks=false)', () => {
