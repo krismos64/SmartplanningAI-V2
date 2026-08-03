@@ -16,7 +16,7 @@ Plateforme SaaS multi-tenant de gestion intelligente des plannings et des ressou
 | Frontend        | Next.js 15.5.9 (App Router), React 19, TypeScript 5.7.2, Tailwind + Shadcn/ui |
 | Backend         | NextAuth v5 (Auth.js), Prisma 6.18.0, Zod, Stripe v20.3.1                     |
 | Base de donnees | PostgreSQL 16, Redis 7 (ioredis 5.10)                                         |
-| Emails          | React Email (30 templates), Nodemailer SMTP                                    |
+| Emails          | React Email (28 templates transactionnels), Nodemailer SMTP                   |
 | Temps reel      | Server-Sent Events (SSE) — notifications + messagerie sur un stream unique     |
 | DevOps          | Docker, GitHub Actions (CI/CD), VPS OVH (Ubuntu 24.04), Nginx, Let's Encrypt  |
 
@@ -39,9 +39,10 @@ Plateforme SaaS multi-tenant de gestion intelligente des plannings et des ressou
 - **Profil** : Avatar Cloudinary, RGPD (export donnees, suppression compte), preferences affichage
 - **Settings** : Apparence, notifications, entreprise (jours travailles, horaires)
 - **Notes & Incidents** : Taches personnelles (drag & drop), notes d'incidents avec visibilite RBAC
-- **SEO** : Metadata API, JSON-LD Schema.org, sitemap, robots.txt
-- **Landing** : Design "Cyber Glass 3D", simulateur tarifs, FAQ, pages legales RGPD, demos video par role (Directeur/Manager/Employe) avec onglets et JSON-LD VideoObject
-- **Accessibilite** : WCAG 2.1 AA, touch targets 44px, Lighthouse 100%
+- **SEO / GEO** : Metadata API, JSON-LD Schema.org (@graph, Article, HowTo, FAQPage, BreadcrumbList), sitemap data-driven avec `lastModified` reels, robots.txt ouvert aux crawlers IA, `llms.txt` et `llms-full.txt`
+- **Contenu editorial** : Pages secteur `/solutions/[slug]` (restauration, commerce, BTP) et guides pratiques `/guides/[slug]`, generes depuis des registres data-driven en SSG strict. Ajouter une page = 1 fichier de donnees + 1 ligne au registre (sitemap, footer, navigation et garde-fous de tests suivent automatiquement)
+- **Landing** : Design "Cyber Glass 3D", simulateur tarifs, FAQ, pages legales RGPD, demos video par role (Directeur/Manager/Employe) avec onglets et JSON-LD VideoObject. Navigation en pattern disclosure (liens toujours dans le DOM pour le maillage interne, `inert` a l'etat ferme)
+- **Accessibilite** : WCAG 2.1 AA, touch targets 44px, Lighthouse A11y 97-100%
 
 > Historique detaille du developpement : [`docs/development-log.md`](docs/development-log.md)
 
@@ -105,30 +106,40 @@ Voir `.env.example` pour la liste complete et les variables optionnelles (Umami,
 npm run dev              # Developpement
 npm run build            # Build production
 npm run lint             # ESLint
+npm run type-check       # TypeScript strict (tsc --noEmit)
+npm run format           # Prettier
 npm run db:migrate       # Migrations Prisma
 npm run db:studio        # Prisma Studio
 npm run db:seed          # Seed base de donnees
-npm run test             # Tests unitaires (watch)
-npm run test -- --run    # Tests unitaires (single run)
-npm run test:e2e         # Tests E2E Playwright
+npm run test             # Tests unitaires (single run)
+npm run test:watch       # Tests unitaires (watch)
+npm run test:coverage    # Couverture de tests
+npm run test:e2e         # Tests E2E Playwright (suite complete)
+npm run test:e2e:ci      # Tests E2E (whitelist CI)
+npm run a11y:audit       # Audit Lighthouse accessibilite
+npm run email:dev        # Previsualisation des templates React Email
 ```
+
+> Playwright en local : prefixer par `PORT=3001` si le port 3000 est deja occupe.
 
 ## Architecture
 
 ```
 src/
-├── app/              # Next.js 15 App Router (56 pages, 5 layouts)
+├── app/              # Next.js 15 App Router (61 pages, 5 layouts, 17 API routes)
 │   ├── (auth)/       # Login, register, verify-email, activate-account
 │   ├── (about)/      # A propos, tarifs
 │   ├── (landing)/    # Landing page
 │   ├── (legal)/      # Pages legales RGPD
+│   ├── (sectors)/    # Pages secteur /solutions/[slug] (registre data-driven)
+│   ├── (guides)/     # Hub et guides pratiques /guides/[slug] (registre data-driven)
 │   ├── app/          # Routes protegees par role
 │   └── api/          # API Routes (avatar, webhooks, health, SSE, messages...)
-├── components/       # 200 composants React
-│   ├── messaging/    # Messagerie (9 composants)
+├── components/       # 187 composants React
+│   ├── messaging/    # Messagerie (8 composants)
 │   ├── import/       # Import CSV (4 composants)
-│   └── ui/           # Shadcn/ui (34 composants)
-├── lib/              # Actions (28), services (20), validations Zod (22), email (30 templates)
+│   └── ui/           # Shadcn/ui (41 composants)
+├── lib/              # Actions (31), services (18), validations Zod, email (28 templates)
 ├── hooks/            # 23 hooks custom (SSE, SWR, messagerie, import CSV)
 ├── types/            # Types TypeScript globaux
 └── styles/           # Design tokens centralises
@@ -136,7 +147,7 @@ src/
 
 ## Base de donnees
 
-21 modeles Prisma (17 core + 4 NextAuth), 16 enums, 55+ index, 19 migrations.
+21 modeles Prisma (17 core + 4 NextAuth), 16 enums, 55+ index, 22 migrations.
 
 | Categorie | Modeles |
 |---|---|
@@ -154,11 +165,13 @@ Voir [`docs/database-architecture.md`](docs/database-architecture.md) pour le de
 
 | Type      | Framework  | Fichiers | Tests     |
 | --------- | ---------- | -------- | --------- |
-| Unitaires | Vitest     | 157      | 2 785     |
-| E2E       | Playwright | 13       | 189       |
-| **Total** |            | **170**  | **2 974** |
+| Unitaires | Vitest     | 173      | 3 008     |
+| E2E       | Playwright | 21       | 238       |
+| **Total** |            | **194**  | **3 246** |
 
-Focus sur la logique metier critique : RBAC, Zod, Server Actions, Stripe, workflows E2E, messagerie, import CSV.
+La CI execute une whitelist E2E (8 specs, 123 tests) ; la suite complete (21 specs, 238 tests) tourne en nightly. `testMatch` de `playwright.ci.config.ts` etant une liste explicite, un spec renomme ou supprime disparait silencieusement de la CI : verifier cette liste apres chaque ajout ou suppression.
+
+Focus sur la logique metier critique : RBAC, Zod, Server Actions, Stripe, workflows E2E, messagerie, import CSV, registres SEO/GEO.
 
 ## Deploiement
 
@@ -177,14 +190,16 @@ Focus sur la logique metier critique : RBAC, Zod, Server Actions, Stripe, workfl
 Push main → CI (lint + tests + build) → CD (Docker build → deploy VPS → Prisma migrate)
 ```
 
-| Trigger          | Tests                   | Deploiement | Temps      |
-| ---------------- | ----------------------- | ----------- | ---------- |
-| Push feature     | Unitaires               | Non         | ~3-5 min   |
-| PR vers main     | Unitaires + E2E prod    | Non         | ~15-20 min |
-| Merge main       | Unitaires               | Oui (auto)  | ~8-10 min  |
-| Nightly (2h UTC) | Unitaires + E2E complet | Non         | ~45-60 min |
+| Trigger                  | Tests                            | Deploiement | Temps      |
+| ------------------------ | -------------------------------- | ----------- | ---------- |
+| Push feature (sans PR)   | Aucun                            | Non         | —          |
+| PR vers main             | Unitaires + E2E (whitelist CI)   | Non         | ~15-18 min |
+| Push direct / merge main | Unitaires + E2E (whitelist CI)   | Oui (auto)  | ~15-18 min |
+| Nightly (2h UTC)         | Unitaires + E2E complet          | Non         | ~45-60 min |
 
-Les migrations Prisma sont executees automatiquement dans le conteneur Docker apres le deploiement.
+Depuis la revision de juillet 2026, un push sur une branche sans PR ne declenche plus le CI : auparavant, chaque push sur une branche avec PR ouverte lancait deux runs complets pour le meme commit (evenements `push` et `pull_request`). Ouvrir une PR, meme en draft, donne le feedback CI.
+
+Le CD ne se declenche que si le CI reussit entierement, E2E comprises : meme un push direct sur main passe par les tests avant deploiement. Les migrations Prisma sont executees automatiquement dans un conteneur ephemere apres le deploiement.
 
 > Guide complet : [`docs/deployment.md`](docs/deployment.md)
 
@@ -204,18 +219,21 @@ Les migrations Prisma sont executees automatiquement dans le conteneur Docker ap
 
 ### Scores Lighthouse
 
-| Performance | SEO  | Accessibilite | Best Practices |
-| ----------- | ---- | ------------- | -------------- |
-| 91%         | 100% | 100%          | 96%            |
+| Page                            | Performance | SEO  | Accessibilite | Best Practices |
+| ------------------------------- | ----------- | ---- | ------------- | -------------- |
+| Landing (mesure mai 2026)       | 91%         | 100% | 100%          | 96%            |
+| `/solutions/planning-restaurant` | —           | 100% | 97%           | 100%           |
+
+Mesures ponctuelles, non rejouees a chaque build : les rejouer apres toute modification d'une page publique.
 
 ## Documentation
 
 - [`docs/deployment.md`](docs/deployment.md) — Guide de deploiement VPS
 - [`docs/database-architecture.md`](docs/database-architecture.md) — Architecture BDD (21 modeles, 16 enums)
 - [`docs/development-log.md`](docs/development-log.md) — Journal de developpement detaille
-- [`docs/audit-technique-v2.md`](docs/audit-technique-v2.md) — Audit technique complet du projet
-- [`docs/plan-messagerie-interne.md`](docs/plan-messagerie-interne.md) — Plan architecture messagerie
+- [`docs/Cahier de recettage.md`](<docs/Cahier de recettage.md>) — Cahier de recettage fonctionnel
 - [`docs/analytics.md`](docs/analytics.md) — Configuration Umami
+- [`docs/e2e-mobile-tests.md`](docs/e2e-mobile-tests.md) — Tests E2E mobile
 - [`docs/security/`](docs/security/) — Plan de securisation, incidents, hardening
 
 ## Auteur
