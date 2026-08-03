@@ -79,6 +79,26 @@ const solutionLinks = [
   { href: '/solutions/planning-btp', label: 'BTP et chantiers' },
 ]
 
+// Guides exposés individuellement dans le menu Ressources. Liste tenue à la
+// main plutôt qu'importée depuis `(guides)/guides/data` : ce composant est
+// un Client Component, et importer le registre embarquerait le texte complet
+// de chaque guide dans le bundle client. Même choix que LandingFooter.
+// À mettre à jour à chaque nouveau guide publié.
+const guideLinks = [
+  {
+    href: '/guides/faire-un-planning-equipe',
+    label: "Faire un planning d'équipe",
+  },
+  {
+    href: '/guides/gerer-conges-payes-tpe-pme',
+    label: 'Gérer les congés payés',
+  },
+  {
+    href: '/guides/coupure-amplitude-restauration-hcr',
+    label: 'Coupure et amplitude en HCR',
+  },
+]
+
 type DesktopMenu = 'product' | 'solutions' | 'resources' | null
 
 interface LandingHeaderProps {
@@ -248,6 +268,19 @@ export function LandingHeader({
                         icon={<BookOpen />}
                         onClick={closeDesktopMenu}
                       />
+                      <ul className="mb-1 ml-[3.25rem] space-y-0.5">
+                        {guideLinks.map((guide) => (
+                          <li key={guide.href}>
+                            <Link
+                              href={guide.href}
+                              onClick={closeDesktopMenu}
+                              className="block rounded-md px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:bg-accent focus-visible:outline-none dark:text-white/60 dark:hover:text-white"
+                            >
+                              {guide.label}
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
                       <MenuLink
                         href="/#faq"
                         label="Questions fréquentes"

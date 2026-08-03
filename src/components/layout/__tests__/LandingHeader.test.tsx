@@ -17,6 +17,7 @@ import { render, screen, fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import '@testing-library/jest-dom'
 import { LandingHeader } from '../LandingHeader'
+import { getAllGuides } from '@/app/(guides)/guides/data'
 
 // Mock next/image (rend une balise img simple, sans les props Next non-DOM)
 vi.mock('next/image', () => ({
@@ -116,10 +117,34 @@ describe('LandingHeader - navbar desktop (disclosure)', () => {
       expect(
         screen.getByRole('link', { name: /Guides pratiques/i })
       ).toHaveAttribute('href', '/guides')
+
+      // Guides exposés individuellement (maillage direct vers chaque article)
+      expect(
+        screen.getByRole('link', { name: /Faire un planning d'équipe/i })
+      ).toHaveAttribute('href', '/guides/faire-un-planning-equipe')
+      expect(
+        screen.getByRole('link', { name: /Gérer les congés payés/i })
+      ).toHaveAttribute('href', '/guides/gerer-conges-payes-tpe-pme')
+      expect(
+        screen.getByRole('link', { name: /Coupure et amplitude en HCR/i })
+      ).toHaveAttribute('href', '/guides/coupure-amplitude-restauration-hcr')
       expect(screen.getByRole('link', { name: /À propos/i })).toHaveAttribute(
         'href',
         '/a-propos'
       )
+    })
+
+    it('expose un lien par guide publié (liste du header alignée sur le registre)', () => {
+      // La liste `guideLinks` du header est tenue à la main pour ne pas tirer
+      // le texte des guides dans le bundle client : ce test empêche qu'elle
+      // diverge du registre quand un guide est publié.
+      render(<LandingHeader />)
+
+      for (const guide of getAllGuides()) {
+        const links = screen.getAllByRole('link')
+        const hrefs = links.map((link) => link.getAttribute('href'))
+        expect(hrefs).toContain(`/guides/${guide.slug}`)
+      }
     })
 
     it('conserve « Tarifs » comme lien direct visible', () => {
