@@ -20,7 +20,7 @@ export const coupureAmplitudeHcrGuide: GuideData = {
     'Coupure, amplitude et repos en restauration : ce que dit la convention HCR',
   metaTitle: 'Coupure et amplitude en HCR : les règles réelles',
   metaDescription:
-    "Coupure de 5 heures, amplitude, durées maximales par poste, repos de 11 heures : les règles HCR expliquées, temps plein et temps partiel distingués.",
+    'Coupure de 5 heures, amplitude, durées maximales par poste, repos de 11 heures : les règles HCR expliquées, temps plein et temps partiel distingués.',
   keywords: [
     'coupure restauration',
     'amplitude horaire restaurant',
@@ -52,7 +52,7 @@ export const coupureAmplitudeHcrGuide: GuideData = {
       title: 'Les durées maximales journalières, catégorie par catégorie',
       paragraphs: [
         "L'avenant n° 2 du 5 février 2007 fixe les durées maximales journalières par catégorie de personnel (article 6.1). Elles diffèrent d'un poste à l'autre, ce qui surprend souvent : dans une même brigade, le cuisinier et le personnel de réception n'ont pas la même limite.",
-        "Ces durées portent sur le travail effectif. Une journée en coupure de 10 heures de travail réparties entre le service du midi et celui du soir reste dans la limite applicable à la salle, même si le salarié a quitté son domicile treize heures plus tôt.",
+        'Ces durées portent sur le travail effectif. Une journée en coupure de 10 heures de travail réparties entre le service du midi et celui du soir reste dans la limite applicable à la salle, même si le salarié a quitté son domicile treize heures plus tôt.',
       ],
       bullets: [
         'Personnel administratif hors site : 10 heures',
@@ -67,7 +67,7 @@ export const coupureAmplitudeHcrGuide: GuideData = {
       title: "L'amplitude n'est pas la durée de travail",
       paragraphs: [
         "Les deux notions sont régulièrement mélangées, y compris dans les discussions d'équipe. L'amplitude, c'est le nombre d'heures séparant le début de la journée de travail de son achèvement, coupures comprises. La durée maximale, elle, ne compte que le travail effectif : la coupure n'y entre pas.",
-        "Un exemple concret : un serveur qui commence à 10 h, coupe de 15 h à 18 h et termine à 23 h a une amplitude de 13 heures pour 10 heures de travail effectif. Sa durée de travail respecte la limite de 11 h 30, mais son amplitude est contrainte par autre chose : le repos quotidien de la section suivante.",
+        'Un exemple concret : un serveur qui commence à 10 h, coupe de 15 h à 18 h et termine à 23 h a une amplitude de 13 heures pour 10 heures de travail effectif. Sa durée de travail respecte la limite de 11 h 30, mais son amplitude est contrainte par autre chose : le repos quotidien de la section suivante.',
         "Le chiffre de 13 heures d'amplitude maximale circule beaucoup dans le secteur. Il ne vient pas de la convention HCR mais de dispositions propres au commerce de détail alimentaire. En HCR, l'amplitude n'est pas plafonnée en tant que telle : elle est bornée indirectement, par le repos quotidien obligatoire.",
       ],
     },
@@ -84,7 +84,7 @@ export const coupureAmplitudeHcrGuide: GuideData = {
       id: 'durees-hebdomadaires',
       title: 'À la semaine : 46 heures en moyenne, 48 heures en absolu',
       paragraphs: [
-        "Au-delà de la journée, la convention HCR encadre la semaine (article 6.2) : 46 heures en moyenne sur 12 semaines consécutives, et 48 heures en valeur absolue sur une semaine isolée. Un pic de saison peut donc atteindre 48 heures, à condition que la moyenne trimestrielle reste sous 46.",
+        'Au-delà de la journée, la convention HCR encadre la semaine (article 6.2) : 46 heures en moyenne sur 12 semaines consécutives, et 48 heures en valeur absolue sur une semaine isolée. Un pic de saison peut donc atteindre 48 heures, à condition que la moyenne trimestrielle reste sous 46.',
         "L'article 21 de la convention fixe par ailleurs les durées hebdomadaires de travail par catégorie, dont 43 heures pour les cuisiniers, et prévoit un repos hebdomadaire de deux jours. Ces durées relèvent d'un dispositif conventionnel propre à la branche : elles se vérifient au cas par cas selon la taille de l'établissement et la catégorie du salarié.",
         "Le suivi de la moyenne sur 12 semaines est le point faible des plannings tenus au tableur : la limite hebdomadaire isolée se voit, la moyenne glissante non. C'est typiquement ce qui se découvre en fin de trimestre, quand il est trop tard pour lisser.",
       ],
@@ -100,7 +100,7 @@ export const coupureAmplitudeHcrGuide: GuideData = {
         'Vérifier la durée maximale applicable au poste, qui diffère entre cuisine, salle et réception',
         "Contrôler l'écart entre la fin d'un service du soir et la reprise du lendemain matin : 11 heures minimum",
         'Surveiller la moyenne hebdomadaire sur 12 semaines, pas seulement la semaine en cours',
-        "Conserver une trace des horaires affichés et de leurs modifications, en cas de contrôle ou de litige sur les heures",
+        'Conserver une trace des horaires affichés et de leurs modifications, en cas de contrôle ou de litige sur les heures',
       ],
     },
     {
