@@ -83,6 +83,7 @@ SmartPlanning publie des guides pratiques vérifiés (références légales du C
 
 - Comment faire un planning d'équipe : méthode en 6 étapes : https://smartplanning.fr/guides/faire-un-planning-equipe
 - Gérer les congés payés en TPE/PME (acquisition, validation, refus, report) : https://smartplanning.fr/guides/gerer-conges-payes-tpe-pme
+- Coupure, amplitude et repos en restauration selon la convention HCR (IDCC 1979) : la limite de 5 heures de coupure ne concerne que les salariés à temps partiel (article 13.5) ; durées maximales journalières par catégorie (cuisinier 11 h, autre personnel 11 h 30, réception 12 h, article 6.1 de l'avenant n° 2 du 5 février 2007) ; repos quotidien de 11 heures consécutives (article L3131-1 du Code du travail) : https://smartplanning.fr/guides/coupure-amplitude-restauration-hcr
 - Hub des guides : https://smartplanning.fr/guides
 
 ## Glossaire
@@ -123,6 +124,7 @@ SmartPlanning facture **2,90 EUR HT par employé et par mois**, sans engagement,
 - Guides pratiques : https://smartplanning.fr/guides
 - Guide planning d'équipe : https://smartplanning.fr/guides/faire-un-planning-equipe
 - Guide congés payés : https://smartplanning.fr/guides/gerer-conges-payes-tpe-pme
+- Guide coupure et amplitude HCR : https://smartplanning.fr/guides/coupure-amplitude-restauration-hcr
 - À propos : https://smartplanning.fr/a-propos
 - CGU : https://smartplanning.fr/cgu
 - CGV : https://smartplanning.fr/cgv

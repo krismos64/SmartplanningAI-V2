@@ -14,6 +14,7 @@ SmartPlanning simplifie la gestion des plannings d'équipe, des congés et des r
 - [Guides pratiques](https://smartplanning.fr/guides): Hub des guides planning et RH pour TPE/PME
 - [Guide : faire un planning d'équipe](https://smartplanning.fr/guides/faire-un-planning-equipe): Méthode en 6 étapes avec les règles légales du Code du travail
 - [Guide : gérer les congés payés](https://smartplanning.fr/guides/gerer-conges-payes-tpe-pme): Acquisition, validation, refus et report des congés payés en TPE/PME
+- [Guide : coupure et amplitude en restauration](https://smartplanning.fr/guides/coupure-amplitude-restauration-hcr): Ce que dit la convention HCR sur la coupure, l'amplitude, les durées maximales et le repos quotidien
 - [À propos](https://smartplanning.fr/a-propos): Mission, valeurs et cible de SmartPlanning
 - [CGU](https://smartplanning.fr/cgu): Conditions générales d'utilisation
 - [CGV](https://smartplanning.fr/cgv): Conditions générales de vente
