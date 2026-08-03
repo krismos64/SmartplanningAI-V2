@@ -76,6 +76,13 @@ CLAUDE.md
 CLAUDE.local.md
 
 # ============================================
+# Documents internes (non publies)
+# ============================================
+# Positionnement produit : nomme des concurrents, interdits dans le
+# contenu public (garde-fous CI sectors.test.ts / guides.test.ts).
+.agents/
+
+# ============================================
 # OS Files
 # ============================================
 .DS_Store
