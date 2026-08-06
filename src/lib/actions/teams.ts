@@ -15,6 +15,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/prisma'
+import { invalidateDashboardCache, invalidateEmployeesCache } from '@/lib/cache'
 import { UserRole, type Prisma } from '@prisma/client'
 import { auth } from '@/lib/auth'
 import {
@@ -24,7 +25,10 @@ import {
   handlePrismaError,
 } from './crud-helpers'
 import { logAuditAction } from '@/lib/services/audit'
-import { assertNotImpersonating, getEffectiveSessionData } from '@/lib/impersonation'
+import {
+  assertNotImpersonating,
+  getEffectiveSessionData,
+} from '@/lib/impersonation'
 import {
   createTeamSchema,
   updateTeamSchema,
@@ -66,6 +70,68 @@ interface AuthenticatedUser {
 type AccessCheckResult =
   | { success: true; user: AuthenticatedUser }
   | { success: false; error: string }
+
+// ============================================================================
+// Invalidation des caches
+// ============================================================================
+
+/**
+ * Invalide tout ce qui depend de la composition des equipes.
+ *
+ * Les stats du dashboard DIRECTOR (dont `totalTeams`, qui pilote la checklist
+ * de demarrage) sont servies par un cache Redis de 300 s : sans cette
+ * invalidation, une equipe fraichement creee restait affichee comme etape
+ * non faite pendant 5 minutes.
+ *
+ * `/app/dashboard` seul ne couvre pas les routes par role : les deux
+ * dashboards manager et director doivent etre revalides explicitement.
+ */
+async function invalidateTeamCaches(
+  companyId: string,
+  teamId?: string
+): Promise<void> {
+  // Les mouvements d'equipe changent le `teamId` des employes concernes :
+  // les listes d'employes mises en cache doivent tomber elles aussi.
+  await Promise.all([
+    invalidateDashboardCache(companyId),
+    invalidateEmployeesCache(companyId),
+  ])
+
+  revalidatePath('/app/director/teams')
+  if (teamId) {
+    revalidatePath(`/app/director/teams/${teamId}`)
+  }
+  revalidatePath('/app/dashboard/employees')
+  revalidatePath('/app/manager/dashboard')
+  revalidatePath('/app/director/dashboard')
+}
+
+/**
+ * Rattache un manager comme membre de l'equipe qu'il dirige.
+ *
+ * `Team.managerId` (relation TeamManager) et `Employee.teamId` (relation
+ * TeamMembers) sont independantes : designer quelqu'un manager ne le faisait
+ * pas apparaitre dans sa propre equipe cote profil.
+ *
+ * Le rattachement n'ecrase jamais une appartenance existante : un employe deja
+ * membre d'une equipe garde la sienne (un `teamId` unique ne peut pas
+ * representer plusieurs equipes managees).
+ */
+async function attachManagerToTeam(
+  managerId: string,
+  teamId: string
+): Promise<void> {
+  try {
+    await prisma.employee.updateMany({
+      where: { id: managerId, teamId: null },
+      data: { teamId },
+    })
+  } catch (error) {
+    // Non bloquant : l'equipe est creee/modifiee, seul le confort d'affichage
+    // du profil manager est degrade.
+    console.error('[attachManagerToTeam] Error:', error)
+  }
+}
 
 // ============================================================================
 // Fonctions d'authentification et RBAC
@@ -580,6 +646,14 @@ export async function createTeam(
       },
     })
 
+    // Rattache le manager comme membre de l'equipe qu'il dirige, s'il n'a pas
+    // deja une equipe. `Team.managerId` et `Employee.teamId` sont deux relations
+    // distinctes : sans ce rattachement, le manager apparaissait bien en tete
+    // de l'equipe mais son propre profil affichait « aucune equipe ».
+    if (team.managerId) {
+      await attachManagerToTeam(team.managerId, team.id)
+    }
+
     // SP-444 : Audit trail (fire-and-forget)
     logAuditAction({
       action: 'CREATE',
@@ -590,8 +664,7 @@ export async function createTeam(
       details: { name: validData.name, managerId: validData.managerId || null },
     }).catch(console.error)
 
-    // Revalide le cache
-    revalidatePath('/app/director/teams')
+    await invalidateTeamCaches(validData.companyId, team.id)
 
     return {
       success: true,
@@ -727,6 +800,11 @@ export async function updateTeam(
       },
     })
 
+    // Nouveau manager designe : le rattacher a l'equipe (voir attachManagerToTeam)
+    if (team.managerId) {
+      await attachManagerToTeam(team.managerId, team.id)
+    }
+
     // SP-444 : Audit trail (fire-and-forget)
     logAuditAction({
       action: 'UPDATE',
@@ -737,9 +815,7 @@ export async function updateTeam(
       details: updateData as unknown as Prisma.InputJsonValue,
     }).catch(console.error)
 
-    // Revalide le cache
-    revalidatePath('/app/director/teams')
-    revalidatePath(`/app/director/teams/${id}`)
+    await invalidateTeamCaches(existing.companyId, id)
 
     return {
       success: true,
@@ -829,8 +905,7 @@ export async function deleteTeam(id: string): Promise<DeleteActionResult> {
       details: { name: team.name },
     }).catch(console.error)
 
-    // Revalide le cache
-    revalidatePath('/app/director/teams')
+    await invalidateTeamCaches(team.companyId)
 
     return { success: true }
   } catch (error) {
@@ -962,8 +1037,12 @@ export async function assignManager(
       },
     }).catch(console.error)
 
-    revalidatePath('/app/director/teams')
-    revalidatePath(`/app/director/teams/${teamId}`)
+    // Rattache le nouveau manager comme membre (voir attachManagerToTeam)
+    if (team.managerId) {
+      await attachManagerToTeam(team.managerId, teamId)
+    }
+
+    await invalidateTeamCaches(existing.companyId, teamId)
 
     return {
       success: true,
@@ -1155,9 +1234,7 @@ export async function addTeamMember(
       }
     }
 
-    revalidatePath('/app/director/teams')
-    revalidatePath(`/app/director/teams/${teamId}`)
-    revalidatePath('/app/dashboard/employees')
+    await invalidateTeamCaches(existingTeam.companyId, teamId)
 
     return {
       success: true,
@@ -1310,9 +1387,7 @@ export async function removeTeamMember(
       details: { action: 'removeMember', employeeId },
     }).catch(console.error)
 
-    revalidatePath('/app/director/teams')
-    revalidatePath(`/app/director/teams/${teamId}`)
-    revalidatePath('/app/dashboard/employees')
+    await invalidateTeamCaches(existingTeam.companyId, teamId)
 
     return {
       success: true,

@@ -784,6 +784,104 @@ describe('Member management', () => {
 })
 
 // ============================================================================
+// Rattachement du manager a son equipe
+// ============================================================================
+
+/**
+ * `Team.managerId` (relation TeamManager) et `Employee.teamId` (relation
+ * TeamMembers) sont deux relations distinctes : designer quelqu'un manager
+ * d'une equipe ne le faisait pas apparaitre comme membre, et son profil
+ * affichait « aucune equipe » alors qu'il figurait bien en tete de l'equipe.
+ */
+describe('rattachement du manager comme membre de son equipe', () => {
+  beforeEach(() => {
+    setMockUser('SYSTEM_ADMIN', null)
+  })
+
+  it('createTeam rattache le manager designe a la nouvelle equipe', async () => {
+    prismaMock.employee.findUnique.mockResolvedValue(mockEmployee)
+    prismaMock.team.create.mockResolvedValue({
+      ...mockTeamWithRelations,
+      managerId: EMP_ID,
+    })
+
+    await createTeam({
+      name: 'Equipe Support',
+      companyId: COMPANY_ID,
+      managerId: EMP_ID,
+      color: '#3B82F6',
+    })
+
+    expect(prismaMock.employee.updateMany).toHaveBeenCalledWith({
+      where: { id: EMP_ID, teamId: null },
+      data: { teamId: TEAM_ID },
+    })
+  })
+
+  it('assignManager rattache le nouveau manager a l equipe', async () => {
+    prismaMock.team.findUnique.mockResolvedValue(mockTeamWithRelations)
+    prismaMock.employee.findUnique.mockResolvedValue(mockEmployee)
+    prismaMock.team.update.mockResolvedValue({
+      ...mockTeamWithRelations,
+      managerId: EMP_ID,
+    })
+
+    await assignManager(TEAM_ID, EMP_ID)
+
+    expect(prismaMock.employee.updateMany).toHaveBeenCalledWith({
+      where: { id: EMP_ID, teamId: null },
+      data: { teamId: TEAM_ID },
+    })
+  })
+
+  it('ne touche pas a l appartenance d un employe deja dans une equipe', async () => {
+    prismaMock.team.findUnique.mockResolvedValue(mockTeamWithRelations)
+    prismaMock.employee.findUnique.mockResolvedValue(mockEmployee)
+    prismaMock.team.update.mockResolvedValue({
+      ...mockTeamWithRelations,
+      managerId: EMP_ID,
+    })
+
+    await assignManager(TEAM_ID, EMP_ID)
+
+    // La clause `teamId: null` du updateMany garantit qu'un employe deja
+    // rattache ailleurs garde son equipe : un `teamId` unique ne peut pas
+    // representer plusieurs equipes managees.
+    const call = prismaMock.employee.updateMany.mock.calls[0]?.[0] as {
+      where: { teamId: null }
+    }
+    expect(call.where.teamId).toBeNull()
+  })
+
+  it('retirer le manager ne rattache personne', async () => {
+    prismaMock.team.findUnique.mockResolvedValue(mockTeamWithRelations)
+    prismaMock.team.update.mockResolvedValue({
+      ...mockTeamWithRelations,
+      managerId: null,
+    })
+
+    await assignManager(TEAM_ID, null)
+
+    expect(prismaMock.employee.updateMany).not.toHaveBeenCalled()
+  })
+
+  it('une equipe creee sans manager ne declenche aucun rattachement', async () => {
+    prismaMock.team.create.mockResolvedValue({
+      ...mockTeamWithRelations,
+      managerId: null,
+    })
+
+    await createTeam({
+      name: 'Equipe Sans Manager',
+      companyId: COMPANY_ID,
+      color: '#3B82F6',
+    })
+
+    expect(prismaMock.employee.updateMany).not.toHaveBeenCalled()
+  })
+})
+
+// ============================================================================
 // Tests Validation Zod
 // ============================================================================
 
