@@ -281,6 +281,8 @@ export async function updateProfile(
     // 5. Revalidate le cache
     revalidatePath('/app/profile')
     revalidatePath('/app/profile/edit')
+    // Le layout /app affiche le nom et le poste dans le header et la sidebar
+    revalidatePath('/app', 'layout')
 
     // 6. Retourner les données mises à jour
     return await getProfile()

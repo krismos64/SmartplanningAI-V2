@@ -93,6 +93,10 @@ vi.mock('@/components/ui/avatar', () => ({
   AvatarFallback: ({ children }: React.PropsWithChildren) => (
     <span>{children}</span>
   ),
+  AvatarImage: (props: { src?: string; alt?: string }) => (
+    // eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text
+    <img data-testid="sidebar-avatar-image" {...props} />
+  ),
 }))
 
 const defaultUser = {
@@ -132,5 +136,50 @@ describe('Sidebar - Leaves Link', () => {
     render(<Sidebar user={{ ...defaultUser, role: 'SYSTEM_ADMIN' }} />)
 
     expect(screen.queryByText('Congés')).not.toBeInTheDocument()
+  })
+})
+
+describe('Sidebar - Avatar et poste', () => {
+  it("affiche la photo de profil quand l'utilisateur en a une", () => {
+    render(
+      <Sidebar
+        user={{ ...defaultUser, image: 'https://cdn.test/avatar.jpg' }}
+      />
+    )
+
+    const avatar = screen.getByTestId('sidebar-avatar-image')
+    expect(avatar).toHaveAttribute('src', 'https://cdn.test/avatar.jpg')
+    expect(avatar).toHaveAttribute('alt', 'Jean Dupont')
+  })
+
+  it('retombe sur les initiales sans photo de profil', () => {
+    render(<Sidebar user={defaultUser} />)
+
+    expect(screen.queryByTestId('sidebar-avatar-image')).not.toBeInTheDocument()
+    expect(screen.getByText('JD')).toBeInTheDocument()
+  })
+
+  it('affiche le poste au lieu du libellé de rôle', () => {
+    render(
+      <Sidebar user={{ ...defaultUser, role: 'DIRECTOR', jobTitle: 'PDG' }} />
+    )
+
+    expect(screen.getByTestId('sidebar-subtitle')).toHaveTextContent('PDG')
+  })
+
+  it('affiche le libellé de rôle quand aucun poste n’est renseigné', () => {
+    render(<Sidebar user={{ ...defaultUser, role: 'DIRECTOR' }} />)
+
+    expect(screen.getByTestId('sidebar-subtitle')).toHaveTextContent(
+      'Directeur'
+    )
+  })
+
+  it('ignore un poste vide ou composé d’espaces', () => {
+    render(
+      <Sidebar user={{ ...defaultUser, role: 'MANAGER', jobTitle: '   ' }} />
+    )
+
+    expect(screen.getByTestId('sidebar-subtitle')).toHaveTextContent('Manager')
   })
 })

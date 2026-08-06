@@ -56,6 +56,8 @@ interface DashboardLayoutProps {
     role: UserRole
     organizationId?: string
     companyName?: string
+    /** Intitulé du poste saisi dans le profil, affiché à la place du rôle */
+    jobTitle?: string
   }
   /** Données d'abonnement pour la bannière (SP-441) */
   subscriptionData?: SubscriptionData

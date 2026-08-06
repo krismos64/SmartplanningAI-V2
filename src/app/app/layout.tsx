@@ -88,6 +88,10 @@ export default async function AppLayout({
       company: {
         select: { name: true },
       },
+      // Le poste renseigné dans le profil prime sur le libellé du rôle dans l'UI
+      employee: {
+        select: { jobTitle: true },
+      },
     },
   })
 
@@ -109,6 +113,7 @@ export default async function AppLayout({
       | 'EMPLOYEE',
     organizationId: effective.companyId || undefined,
     companyName,
+    jobTitle: dbUser?.employee?.jobTitle?.trim() || undefined,
   }
 
   // SP-441 : données subscription pour la bannière progressive
@@ -121,7 +126,10 @@ export default async function AppLayout({
   // SP-299 : données vérification email pour la bannière
   const emailVerificationData =
     dbUser && !dbUser.isEmailVerified
-      ? { isEmailVerified: false as const, userEmail: dbUser.email || user.email }
+      ? {
+          isEmailVerified: false as const,
+          userEmail: dbUser.email || user.email,
+        }
       : undefined
 
   return (

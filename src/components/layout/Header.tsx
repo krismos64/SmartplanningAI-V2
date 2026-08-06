@@ -42,6 +42,8 @@ interface HeaderProps {
     image?: string | null
     role: UserRole
     companyName?: string
+    /** Intitulé du poste, affiché à la place du libellé de rôle s'il est renseigné */
+    jobTitle?: string
   }
   /** Mode impersonation actif (SP-453) */
   isImpersonating?: boolean
@@ -173,8 +175,11 @@ export function Header({ user, isImpersonating }: HeaderProps) {
                 </Avatar>
                 <div className="hidden flex-col items-start text-left lg:flex">
                   <span className="text-sm font-medium">{user.name}</span>
-                  <span className="text-xs text-muted-foreground">
-                    {getRoleLabel(user.role)}
+                  <span
+                    className="text-xs text-muted-foreground"
+                    data-testid="header-user-subtitle"
+                  >
+                    {user.jobTitle?.trim() || getRoleLabel(user.role)}
                   </span>
                 </div>
               </Button>
