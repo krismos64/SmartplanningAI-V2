@@ -115,7 +115,12 @@ export default async function DirectorDashboardPage() {
   const effective = await getEffectiveSessionData(session)
 
   // Verification du role (DIRECTOR ou superieur)
-  if (!hasRequiredRole(effective.role as import('@prisma/client').UserRole, 'DIRECTOR')) {
+  if (
+    !hasRequiredRole(
+      effective.role as import('@prisma/client').UserRole,
+      'DIRECTOR'
+    )
+  ) {
     redirect('/app/dashboard')
   }
 
@@ -128,6 +133,11 @@ export default async function DirectorDashboardPage() {
           id: true,
           name: true,
         },
+      },
+      // Poste et date d'embauche pour l'etape « profil » de la checklist :
+      // ces champs ne sont pas demandes a l'inscription.
+      employee: {
+        select: { jobTitle: true, hireDate: true },
       },
     },
   })
@@ -160,6 +170,11 @@ export default async function DirectorDashboardPage() {
   const scheduleCount = await prisma.schedule.count({
     where: { companyId: user.company.id },
   })
+
+  // Etape « profil » : photo, poste et date d'embauche renseignes
+  const hasCompleteProfile = Boolean(
+    user.image && user.employee?.jobTitle && user.employee?.hireDate
+  )
 
   // Recuperer les 5 derniers conges en attente pour la liste
   const pendingLeaves = await prisma.leaveRequest.findMany({
@@ -225,6 +240,7 @@ export default async function DirectorDashboardPage() {
         hasTeam={stats.totalTeams > 0}
         hasEmployee={stats.totalEmployees > 0}
         hasSchedule={scheduleCount > 0}
+        hasCompleteProfile={hasCompleteProfile}
       />
 
       {/* Grille de 6 KPIs */}
