@@ -49,6 +49,12 @@ export interface SerializedSubscription {
   canceledAt: string | null
   createdAt: string
   stripeCustomerId: string | null
+  /**
+   * Null tant que l'entreprise n'a pas souscrit chez Stripe. Une ligne
+   * Subscription locale (plan FREE, statut TRIAL) est créée dès l'inscription
+   * pour le suivi des essais : elle ne vaut pas abonnement.
+   */
+  stripeSubscriptionId: string | null
 }
 
 export interface SubscriptionStatusProps {
@@ -189,8 +195,15 @@ export function SubscriptionStatus({
 }: SubscriptionStatusProps) {
   const shouldReduceMotion = useReducedMotion()
 
-  // Aucun abonnement — afficher encart trial ou empty state
-  if (!subscription) {
+  // Aucun abonnement Stripe — afficher encart trial ou empty state.
+  // Une ligne Subscription locale existe dès l'inscription (plan FREE, statut
+  // TRIAL, sans identifiants Stripe) pour piloter les rappels de fin d'essai.
+  // Sans le test sur `stripeSubscriptionId`, un compte en essai voyait l'écran
+  // « Vous êtes abonné » avec 0 siège et 0,00 €, et un bouton « Gérer mon
+  // abonnement » qui échouait faute de customer Stripe.
+  const hasStripeSubscription = Boolean(subscription?.stripeSubscriptionId)
+
+  if (!subscription || !hasStripeSubscription) {
     const trialDaysNoSub = getTrialDaysRemaining(trialEndsAt)
     const isInTrial = trialDaysNoSub !== null && trialDaysNoSub > 0
 

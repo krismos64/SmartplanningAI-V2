@@ -80,6 +80,8 @@ export interface BillingData {
     canceledAt: Date | null
     createdAt: Date
     stripeCustomerId: string | null
+    /** Null tant qu'aucune souscription Stripe n'a été confirmée */
+    stripeSubscriptionId: string | null
   } | null
   payments: {
     id: string
