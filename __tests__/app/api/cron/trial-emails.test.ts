@@ -106,7 +106,9 @@ describe('POST /api/cron/trial-emails', () => {
   })
 
   it('retourne 200 si CRON_SECRET valide', async () => {
-    ;(prismaMock.company.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([])
+    ;(
+      prismaMock.company.findMany as ReturnType<typeof vi.fn>
+    ).mockResolvedValue([])
     const response = await POST(makeRequest('test-cron-secret'))
     expect(response.status).toBe(200)
   })
@@ -115,9 +117,9 @@ describe('POST /api/cron/trial-emails', () => {
 
   it('Company trial J-14 → sendTrialEndingSoonEmail appelé avec daysRemaining=14', async () => {
     mockDifferenceInDays.mockReturnValue(14)
-    ;(prismaMock.company.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([
-      makeTrialCompany(),
-    ])
+    ;(
+      prismaMock.company.findMany as ReturnType<typeof vi.fn>
+    ).mockResolvedValue([makeTrialCompany()])
 
     await POST(makeRequest('test-cron-secret'))
 
@@ -132,9 +134,9 @@ describe('POST /api/cron/trial-emails', () => {
 
   it('Company trial J-7 → sendTrialEndingSoonEmail appelé', async () => {
     mockDifferenceInDays.mockReturnValue(7)
-    ;(prismaMock.company.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([
-      makeTrialCompany(),
-    ])
+    ;(
+      prismaMock.company.findMany as ReturnType<typeof vi.fn>
+    ).mockResolvedValue([makeTrialCompany()])
 
     await POST(makeRequest('test-cron-secret'))
 
@@ -145,9 +147,9 @@ describe('POST /api/cron/trial-emails', () => {
 
   it('Company trial J-3 → sendTrialEndingSoonEmail appelé', async () => {
     mockDifferenceInDays.mockReturnValue(3)
-    ;(prismaMock.company.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([
-      makeTrialCompany(),
-    ])
+    ;(
+      prismaMock.company.findMany as ReturnType<typeof vi.fn>
+    ).mockResolvedValue([makeTrialCompany()])
 
     await POST(makeRequest('test-cron-secret'))
 
@@ -156,9 +158,9 @@ describe('POST /api/cron/trial-emails', () => {
 
   it('Company trial J-1 → sendTrialEndingSoonEmail appelé', async () => {
     mockDifferenceInDays.mockReturnValue(1)
-    ;(prismaMock.company.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([
-      makeTrialCompany(),
-    ])
+    ;(
+      prismaMock.company.findMany as ReturnType<typeof vi.fn>
+    ).mockResolvedValue([makeTrialCompany()])
 
     await POST(makeRequest('test-cron-secret'))
 
@@ -171,9 +173,9 @@ describe('POST /api/cron/trial-emails', () => {
 
   it('Company trial J0 (expiré) → sendTrialExpiredEmail appelé', async () => {
     mockDifferenceInDays.mockReturnValue(0)
-    ;(prismaMock.company.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([
-      makeTrialCompany(),
-    ])
+    ;(
+      prismaMock.company.findMany as ReturnType<typeof vi.fn>
+    ).mockResolvedValue([makeTrialCompany()])
 
     await POST(makeRequest('test-cron-secret'))
 
@@ -190,9 +192,9 @@ describe('POST /api/cron/trial-emails', () => {
 
   it('Company trial J-20 (pas de rappel) → aucun email envoyé, skipped++', async () => {
     mockDifferenceInDays.mockReturnValue(20)
-    ;(prismaMock.company.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([
-      makeTrialCompany(),
-    ])
+    ;(
+      prismaMock.company.findMany as ReturnType<typeof vi.fn>
+    ).mockResolvedValue([makeTrialCompany()])
 
     const response = await POST(makeRequest('test-cron-secret'))
     const body = await response.json()
@@ -204,7 +206,9 @@ describe('POST /api/cron/trial-emails', () => {
 
   it('Company ACTIVE → ignorée (pas dans les résultats)', async () => {
     // Le filtre Prisma ne retourne que les TRIAL, donc on simule 0 companies
-    ;(prismaMock.company.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([])
+    ;(
+      prismaMock.company.findMany as ReturnType<typeof vi.fn>
+    ).mockResolvedValue([])
 
     const response = await POST(makeRequest('test-cron-secret'))
     const body = await response.json()
@@ -216,9 +220,9 @@ describe('POST /api/cron/trial-emails', () => {
   it('Doublon → sendBillingEmail retourne skipped, compteur skipped++', async () => {
     mockDifferenceInDays.mockReturnValue(7)
     mockSendTrialEndingSoon.mockResolvedValue({ success: true, skipped: true })
-    ;(prismaMock.company.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([
-      makeTrialCompany(),
-    ])
+    ;(
+      prismaMock.company.findMany as ReturnType<typeof vi.fn>
+    ).mockResolvedValue([makeTrialCompany()])
 
     const response = await POST(makeRequest('test-cron-secret'))
     const body = await response.json()
@@ -228,14 +232,114 @@ describe('POST /api/cron/trial-emails', () => {
   })
 
   it('Company sans director email → skipped avec detail', async () => {
-    ;(prismaMock.company.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([
-      makeTrialCompany({ users: [] }),
-    ])
+    ;(
+      prismaMock.company.findMany as ReturnType<typeof vi.fn>
+    ).mockResolvedValue([makeTrialCompany({ users: [] })])
 
     const response = await POST(makeRequest('test-cron-secret'))
     const body = await response.json()
 
     expect(body.skipped).toBe(1)
     expect(body.details).toContain('Acme Trial: no director email')
+  })
+
+  // ---- Transition TRIAL → EXPIRED ----
+  //
+  // Rien ne faisait passer `Subscription.status` de TRIAL à EXPIRED une fois
+  // `trialEndsAt` dépassée : l'espace admin listait comme « essais en cours »
+  // des entreprises dont la période était terminée depuis des semaines.
+
+  describe('bascule du statut en EXPIRED', () => {
+    /** Essai fini, aucune souscription Stripe : le cas à corriger */
+    function makeExpiredTrialCompany(overrides: Record<string, unknown> = {}) {
+      return makeTrialCompany({
+        subscription: {
+          id: 'sub-db-1',
+          stripeSubscriptionId: null,
+          pricePerEmployee: 290,
+        },
+        ...overrides,
+      })
+    }
+
+    it('essai terminé sans abonnement Stripe → subscription passée en EXPIRED', async () => {
+      mockDifferenceInDays.mockReturnValue(0)
+      ;(
+        prismaMock.company.findMany as ReturnType<typeof vi.fn>
+      ).mockResolvedValue([makeExpiredTrialCompany()])
+
+      const response = await POST(makeRequest('test-cron-secret'))
+      const body = await response.json()
+
+      expect(prismaMock.subscription.update).toHaveBeenCalledWith({
+        where: { id: 'sub-db-1' },
+        data: { status: 'EXPIRED' },
+      })
+      expect(body.expired).toBe(1)
+    })
+
+    it("l'email d'expiration part avant la bascule (sinon il ne partirait jamais)", async () => {
+      mockDifferenceInDays.mockReturnValue(0)
+      const callOrder: string[] = []
+      mockSendTrialExpired.mockImplementation(() => {
+        callOrder.push('email')
+        return Promise.resolve({ success: true })
+      })
+      ;(
+        prismaMock.subscription.update as ReturnType<typeof vi.fn>
+      ).mockImplementation(() => {
+        callOrder.push('update')
+        return Promise.resolve({})
+      })
+      ;(
+        prismaMock.company.findMany as ReturnType<typeof vi.fn>
+      ).mockResolvedValue([makeExpiredTrialCompany()])
+
+      await POST(makeRequest('test-cron-secret'))
+
+      expect(callOrder).toEqual(['email', 'update'])
+    })
+
+    it('essai en cours → statut inchangé', async () => {
+      mockDifferenceInDays.mockReturnValue(7)
+      ;(
+        prismaMock.company.findMany as ReturnType<typeof vi.fn>
+      ).mockResolvedValue([makeExpiredTrialCompany()])
+
+      const response = await POST(makeRequest('test-cron-secret'))
+      const body = await response.json()
+
+      expect(prismaMock.subscription.update).not.toHaveBeenCalled()
+      expect(body.expired).toBe(0)
+    })
+
+    it('abonnement Stripe existant → statut laissé aux webhooks', async () => {
+      mockDifferenceInDays.mockReturnValue(0)
+      ;(
+        prismaMock.company.findMany as ReturnType<typeof vi.fn>
+      ).mockResolvedValue([
+        makeTrialCompany(), // stripeSubscriptionId: 'sub_stripe_1'
+      ])
+
+      const response = await POST(makeRequest('test-cron-secret'))
+      const body = await response.json()
+
+      expect(prismaMock.subscription.update).not.toHaveBeenCalled()
+      expect(body.expired).toBe(0)
+    })
+
+    it('company sans directeur joignable → statut corrigé quand même', async () => {
+      mockDifferenceInDays.mockReturnValue(0)
+      ;(
+        prismaMock.company.findMany as ReturnType<typeof vi.fn>
+      ).mockResolvedValue([makeExpiredTrialCompany({ users: [] })])
+
+      const response = await POST(makeRequest('test-cron-secret'))
+      const body = await response.json()
+
+      expect(prismaMock.subscription.update).toHaveBeenCalledOnce()
+      expect(body.expired).toBe(1)
+      expect(body.skipped).toBe(1)
+    })
   })
 })
