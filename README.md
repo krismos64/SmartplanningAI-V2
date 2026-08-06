@@ -30,14 +30,14 @@ Plateforme SaaS multi-tenant de gestion intelligente des plannings et des ressou
 - **Messagerie interne** : Conversations DIRECT (1:1), TEAM (auto-sync equipes) et GROUP (manuelles). Messages texte + pieces jointes (PDF, images via Cloudinary, max 10 Mo). Reception temps reel via SSE. Groupement de messages, scroll infini cursor-based, optimistic updates. Archivage avec desarchivage auto sur nouveau message. Administration de groupe : avatar personnalisable, renommage, gestion des membres reserves a l'admin. **SYSTEM_ADMIN peut contacter n'importe quel utilisateur cross-tenant** (conversations avec `companyId: null`, isolation multi-tenant preservee pour les autres roles).
 - **Import CSV/Excel** : Import bulk d'employes depuis fichier CSV ou Excel (.xlsx). Validation Zod temps reel cote client avec cellules colorees. Support headers FR/EN avec normalisation. Detection des doublons, creation auto des equipes, sync Stripe. Modele telecharger pre-rempli.
 - **Billing** : Abonnement per-seat Stripe (2,90 euros/employe/mois), portail client, webhooks, sync employes auto. Essai gratuit 21 jours sans carte bancaire : aucun customer Stripe n'est cree avant la premiere souscription volontaire, le suivi de l'essai passe par une ligne `Subscription` locale (statut TRIAL) basculee en EXPIRED par le cron `/api/cron/trial-emails`
-- **Notifications** : Temps reel SSE, 30 emails transactionnels (React Email), preferences par categorie/canal
+- **Notifications** : Temps reel SSE, 30 emails transactionnels (React Email), preferences par categorie/canal. Destinataires bornes par `companyId` a la selection ET refuses par une garde multi-tenant dans les factories : une notification ne peut pas partir vers une autre entreprise
 - **Redis** : Rate limiting distribue (INCR+EXPIRE), sessions actives (TTL 24h), cache dashboards (TTL 300s), fallback memoire
-- **CRUD** : Entreprises, employes, equipes avec RBAC et multi-tenant strict
+- **CRUD** : Entreprises, employes, equipes avec RBAC et multi-tenant strict. Corriger l'email d'un collaborateur propage le changement au compte de connexion : reinvitation immediate si le compte n'a jamais ete active, sinon confirmation par le collaborateur lui-meme (l'ancienne adresse reste l'identifiant jusqu'au clic, et recoit une alerte)
 - **Audit** : Journal d'audit complet, export CSV, protection anti-injection
 - **Impersonation** : Mode support SYSTEM_ADMIN "Voir espace client" lecture seule (cookie `sp-impersonation` TTL 1h, audit trail start/stop, billing accessible en lecture, fallback cookie pour race condition JWT)
 - **Monitoring** : Health check DB + Redis (PING/PONG), KPIs SaaS, graphiques admin, service MRR unifie
 - **Admin** : Page utilisateurs cross-tenant, essais a risque, broadcast email, stats + export PDF
-- **Profil** : Avatar Cloudinary, RGPD (export donnees, suppression compte), preferences affichage
+- **Profil** : Avatar Cloudinary (affiche dans le header et la sidebar), RGPD (export donnees, suppression compte), preferences affichage. Le poste (`jobTitle`) renseigne au profil s'affiche a la place du libelle de role dans l'interface
 - **Settings** : Apparence, notifications, entreprise (jours travailles, horaires)
 - **Notes & Incidents** : Taches personnelles (drag & drop), notes d'incidents avec visibilite RBAC
 - **SEO / GEO** : Metadata API, JSON-LD Schema.org (@graph, Article, HowTo, FAQPage, BreadcrumbList), sitemap data-driven avec `lastModified` reels, robots.txt ouvert aux crawlers IA, `llms.txt` et `llms-full.txt`
@@ -166,9 +166,9 @@ Voir [`docs/database-architecture.md`](docs/database-architecture.md) pour le de
 
 | Type      | Framework  | Fichiers | Tests     |
 | --------- | ---------- | -------- | --------- |
-| Unitaires | Vitest     | 173      | 3 008     |
+| Unitaires | Vitest     | 178      | 3 066     |
 | E2E       | Playwright | 21       | 238       |
-| **Total** |            | **194**  | **3 246** |
+| **Total** |            | **199**  | **3 304** |
 
 La CI execute une whitelist E2E (8 specs, 123 tests) ; la suite complete (21 specs, 238 tests) tourne en nightly. `testMatch` de `playwright.ci.config.ts` etant une liste explicite, un spec renomme ou supprime disparait silencieusement de la CI : verifier cette liste apres chaque ajout ou suppression.
 
