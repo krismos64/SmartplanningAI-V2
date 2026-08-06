@@ -18,6 +18,8 @@
 import { sendVerificationEmailCore } from '@/lib/services/verification.service'
 import { verifyPassword } from '@/lib/password'
 import { prisma } from '@/lib/prisma'
+import { sendWelcomeEmail } from '@/lib/email/templates/welcome'
+import { AuthEmailType, logAuthEmail } from '@/lib/email/auth/log-auth-email'
 
 // =============================================================================
 // TYPES
@@ -145,7 +147,13 @@ export async function verifyEmailAction(data: {
     // 4. Chercher l'utilisateur
     const user = await prisma.user.findUnique({
       where: { email: verificationToken.identifier },
-      select: { id: true, emailVerified: true },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        companyId: true,
+        emailVerified: true,
+      },
     })
 
     if (!user) {
@@ -173,6 +181,35 @@ export async function verifyEmailAction(data: {
         where: { token },
       }),
     ])
+
+    // 7. Email de bienvenue (fire-and-forget), envoyé APRÈS la validation de
+    // l'adresse et non à l'inscription : sinon il arrivait avant l'email de
+    // vérification, ce qui accueillait l'utilisateur sur un compte encore bloqué.
+    if (user.email) {
+      const recipientEmail = user.email
+      const companyId = user.companyId
+      const firstName = user.name?.trim().split(' ')[0] || 'Bonjour'
+
+      sendWelcomeEmail({ firstName, email: recipientEmail })
+        .then((welcomeResult) => {
+          // EmailLog.companyId est NOT NULL : pas de trace pour un SYSTEM_ADMIN
+          // (companyId null), qui ne passe de toute façon pas par ce parcours.
+          if (!companyId) return
+          return logAuthEmail({
+            companyId,
+            emailType: AuthEmailType.WELCOME,
+            recipientEmail,
+            success: welcomeResult.success,
+            messageId: welcomeResult.messageId,
+            error: welcomeResult.error,
+          })
+        })
+        .catch((err) => {
+          if (process.env.NODE_ENV === 'development') {
+            console.error('[verifyEmailAction] Welcome email failed:', err)
+          }
+        })
+    }
 
     return { success: true }
   } catch (error) {
