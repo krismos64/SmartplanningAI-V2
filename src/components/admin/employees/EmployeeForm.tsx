@@ -67,7 +67,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 import { useIsImpersonating } from '@/hooks'
 import { useCrudMutation } from '@/hooks/use-crud-mutation'
-import { type EmployeeWithCounts } from '@/lib/validations/employee'
+import { useToast } from '@/components/toast/use-toast'
+import {
+  type EmployeeWithCounts,
+  type UpdateEmployeeResult,
+} from '@/lib/validations/employee'
 import { createEmployee, updateEmployee } from '@/lib/actions/employees'
 
 // ============================================================================
@@ -88,6 +92,13 @@ interface EmployeeFormProps {
   teams?: TeamOption[]
   /** Role de l'utilisateur connecte */
   userRole?: 'SYSTEM_ADMIN' | 'DIRECTOR' | 'MANAGER'
+  /**
+   * Le compte de connexion de l'employe a-t-il deja ete active ?
+   * Determine le message affiche quand l'adresse email est modifiee :
+   * remplacement immediat (compte jamais active) ou confirmation par
+   * l'employe lui-meme (compte actif).
+   */
+  isAccountActivated?: boolean
   /** Infos facturation pour avertissement prorata (DIRECTOR uniquement) */
   billingInfo?: {
     employeeCount: number
@@ -156,11 +167,13 @@ export function EmployeeForm({
   companyId,
   teams = [],
   userRole = 'DIRECTOR',
+  isAccountActivated = false,
   billingInfo,
   onSuccess,
   onCancel,
 }: EmployeeFormProps) {
   const router = useRouter()
+  const toast = useToast()
   const isImpersonating = useIsImpersonating()
   const isEditing = !!employee
   const [showBillingConfirm, setShowBillingConfirm] = useState(false)
@@ -248,6 +261,14 @@ export function EmployeeForm({
   // Selecteur de role visible uniquement en creation + email rempli + pas MANAGER
   const showRoleSelector = !isEditing && hasEmail && userRole !== 'MANAGER'
 
+  // Changement d'adresse en cours de saisie : declenche l'avertissement
+  const currentEmail = employee?.user?.email || employee?.email || ''
+  const emailWillChange =
+    isEditing &&
+    hasEmail &&
+    watchedEmail.trim().toLowerCase() !== currentEmail.toLowerCase()
+  const hasLoginAccount = !!employee?.userId
+
   // Role label pour l'encart
   const roleLabel =
     roleOptions.find((r) => r.value === watchedRole)?.label || 'Employé'
@@ -282,12 +303,23 @@ export function EmployeeForm({
     if (isEditing && employee) {
       // En edition : envoyer les chaines vides pour permettre la suppression
       const { role: _role, ...updateData } = cleanedData
-      void updateMutation.mutate({
-        id: employee.id,
-        ...updateData,
-        phone: data.phone || '',
-        email: data.email || '',
-      })
+      void updateMutation
+        .mutate({
+          id: employee.id,
+          ...updateData,
+          phone: data.phone || '',
+          email: data.email || '',
+        })
+        .then((result) => {
+          // Le changement d'adresse email demande une action de l'employé :
+          // le signaler explicitement, un « Employé modifié » ne suffit pas.
+          const emailChange = (
+            result as UpdateEmployeeResult & { success: true }
+          ).emailChange
+          if (result.success && emailChange) {
+            toast.info(emailChange.message, { duration: 10000 })
+          }
+        })
     } else {
       void createMutation.mutate({ companyId, ...cleanedData })
     }
@@ -440,9 +472,7 @@ export function EmployeeForm({
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>
-                    {isEditing ? 'Email de contact' : 'Email'}
-                  </FormLabel>
+                  <FormLabel>{isEditing ? 'Adresse email' : 'Email'}</FormLabel>
                   <FormControl>
                     <div className="relative">
                       <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -455,11 +485,24 @@ export function EmployeeForm({
                       />
                     </div>
                   </FormControl>
-                  {isEditing && (
+                  {isEditing && !emailWillChange && (
                     <FormDescription>
-                      Cet email est utilisé comme contact RH. Il ne modifie pas
-                      l&apos;adresse de connexion de l&apos;employé.
+                      Sert de contact RH et d&apos;identifiant de connexion.
                     </FormDescription>
+                  )}
+                  {isEditing && emailWillChange && (
+                    <div
+                      className="mt-2 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3"
+                      data-testid="email-change-warning"
+                    >
+                      <p className="text-sm text-amber-800 dark:text-amber-200">
+                        {hasLoginAccount
+                          ? isAccountActivated
+                            ? `Un email de confirmation sera envoyé à cette nouvelle adresse. ${watchedFirstName || 'Le collaborateur'} devra cliquer sur le lien pour l'utiliser ; d'ici là, son ancienne adresse reste son identifiant de connexion.`
+                            : `Le compte n'ayant jamais été activé, l'adresse sera remplacée immédiatement et une nouvelle invitation partira vers ${watchedEmail}. L'ancien lien d'activation cessera de fonctionner.`
+                          : 'Cet employé n’a pas encore de compte de connexion : seul son contact RH est modifié.'}
+                      </p>
+                    </div>
                   )}
                   <FormMessage />
                 </FormItem>

@@ -16,6 +16,7 @@ import { ArrowLeft, UserCog } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { EmployeeForm } from '@/components/admin/employees'
 import { getEmployee, getTeamsForSelect } from '@/lib/actions/employees'
+import { prisma } from '@/lib/prisma'
 
 interface EditEmployeePageProps {
   params: Promise<{ id: string }>
@@ -69,6 +70,15 @@ export default async function EditEmployeePage({
   // CompanyId de l'employe
   const companyId = employee.companyId
 
+  // Statut d'activation du compte : conditionne le message affiché si
+  // l'adresse email est modifiée (réinvitation directe ou double confirmation)
+  const account = employee.userId
+    ? await prisma.user.findUnique({
+        where: { id: employee.userId },
+        select: { isEmailVerified: true },
+      })
+    : null
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -103,6 +113,7 @@ export default async function EditEmployeePage({
           companyId={companyId}
           teams={teams}
           userRole={role as 'SYSTEM_ADMIN' | 'DIRECTOR' | 'MANAGER'}
+          isAccountActivated={account?.isEmailVerified ?? false}
         />
       </div>
     </div>
