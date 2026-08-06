@@ -443,30 +443,18 @@ export async function createLeaveRequest(
       },
     })
 
-    // SSE : Notifier les managers via notification in-app (fire-and-forget)
-    prisma.employee
-      .findMany({
-        where: {
-          managedTeams: employee.teamId
-            ? { some: { id: employee.teamId } }
-            : undefined,
-          isActive: true,
-          userId: { not: null },
-        },
-        select: { userId: true },
-      })
-      .then((managers) => {
-        for (const m of managers) {
-          if (m.userId) {
-            createLeaveNotification(
-              leaveRequest.id,
-              m.userId,
-              'requested'
-            ).catch(console.error)
-          }
-        }
-      })
-      .catch(console.error)
+    // SSE : Notifier les managers de l'équipe via notification in-app (fire-and-forget)
+    // Sans équipe, il n'y a pas de manager à notifier : les directeurs sont
+    // prévenus juste après. Ne jamais construire un findMany sans filtre d'équipe,
+    // un `undefined` retirerait la contrainte et notifierait toutes les entreprises.
+    if (employee.teamId) {
+      notifyTeamManagersOfLeaveEvent(
+        leaveRequest.id,
+        employee.teamId,
+        employee.companyId,
+        'requested'
+      )
+    }
 
     // Notifier les directeurs de l'entreprise (in-app SSE, fire-and-forget)
     notifyDirectorsOfLeaveEvent(
@@ -2011,28 +1999,63 @@ function notifyCancelledLeaveToManagers(
   prisma.employee
     .findUnique({
       where: { id: employeeId },
-      select: {
-        team: {
-          select: {
-            manager: { select: { userId: true } },
-          },
-        },
-      },
+      select: { teamId: true },
     })
     .then((employee) => {
-      const managerUserId = employee?.team?.manager?.userId
-      if (managerUserId) {
-        createLeaveNotification(
+      if (employee?.teamId) {
+        notifyTeamManagersOfLeaveEvent(
           leaveRequestId,
-          managerUserId,
+          employee.teamId,
+          companyId,
           'cancelled'
-        ).catch(console.error)
+        )
       }
     })
     .catch(console.error)
 
   // Notifier aussi les directeurs
   notifyDirectorsOfLeaveEvent(leaveRequestId, companyId, 'cancelled')
+}
+
+/**
+ * Notifie les managers d'une équipe donnée d'un événement congé.
+ * Fire-and-forget : ne bloque pas l'action appelante.
+ *
+ * Le filtre `companyId` est une défense en profondeur : `teamId` suffit en théorie
+ * à borner le périmètre, mais un `teamId` absent ne doit jamais pouvoir dégénérer
+ * en requête cross-tenant. L'appelant garantit un `teamId` non nul.
+ *
+ * @param leaveRequestId - ID de la demande
+ * @param teamId - ID de l'équipe de l'employé concerné
+ * @param companyId - ID de l'entreprise (isolation multi-tenant)
+ * @param action - Type d'événement (requested, approved, rejected, cancelled)
+ */
+function notifyTeamManagersOfLeaveEvent(
+  leaveRequestId: string,
+  teamId: string,
+  companyId: string,
+  action: 'requested' | 'approved' | 'rejected' | 'cancelled'
+): void {
+  prisma.employee
+    .findMany({
+      where: {
+        companyId,
+        managedTeams: { some: { id: teamId, companyId } },
+        isActive: true,
+        userId: { not: null },
+      },
+      select: { userId: true },
+    })
+    .then((managers) => {
+      for (const m of managers) {
+        if (m.userId) {
+          createLeaveNotification(leaveRequestId, m.userId, action).catch(
+            console.error
+          )
+        }
+      }
+    })
+    .catch(console.error)
 }
 
 /**

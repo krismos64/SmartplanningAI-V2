@@ -485,6 +485,84 @@ describe('createLeaveRequest', () => {
     const result = await createLeaveRequest({ type: 'INVALID' })
     expect(result.success).toBe(false)
   })
+
+  // ─── Isolation multi-tenant des notifications managers ───────────
+  // Régression : un `managedTeams: undefined` quand l'employé n'a pas
+  // d'équipe retirait le filtre du findMany, notifiant les managers de
+  // TOUTES les entreprises.
+
+  it("notifie uniquement les managers de l'équipe et de l'entreprise", async () => {
+    setupAuth('EMPLOYEE')
+    vi.mocked(prisma.employee.findUnique)
+      .mockResolvedValueOnce({ id: EMPLOYEE_ID, managedTeams: [] } as never)
+      .mockResolvedValueOnce({
+        id: EMPLOYEE_ID,
+        companyId: COMPANY_ID,
+        firstName: 'Jean',
+        lastName: 'Dupont',
+        email: 'jean@test.com',
+        teamId: TEAM_ID,
+      } as never)
+    vi.mocked(prisma.leaveBalance.findUnique).mockResolvedValue(
+      mockBalance() as never
+    )
+    vi.mocked(prisma.leaveRequest.findMany).mockResolvedValue([] as never)
+    vi.mocked(prisma.employee.count).mockResolvedValue(5 as never)
+    vi.mocked(prisma.leaveRequest.create).mockResolvedValue(
+      mockLeaveRequest() as never
+    )
+
+    const result = await createLeaveRequest(validInput)
+    expect(result.success).toBe(true)
+
+    // Laisser tourner les notifications fire-and-forget
+    await Promise.resolve()
+
+    const managerQuery = vi
+      .mocked(prisma.employee.findMany)
+      .mock.calls.map(([args]) => args as { where?: Record<string, unknown> })
+      .find((args) => args?.where && 'managedTeams' in args.where)
+
+    expect(managerQuery).toBeDefined()
+    expect(managerQuery?.where?.companyId).toBe(COMPANY_ID)
+    expect(managerQuery?.where?.managedTeams).toEqual({
+      some: { id: TEAM_ID, companyId: COMPANY_ID },
+    })
+  })
+
+  it("ne lance aucune requête managers quand l'employé n'a pas d'équipe", async () => {
+    setupAuth('EMPLOYEE')
+    vi.mocked(prisma.employee.findUnique)
+      .mockResolvedValueOnce({ id: EMPLOYEE_ID, managedTeams: [] } as never)
+      .mockResolvedValueOnce({
+        id: EMPLOYEE_ID,
+        companyId: COMPANY_ID,
+        firstName: 'Jean',
+        lastName: 'Dupont',
+        email: 'jean@test.com',
+        teamId: null,
+      } as never)
+    vi.mocked(prisma.leaveBalance.findUnique).mockResolvedValue(
+      mockBalance() as never
+    )
+    vi.mocked(prisma.leaveRequest.create).mockResolvedValue(
+      mockLeaveRequest({ employee: { teamId: null } }) as never
+    )
+
+    const result = await createLeaveRequest(validInput)
+    expect(result.success).toBe(true)
+
+    await Promise.resolve()
+
+    // Sans équipe : aucun findMany employé avec un filtre managedTeams,
+    // et surtout aucun findMany sans filtre d'entreprise.
+    const managerQueries = vi
+      .mocked(prisma.employee.findMany)
+      .mock.calls.map(([args]) => args as { where?: Record<string, unknown> })
+      .filter((args) => args?.where && 'managedTeams' in args.where)
+
+    expect(managerQueries).toHaveLength(0)
+  })
 })
 
 // ─── reviewLeaveRequest ───────────────────────────────────────────
