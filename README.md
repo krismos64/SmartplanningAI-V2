@@ -24,11 +24,12 @@ Plateforme SaaS multi-tenant de gestion intelligente des plannings et des ressou
 
 - **Authentification** : Multi-roles (SYSTEM_ADMIN, DIRECTOR, MANAGER, EMPLOYEE), verification email, invitation par email, activation de compte
 - **Dashboards** : 4 tableaux de bord par role avec KPIs, graphiques Recharts, animations Framer Motion
+- **Onboarding** : Ecran de bienvenue a la premiere connexion (DIRECTOR) et checklist de demarrage contextuelle sur le dashboard (equipe -> employe -> planning -> profil), affichee tant que la configuration est incomplete
 - **Planning** : Calendrier Schedule-X (drag & drop, recurrence, conflits, exports PDF/Excel/CSV), vues jour/semaine/mois
 - **Conges** : Workflow validation (PENDING -> APPROVED/REJECTED), soldes CP/RTT, overlay calendrier, demi-journees
 - **Messagerie interne** : Conversations DIRECT (1:1), TEAM (auto-sync equipes) et GROUP (manuelles). Messages texte + pieces jointes (PDF, images via Cloudinary, max 10 Mo). Reception temps reel via SSE. Groupement de messages, scroll infini cursor-based, optimistic updates. Archivage avec desarchivage auto sur nouveau message. Administration de groupe : avatar personnalisable, renommage, gestion des membres reserves a l'admin. **SYSTEM_ADMIN peut contacter n'importe quel utilisateur cross-tenant** (conversations avec `companyId: null`, isolation multi-tenant preservee pour les autres roles).
 - **Import CSV/Excel** : Import bulk d'employes depuis fichier CSV ou Excel (.xlsx). Validation Zod temps reel cote client avec cellules colorees. Support headers FR/EN avec normalisation. Detection des doublons, creation auto des equipes, sync Stripe. Modele telecharger pre-rempli.
-- **Billing** : Abonnement per-seat Stripe (2,90 euros/employe/mois), portail client, webhooks, sync employes auto
+- **Billing** : Abonnement per-seat Stripe (2,90 euros/employe/mois), portail client, webhooks, sync employes auto. Essai gratuit 21 jours sans carte bancaire : aucun customer Stripe n'est cree avant la premiere souscription volontaire, le suivi de l'essai passe par une ligne `Subscription` locale (statut TRIAL) basculee en EXPIRED par le cron `/api/cron/trial-emails`
 - **Notifications** : Temps reel SSE, 30 emails transactionnels (React Email), preferences par categorie/canal
 - **Redis** : Rate limiting distribue (INCR+EXPIRE), sessions actives (TTL 24h), cache dashboards (TTL 300s), fallback memoire
 - **CRUD** : Entreprises, employes, equipes avec RBAC et multi-tenant strict

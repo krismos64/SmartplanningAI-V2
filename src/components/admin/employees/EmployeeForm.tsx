@@ -16,6 +16,7 @@ import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { z } from 'zod'
 import {
   User,
@@ -577,7 +578,13 @@ export function EmployeeForm({
                         }
                       >
                         <SelectTrigger className="pl-10">
-                          <SelectValue placeholder="Sélectionner une équipe" />
+                          <SelectValue
+                            placeholder={
+                              teams.length === 0
+                                ? 'Aucune équipe disponible'
+                                : 'Sélectionner une équipe'
+                            }
+                          />
                         </SelectTrigger>
                         <SelectContent>
                           {teams.map((team) => (
@@ -589,6 +596,22 @@ export function EmployeeForm({
                       </Select>
                     </div>
                   </FormControl>
+                  {/* Premier employé d'un compte neuf : aucune équipe n'existe
+                      encore et le sélecteur s'ouvrait sur une liste vide sans
+                      explication. On dit quoi faire, sans bloquer la création. */}
+                  {teams.length === 0 && !isTeamRequired && (
+                    <FormDescription>
+                      Aucune équipe n&apos;existe encore. Vous pouvez créer cet
+                      employé sans équipe et l&apos;y rattacher plus tard, ou{' '}
+                      <Link
+                        href="/app/director/teams/new"
+                        className="font-medium underline underline-offset-4"
+                      >
+                        créer une équipe d&apos;abord
+                      </Link>
+                      .
+                    </FormDescription>
+                  )}
                   {isTeamRequired && (
                     <FormDescription>
                       En tant que manager, l&apos;équipe est obligatoire

@@ -73,6 +73,7 @@ const mockBillingData: SerializedBillingData = {
     canceledAt: null,
     createdAt: '2025-06-01T00:00:00.000Z',
     stripeCustomerId: 'cus_test123',
+    stripeSubscriptionId: 'sub_test123',
   },
   payments: [
     {
@@ -122,7 +123,7 @@ describe('BillingPageContent', () => {
       expect(screen.getByText('Aucun abonnement')).toBeInTheDocument()
     })
 
-    it('masque UsageIndicator et InvoiceHistory si pas d\'abonnement', () => {
+    it("masque UsageIndicator et InvoiceHistory si pas d'abonnement", () => {
       render(<BillingPageContent billingData={mockBillingDataNoSub} />)
       expect(screen.queryByTestId('usage-indicator')).not.toBeInTheDocument()
       expect(screen.queryByTestId('invoice-history')).not.toBeInTheDocument()
@@ -162,7 +163,7 @@ describe('BillingPageContent', () => {
       vi.unstubAllGlobals()
     })
 
-    it('affiche une erreur si l\'action échoue', async () => {
+    it("affiche une erreur si l'action échoue", async () => {
       mockCreateBillingPortalAction.mockResolvedValue({
         success: false,
         error: 'Aucun abonnement Stripe trouvé',

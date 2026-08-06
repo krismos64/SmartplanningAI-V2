@@ -10,7 +10,7 @@ import { OnboardingChecklist } from '../OnboardingChecklist'
 describe('OnboardingChecklist', () => {
   it('renders nothing when all steps are done', () => {
     const { container } = render(
-      <OnboardingChecklist hasTeam hasEmployee hasSchedule />
+      <OnboardingChecklist hasTeam hasEmployee hasSchedule hasCompleteProfile />
     )
 
     expect(container).toBeEmptyDOMElement()
@@ -22,37 +22,64 @@ describe('OnboardingChecklist', () => {
         hasTeam={false}
         hasEmployee={false}
         hasSchedule={false}
+        hasCompleteProfile={false}
       />
     )
 
-    expect(screen.getByText('0/3 étapes complétées')).toBeInTheDocument()
+    expect(screen.getByText('0/4 étapes complétées')).toBeInTheDocument()
   })
 
   it('marks completed steps and counts progress correctly', () => {
     render(
-      <OnboardingChecklist hasTeam hasEmployee hasSchedule={false} />
+      <OnboardingChecklist
+        hasTeam
+        hasEmployee
+        hasSchedule={false}
+        hasCompleteProfile={false}
+      />
     )
 
-    expect(screen.getByText('2/3 étapes complétées')).toBeInTheDocument()
-    expect(
-      screen.getByText('Créer votre premier planning')
-    ).toBeInTheDocument()
+    expect(screen.getByText('2/4 étapes complétées')).toBeInTheDocument()
+    expect(screen.getByText('Créer votre premier planning')).toBeInTheDocument()
   })
 
-  it('collapses and shows next step shortcut', async () => {
+  /**
+   * L'équipe doit rester la première étape : le formulaire de création
+   * d'employé propose d'affecter une équipe, impossible tant qu'aucune
+   * n'existe. Inverser cet ordre remettrait le directeur dans l'impasse.
+   */
+  it('proposes team creation as the first step', async () => {
     const user = userEvent.setup()
     render(
       <OnboardingChecklist
         hasTeam={false}
         hasEmployee={false}
         hasSchedule={false}
+        hasCompleteProfile={false}
       />
     )
 
     await user.click(screen.getByRole('button', { name: 'Réduire' }))
 
     expect(
-      screen.getByText(/Prochaine étape : Ajouter votre premier employé/)
+      screen.getByText(/Prochaine étape : Créer votre première équipe/)
     ).toBeInTheDocument()
+  })
+
+  it('offers a profile completion step linking to the profile page', () => {
+    render(
+      <OnboardingChecklist
+        hasTeam
+        hasEmployee
+        hasSchedule
+        hasCompleteProfile={false}
+      />
+    )
+
+    expect(screen.getByText('Compléter votre profil')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Compléter' })).toHaveAttribute(
+      'href',
+      '/app/profile'
+    )
   })
 })

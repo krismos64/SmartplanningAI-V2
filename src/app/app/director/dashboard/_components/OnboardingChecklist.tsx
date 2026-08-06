@@ -28,6 +28,13 @@ export interface OnboardingChecklistProps {
   hasEmployee: boolean
   /** Au moins un planning créé */
   hasSchedule: boolean
+  /**
+   * Profil du directeur complété : photo, poste et date d'embauche renseignés.
+   * Ces champs ne sont pas demandés à l'inscription (formulaire déjà long,
+   * chaque champ supplémentaire coûte en conversion), la checklist les
+   * rattrape une fois le compte créé.
+   */
+  hasCompleteProfile: boolean
   /** Classes CSS additionnelles */
   className?: string
 }
@@ -45,11 +52,23 @@ export function OnboardingChecklist({
   hasTeam,
   hasEmployee,
   hasSchedule,
+  hasCompleteProfile,
   className,
 }: OnboardingChecklistProps) {
   const [collapsed, setCollapsed] = useState(false)
 
+  // L'equipe passe avant l'employe : le formulaire de creation d'employe
+  // propose d'affecter une equipe, ce qui est impossible tant qu'aucune equipe
+  // n'existe. L'ordre inverse envoyait le directeur dans une impasse.
   const steps: ChecklistStep[] = [
+    {
+      key: 'team',
+      label: 'Créer votre première équipe',
+      description: 'À créer en premier : vos employés y seront rattachés',
+      done: hasTeam,
+      href: '/app/director/teams/new',
+      ctaLabel: 'Créer',
+    },
     {
       key: 'employee',
       label: 'Ajouter votre premier employé',
@@ -59,20 +78,23 @@ export function OnboardingChecklist({
       ctaLabel: 'Ajouter',
     },
     {
-      key: 'team',
-      label: 'Créer votre première équipe',
-      description: 'Regroupez vos employés et assignez un manager',
-      done: hasTeam,
-      href: '/app/director/teams/new',
-      ctaLabel: 'Créer',
-    },
-    {
       key: 'schedule',
       label: 'Créer votre premier planning',
       description: 'Planifiez les horaires de votre équipe',
       done: hasSchedule,
       href: '/app/dashboard/schedules',
       ctaLabel: 'Planifier',
+    },
+    {
+      key: 'profile',
+      // Pointe vers /app/profile et non /app/profile/edit : la photo se change
+      // depuis l'en-tête du profil, les autres champs depuis le formulaire
+      // d'édition accessible juste en dessous.
+      label: 'Compléter votre profil',
+      description: 'Photo, poste et date d’embauche, quand vous le souhaitez',
+      done: hasCompleteProfile,
+      href: '/app/profile',
+      ctaLabel: 'Compléter',
     },
   ]
 
@@ -164,9 +186,7 @@ export function OnboardingChecklist({
       {collapsed && nextStep && (
         <CardContent className="pt-0">
           <Button asChild size="sm" variant="outline">
-            <Link href={nextStep.href}>
-              Prochaine étape : {nextStep.label}
-            </Link>
+            <Link href={nextStep.href}>Prochaine étape : {nextStep.label}</Link>
           </Button>
         </CardContent>
       )}

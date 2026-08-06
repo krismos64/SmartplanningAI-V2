@@ -31,7 +31,49 @@ interface CronResult {
   sent: number
   skipped: number
   failed: number
+  /** Subscriptions basculées de TRIAL à EXPIRED sur ce passage */
+  expired: number
   details: string[]
+}
+
+/**
+ * Bascule une subscription de TRIAL à EXPIRED quand la période d'essai est
+ * terminée.
+ *
+ * Sans cette transition, `status` restait TRIAL indéfiniment : l'espace admin
+ * listait comme « essais en cours » des entreprises dont la période s'était
+ * achevée depuis des semaines.
+ *
+ * Les entreprises ayant souscrit chez Stripe sont exclues : leur statut est
+ * piloté par les webhooks (ACTIVE, PAST_DUE, CANCELED).
+ */
+async function expireTrialSubscription({
+  subscription,
+  daysRemaining,
+  companyName,
+  results,
+}: {
+  subscription: {
+    id: string
+    stripeSubscriptionId: string | null
+  } | null
+  daysRemaining: number
+  companyName: string
+  results: CronResult
+}): Promise<void> {
+  if (daysRemaining > 0) return
+  if (!subscription || subscription.stripeSubscriptionId) return
+
+  try {
+    await prisma.subscription.update({
+      where: { id: subscription.id },
+      data: { status: 'EXPIRED' },
+    })
+    results.expired++
+  } catch {
+    results.failed++
+    results.details.push(`${companyName}: trial status update failed`)
+  }
 }
 
 export async function POST(request: NextRequest) {
@@ -71,18 +113,32 @@ export async function POST(request: NextRequest) {
     },
   })
 
-  const results: CronResult = { sent: 0, skipped: 0, failed: 0, details: [] }
+  const results: CronResult = {
+    sent: 0,
+    skipped: 0,
+    failed: 0,
+    expired: 0,
+    details: [],
+  }
 
   // 3. Pour chaque company, calculer daysRemaining et envoyer l'email
   for (const company of trialCompanies) {
+    const daysRemaining = differenceInDays(company.trialEndsAt!, new Date())
+
+    // Une company dont l'essai est fini mais sans directeur joignable ne doit
+    // pas rester bloquée en TRIAL : on corrige son statut avant de sortir.
     const director = company.users[0]
     if (!director?.email) {
+      await expireTrialSubscription({
+        subscription: company.subscription,
+        daysRemaining,
+        companyName: company.name,
+        results,
+      })
       results.skipped++
       results.details.push(`${company.name}: no director email`)
       continue
     }
-
-    const daysRemaining = differenceInDays(company.trialEndsAt!, new Date())
     const employeeCount = company._count.employees
     const estimatedMonthlyPrice = formatAmountEuros(
       employeeCount * (company.subscription?.pricePerEmployee ?? 290)
@@ -114,6 +170,16 @@ export async function POST(request: NextRequest) {
         results.failed++
         results.details.push(`${company.name}: trial expired email failed`)
       }
+
+      // Après l'email seulement : la bascule en EXPIRED fait sortir la company
+      // du filtre `status: 'TRIAL'` de ce cron, donc l'email d'expiration ne
+      // repartira plus aux passages suivants.
+      await expireTrialSubscription({
+        subscription: company.subscription,
+        daysRemaining,
+        companyName: company.name,
+        results,
+      })
     } else if (
       TRIAL_REMINDER_DAYS.includes(
         daysRemaining as (typeof TRIAL_REMINDER_DAYS)[number]

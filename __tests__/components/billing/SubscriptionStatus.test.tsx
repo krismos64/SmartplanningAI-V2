@@ -42,11 +42,28 @@ const mockSubscriptionActive: SerializedSubscription = {
   canceledAt: null,
   createdAt: '2025-06-01T00:00:00.000Z',
   stripeCustomerId: 'cus_test123',
+  stripeSubscriptionId: 'sub_test123',
 }
 
 const mockSubscriptionTrial: SerializedSubscription = {
   ...mockSubscriptionActive,
   status: 'TRIAL',
+}
+
+/**
+ * Ligne Subscription créée à l'inscription pour suivre l'essai : statut TRIAL,
+ * plan FREE, aucun identifiant Stripe et 0 siège. Elle ne vaut pas abonnement.
+ */
+const mockSubscriptionTrialNoStripe: SerializedSubscription = {
+  ...mockSubscriptionActive,
+  plan: 'FREE',
+  status: 'TRIAL',
+  quantity: 0,
+  planPrice: 0,
+  currentPeriodStart: null,
+  currentPeriodEnd: null,
+  stripeCustomerId: null,
+  stripeSubscriptionId: null,
 }
 
 const mockSubscriptionPastDue: SerializedSubscription = {
@@ -108,7 +125,7 @@ describe('SubscriptionStatus', () => {
       expect(screen.getByText('Essai gratuit')).toBeInTheDocument()
     })
 
-    it('affiche le countdown des jours d\'essai restants', () => {
+    it("affiche le countdown des jours d'essai restants", () => {
       const futureDate = new Date()
       futureDate.setDate(futureDate.getDate() + 10)
       render(
@@ -195,16 +212,41 @@ describe('SubscriptionStatus', () => {
       expect(screen.getByText('Aucun abonnement')).toBeInTheDocument()
       expect(screen.getByText("S'abonner")).toBeInTheDocument()
     })
+
+    /**
+     * Une ligne Subscription locale (TRIAL, sans identifiants Stripe) existe
+     * dès l'inscription pour piloter les rappels de fin d'essai. Elle ne doit
+     * pas déclencher l'écran « Vous êtes abonné » : le compte affichait alors
+     * 0 siège, 0,00 € et un bouton « Gérer mon abonnement » qui échouait.
+     */
+    it('traite une subscription sans identifiant Stripe comme un essai sans abonnement', () => {
+      const futureDate = new Date()
+      futureDate.setDate(futureDate.getDate() + 21)
+
+      render(
+        <SubscriptionStatus
+          {...defaultProps}
+          subscription={mockSubscriptionTrialNoStripe}
+          trialEndsAt={futureDate.toISOString()}
+        />
+      )
+
+      expect(screen.getByTestId('subscription-empty-state')).toBeInTheDocument()
+      expect(screen.getByTestId('subscribe-btn')).toBeInTheDocument()
+      expect(
+        screen.queryByText('Vous êtes abonné, essai gratuit en cours')
+      ).not.toBeInTheDocument()
+      expect(
+        screen.queryByTestId('manage-subscription-btn')
+      ).not.toBeInTheDocument()
+    })
   })
 
   describe('Interactions', () => {
     it('appelle onManageSubscription au clic sur "Gérer mon abonnement"', () => {
       const onManage = vi.fn()
       render(
-        <SubscriptionStatus
-          {...defaultProps}
-          onManageSubscription={onManage}
-        />
+        <SubscriptionStatus {...defaultProps} onManageSubscription={onManage} />
       )
       fireEvent.click(screen.getByTestId('manage-subscription-btn'))
       expect(onManage).toHaveBeenCalledTimes(1)
@@ -213,10 +255,7 @@ describe('SubscriptionStatus', () => {
     it('appelle onCancelSubscription au clic sur "Annuler"', () => {
       const onCancel = vi.fn()
       render(
-        <SubscriptionStatus
-          {...defaultProps}
-          onCancelSubscription={onCancel}
-        />
+        <SubscriptionStatus {...defaultProps} onCancelSubscription={onCancel} />
       )
       fireEvent.click(screen.getByTestId('cancel-subscription-btn'))
       expect(onCancel).toHaveBeenCalledTimes(1)

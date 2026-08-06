@@ -13,9 +13,7 @@
 import { Prisma } from '@prisma/client'
 
 import { PRICING } from '@/lib/config/pricing'
-import { sendWelcomeEmail } from '@/lib/email/templates/welcome'
 import { sendNewRegistrationEmail } from '@/lib/email/templates/new-registration'
-import { logAuthEmail, AuthEmailType } from '@/lib/email/auth/log-auth-email'
 import { hashPassword } from '@/lib/password'
 import { prisma } from '@/lib/prisma'
 import { logAuditAction } from '@/lib/services/audit'
@@ -249,45 +247,27 @@ export async function registerAction(
       )
       .catch(console.error)
 
-    // 8. Envoyer l'email de bienvenue (non bloquant)
-    // L'échec de l'envoi ne doit PAS bloquer l'inscription
+    // 8. Envoyer l'email de vérification (SP-299)
+    // Seul email envoyé à l'inscription : tant que l'adresse n'est pas validée,
+    // la connexion est bloquée (SP-526). L'email de bienvenue part une fois le
+    // lien cliqué (verifyEmailAction), sinon il arrivait avant la vérification
+    // et accueillait l'utilisateur sur un compte inutilisable.
+    // Awaité pour garantir l'ordre d'arrivée dans la boîte de réception.
     try {
-      const firstName = name.trim().split(' ')[0] || name.trim()
-      const welcomeResult = await sendWelcomeEmail({
-        firstName,
-        email: email.toLowerCase(),
-      })
-      // Tracer l'envoi dans EmailLog (non bloquant)
-      await logAuthEmail({
-        companyId: result.company.id,
-        emailType: AuthEmailType.WELCOME,
-        recipientEmail: email.toLowerCase(),
-        success: welcomeResult.success,
-        messageId: welcomeResult.messageId,
-        error: welcomeResult.error,
-      })
-    } catch (emailError) {
-      // Logger l'erreur mais ne pas bloquer l'inscription
+      await sendVerificationEmailAction({ email: email.toLowerCase() })
+    } catch (err) {
+      // L'échec de l'envoi ne doit PAS bloquer l'inscription : l'utilisateur
+      // peut demander un renvoi depuis l'écran de connexion.
       if (process.env.NODE_ENV === 'development') {
         // eslint-disable-next-line no-console
         console.error(
-          '[registerAction] Failed to send welcome email:',
-          emailError
+          '[registerAction] Failed to send verification email:',
+          err
         )
       }
     }
 
-    // 9. Envoyer l'email de vérification (fire-and-forget, SP-299)
-    sendVerificationEmailAction({
-      email: email.toLowerCase(),
-    }).catch((err) => {
-      if (process.env.NODE_ENV === 'development') {
-        // eslint-disable-next-line no-console
-        console.error('[registerAction] Failed to send verification email:', err)
-      }
-    })
-
-    // 10. Notifier l'admin par email de la nouvelle inscription (fire-and-forget, SP-480)
+    // 9. Notifier l'admin par email de la nouvelle inscription (fire-and-forget, SP-480)
     sendNewRegistrationEmail({
       companyName: companyName.trim(),
       directorName: name.trim(),
@@ -296,7 +276,10 @@ export async function registerAction(
     }).catch((err) => {
       if (process.env.NODE_ENV === 'development') {
         // eslint-disable-next-line no-console
-        console.error('[registerAction] Failed to send admin notification:', err)
+        console.error(
+          '[registerAction] Failed to send admin notification:',
+          err
+        )
       }
     })
 

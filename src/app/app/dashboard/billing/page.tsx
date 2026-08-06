@@ -73,6 +73,7 @@ function serializeBillingData(data: BillingData): SerializedBillingData {
           canceledAt: data.subscription.canceledAt?.toISOString() ?? null,
           createdAt: data.subscription.createdAt.toISOString(),
           stripeCustomerId: data.subscription.stripeCustomerId,
+          stripeSubscriptionId: data.subscription.stripeSubscriptionId,
         }
       : null,
     payments: data.payments.map((p) => ({

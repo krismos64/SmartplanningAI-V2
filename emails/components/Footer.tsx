@@ -29,6 +29,9 @@ export interface FooterProps {
  * - Copyright
  * - Lien de désabonnement (optionnel)
  * - Adresse de contact
+ *
+ * Pas de lien « Contact » : la route publique /contact n'existe pas
+ * (seule l'API /api/contact est exposée), le lien pointait dans le vide.
  */
 export function Footer({
   year = new Date().getFullYear(),
@@ -74,14 +77,6 @@ export function Footer({
                         style={linkStyle}
                       >
                         Confidentialité
-                      </Link>
-                    </td>
-                    <td style={separatorCellStyle}>
-                      <Text style={separatorStyle}>•</Text>
-                    </td>
-                    <td style={linkCellStyle}>
-                      <Link href={`${baseUrl}/contact`} style={linkStyle}>
-                        Contact
                       </Link>
                     </td>
                   </tr>

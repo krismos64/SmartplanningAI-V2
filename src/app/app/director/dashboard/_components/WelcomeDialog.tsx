@@ -6,10 +6,11 @@
  * utiles sont noyés en bas de page. Ce dialog raccourcit le chemin vers la
  * première action utile au lieu de laisser l'utilisateur deviner.
  *
- * CTA vers la création d'employé (pas d'équipe) : le formulaire de création
- * d'équipe propose d'assigner un manager, ce qui n'a pas de sens tant
- * qu'aucun employé n'existe. L'ordre logique métier est employé → équipe
- * (avec manager assignable une fois qu'il y a du monde à assigner).
+ * CTA vers la création d'équipe : le formulaire employé propose d'affecter une
+ * équipe, impossible tant qu'aucune n'existe. Le manager d'une équipe est lui
+ * optionnel et s'assigne après coup, donc l'ordre équipe → employé est le seul
+ * qui ne met pas l'utilisateur dans une impasse. Même ordre que la checklist
+ * du dashboard (OnboardingChecklist), les deux doivent rester alignées.
  *
  * Volontairement minimal : pas de tunnel multi-étapes, pas de récap de
  * fonctionnalités. Un message + une action.
@@ -30,7 +31,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
-import { UserPlus } from 'lucide-react'
+import { Users } from 'lucide-react'
 
 export interface WelcomeDialogProps {
   /** Le dialog est-il ouvert (contrôlé par le parent selon hasSeenWelcome) */
@@ -47,9 +48,9 @@ export function WelcomeDialog({ open, userName }: WelcomeDialogProps) {
     showToasts: false,
   })
 
-  const handleAddEmployee = useCallback(async () => {
+  const handleCreateTeam = useCallback(async () => {
     await mutate(undefined)
-    router.push('/app/dashboard/employees/new')
+    router.push('/app/director/teams/new')
   }, [mutate, router])
 
   const handleDismiss = useCallback(
@@ -66,26 +67,21 @@ export function WelcomeDialog({ open, userName }: WelcomeDialogProps) {
       <DialogContent className="glass-strong border-none sm:max-w-md">
         <DialogHeader>
           <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-violet-500/10">
-            <UserPlus
-              className="h-6 w-6 text-neon-primary"
-              aria-hidden="true"
-            />
+            <Users className="text-neon-primary h-6 w-6" aria-hidden="true" />
           </div>
-          <DialogTitle className="text-xl">
-            Bienvenue, {userName} !
-          </DialogTitle>
+          <DialogTitle className="text-xl">Bienvenue, {userName} !</DialogTitle>
           <DialogDescription>
-            Pour commencer, ajoutons votre premier employé. Vous pourrez
-            ensuite créer des équipes et leur assigner un manager.
+            Pour commencer, créons votre première équipe. Vous pourrez ensuite y
+            ajouter vos employés et désigner un manager.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="flex-col gap-2 sm:flex-col">
           <Button
-            onClick={() => void handleAddEmployee()}
+            onClick={() => void handleCreateTeam()}
             disabled={isPending}
             className="w-full"
           >
-            Ajouter un employé
+            Créer une équipe
           </Button>
           <Button
             variant="ghost"

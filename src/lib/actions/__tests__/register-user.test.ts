@@ -275,3 +275,49 @@ describe("registerAction — creation de Subscription a l'inscription", () => {
     expect(mockTransaction).not.toHaveBeenCalled()
   })
 })
+
+/**
+ * L'email de bienvenue partait en `await` juste avant l'email de verification
+ * envoye en fire-and-forget : il arrivait donc en premier dans la boite du
+ * nouvel inscrit, qui etait accueilli sur un compte encore bloque par le
+ * verrou `emailVerified` (SP-526). Le welcome est desormais declenche par
+ * `verifyEmailAction`, une fois l'adresse validee.
+ */
+describe("registerAction — emails envoyes a l'inscription", () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mockUserFindUnique.mockResolvedValue(null)
+    mockCompanyFindUnique.mockResolvedValue(null)
+    mockLogAuditAction.mockResolvedValue(undefined)
+    mockSendWelcomeEmail.mockResolvedValue(undefined)
+    mockSendVerificationEmailAction.mockResolvedValue(undefined)
+    mockSendNewRegistrationEmail.mockResolvedValue(undefined)
+  })
+
+  it("n'envoie pas l'email de bienvenue a l'inscription", async () => {
+    setupSuccessfulTransaction()
+
+    await registerAction(VALID_INPUT)
+
+    expect(mockSendWelcomeEmail).not.toHaveBeenCalled()
+  })
+
+  it("envoie l'email de verification a l'adresse saisie", async () => {
+    setupSuccessfulTransaction()
+
+    await registerAction(VALID_INPUT)
+
+    expect(mockSendVerificationEmailAction).toHaveBeenCalledWith({
+      email: VALID_INPUT.email.toLowerCase(),
+    })
+  })
+
+  it("n'echoue pas l'inscription si l'email de verification part en erreur", async () => {
+    setupSuccessfulTransaction()
+    mockSendVerificationEmailAction.mockRejectedValue(new Error('SMTP down'))
+
+    const result = await registerAction(VALID_INPUT)
+
+    expect(result.success).toBe(true)
+  })
+})

@@ -150,10 +150,14 @@ export async function createBillingPortalAction(
     where: { companyId: user.companyId },
     select: { stripeCustomerId: true },
   })
+  // Le portail Stripe suppose un customer existant. Pendant l'essai gratuit,
+  // aucun customer n'est créé (pas de carte demandée) : le message doit dire
+  // quoi faire plutôt que d'annoncer une erreur technique.
   if (!subscription?.stripeCustomerId) {
     return {
       success: false,
-      error: 'Aucun abonnement Stripe trouvé pour cette entreprise',
+      error:
+        "Vous n'avez pas encore d'abonnement à gérer. Souscrivez depuis cette page pour accéder au portail de facturation.",
     }
   }
 
@@ -359,6 +363,7 @@ export async function getBillingDataAction(): Promise<
               canceledAt: subscription.canceledAt,
               createdAt: subscription.createdAt,
               stripeCustomerId: subscription.stripeCustomerId,
+              stripeSubscriptionId: subscription.stripeSubscriptionId,
             }
           : null,
         payments: payments.map((p) => {
