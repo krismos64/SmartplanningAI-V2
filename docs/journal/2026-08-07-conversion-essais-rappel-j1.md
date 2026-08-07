@@ -2,7 +2,7 @@
 
 | Champ | Valeur |
 |---|---|
-| Ticket | SP-558, SP-559, SP-561 traités. SP-560 préparé, exécution manuelle |
+| Ticket | SP-558, SP-559, SP-560, SP-561, tous clos |
 | Documents produits | `src/scripts/backfill-missing-subscriptions.sql`, `docs/runbooks/rotation-cron-secret.md`, tests de `trial-ending-soon` |
 | Documents modifiés | `trial-ending-soon.ts`, `billing/types.ts`, `validations/email-logs.ts`, `subscription-guard.ts`, `BillingPageContent.tsx`, tests du guard |
 | Contrôles | `npm run test` 3074 tests sur 179 fichiers, `npm run type-check` sans sortie, lint propre sur les fichiers touchés, 3 mutations vérifiées |
@@ -93,15 +93,29 @@ message d'abonnement expiré alors qu'ils n'avaient jamais souscrit.
 Le `CRON_SECRET` était écrit en clair dans la crontab de l'utilisateur `deploy`,
 donc visible par `crontab -l`, dans les sauvegardes de `/var/spool/cron/` et
 dans `ps` pendant l'exécution de `curl`. Il s'est affiché dans la session de
-diagnostic, ce qui le rend compromis. La rotation est préparée en runbook mais
-n'a pas été exécutée : elle touche la production et le secret ne doit pas
-transiter par une session d'assistant.
+diagnostic, ce qui le rendait compromis.
 
-`docs/analytics.credentials.md` documente l'endpoint du cron en `GET` alors que
+La rotation a d'abord été préparée en runbook plutôt qu'exécutée, le secret ne
+devant pas transiter par une session d'assistant. Christophe a ensuite autorisé
+explicitement l'exécution, faite en fin de session sans jamais afficher la
+valeur. Le secret vit maintenant dans `/etc/smartplanning/cron.env` en 600, et
+la crontab le source au lieu de le porter.
+
+La preuve tient à un détail de séquencement : l'ancien secret a été capturé et
+vérifié fonctionnel (200) **avant** le redémarrage du conteneur. Sans ce témoin,
+un 401 après rotation ne prouverait rien, il pourrait venir d'une erreur de
+copie. Après redémarrage, ancien 401, nouveau 200, sans secret 401.
+
+Réserve assumée : la ligne de commande de `curl` reste visible dans `ps` pendant
+l'appel, environ deux secondes par jour. La machine n'ayant qu'un utilisateur
+non privilégié, le passage du header par l'entrée standard n'a pas été fait.
+
+`docs/analytics.credentials.md` documentait l'endpoint du cron en `GET` alors que
 la route n'expose que `POST`. Sans conséquence, la crontab utilisant bien
 `-X POST`. Le fichier est bloqué en lecture par le hook `PreToolUse` à cause du
-`.credentials.` de son nom, protection qui fonctionne comme prévu. La correction
-d'une ligne reste donc à faire à la main.
+`.credentials.` de son nom, protection qui fonctionne comme prévu. Christophe l'a
+corrigé à la main. Aucun commit n'était nécessaire : ce fichier est gitignoré
+(`.gitignore:134`, motif `docs/*.credentials.md`) et n'a jamais été suivi.
 
 La whitelist `testMatch` de `playwright.ci.config.ts` ne contient aucun spec
 billing. Les changements de cette session ne sont donc couverts en CI que par
@@ -110,8 +124,7 @@ n'a pas été pris seul.
 
 ## Prochaine étape
 
-Exécuter la rotation du `CRON_SECRET` avec le runbook, et corriger la ligne
-`GET` de la documentation.
+Rien n'est en cours, les quatre tickets de la session sont clos et déployés.
 
 Sur la conversion, le levier suivant est la relance après expiration : rien ne
 part aujourd'hui une fois l'essai terminé, alors que les données restent
