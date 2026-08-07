@@ -103,10 +103,40 @@ vérifier. L'index a été corrigé et une fiche `index-memoire-perime` créée 
 statut d'avancement dans l'index périme silencieusement, il se confirme dans
 `git log` ou dans le journal.
 
+## Le déploiement, et un échec GHCR à connaître
+
+PR #69 mergée en squash sur `main`, commit `e21e6a2`, les quatre checks au vert.
+
+Le premier passage du CD a **échoué**, à l'étape « Login to GitHub Container
+Registry » : `Get "https://ghcr.io/v2/": denied: denied`. L'échec est survenu
+avant toute compilation, donc `Deploy to VPS` et `Run Database Migrations` ont
+été sautés et la production est restée intacte.
+
+Ce n'était pas une régression du dépôt. Trois éléments l'établissent : la PR ne
+touche pas `.github/`, le workflow déclare bien `packages: write` avec le
+`GITHUB_TOKEN` automatique, et le même CD avait réussi sept fois dans la journée,
+la dernière une heure plus tôt sur `bd7503a`, à configuration identique.
+
+Un simple `gh run rerun --failed` a suffi, les trois jobs sont passés. À retenir :
+un `denied` au login GHCR sur une configuration inchangée se relance avant de se
+diagnostiquer, c'est un incident de plateforme.
+
+Déploiement vérifié par le SHA du conteneur plutôt que par le statut du workflow :
+`docker inspect` renvoie `e21e6a2706d697a...`, conteneur `healthy`. Les six pages
+publiques répondent 200.
+
+Une remarque de méthode au passage : deux 404 observés pendant la vérification
+venaient de slugs devinés (`btp` au lieu de `planning-btp`,
+`planning-restauration` au lieu de `planning-restaurant`), pas du site. Le
+`NoFallbackError` des logs était la trace de ces requêtes sur une route en
+`dynamicParams = false`. Lire les slugs dans les registres avant de tester.
+
 ## Prochaine étape
 
-La branche `feat/instrumentation-decrochage-essais` porte un commit non poussé.
-Il reste à ouvrir la PR, attendre la CI et merger.
-
 Sur la conversion, le levier suivant identifié est le SEO et le GEO, un
-quatrième secteur ou un quatrième guide, pour alimenter les essais à venir.
+quatrième secteur ou un quatrième guide, pour alimenter les essais à venir. Trois
+secteurs et trois guides existent aujourd'hui.
+
+Deux sujets en attente : le seuil de décrochage de sept jours reste à étalonner
+après les essais qui expirent les 26 et 27 août, et la whitelist E2E de la CI ne
+couvre toujours ni le billing ni le dashboard admin.
