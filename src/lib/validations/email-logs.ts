@@ -100,6 +100,7 @@ export const EMAIL_TYPE_META: Record<string, EmailTypeMeta> = {
   TRIAL_REMINDER_14: { label: 'Rappel essai J-14', category: 'BILLING' },
   TRIAL_REMINDER_7: { label: 'Rappel essai J-7', category: 'BILLING' },
   TRIAL_REMINDER_3: { label: 'Rappel essai J-3', category: 'BILLING' },
+  TRIAL_REMINDER_1: { label: 'Rappel essai J-1', category: 'BILLING' },
   TRIAL_EXPIRED: { label: 'Essai expiré', category: 'BILLING' },
   QUANTITY_UPDATED: { label: 'Quantité mise à jour', category: 'BILLING' },
   // Auth (log-auth-email.ts)
