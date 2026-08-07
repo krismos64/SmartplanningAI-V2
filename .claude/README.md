@@ -51,13 +51,14 @@ chemin du fichier et signale la règle applicable. Il reste silencieux sur les
 chemins sans enjeu, un hook qui parle à chaque écriture devient un bruit qu'on
 apprend à ignorer.
 
-## Les trois hooks
+## Les quatre hooks
 
 | Déclencheur | Script | Rôle |
 |---|---|---|
 | `PreToolUse` | `hook-block-secret-files.sh` | bloque la **lecture** des secrets |
 | `PostToolUse` | `hook-rappel-regles.sh` | rappelle la règle du domaine touché |
 | `Stop` | `hook-warn-unpushed.sh` | signale le travail non poussé |
+| `Stop` | `hook-tracabilite.sh` | signale le journal et les tickets à clore |
 
 Le premier porte une nuance qu'une règle de permission ne sait pas exprimer :
 l'**écriture** dans un `.env` est autorisée, la **lecture** est bloquée. Ajouter
@@ -65,6 +66,15 @@ une variable ou générer un secret avec `openssl` n'exige pas de lire l'existan
 alors qu'une valeur lue entrerait dans l'historique de session sur disque. Clés
 privées et certificats sont bloqués dans les deux sens : une clé se génère, elle
 ne s'édite pas.
+
+Le dernier répond au même raisonnement que le hook de règles : une consigne
+écrite mais non vérifiée s'érode en silence, parce que chaque oubli ressemble à
+un cas isolé. Le journal précédent en est la démonstration, il a cessé d'être
+tenu au 12 mai 2026 et personne ne l'a vu pendant trois mois. Le hook ne
+consulte pas l'API Jira volontairement : il faudrait un jeton en `.env`, donc un
+secret de plus sur un dépôt public, lu par le hook qui bloque justement la
+lecture des `.env`. Extraire les clés `SP-XXX` des commits du jour couvre le cas
+réel, oublier de commenter un ticket sur lequel on vient de travailler.
 
 C'est le hook qui porte la protection, pas les règles `deny` de `settings.json`,
 qui restent en seconde ligne. Un hook sortant en code 2 bloque l'appel **avant**
