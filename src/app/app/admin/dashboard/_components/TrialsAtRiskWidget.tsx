@@ -12,13 +12,17 @@
 import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
 import {
+  Activity,
   AlertTriangle,
   Building2,
+  CalendarDays,
   CheckCircle2,
   Clock,
   ExternalLink,
   Mail,
+  MinusCircle,
   Plus,
+  TrendingDown,
   Users,
 } from 'lucide-react'
 
@@ -32,6 +36,10 @@ import {
   extendTrial,
   type TrialAtRisk,
 } from '@/lib/actions/admin-trials'
+import {
+  ENGAGEMENT_LABELS,
+  type TrialEngagement,
+} from '@/lib/billing/trial-engagement'
 
 // ============================================================================
 // Constants
@@ -53,6 +61,25 @@ const URGENCY_CONFIG = {
   },
 } as const
 
+const ENGAGEMENT_CONFIG: Record<
+  TrialEngagement,
+  { className: string; icon: typeof Activity }
+> = {
+  active: {
+    className:
+      'border-emerald-500 text-emerald-600 dark:text-emerald-400',
+    icon: Activity,
+  },
+  disengaged: {
+    className: 'border-amber-500 text-amber-600 dark:text-amber-400',
+    icon: TrendingDown,
+  },
+  never_started: {
+    className: 'border-slate-400 text-slate-600 dark:text-slate-400',
+    icon: MinusCircle,
+  },
+}
+
 // ============================================================================
 // Helpers
 // ============================================================================
@@ -61,6 +88,13 @@ function formatDaysRemaining(days: number): string {
   if (days <= 0) return "Expiré aujourd'hui"
   if (days === 1) return '1 jour restant'
   return `${days} jours restants`
+}
+
+function formatLastLogin(days: number | null): string {
+  if (days === null) return 'Jamais connecté'
+  if (days === 0) return "Vu aujourd'hui"
+  if (days === 1) return 'Vu hier'
+  return `Vu il y a ${days} jours`
 }
 
 // ============================================================================
@@ -77,6 +111,8 @@ function TrialRow({
   isExtending: string | null
 }) {
   const urgencyConfig = URGENCY_CONFIG[trial.urgency]
+  const engagementConfig = ENGAGEMENT_CONFIG[trial.engagement]
+  const EngagementIcon = engagementConfig.icon
 
   return (
     <div
@@ -101,6 +137,14 @@ function TrialRow({
           >
             {urgencyConfig.label}
           </Badge>
+          <Badge
+            variant="outline"
+            className={`flex items-center gap-1 ${engagementConfig.className}`}
+            data-testid="trial-engagement"
+          >
+            <EngagementIcon className="h-3 w-3" aria-hidden />
+            {ENGAGEMENT_LABELS[trial.engagement]}
+          </Badge>
         </div>
 
         <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
@@ -111,6 +155,14 @@ function TrialRow({
           <span className="flex items-center gap-1">
             <Users className="h-3 w-3" aria-hidden />
             {trial.employeeCount} employé{trial.employeeCount > 1 ? 's' : ''}
+          </span>
+          <span className="flex items-center gap-1">
+            <CalendarDays className="h-3 w-3" aria-hidden />
+            {trial.scheduleCount} planning{trial.scheduleCount > 1 ? 's' : ''}
+          </span>
+          <span className="flex items-center gap-1">
+            <Activity className="h-3 w-3" aria-hidden />
+            {formatLastLogin(trial.daysSinceLastLogin)}
           </span>
           {trial.ownerEmail && (
             <span className="flex items-center gap-1 truncate">

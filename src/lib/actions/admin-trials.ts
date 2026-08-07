@@ -5,12 +5,23 @@
  * Identifie les entreprises en période d'essai expirant dans les 7 prochains jours.
  * Réservé SYSTEM_ADMIN.
  *
- * @ticket SP-473
+ * L'urgence croise deux dimensions : le temps restant et l'engagement réel.
+ * Le calendrier seul ne dit rien de ce qui se joue, un compte à 500 plannings
+ * et un compte vide expirant le même jour n'appellent pas la même action.
+ *
+ * @ticket SP-473, SP-562
  */
 
 import { auth } from '@/lib/auth'
 import { hasRequiredRole } from '@/lib/permissions'
 import { prisma } from '@/lib/prisma'
+import {
+  MS_PER_DAY,
+  daysSince,
+  deriveEngagement,
+  deriveUrgency,
+  type TrialEngagement,
+} from '@/lib/billing/trial-engagement'
 
 // ============================================================================
 // Types
@@ -24,6 +35,13 @@ export interface TrialAtRisk {
   employeeCount: number
   ownerEmail: string | null
   urgency: 'critical' | 'warning' | 'info'
+  /** Nombre de plannings créés depuis le début de l'essai */
+  scheduleCount: number
+  /** Dernière connexion du directeur, null s'il ne s'est jamais connecté */
+  lastLoginAt: Date | null
+  /** Jours écoulés depuis la dernière connexion, null si jamais connecté */
+  daysSinceLastLogin: number | null
+  engagement: TrialEngagement
 }
 
 // ============================================================================
@@ -41,7 +59,7 @@ export async function getTrialsAtRisk(): Promise<TrialAtRisk[]> {
   }
 
   const now = new Date()
-  const in7Days = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
+  const in7Days = new Date(now.getTime() + 7 * MS_PER_DAY)
 
   const companies = await prisma.company.findMany({
     where: {
@@ -56,10 +74,15 @@ export async function getTrialsAtRisk(): Promise<TrialAtRisk[]> {
       id: true,
       name: true,
       trialEndsAt: true,
-      _count: { select: { employees: { where: { isActive: true } } } },
+      _count: {
+        select: {
+          employees: { where: { isActive: true } },
+          schedules: true,
+        },
+      },
       users: {
         where: { role: 'DIRECTOR' },
-        select: { email: true },
+        select: { email: true, lastLoginAt: true },
         take: 1,
         orderBy: { createdAt: 'asc' },
       },
@@ -70,19 +93,33 @@ export async function getTrialsAtRisk(): Promise<TrialAtRisk[]> {
   return companies.map((c) => {
     const trialEndsAt = c.trialEndsAt!
     const msRemaining = trialEndsAt.getTime() - now.getTime()
-    const daysRemaining = Math.ceil(msRemaining / (1000 * 60 * 60 * 24))
+    const daysRemaining = Math.ceil(msRemaining / MS_PER_DAY)
 
-    const urgency: TrialAtRisk['urgency'] =
-      daysRemaining <= 2 ? 'critical' : daysRemaining <= 5 ? 'warning' : 'info'
+    const director = c.users[0]
+    const lastLoginAt = director?.lastLoginAt ?? null
+    const daysSinceLastLogin = lastLoginAt ? daysSince(lastLoginAt, now) : null
+
+    const employeeCount = c._count?.employees ?? 0
+    const scheduleCount = c._count?.schedules ?? 0
+
+    const engagement = deriveEngagement({
+      employeeCount,
+      scheduleCount,
+      daysSinceLastLogin,
+    })
 
     return {
       companyId: c.id,
       companyName: c.name,
       trialEndsAt,
       daysRemaining,
-      employeeCount: c._count.employees,
-      ownerEmail: c.users[0]?.email ?? null,
-      urgency,
+      employeeCount,
+      ownerEmail: director?.email ?? null,
+      urgency: deriveUrgency({ daysRemaining, engagement }),
+      scheduleCount,
+      lastLoginAt,
+      daysSinceLastLogin,
+      engagement,
     }
   })
 }

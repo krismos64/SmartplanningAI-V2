@@ -9,7 +9,11 @@
  * 5. getTrialsAtRisk() — urgency "info" si daysRemaining 6-7
  * 6. extendTrial() — non SYSTEM_ADMIN → throw Unauthorized
  *
- * @ticket SP-473
+ * Depuis SP-562, l'urgence croise le temps restant et l'engagement réel : les
+ * cas 3 à 5 portent donc sur des comptes actifs. Le détail de la dérivation est
+ * testé dans `src/lib/billing/__tests__/trial-engagement.test.ts`.
+ *
+ * @ticket SP-473, SP-562
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
@@ -48,13 +52,34 @@ function daysFromNow(days: number): Date {
   return new Date(Date.now() + days * 24 * 60 * 60 * 1000)
 }
 
-function makeCompany(id: string, name: string, trialEndsAt: Date) {
+/**
+ * Company avec un engagement « actif » par défaut : employés, plannings et
+ * connexion du jour. Depuis SP-562 l'urgence croise le temps restant et
+ * l'engagement, une fixture sans usage ne serait plus classée sur le seul
+ * calendrier.
+ */
+function makeCompany(
+  id: string,
+  name: string,
+  trialEndsAt: Date,
+  engagement: { schedules?: number; daysSinceLogin?: number | null } = {}
+) {
+  const { schedules = 20, daysSinceLogin = 0 } = engagement
+
   return {
     id,
     name,
     trialEndsAt,
-    _count: { employees: 5 },
-    users: [{ email: `director@${id}.com` }],
+    _count: { employees: 5, schedules },
+    users: [
+      {
+        email: `director@${id}.com`,
+        lastLoginAt:
+          daysSinceLogin === null
+            ? null
+            : new Date(Date.now() - daysSinceLogin * 24 * 60 * 60 * 1000),
+      },
+    ],
   }
 }
 
@@ -141,6 +166,36 @@ describe('getTrialsAtRisk (SP-473)', () => {
 
     expect(result[0].urgency).toBe('info')
     expect(result[0].daysRemaining).toBeGreaterThanOrEqual(6)
+  })
+
+  // 6. L'engagement module l'urgence à échéance identique (SP-562)
+  it('ne classifie pas "critical" un compte sans usage à échéance identique', async () => {
+    prismaMock.company.findMany.mockResolvedValue([
+      makeCompany('c1', 'Vide Corp', daysFromNow(1), {
+        schedules: 0,
+        daysSinceLogin: 12,
+      }),
+    ])
+
+    const result = await getTrialsAtRisk()
+
+    expect(result[0].engagement).toBe('never_started')
+    expect(result[0].urgency).toBe('warning')
+  })
+
+  // 7. Un compte qui a produit puis décroché remonte malgré l'échéance lointaine
+  it('remonte en "warning" un compte décroché encore loin de l échéance', async () => {
+    prismaMock.company.findMany.mockResolvedValue([
+      makeCompany('c1', 'Decroche Corp', daysFromNow(7), {
+        schedules: 43,
+        daysSinceLogin: 20,
+      }),
+    ])
+
+    const result = await getTrialsAtRisk()
+
+    expect(result[0].engagement).toBe('disengaged')
+    expect(result[0].urgency).toBe('warning')
   })
 })
 
