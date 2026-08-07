@@ -104,9 +104,10 @@ Travailler sans demander de validation à chaque commande, enchaîner librement 
 outils à l'intérieur d'une étape. Faire un point à la fin de chaque étape
 significative, et proposer la suite plutôt que de l'enchaîner d'office.
 
-Trois hooks appuient ce cycle : `PreToolUse` bloque la lecture des secrets,
-`PostToolUse` rappelle la règle applicable au chemin modifié, `Stop` avertit s'il
-reste du travail non poussé.
+Quatre hooks appuient ce cycle : `PreToolUse` bloque la lecture des secrets,
+`PostToolUse` rappelle la règle applicable au chemin modifié, et deux hooks
+`Stop` avertissent s'il reste du travail non poussé ou de la traçabilité à
+clore.
 
 ## Vérification avant de conclure
 

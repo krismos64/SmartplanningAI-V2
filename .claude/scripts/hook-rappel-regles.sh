@@ -34,8 +34,12 @@ case "$relatif" in
 esac
 
 # Pieges Prisma, 'use server', backfill, SQL
+# lib/billing et lib/email sont inclus : ces fichiers cotoient des Server Actions
+# et tombent sur le meme piege 'use server'. Ajoute apres SP-562, ou la logique
+# d'engagement a d'abord ete ecrite dans un fichier 'use server' sans qu'aucun
+# rappel ne se declenche.
 case "$relatif" in
-    *actions/*|*/actions/*|src/scripts/*|scripts/*|*.sql|*service.ts)
+    *actions/*|*/actions/*|src/scripts/*|scripts/*|*.sql|*service.ts|*/lib/billing/*|*/lib/email/*)
         regles+=("prisma-pieges.md : 'use server' n'exporte que de l'async, mesurer avant tout DELETE") ;;
 esac
 

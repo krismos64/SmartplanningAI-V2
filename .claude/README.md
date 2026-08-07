@@ -12,7 +12,7 @@ par diverger.
 ├── settings.json        permissions et déclaration des hooks (versionné)
 ├── settings.local.json  spécificités machine (ignoré par git)
 ├── rules/               règles détaillées, chargées selon les chemins touchés
-├── scripts/             les trois hooks
+├── scripts/             les quatre hooks
 ├── agents/              agents spécialisés du projet
 └── skills/sprint/       le cycle de travail, du ticket à la clôture
 ```
