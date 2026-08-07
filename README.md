@@ -45,7 +45,7 @@ Plateforme SaaS multi-tenant de gestion intelligente des plannings et des ressou
 - **Landing** : Design "Cyber Glass 3D", simulateur tarifs, FAQ, pages legales RGPD, demos video par role (Directeur/Manager/Employe) avec onglets et JSON-LD VideoObject. Navigation en pattern disclosure (liens toujours dans le DOM pour le maillage interne, `inert` a l'etat ferme)
 - **Accessibilite** : WCAG 2.1 AA, touch targets 44px, Lighthouse A11y 97-100%
 
-> Historique detaille du developpement : [`docs/development-log.md`](docs/development-log.md)
+> Historique detaille du developpement : [`docs/journal/`](docs/journal/)
 
 ## Prerequis
 
@@ -231,11 +231,10 @@ Mesures ponctuelles, non rejouees a chaque build : les rejouer apres toute modif
 
 - [`docs/deployment.md`](docs/deployment.md) — Guide de deploiement VPS
 - [`docs/database-architecture.md`](docs/database-architecture.md) — Architecture BDD (21 modeles, 16 enums)
-- [`docs/development-log.md`](docs/development-log.md) — Journal de developpement detaille
-- [`docs/Cahier de recettage.md`](<docs/Cahier de recettage.md>) — Cahier de recettage fonctionnel
+- [`docs/journal/`](docs/journal/) — Journal de developpement, une entree par session
 - [`docs/analytics.md`](docs/analytics.md) — Configuration Umami
-- [`docs/e2e-mobile-tests.md`](docs/e2e-mobile-tests.md) — Tests E2E mobile
 - [`docs/security/`](docs/security/) — Plan de securisation, incidents, hardening
+- [`.claude/`](.claude/) — Configuration de l'assistant : regles, hooks et conventions du projet
 
 ## Auteur
 

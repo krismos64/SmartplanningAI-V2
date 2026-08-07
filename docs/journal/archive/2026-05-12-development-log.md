@@ -1,8 +1,16 @@
-# SmartPlanning — Journal de développement
+# SmartPlanning, journal de développement (archive, jusqu'au 12 mai 2026)
+
+> **Document archivé, figé au 12 mai 2026.** Il reste la source pour tout ce qui
+> précède cette date. Le développement postérieur est journalisé dans
+> [`docs/journal/`](../), une entrée par session.
+>
+> Ce fichier n'est plus mis à jour. Il porte deux défauts connus, laissés en
+> l'état pour ne pas réécrire l'historique : sept sections apparaissent en
+> double, et les trois derniers mois d'activité n'y ont jamais été reportés.
+> C'est précisément ce qui a motivé le passage à un fichier par session, voir
+> [`docs/journal/README.md`](../README.md).
 
 Historique détaillé du développement de SmartPlanning V2, organisé par phases et tickets Jira (préfixe `SP-`).
-
-> Ce document complète le [README.md](../README.md) qui contient la vue d'ensemble du projet.
 
 ---
 
