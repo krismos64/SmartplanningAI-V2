@@ -34,6 +34,7 @@ import {
   type UpdateEmployeeInput,
   type EmployeeFilters,
   type EmployeeWithCounts,
+  type UpdateEmployeeResult,
 } from '@/lib/validations/employee'
 import type {
   CrudActionResult,
@@ -46,12 +47,13 @@ import { syncEmployeeCountToStripe } from '@/lib/services/stripe'
 import { assertNotImpersonating } from '@/lib/impersonation'
 import { hashPassword } from '@/lib/password'
 import { sendInvitationEmail } from '@/lib/email/templates/invitation'
+import {
+  describeEmailChangeOutcome,
+  requestEmployeeEmailChange,
+} from '@/lib/services/email-change.service'
 import { emitNotification } from '@/lib/notifications/emit-notification'
 import { resetPasswordSchema } from '@/lib/validations'
-import {
-  invalidateDashboardCache,
-  invalidateEmployeesCache,
-} from '@/lib/cache'
+import { invalidateDashboardCache, invalidateEmployeesCache } from '@/lib/cache'
 
 // ============================================================================
 // Types internes
@@ -873,12 +875,18 @@ export async function createEmployee(
 /**
  * Met a jour un Employee existant
  *
+ * Si l'adresse email change et que l'employé a un compte de connexion, le
+ * changement est propagé au User via requestEmployeeEmailChange : réinvitation
+ * immédiate si le compte n'a jamais été activé, sinon confirmation par le
+ * collaborateur lui-même. Le résultat est remonté dans `emailChange` pour que
+ * l'UI en informe la personne qui a fait la modification.
+ *
  * @param data - Donnees avec ID obligatoire
- * @returns Employee mis a jour
+ * @returns Employee mis a jour, et le déroulé du changement d'email le cas échéant
  */
 export async function updateEmployee(
   data: UpdateEmployeeInput
-): Promise<CrudActionResult<EmployeeWithCounts>> {
+): Promise<UpdateEmployeeResult> {
   const authResult = await getAuthenticatedUser()
 
   if (!authResult.success) {
@@ -927,6 +935,31 @@ export async function updateEmployee(
       }
     }
 
+    // Changement d'adresse email : normaliser et verifier l'unicite AVANT
+    // d'ecrire, sinon Employee.email divergerait de l'adresse de connexion.
+    const normalizedEmail =
+      updateData.email !== undefined
+        ? updateData.email?.trim().toLowerCase() || null
+        : undefined
+    const emailHasChanged =
+      normalizedEmail !== undefined &&
+      normalizedEmail !== (existing.email?.toLowerCase() ?? null)
+
+    if (emailHasChanged && normalizedEmail) {
+      const conflictingUser = await prisma.user.findUnique({
+        where: { email: normalizedEmail },
+        select: { id: true },
+      })
+
+      if (conflictingUser && conflictingUser.id !== existing.userId) {
+        return {
+          success: false,
+          error: 'Cet email est déjà associé à un compte',
+          field: 'email',
+        }
+      }
+    }
+
     // Mise a jour en base
     const employee = await prisma.employee.update({
       where: { id },
@@ -942,8 +975,8 @@ export async function updateEmployee(
         ...(updateData.phone !== undefined && {
           phone: updateData.phone || null,
         }),
-        ...(updateData.email !== undefined && {
-          email: updateData.email || null,
+        ...(normalizedEmail !== undefined && {
+          email: normalizedEmail,
         }),
         ...(updateData.hireDate !== undefined && {
           hireDate: updateData.hireDate ? new Date(updateData.hireDate) : null,
@@ -999,6 +1032,37 @@ export async function updateEmployee(
       details: updateData as unknown as Prisma.InputJsonValue,
     }).catch(console.error)
 
+    // Propager le changement d'adresse au compte de connexion. Volontairement
+    // await (et non fire-and-forget) : le responsable doit savoir dans la
+    // foulée si le collaborateur a encore une action à faire.
+    let emailChangeInfo:
+      | {
+          kind: 'REINVITED' | 'CONFIRMATION_SENT'
+          newEmail: string
+          message: string
+        }
+      | undefined
+
+    if (emailHasChanged && normalizedEmail) {
+      const changeResult = await requestEmployeeEmailChange(id, normalizedEmail)
+
+      if (changeResult.success && changeResult.outcome.kind !== 'NO_ACCOUNT') {
+        const message = describeEmailChangeOutcome(changeResult.outcome)
+        if (message) {
+          emailChangeInfo = {
+            kind: changeResult.outcome.kind,
+            newEmail: changeResult.outcome.newEmail,
+            message,
+          }
+        }
+      } else if (!changeResult.success) {
+        console.error(
+          '[updateEmployee] Email change failed:',
+          changeResult.error
+        )
+      }
+    }
+
     // Revalide le cache Next.js + Redis (SP-480)
     revalidatePath('/app/dashboard/employees')
     revalidatePath(`/app/dashboard/employees/${id}`)
@@ -1008,6 +1072,7 @@ export async function updateEmployee(
     return {
       success: true,
       data: employee,
+      ...(emailChangeInfo ? { emailChange: emailChangeInfo } : {}),
     }
   } catch (error) {
     console.error('[updateEmployee] Error:', error)

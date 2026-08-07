@@ -267,3 +267,26 @@ export interface EmployeeWithCounts {
     leaveRequests: number
   }
 }
+
+/**
+ * Resultat de updateEmployee
+ *
+ * Etend CrudActionResult d'un champ `emailChange` : quand l'adresse email a
+ * change et que l'employe possede un compte de connexion, la personne qui a
+ * fait la modification doit savoir ce qui a ete envoye et si le collaborateur
+ * doit encore confirmer.
+ */
+export type UpdateEmployeeResult =
+  | {
+      success: true
+      data: EmployeeWithCounts
+      /** Message a afficher au responsable, absent si l'email n'a pas change */
+      emailChange?: {
+        /** REINVITED : compte jamais active, adresse remplacee et invitation renvoyee */
+        /** CONFIRMATION_SENT : compte actif, changement en attente de confirmation */
+        kind: 'REINVITED' | 'CONFIRMATION_SENT'
+        newEmail: string
+        message: string
+      }
+    }
+  | { success: false; error: string; field?: string }

@@ -13,7 +13,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   getNavigationItemsByRole,
   getRoleLabel,
@@ -34,9 +34,13 @@ interface SidebarProps {
   user: {
     name: string
     email: string
+    /** Photo de profil (Cloudinary), repli sur les initiales si absente */
+    image?: string | null
     role: UserRole
     organizationId?: string
     companyName?: string
+    /** Intitulé du poste, affiché à la place du libellé de rôle s'il est renseigné */
+    jobTitle?: string
   }
   /** Variante de style de la sidebar (défaut: 'neon') */
   variant?: SidebarVariant
@@ -77,8 +81,11 @@ export function Sidebar({ user, variant = 'neon' }: SidebarProps) {
           <span className="sidebar-neon-title text-lg">
             {user.companyName || 'SmartPlanning'}
           </span>
-          <span className="text-xs text-slate-400">
-            {getRoleLabel(user.role)}
+          <span
+            className="text-xs text-slate-400"
+            data-testid="sidebar-subtitle"
+          >
+            {user.jobTitle?.trim() || getRoleLabel(user.role)}
           </span>
         </motion.div>
       </SidebarHeader>
@@ -133,6 +140,7 @@ export function Sidebar({ user, variant = 'neon' }: SidebarProps) {
       <SidebarFooter className="border-t border-white/[0.06] p-4">
         <div className="flex items-center gap-3">
           <Avatar className="sp-avatar-neon h-8 w-8 rounded-full">
+            {user.image && <AvatarImage src={user.image} alt={user.name} />}
             <AvatarFallback className="bg-transparent text-xs text-blue-300">
               {userInitials}
             </AvatarFallback>

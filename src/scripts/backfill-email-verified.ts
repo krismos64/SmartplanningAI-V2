@@ -20,8 +20,14 @@
  * Idempotent : relancer le script ne touche que les comptes encore à null,
  * donc une seconde exécution ne fait rien de plus (0 compte mis à jour).
  *
- * Exécution :
+ * Exécution (base de développement uniquement) :
  *   npx tsx src/scripts/backfill-email-verified.ts
+ *
+ * En production, ce script n'est PAS exécutable : l'image Docker est un build
+ * Next.js standalone, sans `src/scripts/` ni `tsx`. Passer par un UPDATE SQL
+ * sur Postgres, en reprenant le filtre de `main()` ci-dessous. Voir
+ * `backfill-expired-trials.ts` pour la marche à suivre détaillée (vérification
+ * en lecture seule, puis UPDATE en transaction).
  *
  * @ticket SP-526
  */
@@ -67,7 +73,9 @@ async function main(): Promise<void> {
   )
 
   for (const user of candidates) {
-    console.log(`  ✓ ${user.email} → emailVerified = ${user.createdAt.toISOString()}`)
+    console.log(
+      `  ✓ ${user.email} → emailVerified = ${user.createdAt.toISOString()}`
+    )
   }
 
   console.log(`\n✅ ${candidates.length} compte(s) mis à jour avec succès.\n`)

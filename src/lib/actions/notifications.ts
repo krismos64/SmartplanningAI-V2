@@ -176,9 +176,11 @@ export async function createPlanningNotification(
 
     // Récupérer les infos du planning (ou utiliser les données fournies pour delete)
     let startTime: string | Date
+    let scheduleCompanyId: string
 
     if (scheduleData) {
       startTime = scheduleData.startTime
+      scheduleCompanyId = scheduleData.companyId
     } else {
       const schedule = await prisma.schedule.findUnique({
         where: { id: scheduleId },
@@ -194,6 +196,7 @@ export async function createPlanningNotification(
         return { success: false, error: 'Planning non trouvé' }
       }
       startTime = schedule.startTime
+      scheduleCompanyId = schedule.companyId
     }
 
     // Récupérer l'utilisateur destinataire avec ses préférences
@@ -210,6 +213,14 @@ export async function createPlanningNotification(
 
     if (!user || !user.companyId) {
       return { success: false, error: 'Utilisateur non trouvé' }
+    }
+
+    // Isolation multi-tenant : destinataire obligatoirement dans l'entreprise du planning
+    if (user.companyId !== scheduleCompanyId) {
+      console.error(
+        `[createPlanningNotification] Tentative cross-tenant bloquée : user ${employeeUserId} (company ${user.companyId}) pour le planning ${scheduleId} (company ${scheduleCompanyId})`
+      )
+      return { success: false, error: 'Destinataire hors entreprise' }
     }
 
     const userPrefs = parseUserPreferences(user.preferences)
@@ -366,6 +377,18 @@ export async function createBatchPlanningNotification(
       return { success: false, error: 'Utilisateur non trouvé' }
     }
 
+    // Isolation multi-tenant : tous les créneaux doivent appartenir à l'entreprise
+    // du destinataire
+    const foreignSchedule = schedules.find(
+      (s) => s.companyId !== user.companyId
+    )
+    if (foreignSchedule) {
+      console.error(
+        `[createBatchPlanningNotification] Tentative cross-tenant bloquée : user ${employeeUserId} (company ${user.companyId}) pour le planning ${foreignSchedule.id} (company ${foreignSchedule.companyId})`
+      )
+      return { success: false, error: 'Destinataire hors entreprise' }
+    }
+
     const userPrefs = parseUserPreferences(user.preferences)
     const category = getNotificationCategory(NotificationType.PLANNING)
     const inAppEnabled = isInAppNotificationEnabled(userPrefs, category)
@@ -517,6 +540,15 @@ export async function createLeaveNotification(
 
     if (!user || !user.companyId) {
       return { success: false, error: 'Utilisateur non trouvé' }
+    }
+
+    // Isolation multi-tenant : un destinataire d'une autre entreprise ne doit
+    // jamais recevoir cette notification, même si l'appelant s'est trompé de cible.
+    if (user.companyId !== leaveRequest.companyId) {
+      console.error(
+        `[createLeaveNotification] Tentative cross-tenant bloquée : user ${targetUserId} (company ${user.companyId}) pour la demande ${leaveRequestId} (company ${leaveRequest.companyId})`
+      )
+      return { success: false, error: 'Destinataire hors entreprise' }
     }
 
     // SP-275: Vérifier les préférences de notifications
@@ -753,6 +785,14 @@ export async function createIncidentNotification(
 
     if (!user || !user.companyId) {
       return { success: false, error: 'Utilisateur non trouvé' }
+    }
+
+    // Isolation multi-tenant : destinataire obligatoirement dans l'entreprise de la note
+    if (user.companyId !== incidentNote.companyId) {
+      console.error(
+        `[createIncidentNotification] Tentative cross-tenant bloquée : user ${targetUserId} (company ${user.companyId}) pour la note ${incidentNoteId} (company ${incidentNote.companyId})`
+      )
+      return { success: false, error: 'Destinataire hors entreprise' }
     }
 
     // SP-275: Vérifier les préférences de notifications (INCIDENT → system)

@@ -216,6 +216,9 @@ export const PUBLIC_ROUTES = [
   '/forgot-password',
   '/reset-password',
   '/verify-email',
+  // Confirmation d'un changement d'adresse email demandé par un responsable :
+  // le collaborateur clique depuis sa boîte mail, sans être connecté.
+  '/confirm-email-change',
   '/api/auth',
 ] as const
 
