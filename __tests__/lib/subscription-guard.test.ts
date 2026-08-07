@@ -295,6 +295,34 @@ describe('checkSubscriptionAccess', () => {
       )
       expect(result.redirectReason).toBe('subscription_expired')
     })
+
+    /**
+     * SP-561 : le cron quotidien bascule les essais echus de TRIAL a EXPIRED.
+     * Sans distinction, ces comptes lisaient « Votre abonnement a expire,
+     * renouvelez-le » alors qu'ils n'ont jamais souscrit. `trialEndsAt` reste
+     * renseigne pour un essai, ce qui separe les deux cas.
+     */
+    it('devrait retourner reason=trial_expired pour un essai echu passe en EXPIRED', () => {
+      const result = checkSubscriptionAccess(
+        makeInput({
+          subscriptionStatus: 'EXPIRED',
+          trialEndsAt: pastDate(1),
+        })
+      )
+      expect(result.allowed).toBe(false)
+      expect(result.redirectReason).toBe('trial_expired')
+    })
+
+    it('devrait conserver subscription_expired pour un abonnement reel expire', () => {
+      const result = checkSubscriptionAccess(
+        makeInput({
+          subscriptionStatus: 'EXPIRED',
+          trialEndsAt: null,
+          currentPeriodEnd: pastDate(1),
+        })
+      )
+      expect(result.redirectReason).toBe('subscription_expired')
+    })
   })
 
   // --------------------------------------------------------------------------

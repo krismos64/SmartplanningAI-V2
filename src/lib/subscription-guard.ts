@@ -158,8 +158,25 @@ export function checkSubscriptionAccess(
   }
 
   // 8. Expiré
+  //
+  // EXPIRED recouvre deux situations distinctes, et l'utilisateur ne doit pas
+  // lire le message de l'une quand il vit l'autre :
+  //
+  //   - fin d'un essai gratuit, jamais passé par Stripe. Le cron quotidien
+  //     bascule ces comptes de TRIAL à EXPIRED (`expireTrialSubscription`), ce
+  //     qui les faisait basculer du bon message vers « Votre abonnement a
+  //     expiré, renouvelez-le » alors qu'ils n'ont jamais souscrit. Le mauvais
+  //     message tombait donc le lendemain de la fin d'essai, au moment precis
+  //     de la decision d'achat (SP-561)
+  //   - expiration d'un abonnement ayant reellement existe
+  //
+  // `trialEndsAt` separe les deux sans requete supplementaire : il reste
+  // renseigne pour un essai, et le JWT ne porte pas `stripeSubscriptionId`.
   if (subscriptionStatus === 'EXPIRED') {
-    return { allowed: false, redirectReason: 'subscription_expired' }
+    return {
+      allowed: false,
+      redirectReason: trialEndsAt ? 'trial_expired' : 'subscription_expired',
+    }
   }
 
   // 9. Paiement incomplet (3D Secure en attente, etc.)
