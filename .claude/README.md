@@ -1,0 +1,117 @@
+# Configuration Claude Code du projet
+
+Ce dossier configure l'assistant de développement utilisé sur SmartPlanning. Il
+est versionné volontairement : ces fichiers documentent les conventions du projet
+au même titre que le code, et une convention qui vit sur une seule machine finit
+par diverger.
+
+## Ce que contient ce dossier
+
+```
+.claude/
+├── settings.json        permissions et déclaration des hooks (versionné)
+├── settings.local.json  spécificités machine (ignoré par git)
+├── rules/               règles détaillées, chargées selon les chemins touchés
+├── scripts/             les trois hooks
+├── agents/              agents spécialisés du projet
+└── skills/sprint/       le cycle de travail, du ticket à la clôture
+```
+
+## Le principe : charger le contexte à la demande
+
+Un fichier d'instructions unique est lu **intégralement à chaque session**, y
+compris quand le travail ne concerne qu'un dixième de son contenu. Sur un projet
+qui accumule des conventions, ce fichier grossit jusqu'à coûter plus qu'il ne
+rapporte.
+
+Le découpage retenu sépare deux natures d'information :
+
+- **`CLAUDE.md`**, à la racine, porte les principes et une table d'aiguillage.
+  Court, toujours chargé.
+- **`.claude/rules/`** porte le détail par domaine. Quatre fichiers, environ 360
+  lignes, chargés seulement quand le travail touche le domaine concerné.
+
+Modifier une page publique ne charge donc pas les règles d'isolation
+multi-tenant, et l'inverse est vrai.
+
+| Règle | Domaine |
+|---|---|
+| `multi-tenant.md` | isolation `companyId`, RBAC, sélection de destinataires |
+| `prisma-pieges.md` | `'use server'`, backfills en production, SQL, Nginx |
+| `seo-content.md` | pages secteur, guides, sitemap, contenu citable par les IA |
+| `tests.md` | conventions Vitest et Playwright, tests négatifs |
+
+## Le risque de ce découpage, et le hook qui le ferme
+
+Sortir le détail du fichier toujours chargé crée un trou : une session peut
+modifier une zone sensible sans avoir lu la règle correspondante.
+
+`hook-rappel-regles.sh` ferme ce trou. Après chaque écriture, il regarde le
+chemin du fichier et signale la règle applicable. Il reste silencieux sur les
+chemins sans enjeu, un hook qui parle à chaque écriture devient un bruit qu'on
+apprend à ignorer.
+
+## Les trois hooks
+
+| Déclencheur | Script | Rôle |
+|---|---|---|
+| `PreToolUse` | `hook-block-secret-files.sh` | bloque la **lecture** des secrets |
+| `PostToolUse` | `hook-rappel-regles.sh` | rappelle la règle du domaine touché |
+| `Stop` | `hook-warn-unpushed.sh` | signale le travail non poussé |
+
+Le premier porte une nuance qu'une règle de permission ne sait pas exprimer :
+l'**écriture** dans un `.env` est autorisée, la **lecture** est bloquée. Ajouter
+une variable ou générer un secret avec `openssl` n'exige pas de lire l'existant,
+alors qu'une valeur lue entrerait dans l'historique de session sur disque. Clés
+privées et certificats sont bloqués dans les deux sens : une clé se génère, elle
+ne s'édite pas.
+
+## Pourquoi ces règles-là
+
+Elles ne sont pas théoriques. Chaque entrée correspond à un défaut qui a coûté du
+temps ou provoqué un incident.
+
+La plus importante vient d'une fuite de données entre clients survenue en août
+2026. Dans la sélection des managers à notifier d'une demande de congé :
+
+```ts
+managedTeams: teamId ? { some: { id: teamId } } : undefined
+```
+
+Quand l'employé n'a pas d'équipe, `teamId` vaut `null`, donc la clause vaut
+`undefined`. Prisma traite `undefined` comme « critère absent », pas comme « ne
+matche rien » : la requête devenait « tous les employés actifs », sans filtre
+d'entreprise. Chaque manager de la base, toutes entreprises confondues, recevait
+le nom de l'employé et ses dates d'absence.
+
+Deux enseignements sont inscrits dans `multi-tenant.md` : une clause d'isolation
+n'est jamais conditionnelle, et le `findMany` qui choisit **qui reçoit** une
+notification est un point d'isolation au même titre qu'une lecture de données.
+
+Le nettoyage qui a suivi a produit une seconde règle, dans `prisma-pieges.md` :
+mesurer avant de supprimer. Les `SELECT` de contrôle ont montré qu'aucune ligne
+n'avait fuité en base. Un `DELETE` lancé directement aurait « réussi » sur zéro
+ligne et laissé croire à un nettoyage effectif.
+
+## Agents
+
+Quatre agents spécialisés, calibrés sur cette stack précise, Next.js 15,
+NextAuth v5, PostgreSQL 16, Redis 7 et multi-tenant : `test-writer`,
+`security-auditor`, `nextjs-architect`, `docker-devops`.
+
+Ils vivent dans le projet plutôt qu'au niveau utilisateur, précisément parce
+qu'ils sont calibrés : proposés sur un projet mono-tenant sans Redis, ils
+donneraient de mauvais conseils avec assurance.
+
+## Skill `sprint`
+
+Porte le cycle complet : lire le ticket **et ses commentaires**, un commentaire
+récent rectifiant souvent une description non réécrite, charger les règles du
+domaine, coder, vérifier avec la preuve à l'appui, puis clore la traçabilité sur
+les quatre canaux (dépôt, Jira, Confluence, mémoire).
+
+## Ce qui reste hors du dépôt
+
+`settings.local.json` porte les permissions propres à une machine. Aucun secret
+n'y figure : l'accès au serveur passe par un alias SSH avec clé publique, jamais
+par un mot de passe écrit dans un fichier de configuration.

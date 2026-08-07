@@ -69,10 +69,19 @@ playwright/.cache/
 *~
 
 # ============================================
-# Claude Code Configuration (LOCAL)
+# Claude Code Configuration
 # ============================================
-.claude/
-CLAUDE.md
+# La configuration partagee est versionnee : CLAUDE.md, .claude/settings.json,
+# les regles, les agents, les skills et les hooks. Elle documente les conventions
+# du projet au meme titre que le code, et doit survivre a un clone.
+#
+# Ce depot est PUBLIC : le contenu de .claude/ est verifie sans secret, sans
+# identifiant et sans IP. Toute valeur sensible passe par .env ou par un alias
+# SSH a cle publique, jamais par un fichier de configuration.
+#
+# Seuls restent ignores les fichiers propres a une machine ou a une session.
+.claude/settings.local.json
+.claude/.session*
 CLAUDE.local.md
 
 # ============================================
