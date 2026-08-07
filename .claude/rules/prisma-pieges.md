@@ -73,6 +73,10 @@ Pour un backfill en production, la marche à suivre est :
 Modèles en en-tête de `backfill-expired-trials.ts` et
 `cleanup-cross-tenant-leave-notifications.ts`.
 
+`backfill-missing-subscriptions.sql` porte le format le plus direct : les trois
+étapes en SQL commenté, avec le résultat réel de chaque exécution consigné dans
+le fichier. C'est le modèle à reprendre pour un nouveau backfill.
+
 Mesurer avant de supprimer. Un `DELETE` lancé à l'aveugle « réussit » sur 0 ligne
 sans jamais révéler que le périmètre était vide, et laisse croire à un nettoyage
 effectif. C'est exactement ce qui s'est produit en août 2026, où les `SELECT`
