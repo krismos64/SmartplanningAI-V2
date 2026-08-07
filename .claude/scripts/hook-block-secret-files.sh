@@ -39,14 +39,21 @@ file=$(echo "$input" | jq -r '.tool_input.file_path // ""' 2>/dev/null)
 tool=$(echo "$input" | jq -r '.tool_name // ""' 2>/dev/null)
 base=$(basename "$file")
 
+# Comparaisons insensibles a la casse. macOS monte un systeme de fichiers
+# insensible a la casse par defaut : ".ENV" et ".env" y designent le meme
+# fichier, un motif sensible a la casse se contourne donc en changeant une
+# lettre. Les motifs ci-dessous s'appliquent tous a cette forme minuscule.
+base_min=$(printf '%s' "$base" | tr '[:upper:]' '[:lower:]')
+file_min=$(printf '%s' "$file" | tr '[:upper:]' '[:lower:]')
+
 # Fichiers d'exemple : toujours autorises
-case "$base" in
-  .env.example|.env.sample|.env.template) exit 0 ;;
+case "$base_min" in
+  .env.example|.env.sample|.env.template|.env.dist) exit 0 ;;
 esac
 
 # Cles privees, certificats, magasins de secrets : bloques dans les deux sens
-case "$base" in
-  *.pem|*.key|*.p12|*.pfx|*.jks|id_rsa|id_ed25519|*.keystore)
+case "$base_min" in
+  *.pem|*.key|*.p12|*.pfx|*.jks|*.keystore|*.crt|*.cer|*.der|*.asc|*.gpg|*.ppk|id_rsa*|id_dsa*|id_ecdsa*|id_ed25519*)
     echo "Hook BLOCK: acces refuse a une cle ou un certificat." >&2
     echo "Fichier : $file" >&2
     echo "" >&2
@@ -56,15 +63,28 @@ case "$base" in
     exit 2 ;;
 esac
 
-case "$file" in
-  */secrets/*|*/.secrets/*|*/.ssh/*|*/.gnupg/*|*/.aws/credentials*)
+case "$file_min" in
+  */secrets/*|*/.secrets/*|*/.ssh/*|*/.gnupg/*|*/.aws/*|*/.config/gcloud/*|*/.kube/*|*/.docker/config.json)
     echo "Hook BLOCK: acces refuse a un repertoire de secrets." >&2
     echo "Fichier : $file" >&2
     exit 2 ;;
 esac
 
+# Fichiers de configuration portant couramment des jetons d'authentification
+case "$base_min" in
+  .npmrc|.netrc|.pgpass|credentials|credentials.json|.git-credentials)
+    if [ "$tool" = "Read" ]; then
+      echo "Hook BLOCK: ce fichier porte couramment un jeton d'authentification." >&2
+      echo "Fichier : $file" >&2
+      echo "" >&2
+      echo "Lecture bloquee : un jeton lu entrerait dans l'historique de session." >&2
+      exit 2
+    fi
+    exit 0 ;;
+esac
+
 # Identifiants de production documentes : lecture bloquee
-case "$file" in
+case "$file_min" in
   *docs/analytics.credentials.md)
     if [ "$tool" = "Read" ]; then
       echo "Hook BLOCK: ce fichier porte des identifiants de production." >&2
@@ -79,8 +99,8 @@ case "$file" in
 esac
 
 # Fichiers d'environnement : ecriture autorisee, lecture bloquee
-case "$base" in
-  .env|.env.*)
+case "$base_min" in
+  .env|.env.*|*.env)
     if [ "$tool" = "Read" ]; then
       echo "Hook BLOCK: lecture refusee sur un fichier d'environnement." >&2
       echo "Fichier : $file" >&2

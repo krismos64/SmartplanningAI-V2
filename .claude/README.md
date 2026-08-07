@@ -66,6 +66,14 @@ alors qu'une valeur lue entrerait dans l'historique de session sur disque. Clés
 privées et certificats sont bloqués dans les deux sens : une clé se génère, elle
 ne s'édite pas.
 
+C'est le hook qui porte la protection, pas les règles `deny` de `settings.json`,
+qui restent en seconde ligne. Un hook sortant en code 2 bloque l'appel **avant**
+l'évaluation des permissions, et il peut normaliser le chemin avant de le
+comparer. Les motifs du hook sont insensibles à la casse : macOS monte par défaut
+un système de fichiers insensible à la casse, où `.ENV` et `.env` désignent le
+même fichier, et un motif sensible à la casse s'y contourne en changeant une
+lettre.
+
 ## Pourquoi ces règles-là
 
 Elles ne sont pas théoriques. Chaque entrée correspond à un défaut qui a coûté du
