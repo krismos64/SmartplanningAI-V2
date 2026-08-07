@@ -29,6 +29,8 @@ export const BillingEmailType = {
   TRIAL_REMINDER_7: 'TRIAL_REMINDER_7',
   /** Rappel trial J-3 (cron daily) */
   TRIAL_REMINDER_3: 'TRIAL_REMINDER_3',
+  /** Rappel trial J-1, dernier jour (cron daily) */
+  TRIAL_REMINDER_1: 'TRIAL_REMINDER_1',
   /** Trial expiré J0 (cron daily) */
   TRIAL_EXPIRED: 'TRIAL_EXPIRED',
   /** Changement de quantité de sièges (sync employés) */

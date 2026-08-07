@@ -73,7 +73,7 @@ const BLOCKING_REASONS: Record<
   trial_expired: {
     title: 'Votre essai gratuit est terminé',
     message:
-      'Pour continuer à utiliser SmartPlanning, choisissez un abonnement ci-dessous.',
+      'Vos plannings, vos équipes et vos données sont conservés. Activez votre abonnement ci-dessous pour y accéder de nouveau, à 2,90 € par employé et par mois.',
     variant: 'warning',
   },
   payment_overdue: {
@@ -274,8 +274,8 @@ export function BillingPageContent({
             </h3>
             <p className="text-xs text-muted-foreground">
               Votre abonnement est renouvelé automatiquement chaque mois. Vous
-              pouvez annuler à tout moment depuis cette page, l&apos;accès
-              reste actif jusqu&apos;à la fin de la période en cours.
+              pouvez annuler à tout moment depuis cette page, l&apos;accès reste
+              actif jusqu&apos;à la fin de la période en cours.
             </p>
           </div>
           <div className="rounded-lg border bg-card p-4">
