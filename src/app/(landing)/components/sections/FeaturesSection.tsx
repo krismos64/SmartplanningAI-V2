@@ -97,6 +97,14 @@ export function FeaturesSection() {
               tone="light"
               index={index + FEATURED_COUNT + 1}
               rule={false}
+              // La derniere carte comble le rang quand le total ne remplit
+              // pas la grille : le fond teinte rendrait la cellule vide
+              // visible comme un trou.
+              className={
+                index === rest.length - 1 && rest.length % 3 === 2
+                  ? 'lg:col-span-2'
+                  : undefined
+              }
             >
               <h3 className="font-geist text-lg font-semibold">
                 {feature.title}

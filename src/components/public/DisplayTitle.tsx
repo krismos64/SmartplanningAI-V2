@@ -34,8 +34,12 @@ interface DisplayTitleProps {
    * pris page par page.
    */
   as?: DisplayTitleLevel
-  /** Couleur de la seconde ligne selon le fond */
-  tone?: 'onLight' | 'onDark'
+  /**
+   * Couleur de la seconde ligne selon le fond.
+   * `onVivid` sert les aplats corail et lime : l'accent corail y serait
+   * invisible, la seconde ligne y prend donc le bleu nuit du texte.
+   */
+  tone?: 'onLight' | 'onDark' | 'onVivid'
   /** Identifiant, pour un aria-labelledby porte par la section */
   id?: string
   className?: string
@@ -54,6 +58,7 @@ const LEVEL_CLASSES: Record<DisplayTitleLevel, string> = {
 const ACCENT_TONE_CLASSES = {
   onLight: 'text-public-accent',
   onDark: 'text-public-accent-on-dark',
+  onVivid: 'text-public-content-on-vivid',
 } as const
 
 export function DisplayTitle({

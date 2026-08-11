@@ -86,7 +86,7 @@ export function PricingCard({
       {/* CTA */}
       {showCTA && (
         <Button
-          className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 text-white hover:from-cyan-600 hover:to-blue-600"
+          className="min-h-[2.75rem] w-full bg-public-surface-dark text-public-content-on-dark hover:opacity-90"
           asChild
         >
           <Link href="/register">Démarrer l&apos;essai gratuit</Link>

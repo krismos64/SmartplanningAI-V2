@@ -9,7 +9,14 @@
 import { cn } from '@/lib/utils'
 import { motion, fadeInUp, staggerContainer } from '@/lib/animations'
 
-export const SECTION_VARIANT = {
+/**
+ * Variante de couleur des en-tetes de section.
+ *
+ * Interne depuis SP-568 : les sections de la landing sont passees aux
+ * primitives de l'identite editoriale, ce jeu ne sert plus qu'aux pages
+ * traitees par SP-570 et SP-571.
+ */
+const SECTION_VARIANT = {
   border: 'border-blue-600/20',
   bg: 'bg-blue-600/10',
   // blue-700 en clair : blue-600 tombe a 4.1:1 (< 4.5 WCAG AA) sur le fond

@@ -3,259 +3,224 @@
 /**
  * RoleDemosSection Component
  *
- * Section démos vidéo par rôle (Directeur / Manager / Employé) avec
- * un système d'onglets : une seule iframe YouTube chargée à la fois.
+ * Demos video par role, direction editoriale SP-568 : aplat bleu nuit,
+ * liste d'onglets en filets plutot que cartes a degrades.
  *
- * @description Permet aux visiteurs de s'identifier au rôle qui les concerne
- * et de visualiser concrètement ce que SmartPlanning leur apporte au quotidien.
+ * Reste un Client Component : le choix du role et la lecture de la video
+ * portent un etat. Une seule iframe YouTube est chargee, et seulement
+ * apres un clic, ce qui evite d'embarquer le lecteur au chargement.
+ *
+ * Accessibilite : le motif tablist / tab / tabpanel de la version
+ * precedente est conserve, avec la navigation par fleches ajoutee en
+ * SP-568, attendue par le motif ARIA. Les libelles etaient a 1.30:1 sur
+ * l'ancien fond (mesure SP-567), ils passent sur l'aplat sombre.
+ *
+ * @see SP-568 - Landing, sections basses
  */
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import Image from 'next/image'
-import { Play, CheckCircle2 } from 'lucide-react'
+import { Play } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import {
-  motion,
-  FramerAnimatePresence,
-  fadeInUp,
-  staggerContainer,
-} from '@/lib/animations'
+import { DisplayTitle } from '@/components/public/DisplayTitle'
+import { SectionLabel } from '@/components/public/SectionLabel'
 import { roleDemos, type RoleDemo } from '../../data'
-import { SectionHeader, SECTION_VARIANT } from '../index'
 
 export function RoleDemosSection() {
   const [activeRoleId, setActiveRoleId] = useState<RoleDemo['id']>('director')
   const [isPlaying, setIsPlaying] = useState(false)
+  const tabRefs = useRef<Record<string, HTMLButtonElement | null>>({})
 
   const activeRole = (roleDemos.find((demo) => demo.id === activeRoleId) ??
     roleDemos[0]) as RoleDemo
-  const colors = SECTION_VARIANT
 
   const handleRoleChange = (id: RoleDemo['id']) => {
     setActiveRoleId(id)
+    // Repasse a la miniature : sans cela, l'iframe du role precedent
+    // resterait affichee sous le nouvel onglet
     setIsPlaying(false)
+  }
+
+  /**
+   * Navigation par fleches, exigee par le motif ARIA tablist : les fleches
+   * deplacent la selection, Home et End vont aux extremites.
+   */
+  const handleKeyDown = (event: React.KeyboardEvent, index: number) => {
+    const keys = ['ArrowRight', 'ArrowLeft', 'Home', 'End']
+    if (!keys.includes(event.key)) return
+
+    event.preventDefault()
+    let next = index
+    if (event.key === 'ArrowRight') next = (index + 1) % roleDemos.length
+    if (event.key === 'ArrowLeft')
+      next = (index - 1 + roleDemos.length) % roleDemos.length
+    if (event.key === 'Home') next = 0
+    if (event.key === 'End') next = roleDemos.length - 1
+
+    const target = roleDemos[next]
+    if (!target) return
+
+    handleRoleChange(target.id)
+    tabRefs.current[target.id]?.focus()
   }
 
   return (
     <section
       id="role-demos"
-      className="bg-gradient-to-b from-transparent via-blue-600/5 to-transparent py-24 lg:py-32"
+      aria-labelledby="role-demos-title"
+      className="bg-public-surface-dark py-24 lg:py-32"
     >
       <div className="container-custom">
-        <SectionHeader
-          badge="Démos par rôle"
-          title="SmartPlanning s'adapte"
-          titleHighlight="à chaque rôle"
-          description="Trois démonstrations courtes pour comprendre concrètement ce que SmartPlanning vous apporte au quotidien, selon votre poste dans l'entreprise."
-          marginBottom="mb-12 lg:mb-16"
-        />
+        <div className="grid gap-8 lg:grid-cols-[auto_1fr] lg:items-start lg:gap-16">
+          <SectionLabel index={3} tone="onDark">
+            Pour chaque rôle
+          </SectionLabel>
 
-        {/* Tabs de sélection du rôle */}
-        <motion.div
-          variants={staggerContainer}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          className="mx-auto mb-10 flex max-w-3xl flex-col gap-3 sm:flex-row sm:gap-4"
-          role="tablist"
-          aria-label="Sélection du rôle utilisateur"
-        >
-          {roleDemos.map((demo) => {
-            const isActive = demo.id === activeRoleId
-            return (
-              <motion.button
-                key={demo.id}
-                variants={fadeInUp}
-                onClick={() => handleRoleChange(demo.id)}
-                role="tab"
-                aria-selected={isActive}
-                aria-controls={`role-panel-${demo.id}`}
-                id={`role-tab-${demo.id}`}
-                className={cn(
-                  'group relative flex flex-1 items-center gap-3 rounded-xl border bg-card/50 p-4 text-left transition-all',
-                  isActive
-                    ? 'border-transparent shadow-lg'
-                    : 'border-border/50 hover:border-blue-600/30'
-                )}
-                whileHover={{ y: -2 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                {/* Gradient actif */}
-                {isActive && (
-                  <motion.span
-                    layoutId="active-role-bg"
-                    className={cn(
-                      'absolute inset-0 rounded-xl bg-gradient-to-br opacity-10',
-                      demo.color
-                    )}
-                    transition={{ type: 'spring', bounce: 0.2, duration: 0.5 }}
-                  />
-                )}
+          <div>
+            <DisplayTitle
+              as="h2"
+              id="role-demos-title"
+              accent="à chaque rôle."
+              tone="onDark"
+              className="text-public-content-on-dark"
+            >
+              SmartPlanning s&rsquo;adapte
+            </DisplayTitle>
 
-                <div
+            <p className="mt-6 max-w-xl font-geist text-lg leading-relaxed text-public-content-on-dark/80">
+              Trois démonstrations courtes, selon votre poste dans
+              l&rsquo;entreprise.
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-16 grid gap-10 lg:grid-cols-[18rem_1fr] lg:gap-16">
+          {/* Onglets */}
+          <div
+            role="tablist"
+            aria-label="Sélection du rôle utilisateur"
+            aria-orientation="vertical"
+            className="flex flex-col"
+          >
+            {roleDemos.map((demo, index) => {
+              const isActive = demo.id === activeRoleId
+              return (
+                <button
+                  key={demo.id}
+                  ref={(el) => {
+                    tabRefs.current[demo.id] = el
+                  }}
+                  type="button"
+                  role="tab"
+                  id={`role-tab-${demo.id}`}
+                  aria-selected={isActive}
+                  aria-controls={`role-panel-${demo.id}`}
+                  tabIndex={isActive ? 0 : -1}
+                  onClick={() => handleRoleChange(demo.id)}
+                  onKeyDown={(event) => handleKeyDown(event, index)}
                   className={cn(
-                    'relative flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br',
-                    demo.color
+                    'flex min-h-[3.5rem] items-center gap-4 border-b border-public-border-on-dark py-5 text-left font-geist transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-public-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-public-surface-dark',
+                    isActive
+                      ? 'text-public-highlight'
+                      : 'text-public-content-on-dark/60 hover:text-public-content-on-dark'
                   )}
                 >
-                  <demo.icon
-                    className="h-5 w-5 text-white"
+                  <span
                     aria-hidden="true"
-                  />
-                </div>
+                    className="text-xs tabular-nums opacity-70"
+                  >
+                    {String(index + 1).padStart(2, '0')}
+                  </span>
+                  <span className="text-xl font-semibold">{demo.label}</span>
+                </button>
+              )
+            })}
+          </div>
 
-                <div className="relative">
-                  <p className="font-semibold text-foreground">{demo.label}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {demo.tagline}
-                  </p>
-                </div>
-              </motion.button>
-            )
-          })}
-        </motion.div>
-
-        {/* Panneau actif : vidéo + highlights */}
-        <FramerAnimatePresence mode="wait">
-          <motion.div
-            key={activeRole.id}
+          {/* Panneau actif */}
+          <div
             id={`role-panel-${activeRole.id}`}
             role="tabpanel"
             aria-labelledby={`role-tab-${activeRole.id}`}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.35 }}
-            className="grid items-start gap-8 lg:grid-cols-[1.4fr_1fr] lg:gap-10"
+            tabIndex={0}
+            className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-public-highlight focus-visible:ring-offset-4 focus-visible:ring-offset-public-surface-dark"
           >
-            {/* Vidéo */}
-            <div className="relative">
-              {/* Glow */}
+            <p className="font-geist text-xs uppercase tracking-[0.2em] text-public-highlight">
+              {activeRole.tagline}
+            </p>
+
+            <h3 className="mt-4 font-geist text-2xl font-semibold text-public-content-on-dark sm:text-3xl">
+              Espace {activeRole.label}
+            </h3>
+
+            <p className="mt-4 max-w-xl font-geist text-base leading-relaxed text-public-content-on-dark/80">
+              {activeRole.description}
+            </p>
+
+            {/* Video : miniature tant que la lecture n'est pas demandee */}
+            <div className="relative mt-8">
               <div
-                className={cn(
-                  'absolute -inset-4 rounded-3xl bg-gradient-to-r opacity-20 blur-2xl',
-                  activeRole.color
-                )}
+                aria-hidden="true"
+                className="absolute inset-0 translate-x-3 translate-y-3 bg-public-accent-surface"
               />
-
-              <div className="relative overflow-hidden rounded-2xl border border-border bg-card shadow-2xl">
-                <div className="relative aspect-video w-full">
-                  {!isPlaying ? (
-                    <>
-                      {/* Miniature spécifique au rôle */}
-                      <Image
-                        src={activeRole.thumbnail}
-                        alt={`SmartPlanning : Démo ${activeRole.label}`}
-                        fill
-                        sizes="(min-width: 1024px) 60vw, 100vw"
-                        loading="lazy"
-                        className="absolute inset-0 h-full w-full object-cover"
-                      />
-                      {/* Overlay pour lisibilité du bouton play */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-black/30" />
-
-                      {/* Badge rôle */}
-                      <div className="absolute left-4 top-4 z-10">
-                        <span
-                          className={cn(
-                            'inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium backdrop-blur-md',
-                            colors.border,
-                            colors.bg,
-                            colors.text
-                          )}
-                        >
-                          <activeRole.icon
-                            className="h-3.5 w-3.5"
-                            aria-hidden="true"
-                          />
-                          Espace {activeRole.label}
-                        </span>
-                      </div>
-
-                      {/* Bouton play */}
-                      <button
-                        onClick={() => setIsPlaying(true)}
-                        className="absolute inset-0 flex cursor-pointer items-center justify-center"
-                        aria-label={`Lancer la démo ${activeRole.label}`}
-                      >
-                        <motion.div
-                          whileHover={{ scale: 1.1 }}
-                          whileTap={{ scale: 0.95 }}
-                          className="relative"
-                        >
-                          <div
-                            className={cn(
-                              'absolute inset-0 animate-ping rounded-full bg-gradient-to-br opacity-30',
-                              activeRole.color
-                            )}
-                          />
-                          <div
-                            className={cn(
-                              'absolute -inset-4 rounded-full bg-gradient-to-br opacity-20 blur-xl',
-                              activeRole.color
-                            )}
-                          />
-                          <div
-                            className={cn(
-                              'relative flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br shadow-2xl sm:h-24 sm:w-24',
-                              activeRole.color
-                            )}
-                          >
-                            <Play className="h-8 w-8 fill-white text-white sm:h-10 sm:w-10" />
-                          </div>
-                        </motion.div>
-                      </button>
-                    </>
-                  ) : (
-                    <iframe
-                      src={`https://www.youtube.com/embed/${activeRole.videoId}?autoplay=1`}
-                      title={`Démo SmartPlanning : Espace ${activeRole.label}`}
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                      referrerPolicy="strict-origin-when-cross-origin"
-                      allowFullScreen
-                      className="absolute inset-0 h-full w-full border-0"
+              <div className="relative aspect-video w-full overflow-hidden bg-black">
+                {isPlaying ? (
+                  <iframe
+                    src={`https://www.youtube.com/embed/${activeRole.videoId}?autoplay=1`}
+                    title={`Démo SmartPlanning : Espace ${activeRole.label}`}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    referrerPolicy="strict-origin-when-cross-origin"
+                    allowFullScreen
+                    className="absolute inset-0 h-full w-full border-0"
+                  />
+                ) : (
+                  <>
+                    <Image
+                      src={activeRole.thumbnail}
+                      alt={`SmartPlanning : démo ${activeRole.label}`}
+                      fill
+                      sizes="(min-width: 1024px) 60vw, 100vw"
+                      loading="lazy"
+                      className="absolute inset-0 h-full w-full object-cover"
                     />
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Highlights */}
-            <div className="flex flex-col gap-6">
-              <div>
-                <p
-                  className={cn(
-                    'mb-2 text-sm font-medium uppercase tracking-wider',
-                    colors.text
-                  )}
-                >
-                  {activeRole.tagline}
-                </p>
-                <h3 className="mb-4 text-2xl font-bold text-foreground sm:text-3xl">
-                  Espace{' '}
-                  <span className="text-blue-600">{activeRole.label}</span>
-                </h3>
-                <p className="text-muted-foreground">
-                  {activeRole.description}
-                </p>
-              </div>
-
-              <ul className="space-y-3">
-                {activeRole.highlights.map((highlight) => (
-                  <li key={highlight} className="flex items-start gap-3">
-                    <CheckCircle2
-                      className={cn('mt-0.5 h-5 w-5 shrink-0', colors.text)}
+                    <span
                       aria-hidden="true"
+                      className="absolute inset-0 bg-black/30"
                     />
-                    <span className="text-sm text-foreground/90 sm:text-base">
-                      {highlight}
-                    </span>
-                  </li>
-                ))}
-              </ul>
+                    <button
+                      type="button"
+                      onClick={() => setIsPlaying(true)}
+                      aria-label={`Lancer la démo ${activeRole.label}`}
+                      className="absolute inset-0 flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-public-highlight focus-visible:ring-inset"
+                    >
+                      <span className="flex h-20 w-20 items-center justify-center rounded-full bg-public-highlight-surface transition-transform hover:scale-105">
+                        <Play
+                          aria-hidden="true"
+                          className="h-8 w-8 translate-x-0.5 fill-public-content-on-vivid text-public-content-on-vivid"
+                        />
+                      </span>
+                    </button>
+                  </>
+                )}
+              </div>
             </div>
-          </motion.div>
-        </FramerAnimatePresence>
+
+            {/* Points cles */}
+            <ul className="mt-8 divide-y divide-public-border-on-dark border-y border-public-border-on-dark">
+              {activeRole.highlights.map((highlight) => (
+                <li key={highlight} className="flex items-start gap-3 py-4">
+                  <span
+                    aria-hidden="true"
+                    className="mt-2 h-1.5 w-1.5 shrink-0 bg-public-accent-on-dark"
+                  />
+                  <span className="font-geist text-base text-public-content-on-dark/90">
+                    {highlight}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
       </div>
     </section>
   )

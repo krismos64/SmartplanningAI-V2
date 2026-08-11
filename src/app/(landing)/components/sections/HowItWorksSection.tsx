@@ -1,67 +1,68 @@
-'use client'
-
 /**
  * HowItWorksSection Component
- * Steps showing how the product works
- * Refactored to use SectionHeader component
+ *
+ * Mise en route en trois temps, direction editoriale SP-568 : liste
+ * numerotee en filets plutot que cercles et degrades.
+ *
+ * Server Component depuis SP-568 : la section n'a aucune interactivite,
+ * les animations d'apparition sont rendues en CSS.
+ *
+ * Les donnees viennent du registre `steps`, leur contenu n'est pas modifie.
+ *
+ * @see SP-568 - Landing, sections basses
  */
 
-import { motion, fadeInUp, staggerContainer } from '@/lib/animations'
+import { DisplayTitle } from '@/components/public/DisplayTitle'
+import { SectionLabel } from '@/components/public/SectionLabel'
 import { steps } from '../../data'
-import { SectionHeader } from '../index'
 
 export function HowItWorksSection() {
   return (
     <section
       id="how-it-works"
-      className="bg-gradient-to-b from-transparent via-blue-600/5 to-transparent py-24 lg:py-32"
+      aria-labelledby="how-it-works-title"
+      className="bg-public-surface py-24 lg:py-32"
     >
       <div className="container-custom">
-        {/* Section Header - Using reusable component */}
-        <SectionHeader
-          badge="Comment ça marche"
-          title="Démarrez en"
-          titleHighlight="3 étapes simples"
-          marginBottom="mb-16 lg:mb-24"
-        />
+        <div className="grid gap-12 lg:grid-cols-2 lg:gap-20">
+          {/* Colonne titre */}
+          <div>
+            <SectionLabel index={4}>Mise en route</SectionLabel>
 
-        {/* Steps */}
-        <motion.div
-          variants={staggerContainer}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          className="grid gap-8 md:grid-cols-3"
-        >
-          {steps.map((step, index) => (
-            <motion.div
-              key={step.number}
-              variants={fadeInUp}
-              className="relative text-center"
+            <DisplayTitle
+              as="h2"
+              id="how-it-works-title"
+              accent="trois temps."
+              className="mt-8 text-public-content"
             >
-              {/* Connector Line */}
-              {index < steps.length - 1 && (
-                <div className="absolute left-1/2 top-16 hidden h-0.5 w-full bg-gradient-to-r from-blue-600/40 to-transparent md:block" />
-              )}
+              Opérationnel en
+            </DisplayTitle>
+          </div>
 
-              {/* Step Number */}
-              <div className="relative mx-auto mb-6 flex h-32 w-32 items-center justify-center">
-                <div className="absolute inset-0 rounded-full bg-blue-600/15 blur-xl" />
-                <div className="relative flex h-24 w-24 items-center justify-center rounded-full border border-blue-600/30 bg-background">
-                  <span className="text-4xl font-bold text-blue-600">
+          {/* Colonne etapes */}
+          <ol className="divide-y divide-public-border border-y border-public-border">
+            {steps.map((step) => (
+              <li key={step.number} className="py-8">
+                <div className="flex gap-6">
+                  <span
+                    aria-hidden="true"
+                    className="font-geist text-sm font-semibold tabular-nums text-public-accent"
+                  >
                     {step.number}
                   </span>
+                  <div>
+                    <h3 className="font-geist text-xl font-semibold text-public-content">
+                      {step.title}
+                    </h3>
+                    <p className="mt-2 font-geist text-base leading-relaxed text-public-content-muted">
+                      {step.description}
+                    </p>
+                  </div>
                 </div>
-              </div>
-
-              {/* Content */}
-              <h3 className="mb-3 text-xl font-semibold">{step.title}</h3>
-              <p className="mx-auto max-w-xs text-muted-foreground">
-                {step.description}
-              </p>
-            </motion.div>
-          ))}
-        </motion.div>
+              </li>
+            ))}
+          </ol>
+        </div>
       </div>
     </section>
   )

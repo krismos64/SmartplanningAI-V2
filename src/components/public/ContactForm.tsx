@@ -353,7 +353,7 @@ export function ContactForm({ onSubmit, className }: ContactFormProps) {
                 En soumettant ce formulaire, vous acceptez notre{' '}
                 <a
                   href="/confidentialite"
-                  className="text-primary underline hover:text-primary/80"
+                  className="inline-flex min-h-[2.75rem] items-center text-public-accent underline underline-offset-2 hover:opacity-80"
                 >
                   politique de confidentialité
                 </a>

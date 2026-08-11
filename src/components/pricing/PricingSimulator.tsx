@@ -103,10 +103,10 @@ export function PricingSimulator({
           className="mb-3 flex items-center justify-between text-sm"
         >
           <span className="flex items-center gap-2 font-medium">
-            <Users className="h-4 w-4 text-cyan-400" aria-hidden="true" />
+            <Users className="h-4 w-4 text-public-accent" aria-hidden="true" />
             Nombre d&apos;employés
           </span>
-          <span className="font-bold text-cyan-400">{employees}</span>
+          <span className="font-bold text-public-accent">{employees}</span>
         </label>
         <input
           id={sliderId}
@@ -139,7 +139,7 @@ export function PricingSimulator({
           <Gift className="h-3.5 w-3.5" aria-hidden="true" />
           {PRICING.TRIAL_DAYS} jours gratuits, sans carte bancaire
         </div>
-        <div className="flex items-center gap-1.5 rounded-full border border-cyan-500/20 bg-cyan-500/10 px-3 py-1.5 text-xs font-medium text-cyan-400">
+        <div className="flex items-center gap-1.5 rounded-full border border-public-accent/20 bg-public-accent/10 px-3 py-1.5 text-xs font-medium text-public-accent">
           <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
           Sans engagement · Résiliation en 1 clic
         </div>

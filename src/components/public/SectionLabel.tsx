@@ -13,7 +13,7 @@
 import { cn } from '@/lib/utils'
 
 /** Fond sur lequel le label est pose, determine le jeu de couleurs. */
-export type SectionLabelTone = 'onLight' | 'onDark' | 'onAccent'
+export type SectionLabelTone = 'onLight' | 'onDark' | 'onAccent' | 'onBrand'
 
 interface SectionLabelProps {
   /**
@@ -46,6 +46,11 @@ const TONE_CLASSES: Record<SectionLabelTone, { ring: string; text: string }> = {
   onAccent: {
     ring: 'border-public-content/40',
     text: 'text-public-content',
+  },
+  // Aplat bleu franc : le lime n'y donne que 3.92:1, le blanc 4.88:1
+  onBrand: {
+    ring: 'border-white/40',
+    text: 'text-white',
   },
 }
 

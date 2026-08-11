@@ -2,7 +2,7 @@
  * Landing page components barrel file
  */
 
-export { SectionHeader, SECTION_VARIANT } from './SectionHeader'
+export { SectionHeader } from './SectionHeader'
 export { FAQItem } from './FAQItem'
 export { AnimatedBackground } from './AnimatedBackground'
 export { ScrollIndicator } from './ScrollIndicator'
