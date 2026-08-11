@@ -2,308 +2,250 @@
 
 /**
  * PricingPageContent Component
- * Client component with animations for the Pricing page
+ * Page tarifs /tarifs
  *
- * @description Composant principal de la page Tarifs avec :
- * - Semantique HTML5 optimisee (article, section)
- * - Accessibilite WCAG 2.1 AA
- * - Animations Framer Motion
- * - Structure optimisee pour SEO et LLMs
- * - 5 sections : Hero, Simulateur, Features, FAQ, CTA
+ * Reste un Client Component : le simulateur porte l'effectif saisi, et
+ * l'accordeon de FAQ son etat, desormais isole dans FaqAccordion.
  *
- * @ticket SP-359
+ * Identifiants preserves pour les tests E2E (e2e/pages/pricing.page.ts) :
+ * #pricing-hero-title, #simulator-title, #features-title, #faq-title,
+ * data-testid pricing-hero-description, large-team-message et cta-register.
+ *
+ * PricingSimulator et PricingCard sont concus pour un fond clair et servent
+ * aussi la landing : ils gardent leur habillage, pose sur les aplats clairs
+ * de la page.
+ *
+ * @ticket SP-358
+ * @see SP-571 - Tarifs, a-propos et pages legales
  */
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { ArrowRight, Check, MessageSquare } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import {
-  motion,
-  FramerAnimatePresence,
-  fadeInUp,
-  staggerContainer,
-} from '@/lib/animations'
-import {
-  SectionHeader,
-  AnimatedBackground,
-  FAQItem,
-  PRIMARY_BUTTON_CLASSES,
-  HIGHLIGHT_TEXT_CLASSES_PUBLIC,
-} from '@/app/(landing)/components'
-import { LandingHeader } from '@/components/layout/LandingHeader'
-import { LandingFooter } from '@/components/layout/LandingFooter'
+import { ArrowUpRight, Check, MessageSquare } from 'lucide-react'
+import { DisplayTitle } from '@/components/public/DisplayTitle'
+import { SectionLabel } from '@/components/public/SectionLabel'
+import { FaqAccordion } from '@/components/public/FaqAccordion'
+import { PublicPageShell } from '@/components/public/PublicPageShell'
 import { PricingSimulator } from '@/components/pricing/PricingSimulator'
 import { PricingCard } from '@/components/pricing/PricingCard'
 import { PRICING, INCLUDED_FEATURES } from '@/lib/config/pricing'
 import { PRICING_FAQS } from './StructuredData'
 
-// Contact threshold for large teams
 const LARGE_TEAM_THRESHOLD = 50
 
 export function PricingPageContent() {
-  const [openFAQ, setOpenFAQ] = useState<number | null>(null)
   const [employees, setEmployees] = useState<number>(PRICING.DEFAULT_EMPLOYEES)
 
-
   return (
-    <div className="public-scope relative min-h-screen bg-background text-foreground">
-      <div aria-hidden="true">
-        <AnimatedBackground />
-      </div>
+    <PublicPageShell breadcrumb={[{ label: 'Tarifs' }]}>
+      {/* Hero prix */}
+      <section aria-labelledby="pricing-hero-title" className="pb-16 pt-10">
+        <div className="container-custom">
+          <SectionLabel index={1}>Tarification</SectionLabel>
 
-      <LandingHeader />
+          <h1
+            id="pricing-hero-title"
+            className="mt-8 max-w-4xl font-geist text-4xl font-bold leading-[0.98] tracking-[-0.03em] text-public-content sm:text-5xl lg:text-6xl"
+          >
+            Un tarif unique,{' '}
+            <span className="font-editorial italic text-public-accent">
+              simple et transparent
+            </span>
+          </h1>
 
-      <a
-        href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-cyan-500 focus:px-4 focus:py-2 focus:text-white"
+          <p
+            data-testid="pricing-hero-description"
+            className="mt-8 max-w-3xl font-geist text-lg leading-relaxed text-public-content-muted"
+          >
+            SmartPlanning coûte 2,90&nbsp;&euro; HT par employé par mois. Toutes
+            les fonctionnalités sont incluses. Sans engagement. Essai gratuit{' '}
+            {PRICING.TRIAL_DAYS} jours sans carte bancaire.
+          </p>
+        </div>
+      </section>
+
+      {/* Simulateur */}
+      <section
+        aria-labelledby="simulator-title"
+        className="bg-public-surface-subtle py-16 lg:py-24"
       >
-        Aller au contenu principal
-      </a>
+        <div className="container-custom">
+          <div className="grid gap-8 lg:grid-cols-[auto_1fr] lg:items-start lg:gap-16">
+            <SectionLabel index={2}>Calculez votre tarif</SectionLabel>
 
-      <main id="main-content" role="main">
-        {/* Section 1 — Hero prix */}
-        <section
-          aria-labelledby="pricing-hero-title"
-          className="relative pb-16 pt-24 lg:pb-24 lg:pt-32"
-        >
-          <div className="container-custom">
-            <motion.div
-              variants={staggerContainer}
-              initial="hidden"
-              animate="visible"
-              className="mx-auto max-w-4xl text-center"
-            >
-              <motion.span
-                variants={fadeInUp}
-                className="mb-6 inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-400"
-                aria-hidden="true"
+            <div>
+              <DisplayTitle
+                as="h2"
+                id="simulator-title"
+                accent="interactif."
+                className="text-public-content"
               >
-                Tarification
-              </motion.span>
+                Simulateur
+              </DisplayTitle>
 
-              <motion.h1
-                id="pricing-hero-title"
-                variants={fadeInUp}
-                className="mb-6 text-4xl font-bold leading-tight sm:text-5xl lg:text-6xl"
-              >
-                Un tarif unique,{' '}
-                <span className={HIGHLIGHT_TEXT_CLASSES_PUBLIC}>
-                  simple et transparent
-                </span>
-              </motion.h1>
-
-              <motion.p
-                variants={fadeInUp}
-                className="mx-auto max-w-3xl text-lg leading-relaxed text-muted-foreground"
-                data-testid="pricing-hero-description"
-              >
-                SmartPlanning coûte 2,90&nbsp;&euro; HT par employé par mois.
-                Toutes les fonctionnalités sont incluses. Sans engagement. Essai
-                gratuit {PRICING.TRIAL_DAYS} jours sans carte bancaire.
-              </motion.p>
-            </motion.div>
-          </div>
-        </section>
-
-        {/* Section 2 — Simulateur interactif */}
-        <section aria-labelledby="simulator-title" className="py-16 lg:py-24">
-          <div className="container-custom">
-            <SectionHeader
-              badge="Calculez votre tarif"
-              title="Simulateur"
-              titleHighlight="interactif"
-              titleId="simulator-title"
-              description="Ajustez le nombre d'employés pour découvrir votre tarif mensuel."
-              marginBottom="mb-12"
-            />
-
-            <div className="mx-auto max-w-2xl">
-              <PricingSimulator size="full" onEmployeesChange={setEmployees} />
-
-              {/* Message contact > 50 employes */}
-              <FramerAnimatePresence>
-                {employees > LARGE_TEAM_THRESHOLD && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
-                    transition={{ duration: 0.3 }}
-                    className="overflow-hidden"
-                    data-testid="large-team-message"
-                  >
-                    <div className="mt-6 flex items-start gap-3 rounded-xl border border-cyan-500/20 bg-cyan-500/5 p-4">
-                      <MessageSquare
-                        className="mt-0.5 h-5 w-5 shrink-0 text-cyan-400"
-                        aria-hidden="true"
-                      />
-                      <div>
-                        <p className="text-sm font-medium text-foreground">
-                          Équipe de plus de {LARGE_TEAM_THRESHOLD} employés ?
-                        </p>
-                        <p className="mt-1 text-sm text-muted-foreground">
-                          Contactez-nous pour un accompagnement personnalisé.
-                        </p>
-                        <Link
-                          href="/#contact"
-                          className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-cyan-400 transition-colors hover:text-cyan-300"
-                        >
-                          Nous contacter
-                          <ArrowRight
-                            className="h-3.5 w-3.5"
-                            aria-hidden="true"
-                          />
-                        </Link>
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-              </FramerAnimatePresence>
+              <p className="mt-6 max-w-xl font-geist text-lg leading-relaxed text-public-content-muted">
+                Ajustez le nombre d&rsquo;employés pour découvrir votre tarif
+                mensuel.
+              </p>
             </div>
           </div>
-        </section>
 
-        {/* Section 3 — Ce qui est inclus */}
-        <section
-          aria-labelledby="features-title"
-          className="bg-gradient-to-b from-transparent via-purple-950/10 to-transparent py-16 lg:py-24"
-        >
-          <div className="container-custom">
-            <SectionHeader
-              badge="Tout inclus"
-              title="Ce qui est"
-              titleHighlight="inclus"
-              titleId="features-title"
-              description="Un seul tarif, toutes les fonctionnalités. Aucun supplément."
-              marginBottom="mb-12"
-            />
+          <div className="mx-auto mt-12 max-w-2xl">
+            <PricingSimulator size="full" onEmployeesChange={setEmployees} />
 
-            <div className="mx-auto grid max-w-5xl items-start gap-8 lg:grid-cols-2 lg:gap-12">
-              {/* Features list */}
-              <motion.div
-                variants={staggerContainer}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
-              >
-                <motion.ul
-                  className="space-y-4"
-                  role="list"
-                  aria-label="Fonctionnalités incluses"
-                >
-                  {INCLUDED_FEATURES.map((feature) => (
-                    <motion.li
-                      key={feature}
-                      variants={fadeInUp}
-                      className="flex items-center gap-3 rounded-lg border border-border/30 bg-card/30 p-3"
-                    >
-                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-500/10">
-                        <Check
-                          className="h-4 w-4 text-emerald-400"
-                          aria-hidden="true"
-                        />
-                      </div>
-                      <span className="text-sm font-medium">{feature}</span>
-                    </motion.li>
-                  ))}
-                </motion.ul>
-              </motion.div>
-
-              {/* Pricing Card */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: 0.2 }}
-                className="flex justify-center lg:sticky lg:top-32"
-              >
-                <PricingCard animated={false} />
-              </motion.div>
-            </div>
-          </div>
-        </section>
-
-        {/* Section 4 — FAQ Pricing */}
-        <section aria-labelledby="faq-title" className="py-16 lg:py-24">
-          <div className="container-custom">
-            <SectionHeader
-              badge="Questions fréquentes"
-              title="Vos questions sur les"
-              titleHighlight="tarifs"
-              titleId="faq-title"
-              marginBottom="mb-12"
-            />
-
-            <motion.div
-              variants={staggerContainer}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-              className="mx-auto max-w-3xl space-y-4"
-              role="list"
-              aria-label="Questions fréquentes sur les tarifs"
+            {/* Message au-dela du seuil, toujours dans le DOM */}
+            <div
+              data-testid="large-team-message"
+              aria-hidden={employees <= LARGE_TEAM_THRESHOLD}
+              className={`grid transition-[grid-template-rows] duration-300 ease-out ${
+                employees > LARGE_TEAM_THRESHOLD
+                  ? 'grid-rows-[1fr]'
+                  : 'grid-rows-[0fr]'
+              }`}
             >
-              {PRICING_FAQS.map((faq, index) => (
-                <motion.div key={index} variants={fadeInUp} role="listitem">
-                  <FAQItem
-                    question={faq.question}
-                    answer={faq.answer}
-                    isOpen={openFAQ === index}
-                    onClick={() => setOpenFAQ(openFAQ === index ? null : index)}
+              <div className="overflow-hidden">
+                <div className="mt-6 flex items-start gap-3 border-l-2 border-public-accent bg-public-surface p-4">
+                  <MessageSquare
+                    className="mt-0.5 h-5 w-5 shrink-0 text-public-accent"
+                    aria-hidden="true"
                   />
-                </motion.div>
-              ))}
-            </motion.div>
-          </div>
-        </section>
-
-        {/* Section 5 — CTA final */}
-        <section aria-labelledby="cta-title" className="py-16 lg:py-24">
-          <div className="container-custom">
-            <motion.aside
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-              className="relative overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-blue-500/10 via-cyan-500/10 to-purple-500/10 p-12 text-center lg:p-20"
-              role="complementary"
-              aria-label="Appel à l'action pour essayer SmartPlanning"
-            >
-              <div
-                className="absolute inset-0 bg-gradient-to-r from-blue-500/5 via-transparent to-cyan-500/5"
-                aria-hidden="true"
-              />
-
-              <div className="relative z-10">
-                <h2
-                  id="cta-title"
-                  className="mb-4 text-3xl font-bold sm:text-4xl lg:text-5xl"
-                >
-                  Prêt à{' '}
-                  <span className={HIGHLIGHT_TEXT_CLASSES_PUBLIC}>simplifier</span> vos
-                  plannings ?
-                </h2>
-                <p className="mx-auto mb-8 max-w-2xl text-lg text-muted-foreground">
-                  Inscription en 2 minutes. Sans engagement.
-                </p>
-                <Button size="lg" className={PRIMARY_BUTTON_CLASSES} asChild>
-                  <Link
-                    href="/register"
-                    aria-label="Démarrer l'essai gratuit de 21 jours sans carte bancaire"
-                    data-testid="cta-register"
-                  >
-                    Démarrer l&apos;essai gratuit, {PRICING.TRIAL_DAYS} jours
-                    sans carte bancaire
-                    <ArrowRight className="ml-2 h-5 w-5" aria-hidden="true" />
-                  </Link>
-                </Button>
+                  <div>
+                    <p className="font-geist text-sm font-semibold text-public-content">
+                      Équipe de plus de {LARGE_TEAM_THRESHOLD} employés ?
+                    </p>
+                    <p className="mt-1 font-geist text-sm text-public-content-muted">
+                      Contactez-nous pour un accompagnement personnalisé.
+                    </p>
+                    <Link
+                      href="/#contact"
+                      className="mt-2 inline-flex min-h-[2.75rem] items-center gap-2 font-geist text-sm font-semibold text-public-accent underline underline-offset-4 transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-public-accent focus-visible:ring-offset-2 focus-visible:ring-offset-public-surface-subtle"
+                    >
+                      Nous contacter
+                      <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
+                    </Link>
+                  </div>
+                </div>
               </div>
-            </motion.aside>
+            </div>
           </div>
-        </section>
-      </main>
+        </div>
+      </section>
 
-      <LandingFooter />
-    </div>
+      {/* Ce qui est inclus */}
+      <section
+        aria-labelledby="features-title"
+        className="bg-public-surface py-16 lg:py-24"
+      >
+        <div className="container-custom">
+          <div className="grid gap-8 lg:grid-cols-[auto_1fr] lg:items-start lg:gap-16">
+            <SectionLabel index={3}>Tout inclus</SectionLabel>
+
+            <div>
+              <DisplayTitle
+                as="h2"
+                id="features-title"
+                accent="Aucun supplément."
+                className="text-public-content"
+              >
+                Un seul tarif.
+              </DisplayTitle>
+
+              <p className="mt-6 max-w-xl font-geist text-lg leading-relaxed text-public-content-muted">
+                Toutes les fonctionnalités sont comprises, quel que soit votre
+                effectif.
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-12 grid items-start gap-10 lg:grid-cols-2 lg:gap-16">
+            <ul
+              className="border-t border-public-border"
+              aria-label="Fonctionnalités incluses"
+            >
+              {INCLUDED_FEATURES.map((feature) => (
+                <li
+                  key={feature}
+                  className="flex items-center gap-3 border-b border-public-border py-4"
+                >
+                  <Check
+                    className="h-4 w-4 shrink-0 text-public-accent"
+                    aria-hidden="true"
+                  />
+                  <span className="font-geist text-sm font-medium text-public-content">
+                    {feature}
+                  </span>
+                </li>
+              ))}
+            </ul>
+
+            <div className="flex justify-center lg:sticky lg:top-32">
+              <PricingCard animated={false} />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ tarifs */}
+      <section
+        aria-labelledby="faq-title"
+        className="bg-public-surface-subtle py-16 lg:py-24"
+      >
+        <div className="container-custom">
+          <div className="grid items-start gap-12 lg:grid-cols-[24rem_1fr] lg:gap-20">
+            <div className="lg:sticky lg:top-32">
+              <SectionLabel index={4}>Questions fréquentes</SectionLabel>
+
+              <DisplayTitle
+                as="h2"
+                id="faq-title"
+                accent="les tarifs."
+                className="mt-8 text-public-content"
+              >
+                Vos questions sur
+              </DisplayTitle>
+            </div>
+
+            <FaqAccordion items={[...PRICING_FAQS]} idPrefix="pricing-faq" />
+          </div>
+        </div>
+      </section>
+
+      {/* CTA final */}
+      <section
+        aria-labelledby="cta-title"
+        className="bg-public-accent-surface py-16 lg:py-24"
+      >
+        <div className="container-custom">
+          <div className="flex flex-col gap-10 lg:flex-row lg:items-center lg:justify-between">
+            <DisplayTitle
+              as="h2"
+              id="cta-title"
+              accent="vos plannings ?"
+              tone="onVivid"
+              className="max-w-2xl text-public-content-on-vivid"
+            >
+              Prêt à simplifier
+            </DisplayTitle>
+
+            <div className="lg:shrink-0">
+              <Link
+                href="/register"
+                aria-label="Démarrer l'essai gratuit de 21 jours sans carte bancaire"
+                data-testid="cta-register"
+                className="inline-flex min-h-[3.5rem] items-center justify-center gap-3 bg-public-surface-dark px-8 font-geist text-base font-semibold text-public-content-on-dark transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-public-surface-dark focus-visible:ring-offset-2 focus-visible:ring-offset-public-accent-surface"
+              >
+                Démarrer l&rsquo;essai gratuit
+                <ArrowUpRight className="h-5 w-5" aria-hidden="true" />
+              </Link>
+
+              <p className="mt-4 max-w-xs font-geist text-sm text-public-content-on-vivid/80">
+                {PRICING.TRIAL_DAYS} jours sans carte bancaire. Inscription en
+                2 minutes.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </PublicPageShell>
   )
 }

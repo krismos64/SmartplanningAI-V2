@@ -99,7 +99,7 @@ export function LegalPageLayout({
   }
 
   return (
-    <div className="public-scope relative min-h-screen overflow-x-hidden bg-background text-foreground">
+    <div className="public-scope relative min-h-screen overflow-x-hidden bg-public-surface font-geist text-public-content">
       {/* Background animé - Decorative, hidden from screen readers */}
       <div aria-hidden="true">
         <AnimatedBackground />
@@ -120,9 +120,9 @@ export function LegalPageLayout({
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.5, delay: 0.2 }}
-                    className="rounded-xl border border-border bg-card p-6 backdrop-blur-sm"
+                    className="border border-public-border bg-public-surface-subtle p-6 backdrop-blur-sm"
                   >
-                    <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                    <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-public-content-muted">
                       Sommaire
                     </h3>
                     <nav className="space-y-2">
@@ -135,8 +135,8 @@ export function LegalPageLayout({
                             item.level === 2 && 'pl-4',
                             item.level === 3 && 'pl-8',
                             activeSection === item.id
-                              ? 'text-blue-600'
-                              : 'text-muted-foreground hover:text-foreground'
+                              ? 'text-public-accent'
+                              : 'text-public-content-muted hover:text-public-content'
                           )}
                         >
                           {item.title}
@@ -158,7 +158,7 @@ export function LegalPageLayout({
               {/* En-tête du document */}
               <motion.div variants={fadeInUp} className="mb-12">
                 {/* Badge avec icône */}
-                <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/10 px-4 py-2 text-sm text-blue-600">
+                <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/10 px-4 py-2 text-sm text-public-accent">
                   {icon}
                   Document légal
                 </div>
@@ -169,14 +169,14 @@ export function LegalPageLayout({
                 </h1>
 
                 {/* Sous-titre */}
-                <p className="mb-6 max-w-2xl text-lg text-muted-foreground">
+                <p className="mb-6 max-w-2xl text-lg text-public-content-muted">
                   {subtitle}
                 </p>
 
                 {/* Métadonnées */}
-                <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground/70">
+                <div className="flex flex-wrap items-center gap-4 text-sm text-public-content-muted/70">
                   <span className="flex items-center gap-2">
-                    <span className="h-1.5 w-1.5 rounded-full bg-blue-600" />
+                    <span className="h-1.5 w-1.5 rounded-full bg-public-accent" />
                     Version {version}
                   </span>
                   <span className="flex items-center gap-2">
@@ -190,9 +190,9 @@ export function LegalPageLayout({
               {tableOfContents.length > 0 && (
                 <motion.div
                   variants={fadeInUp}
-                  className="mb-8 rounded-xl border border-border bg-card p-6 lg:hidden"
+                  className="mb-8 border border-public-border bg-public-surface-subtle p-6 lg:hidden"
                 >
-                  <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                  <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-public-content-muted">
                     Sommaire
                   </h3>
                   <nav className="grid grid-cols-1 gap-2 sm:grid-cols-2">
@@ -202,7 +202,7 @@ export function LegalPageLayout({
                         <button
                           key={item.id}
                           onClick={() => scrollToSection(item.id)}
-                          className="text-left text-sm text-muted-foreground hover:text-blue-600"
+                          className="text-left text-sm text-public-content-muted hover:text-public-accent"
                         >
                           {item.title}
                         </button>
@@ -232,7 +232,7 @@ export function LegalPageLayout({
         animate={{ opacity: showScrollTop ? 1 : 0 }}
         onClick={scrollToTop}
         className={cn(
-          'fixed bottom-8 right-8 z-40 flex h-12 w-12 items-center justify-center rounded-full border border-border bg-background/90 text-muted-foreground shadow-lg backdrop-blur-sm transition-all hover:border-blue-600/50 hover:bg-blue-600/20 hover:text-blue-600',
+          'fixed bottom-8 right-8 z-40 flex h-12 w-12 items-center justify-center rounded-full border border-public-border bg-background/90 text-public-content-muted shadow-lg backdrop-blur-sm transition-all hover:border-blue-600/50 hover:bg-public-accent/20 hover:text-public-accent',
           !showScrollTop && 'pointer-events-none'
         )}
         aria-label="Retour en haut"

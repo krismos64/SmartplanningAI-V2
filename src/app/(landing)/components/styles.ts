@@ -30,10 +30,3 @@ export const HIGHLIGHT_TEXT_CLASSES = 'text-blue-600 dark:text-blue-400'
  * peut plus choisir sur ces pages.
  */
 export const HIGHLIGHT_TEXT_CLASSES_PUBLIC = 'text-blue-600'
-
-/**
- * Badge styles for section headers
- * Color variants are handled by SectionHeader component
- */
-export const BADGE_BASE_CLASSES =
-  'inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm'

@@ -1,5 +1,3 @@
-'use client'
-
 /**
  * LegalSection Component
  * Composant pour les sections dans les pages légales
@@ -39,19 +37,19 @@ export function LegalSection({
       <HeadingTag
         className={cn(
           'mb-6 font-bold',
-          level === 1 && 'text-2xl text-foreground sm:text-3xl',
-          level === 2 && 'text-xl text-foreground/90 sm:text-2xl',
-          level === 3 && 'text-lg text-foreground/80'
+          level === 1 && 'text-2xl text-public-content sm:text-3xl',
+          level === 2 && 'text-xl text-public-content/90 sm:text-2xl',
+          level === 3 && 'text-lg text-public-content/80'
         )}
       >
         {number && (
-          <span className="mr-3 text-cyan-600">
+          <span className="mr-3 text-public-accent">
             {number}
           </span>
         )}
         {title}
       </HeadingTag>
-      <div className="space-y-4 text-muted-foreground">{children}</div>
+      <div className="space-y-4 text-public-content-muted">{children}</div>
     </section>
   )
 }
@@ -68,7 +66,7 @@ export function LegalParagraph({
   className?: string
 }) {
   return (
-    <p className={cn('leading-relaxed text-muted-foreground', className)}>
+    <p className={cn('leading-relaxed text-public-content-muted', className)}>
       {children}
     </p>
   )
@@ -98,7 +96,7 @@ export function LegalList({
       )}
     >
       {items.map((item, index) => (
-        <li key={index} className="text-muted-foreground">
+        <li key={index} className="text-public-content-muted">
           {item}
         </li>
       ))}
@@ -122,26 +120,17 @@ export function LegalHighlight({
   return (
     <div
       className={cn(
-        'rounded-lg border p-4',
-        type === 'info' &&
-          'border-blue-500/30 bg-blue-500/10',
-        type === 'warning' &&
-          'border-amber-500/30 bg-amber-500/10',
-        type === 'important' &&
-          'border-cyan-500/30 bg-cyan-500/10',
+        // Filet colore a gauche plutot que fond teinte : le texte se pose
+        // sur la surface courante, ou sa lisibilite est acquise. Les
+        // variantes precedentes tombaient a 1.52:1 et 2.21:1 (SP-571).
+        'border-l-2 bg-public-surface-subtle p-4',
+        type === 'info' && 'border-public-brand-on-light',
+        type === 'warning' && 'border-public-accent',
+        type === 'important' && 'border-public-accent',
         className
       )}
     >
-      <div
-        className={cn(
-          'text-sm',
-          type === 'info' && 'text-blue-700',
-          type === 'warning' && 'text-amber-700',
-          type === 'important' && 'text-cyan-700'
-        )}
-      >
-        {children}
-      </div>
+      <div className="font-geist text-sm text-public-content">{children}</div>
     </div>
   )
 }
@@ -151,7 +140,7 @@ export function LegalHighlight({
  * Séparateur visuel entre les sections
  */
 export function LegalDivider({ className }: { className?: string }) {
-  return <hr className={cn('my-12 border-t border-border', className)} />
+  return <hr className={cn('my-12 border-t border-public-border', className)} />
 }
 
 /**
@@ -173,16 +162,16 @@ export function LegalContact({
 }) {
   return (
     <div
-      className={cn('rounded-lg border border-border bg-card p-6', className)}
+      className={cn('rounded-lg border border-public-border bg-card p-6', className)}
     >
-      {title && <h4 className="mb-4 font-semibold text-foreground">{title}</h4>}
-      <div className="space-y-2 text-sm text-muted-foreground">
+      {title && <h4 className="mb-4 font-semibold text-public-content">{title}</h4>}
+      <div className="space-y-2 text-sm text-public-content-muted">
         {email && (
           <p>
-            <span className="text-muted-foreground/70">Email : </span>
+            <span className="text-public-content-muted/70">Email : </span>
             <a
               href={`mailto:${email}`}
-              className="text-cyan-600 hover:underline"
+              className="text-public-accent hover:underline"
             >
               {email}
             </a>
@@ -190,16 +179,16 @@ export function LegalContact({
         )}
         {address && (
           <p>
-            <span className="text-muted-foreground/70">Adresse : </span>
+            <span className="text-public-content-muted/70">Adresse : </span>
             {address}
           </p>
         )}
         {phone && (
           <p>
-            <span className="text-muted-foreground/70">Téléphone : </span>
+            <span className="text-public-content-muted/70">Téléphone : </span>
             <a
               href={`tel:${phone}`}
-              className="text-cyan-600 hover:underline"
+              className="text-public-accent hover:underline"
             >
               {phone}
             </a>
@@ -238,26 +227,26 @@ export function LegalTable({
     <div className={cn('my-6 overflow-x-auto', className)}>
       <table className="w-full border-collapse text-sm">
         <thead>
-          <tr className="border-b border-border">
+          <tr className="border-b border-public-border">
             {columns.map((col) => (
               <th
                 key={col.key}
-                className="px-4 py-3 text-left font-semibold text-foreground"
+                className="px-4 py-3 text-left font-semibold text-public-content"
               >
                 {col.header}
               </th>
             ))}
           </tr>
         </thead>
-        <tbody className="text-muted-foreground">
+        <tbody className="text-public-content-muted">
           {rows.map((row, rowIndex) => (
-            <tr key={rowIndex} className="border-b border-border/50">
+            <tr key={rowIndex} className="border-b border-public-border">
               {columns.map((col) => (
                 <td
                   key={col.key}
                   className={cn(
                     'px-4 py-3',
-                    col.mono && 'font-mono text-cyan-600'
+                    col.mono && 'font-mono text-public-accent'
                   )}
                 >
                   {row[col.key]}
@@ -289,12 +278,12 @@ export function LegalAcceptanceBox({
   return (
     <div
       className={cn(
-        'mt-12 rounded-lg border border-border bg-card p-6',
+        'mt-12 rounded-lg border border-public-border bg-card p-6',
         className
       )}
     >
-      <p className="text-center text-sm text-muted-foreground">{message}</p>
-      <p className="mt-4 text-center text-xs text-muted-foreground/70">
+      <p className="text-center text-sm text-public-content-muted">{message}</p>
+      <p className="mt-4 text-center text-xs text-public-content-muted/70">
         Dernière mise à jour : {lastUpdated} | Version {version}
       </p>
     </div>
@@ -324,7 +313,7 @@ export function LegalLink({
     <a
       href={href}
       className={cn(
-        'text-cyan-600 hover:underline',
+        'text-public-accent hover:underline',
         className
       )}
       {...externalProps}
