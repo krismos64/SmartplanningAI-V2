@@ -24,14 +24,14 @@ const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://smartplanning.fr'
  * ignore par Google).
  */
 const PAGE_LAST_MODIFIED = {
-  home: new Date('2026-07-21'),
-  tarifs: new Date('2026-07-17'),
-  aPropos: new Date('2026-06-05'),
-  cgu: new Date('2026-02-19'),
-  cgv: new Date('2026-02-11'),
-  confidentialite: new Date('2026-02-11'),
-  mentionsLegales: new Date('2026-02-11'),
-  cookies: new Date('2026-02-11'),
+  home: new Date('2026-08-11'),
+  tarifs: new Date('2026-08-11'),
+  aPropos: new Date('2026-08-11'),
+  cgu: new Date('2026-08-11'),
+  cgv: new Date('2026-08-11'),
+  confidentialite: new Date('2026-08-11'),
+  mentionsLegales: new Date('2026-08-11'),
+  cookies: new Date('2026-08-11'),
 } as const
 
 // Pages secteur /solutions/[slug] : chaque secteur porte sa propre date

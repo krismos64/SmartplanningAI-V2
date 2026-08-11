@@ -89,7 +89,7 @@ export function BentoCard({
         {typeof index === 'number' ? (
           <span
             aria-hidden="true"
-            className="text-xs font-semibold tabular-nums opacity-70"
+            className="text-xs font-semibold tabular-nums"
           >
             {String(index).padStart(2, '0')}
           </span>

@@ -47,7 +47,7 @@ export function PricingSection() {
               2,90 &euro; HT par employé et par mois
             </DisplayTitle>
 
-            <p className="mt-6 max-w-xl font-geist text-lg leading-relaxed text-white/80">
+            <p className="mt-6 max-w-xl font-geist text-lg leading-relaxed text-white">
               Toutes les fonctionnalités, sans engagement. La facture suit
               votre effectif réel.
             </p>
@@ -74,7 +74,7 @@ export function PricingSection() {
                 que les reponses de FAQ. */}
             <div
               data-testid="large-team-message"
-              aria-hidden={employees <= LARGE_TEAM_THRESHOLD}
+              inert={employees <= LARGE_TEAM_THRESHOLD}
               className={`grid transition-[grid-template-rows] duration-300 ease-out ${
                 employees > LARGE_TEAM_THRESHOLD
                   ? 'grid-rows-[1fr]'

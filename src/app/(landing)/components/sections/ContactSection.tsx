@@ -20,6 +20,7 @@
  * @see SP-568 - Landing, sections basses
  */
 
+import { Fragment } from 'react'
 import { Mail, Clock, MapPin, Linkedin, Youtube } from 'lucide-react'
 import { ContactForm } from '@/components/public/ContactForm'
 import { DisplayTitle } from '@/components/public/DisplayTitle'
@@ -93,18 +94,22 @@ export function ContactSection() {
             </p>
 
             {/* Coordonnees */}
-            <dl className="mt-10 divide-y divide-public-border border-y border-public-border">
+            {/*
+              Liste de description : <dt> et <dd> doivent etre enfants directs
+              du <dl>, un <div> intermediaire n'est pas admis par la structure
+              attendue (axe-core, regles dlitem et only-dlitems).
+            */}
+            <dl className="mt-10 border-y border-public-border">
               {contactInfo.map((item) => (
-                <div key={item.label} className="flex gap-4 py-5">
-                  <item.icon
-                    aria-hidden="true"
-                    className="mt-0.5 h-5 w-5 shrink-0 text-public-accent"
-                  />
-                  <div className="min-w-0">
-                    <dt className="font-geist text-xs uppercase tracking-[0.12em] text-public-content-muted">
-                      {item.label}
-                    </dt>
-                    <dd className="mt-1">
+                <Fragment key={item.label}>
+                  <dt className="flex items-center gap-4 pt-5 font-geist text-xs uppercase tracking-[0.12em] text-public-content-muted">
+                    <item.icon
+                      aria-hidden="true"
+                      className="h-5 w-5 shrink-0 text-public-accent"
+                    />
+                    {item.label}
+                  </dt>
+                  <dd className="border-b border-public-border pb-5 pl-9">
                       {item.href ? (
                         <a
                           href={item.href}
@@ -117,9 +122,8 @@ export function ContactSection() {
                           {item.value}
                         </span>
                       )}
-                    </dd>
-                  </div>
-                </div>
+                  </dd>
+                </Fragment>
               ))}
             </dl>
 

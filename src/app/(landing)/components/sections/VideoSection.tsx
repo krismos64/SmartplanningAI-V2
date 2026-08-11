@@ -114,7 +114,7 @@ export function VideoSection() {
               <h3 className="font-geist font-semibold text-public-content-on-dark">
                 {feature.title}
               </h3>
-              <p className="mt-2 font-geist text-sm leading-relaxed text-public-content-on-dark/70">
+              <p className="mt-2 font-geist text-sm leading-relaxed text-public-content-on-dark/75">
                 {feature.description}
               </p>
             </li>

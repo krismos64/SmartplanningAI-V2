@@ -264,13 +264,13 @@ export function SectorContent({ sector }: SectorContentProps) {
                 {formatPrice(monthlyPrice)} HT / mois
               </DisplayTitle>
 
-              <p className="mt-6 font-geist text-lg text-white/80">
+              <p className="mt-6 font-geist text-lg text-white">
                 {sector.pricingExample.headcount} employés &times;{' '}
                 {formatPrice(PRICING.PRICE_PER_EMPLOYEE)} HT, pour{' '}
                 {sector.pricingExample.teamLabel}.
               </p>
 
-              <p className="mt-4 max-w-xl font-geist leading-relaxed text-white/80">
+              <p className="mt-4 max-w-xl font-geist leading-relaxed text-white">
                 {sector.pricingExample.description}
               </p>
 
@@ -340,7 +340,7 @@ export function SectorContent({ sector }: SectorContentProps) {
                 <ArrowUpRight className="h-5 w-5" aria-hidden="true" />
               </Link>
 
-              <p className="mt-4 max-w-xs font-geist text-sm text-public-content-on-vivid/80">
+              <p className="mt-4 max-w-xs font-geist text-sm text-public-content-on-vivid">
                 {PRICING.TRIAL_DAYS} jours gratuits, sans carte bancaire.
               </p>
             </div>

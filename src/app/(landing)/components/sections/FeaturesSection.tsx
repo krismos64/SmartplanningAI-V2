@@ -65,7 +65,7 @@ export function FeaturesSection() {
               <h3 className="font-geist text-2xl font-semibold sm:text-3xl">
                 {featured[0].title}
               </h3>
-              <p className="text-base leading-relaxed opacity-80">
+              <p className="text-base leading-relaxed">
                 {featured[0].description}
               </p>
             </BentoCard>
@@ -81,7 +81,7 @@ export function FeaturesSection() {
                 <h3 className="font-geist text-xl font-semibold sm:text-2xl">
                   {feature.title}
                 </h3>
-                <p className="text-base leading-relaxed opacity-80">
+                <p className="text-base leading-relaxed">
                   {feature.description}
                 </p>
               </BentoCard>

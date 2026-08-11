@@ -122,7 +122,7 @@ export function RoleDemosSection() {
                     'flex min-h-[3.5rem] items-center gap-4 border-b border-public-border-on-dark py-5 text-left font-geist transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-public-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-public-surface-dark',
                     isActive
                       ? 'text-public-highlight'
-                      : 'text-public-content-on-dark/60 hover:text-public-content-on-dark'
+                      : 'text-public-content-on-dark/75 hover:text-public-content-on-dark'
                   )}
                 >
                   <span

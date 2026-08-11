@@ -89,7 +89,7 @@ export function GuideContent({ guide }: GuideContentProps) {
                     >
                       <span
                         aria-hidden="true"
-                        className="text-xs tabular-nums opacity-60"
+                        className="text-xs tabular-nums text-public-accent"
                       >
                         {String(index + 1).padStart(2, '0')}
                       </span>
@@ -173,7 +173,7 @@ export function GuideContent({ guide }: GuideContentProps) {
                 Passez de la théorie
               </DisplayTitle>
 
-              <p className="mt-6 font-geist text-public-content-on-vivid/80">
+              <p className="mt-6 font-geist text-public-content-on-vivid">
                 Plannings, congés et messagerie d&rsquo;équipe dans un seul
                 outil. Essai gratuit {PRICING.TRIAL_DAYS} jours, sans carte
                 bancaire.

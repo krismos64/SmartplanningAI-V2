@@ -96,7 +96,7 @@ export function PricingPageContent() {
             {/* Message au-dela du seuil, toujours dans le DOM */}
             <div
               data-testid="large-team-message"
-              aria-hidden={employees <= LARGE_TEAM_THRESHOLD}
+              inert={employees <= LARGE_TEAM_THRESHOLD}
               className={`grid transition-[grid-template-rows] duration-300 ease-out ${
                 employees > LARGE_TEAM_THRESHOLD
                   ? 'grid-rows-[1fr]'
@@ -238,7 +238,7 @@ export function PricingPageContent() {
                 <ArrowUpRight className="h-5 w-5" aria-hidden="true" />
               </Link>
 
-              <p className="mt-4 max-w-xs font-geist text-sm text-public-content-on-vivid/80">
+              <p className="mt-4 max-w-xs font-geist text-sm text-public-content-on-vivid">
                 {PRICING.TRIAL_DAYS} jours sans carte bancaire. Inscription en
                 2 minutes.
               </p>

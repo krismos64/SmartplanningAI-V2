@@ -74,7 +74,7 @@ const columns = [
  * absente de la version precedente ou les liens mesuraient environ 20 px.
  */
 const LINK_CLASSES =
-  'inline-flex min-h-[2.75rem] items-center font-geist text-sm text-public-content-on-dark/70 transition-colors hover:text-public-content-on-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-public-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-public-surface-dark'
+  'inline-flex min-h-[2.75rem] items-center font-geist text-sm text-public-content-on-dark/75 transition-colors hover:text-public-content-on-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-public-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-public-surface-dark'
 
 export function LandingFooter() {
   return (
@@ -93,7 +93,7 @@ export function LandingFooter() {
               </span>
             </Link>
 
-            <p className="mt-4 max-w-xs text-sm leading-relaxed text-public-content-on-dark/70">
+            <p className="mt-4 max-w-xs text-sm leading-relaxed text-public-content-on-dark/75">
               Le planning d&rsquo;équipe qui laisse moins de place aux
               imprévus.
             </p>
@@ -106,7 +106,7 @@ export function LandingFooter() {
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={social.label}
-                    className="flex h-11 w-11 items-center justify-center border border-public-border-on-dark text-public-content-on-dark/70 transition-colors hover:border-public-accent-on-dark hover:text-public-accent-on-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-public-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-public-surface-dark"
+                    className="flex h-11 w-11 items-center justify-center border border-public-border-on-dark text-public-content-on-dark/75 transition-colors hover:border-public-accent-on-dark hover:text-public-accent-on-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-public-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-public-surface-dark"
                   >
                     <social.icon aria-hidden="true" className="h-5 w-5" />
                   </a>
@@ -146,14 +146,14 @@ export function LandingFooter() {
             <Mail aria-hidden="true" className="h-4 w-4" />
             contact@smartplanning.fr
           </a>
-          <p className="text-sm text-public-content-on-dark/60">
+          <p className="text-sm text-public-content-on-dark/75">
             Réponse sous 24 h ouvrées
           </p>
         </div>
 
         {/* Mentions */}
         <div className="mt-8 flex flex-col gap-4 border-t border-public-border-on-dark pt-8 md:flex-row md:items-center md:justify-between">
-          <p className="text-sm text-public-content-on-dark/60">
+          <p className="text-sm text-public-content-on-dark/75">
             &copy; {new Date().getFullYear()} SmartPlanning. Tous droits
             réservés.
           </p>
@@ -161,9 +161,9 @@ export function LandingFooter() {
           <div className="flex flex-wrap items-center gap-6">
             <CookieSettingsButton
               variant="link"
-              className="h-auto min-h-[2.75rem] p-0 text-sm text-public-content-on-dark/60 hover:text-public-content-on-dark"
+              className="h-auto min-h-[2.75rem] p-0 text-sm text-public-content-on-dark/75 hover:text-public-content-on-dark"
             />
-            <p className="flex items-center gap-2 text-sm text-public-content-on-dark/60">
+            <p className="flex items-center gap-2 text-sm text-public-content-on-dark/75">
               Conçu et hébergé en France
               <span aria-hidden="true" className="text-base">
                 🇫🇷

@@ -135,11 +135,11 @@ export function PricingSimulator({
           isCompact ? 'gap-2' : 'gap-3'
         )}
       >
-        <div className="flex items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1.5 text-xs font-medium text-emerald-400">
+        <div className="flex items-center gap-1.5 border-l-2 border-emerald-600 bg-public-surface-subtle px-3 py-1.5 text-xs font-medium text-public-content">
           <Gift className="h-3.5 w-3.5" aria-hidden="true" />
           {PRICING.TRIAL_DAYS} jours gratuits, sans carte bancaire
         </div>
-        <div className="flex items-center gap-1.5 rounded-full border border-public-accent/20 bg-public-accent/10 px-3 py-1.5 text-xs font-medium text-public-accent">
+        <div className="flex items-center gap-1.5 border-l-2 border-public-accent bg-public-surface-subtle px-3 py-1.5 text-xs font-medium text-public-content">
           <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
           Sans engagement · Résiliation en 1 clic
         </div>

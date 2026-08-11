@@ -78,7 +78,7 @@ export function HeroSection() {
               </Link>
             </div>
 
-            <ul className="mt-10 flex flex-col gap-3 font-geist text-sm uppercase tracking-[0.12em] text-public-content-on-dark/70 sm:flex-row sm:flex-wrap sm:gap-x-8">
+            <ul className="mt-10 flex flex-col gap-3 font-geist text-sm uppercase tracking-[0.12em] text-public-content-on-dark/75 sm:flex-row sm:flex-wrap sm:gap-x-8">
               {REASSURANCE.map((item) => (
                 <li key={item} className="flex items-center gap-2">
                   <span
@@ -95,7 +95,7 @@ export function HeroSection() {
               `aspect-ratio` reserve la hauteur des le premier rendu : le
               mockup ne provoque aucun decalage de mise en page. */}
           <div className="relative lg:pl-4">
-            <p className="mb-4 hidden text-right font-geist text-xs uppercase tracking-[0.2em] text-public-content-on-dark/50 lg:block">
+            <p className="mb-4 hidden text-right font-geist text-xs uppercase tracking-[0.2em] text-public-content-on-dark/75 lg:block">
               Une semaine en un coup d&rsquo;œil
             </p>
             <div className="aspect-[4/3] sm:aspect-[16/11]">
