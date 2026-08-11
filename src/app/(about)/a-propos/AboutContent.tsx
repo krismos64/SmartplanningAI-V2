@@ -15,7 +15,6 @@
  * @see SP-285 - Page À propos
  */
 
-import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowRight, Target, Linkedin, Youtube } from 'lucide-react'
@@ -34,15 +33,7 @@ import { ValueCard, TargetCard } from '../components'
 import { values, targets, mission } from '../data'
 
 export function AboutContent() {
-  const [isScrolled, setIsScrolled] = useState(false)
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50)
-    }
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
 
   return (
     <div className="public-scope relative min-h-screen bg-background text-foreground">
@@ -52,7 +43,7 @@ export function AboutContent() {
       </div>
 
       {/* Header with scroll-aware background */}
-      <LandingHeader isScrolled={isScrolled} />
+      <LandingHeader />
 
       {/* Skip to main content link for accessibility */}
       <a

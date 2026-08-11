@@ -14,7 +14,7 @@
  * @ticket SP-359
  */
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 import { ArrowRight, Check, MessageSquare } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -42,17 +42,9 @@ import { PRICING_FAQS } from './StructuredData'
 const LARGE_TEAM_THRESHOLD = 50
 
 export function PricingPageContent() {
-  const [isScrolled, setIsScrolled] = useState(false)
   const [openFAQ, setOpenFAQ] = useState<number | null>(null)
   const [employees, setEmployees] = useState<number>(PRICING.DEFAULT_EMPLOYEES)
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50)
-    }
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
 
   return (
     <div className="public-scope relative min-h-screen bg-background text-foreground">
@@ -60,7 +52,7 @@ export function PricingPageContent() {
         <AnimatedBackground />
       </div>
 
-      <LandingHeader isScrolled={isScrolled} />
+      <LandingHeader />
 
       <a
         href="#main-content"

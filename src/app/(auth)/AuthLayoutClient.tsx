@@ -10,7 +10,6 @@
  * - Support light/dark mode via CSS variables
  */
 
-import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { LandingHeader } from '@/components/layout/LandingHeader'
 import { LandingFooter } from '@/components/layout/LandingFooter'
@@ -22,15 +21,7 @@ interface AuthLayoutClientProps {
 }
 
 export function AuthLayoutClient({ children }: AuthLayoutClientProps) {
-  const [isScrolled, setIsScrolled] = useState(false)
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50)
-    }
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
 
   return (
     <div className="relative flex min-h-screen flex-col overflow-x-hidden bg-background text-foreground">
@@ -40,7 +31,7 @@ export function AuthLayoutClient({ children }: AuthLayoutClientProps) {
       </div>
 
       {/* Header - sans navigation links pour les pages auth */}
-      <LandingHeader isScrolled={isScrolled} showNavLinks={false} />
+      <LandingHeader showNavLinks={false} />
 
       {/* Main Content - Centré avec espace pour le header fixe */}
       <main className="relative z-10 flex flex-1 items-center justify-center px-4 py-24">

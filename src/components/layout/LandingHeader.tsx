@@ -103,8 +103,6 @@ const guideLinks = [
 type DesktopMenu = 'product' | 'solutions' | 'resources' | null
 
 interface LandingHeaderProps {
-  /** Whether the page has been scrolled (for background change) */
-  isScrolled?: boolean
   /** Whether to show navigation links (false for auth pages) */
   showNavLinks?: boolean
   /** Whether the header is fixed or static */
@@ -112,7 +110,6 @@ interface LandingHeaderProps {
 }
 
 export function LandingHeader({
-  isScrolled = false,
   showNavLinks = true,
   isFixed = true,
 }: LandingHeaderProps) {
@@ -177,8 +174,7 @@ export function LandingHeader({
         // evite d'avoir a decliner le header selon la section survolee.
         className={cn(
           'left-0 right-0 z-50 border-b border-public-border bg-public-surface font-geist transition-all duration-300',
-          isFixed ? 'fixed top-0' : 'relative top-0',
-          isScrolled || !isFixed ? 'py-4' : 'py-5'
+          isFixed ? 'fixed top-0 py-4' : 'relative top-0 py-4'
         )}
       >
         <div className="container-custom">

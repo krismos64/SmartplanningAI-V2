@@ -11,7 +11,6 @@
 'use client'
 
 import dynamic from 'next/dynamic'
-import { useEffect, useState } from 'react'
 
 // Composants above-the-fold : import statique direct (pas via le barrel) pour
 // un rendu immédiat du LCP sans tirer le code des sections below-the-fold.
@@ -69,20 +68,12 @@ const Footer = dynamic(() =>
 )
 
 export default function LandingPageContent() {
-  const [isScrolled, setIsScrolled] = useState(false)
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50)
-    }
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
 
   return (
     <div className="public-scope min-h-screen overflow-x-hidden bg-public-surface text-public-content">
       {/* Header */}
-      <Header isScrolled={isScrolled} />
+      <Header />
 
       {/* Sections */}
       <HeroSection />

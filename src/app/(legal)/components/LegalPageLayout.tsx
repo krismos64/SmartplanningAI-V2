@@ -55,14 +55,12 @@ export function LegalPageLayout({
   tableOfContents = [],
   children,
 }: LegalPageLayoutProps) {
-  const [isScrolled, setIsScrolled] = useState(false)
   const [activeSection, setActiveSection] = useState<string>('')
   const [showScrollTop, setShowScrollTop] = useState(false)
 
-  // Gestion du scroll pour le header et le bouton scroll-to-top
+  // Bouton scroll-to-top et detection de la section active
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50)
       setShowScrollTop(window.scrollY > 500)
 
       // Détection de la section active
@@ -108,7 +106,7 @@ export function LegalPageLayout({
       </div>
 
       {/* Header with scroll-aware background */}
-      <LandingHeader isScrolled={isScrolled} />
+      <LandingHeader />
 
       {/* Contenu principal */}
       <main className="relative pb-20 pt-24">
