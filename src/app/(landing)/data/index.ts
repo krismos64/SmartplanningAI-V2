@@ -295,7 +295,7 @@ export const roleDemos: RoleDemo[] = [
       'Audit logs complets et conformité RGPD',
     ],
     color: 'from-blue-600 to-blue-500',
-    thumbnail: '/images/demo-directeur.png',
+    thumbnail: '/images/demo-directeur.webp',
   },
   {
     id: 'manager',
@@ -315,7 +315,7 @@ export const roleDemos: RoleDemo[] = [
       'Suivi des incidents et notes employés',
     ],
     color: 'from-blue-500 to-blue-400',
-    thumbnail: '/images/demo-manager.png',
+    thumbnail: '/images/demo-manager.webp',
   },
   {
     id: 'employee',
@@ -335,7 +335,7 @@ export const roleDemos: RoleDemo[] = [
       'Export PDF du planning pour consultation offline',
     ],
     color: 'from-blue-400 to-blue-300',
-    thumbnail: '/images/demo-employe.png',
+    thumbnail: '/images/demo-employe.webp',
   },
 ]
 

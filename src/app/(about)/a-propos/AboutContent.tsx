@@ -152,7 +152,7 @@ export function AboutContent() {
                 {/* Manager illustration */}
                 <div className="relative z-10 overflow-hidden rounded-2xl border border-border">
                   <Image
-                    src="/images/manager.png"
+                    src="/images/manager.webp"
                     alt="Manager utilisant le logiciel SmartPlanning sur ordinateur pour organiser les plannings de son équipe dans un bureau moderne"
                     width={500}
                     height={400}

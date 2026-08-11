@@ -35,7 +35,7 @@ export function BenefitsSection() {
           >
             <div className="absolute inset-0 rounded-3xl bg-blue-600/10 dark:bg-blue-400/10 blur-3xl" />
             <Image
-              src="/images/avant-après-sp.png"
+              src="/images/avant-apres-sp.webp"
               alt="Avant et après SmartPlanning - Comparaison visuelle"
               width={600}
               height={450}

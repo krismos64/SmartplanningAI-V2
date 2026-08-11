@@ -71,7 +71,7 @@ export const metadata: Metadata = {
     locale: 'fr_FR',
     images: [
       {
-        url: `${baseUrl}/images/og-about.png`,
+        url: `${baseUrl}/og-image.png`,
         width: 1200,
         height: 630,
         alt: 'SmartPlanning - Logiciel de gestion de planning pour entreprises',
@@ -86,7 +86,7 @@ export const metadata: Metadata = {
     title: 'À propos de SmartPlanning | Gestion de planning simplifiée',
     description:
       "SmartPlanning : solution française de gestion des plannings d'équipe. Simplicité, Proximité, Fiabilité pour les TPE et PME.",
-    images: [`${baseUrl}/images/og-about.png`],
+    images: [`${baseUrl}/og-image.png`],
     creator: '@smartplanning',
   },
 

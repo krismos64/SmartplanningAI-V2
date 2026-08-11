@@ -61,7 +61,7 @@ export function VideoSection() {
                 <>
                   {/* Miniature vidéo promotionnelle */}
                   <Image
-                    src="/images/video-promotionnelle.png"
+                    src="/images/video-promotionnelle.webp"
                     alt="SmartPlanning - Vidéo de présentation"
                     fill
                     sizes="(min-width: 1024px) 80vw, 100vw"
