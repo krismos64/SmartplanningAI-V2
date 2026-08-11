@@ -4,11 +4,11 @@
 |---|---|
 | Ticket | SP-563, créé pendant la session |
 | Documents produits | `(sectors)/solutions/page.tsx`, `(sectors)/solutions/StructuredData.tsx`, `(sectors)/solutions/components/SectorsHubContent.tsx` |
-| Documents modifiés | `sitemap.ts`, `sitemap.test.ts`, `LandingHeader.tsx`, `LandingFooter.tsx`, `llms.txt`, `llms-full.txt`, les 3 fichiers secteur, 2 fichiers guide |
-| Contrôles | `npm run test` 3111 tests sur 181 fichiers, `npm run type-check` sans sortie, `npm run lint` aucun avertissement sur les fichiers touchés, `npm run build` 78 pages statiques, 1 mutation vérifiée |
-| Jira | SP-563 créé |
-| Mémoire | `ou-en-est-le-projet` à réécrire en fin de session |
-| Branche | `fix/hub-solutions-et-ctr-seo`, commits `7f701e6` et `5139847`, non poussée |
+| Documents modifiés | `sitemap.ts`, `sitemap.test.ts`, `LandingHeader.tsx`, `LandingFooter.tsx`, `llms.txt`, `llms-full.txt`, les 3 fichiers secteur, 2 fichiers guide, `hook-rappel-regles.sh`, `seo-content.md`, `README.md` |
+| Contrôles | `npm run test` 3111 tests sur 181 fichiers, `npm run type-check` sans sortie, `npm run lint` aucun avertissement sur les fichiers touchés, `npm run build` 78 pages statiques, 1 mutation vérifiée, 4 hooks exécutés |
+| Jira | SP-563 créé et commenté avec la référence PR |
+| Mémoire | `sp563-hub-solutions-et-ctr` et `umami-sous-compte-le-trafic-search` créées, `ou-en-est-le-projet` réécrite, index corrigé |
+| Branche | `fix/hub-solutions-et-ctr-seo`, 4 commits, poussée, **PR #70 ouverte, non mergée** |
 
 Session partie d'une question simple, ajouter une 4e page secteur
 améliorerait-il le SEO. La mesure a répondu non, et déplacé le sujet deux fois.
@@ -82,6 +82,56 @@ guide. La règle existait, écrite, et a été reproduite malgré tout.
 Corrigé en passant slug et titre depuis le Server Component : **4,34 kB**,
 aligné sur `/guides`.
 
+## Trois pistes écartées, et pourquoi
+
+Une fois la PR ouverte, trois idées de contenu ont été posées et écartées. Elles
+sont consignées ici parce qu'elles reviendront.
+
+**Un article sur la grande distribution.** Il cannibaliserait
+`/solutions/planning-commerce`, qui cible déjà « planning magasin », 79
+impressions à 0 clic. Deux pages sur le même terrain se disputent les mêmes
+requêtes, Google en choisit une et dilue l'autre. La cible ne correspond pas non
+plus : un hypermarché emploie 200 à 500 personnes, hors du créneau 5 à 250
+annoncé dans `llms.txt`, et l'achat y passe par un appel d'offres, pas par un
+essai de 21 jours.
+
+**Publier pour montrer à Google que le site est actif.** La fréquence de
+publication n'est pas un facteur de classement hors requêtes d'actualité. Google
+mesure la pertinence d'une page pour une requête, pas un score d'activité qui
+remonterait les pages voisines. Le seul effet réel est la surface de requêtes
+couvertes.
+
+**Republier une date sans toucher au texte.** Détecté et ignoré, et cela dégrade
+la confiance dans les `lastmod` du sitemap. La règle du projet impose déjà des
+dates réelles de modification.
+
+Ce qui reste après ces trois refus : les liens entrants. C'est le seul levier
+qui remonte une position moyenne de 21,4.
+
+## La vérification de config a trouvé un trou
+
+Demandée pendant que la CI tournait, sur `CLAUDE.md`, les agents, le skill, les
+hooks et le README.
+
+`hook-rappel-regles.sh` restait **silencieux sur `src/app/robots.ts`**, alors
+que son voisin `sitemap.ts` déclenchait un rappel et que ce fichier commande
+l'indexation de tout le site. Le trou s'est vu en exécutant le hook sur les huit
+chemins réels de la session, pas en le relisant. Ironie du calendrier : c'est le
+fichier sur lequel a porté le diagnostic du matin, sans qu'aucun rappel ne se
+déclenche.
+
+`seo-content.md` ne citait pas non plus `robots.ts` dans sa liste de chargement.
+Les deux sont corrigés, le hook et la règle.
+
+Le reste de la config est sain. Les quatre hooks passent `bash -n`, le blocage
+des secrets refuse la lecture d'un `.env` y compris écrit `.ENV`, autorise
+l'écriture, et laisse passer `.env.example`. Les compteurs du README avaient
+dérivé, 61 pages annoncées contre 63 réelles et 187 composants contre 205.
+
+Un écart signalé sans le corriger : `CLAUDE.md` fait de la doc Confluence une
+règle absolue par feature, et aucune entrée de journal n'en cite une. Soit la
+règle est morte, soit il manque des pages. Arbitrage à prendre.
+
 ## Les écarts
 
 Le sujet annoncé, réparer l'indexation, n'a produit aucune réparation
@@ -93,12 +143,14 @@ Aucun test E2E ajouté sur le hub. La whitelist `testMatch` de
 allonge chaque exécution. Arbitrage non pris seul, cohérent avec la session du
 7 août.
 
-Le déploiement n'est pas fait, la branche n'est pas poussée.
+La branche est poussée et la PR #70 ouverte, mais **le merge et le déploiement
+ne sont pas faits** : la session s'est arrêtée avec la CI en cours.
 
 ## Prochaine étape
 
-Pousser, ouvrir la PR, attendre la CI, merger et déployer. L'effet sur le CTR se
-mesure ensuite dans 2 à 3 semaines en Search Console, sur les mêmes requêtes.
+Attendre les checks, merger, déployer, vérifier par le SHA du conteneur plutôt
+que par le statut du workflow. L'effet sur le CTR se mesure ensuite dans 2 à 3
+semaines en Search Console, sur les mêmes requêtes.
 
 Le plafond reste la position moyenne de 21,4. Un bon titre à cette position
 plafonne autour de 1 à 2 pour cent. Le levier suivant est l'autorité de domaine,
