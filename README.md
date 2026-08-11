@@ -41,7 +41,7 @@ Plateforme SaaS multi-tenant de gestion intelligente des plannings et des ressou
 - **Settings** : Apparence, notifications, entreprise (jours travailles, horaires)
 - **Notes & Incidents** : Taches personnelles (drag & drop), notes d'incidents avec visibilite RBAC
 - **SEO / GEO** : Metadata API, JSON-LD Schema.org (@graph, Article, HowTo, FAQPage, BreadcrumbList), sitemap data-driven avec `lastModified` reels, robots.txt ouvert aux crawlers IA, `llms.txt` et `llms-full.txt`
-- **Contenu editorial** : Pages secteur `/solutions/[slug]` (restauration, commerce, BTP) et guides pratiques `/guides/[slug]`, generes depuis des registres data-driven en SSG strict. Ajouter une page = 1 fichier de donnees + 1 ligne au registre (sitemap, footer, navigation et garde-fous de tests suivent automatiquement)
+- **Contenu editorial** : Pages secteur `/solutions/[slug]` (restauration, commerce, BTP) et guides pratiques `/guides/[slug]`, chacune sous son hub (`/solutions`, `/guides`), generes depuis des registres data-driven en SSG strict. Ajouter une page = 1 fichier de donnees + 1 ligne au registre (sitemap, footer, navigation et garde-fous de tests suivent automatiquement)
 - **Landing** : Design "Cyber Glass 3D", simulateur tarifs, FAQ, pages legales RGPD, demos video par role (Directeur/Manager/Employe) avec onglets et JSON-LD VideoObject. Navigation en pattern disclosure (liens toujours dans le DOM pour le maillage interne, `inert` a l'etat ferme)
 - **Accessibilite** : WCAG 2.1 AA, touch targets 44px, Lighthouse A11y 97-100%
 
@@ -127,7 +127,7 @@ npm run email:dev        # Previsualisation des templates React Email
 
 ```
 src/
-├── app/              # Next.js 15 App Router (61 pages, 5 layouts, 17 API routes)
+├── app/              # Next.js 15 App Router (63 pages, 5 layouts, 17 API routes)
 │   ├── (auth)/       # Login, register, verify-email, activate-account
 │   ├── (about)/      # A propos, tarifs
 │   ├── (landing)/    # Landing page
@@ -136,7 +136,7 @@ src/
 │   ├── (guides)/     # Hub et guides pratiques /guides/[slug] (registre data-driven)
 │   ├── app/          # Routes protegees par role
 │   └── api/          # API Routes (avatar, webhooks, health, SSE, messages...)
-├── components/       # 187 composants React
+├── components/       # 205 composants React
 │   ├── messaging/    # Messagerie (8 composants)
 │   ├── import/       # Import CSV (4 composants)
 │   └── ui/           # Shadcn/ui (41 composants)

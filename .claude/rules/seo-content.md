@@ -1,8 +1,9 @@
 # Contenu public, SEO et GEO
 
 Charger ce fichier avant de toucher : `src/app/(sectors)/`, `src/app/(guides)/`,
-la landing, le header ou le footer public, `src/app/sitemap.ts`, `public/llms*.txt`,
-ou tout texte visible par un visiteur non connecté.
+la landing, le header ou le footer public, `src/app/sitemap.ts`,
+`src/app/robots.ts`, `public/llms*.txt`, ou tout texte visible par un visiteur
+non connecté.
 
 Le contenu public sert deux canaux d'acquisition : la recherche classique et la
 citation par les assistants IA. Les deux imposent des contraintes différentes,
@@ -18,6 +19,24 @@ footer, `generateStaticParams` et les garde-fous de tests suivent
 automatiquement. Ne pas créer de route à la main.
 
 SSG strict : `dynamicParams = false`.
+
+Chaque famille de contenu a son hub : `/solutions` pour les secteurs,
+`/guides` pour les guides. Une famille sans page parente laisse un 404 sur le
+segment intermédiaire, ce qui affaiblit les pages filles au crawl. C'est le
+défaut corrigé par SP-563, `/solutions` ayant vécu trois mois en 404 pendant
+que ses trois pages filles étaient indexées.
+
+## Mesurer avant de produire une page
+
+Umami ne suffit pas pour une question de visibilité search : il ne compte que
+les visiteurs qui acceptent le tracking et n'ont pas de bloqueur. Sur les mêmes
+pages en août 2026, il montrait 40 vues quand la Search Console en comptait
+2730 impressions, soit un facteur 40.
+
+Avant de proposer une page supplémentaire, lire la Search Console : impressions,
+clics et position moyenne par page. Une position au-delà de 15 signifie que le
+contenu existant n'est pas encore classé, et qu'une page de plus ne changera pas
+le résultat. Le levier est alors l'autorité de domaine.
 
 ## Aucun concurrent nommé
 
