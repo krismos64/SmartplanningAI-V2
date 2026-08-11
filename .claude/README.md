@@ -126,7 +126,7 @@ donneraient de mauvais conseils avec assurance.
 Porte le cycle complet : lire le ticket **et ses commentaires**, un commentaire
 récent rectifiant souvent une description non réécrite, charger les règles du
 domaine, coder, vérifier avec la preuve à l'appui, puis clore la traçabilité sur
-les quatre canaux (dépôt, Jira, Confluence, mémoire).
+les canaux applicables (dépôt, journal, Jira, mémoire).
 
 ## Ce qui reste hors du dépôt
 
