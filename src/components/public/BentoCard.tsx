@@ -51,7 +51,7 @@ const TONE_CLASSES: Record<BentoCardTone, { surface: string; rule: string }> = {
     rule: 'bg-public-highlight',
   },
   accent: {
-    surface: 'bg-public-accent-surface text-public-content',
+    surface: 'bg-public-accent-surface text-public-content-on-vivid',
     rule: 'bg-public-surface-inverted',
   },
   brand: {
@@ -59,7 +59,7 @@ const TONE_CLASSES: Record<BentoCardTone, { surface: string; rule: string }> = {
     rule: 'bg-public-highlight',
   },
   highlight: {
-    surface: 'bg-public-highlight-surface text-public-content',
+    surface: 'bg-public-highlight-surface text-public-content-on-vivid',
     rule: 'bg-public-surface-inverted',
   },
 }

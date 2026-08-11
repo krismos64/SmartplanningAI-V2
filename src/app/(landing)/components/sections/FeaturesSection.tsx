@@ -1,97 +1,117 @@
-'use client'
-
 /**
  * FeaturesSection Component
- * Grid of feature cards
- * Refactored to use SectionHeader component
+ *
+ * Grille bento asymetrique des fonctionnalites, direction editoriale SP-567.
+ *
+ * Server Component depuis SP-567. Deux changements de fond par rapport a la
+ * version precedente :
+ *
+ * - L'animation Lottie du haut de section est retiree. `planning-animation.json`
+ *   pesait 148 Ko importes statiquement dans le bundle, pour une decoration
+ *   sans rapport avec le contenu de la section.
+ * - Les cartes ne portent plus d'icone. Le prototype numerote les entrees et
+ *   laisse le texte porter le sens, ce qui allege le rendu et supprime autant
+ *   d'imports lucide-react.
+ *
+ * Les donnees viennent du registre `features` : leur contenu n'est pas
+ * modifie, seul le rendu change.
+ *
+ * @see SP-567 - Landing, hero et sections hautes
  */
 
-import dynamic from 'next/dynamic'
-import { ChevronRight } from 'lucide-react'
-import { cn } from '@/lib/utils'
-import { motion, fadeInUp, staggerContainer } from '@/lib/animations'
+import { BentoCard } from '@/components/public/BentoCard'
+import { DisplayTitle } from '@/components/public/DisplayTitle'
+import { SectionLabel } from '@/components/public/SectionLabel'
 import { features } from '../../data'
-import { SectionHeader } from '../index'
 
-// Import Lottie dynamically to avoid SSR issues
-const Lottie = dynamic(() => import('lottie-react'), { ssr: false })
-
-// Import animation data
-import planningAnimation from '../../../../../public/animations/planning-animation.json'
+/**
+ * Les trois premieres entrees occupent les blocs mis en avant du bento, les
+ * suivantes remplissent la grille reguliere. Repartition portee ici plutot
+ * que dans le registre : c'est une decision de mise en page, pas une
+ * propriete du contenu.
+ */
+const FEATURED_COUNT = 3
 
 export function FeaturesSection() {
+  const featured = features.slice(0, FEATURED_COUNT)
+  const rest = features.slice(FEATURED_COUNT)
+
   return (
-    <section id="features" className="py-24 lg:py-32">
+    <section id="features" className="bg-public-surface py-24 lg:py-32">
       <div className="container-custom">
-        {/* Lottie Animation */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="mx-auto mb-6 flex justify-center"
-        >
-          <Lottie
-            animationData={planningAnimation}
-            loop={true}
-            className="h-40 w-40 md:h-48 md:w-48"
-          />
-        </motion.div>
+        {/* En-tete de section */}
+        <div className="grid gap-8 lg:grid-cols-[auto_1fr_20rem] lg:items-start">
+          <SectionLabel index={2}>Le produit</SectionLabel>
 
-        {/* Section Header - Using reusable component */}
-        <SectionHeader
-          badge="Fonctionnalités"
-          title="Tous vos outils RH"
-          titleHighlight="réunis au même endroit"
-          description="Plannings, congés, tâches, incidents, messagerie : tous les modules pour la gestion RH d&rsquo;une TPE-PME."
-          marginBottom="mb-8"
-        />
+          <DisplayTitle
+            as="h2"
+            id="features-title"
+            accent="Plus de clarté."
+            className="text-public-content lg:text-center"
+          >
+            Moins d&rsquo;outils.
+          </DisplayTitle>
 
-        {/* Features Grid */}
-        <motion.div
-          variants={staggerContainer}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          className="grid gap-6 md:grid-cols-2 lg:grid-cols-3"
-        >
-          {features.map((feature) => (
-            <motion.div
+          <p className="font-geist text-lg leading-relaxed text-public-content-muted">
+            SmartPlanning réunit les gestes quotidiens du manager et les
+            informations dont l&rsquo;équipe a vraiment besoin.
+          </p>
+        </div>
+
+        {/* Blocs mis en avant */}
+        <div className="mt-16 grid gap-4 lg:grid-cols-2">
+          {featured[0] ? (
+            <BentoCard tone="dark" index={1} className="lg:row-span-2">
+              <h3 className="font-geist text-2xl font-semibold sm:text-3xl">
+                {featured[0].title}
+              </h3>
+              <p className="text-base leading-relaxed opacity-80">
+                {featured[0].description}
+              </p>
+            </BentoCard>
+          ) : null}
+
+          <div className="grid gap-4">
+            {featured.slice(1).map((feature, index) => (
+              <BentoCard
+                key={feature.title}
+                tone={index === 0 ? 'light' : 'brand'}
+                index={index + 2}
+              >
+                <h3 className="font-geist text-xl font-semibold sm:text-2xl">
+                  {feature.title}
+                </h3>
+                <p className="text-base leading-relaxed opacity-80">
+                  {feature.description}
+                </p>
+              </BentoCard>
+            ))}
+          </div>
+        </div>
+
+        {/* Grille reguliere */}
+        <div className="mt-4 grid gap-px bg-public-border sm:grid-cols-2 lg:grid-cols-3">
+          {rest.map((feature, index) => (
+            <BentoCard
               key={feature.title}
-              variants={fadeInUp}
-              whileHover={{ y: -5, transition: { duration: 0.2 } }}
-              className={cn(
-                'group relative overflow-hidden rounded-2xl border bg-card/50 p-8 transition-all hover:border-blue-600/30 dark:hover:border-blue-400/30',
-                feature.comingSoon
-                  ? 'border-blue-600/30 dark:border-blue-400/30 bg-blue-600/5 dark:bg-blue-400/5'
-                  : 'border-border/50'
-              )}
+              tone="light"
+              index={index + FEATURED_COUNT + 1}
+              rule={false}
             >
-              {/* Coming Soon Badge */}
-              {feature.comingSoon && (
-                <div className="absolute right-4 top-4 rounded-full bg-blue-600 px-3 py-1 text-xs font-semibold text-white">
-                  À venir
-                </div>
-              )}
-
-              {/* Icon */}
-              <div className="mb-6 inline-flex rounded-xl bg-blue-600/10 p-3 ring-1 ring-blue-600/15 dark:bg-blue-400/15 dark:ring-blue-400/15">
-                <feature.icon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-              </div>
-
-              {/* Content */}
-              <h3 className="mb-3 text-xl font-semibold">{feature.title}</h3>
-              <p className="text-muted-foreground">{feature.description}</p>
-
-              {/* Hover Tint */}
-              <div className="absolute inset-0 -z-10 bg-blue-600/5 dark:bg-blue-400/5 opacity-0 transition-opacity group-hover:opacity-100" />
-
-              {/* Hover Arrow */}
-              <div className="absolute bottom-8 right-8 opacity-0 transition-opacity group-hover:opacity-100">
-                <ChevronRight className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-              </div>
-            </motion.div>
+              <h3 className="font-geist text-lg font-semibold">
+                {feature.title}
+                {feature.comingSoon ? (
+                  <span className="ml-2 align-middle bg-public-accent-surface px-2 py-0.5 text-[0.65rem] font-semibold uppercase tracking-wider text-public-content-on-vivid">
+                    À venir
+                  </span>
+                ) : null}
+              </h3>
+              <p className="text-sm leading-relaxed text-public-content-muted">
+                {feature.description}
+              </p>
+            </BentoCard>
           ))}
-        </motion.div>
+        </div>
       </div>
     </section>
   )

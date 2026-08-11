@@ -94,8 +94,18 @@ export const publicSemanticLight = {
   surface: publicPalette.cream[100],
   /** Fond legerement contraste, cartes sur fond creme */
   surfaceSubtle: publicPalette.cream[50],
-  /** Fond des sections sombres, en alternance */
+  /** Fond oppose au fond courant, pour une carte qui tranche */
   surfaceInverted: publicPalette.ink[900],
+
+  /**
+   * Fond bleu nuit constant, identique dans les deux modes.
+   *
+   * A distinguer de `surfaceInverted`, qui suit le theme : une section
+   * dont le fond doit rester sombre en clair comme en sombre (le hero,
+   * la section securite) utilise `surfaceDark`, sans quoi elle vire au
+   * creme des que l'utilisateur bascule en mode sombre.
+   */
+  surfaceDark: publicPalette.ink[900],
 
   /** Texte courant sur surface */
   content: publicPalette.ink[900],
@@ -103,6 +113,14 @@ export const publicSemanticLight = {
   contentMuted: publicPalette.ink[700],
   /** Texte sur surfaceInverted */
   contentInverted: publicPalette.cream[100],
+  /** Texte sur surfaceDark, constant dans les deux modes */
+  contentOnDark: publicPalette.cream[100],
+  /**
+   * Texte bleu nuit constant, pour les aplats vifs (corail, lime) dont la
+   * teinte ne change pas avec le theme. `content` suit le theme et vire au
+   * creme en mode sombre, ce qui rendrait le texte illisible sur ces fonds.
+   */
+  contentOnVivid: publicPalette.ink[900],
 
   /** Accent sur fond clair, variante assombrie pour tenir AA */
   accent: publicPalette.coral[700],
@@ -141,9 +159,15 @@ export const publicSemanticDark = {
   surfaceSubtle: publicPalette.ink[900],
   surfaceInverted: publicPalette.cream[100],
 
+  /** Constant : le hero reste bleu nuit quel que soit le theme */
+  surfaceDark: publicPalette.ink[900],
+
   content: publicPalette.cream[100],
   contentMuted: publicPalette.cream[300],
   contentInverted: publicPalette.ink[900],
+  contentOnDark: publicPalette.cream[100],
+  /** Constant : les aplats vifs gardent un texte bleu nuit */
+  contentOnVivid: publicPalette.ink[900],
 
   accent: publicPalette.coral[500],
   accentOnDark: publicPalette.coral[500],

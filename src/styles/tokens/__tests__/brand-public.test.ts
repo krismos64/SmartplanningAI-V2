@@ -189,6 +189,35 @@ describe('tokens semantiques', () => {
     ).toBeGreaterThanOrEqual(AA_TEXT)
   })
 
+  /**
+   * Les aplats vifs et le fond sombre constant ne changent pas avec le
+   * theme, contrairement a `content`. Un texte thematique pose dessus
+   * devient illisible dans l'un des deux modes : le bouton lime du hero
+   * est passe a 1.06:1 en mode sombre avant que ces tokens n'existent
+   * (SP-567). Les paires constantes se verifient donc dans les deux modes.
+   */
+  it.each([
+    ['clair', publicSemanticLight],
+    ['sombre', publicSemanticDark],
+  ] as const)(
+    'le texte des aplats constants reste lisible en mode %s',
+    (_mode, semantic) => {
+      // Aplats vifs : corail et lime, texte bleu nuit constant
+      expect(
+        contrastRatio(semantic.accentSurface, semantic.contentOnVivid)
+      ).toBeGreaterThanOrEqual(AA_TEXT)
+
+      expect(
+        contrastRatio(semantic.highlightSurface, semantic.contentOnVivid)
+      ).toBeGreaterThanOrEqual(AA_TEXT)
+
+      // Fond bleu nuit constant : texte creme constant
+      expect(
+        contrastRatio(semantic.surfaceDark, semantic.contentOnDark)
+      ).toBeGreaterThanOrEqual(AA_TEXT)
+    }
+  )
+
   it('les aplats pleine section portent un texte lisible', () => {
     // Corail et lime portent du texte bleu nuit, jamais du blanc
     expect(

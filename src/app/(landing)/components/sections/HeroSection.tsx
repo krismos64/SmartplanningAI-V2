@@ -1,158 +1,109 @@
-'use client'
-
 /**
  * HeroSection Component
- * Main hero section with headline, CTA, and illustration
+ *
+ * Hero de la page d'accueil, direction editoriale SP-567 : aplat bleu nuit,
+ * titre a deux registres, apercu de planning construit en DOM.
+ *
+ * Server Component depuis SP-567. La version precedente etait cliente pour
+ * un effet de parallaxe au scroll (useScroll, useTransform) qui tirait
+ * Framer Motion dans le chemin critique de la page. L'effet est rendu en
+ * CSS, l'animation d'entree se limite a une transition sur les elements
+ * deja presents.
+ *
+ * CLS : le conteneur du mockup reserve sa hauteur par aspect-ratio, et
+ * l'illustration ne charge aucune ressource externe. SP-556 avait corrige
+ * un CLS mobile de 0,09 sur ce hero, cause par une image sans dimensions
+ * reservees.
+ *
+ * @see SP-567 - Landing, hero et sections hautes
  */
 
-import { Button } from '@/components/ui/button'
-import {
-  fadeInUp,
-  motion,
-  scaleIn,
-  staggerContainer,
-  useScroll,
-  useTransform,
-} from '@/lib/animations'
-import { ArrowRight } from 'lucide-react'
-import Image from 'next/image'
+import { PlanningMockup } from '@/components/public/mockups/PlanningMockup'
+import { SectionLabel } from '@/components/public/SectionLabel'
+import { ArrowUpRight } from 'lucide-react'
 import Link from 'next/link'
-import { useRef } from 'react'
-import { ScrollIndicator } from '../index'
+
+/** Faits verifiables, sans promesse chiffree. */
+const REASSURANCE = [
+  '21 jours gratuits',
+  'Sans carte bancaire',
+  'Données hébergées en France',
+] as const
 
 export function HeroSection() {
-  const heroRef = useRef(null)
-  const { scrollYProgress } = useScroll({
-    target: heroRef,
-    offset: ['start start', 'end start'],
-  })
-
-  // More gradual fade out - starts later and ends later for smoother transition
-  const heroOpacity = useTransform(scrollYProgress, [0, 0.3, 0.8], [1, 1, 0])
-  const heroScale = useTransform(scrollYProgress, [0, 0.8], [1, 0.98])
-  const heroY = useTransform(scrollYProgress, [0, 0.8], [0, 50])
-
   return (
-    <section
-      ref={heroRef}
-      className="relative flex min-h-screen items-center pb-20 pt-32"
-    >
-      <motion.div
-        style={{ opacity: heroOpacity, scale: heroScale, y: heroY }}
-        className="mx-auto w-full max-w-screen-2xl px-4 sm:px-6 lg:px-8"
-      >
-        {/* Mobile: flex column (image → text → buttons) | Desktop: grid 2 cols */}
-        <div className="flex flex-col items-center gap-8 lg:grid lg:grid-cols-2 lg:items-center lg:gap-20">
-          {/* Image - First on mobile, second on desktop */}
-          <motion.div
-            variants={scaleIn}
-            initial={false}
-            animate="visible"
-            className="relative flex items-center justify-center lg:order-2"
-          >
-            {/* Glow Effect */}
-            <div className="absolute inset-0 rounded-3xl bg-blue-600/10 dark:bg-blue-400/10 blur-3xl" />
+    <section className="relative overflow-hidden bg-public-surface-dark">
+      {/* Filet corail vertical, marqueur de la direction editoriale */}
+      <span
+        aria-hidden="true"
+        className="absolute left-0 top-1/3 h-40 w-1 bg-public-accent-surface"
+      />
 
-            {/* Welcome Image (static, no infinite float) */}
-            <div className="relative w-full max-w-md md:max-w-xl lg:max-w-3xl xl:max-w-4xl">
-              <Image
-                src="/images/logo-smartplanning.webp"
-                alt="Bienvenue sur SmartPlanning - Illustration avec personnage et robot IA"
-                width={1376}
-                height={768}
-                sizes="(max-width: 768px) 448px, (max-width: 1024px) 576px, (max-width: 1280px) 768px, 896px"
-                className="relative z-10 h-auto w-full drop-shadow-2xl"
-                priority
-                fetchPriority="high"
-              />
-            </div>
-          </motion.div>
+      <div className="container-custom py-20 lg:py-28">
+        <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
+          {/* Colonne texte */}
+          <div className="max-w-2xl">
+            <SectionLabel index={1} tone="onDark">
+              Gestion d&rsquo;équipe pour TPE &amp; PME
+            </SectionLabel>
 
-          {/* Text Content - Second on mobile, first on desktop */}
-          <motion.div
-            variants={staggerContainer}
-            initial={false}
-            animate="visible"
-            className="text-center lg:order-1 lg:text-left"
-          >
-            {/* Headline */}
-            <motion.h1
-              variants={fadeInUp}
-              className="mb-6 text-4xl font-bold leading-[1.1] sm:text-5xl lg:text-6xl xl:text-7xl"
-            >
-              Gérez plannings, congés et équipes{' '}
-              <span className="text-blue-600 dark:text-blue-400">
-                au même endroit
+            {/* h1 ecrit ici plutot que via DisplayTitle : la page ne porte
+                qu'un seul h1, il merite d'etre lisible dans la source */}
+            <h1 className="mt-8 font-geist text-5xl font-bold leading-[0.95] tracking-[-0.03em] text-public-content-on-dark sm:text-6xl lg:text-7xl">
+              Votre équipe avance.
+              <span className="mt-1 block font-editorial italic text-public-accent-on-dark">
+                Tout reste clair.
               </span>
-            </motion.h1>
+            </h1>
 
-            {/* Subheadline */}
-            <motion.p
-              variants={fadeInUp}
-              className="mx-auto max-w-xl text-lg text-muted-foreground sm:text-xl lg:mx-0"
-            >
-              Planifiez, validez les congés et communiquez avec vos équipes
-              depuis une seule application pensée pour les TPE et PME
-              françaises.
-            </motion.p>
-
-            {/* CTA Buttons - Desktop only (inside text block) */}
-            <motion.div
-              variants={fadeInUp}
-              className="mt-8 hidden gap-4 sm:flex sm:flex-row sm:justify-center lg:justify-start"
-            >
-              <Button
-                size="lg"
-                className="h-14 bg-blue-600 px-8 text-base font-semibold text-white shadow-lg shadow-blue-600/25 hover:bg-blue-700"
-                asChild
-              >
-                <Link href="/register">
-                  Démarrer gratuitement
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </Link>
-              </Button>
-            </motion.div>
-
-            {/* Réassurance factuelle (desktop) - faits vérifiables, sans promesse chiffrée */}
-            <motion.p
-              variants={fadeInUp}
-              className="mt-4 hidden text-sm text-muted-foreground sm:block"
-            >
-              Sans carte bancaire · Résiliable à tout moment · Données hébergées
-              en France
-            </motion.p>
-          </motion.div>
-
-          {/* CTA Button - Mobile only (after text) */}
-          <motion.div
-            variants={fadeInUp}
-            initial={false}
-            animate="visible"
-            className="flex w-full flex-col gap-4 px-4 sm:hidden"
-          >
-            <Button
-              size="lg"
-              className="h-14 w-full bg-blue-600 px-8 text-base font-semibold text-white shadow-lg shadow-blue-600/25 hover:bg-blue-700"
-              asChild
-            >
-              <Link href="/register">
-                Démarrer gratuitement
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Link>
-            </Button>
-
-            {/* Réassurance factuelle (mobile) */}
-            <p className="text-center text-sm text-muted-foreground">
-              Sans carte bancaire · Résiliable à tout moment · Données hébergées
-              en France
+            <p className="mt-8 max-w-xl font-geist text-lg leading-relaxed text-public-content-on-dark/80 sm:text-xl">
+              Plannings, congés, tâches, incidents et messagerie réunis dans un
+              outil lisible, pensé pour les équipes de terrain.
             </p>
-          </motion.div>
+
+            <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:items-center">
+              <Link
+                href="/register"
+                className="inline-flex min-h-[3.5rem] items-center justify-center gap-3 bg-public-highlight-surface px-8 font-geist text-base font-semibold text-public-content-on-vivid transition-colors hover:bg-public-highlight-surface/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-public-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-public-surface-dark"
+              >
+                Démarrer gratuitement
+                <ArrowUpRight className="h-5 w-5" aria-hidden="true" />
+              </Link>
+
+              <Link
+                href="#features"
+                className="inline-flex min-h-[3.5rem] items-center justify-center px-2 font-geist text-base font-semibold text-public-content-on-dark underline underline-offset-8 transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-public-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-public-surface-dark"
+              >
+                Voir le produit
+              </Link>
+            </div>
+
+            <ul className="mt-10 flex flex-col gap-3 font-geist text-sm uppercase tracking-[0.12em] text-public-content-on-dark/70 sm:flex-row sm:flex-wrap sm:gap-x-8">
+              {REASSURANCE.map((item) => (
+                <li key={item} className="flex items-center gap-2">
+                  <span
+                    aria-hidden="true"
+                    className="h-1.5 w-1.5 shrink-0 bg-public-accent-on-dark"
+                  />
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Colonne illustration.
+              `aspect-ratio` reserve la hauteur des le premier rendu : le
+              mockup ne provoque aucun decalage de mise en page. */}
+          <div className="relative lg:pl-4">
+            <p className="mb-4 hidden text-right font-geist text-xs uppercase tracking-[0.2em] text-public-content-on-dark/50 lg:block">
+              Une semaine en un coup d&rsquo;œil
+            </p>
+            <div className="aspect-[4/3] sm:aspect-[16/11]">
+              <PlanningMockup />
+            </div>
+          </div>
         </div>
-
-      </motion.div>
-
-      {/* Scroll Indicator */}
-      <ScrollIndicator />
+      </div>
     </section>
   )
 }

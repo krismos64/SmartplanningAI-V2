@@ -205,10 +205,19 @@
     --public-surface-subtle: 40 30% 96%;
     --public-surface-inverted: 216 50% 11.8%; /* bleu nuit #0f1b2d */
 
+    /* Fond bleu nuit constant, identique dans les deux modes. A la
+       difference de surface-inverted, qui suit le theme, il sert les
+       sections qui doivent rester sombres en clair comme en sombre. */
+    --public-surface-dark: 216 50% 11.8%;
+
     /* Textes */
     --public-content: 216 50% 11.8%;
     --public-content-muted: 216 50% 22%;
     --public-content-inverted: 40 28.6% 91.8%;
+    --public-content-on-dark: 40 28.6% 91.8%;
+    /* Texte des aplats vifs (corail, lime), constant : ces fonds ne
+       changent pas avec le theme, leur texte non plus. */
+    --public-content-on-vivid: 216 50% 11.8%;
 
     /* Corail. `accent` est assombri (coral.700) : le corail 500 ne donne
        que 2.71:1 sur le creme, sous le seuil AA. */
@@ -374,9 +383,14 @@
     --public-surface-subtle: 216 50% 11.8%;
     --public-surface-inverted: 40 28.6% 91.8%;
 
+    /* Constant : inchange par rapport au mode clair */
+    --public-surface-dark: 216 50% 11.8%;
+
     --public-content: 40 28.6% 91.8%;
     --public-content-muted: 38 18% 76%;
     --public-content-inverted: 216 50% 11.8%;
+    --public-content-on-dark: 40 28.6% 91.8%;
+    --public-content-on-vivid: 216 50% 11.8%;
 
     /* Le corail pleine intensite passe AA sur fond sombre (5.41:1), la
        variante assombrie du mode clair n'a plus lieu d'etre */
