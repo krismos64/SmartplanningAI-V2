@@ -117,3 +117,8 @@ l'avoir exécuté. Si un test échoue, le dire avec sa sortie.
 
 Pour une zone critique, isolation, autorisation ou paiement, s'ajoute un test
 négatif : prouver le refus, pas seulement le chemin nominal.
+
+Sur une page publique, l'accessibilité se vérifie avec axe-core, jamais avec un
+calcul de contraste écrit pour l'occasion : celui-ci ignore les opacités et ne
+voit aucun défaut de structure. `npx playwright test e2e/specs/landing/`, ces
+specs ne sont pas dans la whitelist CI.

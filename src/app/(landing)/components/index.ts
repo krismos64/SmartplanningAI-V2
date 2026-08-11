@@ -2,7 +2,6 @@
  * Landing page components barrel file
  */
 
-export { FAQItem } from './FAQItem'
 export { AnimatedBackground } from './AnimatedBackground'
 
 // Shared styles constants

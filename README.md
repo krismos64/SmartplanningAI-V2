@@ -136,7 +136,8 @@ src/
 │   ├── (guides)/     # Hub et guides pratiques /guides/[slug] (registre data-driven)
 │   ├── app/          # Routes protegees par role
 │   └── api/          # API Routes (avatar, webhooks, health, SSE, messages...)
-├── components/       # 205 composants React
+├── components/       # 212 composants React
+│   ├── public/       # Primitives des pages publiques (identite editoriale)
 │   ├── messaging/    # Messagerie (8 composants)
 │   ├── import/       # Import CSV (4 composants)
 │   └── ui/           # Shadcn/ui (41 composants)

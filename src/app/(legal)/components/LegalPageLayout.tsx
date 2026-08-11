@@ -17,7 +17,6 @@
 import { useState, useEffect } from 'react'
 import { ChevronUp, FileText } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { AnimatedBackground } from '@/app/(landing)/components'
 import { LandingHeader } from '@/components/layout/LandingHeader'
 import { LandingFooter } from '@/components/layout/LandingFooter'
 import { motion, fadeInUp, staggerContainer } from '@/lib/animations'
@@ -100,11 +99,6 @@ export function LegalPageLayout({
 
   return (
     <div className="public-scope relative min-h-screen overflow-x-hidden bg-public-surface font-geist text-public-content">
-      {/* Background animé - Decorative, hidden from screen readers */}
-      <div aria-hidden="true">
-        <AnimatedBackground />
-      </div>
-
       {/* Header with scroll-aware background */}
       <LandingHeader />
 

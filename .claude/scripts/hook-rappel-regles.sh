@@ -48,8 +48,11 @@ esac
 # voisin sitemap.ts declenchait deja un rappel. Trou constate le 11 aout 2026
 # pendant SP-563, ou le diagnostic d'indexation a porte sur ce fichier sans
 # qu'aucun rappel ne se declenche.
+# (about), (legal) et components/public ajoutes le 11 aout 2026 apres la
+# refonte visuelle : les primitives publiques et les pages tarifs, a-propos
+# et legales n'y declenchaient aucun rappel.
 case "$relatif" in
-    *"(sectors)"*|*"(guides)"*|*sitemap.ts|*robots.ts|public/llms*|*landing*|*Landing*|*Footer*|*footer*)
+    *"(sectors)"*|*"(guides)"*|*"(about)"*|*"(legal)"*|*components/public/*|*sitemap.ts|*robots.ts|public/llms*|*landing*|*Landing*|*Footer*|*footer*)
         regles+=("seo-content.md : registre data-driven, aucun concurrent nomme, llms.txt et sitemap a mettre a jour") ;;
 esac
 

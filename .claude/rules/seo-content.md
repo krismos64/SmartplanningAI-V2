@@ -57,16 +57,45 @@ Pour être cité par un assistant, une page doit répondre avant de convaincre.
 - **FAQ** avec schéma `FAQPage`
 - **Dates de fraîcheur réelles**, et `dateModified` en JSON-LD
 
-## FAQItem, la réponse reste dans le DOM
+## FaqAccordion, la réponse reste dans le DOM
 
-L'accordéon anime une hauteur et bascule `aria-hidden`. La réponse est
+`src/components/public/FaqAccordion.tsx` est l'accordéon unique des pages
+publiques depuis la refonte d'août 2026. Il anime une hauteur par
+`grid-template-rows` en CSS et bascule `aria-hidden`. La réponse est
 **toujours** présente dans le DOM.
 
 Un montage conditionnel la rendrait invisible aux crawlers et aux assistants,
 annulant tout l'intérêt du schéma `FAQPage`.
 
+Le déclencheur est un `<button>` avec `aria-expanded` et `aria-controls`, pas
+une `<div>` cliquable : sans cela l'accordéon est inutilisable au clavier.
+
 Même principe pour les panneaux de la navbar : `inert` à l'état fermé, liens
-toujours présents.
+toujours présents. `inert` plutôt qu'`aria-hidden` seul dès qu'un élément
+focusable est masqué, sinon il reste atteignable à la tabulation.
+
+## Identité visuelle des pages publiques
+
+Refonte d'août 2026, SP-565 à SP-573. Trois règles à tenir sur toute page
+publique, nouvelle ou modifiée.
+
+**Pas de mode sombre.** Les pages publiques n'ont qu'un mode clair. Ne jamais y
+écrire de variante `dark:`. L'application privée conserve le sien, avec ses
+propres tokens.
+
+**La classe `.public-scope` est obligatoire** sur le conteneur racine, ou via
+`PublicPageShell` qui la porte déjà. Le `ThemeProvider` reste monté au layout
+racine : sans cette classe, la page suit le thème de l'application et vire au
+sombre chez un utilisateur qui l'a choisi.
+
+**Tokens `public-*` uniquement**, définis dans `src/styles/tokens/brand-public.ts`.
+Aucune opacité sur les aplats vifs : sur le bleu franc, le blanc plein ne donne
+déjà que 4,88:1, sur le corail la limite tombe dès 80 %.
+
+Les primitives vivent dans `src/components/public/` : `PublicPageShell`,
+`DisplayTitle`, `SectionLabel`, `BentoCard`, `FaqAccordion`. Les importer par
+leur chemin exact, pas par le barrel `@/components/public`, qui réexporte
+`ContactForm` et tire react-hook-form dans le bundle initial.
 
 ## Navigation
 

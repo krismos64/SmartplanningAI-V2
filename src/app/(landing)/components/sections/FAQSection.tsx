@@ -1,30 +1,26 @@
-'use client'
-
 /**
  * FAQSection Component
  *
  * Questions frequentes, direction editoriale SP-568.
  *
- * Reste un Client Component : l'accordeon porte un etat. La reponse de
- * chaque question demeure dans le DOM, seule sa hauteur est animee, ce qui
- * preserve le schema FAQPage pour les moteurs et les assistants.
+ * Server Component depuis SP-572 : l'etat de l'accordeon vit dans
+ * FaqAccordion, seul ilot client. La reponse de chaque question demeure
+ * dans le DOM, seule sa hauteur est animee, ce qui preserve le schema
+ * FAQPage pour les moteurs et les assistants.
  *
  * Les donnees viennent du registre `faqs`, leur contenu n'est pas modifie.
  *
  * @see SP-568 - Landing, sections basses
  */
 
-import { useState } from 'react'
 import Link from 'next/link'
 import { ArrowUpRight } from 'lucide-react'
 import { DisplayTitle } from '@/components/public/DisplayTitle'
 import { SectionLabel } from '@/components/public/SectionLabel'
+import { FaqAccordion } from '@/components/public/FaqAccordion'
 import { faqs } from '../../data'
-import { FAQItem } from '../index'
 
 export function FAQSection() {
-  const [openFAQ, setOpenFAQ] = useState<number | null>(null)
-
   return (
     <section
       id="faq"
@@ -61,18 +57,7 @@ export function FAQSection() {
           </div>
 
           {/* Colonne questions */}
-          <div className="border-t border-public-border">
-            {faqs.map((faq, index) => (
-              <FAQItem
-                key={faq.question}
-                id={String(index)}
-                question={faq.question}
-                answer={faq.answer}
-                isOpen={openFAQ === index}
-                onClick={() => setOpenFAQ(openFAQ === index ? null : index)}
-              />
-            ))}
-          </div>
+          <FaqAccordion items={[...faqs]} idPrefix="landing-faq" />
         </div>
       </div>
     </section>
