@@ -160,6 +160,41 @@ Deux sujets en attente depuis le 7 août : le seuil de décrochage de sept jours
 étalonner après les essais qui expirent les 26 et 27 août, et la whitelist E2E
 qui ne couvre ni le billing ni le dashboard admin.
 
-Point à vérifier au passage, repéré dans les données Umami :
-`smartplanning-nouvelle-identite.krismos.chatgpt.site` a envoyé 4 vues. Si ce
-domaine expose une copie du site, c'est du contenu dupliqué.
+## Le GEO, vérifié et laissé en l'état
+
+Question posée en fin de session : faut-il changer quelque chose côté GEO.
+Vérification faite en production, l'infrastructure tient. `llms.txt` et
+`llms-full.txt` répondent 200 et portent le nouveau hub, les sept crawlers LLM
+sont autorisés dans `robots.txt`, chaque page publique porte 5 à 6 entrées de
+FAQ et sa réponse directe citable.
+
+Le signal mesurable est mince : **2 visites depuis `chatgpt.com`**, la dernière
+le 6 août. Et il le restera. Quand un assistant cite une page dans sa réponse,
+l'utilisateur lit la réponse sans cliquer : la citation ne laisse aucune trace.
+Ces 2 visites comptent les clics, pas les citations. Le GEO ne se prouve donc ni
+dans un sens ni dans l'autre avec les outils en place.
+
+Décision : ne rien changer. Le hub `/solutions` livré aujourd'hui est déjà un
+gain GEO, son `CollectionPage` plus `ItemList` donnant aux assistants une vue
+structurée de la couverture sectorielle. Et la contrainte qui bride le SEO,
+l'autorité de domaine, bride aussi le GEO, les assistants s'appuyant sur des
+signaux de confiance voisins.
+
+Une piste notée sans être retenue : `llms-full.txt` liste des URL alors que le
+format complet embarque le contenu lui-même. Une heure de travail, sans risque
+et sans moyen de mesurer l'effet. À faire après le déploiement, pas avant.
+
+Le seul test direct du GEO reste manuel : poser à ChatGPT et Claude la question
+du client type, « quel logiciel de planning pour un restaurant en France », et
+regarder qui est cité.
+
+## Une fausse alerte levée
+
+Une remarque de la première version de cette entrée annonçait un risque de
+contenu dupliqué :
+`smartplanning-nouvelle-identite.krismos.chatgpt.site` avait envoyé des vues, la
+dernière le 11 août.
+
+Vérification faite, ce domaine répond **401 Sign in required**. C'est un
+prototype protégé, pas une copie publique du site. Aucun risque SEO, le point
+est clos.
