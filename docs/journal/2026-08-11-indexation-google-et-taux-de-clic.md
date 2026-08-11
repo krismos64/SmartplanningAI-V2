@@ -146,11 +146,48 @@ allonge chaque exécution. Arbitrage non pris seul, cohérent avec la session du
 La branche est poussée et la PR #70 ouverte, mais **le merge et le déploiement
 ne sont pas faits** : la session s'est arrêtée avec la CI en cours.
 
+## Le déploiement, et trois cycles de CI gâchés
+
+PR #70 mergée en squash, commit `10e7723`, 18 fichiers, 669 insertions.
+
+Vérification par le SHA du conteneur plutôt que par le statut du workflow :
+`docker inspect` renvoie `10e7723d5ef8ab949a1c5cc65d0dff7852dd569d`, conteneur
+`healthy`. `/solutions` répond 200 après avoir vécu en 404, son JSON-LD porte
+bien `CollectionPage` et `ItemList`, et les trois nouveaux titres sont en ligne.
+L'étape GHCR, qui avait échoué de façon transitoire le 7 août, est passée du
+premier coup.
+
+Le point de méthode de la session : **trois cycles de CI ont été annulés avant
+d'aboutir**. GitHub tue le run en cours dès qu'un commit arrive sur la branche,
+et trois commits de documentation ont été poussés coup sur coup pendant que la
+CI tournait.
+
+```
+0bb239c4  in_progress        <- le seul allé au bout
+57ea08f0  completed cancelled
+60aeb8cb  completed cancelled
+8bc1dc4b  completed cancelled
+```
+
+Le piège est que `gh pr checks` affiche des checks `pass` pendant que le run se
+fait annuler. Ces résultats sont réels quand ils tombent, mais leur run n'ira
+jamais au bout : ils ne valident rien. Trois cycles de minutes GitHub Actions
+consommés pour rien, à rebours de la règle d'économie du projet.
+
+À retenir : grouper les commits de documentation, et vérifier l'état par
+`gh run list` sur le SHA de tête, pas par les checks de la PR.
+
 ## Prochaine étape
 
-Attendre les checks, merger, déployer, vérifier par le SHA du conteneur plutôt
-que par le statut du workflow. L'effet sur le CTR se mesure ensuite dans 2 à 3
-semaines en Search Console, sur les mêmes requêtes.
+**Action manuelle à faire dans la Search Console** : resoumettre le sitemap et
+demander l'indexation de `/solutions`, URL que Google n'a jamais vue. Ne pas
+demander la réindexation des cinq pages aux titres modifiés, elles sont déjà
+indexées et le quota quotidien est limité.
+
+Mesure du CTR fin août, sur 28 jours. Les données ont 2 à 3 jours de latence et
+un changement de titre met une à deux semaines à se voir. Premier chiffre,
+`/solutions/planning-restaurant`, aujourd'hui 0 % sur 622 impressions. Si le
+CTR reste nul avec un titre portant le prix, le problème n'est pas le titre.
 
 Le plafond reste la position moyenne de 21,4. Un bon titre à cette position
 plafonne autour de 1 à 2 pour cent. Le levier suivant est l'autorité de domaine,

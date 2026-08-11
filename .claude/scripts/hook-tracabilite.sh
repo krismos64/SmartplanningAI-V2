@@ -2,11 +2,11 @@
 #
 # Hook Stop : verifie les canaux de tracabilite en fin de session.
 #
-# Pourquoi il existe. Le skill `sprint` enonce la cloture sur cinq canaux :
-# depot, journal, Jira, Confluence, memoire. Une consigne ecrite mais non
-# verifiee s'erode en silence, chaque oubli ressemblant a un cas isole. Le
-# journal precedent en est la preuve : `development-log.md` a cesse d'etre tenu
-# au 12 mai 2026 et personne ne l'a vu pendant trois mois.
+# Pourquoi il existe. Le skill `sprint` enonce la cloture sur quatre canaux :
+# depot, journal, Jira, memoire. Une consigne ecrite mais non verifiee s'erode
+# en silence, chaque oubli ressemblant a un cas isole. Le journal precedent en
+# est la preuve : `development-log.md` a cesse d'etre tenu au 12 mai 2026 et
+# personne ne l'a vu pendant trois mois.
 #
 # Ce hook rend deterministe ce qui n'etait qu'une intention. Il couvre deux
 # canaux, les seuls verifiables sans appel reseau :

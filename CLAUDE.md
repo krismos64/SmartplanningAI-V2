@@ -55,7 +55,7 @@ récente en début de session** donne l'état du projet plus vite que Jira.
 6. **SEO** : Metadata API, JSON-LD Schema.org
 7. **Sécurité** : OWASP, CSRF, sanitization, `.env` jamais commité ni lu
 8. **Context7** : consulter pour toute API Next.js 15, React 19, Prisma ou Stripe, ces versions dépassant ma connaissance. Signaler « Via Context7 » quand c'est fait
-9. **Jira/Confluence** : chaque feature = ticket SP-XXX + doc Confluence liée
+9. **Jira** : chaque feature = ticket SP-XXX
 10. **Rédaction** : jamais de tiret cadratin (—), accents français complets partout
 
 ## Patterns

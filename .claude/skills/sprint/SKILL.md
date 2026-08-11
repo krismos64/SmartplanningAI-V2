@@ -103,8 +103,7 @@ mis à jour :
    porte ce que git ne dit pas : pourquoi, ce qui a été mesuré, ce qui reste
    ouvert
 3. **Jira** : état réel de chaque critère, commit de référence, ce qui reste
-4. **Confluence** : doc liée si la feature en a une
-5. **Mémoire** : toute découverte non dérivable du code ni de l'historique git
+4. **Mémoire** : toute découverte non dérivable du code ni de l'historique git
 
 Un travail non tracé sera refait ou contredit.
 

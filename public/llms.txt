@@ -25,4 +25,4 @@ SmartPlanning simplifie la gestion des plannings d'équipe, des congés et des r
 
 ## Optional
 
-- [llms-full.txt](https://smartplanning.fr/llms-full.txt): Version détaillée de ce fichier avec contenu complet
+- [llms-full.txt](https://smartplanning.fr/llms-full.txt): Contenu intégral des pages secteur et des guides, texte complet et références légales datées
