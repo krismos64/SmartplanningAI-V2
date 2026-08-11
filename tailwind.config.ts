@@ -19,6 +19,7 @@ import {
   violet,
 } from './src/styles/tokens/colors'
 import { fontFamily, fontSize } from './src/styles/tokens/typography'
+import { publicFontFamily } from './src/styles/tokens/brand-public'
 import {
   spacing,
   breakpoints,
@@ -72,6 +73,12 @@ const config: Config = {
         mono: [...fontFamily.mono],
         // Police serif
         serif: [...fontFamily.serif],
+
+        // Pages publiques uniquement (SP-565).
+        // `sans` et `display` restent inchangees : elles sont partagees
+        // avec l'application privee, ou 65 fichiers en dependent.
+        geist: [...publicFontFamily.geist],
+        editorial: [...publicFontFamily.editorial],
       },
 
       fontSize: {
@@ -180,6 +187,27 @@ const config: Config = {
         amber,
         rose,
         violet,
+
+        // Pages publiques uniquement (SP-565).
+        // Prefixe `public-` pour qu'un usage hors pages publiques soit
+        // visible en relecture. Les variables basculent en mode sombre.
+        public: {
+          surface: 'hsl(var(--public-surface))',
+          'surface-subtle': 'hsl(var(--public-surface-subtle))',
+          'surface-inverted': 'hsl(var(--public-surface-inverted))',
+          content: 'hsl(var(--public-content))',
+          'content-muted': 'hsl(var(--public-content-muted))',
+          'content-inverted': 'hsl(var(--public-content-inverted))',
+          accent: 'hsl(var(--public-accent))',
+          'accent-on-dark': 'hsl(var(--public-accent-on-dark))',
+          'accent-surface': 'hsl(var(--public-accent-surface))',
+          highlight: 'hsl(var(--public-highlight))',
+          'highlight-surface': 'hsl(var(--public-highlight-surface))',
+          'brand-surface': 'hsl(var(--public-brand-surface))',
+          'brand-on-light': 'hsl(var(--public-brand-on-light))',
+          border: 'hsl(var(--public-border))',
+          'border-inverted': 'hsl(var(--public-border-inverted))',
+        },
 
         // Couleurs sémantiques via CSS variables
         border: 'hsl(var(--border))',

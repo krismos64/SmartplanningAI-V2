@@ -191,6 +191,43 @@
 
     --glow-cyan-subtle: 0 0 20px rgba(6, 182, 212, 0.3);
     --glow-cyan-medium: 0 0 20px rgba(6, 182, 212, 0.3), 0 0 40px rgba(6, 182, 212, 0.15);
+
+    /* =====================================================================
+       PAGES PUBLIQUES (SP-565)
+
+       Identite editoriale des pages publiques uniquement. Ces variables
+       n'affectent pas l'application privee, qui consomme les tokens
+       ci-dessus. Valeurs de reference : brand-public.ts.
+       ===================================================================== */
+
+    /* Fonds */
+    --public-surface: 40 28.6% 91.8%; /* creme #f0ece4 */
+    --public-surface-subtle: 40 30% 96%;
+    --public-surface-inverted: 216 50% 11.8%; /* bleu nuit #0f1b2d */
+
+    /* Textes */
+    --public-content: 216 50% 11.8%;
+    --public-content-muted: 216 50% 22%;
+    --public-content-inverted: 40 28.6% 91.8%;
+
+    /* Corail. `accent` est assombri (coral.700) : le corail 500 ne donne
+       que 2.71:1 sur le creme, sous le seuil AA. */
+    --public-accent: 9 100% 40%;
+    --public-accent-on-dark: 9 100% 60.6%;
+    --public-accent-surface: 9 100% 60.6%;
+
+    /* Lime : aplat de fond ou label sur fond sombre, jamais du texte sur
+       fond clair */
+    --public-highlight: 75.8 89.9% 65.1%;
+    --public-highlight-surface: 75.8 89.9% 65.1%;
+
+    /* Bleu franc. `brand-on-light` est assombri pour tenir AA sur creme. */
+    --public-brand-surface: 222.9 100% 57.3%;
+    --public-brand-on-light: 222.9 100% 54%;
+
+    /* Filets */
+    --public-border: 38 18% 76%;
+    --public-border-inverted: 216 50% 22%;
   }
 
   /* =======================================================================
@@ -324,6 +361,37 @@
 
     --glow-cyan-subtle: 0 0 20px rgba(6, 182, 212, 0.35);
     --glow-cyan-medium: 0 0 20px rgba(6, 182, 212, 0.35), 0 0 40px rgba(6, 182, 212, 0.2);
+
+    /* =====================================================================
+       PAGES PUBLIQUES (SP-565)
+
+       Declinaison sombre : le creme cede la place au bleu nuit, et le bleu
+       nuit descend vers un noir plus profond. Corail et lime restent les
+       accents, leur lisibilite sur fond sombre etant deja acquise.
+       ===================================================================== */
+
+    --public-surface: 216 52% 7%;
+    --public-surface-subtle: 216 50% 11.8%;
+    --public-surface-inverted: 40 28.6% 91.8%;
+
+    --public-content: 40 28.6% 91.8%;
+    --public-content-muted: 38 18% 76%;
+    --public-content-inverted: 216 50% 11.8%;
+
+    /* Le corail pleine intensite passe AA sur fond sombre (5.41:1), la
+       variante assombrie du mode clair n'a plus lieu d'etre */
+    --public-accent: 9 100% 60.6%;
+    --public-accent-on-dark: 9 100% 60.6%;
+    --public-accent-surface: 9 100% 60.6%;
+
+    --public-highlight: 75.8 89.9% 65.1%;
+    --public-highlight-surface: 75.8 89.9% 65.1%;
+
+    --public-brand-surface: 222.9 100% 57.3%;
+    --public-brand-on-light: 222.9 100% 57.3%;
+
+    --public-border: 216 50% 22%;
+    --public-border-inverted: 38 18% 76%;
   }
 }
 

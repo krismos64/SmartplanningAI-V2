@@ -373,5 +373,24 @@ export {
   outline,
 }
 
+// =============================================================================
+// IDENTITE PUBLIQUE (SP-565)
+// =============================================================================
+
+/**
+ * Tokens des pages publiques. Volontairement hors de l'objet `tokens` :
+ * ils ne s'appliquent qu'aux pages publiques, alors que `tokens` sert
+ * l'application entiere. Les melanger inviterait a consommer la palette
+ * editoriale dans le back-office.
+ */
+export {
+  brandPublic,
+  publicPalette,
+  publicSemanticLight,
+  publicSemanticDark,
+  publicFontFamily,
+  publicContrastReference,
+} from './brand-public'
+
 // Default export
 export default tokens
