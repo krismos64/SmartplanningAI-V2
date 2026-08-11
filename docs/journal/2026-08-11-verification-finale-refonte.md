@@ -76,7 +76,34 @@ accessibilité sur deux pages, mais le rapport détaillé donne 100. L'écart ve
 d'un bouton `recruiter-chat__launcher` injecté par une extension du navigateur,
 absent du projet et du HTML servi.
 
+## Balayage de clôture
+
+Vérification demandée après coup sur la documentation, la configuration et le
+code mort. Quatre trous trouvés.
+
+**`FAQItem` faisait doublon avec `FaqAccordion`.** `FAQSection` n'avait pas été
+migrée en SP-568. Corrigé, et la section redevient un Server Component au
+passage, son état vivant désormais dans l'îlot client.
+
+**`AnimatedBackground` posait ses halos bleus sur les pages légales**, qui ont
+un aplat crème depuis SP-571. Retiré de là, il ne sert plus que les pages
+d'authentification, hors périmètre de la refonte.
+
+**Deux images orphelines** : `avant-apres-sp.webp` et
+`logo-smartplanning.webp`, sans référence depuis SP-567. `public/images` passe
+de 1,1 Mo à 836 Ko, soit 12 Mo au départ du chantier.
+
+**Le hook de rappel des règles ne couvrait ni `(about)`, ni `(legal)`, ni
+`components/public`.** Trois familles de fichiers publics ne déclenchaient donc
+aucun rappel de `seo-content.md`. Corrigé et vérifié sur les trois chemins.
+
+Documentation mise à jour : `seo-content.md` gagne une section sur l'identité
+visuelle publique (pas de mode sombre, `public-scope` obligatoire, aucune
+opacité sur les aplats vifs), `CLAUDE.md` précise d'utiliser axe-core plutôt
+qu'un calcul de contraste maison, le README passe à 212 composants et expose
+`components/public`.
+
 ## Prochaine étape
 
-Le chantier est terminé côté code. Reste le push et la PR groupée, dix-neuf
-commits sur neuf branches.
+Le chantier est terminé côté code. Reste le push et la PR groupée, vingt
+commits.
