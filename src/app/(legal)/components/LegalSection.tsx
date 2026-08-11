@@ -45,7 +45,7 @@ export function LegalSection({
         )}
       >
         {number && (
-          <span className="mr-3 text-cyan-600 dark:text-cyan-400">
+          <span className="mr-3 text-cyan-600">
             {number}
           </span>
         )}
@@ -124,20 +124,20 @@ export function LegalHighlight({
       className={cn(
         'rounded-lg border p-4',
         type === 'info' &&
-          'border-blue-500/30 bg-blue-500/10 dark:border-blue-500/20',
+          'border-blue-500/30 bg-blue-500/10',
         type === 'warning' &&
-          'border-amber-500/30 bg-amber-500/10 dark:border-amber-500/20',
+          'border-amber-500/30 bg-amber-500/10',
         type === 'important' &&
-          'border-cyan-500/30 bg-cyan-500/10 dark:border-cyan-500/20',
+          'border-cyan-500/30 bg-cyan-500/10',
         className
       )}
     >
       <div
         className={cn(
           'text-sm',
-          type === 'info' && 'text-blue-700 dark:text-blue-300',
-          type === 'warning' && 'text-amber-700 dark:text-amber-300',
-          type === 'important' && 'text-cyan-700 dark:text-cyan-300'
+          type === 'info' && 'text-blue-700',
+          type === 'warning' && 'text-amber-700',
+          type === 'important' && 'text-cyan-700'
         )}
       >
         {children}
@@ -182,7 +182,7 @@ export function LegalContact({
             <span className="text-muted-foreground/70">Email : </span>
             <a
               href={`mailto:${email}`}
-              className="text-cyan-600 hover:underline dark:text-cyan-400"
+              className="text-cyan-600 hover:underline"
             >
               {email}
             </a>
@@ -199,7 +199,7 @@ export function LegalContact({
             <span className="text-muted-foreground/70">Téléphone : </span>
             <a
               href={`tel:${phone}`}
-              className="text-cyan-600 hover:underline dark:text-cyan-400"
+              className="text-cyan-600 hover:underline"
             >
               {phone}
             </a>
@@ -257,7 +257,7 @@ export function LegalTable({
                   key={col.key}
                   className={cn(
                     'px-4 py-3',
-                    col.mono && 'font-mono text-cyan-600 dark:text-cyan-400'
+                    col.mono && 'font-mono text-cyan-600'
                   )}
                 >
                   {row[col.key]}
@@ -324,7 +324,7 @@ export function LegalLink({
     <a
       href={href}
       className={cn(
-        'text-cyan-600 hover:underline dark:text-cyan-400',
+        'text-cyan-600 hover:underline',
         className
       )}
       {...externalProps}

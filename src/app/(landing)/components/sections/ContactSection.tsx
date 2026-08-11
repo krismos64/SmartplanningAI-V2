@@ -96,12 +96,12 @@ export function ContactSection() {
             {/* Response time */}
             <motion.div
               variants={fadeInUp}
-              className="flex items-center gap-3 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 dark:border-emerald-500/20"
+              className="flex items-center gap-3 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3"
             >
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-500/20">
-                <Clock className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                <Clock className="h-4 w-4 text-emerald-600" />
               </div>
-              <p className="text-sm text-emerald-700 dark:text-emerald-300">
+              <p className="text-sm text-emerald-700">
                 <span className="font-medium">Réponse rapide</span> : nous
                 répondons généralement sous 24h ouvrées
               </p>

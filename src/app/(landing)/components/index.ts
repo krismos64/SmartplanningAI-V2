@@ -11,5 +11,6 @@ export { ScrollIndicator } from './ScrollIndicator'
 export {
   PRIMARY_BUTTON_CLASSES,
   HIGHLIGHT_TEXT_CLASSES,
+  HIGHLIGHT_TEXT_CLASSES_PUBLIC,
   BADGE_BASE_CLASSES,
 } from './styles'

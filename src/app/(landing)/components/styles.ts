@@ -16,8 +16,20 @@ export const PRIMARY_BUTTON_CLASSES =
 /**
  * Highlight text — blue-600 in light / blue-400 in dark for WCAG AA contrast.
  * Used in titles to emphasize a keyword.
+ *
+ * Reserve aux pages d'authentification, qui suivent encore le theme.
+ * Les pages publiques utilisent HIGHLIGHT_TEXT_CLASSES_PUBLIC (SP-573).
  */
 export const HIGHLIGHT_TEXT_CLASSES = 'text-blue-600 dark:text-blue-400'
+
+/**
+ * Variante publique du texte mis en avant.
+ *
+ * Les pages publiques n'ont pas de mode sombre (SP-573) : la variante
+ * `dark:` y ferait varier la couleur selon un theme que le visiteur ne
+ * peut plus choisir sur ces pages.
+ */
+export const HIGHLIGHT_TEXT_CLASSES_PUBLIC = 'text-blue-600'
 
 /**
  * Badge styles for section headers

@@ -50,7 +50,7 @@ export function FAQSection() {
               className="mb-6 text-3xl font-bold sm:text-4xl lg:text-5xl"
             >
               Questions{' '}
-              <span className="text-blue-600 dark:text-blue-400">fréquentes</span>
+              <span className="text-blue-600">fréquentes</span>
             </motion.h2>
             <motion.p
               variants={fadeInUp}

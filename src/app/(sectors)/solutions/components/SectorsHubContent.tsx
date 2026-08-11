@@ -18,7 +18,7 @@ import { Button } from '@/components/ui/button'
 import {
   AnimatedBackground,
   PRIMARY_BUTTON_CLASSES,
-  HIGHLIGHT_TEXT_CLASSES,
+  HIGHLIGHT_TEXT_CLASSES_PUBLIC,
 } from '@/app/(landing)/components'
 import { LandingHeader } from '@/components/layout/LandingHeader'
 import { LandingFooter } from '@/components/layout/LandingFooter'
@@ -57,7 +57,7 @@ export function SectorsHubContent({
   }, [])
 
   return (
-    <div className="relative min-h-screen bg-background text-foreground">
+    <div className="public-scope relative min-h-screen bg-background text-foreground">
       {/* Background Effects - Decorative, hidden from screen readers */}
       <div aria-hidden="true">
         <AnimatedBackground />
@@ -98,14 +98,14 @@ export function SectorsHubContent({
           {/* En-tête */}
           <header className="mx-auto mb-16 max-w-3xl text-center">
             <p className="mb-6" aria-hidden="true">
-              <span className="inline-flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/10 px-4 py-2 text-sm text-blue-700 dark:border-blue-500/20 dark:text-blue-400">
+              <span className="inline-flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/10 px-4 py-2 text-sm text-blue-700">
                 <Store className="h-4 w-4" aria-hidden="true" />
                 Solutions par secteur
               </span>
             </p>
             <h1 className="mb-6 text-4xl font-bold leading-tight sm:text-5xl">
               Un logiciel de planning adapté à{' '}
-              <span className={HIGHLIGHT_TEXT_CLASSES}>votre métier</span>
+              <span className={HIGHLIGHT_TEXT_CLASSES_PUBLIC}>votre métier</span>
             </h1>
             <p className="text-lg leading-relaxed text-muted-foreground">
               Les contraintes de planning d&apos;un restaurant ne sont pas
@@ -127,7 +127,7 @@ export function SectorsHubContent({
                   href={`/solutions/${sector.slug}`}
                   className="group flex h-full flex-col rounded-2xl border border-border/50 bg-card/50 p-6 backdrop-blur-sm transition-all duration-300 hover:border-border hover:bg-card"
                 >
-                  <h2 className="mb-3 text-xl font-semibold transition-colors group-hover:text-blue-700 dark:group-hover:text-blue-400">
+                  <h2 className="mb-3 text-xl font-semibold transition-colors group-hover:text-blue-700">
                     {sector.name}
                   </h2>
                   <p className="mb-6 flex-1 text-muted-foreground">
@@ -153,7 +153,7 @@ export function SectorsHubContent({
               id="guides-title"
               className="mb-4 text-2xl font-bold sm:text-3xl"
             >
-              Les <span className={HIGHLIGHT_TEXT_CLASSES}>guides</span>{' '}
+              Les <span className={HIGHLIGHT_TEXT_CLASSES_PUBLIC}>guides</span>{' '}
               pratiques
             </h2>
             <p className="mb-8 text-muted-foreground">
@@ -172,7 +172,7 @@ export function SectorsHubContent({
                     className="inline-flex items-center gap-2 rounded-full border border-border/50 bg-card/50 px-5 py-3 text-sm transition-all hover:border-border hover:bg-card"
                   >
                     <BookOpen
-                      className="h-4 w-4 text-blue-700 dark:text-blue-400"
+                      className="h-4 w-4 text-blue-700"
                       aria-hidden="true"
                     />
                     {guide.title}
@@ -190,7 +190,7 @@ export function SectorsHubContent({
           >
             <h2 className="mb-4 text-2xl font-bold sm:text-3xl">
               Prêt à simplifier vos{' '}
-              <span className={HIGHLIGHT_TEXT_CLASSES}>plannings</span> ?
+              <span className={HIGHLIGHT_TEXT_CLASSES_PUBLIC}>plannings</span> ?
             </h2>
             <p className="mx-auto mb-8 max-w-xl text-muted-foreground">
               Essai gratuit 21 jours, sans carte bancaire, sans engagement.

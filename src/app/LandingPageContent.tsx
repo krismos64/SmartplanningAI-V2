@@ -80,7 +80,7 @@ export default function LandingPageContent() {
   }, [])
 
   return (
-    <div className="min-h-screen overflow-x-hidden bg-public-surface text-public-content">
+    <div className="public-scope min-h-screen overflow-x-hidden bg-public-surface text-public-content">
       {/* Header */}
       <Header isScrolled={isScrolled} />
 

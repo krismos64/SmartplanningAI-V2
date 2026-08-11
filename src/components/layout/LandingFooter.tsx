@@ -57,7 +57,7 @@ export function LandingFooter() {
               </div>
               <span className="text-lg font-bold text-foreground">
                 Smart
-                <span className="text-blue-600 dark:text-blue-400">
+                <span className="text-blue-600">
                   Planning
                 </span>
               </span>

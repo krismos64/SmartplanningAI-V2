@@ -31,7 +31,7 @@ export function PricingSection() {
   return (
     <section
       id="pricing"
-      className="bg-gradient-to-b from-transparent via-blue-600/5 dark:via-blue-400/5 to-transparent py-24 lg:py-32"
+      className="bg-gradient-to-b from-transparent via-blue-600/5 to-transparent py-24 lg:py-32"
     >
       <div className="container-custom">
         {/* Section Header */}

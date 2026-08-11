@@ -14,8 +14,7 @@
 import { describe, it, expect } from 'vitest'
 import {
   publicPalette,
-  publicSemanticLight,
-  publicSemanticDark,
+  publicSemantic,
   publicContrastReference,
 } from '../brand-public'
 
@@ -135,108 +134,64 @@ describe('palette publique, contraste WCAG', () => {
 })
 
 describe('tokens semantiques', () => {
-  it('le texte courant est lisible sur son fond, en mode clair', () => {
-    const measured = contrastRatio(
-      publicSemanticLight.surface,
-      publicSemanticLight.content
-    )
-
-    expect(measured).toBeGreaterThanOrEqual(AA_TEXT)
-  })
-
-  it('le texte courant est lisible sur son fond, en mode sombre', () => {
-    const measured = contrastRatio(
-      publicSemanticDark.surface,
-      publicSemanticDark.content
-    )
-
-    expect(measured).toBeGreaterThanOrEqual(AA_TEXT)
-  })
-
-  it('le texte secondaire reste lisible dans les deux modes', () => {
+  it('le texte courant est lisible sur son fond', () => {
     expect(
-      contrastRatio(publicSemanticLight.surface, publicSemanticLight.contentMuted)
-    ).toBeGreaterThanOrEqual(AA_TEXT)
-
-    expect(
-      contrastRatio(publicSemanticDark.surface, publicSemanticDark.contentMuted)
+      contrastRatio(publicSemantic.surface, publicSemantic.content)
     ).toBeGreaterThanOrEqual(AA_TEXT)
   })
 
-  it('le texte inverse est lisible sur le fond inverse, dans les deux modes', () => {
+  it('le texte secondaire reste lisible', () => {
     expect(
-      contrastRatio(
-        publicSemanticLight.surfaceInverted,
-        publicSemanticLight.contentInverted
-      )
-    ).toBeGreaterThanOrEqual(AA_TEXT)
-
-    expect(
-      contrastRatio(
-        publicSemanticDark.surfaceInverted,
-        publicSemanticDark.contentInverted
-      )
+      contrastRatio(publicSemantic.surface, publicSemantic.contentMuted)
     ).toBeGreaterThanOrEqual(AA_TEXT)
   })
 
-  it('l accent est lisible sur le fond courant, dans les deux modes', () => {
+  it('le texte des sections sombres est lisible sur leur fond', () => {
     expect(
-      contrastRatio(publicSemanticLight.surface, publicSemanticLight.accent)
+      contrastRatio(publicSemantic.surfaceDark, publicSemantic.contentOnDark)
     ).toBeGreaterThanOrEqual(AA_TEXT)
+  })
 
+  it('l accent est lisible sur le fond courant', () => {
     expect(
-      contrastRatio(publicSemanticDark.surface, publicSemanticDark.accent)
+      contrastRatio(publicSemantic.surface, publicSemantic.accent)
+    ).toBeGreaterThanOrEqual(AA_TEXT)
+  })
+
+  it('l accent sur fond sombre est lisible', () => {
+    expect(
+      contrastRatio(publicSemantic.surfaceDark, publicSemantic.accentOnDark)
     ).toBeGreaterThanOrEqual(AA_TEXT)
   })
 
   /**
-   * Les aplats vifs et le fond sombre constant ne changent pas avec le
-   * theme, contrairement a `content`. Un texte thematique pose dessus
-   * devient illisible dans l'un des deux modes : le bouton lime du hero
-   * est passe a 1.06:1 en mode sombre avant que ces tokens n'existent
-   * (SP-567). Les paires constantes se verifient donc dans les deux modes.
+   * Les aplats vifs appellent un texte bleu nuit, jamais du blanc, qui
+   * tomberait a 3.19:1 sur le corail. Le token dedie `contentOnVivid`
+   * existe pour cela : sur SP-567, un texte pose avec `content` sur le
+   * bouton lime etait tombe a 1.06:1.
    */
-  it.each([
-    ['clair', publicSemanticLight],
-    ['sombre', publicSemanticDark],
-  ] as const)(
-    'le texte des aplats constants reste lisible en mode %s',
-    (_mode, semantic) => {
-      // Aplats vifs : corail et lime, texte bleu nuit constant
-      expect(
-        contrastRatio(semantic.accentSurface, semantic.contentOnVivid)
-      ).toBeGreaterThanOrEqual(AA_TEXT)
-
-      expect(
-        contrastRatio(semantic.highlightSurface, semantic.contentOnVivid)
-      ).toBeGreaterThanOrEqual(AA_TEXT)
-
-      // Fond bleu nuit constant : texte creme constant
-      expect(
-        contrastRatio(semantic.surfaceDark, semantic.contentOnDark)
-      ).toBeGreaterThanOrEqual(AA_TEXT)
-    }
-  )
-
-  it('les aplats pleine section portent un texte lisible', () => {
-    // Corail et lime portent du texte bleu nuit, jamais du blanc
+  it('le texte des aplats vifs est lisible', () => {
     expect(
-      contrastRatio(
-        publicSemanticLight.accentSurface,
-        publicSemanticLight.content
-      )
+      contrastRatio(publicSemantic.accentSurface, publicSemantic.contentOnVivid)
     ).toBeGreaterThanOrEqual(AA_TEXT)
 
     expect(
       contrastRatio(
-        publicSemanticLight.highlightSurface,
-        publicSemanticLight.content
+        publicSemantic.highlightSurface,
+        publicSemantic.contentOnVivid
       )
     ).toBeGreaterThanOrEqual(AA_TEXT)
+  })
 
-    // Le bleu franc porte du blanc
+  it('l aplat bleu franc porte du texte blanc lisible', () => {
     expect(
-      contrastRatio(publicSemanticLight.brandSurface, '0 0% 100%')
+      contrastRatio(publicSemantic.brandSurface, '0 0% 100%')
+    ).toBeGreaterThanOrEqual(AA_TEXT)
+  })
+
+  it('le lien bleu est lisible sur le fond clair', () => {
+    expect(
+      contrastRatio(publicSemantic.surface, publicSemantic.brandOnLight)
     ).toBeGreaterThanOrEqual(AA_TEXT)
   })
 })

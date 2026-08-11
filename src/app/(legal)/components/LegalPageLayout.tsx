@@ -101,7 +101,7 @@ export function LegalPageLayout({
   }
 
   return (
-    <div className="relative min-h-screen overflow-x-hidden bg-background text-foreground">
+    <div className="public-scope relative min-h-screen overflow-x-hidden bg-background text-foreground">
       {/* Background animé - Decorative, hidden from screen readers */}
       <div aria-hidden="true">
         <AnimatedBackground />
@@ -137,7 +137,7 @@ export function LegalPageLayout({
                             item.level === 2 && 'pl-4',
                             item.level === 3 && 'pl-8',
                             activeSection === item.id
-                              ? 'text-blue-600 dark:text-blue-400'
+                              ? 'text-blue-600'
                               : 'text-muted-foreground hover:text-foreground'
                           )}
                         >
@@ -160,7 +160,7 @@ export function LegalPageLayout({
               {/* En-tête du document */}
               <motion.div variants={fadeInUp} className="mb-12">
                 {/* Badge avec icône */}
-                <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/10 px-4 py-2 text-sm text-blue-600 dark:border-blue-500/20 dark:text-blue-400">
+                <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/10 px-4 py-2 text-sm text-blue-600">
                   {icon}
                   Document légal
                 </div>
@@ -178,11 +178,11 @@ export function LegalPageLayout({
                 {/* Métadonnées */}
                 <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground/70">
                   <span className="flex items-center gap-2">
-                    <span className="h-1.5 w-1.5 rounded-full bg-blue-600 dark:bg-blue-400" />
+                    <span className="h-1.5 w-1.5 rounded-full bg-blue-600" />
                     Version {version}
                   </span>
                   <span className="flex items-center gap-2">
-                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400" />
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                     Mis à jour le {lastUpdated}
                   </span>
                 </div>
@@ -204,7 +204,7 @@ export function LegalPageLayout({
                         <button
                           key={item.id}
                           onClick={() => scrollToSection(item.id)}
-                          className="text-left text-sm text-muted-foreground hover:text-blue-600 dark:hover:text-blue-400"
+                          className="text-left text-sm text-muted-foreground hover:text-blue-600"
                         >
                           {item.title}
                         </button>
@@ -216,7 +216,7 @@ export function LegalPageLayout({
               {/* Contenu du document */}
               <motion.div
                 variants={fadeInUp}
-                className="legal-content prose prose-neutral dark:prose-invert max-w-none"
+                className="legal-content prose prose-neutral max-w-none"
               >
                 {children}
               </motion.div>
@@ -234,7 +234,7 @@ export function LegalPageLayout({
         animate={{ opacity: showScrollTop ? 1 : 0 }}
         onClick={scrollToTop}
         className={cn(
-          'fixed bottom-8 right-8 z-40 flex h-12 w-12 items-center justify-center rounded-full border border-border bg-background/90 text-muted-foreground shadow-lg backdrop-blur-sm transition-all hover:border-blue-600/50 hover:bg-blue-600/20 hover:text-blue-600 dark:hover:text-blue-400',
+          'fixed bottom-8 right-8 z-40 flex h-12 w-12 items-center justify-center rounded-full border border-border bg-background/90 text-muted-foreground shadow-lg backdrop-blur-sm transition-all hover:border-blue-600/50 hover:bg-blue-600/20 hover:text-blue-600',
           !showScrollTop && 'pointer-events-none'
         )}
         aria-label="Retour en haut"

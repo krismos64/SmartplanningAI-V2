@@ -44,7 +44,7 @@ import {
   AnimatedBackground,
   FAQItem,
   PRIMARY_BUTTON_CLASSES,
-  HIGHLIGHT_TEXT_CLASSES,
+  HIGHLIGHT_TEXT_CLASSES_PUBLIC,
 } from '@/app/(landing)/components'
 import { LandingHeader } from '@/components/layout/LandingHeader'
 import { LandingFooter } from '@/components/layout/LandingFooter'
@@ -91,7 +91,7 @@ export function SectorContent({ sector }: SectorContentProps) {
   const monthlyPrice = calculateMonthlyPrice(sector.pricingExample.headcount)
 
   return (
-    <div className="relative min-h-screen bg-background text-foreground">
+    <div className="public-scope relative min-h-screen bg-background text-foreground">
       {/* Background Effects - Decorative, hidden from screen readers */}
       <div aria-hidden="true">
         <AnimatedBackground />
@@ -147,7 +147,7 @@ export function SectorContent({ sector }: SectorContentProps) {
                 className="mb-6 inline-block"
                 aria-hidden="true"
               >
-                <span className="inline-flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/10 px-4 py-2 text-sm text-blue-700 dark:border-blue-500/20 dark:text-blue-400">
+                <span className="inline-flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/10 px-4 py-2 text-sm text-blue-700">
                   <Store className="h-4 w-4" aria-hidden="true" />
                   {sector.badge}
                 </span>
@@ -160,7 +160,7 @@ export function SectorContent({ sector }: SectorContentProps) {
                 className="mb-6 text-4xl font-bold leading-tight sm:text-5xl"
               >
                 {sector.h1}{' '}
-                <span className={HIGHLIGHT_TEXT_CLASSES}>
+                <span className={HIGHLIGHT_TEXT_CLASSES_PUBLIC}>
                   {sector.h1Highlight}
                 </span>
               </motion.h1>
@@ -257,9 +257,9 @@ export function SectorContent({ sector }: SectorContentProps) {
                     variants={fadeInUp}
                     className="h-full rounded-2xl border border-border/50 bg-card/50 p-6 backdrop-blur-sm transition-all duration-300 hover:border-border"
                   >
-                    <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-blue-600/10 dark:bg-blue-400/10">
+                    <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-blue-600/10">
                       <Icon
-                        className="h-6 w-6 text-blue-600 dark:text-blue-400"
+                        className="h-6 w-6 text-blue-600"
                         aria-hidden="true"
                       />
                     </div>
@@ -309,9 +309,9 @@ export function SectorContent({ sector }: SectorContentProps) {
                     variants={fadeInUp}
                     className="h-full rounded-2xl border border-border/50 bg-card/50 p-6 backdrop-blur-sm transition-all duration-300 hover:border-border"
                   >
-                    <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-blue-600/10 dark:bg-blue-400/10">
+                    <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-blue-600/10">
                       <Icon
-                        className="h-6 w-6 text-blue-600 dark:text-blue-400"
+                        className="h-6 w-6 text-blue-600"
                         aria-hidden="true"
                       />
                     </div>
@@ -437,7 +437,7 @@ export function SectorContent({ sector }: SectorContentProps) {
                   className="mb-4 text-3xl font-bold sm:text-4xl lg:text-5xl"
                 >
                   Testez SmartPlanning dans votre{' '}
-                  <span className={HIGHLIGHT_TEXT_CLASSES}>établissement</span>
+                  <span className={HIGHLIGHT_TEXT_CLASSES_PUBLIC}>établissement</span>
                 </h2>
                 <p className="mx-auto mb-8 max-w-2xl text-lg text-muted-foreground">
                   Créez votre compte et testez SmartPlanning gratuitement

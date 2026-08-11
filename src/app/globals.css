@@ -198,25 +198,22 @@
        Identite editoriale des pages publiques uniquement. Ces variables
        n'affectent pas l'application privee, qui consomme les tokens
        ci-dessus. Valeurs de reference : brand-public.ts.
+
+       Palette unique : les pages publiques n'ont pas de mode sombre
+       (SP-573), ces variables ne sont donc pas redefinies sous .dark.
        ===================================================================== */
 
     /* Fonds */
     --public-surface: 40 28.6% 91.8%; /* creme #f0ece4 */
     --public-surface-subtle: 40 30% 96%;
-    --public-surface-inverted: 216 50% 11.8%; /* bleu nuit #0f1b2d */
-
-    /* Fond bleu nuit constant, identique dans les deux modes. A la
-       difference de surface-inverted, qui suit le theme, il sert les
-       sections qui doivent rester sombres en clair comme en sombre. */
+    /* Fond bleu nuit, pour les sections qui tranchent (hero, securite) */
     --public-surface-dark: 216 50% 11.8%;
 
     /* Textes */
     --public-content: 216 50% 11.8%;
     --public-content-muted: 216 50% 22%;
-    --public-content-inverted: 40 28.6% 91.8%;
     --public-content-on-dark: 40 28.6% 91.8%;
-    /* Texte des aplats vifs (corail, lime), constant : ces fonds ne
-       changent pas avec le theme, leur texte non plus. */
+    /* Texte des aplats vifs (corail, lime) : bleu nuit, jamais du blanc */
     --public-content-on-vivid: 216 50% 11.8%;
 
     /* Corail. `accent` est assombri (coral.700) : le corail 500 ne donne
@@ -236,7 +233,7 @@
 
     /* Filets */
     --public-border: 38 18% 76%;
-    --public-border-inverted: 216 50% 22%;
+    --public-border-on-dark: 216 50% 22%;
   }
 
   /* =======================================================================
@@ -371,42 +368,44 @@
     --glow-cyan-subtle: 0 0 20px rgba(6, 182, 212, 0.35);
     --glow-cyan-medium: 0 0 20px rgba(6, 182, 212, 0.35), 0 0 40px rgba(6, 182, 212, 0.2);
 
-    /* =====================================================================
-       PAGES PUBLIQUES (SP-565)
-
-       Declinaison sombre : le creme cede la place au bleu nuit, et le bleu
-       nuit descend vers un noir plus profond. Corail et lime restent les
-       accents, leur lisibilite sur fond sombre etant deja acquise.
-       ===================================================================== */
-
-    --public-surface: 216 52% 7%;
-    --public-surface-subtle: 216 50% 11.8%;
-    --public-surface-inverted: 40 28.6% 91.8%;
-
-    /* Constant : inchange par rapport au mode clair */
-    --public-surface-dark: 216 50% 11.8%;
-
-    --public-content: 40 28.6% 91.8%;
-    --public-content-muted: 38 18% 76%;
-    --public-content-inverted: 216 50% 11.8%;
-    --public-content-on-dark: 40 28.6% 91.8%;
-    --public-content-on-vivid: 216 50% 11.8%;
-
-    /* Le corail pleine intensite passe AA sur fond sombre (5.41:1), la
-       variante assombrie du mode clair n'a plus lieu d'etre */
-    --public-accent: 9 100% 60.6%;
-    --public-accent-on-dark: 9 100% 60.6%;
-    --public-accent-surface: 9 100% 60.6%;
-
-    --public-highlight: 75.8 89.9% 65.1%;
-    --public-highlight-surface: 75.8 89.9% 65.1%;
-
-    --public-brand-surface: 222.9 100% 57.3%;
-    --public-brand-on-light: 222.9 100% 57.3%;
-
-    --public-border: 216 50% 22%;
-    --public-border-inverted: 38 18% 76%;
   }
+}
+
+/* =========================================================================
+   PAGES PUBLIQUES - Mode clair unique (SP-573)
+   ========================================================================= */
+
+/**
+ * Les pages publiques n'ont pas de mode sombre. Le ThemeProvider reste monte
+ * au layout racine pour l'application, donc la classe `dark` peut etre
+ * presente sur <html> pendant qu'un visiteur consulte le site public.
+ *
+ * Cette classe, posee sur le conteneur racine de chaque page publique,
+ * reancre les tokens globaux sur leurs valeurs claires. Sans elle, il
+ * faudrait remplacer 264 usages de bg-background, text-foreground,
+ * text-muted-foreground, bg-card et border-border repartis sur 20 fichiers,
+ * et chaque nouvelle page publique reintroduirait le probleme.
+ *
+ * Les valeurs reprennent celles de :root, volontairement dupliquees : une
+ * variable CSS ne peut pas se referencer elle-meme depuis un scope enfant.
+ */
+.public-scope {
+  --background: 226 100% 97%;
+  --background-subtle: 226 80% 96%;
+  --background-muted: 220 50% 94%;
+  --foreground: 222.2 84% 4.9%;
+  --foreground-muted: 215.4 16.3% 46.9%;
+  --foreground-subtle: 215 20% 65%;
+  --card: 0 0% 100%;
+  --card-foreground: 222.2 84% 4.9%;
+  --muted: 220 50% 94%;
+  --muted-foreground: 215.4 20% 40%;
+  --accent: 258 90% 66%;
+  --accent-foreground: 0 0% 100%;
+  --border: 222 60% 90%;
+  --input: 222 60% 90%;
+
+  color-scheme: light;
 }
 
 /* =========================================================================

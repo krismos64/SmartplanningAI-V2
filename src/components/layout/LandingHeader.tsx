@@ -23,7 +23,6 @@ import {
   X,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { ThemeToggle } from '@/components/ui/ThemeToggle'
 import { cn } from '@/lib/utils'
 
 // Flat navigation kept for the mobile menu.
@@ -175,7 +174,7 @@ export function LandingHeader({
           'left-0 right-0 z-50 transition-all duration-500',
           isFixed ? 'fixed top-0' : 'relative top-0',
           isScrolled || !isFixed
-            ? 'border-b border-border/10 bg-background/80 py-4 backdrop-blur-xl dark:border-white/5 dark:bg-[#030712]/80'
+            ? 'border-b border-border/10 bg-background/80 py-4 backdrop-blur-xl'
             : 'bg-transparent py-6'
         )}
       >
@@ -191,9 +190,9 @@ export function LandingHeader({
                 priority
                 className="h-11 w-11 object-contain transition-transform group-hover:scale-105"
               />
-              <span className="text-xl font-bold tracking-tight text-foreground dark:text-white">
+              <span className="text-xl font-bold tracking-tight text-foreground">
                 Smart
-                <span className="text-blue-600 dark:text-blue-400">
+                <span className="text-blue-600">
                   Planning
                 </span>
               </span>
@@ -240,7 +239,7 @@ export function LandingHeader({
                         key={link.href}
                         href={link.href}
                         onClick={closeDesktopMenu}
-                        className="block rounded-lg px-3 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-accent focus-visible:bg-accent focus-visible:outline-none dark:text-white"
+                        className="block rounded-lg px-3 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-accent focus-visible:bg-accent focus-visible:outline-none"
                       >
                         {link.label}
                       </Link>
@@ -276,7 +275,7 @@ export function LandingHeader({
                             <Link
                               href={guide.href}
                               onClick={closeDesktopMenu}
-                              className="block rounded-md px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:bg-accent focus-visible:outline-none dark:text-white/60 dark:hover:text-white"
+                              className="block rounded-md px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:bg-accent focus-visible:outline-none"
                             >
                               {guide.label}
                             </Link>
@@ -291,7 +290,7 @@ export function LandingHeader({
                         onClick={closeDesktopMenu}
                       />
                     </div>
-                    <div className="border-l border-border/60 pl-2 dark:border-white/10">
+                    <div className="border-l border-border/60 pl-2">
                       <p className="px-3 pb-2 pt-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                         SmartPlanning
                       </p>
@@ -315,21 +314,18 @@ export function LandingHeader({
 
                 <Link
                   href="/tarifs"
-                  className="whitespace-nowrap text-sm text-muted-foreground transition-colors hover:text-foreground dark:text-white/70 dark:hover:text-white"
+                  className="whitespace-nowrap text-sm text-muted-foreground transition-colors hover:text-foreground"
                 >
                   Tarifs
                 </Link>
               </div>
             )}
 
-            {/* CTA Buttons + Theme Toggle */}
+            {/* CTA Buttons */}
             <div className="hidden items-center gap-4 lg:flex">
-              {/* Theme Toggle (SP-265) */}
-              <ThemeToggle className="text-muted-foreground hover:text-foreground dark:text-white/80 dark:hover:text-white" />
-
               <Button
                 variant="ghost"
-                className="text-muted-foreground hover:bg-accent hover:text-foreground dark:text-white/80 dark:hover:bg-white/10 dark:hover:text-white"
+                className="text-muted-foreground hover:bg-accent hover:text-foreground"
                 asChild
               >
                 <Link href="/login">Connexion</Link>
@@ -344,7 +340,7 @@ export function LandingHeader({
 
             {/* Mobile Menu Button - WCAG 2.5.5: 44px minimum touch target */}
             <button
-              className="flex h-11 min-h-[44px] w-11 min-w-[44px] touch-manipulation items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-accent dark:text-white/80 dark:hover:bg-white/10 lg:hidden"
+              className="flex h-11 min-h-[44px] w-11 min-w-[44px] touch-manipulation items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-accent lg:hidden"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               aria-label={
                 isMobileMenuOpen ? 'Fermer le menu' : 'Ouvrir le menu'
@@ -371,14 +367,14 @@ export function LandingHeader({
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.3 }}
-                className="fixed inset-0 z-[200] flex flex-col overflow-hidden bg-background dark:bg-[#030712] lg:hidden"
+                className="fixed inset-0 z-[200] flex flex-col overflow-hidden bg-background lg:hidden"
               >
                 {/* Close button - Fixed top right - WCAG 2.5.5: 44px minimum touch target */}
                 <motion.button
                   initial={{ opacity: 0, rotate: -90 }}
                   animate={{ opacity: 1, rotate: 0 }}
                   transition={{ duration: 0.3, delay: 0.1 }}
-                  className="absolute right-4 top-4 z-10 flex h-12 min-h-[44px] w-12 min-w-[44px] touch-manipulation items-center justify-center rounded-full border border-border bg-background text-foreground transition-all hover:border-blue-400/50 hover:bg-blue-400/20 hover:text-blue-400 dark:border-white/20 dark:bg-[#030712] dark:text-white"
+                  className="absolute right-4 top-4 z-10 flex h-12 min-h-[44px] w-12 min-w-[44px] touch-manipulation items-center justify-center rounded-full border border-border bg-background text-foreground transition-all hover:border-blue-400/50 hover:bg-blue-400/20 hover:text-blue-400"
                   onClick={() => setIsMobileMenuOpen(false)}
                   aria-label="Fermer le menu"
                   data-testid="landing-mobile-menu-close"
@@ -412,7 +408,7 @@ export function LandingHeader({
                       // préchargement) plutôt que par un rechargement complet.
                       const isAnchor = link.href.startsWith('/#')
                       const className =
-                        'text-[15px] font-medium text-foreground transition-colors hover:text-blue-400 dark:text-white'
+                        'text-[15px] font-medium text-foreground transition-colors hover:text-blue-400'
                       const closeMenu = () => setIsMobileMenuOpen(false)
 
                       return (
@@ -443,21 +439,6 @@ export function LandingHeader({
                       )
                     })}
 
-                  {/* Theme Toggle Mobile */}
-                  <motion.div
-                    initial={{ opacity: 0, y: 15 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{
-                      delay: showNavLinks ? mobileNavLinks.length * 0.05 : 0,
-                    }}
-                    className="mt-1 flex items-center gap-2"
-                  >
-                    <span className="text-sm text-muted-foreground dark:text-white/70">
-                      Thème
-                    </span>
-                    <ThemeToggle className="text-foreground dark:text-white" />
-                  </motion.div>
-
                   {/* CTA Buttons */}
                   <motion.div
                     initial={{ opacity: 0, y: 15 }}
@@ -471,7 +452,7 @@ export function LandingHeader({
                   >
                     <Button
                       size="default"
-                      className="h-10 w-full border-2 border-foreground bg-transparent text-sm font-semibold text-foreground hover:bg-foreground hover:text-background dark:border-white dark:text-white dark:hover:bg-white dark:hover:text-[#030712]"
+                      className="h-10 w-full border-2 border-foreground bg-transparent text-sm font-semibold text-foreground hover:bg-foreground hover:text-background"
                       asChild
                     >
                       <Link
@@ -589,8 +570,8 @@ function DesktopMenuItem({
           onOpen(menu)
         }}
         className={cn(
-          'flex items-center gap-1 whitespace-nowrap py-2 text-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/60 dark:text-white/70 dark:hover:text-white',
-          isOpen && 'text-foreground dark:text-white'
+          'flex items-center gap-1 whitespace-nowrap py-2 text-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/60',
+          isOpen && 'text-foreground'
         )}
       >
         {label}
@@ -618,7 +599,7 @@ function DesktopMenuItem({
           align === 'right' ? 'right-0' : 'left-0'
         )}
       >
-        <div className="overflow-hidden rounded-xl border border-border/70 bg-background/95 shadow-xl shadow-black/10 backdrop-blur-xl dark:border-white/10 dark:bg-[#080d1a]/95 dark:shadow-black/30">
+        <div className="overflow-hidden rounded-xl border border-border/70 bg-background/95 shadow-xl shadow-black/10 backdrop-blur-xl">
           {children}
         </div>
       </motion.div>
@@ -642,15 +623,15 @@ function MenuLink({ href, label, description, icon, onClick }: MenuLinkProps) {
       className="group flex gap-3 rounded-lg px-3 py-2.5 transition-colors hover:bg-accent focus-visible:bg-accent focus-visible:outline-none"
     >
       {icon && (
-        <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-500/10 text-blue-600 group-hover:bg-blue-500/15 dark:text-blue-400 [&>svg]:h-4 [&>svg]:w-4">
+        <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-500/10 text-blue-600 group-hover:bg-blue-500/15 [&>svg]:h-4 [&>svg]:w-4">
           {icon}
         </span>
       )}
       <span>
-        <span className="block text-sm font-medium text-foreground dark:text-white">
+        <span className="block text-sm font-medium text-foreground">
           {label}
         </span>
-        <span className="mt-0.5 block text-xs leading-relaxed text-muted-foreground dark:text-white/60">
+        <span className="mt-0.5 block text-xs leading-relaxed text-muted-foreground">
           {description}
         </span>
       </span>

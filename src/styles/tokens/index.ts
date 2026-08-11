@@ -386,8 +386,7 @@ export {
 export {
   brandPublic,
   publicPalette,
-  publicSemanticLight,
-  publicSemanticDark,
+  publicSemantic,
   publicFontFamily,
   publicContrastReference,
 } from './brand-public'

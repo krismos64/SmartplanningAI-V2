@@ -29,7 +29,7 @@ import {
   AnimatedBackground,
   FAQItem,
   PRIMARY_BUTTON_CLASSES,
-  HIGHLIGHT_TEXT_CLASSES,
+  HIGHLIGHT_TEXT_CLASSES_PUBLIC,
 } from '@/app/(landing)/components'
 import { LandingHeader } from '@/components/layout/LandingHeader'
 import { LandingFooter } from '@/components/layout/LandingFooter'
@@ -55,7 +55,7 @@ export function PricingPageContent() {
   }, [])
 
   return (
-    <div className="relative min-h-screen bg-background text-foreground">
+    <div className="public-scope relative min-h-screen bg-background text-foreground">
       <div aria-hidden="true">
         <AnimatedBackground />
       </div>
@@ -96,7 +96,7 @@ export function PricingPageContent() {
                 className="mb-6 text-4xl font-bold leading-tight sm:text-5xl lg:text-6xl"
               >
                 Un tarif unique,{' '}
-                <span className={HIGHLIGHT_TEXT_CLASSES}>
+                <span className={HIGHLIGHT_TEXT_CLASSES_PUBLIC}>
                   simple et transparent
                 </span>
               </motion.h1>
@@ -288,7 +288,7 @@ export function PricingPageContent() {
                   className="mb-4 text-3xl font-bold sm:text-4xl lg:text-5xl"
                 >
                   Prêt à{' '}
-                  <span className={HIGHLIGHT_TEXT_CLASSES}>simplifier</span> vos
+                  <span className={HIGHLIGHT_TEXT_CLASSES_PUBLIC}>simplifier</span> vos
                   plannings ?
                 </h2>
                 <p className="mx-auto mb-8 max-w-2xl text-lg text-muted-foreground">

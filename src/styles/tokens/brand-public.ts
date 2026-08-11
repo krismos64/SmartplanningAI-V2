@@ -83,42 +83,37 @@ export const publicPalette = {
 } as const
 
 // =============================================================================
-// SEMANTIC TOKENS - Mode clair
+// SEMANTIC TOKENS
 // =============================================================================
 
 /**
- * Le mode clair est la lecture de reference : fond creme, texte bleu nuit.
+ * Palette unique des pages publiques : fond creme, texte bleu nuit.
+ *
+ * Les pages publiques n'ont pas de mode sombre (SP-573). Une landing est un
+ * support de communication, pas un outil de travail, et le double mode avait
+ * produit deux defauts pendant SP-567 : le hero virait au creme, et le bouton
+ * lime tombait a 1.06:1 de contraste.
+ *
+ * L'application privee conserve son mode sombre, avec les tokens de colors.ts.
  */
-export const publicSemanticLight = {
+export const publicSemantic = {
   /** Fond des sections claires */
   surface: publicPalette.cream[100],
   /** Fond legerement contraste, cartes sur fond creme */
   surfaceSubtle: publicPalette.cream[50],
-  /** Fond oppose au fond courant, pour une carte qui tranche */
-  surfaceInverted: publicPalette.ink[900],
-
-  /**
-   * Fond bleu nuit constant, identique dans les deux modes.
-   *
-   * A distinguer de `surfaceInverted`, qui suit le theme : une section
-   * dont le fond doit rester sombre en clair comme en sombre (le hero,
-   * la section securite) utilise `surfaceDark`, sans quoi elle vire au
-   * creme des que l'utilisateur bascule en mode sombre.
-   */
+  /** Fond bleu nuit, pour les sections qui tranchent (hero, securite) */
   surfaceDark: publicPalette.ink[900],
 
   /** Texte courant sur surface */
   content: publicPalette.ink[900],
   /** Texte secondaire */
   contentMuted: publicPalette.ink[700],
-  /** Texte sur surfaceInverted */
-  contentInverted: publicPalette.cream[100],
-  /** Texte sur surfaceDark, constant dans les deux modes */
+  /** Texte sur surfaceDark */
   contentOnDark: publicPalette.cream[100],
   /**
-   * Texte bleu nuit constant, pour les aplats vifs (corail, lime) dont la
-   * teinte ne change pas avec le theme. `content` suit le theme et vire au
-   * creme en mode sombre, ce qui rendrait le texte illisible sur ces fonds.
+   * Texte des aplats vifs, corail et lime.
+   * Distinct de `content` par lisibilite : ces fonds appellent un texte
+   * bleu nuit, jamais du blanc, qui tomberait a 3.19:1 sur le corail.
    */
   contentOnVivid: publicPalette.ink[900],
 
@@ -141,46 +136,7 @@ export const publicSemanticLight = {
 
   /** Filets et separateurs */
   border: publicPalette.cream[300],
-  borderInverted: publicPalette.ink[700],
-} as const
-
-// =============================================================================
-// SEMANTIC TOKENS - Mode sombre
-// =============================================================================
-
-/**
- * Le prototype ne gere qu'un seul mode. La declinaison sombre est une
- * decision de conception : le creme cede la place au bleu nuit, et le
- * bleu nuit descend vers un noir plus profond. Corail et lime restent
- * les accents, leur lisibilite etant deja acquise sur fond sombre.
- */
-export const publicSemanticDark = {
-  surface: publicPalette.ink[950],
-  surfaceSubtle: publicPalette.ink[900],
-  surfaceInverted: publicPalette.cream[100],
-
-  /** Constant : le hero reste bleu nuit quel que soit le theme */
-  surfaceDark: publicPalette.ink[900],
-
-  content: publicPalette.cream[100],
-  contentMuted: publicPalette.cream[300],
-  contentInverted: publicPalette.ink[900],
-  contentOnDark: publicPalette.cream[100],
-  /** Constant : les aplats vifs gardent un texte bleu nuit */
-  contentOnVivid: publicPalette.ink[900],
-
-  accent: publicPalette.coral[500],
-  accentOnDark: publicPalette.coral[500],
-  accentSurface: publicPalette.coral[500],
-
-  highlightSurface: publicPalette.lime[400],
-  highlightOnDark: publicPalette.lime[400],
-
-  brandSurface: publicPalette.blue[500],
-  brandOnLight: publicPalette.blue[500],
-
-  border: publicPalette.ink[700],
-  borderInverted: publicPalette.cream[300],
+  borderOnDark: publicPalette.ink[700],
 } as const
 
 // =============================================================================
@@ -248,10 +204,7 @@ export const publicContrastReference = {
 
 export const brandPublic = {
   palette: publicPalette,
-  semantic: {
-    light: publicSemanticLight,
-    dark: publicSemanticDark,
-  },
+  semantic: publicSemantic,
   fontFamily: publicFontFamily,
   contrast: publicContrastReference,
 } as const

@@ -21,7 +21,7 @@ import {
   AnimatedBackground,
   FAQItem,
   PRIMARY_BUTTON_CLASSES,
-  HIGHLIGHT_TEXT_CLASSES,
+  HIGHLIGHT_TEXT_CLASSES_PUBLIC,
 } from '@/app/(landing)/components'
 import { LandingHeader } from '@/components/layout/LandingHeader'
 import { LandingFooter } from '@/components/layout/LandingFooter'
@@ -47,7 +47,7 @@ export function GuideContent({ guide }: GuideContentProps) {
   }, [])
 
   return (
-    <div className="relative min-h-screen bg-background text-foreground">
+    <div className="public-scope relative min-h-screen bg-background text-foreground">
       {/* Background Effects - Decorative, hidden from screen readers */}
       <div aria-hidden="true">
         <AnimatedBackground />
@@ -104,7 +104,7 @@ export function GuideContent({ guide }: GuideContentProps) {
               {/* En-tête de l'article */}
               <header className="mb-12">
                 <p className="mb-6" aria-hidden="true">
-                  <span className="inline-flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/10 px-4 py-2 text-sm text-blue-700 dark:border-blue-500/20 dark:text-blue-400">
+                  <span className="inline-flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/10 px-4 py-2 text-sm text-blue-700">
                     <BookOpen className="h-4 w-4" aria-hidden="true" />
                     Guide pratique
                   </span>
@@ -131,7 +131,7 @@ export function GuideContent({ guide }: GuideContentProps) {
                 </p>
 
                 {/* Réponse directe (GEO) : la réponse à la requête, citable */}
-                <p className="border-l-4 border-blue-600 pl-4 text-lg leading-relaxed text-muted-foreground dark:border-blue-400">
+                <p className="border-l-4 border-blue-600 pl-4 text-lg leading-relaxed text-muted-foreground">
                   {guide.directAnswer}
                 </p>
               </header>
@@ -223,7 +223,7 @@ export function GuideContent({ guide }: GuideContentProps) {
               >
                 <h2 className="mb-4 text-2xl font-bold sm:text-3xl">
                   Passez de la théorie à la{' '}
-                  <span className={HIGHLIGHT_TEXT_CLASSES}>pratique</span>
+                  <span className={HIGHLIGHT_TEXT_CLASSES_PUBLIC}>pratique</span>
                 </h2>
                 <p className="mx-auto mb-8 max-w-xl text-muted-foreground">
                   Plannings, congés et messagerie d&apos;équipe dans un seul

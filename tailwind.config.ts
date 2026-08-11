@@ -190,15 +190,14 @@ const config: Config = {
 
         // Pages publiques uniquement (SP-565).
         // Prefixe `public-` pour qu'un usage hors pages publiques soit
-        // visible en relecture. Les variables basculent en mode sombre.
+        // visible en relecture. Palette unique : pas de mode sombre sur
+        // les pages publiques (SP-573).
         public: {
           surface: 'hsl(var(--public-surface))',
           'surface-subtle': 'hsl(var(--public-surface-subtle))',
-          'surface-inverted': 'hsl(var(--public-surface-inverted))',
           'surface-dark': 'hsl(var(--public-surface-dark))',
           content: 'hsl(var(--public-content))',
           'content-muted': 'hsl(var(--public-content-muted))',
-          'content-inverted': 'hsl(var(--public-content-inverted))',
           'content-on-dark': 'hsl(var(--public-content-on-dark))',
           'content-on-vivid': 'hsl(var(--public-content-on-vivid))',
           accent: 'hsl(var(--public-accent))',
@@ -209,7 +208,7 @@ const config: Config = {
           'brand-surface': 'hsl(var(--public-brand-surface))',
           'brand-on-light': 'hsl(var(--public-brand-on-light))',
           border: 'hsl(var(--public-border))',
-          'border-inverted': 'hsl(var(--public-border-inverted))',
+          'border-on-dark': 'hsl(var(--public-border-on-dark))',
         },
 
         // Couleurs sémantiques via CSS variables
