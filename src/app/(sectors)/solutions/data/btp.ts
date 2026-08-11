@@ -16,9 +16,9 @@ export const btpSector: SectorData = {
   shortName: 'BTP',
   badge: 'BTP & chantiers',
 
-  metaTitle: 'Logiciel de planning pour le BTP et les chantiers',
+  metaTitle: 'Logiciel planning chantier BTP à 2,90 €',
   metaDescription:
-    "Affectation des compagnons par chantier, congés intempéries, heures par projet : SmartPlanning simplifie le planning BTP. 2,90 € HT par employé, essai 21 jours.",
+    'Affectez vos compagnons par chantier, gérez les intempéries et sortez les heures par projet. 2,90 € HT par employé, essai 21 jours sans carte bancaire.',
   keywords: [
     'logiciel planning btp',
     'planning chantier',
@@ -54,7 +54,7 @@ export const btpSector: SectorData = {
       icon: 'alert',
       title: 'Congés et arrêts intempéries',
       description:
-        "Les arrêts pour intempéries décalent le calendrier de tout un chantier du jour au lendemain. Il faut pouvoir replanifier rapidement les équipes concernées sans perdre le suivi des congés déjà posés.",
+        'Les arrêts pour intempéries décalent le calendrier de tout un chantier du jour au lendemain. Il faut pouvoir replanifier rapidement les équipes concernées sans perdre le suivi des congés déjà posés.',
     },
     {
       icon: 'map-pin',
@@ -79,21 +79,21 @@ export const btpSector: SectorData = {
     },
     {
       icon: 'smartphone',
-      feature: 'Consultation mobile pour toute l\'équipe',
+      feature: "Consultation mobile pour toute l'équipe",
       benefit:
-        "Chaque compagnon accède à son planning depuis son téléphone, sans application à installer, et voit toujours la dernière version de ses affectations du jour.",
+        'Chaque compagnon accède à son planning depuis son téléphone, sans application à installer, et voit toujours la dernière version de ses affectations du jour.',
     },
     {
       icon: 'bell',
-      feature: 'Notifications à chaque changement d\'affectation',
+      feature: "Notifications à chaque changement d'affectation",
       benefit:
-        "Un chantier réaffecté suite à une intempérie ou un imprévu ? Chaque compagnon concerné reçoit une notification email automatique dès la mise à jour du planning.",
+        'Un chantier réaffecté suite à une intempérie ou un imprévu ? Chaque compagnon concerné reçoit une notification email automatique dès la mise à jour du planning.',
     },
     {
       icon: 'scale',
-      feature: 'Notes d\'incidents horodatées',
+      feature: "Notes d'incidents horodatées",
       benefit:
-        "Le chef de chantier ou la direction consigne un accident, un retard ou un incident de sécurité dans une note horodatée, avec une visibilité RBAC adaptée au rôle : la note reste réservée à la direction ou devient visible par le compagnon concerné.",
+        'Le chef de chantier ou la direction consigne un accident, un retard ou un incident de sécurité dans une note horodatée, avec une visibilité RBAC adaptée au rôle : la note reste réservée à la direction ou devient visible par le compagnon concerné.',
     },
     {
       icon: 'file-down',
@@ -125,10 +125,10 @@ export const btpSector: SectorData = {
     {
       question: 'Comment gérer les congés intempéries dans le planning ?',
       answer:
-        "Les congés intempéries suivent le même circuit que les congés classiques : demande, validation par le manager, mise à jour automatique du planning. Le solde de chaque compagnon reste visible à tout moment.",
+        'Les congés intempéries suivent le même circuit que les congés classiques : demande, validation par le manager, mise à jour automatique du planning. Le solde de chaque compagnon reste visible à tout moment.',
     },
     {
-      question: "Peut-on suivre les heures travaillées par chantier ?",
+      question: 'Peut-on suivre les heures travaillées par chantier ?',
       answer:
         "Oui. Indiquez le chantier dans le champ « lieu » de chaque créneau : l'export Excel détaille alors, pour chaque intervention, la durée, le lieu et le compagnon. Vous ventilez ensuite les heures par chantier dans votre tableur pour la facturation client ou la préparation de la paie. L'export se filtre par équipe, par employé et par période.",
     },
@@ -138,9 +138,10 @@ export const btpSector: SectorData = {
         "Le chef de chantier (manager) ou la direction crée une note d'incident depuis son espace, avec une visibilité adaptée au rôle : selon les règles RBAC définies, la note reste réservée à la direction ou devient visible par le compagnon concerné, qui la retrouve alors dans son espace personnel.",
     },
     {
-      question: 'Combien coûte SmartPlanning pour une équipe de 15 compagnons ?',
+      question:
+        'Combien coûte SmartPlanning pour une équipe de 15 compagnons ?',
       answer:
-        "43,50 € HT par mois, soit 15 employés à 2,90 € HT chacun. Toutes les fonctionnalités sont incluses : plannings multi-chantiers, congés, incidents, exports et support. Sans engagement, avec un essai gratuit de 21 jours sans carte bancaire.",
+        '43,50 € HT par mois, soit 15 employés à 2,90 € HT chacun. Toutes les fonctionnalités sont incluses : plannings multi-chantiers, congés, incidents, exports et support. Sans engagement, avec un essai gratuit de 21 jours sans carte bancaire.',
     },
     {
       question:
@@ -150,5 +151,5 @@ export const btpSector: SectorData = {
     },
   ],
 
-  lastModified: '2026-07-21',
+  lastModified: '2026-08-11',
 }

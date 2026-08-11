@@ -24,6 +24,7 @@ describe('sitemap', () => {
     expect(urls).toEqual([
       'https://smartplanning.fr',
       'https://smartplanning.fr/tarifs',
+      'https://smartplanning.fr/solutions',
       ...getAllSectors().map(
         (sector) => `https://smartplanning.fr/solutions/${sector.slug}`
       ),
@@ -55,6 +56,22 @@ describe('sitemap', () => {
         new Date(sector.lastModified).getTime()
       )
     }
+  })
+
+  it('inclut le hub solutions avec la date du secteur le plus recent', () => {
+    const entries = sitemap()
+
+    const hub = entries.find(
+      (e) => e.url === 'https://smartplanning.fr/solutions'
+    )
+    expect(hub).toBeDefined()
+    expect(hub?.priority).toBe(0.8)
+    const newestSector = Math.max(
+      ...getAllSectors().map((sector) =>
+        new Date(sector.lastModified).getTime()
+      )
+    )
+    expect((hub?.lastModified as Date).getTime()).toBe(newestSector)
   })
 
   it('inclut le hub guides et chaque guide avec sa date propre', () => {

@@ -16,9 +16,9 @@ export const commerceSector: SectorData = {
   shortName: 'commerce',
   badge: 'Commerce & retail',
 
-  metaTitle: 'Logiciel de planning pour commerce et retail',
+  metaTitle: 'Logiciel planning magasin à 2,90 € par mois',
   metaDescription:
-    'Amplitude 7j/7, temps partiels, samedis équitables : SmartPlanning simplifie les plannings des boutiques et enseignes. 2,90 € HT par employé, essai gratuit 21 jours.',
+    'Ouverture 7j/7, temps partiels, samedis répartis équitablement : gérez le planning de votre boutique sans tableur. 2,90 € HT par employé, essai gratuit 21 jours.',
   keywords: [
     'logiciel planning commerce',
     'planning équipe boutique',
@@ -149,5 +149,5 @@ export const commerceSector: SectorData = {
     },
   ],
 
-  lastModified: '2026-07-17',
+  lastModified: '2026-08-11',
 }

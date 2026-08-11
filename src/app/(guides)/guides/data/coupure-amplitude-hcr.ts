@@ -18,9 +18,9 @@ export const coupureAmplitudeHcrGuide: GuideData = {
   slug: 'coupure-amplitude-restauration-hcr',
   title:
     'Coupure, amplitude et repos en restauration : ce que dit la convention HCR',
-  metaTitle: 'Coupure et amplitude en HCR : les règles réelles',
+  metaTitle: 'Coupure et amplitude en HCR : les règles 2026',
   metaDescription:
-    'Coupure de 5 heures, amplitude, durées maximales par poste, repos de 11 heures : les règles HCR expliquées, temps plein et temps partiel distingués.',
+    'La coupure de 5 heures ne vaut que pour les temps partiels : amplitude, durées maximales par poste et repos de 11 heures, expliqués cas par cas avec les textes.',
   keywords: [
     'coupure restauration',
     'amplitude horaire restaurant',
@@ -150,6 +150,6 @@ export const coupureAmplitudeHcrGuide: GuideData = {
   ],
 
   datePublished: '2026-08-03',
-  lastModified: '2026-08-03',
+  lastModified: '2026-08-11',
   readingMinutes: 8,
 }

@@ -34,6 +34,7 @@ const mobileNavLinks = [
   { href: '/#features', label: 'Fonctionnalités' },
   { href: '/#how-it-works', label: 'Comment ça marche' },
   { href: '/#benefits', label: 'Avantages' },
+  { href: '/solutions', label: 'Solutions par secteur' },
   {
     href: '/solutions/planning-restaurant',
     label: 'Restauration et hôtellerie',
@@ -71,6 +72,7 @@ const productLinks = [
 ]
 
 const solutionLinks = [
+  { href: '/solutions', label: 'Tous les secteurs' },
   {
     href: '/solutions/planning-restaurant',
     label: 'Restauration et hôtellerie',
