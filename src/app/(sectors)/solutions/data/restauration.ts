@@ -16,9 +16,9 @@ export const restaurationSector: SectorData = {
   shortName: 'restauration',
   badge: 'Restauration & hôtellerie',
 
-  metaTitle: 'Logiciel de planning pour restaurant et hôtel',
+  metaTitle: 'Logiciel planning restauration à 2,90 €',
   metaDescription:
-    'Shifts en coupure, extras, remplacements de dernière minute : SmartPlanning simplifie le planning des restaurants et hôtels. 2,90 € HT par employé, essai 21 jours.',
+    'Coupures, extras, remplacements de dernière minute : faites le planning de votre brigade en 10 minutes. 2,90 € HT par employé, essai 21 jours sans carte bancaire.',
   keywords: [
     'logiciel planning restaurant',
     'planning équipe restauration',
@@ -151,5 +151,5 @@ export const restaurationSector: SectorData = {
     },
   ],
 
-  lastModified: '2026-07-17',
+  lastModified: '2026-08-11',
 }

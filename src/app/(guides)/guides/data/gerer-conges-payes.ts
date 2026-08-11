@@ -13,9 +13,9 @@ import type { GuideData } from './types'
 export const congesPayesGuide: GuideData = {
   slug: 'gerer-conges-payes-tpe-pme',
   title: 'Gérer les congés payés en TPE/PME : le guide complet',
-  metaTitle: 'Congés payés en TPE/PME : acquisition et validation',
+  metaTitle: 'Congés payés en TPE/PME : le guide 2026',
   metaDescription:
-    'Acquisition (2,5 jours par mois), jours ouvrables ou ouvrés, ordre des départs, refus et report : les règles des congés payés expliquées pour les TPE et PME.',
+    'Acquisition de 2,5 jours par mois, ouvrables ou ouvrés, ordre des départs, refus et report : les règles des congés payés expliquées avec des exemples chiffrés.',
   keywords: [
     'congés payés TPE',
     'gestion congés payés PME',
@@ -128,6 +128,6 @@ export const congesPayesGuide: GuideData = {
   ],
 
   datePublished: '2026-07-17',
-  lastModified: '2026-07-17',
+  lastModified: '2026-08-11',
   readingMinutes: 9,
 }
