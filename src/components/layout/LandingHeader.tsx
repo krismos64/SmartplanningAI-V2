@@ -21,8 +21,8 @@ import {
   Mail,
   Menu,
   X,
+  ArrowUpRight,
 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
 // Flat navigation kept for the mobile menu.
@@ -170,12 +170,15 @@ export function LandingHeader({
         initial={false}
         animate={{ y: 0 }}
         transition={{ duration: 0.6, ease: 'easeOut' }}
+        // Fond opaque en permanence, y compris en haut de page.
+        // Le header transparent se superposait au hero, desormais en aplat
+        // bleu nuit : les liens et le logo, poses en couleurs sombres,
+        // tombaient a 1:1 de contraste (SP-569). Un fond creme constant
+        // evite d'avoir a decliner le header selon la section survolee.
         className={cn(
-          'left-0 right-0 z-50 transition-all duration-500',
+          'left-0 right-0 z-50 border-b border-public-border bg-public-surface font-geist transition-all duration-300',
           isFixed ? 'fixed top-0' : 'relative top-0',
-          isScrolled || !isFixed
-            ? 'border-b border-border/10 bg-background/80 py-4 backdrop-blur-xl'
-            : 'bg-transparent py-6'
+          isScrolled || !isFixed ? 'py-4' : 'py-5'
         )}
       >
         <div className="container-custom">
@@ -190,11 +193,9 @@ export function LandingHeader({
                 priority
                 className="h-11 w-11 object-contain transition-transform group-hover:scale-105"
               />
-              <span className="text-xl font-bold tracking-tight text-foreground">
+              <span className="font-geist text-xl font-bold tracking-tight text-public-content">
                 Smart
-                <span className="text-blue-600">
-                  Planning
-                </span>
+                <span className="text-public-brand-on-light">Planning</span>
               </span>
             </Link>
 
@@ -239,7 +240,7 @@ export function LandingHeader({
                         key={link.href}
                         href={link.href}
                         onClick={closeDesktopMenu}
-                        className="block rounded-lg px-3 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-accent focus-visible:bg-accent focus-visible:outline-none"
+                        className="block px-3 py-2.5 font-geist text-sm font-medium text-public-content transition-colors hover:bg-public-surface focus-visible:bg-public-surface focus-visible:outline-none"
                       >
                         {link.label}
                       </Link>
@@ -259,7 +260,7 @@ export function LandingHeader({
                 >
                   <div className="grid w-[34rem] grid-cols-2 gap-2 p-3">
                     <div>
-                      <p className="px-3 pb-2 pt-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      <p className="px-3 pb-2 pt-1 font-geist text-xs font-semibold uppercase tracking-[0.14em] text-public-accent">
                         Apprendre
                       </p>
                       <MenuLink
@@ -275,7 +276,7 @@ export function LandingHeader({
                             <Link
                               href={guide.href}
                               onClick={closeDesktopMenu}
-                              className="block rounded-md px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:bg-accent focus-visible:outline-none"
+                              className="block px-3 py-1.5 font-geist text-xs text-public-content-muted transition-colors hover:bg-public-surface hover:text-public-content focus-visible:bg-public-surface focus-visible:outline-none"
                             >
                               {guide.label}
                             </Link>
@@ -290,8 +291,8 @@ export function LandingHeader({
                         onClick={closeDesktopMenu}
                       />
                     </div>
-                    <div className="border-l border-border/60 pl-2">
-                      <p className="px-3 pb-2 pt-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    <div className="border-l border-public-border pl-2">
+                      <p className="px-3 pb-2 pt-1 font-geist text-xs font-semibold uppercase tracking-[0.14em] text-public-accent">
                         SmartPlanning
                       </p>
                       <MenuLink
@@ -314,7 +315,7 @@ export function LandingHeader({
 
                 <Link
                   href="/tarifs"
-                  className="whitespace-nowrap text-sm text-muted-foreground transition-colors hover:text-foreground"
+                  className="inline-flex min-h-[2.75rem] items-center whitespace-nowrap font-geist text-sm font-medium text-public-content-muted transition-colors hover:text-public-content focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-public-accent focus-visible:ring-offset-2 focus-visible:ring-offset-public-surface"
                 >
                   Tarifs
                 </Link>
@@ -323,24 +324,24 @@ export function LandingHeader({
 
             {/* CTA Buttons */}
             <div className="hidden items-center gap-4 lg:flex">
-              <Button
-                variant="ghost"
-                className="text-muted-foreground hover:bg-accent hover:text-foreground"
-                asChild
+              <Link
+                href="/login"
+                className="inline-flex min-h-[2.75rem] items-center font-geist text-sm font-medium text-public-content-muted transition-colors hover:text-public-content focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-public-accent focus-visible:ring-offset-2 focus-visible:ring-offset-public-surface"
               >
-                <Link href="/login">Connexion</Link>
-              </Button>
-              <Button
-                className="bg-blue-600 text-white shadow-lg shadow-blue-600/25 hover:bg-blue-700"
-                asChild
+                Connexion
+              </Link>
+              <Link
+                href="/register"
+                className="inline-flex min-h-[2.75rem] items-center gap-2 border border-public-content px-5 font-geist text-sm font-semibold text-public-content transition-colors hover:bg-public-content hover:text-public-content-inverted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-public-accent focus-visible:ring-offset-2 focus-visible:ring-offset-public-surface"
               >
-                <Link href="/register">Essai gratuit</Link>
-              </Button>
+                Essayer 21 jours
+                <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
+              </Link>
             </div>
 
             {/* Mobile Menu Button - WCAG 2.5.5: 44px minimum touch target */}
             <button
-              className="flex h-11 min-h-[44px] w-11 min-w-[44px] touch-manipulation items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-accent lg:hidden"
+              className="flex h-11 min-h-[44px] w-11 min-w-[44px] touch-manipulation items-center justify-center text-public-content transition-colors hover:bg-public-surface-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-public-accent lg:hidden"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               aria-label={
                 isMobileMenuOpen ? 'Fermer le menu' : 'Ouvrir le menu'
@@ -367,14 +368,14 @@ export function LandingHeader({
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.3 }}
-                className="fixed inset-0 z-[200] flex flex-col overflow-hidden bg-background lg:hidden"
+                className="public-scope fixed inset-0 z-[200] flex flex-col overflow-hidden bg-public-surface font-geist lg:hidden"
               >
                 {/* Close button - Fixed top right - WCAG 2.5.5: 44px minimum touch target */}
                 <motion.button
                   initial={{ opacity: 0, rotate: -90 }}
                   animate={{ opacity: 1, rotate: 0 }}
                   transition={{ duration: 0.3, delay: 0.1 }}
-                  className="absolute right-4 top-4 z-10 flex h-12 min-h-[44px] w-12 min-w-[44px] touch-manipulation items-center justify-center rounded-full border border-border bg-background text-foreground transition-all hover:border-blue-400/50 hover:bg-blue-400/20 hover:text-blue-400"
+                  className="absolute right-4 top-4 z-10 flex h-12 min-h-[44px] w-12 min-w-[44px] touch-manipulation items-center justify-center border border-public-border bg-public-surface text-public-content transition-colors hover:bg-public-accent hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-public-accent"
                   onClick={() => setIsMobileMenuOpen(false)}
                   aria-label="Fermer le menu"
                   data-testid="landing-mobile-menu-close"
@@ -382,21 +383,15 @@ export function LandingHeader({
                   <X className="h-6 w-6" />
                 </motion.button>
 
-                {/* Logo at top center */}
-                <motion.div
-                  initial={{ opacity: 0, y: -20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4 }}
-                  className="mt-3 flex justify-center"
-                >
-                  <Image
-                    src="/images/logo-sp.png"
-                    alt="SmartPlanning"
-                    width={120}
-                    height={78}
-                    className="drop-shadow-2xl"
-                  />
-                </motion.div>
+                {/* Logotype, en typographie plutot qu'en image : le logo
+                    pastel jure avec la palette editoriale, et c'est deja le
+                    traitement retenu dans la barre du header. */}
+                <div className="mt-6 flex justify-center">
+                  <span className="font-geist text-2xl font-bold tracking-tight text-public-content">
+                    Smart
+                    <span className="text-public-accent">Planning</span>
+                  </span>
+                </div>
 
                 {/* Menu content centered */}
                 <div className="flex flex-1 flex-col items-center justify-center gap-1.5 px-6 py-1">
@@ -407,8 +402,10 @@ export function LandingHeader({
                       // Les vraies pages passent par Link (navigation client,
                       // préchargement) plutôt que par un rechargement complet.
                       const isAnchor = link.href.startsWith('/#')
+                      // min-h-[44px] : les liens mesuraient environ 20 px de
+                      // haut, sous le minimum tactile WCAG 2.5.5
                       const className =
-                        'text-[15px] font-medium text-foreground transition-colors hover:text-blue-400'
+                        'flex min-h-[44px] items-center font-geist text-[15px] font-medium text-public-content transition-colors hover:text-public-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-public-accent'
                       const closeMenu = () => setIsMobileMenuOpen(false)
 
                       return (
@@ -450,30 +447,21 @@ export function LandingHeader({
                     }}
                     className="mt-2 flex w-full max-w-xs flex-col gap-2"
                   >
-                    <Button
-                      size="default"
-                      className="h-10 w-full border-2 border-foreground bg-transparent text-sm font-semibold text-foreground hover:bg-foreground hover:text-background"
-                      asChild
+                    <Link
+                      href="/login"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="flex min-h-[2.75rem] w-full items-center justify-center border border-public-content font-geist text-sm font-semibold text-public-content transition-colors hover:bg-public-content hover:text-public-content-inverted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-public-accent focus-visible:ring-offset-2"
                     >
-                      <Link
-                        href="/login"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                      >
-                        Connexion
-                      </Link>
-                    </Button>
-                    <Button
-                      size="default"
-                      className="h-10 w-full bg-blue-600 text-sm font-semibold text-white shadow-lg shadow-blue-600/25"
-                      asChild
+                      Connexion
+                    </Link>
+                    <Link
+                      href="/register"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="flex min-h-[2.75rem] w-full items-center justify-center gap-2 bg-public-highlight-surface font-geist text-sm font-semibold text-public-content-on-vivid transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-public-accent focus-visible:ring-offset-2"
                     >
-                      <Link
-                        href="/register"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                      >
-                        Essai gratuit
-                      </Link>
-                    </Button>
+                      Essayer 21 jours
+                      <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
+                    </Link>
                   </motion.div>
                 </div>
               </motion.div>
@@ -570,8 +558,8 @@ function DesktopMenuItem({
           onOpen(menu)
         }}
         className={cn(
-          'flex items-center gap-1 whitespace-nowrap py-2 text-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/60',
-          isOpen && 'text-foreground'
+          'flex min-h-[2.75rem] items-center gap-1 whitespace-nowrap font-geist text-sm font-medium text-public-content-muted transition-colors hover:text-public-content focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-public-accent focus-visible:ring-offset-2 focus-visible:ring-offset-public-surface',
+          isOpen && 'text-public-content'
         )}
       >
         {label}
@@ -599,7 +587,7 @@ function DesktopMenuItem({
           align === 'right' ? 'right-0' : 'left-0'
         )}
       >
-        <div className="overflow-hidden rounded-xl border border-border/70 bg-background/95 shadow-xl shadow-black/10 backdrop-blur-xl">
+        <div className="overflow-hidden border border-public-border bg-public-surface-subtle shadow-xl shadow-black/5">
           {children}
         </div>
       </motion.div>
@@ -620,18 +608,18 @@ function MenuLink({ href, label, description, icon, onClick }: MenuLinkProps) {
     <Link
       href={href}
       onClick={onClick}
-      className="group flex gap-3 rounded-lg px-3 py-2.5 transition-colors hover:bg-accent focus-visible:bg-accent focus-visible:outline-none"
+      className="group flex gap-3 px-3 py-2.5 transition-colors hover:bg-public-surface focus-visible:bg-public-surface focus-visible:outline-none"
     >
       {icon && (
-        <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-500/10 text-blue-600 group-hover:bg-blue-500/15 [&>svg]:h-4 [&>svg]:w-4">
+        <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center bg-public-accent/10 text-public-accent [&>svg]:h-4 [&>svg]:w-4">
           {icon}
         </span>
       )}
       <span>
-        <span className="block text-sm font-medium text-foreground">
+        <span className="block font-geist text-sm font-medium text-public-content">
           {label}
         </span>
-        <span className="mt-0.5 block text-xs leading-relaxed text-muted-foreground">
+        <span className="mt-0.5 block font-geist text-xs leading-relaxed text-public-content-muted">
           {description}
         </span>
       </span>

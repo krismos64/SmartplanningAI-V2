@@ -39,7 +39,7 @@ export function HeroSection() {
         className="absolute left-0 top-1/3 h-40 w-1 bg-public-accent-surface"
       />
 
-      <div className="container-custom py-20 lg:py-28">
+      <div className="container-custom pb-20 pt-28 lg:pb-28 lg:pt-32">
         <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
           {/* Colonne texte */}
           <div className="max-w-2xl">
