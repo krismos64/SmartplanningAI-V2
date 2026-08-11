@@ -118,6 +118,7 @@ SmartPlanning facture **2,90 EUR HT par employé et par mois**, sans engagement,
 
 - Accueil : https://smartplanning.fr
 - Tarifs : https://smartplanning.fr/tarifs
+- Solutions par secteur : https://smartplanning.fr/solutions
 - Planning restauration et hôtellerie : https://smartplanning.fr/solutions/planning-restaurant
 - Planning commerce et retail : https://smartplanning.fr/solutions/planning-commerce
 - Planning BTP et chantiers : https://smartplanning.fr/solutions/planning-btp

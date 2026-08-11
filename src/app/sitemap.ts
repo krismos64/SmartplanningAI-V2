@@ -42,6 +42,20 @@ const sectorEntries: MetadataRoute.Sitemap = getAllSectors().map((sector) => ({
   priority: 0.8,
 }))
 
+// Hub /solutions : prend la date du secteur le plus recent
+const sectorsHubEntry: MetadataRoute.Sitemap[number] = {
+  url: `${baseUrl}/solutions`,
+  lastModified: new Date(
+    Math.max(
+      ...getAllSectors().map((sector) =>
+        new Date(sector.lastModified).getTime()
+      )
+    )
+  ),
+  changeFrequency: 'weekly',
+  priority: 0.8,
+}
+
 // Guides /guides/[slug] : chaque guide porte sa propre date,
 // le hub prend la date du guide le plus récent
 const guideEntries: MetadataRoute.Sitemap = getAllGuides().map((guide) => ({
@@ -76,6 +90,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'monthly',
       priority: 0.9,
     },
+    sectorsHubEntry,
     ...sectorEntries,
     guidesHubEntry,
     ...guideEntries,

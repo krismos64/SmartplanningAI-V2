@@ -24,6 +24,7 @@ const footerLinks = {
   product: [
     { href: '/#features', label: 'Fonctionnalités' },
     { href: '/tarifs', label: 'Tarifs' },
+    { href: '/solutions', label: 'Solutions par secteur' },
     ...sectorLinks,
     { href: '/guides', label: 'Guides pratiques' },
   ],
