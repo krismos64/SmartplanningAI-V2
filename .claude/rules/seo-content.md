@@ -97,6 +97,15 @@ Les primitives vivent dans `src/components/public/` : `PublicPageShell`,
 leur chemin exact, pas par le barrel `@/components/public`, qui réexporte
 `ContactForm` et tire react-hook-form dans le bundle initial.
 
+Les pages d'authentification (`src/app/(auth)/`) suivent la même identité
+depuis SP-574 : `/login` et `/register` sont atteintes depuis le site public
+et sont la dernière étape avant conversion. Leur layout porte `.public-scope`.
+
+`PRIMARY_BUTTON_CLASSES` (`src/app/(landing)/components/styles.ts`) sert les
+hubs `/solutions` et `/guides` **et** les formulaires auth. Une modification y
+touche les trois : vérifier les usages réels avant d'y toucher, le commentaire
+d'en-tête a déjà été périmé une fois.
+
 ## Navigation
 
 Une nouvelle page publique s'ajoute au header (`LandingHeader`) **et** au footer.
