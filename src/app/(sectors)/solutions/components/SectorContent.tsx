@@ -115,7 +115,7 @@ export function SectorContent({ sector }: SectorContentProps) {
             <Link
               href="/tarifs"
               aria-label="Consulter les tarifs de SmartPlanning"
-              className="inline-flex min-h-[3.5rem] items-center justify-center border border-public-content px-8 font-geist text-base font-semibold text-public-content transition-colors hover:bg-public-content hover:text-public-content-inverted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-public-accent focus-visible:ring-offset-2 focus-visible:ring-offset-public-surface"
+              className="inline-flex min-h-[3.5rem] items-center justify-center border border-public-content px-8 font-geist text-base font-semibold text-public-content transition-colors hover:bg-public-content hover:text-public-content-on-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-public-accent focus-visible:ring-offset-2 focus-visible:ring-offset-public-surface"
             >
               Voir les tarifs
             </Link>

@@ -328,7 +328,7 @@ export function LandingHeader({
               </Link>
               <Link
                 href="/register"
-                className="inline-flex min-h-[2.75rem] items-center gap-2 border border-public-content px-5 font-geist text-sm font-semibold text-public-content transition-colors hover:bg-public-content hover:text-public-content-inverted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-public-accent focus-visible:ring-offset-2 focus-visible:ring-offset-public-surface"
+                className="inline-flex min-h-[2.75rem] items-center gap-2 border border-public-content px-5 font-geist text-sm font-semibold text-public-content transition-colors hover:bg-public-content hover:text-public-content-on-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-public-accent focus-visible:ring-offset-2 focus-visible:ring-offset-public-surface"
               >
                 Essayer 21 jours
                 <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
@@ -446,7 +446,7 @@ export function LandingHeader({
                     <Link
                       href="/login"
                       onClick={() => setIsMobileMenuOpen(false)}
-                      className="flex min-h-[2.75rem] w-full items-center justify-center border border-public-content font-geist text-sm font-semibold text-public-content transition-colors hover:bg-public-content hover:text-public-content-inverted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-public-accent focus-visible:ring-offset-2"
+                      className="flex min-h-[2.75rem] w-full items-center justify-center border border-public-content font-geist text-sm font-semibold text-public-content transition-colors hover:bg-public-content hover:text-public-content-on-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-public-accent focus-visible:ring-offset-2"
                     >
                       Connexion
                     </Link>
