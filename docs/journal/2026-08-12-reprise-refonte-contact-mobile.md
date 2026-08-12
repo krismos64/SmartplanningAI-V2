@@ -5,7 +5,7 @@
 | Ticket | SP-574, reprise des écarts constatés sur la refonte SP-565 à SP-573 |
 | Documents produits | `src/app/(about)/contact/{page,ContactPageContent,StructuredData}.tsx`, `src/app/(landing)/components/sections/MobileSection.tsx`, `src/components/public/mockups/MobileMockup.tsx`, `src/components/public/__tests__/public-tokens.test.ts` |
 | Documents modifiés | `LandingHeader.tsx`, `SectorContent.tsx`, `ContactSection.tsx`, `ContactForm.tsx`, `LandingPageContent.tsx`, `sitemap.ts`, `llms.txt`, `llms-full.content.ts`, `a11y.spec.ts`, `sitemap.test.ts`, plus 6 fichiers pour les liens |
-| Contrôles | type-check vert, 3153 tests unitaires (185 fichiers), 18 specs publiques, 3 specs axe-core, build de production |
+| Contrôles | type-check vert, 3153 tests unitaires (185 fichiers), 18 specs publiques, 5 specs axe-core, build de production |
 | Jira | SP-574 créé, assigné, priorité High, transitionné en « En cours », commenté avec les 6 SHA et les contrôles |
 | Mémoire | `token-tailwind-inexistant-echoue-en-silence` créée, `ou-en-est-le-projet` et `MEMORY.md` mises à jour |
 
@@ -105,6 +105,7 @@ liste attendue est explicite, elle force à déclarer toute nouvelle page.
 |---|---|
 | `/` | 167 kB, inchangé |
 | `/contact` | 226 kB |
+| `/login` et `/register` | 196 kB |
 | `/tarifs` | 202 kB |
 | `/a-propos` | 191 kB |
 
@@ -115,8 +116,54 @@ coûte aucune requête, et le formulaire parti compense le poids de la section.
 tirés par `ContactForm`. Attendu pour une page qui porte un formulaire validé,
 et c'est précisément le coût que la landing n'a plus à payer.
 
-Accessibilité : 3 specs axe-core au vert, WCAG 2.1 AA, sur `/` en mode clair,
-`/` en mode sombre et `/contact`. La spec `/contact` est nouvelle.
+Accessibilité : 5 specs axe-core au vert, WCAG 2.1 AA, sur `/` en mode clair,
+`/` en mode sombre, `/contact`, `/login` et `/register`. Les trois dernières
+sont nouvelles.
+
+## Seconde passe : proportions, login, register et CTA oubliés
+
+Christophe a relevé deux points de plus en regardant le résultat.
+
+### La maquette téléphone trop courte
+
+Mesurée dans le navigateur sur les deux versions : le cadre faisait 352 x 449,
+ratio **1,27**, quand le prototype tient 313 x 604, ratio **1,93**. Trop large
+et trop court, il se lisait comme une tablette.
+
+Deux corrections. Le cadre est borné à 19,5rem au lieu de 22, et le contenu
+reprend les espacements relevés sur le DOM du prototype : 35 px de padding haut
+d'écran, 25 px avant la liste des jours, 18 px sur le bloc du prochain créneau.
+Résultat 312 x 564, ratio **1,81**.
+
+Le conteneur extérieur passe à 26rem, plus large que le cadre : les étiquettes
+flottantes se posaient sinon par-dessus le contenu et masquaient les pastilles
+d'avatar.
+
+### login et register jamais refondues
+
+SP-573 les avait exclues explicitement du périmètre, « pages publiques mais
+menant à l'application ». Décision revue avec Christophe : ce sont les deux
+pages que le visiteur non connecté atteint depuis le site public, et la
+dernière étape avant conversion. Le header et le footer refondus encadraient
+une carte blanche arrondie à ombres portées.
+
+Le layout `(auth)` porte désormais `.public-scope`. Il sert les 6 pages auth,
+donc les 4 autres héritent du même habillage : cohérent, et non un
+débordement de périmètre.
+
+### Deux CTA de pages refondues avaient échappé à la refonte
+
+Trouvé en suivant `PRIMARY_BUTTON_CLASSES`, utilisée par les formulaires auth
+**et** par les hubs `/solutions` et `/guides`. La constante était restée le
+bouton bleu arrondi à ombre d'avant la refonte. En la reprenant, les trois
+endroits sont corrigés d'un coup.
+
+Les hubs portaient en plus un bloc CTA en dégradé bleu translucide avec
+`rounded-3xl`, des pastilles `bg-card/50` et un badge `bg-blue-500/10`,
+contraires à la règle « aucune opacité sur les aplats ». Zéro classe
+hors-refonte restante dans les deux hubs.
+
+Deux specs axe-core ajoutées sur login et register, qui n'en avaient aucune.
 
 ## Ce qui reste ouvert
 
