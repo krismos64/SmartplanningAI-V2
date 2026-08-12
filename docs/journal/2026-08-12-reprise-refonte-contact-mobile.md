@@ -7,7 +7,7 @@
 | Documents modifiés | `LandingHeader.tsx`, `SectorContent.tsx`, `ContactSection.tsx`, `ContactForm.tsx`, `LandingPageContent.tsx`, `sitemap.ts`, `llms.txt`, `llms-full.content.ts`, `a11y.spec.ts`, `sitemap.test.ts`, plus 6 fichiers pour les liens |
 | Contrôles | type-check vert, 3153 tests unitaires (185 fichiers), 18 specs publiques, 3 specs axe-core, build de production |
 | Jira | SP-574 créé, assigné, priorité High, transitionné en « En cours », commenté avec les 6 SHA et les contrôles |
-| Mémoire | à écrire en fin de session |
+| Mémoire | `token-tailwind-inexistant-echoue-en-silence` créée, `ou-en-est-le-projet` et `MEMORY.md` mises à jour |
 
 ## Ce qui a été fait
 
@@ -127,7 +127,7 @@ Accessibilité : 3 specs axe-core au vert, WCAG 2.1 AA, sur `/` en mode clair,
    rendu : Hero 1, RoleDemos 3, Features 2, et `VideoSection` porte l'index 5
    sans être montée. La section mobile prend 3 comme dans le prototype, ce qui
    ajoute un doublon. Cosmétique, à reprendre d'un bloc
-3. **Les 20 commits de la refonte plus les 5 de cette session ne sont pas
+3. **Les 20 commits de la refonte plus les 7 de cette session ne sont pas
    poussés**, la CI n'a jamais tourné dessus
 4. **SP-574 passera à Terminé au merge**, avec SP-565 à SP-573. Il est en
    « En cours », le travail ayant été fait avant la création du ticket
