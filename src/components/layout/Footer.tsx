@@ -26,7 +26,7 @@ export function Footer({ variant = 'dashboard' }: FooterProps) {
               <Link href="/confidentialite">Confidentialité</Link>
             </Button>
             <Button variant="link" size="sm" asChild>
-              <Link href="/#contact">Contact</Link>
+              <Link href="/contact">Contact</Link>
             </Button>
           </div>
         </div>
@@ -76,7 +76,7 @@ export function Footer({ variant = 'dashboard' }: FooterProps) {
                 asChild
                 className="justify-start"
               >
-                <Link href="/#contact">Nous contacter</Link>
+                <Link href="/contact">Nous contacter</Link>
               </Button>
               <Button
                 variant="link"

@@ -43,7 +43,7 @@ const mobileNavLinks = [
   { href: '/guides', label: 'Guides pratiques' },
   { href: '/tarifs', label: 'Tarifs' },
   { href: '/#faq', label: 'FAQ' },
-  { href: '/#contact', label: 'Contact' },
+  { href: '/contact', label: 'Contact' },
   { href: '/a-propos', label: 'À propos' },
 ]
 
@@ -299,7 +299,7 @@ export function LandingHeader({
                         onClick={closeDesktopMenu}
                       />
                       <MenuLink
-                        href="/#contact"
+                        href="/contact"
                         label="Contact"
                         description="Échangez directement avec notre équipe."
                         icon={<Mail />}

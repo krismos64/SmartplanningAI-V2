@@ -89,7 +89,7 @@ export const navLinks = [
   { href: '#benefits', label: 'Avantages' },
   { href: '#pricing', label: 'Tarifs' },
   { href: '#faq', label: 'FAQ' },
-  { href: '#contact', label: 'Contact' },
+  { href: '/contact', label: 'Contact' },
 ]
 
 // ============================================================================

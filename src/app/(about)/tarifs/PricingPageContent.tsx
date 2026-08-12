@@ -117,7 +117,7 @@ export function PricingPageContent() {
                       Contactez-nous pour un accompagnement personnalisé.
                     </p>
                     <Link
-                      href="/#contact"
+                      href="/contact"
                       className="mt-2 inline-flex min-h-[2.75rem] items-center gap-2 font-geist text-sm font-semibold text-public-accent underline underline-offset-4 transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-public-accent focus-visible:ring-offset-2 focus-visible:ring-offset-public-surface-subtle"
                     >
                       Nous contacter

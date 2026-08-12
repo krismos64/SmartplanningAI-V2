@@ -243,6 +243,7 @@ ${sectorLinks}
 - Guides pratiques : ${baseUrl}/guides
 ${guideLinks}
 - À propos : ${baseUrl}/a-propos
+- Contact : ${baseUrl}/contact
 - CGU : ${baseUrl}/cgu
 - CGV : ${baseUrl}/cgv
 - Confidentialité : ${baseUrl}/confidentialite

@@ -48,7 +48,7 @@ export function FAQSection() {
             </p>
 
             <Link
-              href="#contact"
+              href="/contact"
               className="mt-8 inline-flex min-h-[3rem] items-center gap-2 font-geist text-base font-semibold text-public-accent underline underline-offset-8 transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-public-accent focus-visible:ring-offset-2 focus-visible:ring-offset-public-surface"
             >
               Nous contacter

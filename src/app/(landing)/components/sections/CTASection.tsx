@@ -45,7 +45,7 @@ export function CTASection() {
             </Link>
 
             <Link
-              href="#contact"
+              href="/contact"
               className="inline-flex min-h-[3.5rem] items-center justify-center px-6 font-geist text-base font-semibold text-public-content-on-vivid underline underline-offset-8 transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-public-surface-dark focus-visible:ring-offset-2 focus-visible:ring-offset-public-accent-surface"
             >
               Poser une question

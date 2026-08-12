@@ -38,7 +38,7 @@ const footerLinks = {
   ],
   company: [
     { href: '/a-propos', label: 'À propos' },
-    { href: '/#contact', label: 'Contact' },
+    { href: '/contact', label: 'Contact' },
   ],
   legal: [
     { href: '/cgu', label: 'CGU' },
