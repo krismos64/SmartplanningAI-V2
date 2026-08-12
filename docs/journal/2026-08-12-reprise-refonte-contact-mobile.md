@@ -5,7 +5,7 @@
 | Ticket | SP-574, reprise des écarts constatés sur la refonte SP-565 à SP-573 |
 | Documents produits | `src/app/(about)/contact/{page,ContactPageContent,StructuredData}.tsx`, `src/app/(landing)/components/sections/MobileSection.tsx`, `src/components/public/mockups/MobileMockup.tsx`, `src/components/public/__tests__/public-tokens.test.ts` |
 | Documents modifiés | `LandingHeader.tsx`, `SectorContent.tsx`, `ContactSection.tsx`, `ContactForm.tsx`, `LandingPageContent.tsx`, `sitemap.ts`, `llms.txt`, `llms-full.content.ts`, `a11y.spec.ts`, `sitemap.test.ts`, plus 6 fichiers pour les liens |
-| Contrôles | type-check vert, 3160 tests unitaires (187 fichiers), 20 specs publiques, 7 specs axe-core, build de production |
+| Contrôles | type-check vert, 3160 tests unitaires (187 fichiers), 22 specs publiques, 7 specs axe-core, build de production |
 | Jira | SP-574 créé, assigné, priorité High, transitionné en « En cours », commenté avec les 6 SHA et les contrôles |
 | Mémoire | `token-tailwind-inexistant-echoue-en-silence` créée, `ou-en-est-le-projet` et `MEMORY.md` mises à jour |
 
@@ -106,7 +106,7 @@ liste attendue est explicite, elle force à déclarer toute nouvelle page.
 | `/` | 167 kB, inchangé |
 | `/contact` | 226 kB |
 | `/login` et `/register` | 196 kB |
-| `/tarifs` | 202 kB |
+| `/tarifs` | 200 kB |
 | `/a-propos` | 191 kB |
 
 La landing tient à 167 kB malgré la section ajoutée : la maquette en DOM ne
@@ -261,6 +261,45 @@ Audit axe-core étendu à `/tarifs` et `/cgu`, qui n'en avaient aucun.
 
 **Scan final** : le périmètre public ne porte plus aucune classe hors-refonte,
 `PlanningMockup` excepté.
+
+## Cinquième passe : la page tarifs à la mise en page du prototype
+
+Christophe a trouvé la page tarifs du prototype plus réussie. En comparant les
+deux, il avait raison, et pour une raison précise : la passe de balayage avait
+mis cette page **en conformité**, sans toucher à sa structure. Celle-ci datait
+d'avant la refonte, SP-571 ayant traité les tarifs sans la reprendre.
+
+**Le prix vit désormais sur un aplat bleu franc.** Curseur à gauche sur 3fr,
+résultat à droite sur 2fr, rapport relevé sur le prototype (730 px contre 393).
+La carte porte son ombre bleu nuit décalée de 14 px sans flou et le CTA lime.
+Avant, le prix était un chiffre bleu nuit sur crème dans un bloc étroit centré
+à `max-w-2xl`.
+
+**Le curseur passe à `accent-color`**, comme le prototype : une déclaration au
+lieu de huit pseudo-éléments par moteur, et le rail rempli devient visible. Le
+précédent avait un rail beige sur fond crème, quasi invisible.
+
+**La duplication disparaît.** `PricingCard` répétait le prix du simulateur juste
+au-dessus et redonnait la même liste de fonctionnalités que la colonne de
+gauche, dans le même écran. La liste devient une grille numérotée sur deux
+colonnes.
+
+### Un défaut de mesure dans l'audit lui-même
+
+Le texte de la carte bleue est en blanc pur : le crème n'y donne que **4,13:1**,
+le blanc tient **4,88:1**.
+
+Plus intéressant, axe-core mesurait le contraste **pendant le fondu
+d'apparition** et lisait le bleu `#2563ff` comme `#5e8bfc`, ce qui faisait
+échouer un blanc pourtant conforme. Les specs émulent désormais
+`prefers-reduced-motion`, ce qui fait mesurer l'état final.
+
+Ce n'est pas un contournement, vérifié par mutation : avec ce réglage, axe lit
+le bleu réel et rougit bien sur le crème à 4,13:1. L'audit est devenu plus
+exact, et couvre en plus le parcours des personnes qui réduisent les
+animations.
+
+`/tarifs` passe de 202 à 200 kB.
 
 ## Ce qui reste ouvert
 
