@@ -93,4 +93,36 @@ test.describe('Landing — accessibilité axe-core', () => {
       `Violations sur /contact :\n${JSON.stringify(results.violations, null, 2)}`
     ).toEqual([])
   })
+
+  /**
+   * `/login` et `/register` sont la derniere etape avant conversion et
+   * portent des formulaires. Elles ont ete reprises a l'identite publique
+   * en SP-574, apres avoir garde l'habillage d'avant la refonte.
+   *
+   * Un seul mode : elles portent desormais `.public-scope`, le theme de
+   * l'application ne les atteint plus.
+   *
+   * @see SP-574
+   */
+  for (const { path, label, field } of [
+    { path: '/login', label: 'connexion', field: /^email$/i },
+    { path: '/register', label: 'inscription', field: /nom complet/i },
+  ]) {
+    test(`aucune violation WCAG AA sur la page ${label}`, async ({ page }) => {
+      await page.goto(path)
+      await page.waitForLoadState('networkidle')
+      await page.getByLabel(field).first().waitFor({ state: 'visible' })
+
+      const results = await new AxeBuilder({ page })
+        .withTags(A11Y_TAGS)
+        .exclude('[data-testid="cookie-accept-all"]')
+        .exclude('button[aria-label="Accepter tous les cookies"]')
+        .analyze()
+
+      expect(
+        results.violations,
+        `Violations sur ${path} :\n${JSON.stringify(results.violations, null, 2)}`
+      ).toEqual([])
+    })
+  }
 })

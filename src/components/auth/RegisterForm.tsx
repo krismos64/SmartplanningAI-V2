@@ -196,7 +196,7 @@ export function RegisterForm() {
               <FormLabel>Nom de votre organisation</FormLabel>
               <FormControl>
                 <div className="relative">
-                  <Building2 className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Building2 className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-public-content-muted" />
                   <Input
                     type="text"
                     placeholder="Mon Entreprise SAS"
@@ -220,13 +220,13 @@ export function RegisterForm() {
             <FormItem>
               <FormLabel>
                 Téléphone{' '}
-                <span className="font-normal text-muted-foreground">
+                <span className="font-normal text-public-content-muted">
                   (optionnel)
                 </span>
               </FormLabel>
               <FormControl>
                 <div className="relative">
-                  <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-public-content-muted" />
                   <Input
                     type="tel"
                     placeholder="0612345678"
@@ -272,9 +272,9 @@ export function RegisterForm() {
                     }
                   >
                     {showPassword ? (
-                      <EyeOff className="h-4 w-4 text-muted-foreground" />
+                      <EyeOff className="h-4 w-4 text-public-content-muted" />
                     ) : (
-                      <Eye className="h-4 w-4 text-muted-foreground" />
+                      <Eye className="h-4 w-4 text-public-content-muted" />
                     )}
                   </Button>
                 </div>
@@ -318,9 +318,9 @@ export function RegisterForm() {
                     }
                   >
                     {showConfirmPassword ? (
-                      <EyeOff className="h-4 w-4 text-muted-foreground" />
+                      <EyeOff className="h-4 w-4 text-public-content-muted" />
                     ) : (
-                      <Eye className="h-4 w-4 text-muted-foreground" />
+                      <Eye className="h-4 w-4 text-public-content-muted" />
                     )}
                   </Button>
                 </div>
@@ -348,7 +348,7 @@ export function RegisterForm() {
                   J&apos;accepte les{' '}
                   <Link
                     href="/cgu"
-                    className="text-cyan-600 hover:text-cyan-500 dark:text-cyan-400 dark:hover:text-cyan-300"
+                    className="font-medium text-public-content underline underline-offset-4 transition-colors hover:text-public-accent"
                     target="_blank"
                   >
                     conditions d&apos;utilisation
@@ -356,7 +356,7 @@ export function RegisterForm() {
                   et la{' '}
                   <Link
                     href="/confidentialite"
-                    className="text-cyan-600 hover:text-cyan-500 dark:text-cyan-400 dark:hover:text-cyan-300"
+                    className="font-medium text-public-content underline underline-offset-4 transition-colors hover:text-public-accent"
                     target="_blank"
                   >
                     politique de confidentialité

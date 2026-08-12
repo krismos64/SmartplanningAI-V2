@@ -24,10 +24,10 @@ export default function RegisterPage() {
     <div className="space-y-6">
       {/* Header */}
       <div className="text-center">
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">
+        <h1 className="font-geist text-2xl font-bold tracking-tight text-public-content">
           Créer votre compte
         </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
+        <p className="mt-2 font-geist text-sm text-public-content-muted">
           Commencez gratuitement, sans carte bancaire
         </p>
       </div>
@@ -36,22 +36,27 @@ export default function RegisterPage() {
       <RegisterForm />
 
       {/* Link to login */}
-      <p className="text-center text-sm text-muted-foreground">
+      <p className="text-center font-geist text-sm text-public-content-muted">
         Vous avez déjà un compte ?{' '}
         <Link
           href="/login"
-          className="font-medium text-blue-600 transition-colors hover:text-blue-500 hover:underline dark:text-blue-400 dark:hover:text-blue-300"
+          className="font-semibold text-public-content underline underline-offset-4 transition-colors hover:text-public-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-public-accent focus-visible:ring-offset-2"
         >
           Se connecter
         </Link>
       </p>
 
-      {/* Info essai gratuit */}
-      <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-4">
-        <p className="mb-1 text-xs font-medium text-emerald-600 dark:text-emerald-400">
+      {/*
+        Info essai gratuit. Filet lime et aplat creme plutot que l'encart
+        vert sur fond transparent : la refonte n'utilise aucune opacite sur
+        les aplats, et le vert emeraude n'appartient pas a la palette
+        publique.
+      */}
+      <div className="border-l-4 border-public-highlight bg-public-surface p-4">
+        <p className="mb-1 font-geist text-xs font-semibold uppercase tracking-[0.12em] text-public-content">
           21 jours d&apos;essai gratuit
         </p>
-        <p className="text-xs text-muted-foreground">
+        <p className="font-geist text-xs leading-relaxed text-public-content-muted">
           Toutes les fonctionnalités incluses, sans carte bancaire. 2,90 € par
           employé par mois après l&apos;essai.
         </p>
