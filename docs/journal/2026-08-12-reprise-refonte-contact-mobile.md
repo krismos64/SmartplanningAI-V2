@@ -5,7 +5,7 @@
 | Ticket | SP-574, reprise des écarts constatés sur la refonte SP-565 à SP-573 |
 | Documents produits | `src/app/(about)/contact/{page,ContactPageContent,StructuredData}.tsx`, `src/app/(landing)/components/sections/MobileSection.tsx`, `src/components/public/mockups/MobileMockup.tsx`, `src/components/public/__tests__/public-tokens.test.ts` |
 | Documents modifiés | `LandingHeader.tsx`, `SectorContent.tsx`, `ContactSection.tsx`, `ContactForm.tsx`, `LandingPageContent.tsx`, `sitemap.ts`, `llms.txt`, `llms-full.content.ts`, `a11y.spec.ts`, `sitemap.test.ts`, plus 6 fichiers pour les liens |
-| Contrôles | type-check vert, 3153 tests unitaires (185 fichiers), 18 specs publiques, 5 specs axe-core, build de production |
+| Contrôles | type-check vert, 3156 tests unitaires (186 fichiers), 20 specs publiques, 5 specs axe-core, build de production |
 | Jira | SP-574 créé, assigné, priorité High, transitionné en « En cours », commenté avec les 6 SHA et les contrôles |
 | Mémoire | `token-tailwind-inexistant-echoue-en-silence` créée, `ou-en-est-le-projet` et `MEMORY.md` mises à jour |
 
@@ -164,6 +164,62 @@ contraires à la règle « aucune opacité sur les aplats ». Zéro classe
 hors-refonte restante dans les deux hubs.
 
 Deux specs axe-core ajoutées sur login et register, qui n'en avaient aucune.
+
+## Troisième passe : emails, images et fidélité au prototype
+
+### Un lien 404 dans les emails de fin d'essai
+
+Le pied de page des emails portait « Gérer mes préférences email » vers
+`/preferences-email`, une route qui n'a **jamais existé**. Aucun appelant ne
+passant `unsubscribeUrl`, le repli était le seul chemin emprunté.
+
+Les deux emails concernés sont `TrialEndingSoon` et `TrialExpired`, envoyés aux
+prospects à J-1 et à expiration : la population que le projet cherche à
+convertir. Corrigé vers `/app/settings/notifications`.
+
+Le lien « Contact » du pied de page est rétabli au passage, il avait été retiré
+parce que la route n'existait pas, ce que le commentaire du fichier
+documentait.
+
+Un test confronte désormais les URL du pied de page aux routes réelles de
+`src/app`, groupes de routes compris. Vérifié par mutation. **Premier test sur
+`emails/`**, ce dossier n'en avait aucun.
+
+### Deux illustrations supprimées par la refonte
+
+`avant-apres-sp.webp` sur la landing : SP-567 a retiré la référence en
+réécrivant la section, jugeant l'image « marqueur de contenu généré », puis
+SP-572 a supprimé le fichier devenu orphelin. Le nettoyage était logiquement
+correct, il a entériné une perte de contenu. Restaurée depuis git.
+
+Le commentaire de SP-567 annonçait 2,6 Mo : le WebP pèse **261 Ko**, la source
+PNG ayant été convertie entre-temps.
+
+`manager.webp` sur `/a-propos` : le fichier n'avait jamais été supprimé, seule
+sa référence l'avait été en SP-571. Replacée aux côtés du texte de mission,
+avec la légende du prototype.
+
+Réserve signalée à Christophe : `avant-apres-sp` est visiblement générée,
+personnages cartoon et couleurs saturées, exactement ce que SP-567 lui
+reprochait. Elle détonne avec la sobriété de la refonte et mériterait d'être
+refaite.
+
+### login et register à l'identique du prototype
+
+La passe précédente avait porté l'identité, pas la mise en page. Le prototype
+**scinde l'écran en deux moitiés égales** : panneau bleu nuit éditorial à
+gauche, panneau crème avec la carte du formulaire à droite.
+
+Valeurs relevées sur le DOM du prototype : grille 50/50, ombre corail décalée
+de 15 px et 17 px **sans flou**, angles à 2 px, bouton lime à texte bleu nuit.
+
+Le contenu du panneau diffère entre les deux pages. Choisi sur le `pathname` :
+un layout Next ne peut pas recevoir de props de ses pages, et un contexte pour
+deux titres serait disproportionné.
+
+`AUTH_BUTTON_CLASSES` sépare enfin le CTA des formulaires auth de
+`PRIMARY_BUTTON_CLASSES`. Les deux avaient vécu confondus, c'est ce qui avait
+laissé un bouton bleu arrondi sur les hubs longtemps après la refonte.
 
 ## Ce qui reste ouvert
 
