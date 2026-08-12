@@ -47,7 +47,7 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { cn } from '@/lib/utils'
-import { PRIMARY_BUTTON_CLASSES } from '@/app/(landing)/components'
+import { AUTH_BUTTON_CLASSES } from '@/app/(landing)/components'
 
 /**
  * LoginForm Component
@@ -303,7 +303,7 @@ export function LoginForm() {
         {/* Submit Button */}
         <Button
           type="submit"
-          className={cn('w-full', PRIMARY_BUTTON_CLASSES)}
+          className={cn('w-full', AUTH_BUTTON_CLASSES)}
           disabled={isLoading}
         >
           {isLoading ? (

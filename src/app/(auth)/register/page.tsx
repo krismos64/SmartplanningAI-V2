@@ -21,14 +21,17 @@ export const metadata: Metadata = {
 
 export default function RegisterPage() {
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="text-center">
-        <h1 className="font-geist text-2xl font-bold tracking-tight text-public-content">
+    <div className="space-y-8">
+      {/* En-tete aligne a gauche, meme motif que la page de connexion */}
+      <div>
+        <p className="font-geist text-xs font-semibold uppercase tracking-[0.14em] text-public-brand-on-light">
+          Nouvelle entreprise
+        </p>
+        <h1 className="mt-4 font-geist text-3xl font-bold tracking-[-0.02em] text-public-content sm:text-4xl">
           Créer votre compte
         </h1>
-        <p className="mt-2 font-geist text-sm text-public-content-muted">
-          Commencez gratuitement, sans carte bancaire
+        <p className="mt-3 font-geist text-base text-public-content-muted">
+          Commencez gratuitement, sans carte bancaire.
         </p>
       </div>
 

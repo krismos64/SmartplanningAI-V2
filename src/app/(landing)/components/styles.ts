@@ -39,3 +39,22 @@ export const HIGHLIGHT_TEXT_CLASSES = 'text-blue-600 dark:text-blue-400'
  * peut plus choisir sur ces pages.
  */
 export const HIGHLIGHT_TEXT_CLASSES_PUBLIC = 'text-blue-600'
+
+/**
+ * CTA des formulaires d'authentification.
+ *
+ * Aplat lime a texte bleu nuit, comme le prototype : sur `/login` et
+ * `/register` le bouton est le point de bascule de la page, le lime le
+ * detache du creme de la carte bien mieux qu'un aplat sombre.
+ *
+ * `content-on-vivid` est le token prevu pour un texte sur aplat vif, le blanc
+ * n'y tiendrait pas le contraste AA.
+ *
+ * Distinct de PRIMARY_BUTTON_CLASSES, qui sert les hubs publics : les deux
+ * ont vecu confondus jusqu'a SP-574, ce qui avait laisse un bouton bleu
+ * arrondi sur les hubs longtemps apres la refonte.
+ *
+ * @see SP-574
+ */
+export const AUTH_BUTTON_CLASSES =
+  'h-14 rounded-[2px] bg-public-highlight-surface px-8 font-geist text-base font-semibold text-public-content-on-vivid transition-opacity hover:opacity-90 focus-visible:ring-2 focus-visible:ring-public-content focus-visible:ring-offset-2'

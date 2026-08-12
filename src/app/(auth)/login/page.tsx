@@ -21,14 +21,21 @@ export const metadata: Metadata = {
 
 export default function LoginPage() {
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="text-center">
-        <h1 className="font-geist text-2xl font-bold tracking-tight text-public-content">
-          Bon retour !
+    <div className="space-y-8">
+      {/*
+        En-tete aligne a gauche comme sur le prototype : label en petites
+        capitales, titre large, puis une phrase de contexte. Le panneau
+        editorial de gauche porte l'accroche, cet en-tete nomme l'action.
+      */}
+      <div>
+        <p className="font-geist text-xs font-semibold uppercase tracking-[0.14em] text-public-brand-on-light">
+          Compte existant
+        </p>
+        <h1 className="mt-4 font-geist text-3xl font-bold tracking-[-0.02em] text-public-content sm:text-4xl">
+          Se connecter
         </h1>
-        <p className="mt-2 font-geist text-sm text-public-content-muted">
-          Connectez-vous à votre compte pour accéder au dashboard
+        <p className="mt-3 font-geist text-base text-public-content-muted">
+          Accédez à votre tableau de bord SmartPlanning.
         </p>
       </div>
 
