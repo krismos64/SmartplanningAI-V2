@@ -6,17 +6,24 @@
  *
  * Server Component depuis SP-567.
  *
- * L'illustration « AVANT / AVEC SmartPlanning » est retiree. C'etait le
- * marqueur « contenu genere » le plus visible du site, et elle pesait 2,6 Mo
- * en source. Le texte porte desormais seul la comparaison, ce qui est aussi
- * ce que lisent les moteurs et les assistants.
+ * L'illustration « AVANT / AVEC SmartPlanning » avait ete retiree en SP-567,
+ * jugee marqueur de « contenu genere » et pesant 2,6 Mo en source. Elle est
+ * retablie en SP-574 : le prototype de reference la porte, et cette section
+ * expose le seul argument du site qui se montre mieux qu'il ne se raconte.
+ * Le fichier WebP pese 261 Ko, pas 2,6 Mo, la source PNG ayant ete convertie
+ * entre-temps.
+ *
+ * SP-572 avait supprime le fichier, devenu orphelin apres SP-567. Restaure
+ * depuis l'historique git plutot que regenere.
  *
  * Les donnees viennent du registre `benefits` : leur contenu n'est pas
  * modifie, seul le rendu change.
  *
  * @see SP-567 - Landing, hero et sections hautes
+ * @see SP-574 - Retablissement de l'illustration
  */
 
+import Image from 'next/image'
 import { DisplayTitle } from '@/components/public/DisplayTitle'
 import { SectionLabel } from '@/components/public/SectionLabel'
 import { benefits } from '../../data'
@@ -48,6 +55,25 @@ export function BenefitsSection() {
               dernière minute et les versions imprimées qui ne sont déjà plus à
               jour.
             </p>
+
+            {/*
+              Comparaison avant/apres. L'illustration existait avant la
+              refonte, SP-567 a retire sa reference en reecrivant la section
+              et SP-572 a supprime le fichier devenu orphelin. La section
+              porte pourtant le seul argument du site qui se montre mieux
+              qu'il ne se raconte.
+
+              `sizes` borne le telechargement : sans lui, Next sert le 3840w
+              a tout le monde alors que la colonne fait au plus 640 px.
+            */}
+            <Image
+              src="/images/avant-apres-sp.webp"
+              alt="À gauche, une organisation dispersée entre tableurs, messages et impressions. À droite, la même équipe sur une vue unique SmartPlanning."
+              width={1536}
+              height={1024}
+              sizes="(min-width: 1024px) 40vw, 90vw"
+              className="mt-10 w-full border border-public-border"
+            />
           </div>
 
           {/* Colonne benefices */}

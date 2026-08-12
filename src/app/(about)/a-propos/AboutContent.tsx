@@ -6,17 +6,20 @@
  * depuis le retrait de `isScrolled` (SP-570), seules subsistaient des
  * animations d'apparition qui tiraient Framer Motion dans le bundle.
  *
- * L'illustration `manager.webp` est retiree : image generee, marqueur du
- * registre visuel dont la refonte cherche a sortir. Le texte de mission
- * porte desormais seul l'ouverture de la page.
+ * L'illustration `manager.webp` avait ete retiree en SP-571, jugee marqueur
+ * du registre visuel dont la refonte sortait. Retablie en SP-574 : le
+ * prototype de reference la conserve, avec sa legende, aux cotes du texte
+ * de mission.
  *
  * Le contenu vient du registre `../data` : ce fichier ne fait que le mettre
  * en page, il n'en modifie aucun texte.
  *
  * @ticket SP-285
  * @see SP-571 - Tarifs, a-propos et pages legales
+ * @see SP-574 - Retablissement de l'illustration
  */
 
+import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowUpRight, Linkedin, Youtube } from 'lucide-react'
 import { DisplayTitle } from '@/components/public/DisplayTitle'
@@ -67,13 +70,35 @@ export function AboutContent() {
             </span>
           </h1>
 
-          <div className="mt-10 max-w-3xl space-y-6 border-t border-public-border pt-10">
-            <p className="font-geist text-lg leading-relaxed text-public-content-muted">
-              {mission.description}
-            </p>
-            <p className="font-geist text-lg leading-relaxed text-public-content-muted">
-              {mission.solution}
-            </p>
+          {/*
+            Texte et illustration cote a cote, comme le manifeste du
+            prototype. L'image avait ete retiree en SP-571, jugee marqueur du
+            registre visuel dont la refonte sortait, mais le prototype de
+            reference la conserve avec sa legende.
+          */}
+          <div className="mt-10 grid gap-10 border-t border-public-border pt-10 lg:grid-cols-[1fr_auto] lg:items-start lg:gap-16">
+            <div className="max-w-3xl space-y-6">
+              <p className="font-geist text-lg leading-relaxed text-public-content-muted">
+                {mission.description}
+              </p>
+              <p className="font-geist text-lg leading-relaxed text-public-content-muted">
+                {mission.solution}
+              </p>
+            </div>
+
+            <figure className="lg:w-[22rem]">
+              <Image
+                src="/images/manager.webp"
+                alt="Une responsable d'équipe organise les plannings de la semaine sur SmartPlanning."
+                width={1024}
+                height={1024}
+                sizes="(min-width: 1024px) 22rem, 90vw"
+                className="w-full border border-public-border"
+              />
+              <figcaption className="mt-3 font-geist text-sm text-public-content-muted">
+                Un outil pensé pour le quotidien des responsables d&rsquo;équipe
+              </figcaption>
+            </figure>
           </div>
 
           <Link
