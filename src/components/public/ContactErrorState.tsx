@@ -67,7 +67,7 @@ export function ContactErrorState({
     >
       <Alert
         variant="destructive"
-        className="border-red-500/50 bg-red-500/10 text-white"
+        className="rounded-none border-l-4 border-public-accent bg-public-surface-subtle text-public-content"
       >
         {/* Icône animée */}
         <motion.div
@@ -75,22 +75,22 @@ export function ContactErrorState({
           initial="hidden"
           animate="visible"
         >
-          <XCircle className="h-5 w-5 text-red-400" />
+          <XCircle className="h-5 w-5 text-public-accent" />
         </motion.div>
 
-        <AlertTitle className="text-red-400">
+        <AlertTitle className="font-geist font-semibold text-public-content">
           Erreur lors de l&apos;envoi
         </AlertTitle>
 
         <AlertDescription className="mt-2 space-y-4">
-          <p className="text-white/80">{message}</p>
+          <p className="font-geist text-public-content-muted">{message}</p>
 
           <Button
             type="button"
             variant="outline"
             size="sm"
             onClick={onRetry}
-            className="border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 hover:text-red-300"
+            className="min-h-[2.75rem] rounded-none border border-public-content bg-transparent font-geist font-semibold text-public-content transition-colors hover:bg-public-content hover:text-public-content-on-dark"
           >
             <RefreshCw className="mr-2 h-4 w-4" />
             Réessayer

@@ -139,24 +139,24 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
   if (isSuccess) {
     return (
       <div className="space-y-6 text-center">
-        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-cyan-500/20">
-          <CheckCircle2 className="h-8 w-8 text-cyan-600 dark:text-cyan-400" />
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-public-accent/20">
+          <CheckCircle2 className="h-8 w-8 text-public-content-on-vivid" />
         </div>
 
         <div className="space-y-2">
-          <h2 className="text-xl font-semibold text-foreground">
+          <h2 className="text-xl font-semibold text-public-content">
             Mot de passe réinitialisé
           </h2>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-public-content-muted">
             Votre mot de passe a été modifié avec succès. Vous allez être
             redirigé vers la page de connexion.
           </p>
         </div>
 
         <div className="space-y-3">
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-public-content-muted">
             Redirection dans{' '}
-            <span className="font-semibold text-cyan-600 dark:text-cyan-400">
+            <span className="font-semibold text-public-content">
               {countdown}
             </span>{' '}
             secondes...
@@ -207,9 +207,9 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
                     }
                   >
                     {showPassword ? (
-                      <EyeOff className="h-4 w-4 text-muted-foreground" />
+                      <EyeOff className="h-4 w-4 text-public-content-muted" />
                     ) : (
-                      <Eye className="h-4 w-4 text-muted-foreground" />
+                      <Eye className="h-4 w-4 text-public-content-muted" />
                     )}
                   </Button>
                 </div>
@@ -253,9 +253,9 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
                     }
                   >
                     {showConfirmPassword ? (
-                      <EyeOff className="h-4 w-4 text-muted-foreground" />
+                      <EyeOff className="h-4 w-4 text-public-content-muted" />
                     ) : (
-                      <Eye className="h-4 w-4 text-muted-foreground" />
+                      <Eye className="h-4 w-4 text-public-content-muted" />
                     )}
                   </Button>
                 </div>
@@ -285,7 +285,7 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
         <div className="text-center">
           <Link
             href="/login"
-            className="inline-flex items-center gap-1 text-sm font-medium text-cyan-600 transition-colors hover:text-cyan-500 dark:text-cyan-400 dark:hover:text-cyan-300"
+            className="inline-flex items-center gap-1 text-sm font-medium text-public-content underline underline-offset-4 transition-colors hover:text-public-accent"
           >
             <ArrowLeft className="h-4 w-4" />
             Retour à la connexion

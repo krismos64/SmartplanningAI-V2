@@ -110,10 +110,10 @@ export function VerifyEmailContent({ token }: VerifyEmailContentProps) {
   if (isLoading) {
     return (
       <div className="space-y-6 text-center">
-        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-cyan-500/20">
-          <Loader2 className="h-8 w-8 animate-spin text-cyan-600 dark:text-cyan-400" />
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-public-accent/20">
+          <Loader2 className="h-8 w-8 animate-spin text-public-content-on-vivid" />
         </div>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-public-content-muted">
           Vérification en cours...
         </p>
       </div>
@@ -124,24 +124,24 @@ export function VerifyEmailContent({ token }: VerifyEmailContentProps) {
   if (isSuccess) {
     return (
       <div className="space-y-6 text-center">
-        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-500/20">
-          <CheckCircle2 className="h-8 w-8 text-green-600 dark:text-green-400" />
+        <div className="mx-auto flex h-16 w-16 items-center justify-center bg-public-highlight-surface">
+          <CheckCircle2 className="h-8 w-8 text-public-content-on-vivid" />
         </div>
 
         <div className="space-y-2">
-          <h2 className="text-xl font-semibold text-foreground">
+          <h2 className="text-xl font-semibold text-public-content">
             Email vérifié !
           </h2>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-public-content-muted">
             Votre adresse email a été vérifiée avec succès. Vous pouvez
             maintenant vous connecter.
           </p>
         </div>
 
         <div className="space-y-3">
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-public-content-muted">
             Redirection dans{' '}
-            <span className="font-semibold text-cyan-600 dark:text-cyan-400">
+            <span className="font-semibold text-public-content">
               {countdown}
             </span>{' '}
             secondes...
@@ -160,15 +160,15 @@ export function VerifyEmailContent({ token }: VerifyEmailContentProps) {
   if (isExpired) {
     return (
       <div className="space-y-6 text-center">
-        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-amber-500/20">
-          <RefreshCw className="h-8 w-8 text-amber-600 dark:text-amber-400" />
+        <div className="mx-auto flex h-16 w-16 items-center justify-center bg-public-highlight-surface">
+          <RefreshCw className="h-8 w-8 text-public-content-on-vivid" />
         </div>
 
         <div className="space-y-2">
-          <h2 className="text-xl font-semibold text-foreground">
+          <h2 className="text-xl font-semibold text-public-content">
             Lien expiré
           </h2>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-public-content-muted">
             Ce lien de vérification a expiré. Saisissez votre email pour
             recevoir un nouveau lien.
           </p>
@@ -176,10 +176,10 @@ export function VerifyEmailContent({ token }: VerifyEmailContentProps) {
 
         {isResendSuccess ? (
           <div className="space-y-3">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-500/20">
-              <Mail className="h-6 w-6 text-green-600 dark:text-green-400" />
+            <div className="mx-auto flex h-12 w-12 items-center justify-center bg-public-highlight-surface">
+              <Mail className="h-6 w-6 text-public-content-on-vivid" />
             </div>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-public-content-muted">
               Nouveau lien envoyé ! Vérifiez votre boîte mail.
             </p>
           </div>
@@ -188,7 +188,7 @@ export function VerifyEmailContent({ token }: VerifyEmailContentProps) {
             <input
               type="email"
               placeholder="Votre adresse email"
-              className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-cyan-500"
+              className="w-full rounded-none border border-public-border bg-public-surface px-3 py-2 text-sm text-public-content placeholder:text-public-content-muted focus:outline-none focus:ring-2 focus:ring-public-accent"
               onChange={(e) => setUserEmail(e.target.value)}
               value={userEmail || ''}
             />
@@ -215,7 +215,7 @@ export function VerifyEmailContent({ token }: VerifyEmailContentProps) {
         <div className="text-center">
           <Link
             href="/login"
-            className="inline-flex items-center gap-1 text-sm font-medium text-cyan-600 transition-colors hover:text-cyan-500 dark:text-cyan-400 dark:hover:text-cyan-300"
+            className="inline-flex items-center gap-1 text-sm font-medium text-public-content underline underline-offset-4 transition-colors hover:text-public-accent"
           >
             <ArrowLeft className="h-4 w-4" />
             Retour à la connexion
@@ -228,15 +228,15 @@ export function VerifyEmailContent({ token }: VerifyEmailContentProps) {
   // État : erreur générique
   return (
     <div className="space-y-6 text-center">
-      <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-red-500/20">
-        <AlertCircle className="h-8 w-8 text-red-500 dark:text-red-400" />
+      <div className="mx-auto flex h-16 w-16 items-center justify-center bg-public-accent-surface">
+        <AlertCircle className="h-8 w-8 text-public-content-on-vivid" />
       </div>
 
       <div className="space-y-2">
-        <h2 className="text-xl font-semibold text-foreground">
+        <h2 className="text-xl font-semibold text-public-content">
           Vérification échouée
         </h2>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-public-content-muted">
           {errorMessage || 'Une erreur est survenue lors de la vérification.'}
         </p>
       </div>
@@ -244,7 +244,7 @@ export function VerifyEmailContent({ token }: VerifyEmailContentProps) {
       <div className="text-center">
         <Link
           href="/login"
-          className="inline-flex items-center gap-1 text-sm font-medium text-cyan-600 transition-colors hover:text-cyan-500 dark:text-cyan-400 dark:hover:text-cyan-300"
+          className="inline-flex items-center gap-1 text-sm font-medium text-public-content underline underline-offset-4 transition-colors hover:text-public-accent"
         >
           <ArrowLeft className="h-4 w-4" />
           Retour à la connexion

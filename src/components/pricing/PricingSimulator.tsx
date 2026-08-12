@@ -56,7 +56,7 @@ export function PricingSimulator({
   const content = (
     <div
       className={cn(
-        'w-full rounded-2xl border border-border/50 bg-card/50 backdrop-blur-sm',
+        'w-full border-t-2 border-public-accent bg-public-surface-subtle',
         isCompact ? 'p-6' : 'p-8 lg:p-10',
         className
       )}
@@ -71,7 +71,7 @@ export function PricingSimulator({
         >
           Simulez votre tarif
         </p>
-        <p className="mt-2 text-sm text-muted-foreground">
+        <p className="mt-2 text-sm text-public-content-muted">
           Un prix unique et transparent, basé sur votre effectif
         </p>
       </div>
@@ -81,16 +81,16 @@ export function PricingSimulator({
         <div className="flex items-baseline justify-center gap-1">
           <span
             className={cn(
-              'bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text font-extrabold text-transparent',
+              'font-extrabold text-public-content',
               isCompact ? 'text-4xl' : 'text-5xl lg:text-6xl'
             )}
           >
             {formatPrice(monthlyPrice)}
           </span>
-          <span className="text-muted-foreground">/mois</span>
+          <span className="text-public-content-muted">/mois</span>
         </div>
-        <p className="mt-2 text-sm text-muted-foreground">
-          <span className="font-medium text-foreground">{employees}</span>{' '}
+        <p className="mt-2 text-sm text-public-content-muted">
+          <span className="font-medium text-public-content">{employees}</span>{' '}
           employé{employees > 1 ? 's' : ''} ×{' '}
           {formatPrice(PRICING.PRICE_PER_EMPLOYEE)}
         </p>
@@ -106,7 +106,7 @@ export function PricingSimulator({
             <Users className="h-4 w-4 text-public-accent" aria-hidden="true" />
             Nombre d&apos;employés
           </span>
-          <span className="font-bold text-public-accent">{employees}</span>
+          <span className="font-bold text-public-content">{employees}</span>
         </label>
         <input
           id={sliderId}
@@ -120,9 +120,9 @@ export function PricingSimulator({
           aria-valuemin={PRICING.MIN_EMPLOYEES}
           aria-valuemax={PRICING.MAX_EMPLOYEES}
           aria-valuenow={employees}
-          className="slider-pricing h-2 w-full cursor-pointer appearance-none rounded-full bg-gradient-to-r from-cyan-500/20 to-blue-500/20 outline-none transition-all focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-2 focus-visible:ring-offset-background [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-cyan-400 [&::-moz-range-thumb]:bg-background [&::-moz-range-thumb]:shadow-lg [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-cyan-400 [&::-webkit-slider-thumb]:bg-background [&::-webkit-slider-thumb]:shadow-lg"
+          className="slider-pricing h-2 w-full cursor-pointer appearance-none bg-public-border outline-none transition-colors focus-visible:ring-2 focus-visible:ring-public-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-public-content [&::-moz-range-thumb]:bg-public-surface [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-public-content [&::-webkit-slider-thumb]:bg-public-surface"
         />
-        <div className="mt-2 flex justify-between text-xs text-muted-foreground">
+        <div className="mt-2 flex justify-between text-xs text-public-content-muted">
           <span>{PRICING.MIN_EMPLOYEES}</span>
           <span>{PRICING.MAX_EMPLOYEES}</span>
         </div>
@@ -135,7 +135,7 @@ export function PricingSimulator({
           isCompact ? 'gap-2' : 'gap-3'
         )}
       >
-        <div className="flex items-center gap-1.5 border-l-2 border-emerald-600 bg-public-surface-subtle px-3 py-1.5 text-xs font-medium text-public-content">
+        <div className="flex items-center gap-1.5 border-l-2 border-public-highlight bg-public-surface-subtle px-3 py-1.5 text-xs font-medium text-public-content">
           <Gift className="h-3.5 w-3.5" aria-hidden="true" />
           {PRICING.TRIAL_DAYS} jours gratuits, sans carte bancaire
         </div>

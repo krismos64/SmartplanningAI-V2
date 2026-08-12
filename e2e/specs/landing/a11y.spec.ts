@@ -125,4 +125,35 @@ test.describe('Landing — accessibilité axe-core', () => {
       ).toEqual([])
     })
   }
+
+  /**
+   * Pages reprises pendant le balayage de SP-574, qui n'avaient aucun audit :
+   * `/tarifs` porte le simulateur et la carte de prix, `/cgu` l'ossature
+   * commune des cinq pages legales.
+   *
+   * Le simulateur etait le defaut le plus visible du balayage, un prix en
+   * degrade cyan-bleu sur la page qui porte l'argument commercial.
+   *
+   * @see SP-574
+   */
+  for (const { path, label } of [
+    { path: '/tarifs', label: 'tarifs' },
+    { path: '/cgu', label: 'legale' },
+  ]) {
+    test(`aucune violation WCAG AA sur la page ${label}`, async ({ page }) => {
+      await page.goto(path)
+      await page.waitForLoadState('networkidle')
+
+      const results = await new AxeBuilder({ page })
+        .withTags(A11Y_TAGS)
+        .exclude('[data-testid="cookie-accept-all"]')
+        .exclude('button[aria-label="Accepter tous les cookies"]')
+        .analyze()
+
+      expect(
+        results.violations,
+        `Violations sur ${path} :\n${JSON.stringify(results.violations, null, 2)}`
+      ).toEqual([])
+    })
+  }
 })

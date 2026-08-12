@@ -42,11 +42,7 @@ export function LegalSection({
           level === 3 && 'text-lg text-public-content/80'
         )}
       >
-        {number && (
-          <span className="mr-3 text-public-accent">
-            {number}
-          </span>
-        )}
+        {number && <span className="mr-3 text-public-accent">{number}</span>}
         {title}
       </HeadingTag>
       <div className="space-y-4 text-public-content-muted">{children}</div>
@@ -162,13 +158,18 @@ export function LegalContact({
 }) {
   return (
     <div
-      className={cn('rounded-lg border border-public-border bg-card p-6', className)}
+      className={cn(
+        'border-l-4 border-public-accent bg-public-surface-subtle p-6',
+        className
+      )}
     >
-      {title && <h4 className="mb-4 font-semibold text-public-content">{title}</h4>}
+      {title && (
+        <h4 className="mb-4 font-semibold text-public-content">{title}</h4>
+      )}
       <div className="space-y-2 text-sm text-public-content-muted">
         {email && (
           <p>
-            <span className="text-public-content-muted/70">Email : </span>
+            <span className="text-public-content-muted">Email : </span>
             <a
               href={`mailto:${email}`}
               className="text-public-accent hover:underline"
@@ -179,13 +180,13 @@ export function LegalContact({
         )}
         {address && (
           <p>
-            <span className="text-public-content-muted/70">Adresse : </span>
+            <span className="text-public-content-muted">Adresse : </span>
             {address}
           </p>
         )}
         {phone && (
           <p>
-            <span className="text-public-content-muted/70">Téléphone : </span>
+            <span className="text-public-content-muted">Téléphone : </span>
             <a
               href={`tel:${phone}`}
               className="text-public-accent hover:underline"
@@ -278,12 +279,12 @@ export function LegalAcceptanceBox({
   return (
     <div
       className={cn(
-        'mt-12 rounded-lg border border-public-border bg-card p-6',
+        'mt-12 border-t border-public-border bg-public-surface-subtle p-6',
         className
       )}
     >
       <p className="text-center text-sm text-public-content-muted">{message}</p>
-      <p className="mt-4 text-center text-xs text-public-content-muted/70">
+      <p className="mt-4 text-center text-xs text-public-content-muted">
         Dernière mise à jour : {lastUpdated} | Version {version}
       </p>
     </div>
@@ -312,10 +313,7 @@ export function LegalLink({
   return (
     <a
       href={href}
-      className={cn(
-        'text-public-accent hover:underline',
-        className
-      )}
+      className={cn('text-public-accent hover:underline', className)}
       {...externalProps}
     >
       {children}

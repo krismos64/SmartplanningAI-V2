@@ -58,7 +58,7 @@ function AnimatedCheckmark() {
         stroke="currentColor"
         strokeWidth="4"
         fill="none"
-        className="text-emerald-500"
+        className="text-public-content"
         variants={checkmarkCircleVariants}
         style={{
           strokeLinecap: 'round',
@@ -70,7 +70,7 @@ function AnimatedCheckmark() {
         stroke="currentColor"
         strokeWidth="4"
         fill="none"
-        className="text-emerald-500"
+        className="text-public-content"
         variants={checkmarkTickVariants}
         style={{
           strokeLinecap: 'round',
@@ -106,8 +106,10 @@ export function ContactSuccessState({
 
       {/* Message principal */}
       <motion.div variants={successItemVariants} className="space-y-2">
-        <h3 className="text-2xl font-bold text-white">Merci {name} !</h3>
-        <p className="text-lg text-emerald-400">
+        <h3 className="font-geist text-2xl font-bold text-public-content">
+          Merci {name} !
+        </h3>
+        <p className="font-geist text-lg font-medium text-public-content">
           Votre message a bien été envoyé.
         </p>
       </motion.div>
@@ -115,7 +117,7 @@ export function ContactSuccessState({
       {/* Sous-message */}
       <motion.p
         variants={successItemVariants}
-        className="max-w-sm text-white/70"
+        className="max-w-sm font-geist text-public-content-muted"
       >
         Nous vous répondrons dans les 24-48h. Consultez votre boîte mail pour la
         confirmation.
@@ -127,7 +129,7 @@ export function ContactSuccessState({
           type="button"
           variant="outline"
           onClick={onReset}
-          className="border-white/20 bg-white/5 text-white hover:bg-white/10"
+          className="min-h-[2.75rem] rounded-none border border-public-content bg-transparent font-geist font-semibold text-public-content transition-colors hover:bg-public-content hover:text-public-content-on-dark"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
           Envoyer un autre message

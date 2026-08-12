@@ -129,7 +129,7 @@ export function LegalPageLayout({
                             item.level === 2 && 'pl-4',
                             item.level === 3 && 'pl-8',
                             activeSection === item.id
-                              ? 'text-public-accent'
+                              ? 'font-semibold text-public-content'
                               : 'text-public-content-muted hover:text-public-content'
                           )}
                         >
@@ -152,7 +152,7 @@ export function LegalPageLayout({
               {/* En-tête du document */}
               <motion.div variants={fadeInUp} className="mb-12">
                 {/* Badge avec icône */}
-                <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/10 px-4 py-2 text-sm text-public-accent">
+                <div className="mb-6 inline-flex items-center gap-2 border-l-4 border-public-accent bg-public-surface-subtle px-4 py-2 font-geist text-sm font-medium text-public-content">
                   {icon}
                   Document légal
                 </div>
@@ -168,13 +168,13 @@ export function LegalPageLayout({
                 </p>
 
                 {/* Métadonnées */}
-                <div className="flex flex-wrap items-center gap-4 text-sm text-public-content-muted/70">
+                <div className="flex flex-wrap items-center gap-4 text-sm text-public-content-muted">
                   <span className="flex items-center gap-2">
-                    <span className="h-1.5 w-1.5 rounded-full bg-public-accent" />
+                    <span className="h-1.5 w-1.5 bg-public-accent" />
                     Version {version}
                   </span>
                   <span className="flex items-center gap-2">
-                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                    <span className="h-1.5 w-1.5 bg-public-highlight" />
                     Mis à jour le {lastUpdated}
                   </span>
                 </div>
@@ -196,7 +196,7 @@ export function LegalPageLayout({
                         <button
                           key={item.id}
                           onClick={() => scrollToSection(item.id)}
-                          className="text-left text-sm text-public-content-muted hover:text-public-accent"
+                          className="text-left text-sm text-public-content-muted hover:text-public-content"
                         >
                           {item.title}
                         </button>
@@ -226,7 +226,10 @@ export function LegalPageLayout({
         animate={{ opacity: showScrollTop ? 1 : 0 }}
         onClick={scrollToTop}
         className={cn(
-          'fixed bottom-8 right-8 z-40 flex h-12 w-12 items-center justify-center rounded-full border border-public-border bg-background/90 text-public-content-muted shadow-lg backdrop-blur-sm transition-all hover:border-blue-600/50 hover:bg-public-accent/20 hover:text-public-accent',
+          // Aplat franc et angles vifs : le bouton portait un fond
+          // translucide avec flou et un survol bleu, d'avant la refonte.
+          // WCAG 2.5.5 : 48 px, au-dessus du minimum de 44.
+          'fixed bottom-8 right-8 z-40 flex h-12 w-12 items-center justify-center bg-public-surface-dark text-public-content-on-dark transition-colors hover:bg-public-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-public-accent focus-visible:ring-offset-2',
           !showScrollTop && 'pointer-events-none'
         )}
         aria-label="Retour en haut"

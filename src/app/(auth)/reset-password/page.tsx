@@ -35,16 +35,16 @@ export default async function ResetPasswordPage({
   // Si pas de token, afficher un message d'erreur
   if (!token) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-8">
         {/* Header */}
-        <div className="text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-500/20">
-            <AlertCircle className="h-8 w-8 text-red-500 dark:text-red-400" />
+        <div>
+          <div className="mb-6 flex h-14 w-14 items-center justify-center bg-public-accent-surface">
+            <AlertCircle className="h-7 w-7 text-public-content-on-vivid" />
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">
+          <h1 className="font-geist text-3xl font-bold tracking-[-0.02em] text-public-content">
             Lien invalide
           </h1>
-          <p className="mt-2 text-sm text-muted-foreground">
+          <p className="mt-3 font-geist text-base text-public-content-muted">
             Ce lien de réinitialisation est invalide ou a expiré.
           </p>
         </div>
@@ -52,15 +52,15 @@ export default async function ResetPasswordPage({
         {/* Actions */}
         <div className="space-y-3">
           <Link href="/forgot-password" className="block">
-            <Button className="w-full bg-gradient-to-r from-blue-500 to-cyan-400 text-white shadow-lg shadow-blue-500/25 hover:from-blue-600 hover:to-cyan-500">
+            <Button className="w-full rounded-none bg-public-content font-geist font-semibold text-public-content-on-dark transition-colors hover:bg-public-accent">
               Demander un nouveau lien
             </Button>
           </Link>
 
-          <div className="text-center">
+          <div>
             <Link
               href="/login"
-              className="inline-flex items-center gap-1 text-sm font-medium text-cyan-600 transition-colors hover:text-cyan-500 dark:text-cyan-400 dark:hover:text-cyan-300"
+              className="inline-flex items-center gap-1 text-sm font-medium text-public-content underline underline-offset-4 transition-colors hover:text-public-accent"
             >
               <ArrowLeft className="h-4 w-4" />
               Retour à la connexion
@@ -72,13 +72,13 @@ export default async function ResetPasswordPage({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Header */}
-      <div className="text-center">
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">
+      <div>
+        <h1 className="font-geist text-3xl font-bold tracking-[-0.02em] text-public-content">
           Nouveau mot de passe
         </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
+        <p className="mt-3 font-geist text-base text-public-content-muted">
           Choisissez un mot de passe sécurisé pour votre compte
         </p>
       </div>
