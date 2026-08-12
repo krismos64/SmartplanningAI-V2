@@ -63,9 +63,9 @@ export function MobileSection() {
             </DisplayTitle>
 
             <p className="mt-6 max-w-xl font-geist text-lg leading-relaxed text-public-content-on-dark/75">
-              Depuis le navigateur de leur téléphone, les employés retrouvent
-              la dernière version de leur planning, leurs congés, leurs tâches
-              et les échanges de l&rsquo;équipe.
+              Depuis le navigateur de leur téléphone, les employés retrouvent la
+              dernière version de leur planning, leurs congés, leurs tâches et
+              les échanges de l&rsquo;équipe.
             </p>
 
             {/*

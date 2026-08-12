@@ -68,8 +68,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Contact | SmartPlanning',
-    description:
-      'Une question sur SmartPlanning ? Réponse sous 24 h ouvrées.',
+    description: 'Une question sur SmartPlanning ? Réponse sous 24 h ouvrées.',
     creator: '@smartplanning',
   },
 

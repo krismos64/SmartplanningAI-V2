@@ -54,9 +54,9 @@ export function ContactSection() {
             </DisplayTitle>
 
             <p className="mt-6 max-w-xl font-geist text-lg leading-relaxed text-public-content-muted">
-              Décrivez votre équipe et la façon dont vous organisez les
-              horaires aujourd&rsquo;hui. Notre équipe répond sur la mise en
-              place comme sur le produit.
+              Décrivez votre équipe et la façon dont vous organisez les horaires
+              aujourd&rsquo;hui. Notre équipe répond sur la mise en place comme
+              sur le produit.
             </p>
 
             <ul className="mt-8 flex flex-col gap-3 sm:flex-row sm:gap-8">

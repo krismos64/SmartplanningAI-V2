@@ -35,7 +35,10 @@ function declaredPublicTokens(): Set<string> {
   const config = readFileSync(join(ROOT, 'tailwind.config.ts'), 'utf-8')
 
   const groupStart = config.indexOf('public: {')
-  expect(groupStart, 'groupe `public` absent de tailwind.config.ts').toBeGreaterThan(-1)
+  expect(
+    groupStart,
+    'groupe `public` absent de tailwind.config.ts'
+  ).toBeGreaterThan(-1)
 
   // Le groupe s'arrete a la premiere ligne qui ferme l'objet a son niveau.
   const groupEnd = config.indexOf('\n        },', groupStart)

@@ -82,8 +82,7 @@ export function ContactPageContent() {
             className="mt-6 max-w-2xl font-geist text-lg leading-relaxed text-public-content-on-dark/75"
           >
             Décrivez votre équipe et la façon dont vous organisez les horaires
-            aujourd&rsquo;hui. Notre équipe vous répond sous 24 heures
-            ouvrées.
+            aujourd&rsquo;hui. Notre équipe vous répond sous 24 heures ouvrées.
           </p>
         </div>
       </section>
