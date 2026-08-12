@@ -51,8 +51,12 @@ esac
 # (about), (legal) et components/public ajoutes le 11 aout 2026 apres la
 # refonte visuelle : les primitives publiques et les pages tarifs, a-propos
 # et legales n'y declenchaient aucun rappel.
+# (auth), components/auth, components/pricing et emails/ ajoutes le 12 aout
+# 2026 apres SP-574 : login et register suivent desormais l'identite publique,
+# le simulateur de tarifs sert la landing, et le pied de page des emails a
+# porte un lien mort vers une route inexistante pendant des mois.
 case "$relatif" in
-    *"(sectors)"*|*"(guides)"*|*"(about)"*|*"(legal)"*|*components/public/*|*sitemap.ts|*robots.ts|public/llms*|*landing*|*Landing*|*Footer*|*footer*)
+    *"(sectors)"*|*"(guides)"*|*"(about)"*|*"(legal)"*|*"(auth)"*|*components/public/*|*components/auth/*|*components/pricing/*|emails/*|*sitemap.ts|*robots.ts|public/llms*|*landing*|*Landing*|*Footer*|*footer*)
         regles+=("seo-content.md : registre data-driven, aucun concurrent nomme, llms.txt et sitemap a mettre a jour") ;;
 esac
 

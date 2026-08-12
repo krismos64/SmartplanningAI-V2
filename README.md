@@ -127,16 +127,16 @@ npm run email:dev        # Previsualisation des templates React Email
 
 ```
 src/
-├── app/              # Next.js 15 App Router (63 pages, 5 layouts, 17 API routes)
+├── app/              # Next.js 15 App Router (64 pages, 5 layouts, 17 API routes)
 │   ├── (auth)/       # Login, register, verify-email, activate-account
-│   ├── (about)/      # A propos, tarifs
+│   ├── (about)/      # A propos, tarifs, contact
 │   ├── (landing)/    # Landing page
 │   ├── (legal)/      # Pages legales RGPD
 │   ├── (sectors)/    # Pages secteur /solutions/[slug] (registre data-driven)
 │   ├── (guides)/     # Hub et guides pratiques /guides/[slug] (registre data-driven)
 │   ├── app/          # Routes protegees par role
 │   └── api/          # API Routes (avatar, webhooks, health, SSE, messages...)
-├── components/       # 212 composants React
+├── components/       # 194 composants React
 │   ├── public/       # Primitives des pages publiques (identite editoriale)
 │   ├── messaging/    # Messagerie (8 composants)
 │   ├── import/       # Import CSV (4 composants)

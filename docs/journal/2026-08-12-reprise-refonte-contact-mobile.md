@@ -4,10 +4,10 @@
 |---|---|
 | Ticket | SP-574, reprise des écarts constatés sur la refonte SP-565 à SP-573 |
 | Documents produits | `src/app/(about)/contact/{page,ContactPageContent,StructuredData}.tsx`, `src/app/(landing)/components/sections/MobileSection.tsx`, `src/components/public/mockups/MobileMockup.tsx`, `src/components/public/__tests__/public-tokens.test.ts` |
-| Documents modifiés | `LandingHeader.tsx`, `SectorContent.tsx`, `ContactSection.tsx`, `ContactForm.tsx`, `LandingPageContent.tsx`, `sitemap.ts`, `llms.txt`, `llms-full.content.ts`, `a11y.spec.ts`, `sitemap.test.ts`, plus 6 fichiers pour les liens |
+| Documents modifiés | 19 commits au total : `LandingHeader.tsx`, `SectorContent.tsx`, `ContactSection.tsx`, `ContactForm.tsx`, `LandingPageContent.tsx`, les 7 pages `(auth)` et leurs 6 formulaires, `PricingSimulator.tsx`, `PricingCard.tsx`, `LegalPageLayout.tsx`, `LegalSection.tsx`, `emails/components/Footer.tsx`, `sitemap.ts`, `llms.txt`, `llms-full.content.ts`, `a11y.spec.ts`, `sitemap.test.ts`, `README.md`, `seo-content.md`, `hook-rappel-regles.sh` |
 | Contrôles | type-check vert, 3160 tests unitaires (187 fichiers), 22 specs publiques, 7 specs axe-core, build de production |
-| Jira | SP-574 créé, assigné, priorité High, transitionné en « En cours », commenté avec les 6 SHA et les contrôles |
-| Mémoire | `token-tailwind-inexistant-echoue-en-silence` créée, `ou-en-est-le-projet` et `MEMORY.md` mises à jour |
+| Jira | SP-574 créé, assigné, priorité High, « En cours ». Quatre commentaires, un par passe, avec les SHA et les contrôles |
+| Mémoire | `token-tailwind-inexistant-echoue-en-silence` et `refonte-publique-angles-morts` créées, `ou-en-est-le-projet` et `MEMORY.md` mises à jour |
 
 ## Ce qui a été fait
 
