@@ -30,8 +30,9 @@ export interface FooterProps {
  * - Lien de désabonnement (optionnel)
  * - Adresse de contact
  *
- * Pas de lien « Contact » : la route publique /contact n'existe pas
- * (seule l'API /api/contact est exposée), le lien pointait dans le vide.
+ * Le lien « Contact » avait ete retire parce que la route publique /contact
+ * n'existait pas, seule l'API /api/contact etant exposee. La page existe
+ * depuis SP-574, le lien est retabli.
  */
 export function Footer({
   year = new Date().getFullYear(),
@@ -79,6 +80,14 @@ export function Footer({
                         Confidentialité
                       </Link>
                     </td>
+                    <td style={separatorCellStyle}>
+                      <Text style={separatorStyle}>•</Text>
+                    </td>
+                    <td style={linkCellStyle}>
+                      <Link href={`${baseUrl}/contact`} style={linkStyle}>
+                        Contact
+                      </Link>
+                    </td>
                   </tr>
                 </tbody>
               </table>
@@ -111,8 +120,15 @@ export function Footer({
               <Text style={unsubscribeTextStyle}>
                 Vous recevez cet email car vous êtes inscrit sur SmartPlanning.
                 <br />
+                {/*
+                  `/preferences-email` n'a jamais existe : le lien renvoyait
+                  un 404 sur les deux emails qui l'affichent, ceux de fin
+                  d'essai. La page reelle est `/app/settings/notifications`.
+                */}
                 <Link
-                  href={unsubscribeUrl || `${baseUrl}/preferences-email`}
+                  href={
+                    unsubscribeUrl || `${baseUrl}/app/settings/notifications`
+                  }
                   style={unsubscribeLinkStyle}
                 >
                   Gérer mes préférences email
