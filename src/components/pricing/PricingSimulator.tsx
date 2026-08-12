@@ -3,14 +3,29 @@
 /**
  * PricingSimulator Component
  *
- * Simulateur interactif de tarification per-seat.
- * Slider pour ajuster le nombre d'employés avec calcul en temps réel.
+ * Simulateur interactif de tarification per-seat, curseur et calcul en
+ * temps reel.
+ *
+ * Deux mises en page. En `full`, celle du prototype (SP-574) : curseur a
+ * gauche sur la plus grande part de la largeur, resultat a droite sur un
+ * aplat bleu franc avec son CTA. Le prix devient le point focal de la page
+ * plutot qu'un chiffre parmi d'autres sur du creme.
+ *
+ * En `compact`, la colonne unique est conservee : la section tarifs de la
+ * landing pose le simulateur dans une grille deja a deux colonnes, un second
+ * niveau de scission y serait illisible.
+ *
+ * Le curseur utilise `accent-color`, comme le prototype, plutot que des
+ * pseudo-elements par moteur : une declaration au lieu de huit, et le rendu
+ * natif reste coherent sur Firefox comme sur les navigateurs WebKit.
  *
  * @ticket SP-355
+ * @see SP-574 - Mise en page du prototype
  */
 
 import { useState, useId } from 'react'
-import { Users, Gift, ShieldCheck } from 'lucide-react'
+import Link from 'next/link'
+import { ArrowUpRight, Gift, ShieldCheck, Users } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import {
   PRICING,
@@ -33,6 +48,20 @@ export interface PricingSimulatorProps {
   onEmployeesChange?: (employees: number) => void
 }
 
+/** Reassurances affichees sous le curseur. */
+const BADGES = [
+  {
+    icon: Gift,
+    rule: 'border-public-highlight',
+    label: `${PRICING.TRIAL_DAYS} jours gratuits, sans carte bancaire`,
+  },
+  {
+    icon: ShieldCheck,
+    rule: 'border-public-accent',
+    label: 'Sans engagement · Résiliation en 1 clic',
+  },
+] as const
+
 export function PricingSimulator({
   className,
   size = 'full',
@@ -53,97 +82,140 @@ export function PricingSimulator({
     onEmployeesChange?.(value)
   }
 
-  const content = (
-    <div
-      className={cn(
-        'w-full border-t-2 border-public-accent bg-public-surface-subtle',
-        isCompact ? 'p-6' : 'p-8 lg:p-10',
-        className
-      )}
-    >
-      {/* Header */}
-      <div className={cn('text-center', isCompact ? 'mb-6' : 'mb-8')}>
-        <p
+  /** Colonne de reglage : intitule, curseur, bornes et reassurances. */
+  const control = (
+    <div className={isCompact ? '' : 'lg:pr-8'}>
+      <label
+        htmlFor={sliderId}
+        className="flex flex-wrap items-baseline justify-between gap-3"
+      >
+        <span className="flex items-center gap-2 font-geist text-base font-medium text-public-content">
+          <Users className="h-5 w-5 text-public-accent" aria-hidden="true" />
+          Taille de votre équipe
+        </span>
+        <span
           className={cn(
-            'font-bold tracking-tight',
+            'font-geist font-bold text-public-content',
             isCompact ? 'text-xl' : 'text-2xl lg:text-3xl'
           )}
         >
-          Simulez votre tarif
-        </p>
-        <p className="mt-2 text-sm text-public-content-muted">
-          Un prix unique et transparent, basé sur votre effectif
-        </p>
+          {employees} employé{employees > 1 ? 's' : ''}
+        </span>
+      </label>
+
+      {/*
+        `accent-color` colore le rail rempli et la poignee d'un seul coup, et
+        laisse le navigateur gerer les etats de survol et de focus.
+      */}
+      <input
+        id={sliderId}
+        type="range"
+        min={PRICING.MIN_EMPLOYEES}
+        max={PRICING.MAX_EMPLOYEES}
+        value={employees}
+        onChange={handleSliderChange}
+        aria-label={`Nombre d'employés : ${employees}`}
+        aria-describedby={priceId}
+        className={cn(
+          'mt-6 h-2 w-full cursor-pointer accent-public-accent',
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-public-accent focus-visible:ring-offset-2 focus-visible:ring-offset-public-surface'
+        )}
+      />
+
+      <div className="mt-2 flex justify-between font-geist text-xs text-public-content-muted">
+        <span>{PRICING.MIN_EMPLOYEES}</span>
+        <span>{PRICING.MAX_EMPLOYEES}</span>
       </div>
 
-      {/* Price display */}
-      <div className="mb-8 text-center" aria-live="polite" id={priceId}>
-        <div className="flex items-baseline justify-center gap-1">
-          <span
+      <div className="mt-8 flex flex-wrap gap-3">
+        {BADGES.map((badge) => (
+          <p
+            key={badge.label}
             className={cn(
-              'font-extrabold text-public-content',
-              isCompact ? 'text-4xl' : 'text-5xl lg:text-6xl'
+              'flex items-center gap-1.5 border-l-2 bg-public-surface px-3 py-1.5 font-geist text-xs font-medium text-public-content',
+              badge.rule
             )}
           >
-            {formatPrice(monthlyPrice)}
-          </span>
-          <span className="text-public-content-muted">/mois</span>
-        </div>
-        <p className="mt-2 text-sm text-public-content-muted">
-          <span className="font-medium text-public-content">{employees}</span>{' '}
-          employé{employees > 1 ? 's' : ''} ×{' '}
-          {formatPrice(PRICING.PRICE_PER_EMPLOYEE)}
-        </p>
+            <badge.icon className="h-3.5 w-3.5" aria-hidden="true" />
+            {badge.label}
+          </p>
+        ))}
       </div>
+    </div>
+  )
 
-      {/* Slider */}
-      <div className={cn(isCompact ? 'mb-6' : 'mb-8')}>
-        <label
-          htmlFor={sliderId}
-          className="mb-3 flex items-center justify-between text-sm"
+  /**
+   * Colonne de resultat, aplat bleu franc.
+   *
+   * Ombre bleu nuit decalee de 14 px sans flou, relevee sur le prototype.
+   *
+   * Texte en blanc pur et non en `content-on-dark` : le creme sur ce bleu ne
+   * donne que 4,14:1, mesure par axe-core, quand le blanc tient 4,88:1. Meme
+   * choix que le ton `brand` de BentoCard.
+   */
+  const result = (
+    <div
+      id={priceId}
+      aria-live="polite"
+      className={cn(
+        'bg-public-brand-surface p-8 text-white',
+        !isCompact && 'shadow-[14px_14px_0_0_hsl(var(--public-surface-dark))]'
+      )}
+    >
+      <p className="font-geist text-xs uppercase tracking-[0.14em] text-white">
+        Votre abonnement mensuel
+      </p>
+
+      <p className="mt-4 flex items-baseline gap-2">
+        <span
+          className={cn(
+            'font-geist font-extrabold tracking-[-0.03em]',
+            isCompact ? 'text-4xl' : 'text-5xl lg:text-6xl'
+          )}
         >
-          <span className="flex items-center gap-2 font-medium">
-            <Users className="h-4 w-4 text-public-accent" aria-hidden="true" />
-            Nombre d&apos;employés
-          </span>
-          <span className="font-bold text-public-content">{employees}</span>
-        </label>
-        <input
-          id={sliderId}
-          type="range"
-          min={PRICING.MIN_EMPLOYEES}
-          max={PRICING.MAX_EMPLOYEES}
-          value={employees}
-          onChange={handleSliderChange}
-          aria-label={`Nombre d'employés : ${employees}`}
-          aria-describedby={priceId}
-          aria-valuemin={PRICING.MIN_EMPLOYEES}
-          aria-valuemax={PRICING.MAX_EMPLOYEES}
-          aria-valuenow={employees}
-          className="slider-pricing h-2 w-full cursor-pointer appearance-none bg-public-border outline-none transition-colors focus-visible:ring-2 focus-visible:ring-public-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-public-content [&::-moz-range-thumb]:bg-public-surface [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-public-content [&::-webkit-slider-thumb]:bg-public-surface"
-        />
-        <div className="mt-2 flex justify-between text-xs text-public-content-muted">
-          <span>{PRICING.MIN_EMPLOYEES}</span>
-          <span>{PRICING.MAX_EMPLOYEES}</span>
-        </div>
-      </div>
+          {formatPrice(monthlyPrice)}
+        </span>
+        <span className="font-geist text-sm font-semibold">HT</span>
+      </p>
 
-      {/* Badges */}
-      <div
-        className={cn(
-          'flex flex-wrap justify-center gap-3',
-          isCompact ? 'gap-2' : 'gap-3'
-        )}
+      <p className="mt-2 font-geist text-base text-white">
+        {employees} × {formatPrice(PRICING.PRICE_PER_EMPLOYEE)} / mois
+      </p>
+
+      {/*
+        Aplat lime a texte bleu nuit : sur le bleu franc c'est le seul aplat
+        de la palette qui detache le CTA sans perdre le contraste.
+      */}
+      <Link
+        href="/register"
+        className="mt-8 inline-flex min-h-[3.25rem] items-center justify-center gap-2 rounded-[2px] bg-public-highlight-surface px-6 font-geist text-base font-semibold text-public-content-on-vivid transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-public-brand-surface"
       >
-        <div className="flex items-center gap-1.5 border-l-2 border-public-highlight bg-public-surface-subtle px-3 py-1.5 text-xs font-medium text-public-content">
-          <Gift className="h-3.5 w-3.5" aria-hidden="true" />
-          {PRICING.TRIAL_DAYS} jours gratuits, sans carte bancaire
-        </div>
-        <div className="flex items-center gap-1.5 border-l-2 border-public-accent bg-public-surface-subtle px-3 py-1.5 text-xs font-medium text-public-content">
-          <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
-          Sans engagement · Résiliation en 1 clic
-        </div>
-      </div>
+        Essayer {PRICING.TRIAL_DAYS} jours
+        <ArrowUpRight className="h-5 w-5" aria-hidden="true" />
+      </Link>
+    </div>
+  )
+
+  const content = isCompact ? (
+    <div
+      className={cn(
+        'w-full border-t-2 border-public-accent bg-public-surface-subtle p-6',
+        className
+      )}
+    >
+      {control}
+      <div className="mt-8">{result}</div>
+    </div>
+  ) : (
+    // 3fr / 2fr reprend le rapport du prototype, 730 px contre 393.
+    <div
+      className={cn(
+        'grid w-full items-center gap-10 lg:grid-cols-[3fr_2fr] lg:gap-16',
+        className
+      )}
+    >
+      {control}
+      {result}
     </div>
   )
 

@@ -141,6 +141,18 @@ test.describe('Landing — accessibilité axe-core', () => {
     { path: '/cgu', label: 'legale' },
   ]) {
     test(`aucune violation WCAG AA sur la page ${label}`, async ({ page }) => {
+      /*
+        `prefers-reduced-motion` avant le chargement : les cartes du
+        simulateur apparaissent en fondu, et axe mesurait le contraste
+        pendant la transition. Le bleu #2563ff y etait lu #5e8bfc, ce qui
+        faisait echouer un texte blanc pourtant a 4,88:1 une fois l'animation
+        terminee.
+
+        Le reglage n'affaiblit pas l'audit : il coupe les fondus, donc axe
+        mesure l'etat final que le visiteur voit, et couvre en plus le
+        parcours des personnes qui reduisent les animations.
+      */
+      await page.emulateMedia({ reducedMotion: 'reduce' })
       await page.goto(path)
       await page.waitForLoadState('networkidle')
 

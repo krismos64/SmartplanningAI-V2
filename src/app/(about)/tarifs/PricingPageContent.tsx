@@ -11,23 +11,26 @@
  * #pricing-hero-title, #simulator-title, #features-title, #faq-title,
  * data-testid pricing-hero-description, large-team-message et cta-register.
  *
- * PricingSimulator et PricingCard sont concus pour un fond clair et servent
- * aussi la landing : ils gardent leur habillage, pose sur les aplats clairs
- * de la page.
+ * Le simulateur occupe la largeur en deux colonnes depuis SP-574, curseur a
+ * gauche et resultat sur aplat bleu a droite, comme le prototype. Il sert
+ * aussi la landing, ou sa variante `compact` garde la colonne unique.
+ *
+ * PricingCard a ete retiree de cette page : elle repetait le prix du
+ * simulateur et sa liste de fonctionnalites dans le meme ecran.
  *
  * @ticket SP-358
  * @see SP-571 - Tarifs, a-propos et pages legales
+ * @see SP-574 - Mise en page du prototype
  */
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { ArrowUpRight, Check, MessageSquare } from 'lucide-react'
+import { ArrowUpRight, MessageSquare } from 'lucide-react'
 import { DisplayTitle } from '@/components/public/DisplayTitle'
 import { SectionLabel } from '@/components/public/SectionLabel'
 import { FaqAccordion } from '@/components/public/FaqAccordion'
 import { PublicPageShell } from '@/components/public/PublicPageShell'
 import { PricingSimulator } from '@/components/pricing/PricingSimulator'
-import { PricingCard } from '@/components/pricing/PricingCard'
 import { PRICING, INCLUDED_FEATURES } from '@/lib/config/pricing'
 import { PRICING_FAQS } from './StructuredData'
 
@@ -90,7 +93,7 @@ export function PricingPageContent() {
             </div>
           </div>
 
-          <div className="mx-auto mt-12 max-w-2xl">
+          <div className="mt-12">
             <PricingSimulator size="full" onEmployeesChange={setEmployees} />
 
             {/* Message au-dela du seuil, toujours dans le DOM */}
@@ -104,7 +107,7 @@ export function PricingPageContent() {
               }`}
             >
               <div className="overflow-hidden">
-                <div className="mt-6 flex items-start gap-3 border-l-2 border-public-accent bg-public-surface p-4">
+                <div className="mt-8 flex items-start gap-3 border-l-2 border-public-accent bg-public-surface p-4">
                   <MessageSquare
                     className="mt-0.5 h-5 w-5 shrink-0 text-public-accent"
                     aria-hidden="true"
@@ -157,31 +160,35 @@ export function PricingPageContent() {
             </div>
           </div>
 
-          <div className="mt-12 grid items-start gap-10 lg:grid-cols-2 lg:gap-16">
-            <ul
-              className="border-t border-public-border"
-              aria-label="Fonctionnalités incluses"
-            >
-              {INCLUDED_FEATURES.map((feature) => (
-                <li
-                  key={feature}
-                  className="flex items-center gap-3 border-b border-public-border py-4"
-                >
-                  <Check
-                    className="h-4 w-4 shrink-0 text-public-accent"
-                    aria-hidden="true"
-                  />
-                  <span className="font-geist text-sm font-medium text-public-content">
-                    {feature}
-                  </span>
-                </li>
-              ))}
-            </ul>
+          {/*
+            Liste numerotee sur deux colonnes, comme le prototype.
 
-            <div className="flex justify-center lg:sticky lg:top-32">
-              <PricingCard animated={false} />
-            </div>
-          </div>
+            `PricingCard` a ete retiree d'ici : elle repetait le prix deja
+            porte par le simulateur juste au-dessus, et redonnait cette meme
+            liste de fonctionnalites dans le meme ecran. Elle sert toujours la
+            section tarifs de la landing, ou elle est seule a porter le prix.
+          */}
+          <ul
+            className="mt-12 grid gap-x-16 border-t border-public-border sm:grid-cols-2"
+            aria-label="Fonctionnalités incluses"
+          >
+            {INCLUDED_FEATURES.map((feature, index) => (
+              <li
+                key={feature}
+                className="flex items-baseline gap-4 border-b border-public-border py-4"
+              >
+                <span
+                  aria-hidden="true"
+                  className="font-geist text-xs font-bold tabular-nums text-public-accent"
+                >
+                  {String(index + 1).padStart(2, '0')}
+                </span>
+                <span className="font-geist text-base text-public-content">
+                  {feature}
+                </span>
+              </li>
+            ))}
+          </ul>
         </div>
       </section>
 
@@ -239,8 +246,8 @@ export function PricingPageContent() {
               </Link>
 
               <p className="mt-4 max-w-xs font-geist text-sm text-public-content-on-vivid">
-                {PRICING.TRIAL_DAYS} jours sans carte bancaire. Inscription en
-                2 minutes.
+                {PRICING.TRIAL_DAYS} jours sans carte bancaire. Inscription en 2
+                minutes.
               </p>
             </div>
           </div>
