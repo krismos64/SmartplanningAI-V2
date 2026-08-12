@@ -6,7 +6,7 @@
 | Documents produits | `src/app/(about)/contact/{page,ContactPageContent,StructuredData}.tsx`, `src/app/(landing)/components/sections/MobileSection.tsx`, `src/components/public/mockups/MobileMockup.tsx`, `src/components/public/__tests__/public-tokens.test.ts` |
 | Documents modifiés | `LandingHeader.tsx`, `SectorContent.tsx`, `ContactSection.tsx`, `ContactForm.tsx`, `LandingPageContent.tsx`, `sitemap.ts`, `llms.txt`, `llms-full.content.ts`, `a11y.spec.ts`, `sitemap.test.ts`, plus 6 fichiers pour les liens |
 | Contrôles | type-check vert, 3153 tests unitaires (185 fichiers), 18 specs publiques, 3 specs axe-core, build de production |
-| Jira | aucun, SP-574 à créer |
+| Jira | SP-574 créé, assigné, priorité High, transitionné en « En cours », commenté avec les 6 SHA et les contrôles |
 | Mémoire | à écrire en fin de session |
 
 ## Ce qui a été fait
@@ -129,4 +129,5 @@ Accessibilité : 3 specs axe-core au vert, WCAG 2.1 AA, sur `/` en mode clair,
    ajoute un doublon. Cosmétique, à reprendre d'un bloc
 3. **Les 20 commits de la refonte plus les 5 de cette session ne sont pas
    poussés**, la CI n'a jamais tourné dessus
-4. **SP-574 à créer dans Jira**, le travail a été fait sans ticket préalable
+4. **SP-574 passera à Terminé au merge**, avec SP-565 à SP-573. Il est en
+   « En cours », le travail ayant été fait avant la création du ticket
