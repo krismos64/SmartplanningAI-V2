@@ -5,7 +5,7 @@
 | Ticket | SP-574, reprise des écarts constatés sur la refonte SP-565 à SP-573 |
 | Documents produits | `src/app/(about)/contact/{page,ContactPageContent,StructuredData}.tsx`, `src/app/(landing)/components/sections/MobileSection.tsx`, `src/components/public/mockups/MobileMockup.tsx`, `src/components/public/__tests__/public-tokens.test.ts` |
 | Documents modifiés | `LandingHeader.tsx`, `SectorContent.tsx`, `ContactSection.tsx`, `ContactForm.tsx`, `LandingPageContent.tsx`, `sitemap.ts`, `llms.txt`, `llms-full.content.ts`, `a11y.spec.ts`, `sitemap.test.ts`, plus 6 fichiers pour les liens |
-| Contrôles | type-check vert, 3156 tests unitaires (186 fichiers), 20 specs publiques, 5 specs axe-core, build de production |
+| Contrôles | type-check vert, 3160 tests unitaires (187 fichiers), 20 specs publiques, 7 specs axe-core, build de production |
 | Jira | SP-574 créé, assigné, priorité High, transitionné en « En cours », commenté avec les 6 SHA et les contrôles |
 | Mémoire | `token-tailwind-inexistant-echoue-en-silence` créée, `ou-en-est-le-projet` et `MEMORY.md` mises à jour |
 
@@ -116,9 +116,9 @@ coûte aucune requête, et le formulaire parti compense le poids de la section.
 tirés par `ContactForm`. Attendu pour une page qui porte un formulaire validé,
 et c'est précisément le coût que la landing n'a plus à payer.
 
-Accessibilité : 5 specs axe-core au vert, WCAG 2.1 AA, sur `/` en mode clair,
-`/` en mode sombre, `/contact`, `/login` et `/register`. Les trois dernières
-sont nouvelles.
+Accessibilité : **7 specs axe-core** au vert, WCAG 2.1 AA, sur `/` en mode
+clair, `/` en mode sombre, `/contact`, `/login`, `/register`, `/tarifs` et
+`/cgu`. Cinq sont nouvelles.
 
 ## Seconde passe : proportions, login, register et CTA oubliés
 
@@ -220,6 +220,47 @@ deux titres serait disproportionné.
 `AUTH_BUTTON_CLASSES` sépare enfin le CTA des formulaires auth de
 `PRIMARY_BUTTON_CLASSES`. Les deux avaient vécu confondus, c'est ce qui avait
 laissé un bouton bleu arrondi sur les hubs longtemps après la refonte.
+
+## Quatrième passe : balayage systématique des écrans restants
+
+Six défauts réels, deux faux positifs écartés.
+
+**Pages légales** : badge bleu translucide arrondi (le même que sur les hubs),
+pastille verte hors palette, bouton de retour en haut à fond translucide et
+survol bleu, deux blocs `bg-card` dans `LegalSection`.
+
+**États du formulaire de contact** : `ContactSuccessState` et
+`ContactErrorState` avaient été écrits pour un fond sombre, `text-white` et
+`bg-white/5`. Depuis la refonte ils s'affichent sur la carte crème, où le blanc
+est illisible. Le défaut n'apparaît qu'après un envoi réussi ou une panne
+réseau, deux états qu'aucun parcours de vérification ne traverse : ni axe-core,
+ni les specs E2E, ni un coup d'œil à la page. Un test les couvre désormais.
+
+**Tarifs** : le prix du simulateur était un dégradé cyan-bleu en
+`bg-clip-text`, l'élément le plus visible de la page. Curseur au même dégradé,
+`PricingCard` avec deux dégradés et une bordure cyan.
+
+**Les cinq autres pages auth et leurs quatre formulaires** : titres centrés,
+`text-foreground`, liens cyan, pastilles rondes en opacité. Normalisés sur le
+motif de login et register. Zéro `dark:` restant sur les sept pages auth.
+
+**Deux violations de contraste que seul l'audit a vues**, après mes propres
+corrections : `text-public-content-muted/70` tombe à **2,81:1** sur les pages
+légales, et le corail sur crème en 14 px donne **3,58 à 3,89:1**. L'opacité sur
+`content-muted` est interdite par la règle du projet, je l'avais laissée
+passer.
+
+**`AnimatedBackground` supprimé** : mon layout auth réécrit était son dernier
+appelant.
+
+Faux positifs écartés : `PlanningMockup` porte volontairement les couleurs de
+l'application réelle qu'il représente, son commentaire le documente, et le
+`dark:` de `BentoCard` est un nom de clé de variante, pas une classe.
+
+Audit axe-core étendu à `/tarifs` et `/cgu`, qui n'en avaient aucun.
+
+**Scan final** : le périmètre public ne porte plus aucune classe hors-refonte,
+`PlanningMockup` excepté.
 
 ## Ce qui reste ouvert
 
