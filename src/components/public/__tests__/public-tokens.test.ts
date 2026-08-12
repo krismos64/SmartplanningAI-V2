@@ -44,7 +44,8 @@ function declaredPublicTokens(): Set<string> {
   const tokens = new Set<string>()
   // `surface: 'hsl(...)'` et `'surface-subtle': 'hsl(...)'`
   for (const match of group.matchAll(/^\s*'?([a-z][a-z0-9-]*)'?\s*:/gm)) {
-    if (match[1] !== 'public') tokens.add(match[1])
+    const token = match[1]
+    if (token && token !== 'public') tokens.add(token)
   }
 
   return tokens
@@ -119,8 +120,8 @@ describe('tokens public-*', () => {
       const content = readFileSync(file, 'utf-8')
 
       for (const match of content.matchAll(pattern)) {
-        const token = match[1].split('/')[0]
-        if (declared.has(token)) continue
+        const token = match[1]?.split('/')[0]
+        if (!token || declared.has(token)) continue
 
         unknown.push(`${file.replace(`${ROOT}/`, '')} : public-${token}`)
       }

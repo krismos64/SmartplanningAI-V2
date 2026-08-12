@@ -20,7 +20,7 @@ import { HeroSection } from './(landing)/components/sections/HeroSection'
 /**
  * Sections below-the-fold : import dynamique (code-splitting).
  *
- * Perf (TBT mobile) : ces 9 sections embarquent toutes Framer Motion. En
+ * Perf (TBT mobile) : ces 10 sections embarquent toutes Framer Motion. En
  * import statique, leur JS était parsé/exécuté dans le bundle initial alors
  * qu'elles ne sont pas visibles au chargement. `next/dynamic` les isole dans
  * des chunks séparés chargés à la demande, ce qui réduit le Total Blocking
@@ -35,6 +35,11 @@ const RoleDemosSection = dynamic(() =>
 const FeaturesSection = dynamic(() =>
   import('./(landing)/components/sections/FeaturesSection').then(
     (m) => m.FeaturesSection
+  )
+)
+const MobileSection = dynamic(() =>
+  import('./(landing)/components/sections/MobileSection').then(
+    (m) => m.MobileSection
   )
 )
 const HowItWorksSection = dynamic(() =>
@@ -79,6 +84,7 @@ export default function LandingPageContent() {
       <HeroSection />
       <RoleDemosSection />
       <FeaturesSection />
+      <MobileSection />
       <HowItWorksSection />
       <BenefitsSection />
       <PricingSection />
