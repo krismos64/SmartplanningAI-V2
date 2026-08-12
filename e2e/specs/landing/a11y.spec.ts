@@ -63,4 +63,34 @@ test.describe('Landing — accessibilité axe-core', () => {
       `Violations en mode sombre :\n${JSON.stringify(results.violations, null, 2)}`
     ).toEqual([])
   })
+
+  /**
+   * La page /contact porte le seul formulaire du site public. Labels,
+   * messages d'erreur relies par `aria-describedby` et contraste des champs
+   * sont exactement ce qu'un audit statique attrape, et ce qu'une reprise
+   * visuelle casse le plus facilement.
+   *
+   * Un seul mode ici : les pages publiques n'ont plus de variante sombre
+   * depuis SP-573, le theme de l'application ne les atteint pas.
+   *
+   * @see SP-574
+   */
+  test('aucune violation WCAG AA sur la page contact', async ({ page }) => {
+    await page.goto('/contact')
+    await page.waitForLoadState('networkidle')
+    // Le formulaire s'anime au montage : attendre qu'il soit visible, sinon
+    // axe auditerait un arbre encore a `opacity: 0`.
+    await page.getByLabel(/nom complet/i).waitFor({ state: 'visible' })
+
+    const results = await new AxeBuilder({ page })
+      .withTags(A11Y_TAGS)
+      .exclude('[data-testid="cookie-accept-all"]')
+      .exclude('button[aria-label="Accepter tous les cookies"]')
+      .analyze()
+
+    expect(
+      results.violations,
+      `Violations sur /contact :\n${JSON.stringify(results.violations, null, 2)}`
+    ).toEqual([])
+  })
 })

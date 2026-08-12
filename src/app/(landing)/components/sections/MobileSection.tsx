@@ -12,6 +12,7 @@
  * @see SP-574 - Section mobile de la landing
  */
 
+import { Fragment } from 'react'
 import { Smartphone, BellRing, RefreshCw } from 'lucide-react'
 import { DisplayTitle } from '@/components/public/DisplayTitle'
 import { SectionLabel } from '@/components/public/SectionLabel'
@@ -67,25 +68,25 @@ export function MobileSection() {
               et les échanges de l&rsquo;équipe.
             </p>
 
+            {/*
+              Liste de description : <dt> et <dd> doivent etre enfants
+              directs du <dl>, un <div> intermediaire n'est pas admis
+              (axe-core, regles dlitem et only-dlitems).
+            */}
             <dl className="mt-12 border-t border-public-border-on-dark">
               {BENEFITS.map((benefit) => (
-                <div
-                  key={benefit.title}
-                  className="flex gap-4 border-b border-public-border-on-dark py-5"
-                >
-                  <benefit.icon
-                    aria-hidden="true"
-                    className="mt-0.5 h-5 w-5 shrink-0 text-public-highlight"
-                  />
-                  <div>
-                    <dt className="font-geist text-base font-semibold text-public-content-on-dark">
-                      {benefit.title}
-                    </dt>
-                    <dd className="mt-1 font-geist text-base leading-relaxed text-public-content-on-dark/75">
-                      {benefit.description}
-                    </dd>
-                  </div>
-                </div>
+                <Fragment key={benefit.title}>
+                  <dt className="flex items-center gap-4 pt-5 font-geist text-base font-semibold text-public-content-on-dark">
+                    <benefit.icon
+                      aria-hidden="true"
+                      className="h-5 w-5 shrink-0 text-public-highlight"
+                    />
+                    {benefit.title}
+                  </dt>
+                  <dd className="border-b border-public-border-on-dark pb-5 pl-9 pt-1 font-geist text-base leading-relaxed text-public-content-on-dark/75">
+                    {benefit.description}
+                  </dd>
+                </Fragment>
               ))}
             </dl>
           </div>

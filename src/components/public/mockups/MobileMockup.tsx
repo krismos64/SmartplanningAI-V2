@@ -123,9 +123,12 @@ export function MobileMockup() {
 
           {/* Message d'equipe */}
           <div className="mx-4 mt-3 flex items-start gap-2.5 bg-public-surface-subtle px-3 py-2.5">
-            {/* Aplat bleu franc : le blanc n'y donne que 4,88:1, suffisant
-                pour ce corps de texte en gras. */}
-            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-public-brand-surface font-geist text-[0.625rem] font-bold text-public-content-on-dark">
+            {/*
+              Le creme sur le bleu franc tombe a 4,13:1, mesure par axe-core :
+              sous le seuil AA de 4,5. Le bleu nuit sur creme le tient
+              largement, et reprend le code des pastilles claires du planning.
+            */}
+            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-public-border bg-public-surface font-geist text-[0.625rem] font-bold text-public-content">
               LM
             </span>
             <p className="min-w-0 flex-1">
