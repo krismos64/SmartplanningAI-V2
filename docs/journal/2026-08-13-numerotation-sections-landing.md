@@ -4,9 +4,9 @@
 |---|---|
 | Ticket | SP-574, point 2 laissé ouvert par la session du 12 août |
 | Documents produits | `src/components/public/__tests__/section-numbering.test.ts`, `src/app/(landing)/components/sections/TickerSection.tsx`, `src/components/public/mockups/MiniWeek.tsx` |
-| Documents modifiés | `RoleDemosSection.tsx`, `FeaturesSection.tsx`, `MobileSection.tsx`, `HowItWorksSection.tsx`, `BenefitsSection.tsx`, `VideoSection.tsx`, `a-propos/AboutContent.tsx`, `PlanningMockup.tsx`, `HeroSection.tsx`, `LandingPageContent.tsx`, `tailwind.config.ts`, `sections/index.ts`, `RoleDemosSection.tsx`, `(landing)/data/index.ts`, `FeaturesSection.tsx`, `BentoCard.tsx` |
+| Documents modifiés | `RoleDemosSection.tsx`, `FeaturesSection.tsx`, `MobileSection.tsx`, `HowItWorksSection.tsx`, `BenefitsSection.tsx`, `VideoSection.tsx`, `a-propos/AboutContent.tsx`, `PlanningMockup.tsx`, `HeroSection.tsx`, `LandingPageContent.tsx`, `tailwind.config.ts`, `sections/index.ts`, `RoleDemosSection.tsx`, `(landing)/data/index.ts`, `FeaturesSection.tsx`, `BentoCard.tsx`, `PricingSection.tsx`, `LegalSection.tsx`, `a11y.spec.ts` |
 | Contrôles | type-check vert, 3163 tests unitaires (188 fichiers), 22 specs publiques dont 7 axe-core, build de production, rangs et dimensions relevés au navigateur |
-| Jira | SP-574, cinq commentaires : clôture du point 2, maquette du hero, bandeau défilant, section des rôles, section produit |
+| Jira | SP-574, six commentaires : clôture du point 2, maquette du hero, bandeau défilant, section des rôles, section produit, section tarifs |
 | Mémoire | `refonte-publique-angles-morts` mise à jour |
 
 ## Ce qui a été fait
@@ -291,11 +291,78 @@ code, 200 après redémarrage.
 
 Landing inchangée à 167 kB.
 
+## Sixième partie : la section tarifs, et deux défauts d'accessibilité
+
+Christophe préfère la version du prototype, plus simple et compacte, sans
+simulateur en landing. **1365 px contre 518.** Après comparaison, son avis se
+défend sur trois points concrets.
+
+**Le prix apparaissait trois fois dans le même écran** : dans le titre (2,90 €),
+dans le simulateur (29,00 €), dans la carte (2,90 € encore). La répétition
+dilue au lieu d'appuyer.
+
+**Deux CTA concurrents** menaient au même endroit, « Essayer 21 jours » et
+« Démarrer l'essai gratuit », côte à côte.
+
+**La landing dupliquait `/tarifs`**, refaite à la passe 5 précisément pour
+porter le simulateur. Cette page avait déjà vu `PricingCard` retirée pour ce
+même motif de répétition du prix : le diagnostic valait aussi ici.
+
+La section redevient un **Server Component**, elle était `'use client'` pour la
+seule raison qu'elle portait l'effectif saisi.
+
+Rien ne se perd, vérifié avant de supprimer. Le JSON-LD `Offer` vit dans
+`StructuredData.tsx` et déclare le prix aux moteurs indépendamment. Le message
+destiné aux équipes de plus de 50 employés, qui pousse vers `/contact`, existe à
+l'identique sur `/tarifs`. Le page object E2E des tarifs cible déjà `/tarifs`.
+
+Résultat **531 px** contre 518 au prototype, un seul CTA, parcours vérifié au
+clic jusqu'au simulateur.
+
+### Un échec axe qui en cachait deux autres
+
+Le spec des pages légales a rougi pendant la vérification. Trois fausses pistes
+avant la bonne, et deux défauts réels au bout.
+
+J'ai d'abord cru à un flake : vert en isolation, rouge en suite. Puis à une
+compilation à la demande du serveur de dev, **hypothèse fausse**, l'échec se
+reproduisant sur un build de production. `git stash` a montré qu'il était
+**antérieur à mon travail**.
+
+Le premier message que j'avais lu, un contraste de 1,59:1, venait d'un run en
+cache et m'a fait chercher une couleur qui n'existait pas. Le vrai relevé
+donnait 3,88:1 sur un encadré « Important ».
+
+**Défaut 1, le spec mesurait trop tôt.** Le conteneur `.legal-content` est animé
+par Framer Motion, qui anime en JavaScript sans consulter
+`prefers-reduced-motion` : l'émulation ajoutée le 12 août ne le couvre pas. Un
+instant après `networkidle`, il reste à `opacity: 0`, et axe lit un bleu nuit
+`#0f1b2d` comme `#757980`. En suite complète la machine est plus chargée,
+l'animation traîne, et la mesure tombe pendant le fondu. Le spec attend
+désormais la fin de l'apparition.
+
+Première tentative trop large : attendre que **tous** les éléments soient
+stables expire sur ceux qu'on laisse volontairement transparents, et faisait
+échouer `/tarifs` en plus. L'attente cible le conteneur animé.
+
+**Défaut 2, révélé par le premier correctif.** Les liens des pages légales
+n'étaient soulignés qu'au survol. Un lien posé dans un paragraphe ne peut pas se
+distinguer par la seule couleur, son contraste avec le texte voisin ne valant
+que 2,3:1 (règle axe `link-in-text-block`). Trois occurrences dans
+`LegalSection`, soulignées en permanence.
+
+Ce second défaut vivait derrière le premier : tant que le spec échouait sur le
+contraste, axe n'allait pas plus loin. Un audit qui rougit au hasard ne masque
+pas seulement du bruit, il masque de vrais défauts.
+
+**22 specs vertes sur trois passages consécutifs**, contre un échec
+reproductible avant. Landing inchangée à 167 kB.
+
 ## Prochaine étape
 
 Les trois autres points du 12 août restent ouverts, inchangés :
 
 1. **La whitelist E2E de la CI ne couvre pas les specs `landing/`**. Arbitrage
    jamais pris, revenu à chaque session depuis le 7 août
-2. **53 commits non poussés** (mesuré par `git rev-list --count main..HEAD`), la CI n'a jamais tourné sur la refonte
+2. **55 commits non poussés** (mesuré par `git rev-list --count main..HEAD`), la CI n'a jamais tourné sur la refonte
 3. **SP-574 passera à Terminé au merge**, avec SP-565 à SP-573
