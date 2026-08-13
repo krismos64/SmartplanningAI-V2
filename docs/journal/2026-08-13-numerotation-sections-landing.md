@@ -4,9 +4,9 @@
 |---|---|
 | Ticket | SP-574, point 2 laissé ouvert par la session du 12 août |
 | Documents produits | `src/components/public/__tests__/section-numbering.test.ts`, `src/app/(landing)/components/sections/TickerSection.tsx`, `src/components/public/mockups/MiniWeek.tsx`, `src/app/(landing)/components/sections/SecuritySection.tsx` |
-| Documents modifiés | `RoleDemosSection.tsx`, `FeaturesSection.tsx`, `MobileSection.tsx`, `HowItWorksSection.tsx`, `BenefitsSection.tsx`, `VideoSection.tsx`, `a-propos/AboutContent.tsx`, `PlanningMockup.tsx`, `HeroSection.tsx`, `LandingPageContent.tsx`, `tailwind.config.ts`, `sections/index.ts`, `RoleDemosSection.tsx`, `(landing)/data/index.ts`, `FeaturesSection.tsx`, `BentoCard.tsx`, `PricingSection.tsx`, `LegalSection.tsx`, `a11y.spec.ts`, `FAQSection.tsx`, `ContactSection.tsx`, `sitemap.ts`, `tarifs/PricingPageContent.tsx` |
+| Documents modifiés | `RoleDemosSection.tsx`, `FeaturesSection.tsx`, `MobileSection.tsx`, `HowItWorksSection.tsx`, `BenefitsSection.tsx`, `VideoSection.tsx`, `a-propos/AboutContent.tsx`, `PlanningMockup.tsx`, `HeroSection.tsx`, `LandingPageContent.tsx`, `tailwind.config.ts`, `sections/index.ts`, `RoleDemosSection.tsx`, `(landing)/data/index.ts`, `FeaturesSection.tsx`, `BentoCard.tsx`, `PricingSection.tsx`, `LegalSection.tsx`, `a11y.spec.ts`, `FAQSection.tsx`, `ContactSection.tsx`, `sitemap.ts`, `tarifs/PricingPageContent.tsx`, `SectorsHubContent.tsx`, `GuidesHubContent.tsx`, `SectorContent.tsx`, `styles.ts` |
 | Contrôles | type-check vert, 3163 tests unitaires (188 fichiers), 22 specs publiques dont 7 axe-core, build de production, rangs et dimensions relevés au navigateur |
-| Jira | SP-574, huit commentaires : clôture du point 2, maquette du hero, bandeau défilant, section des rôles, section produit, section tarifs, bande sécurité, page /tarifs |
+| Jira | SP-574, neuf commentaires : clôture du point 2, maquette du hero, bandeau défilant, section des rôles, section produit, section tarifs, bande sécurité, page /tarifs, hubs et pages secteur |
 | Mémoire | `refonte-publique-angles-morts` mise à jour |
 
 ## Ce qui a été fait
@@ -455,11 +455,67 @@ la landing, est corrigé.
 
 `/tarifs` inchangée à 200 kB, 22 specs publiques vertes dont son audit axe.
 
+## Neuvième partie : les hubs et les pages secteur
+
+Christophe a trouvé `/solutions` et les pages d'article bien meilleures sur le
+prototype. Diagnostic : **les deux hubs avaient totalement échappé à la
+refonte**, comme le formulaire de contact et les pages auth avant eux.
+
+Marqueurs sans ambiguïté : titre centré avec accent `text-blue-600` brut,
+cartes blanches à bordure fine, badges arrondis à icône, CTA en encart centré à
+bouton arrondi. L'identité d'avant SP-565, intacte.
+
+Les pages secteur, elles, **étaient bien refondues**. Seul leur hero restait sur
+crème, sans contraste à l'entrée de page.
+
+### Une constante partagée restée en arrière
+
+`HIGHLIGHT_TEXT_CLASSES_PUBLIC` valait `text-blue-600`, une couleur Tailwind
+brute. Son commentaire expliquait qu'elle existait pour retirer la variante
+`dark:` de la version privée, mais personne n'avait remplacé la couleur par un
+token.
+
+Le garde-fou des tokens `public-*` ne pouvait pas la voir : `text-blue-600` est
+une classe parfaitement valide, simplement hors palette. C'est exactement le
+motif de `PRIMARY_BUTTON_CLASSES`, corrigée pour la même raison le 12 août.
+Passée à `public-brand-on-light`, de même valeur : le changement est structurel,
+pas visuel.
+
+### Ce qui a été porté
+
+Hero sur aplat bleu nuit et cartes en aplats vifs à filet noir sur les deux
+hubs, maillage croisé en filets, CTA en bandeau corail pleine largeur. Le hero
+des pages secteur suit, avec CTA lime et intro métier sur deux colonnes.
+
+**Un écart assumé avec le prototype :** sa troisième carte est jaune, teinte
+absente de la palette publique. Elle prend le crème contrasté plutôt que le bleu
+franc, sur lequel seul le blanc tient (4,88:1) : le bleu nuit n'y passe pas et
+la série perdrait sa couleur de texte commune. Étendre la palette pour une seule
+carte serait disproportionné.
+
+### Les audits ajoutés ont trouvé mon propre défaut
+
+Les deux hubs n'avaient **aucun audit axe**. Je les ai ajoutés, et ils ont
+immédiatement rougi sur un défaut que je venais d'introduire :
+`content-on-vivid/80` sur la date des cartes tombe à **4,29:1** sur le corail,
+contre 5,41 sans opacité.
+
+La règle du projet interdit l'opacité sur les aplats vifs. Je l'ai enfreinte
+dans les deux hubs, et c'est l'audit ajouté dans la même passe qui l'a
+rattrapée. Sans lui, le défaut partait en production.
+
+**24 specs publiques vertes**, dont 9 audits axe contre 7. Aucune spec renommée
+ni supprimée, la whitelist CI reste inchangée, et ces specs n'y sont toujours
+pas.
+
+Les dates des registres ne bougent pas : seule la présentation change, les
+modifier signalerait à tort un contenu réécrit à Google.
+
 ## Prochaine étape
 
 Les trois autres points du 12 août restent ouverts, inchangés :
 
 1. **La whitelist E2E de la CI ne couvre pas les specs `landing/`**. Arbitrage
    jamais pris, revenu à chaque session depuis le 7 août
-2. **59 commits non poussés** (mesuré par `git rev-list --count main..HEAD`), la CI n'a jamais tourné sur la refonte
+2. **61 commits non poussés** (mesuré par `git rev-list --count main..HEAD`), la CI n'a jamais tourné sur la refonte
 3. **SP-574 passera à Terminé au merge**, avec SP-565 à SP-573
