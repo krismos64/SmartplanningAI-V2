@@ -58,6 +58,11 @@ const BenefitsSection = dynamic(() =>
     (m) => m.BenefitsSection
   )
 )
+const SecuritySection = dynamic(() =>
+  import('./(landing)/components/sections/SecuritySection').then(
+    (m) => m.SecuritySection
+  )
+)
 const PricingSection = dynamic(() =>
   import('./(landing)/components/sections/PricingSection').then(
     (m) => m.PricingSection
@@ -94,6 +99,7 @@ export default function LandingPageContent() {
       <MobileSection />
       <HowItWorksSection />
       <BenefitsSection />
+      <SecuritySection />
       <PricingSection />
       <FAQSection />
       <ContactSection />

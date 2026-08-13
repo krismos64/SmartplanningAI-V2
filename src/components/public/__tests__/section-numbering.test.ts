@@ -44,6 +44,7 @@ const PAGES = [
       'MobileSection',
       'HowItWorksSection',
       'BenefitsSection',
+      'SecuritySection',
       'PricingSection',
       'FAQSection',
       'ContactSection',

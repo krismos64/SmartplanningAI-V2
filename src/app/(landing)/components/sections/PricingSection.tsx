@@ -61,7 +61,7 @@ export function PricingSection() {
       className="bg-public-brand-surface py-20 lg:py-28"
     >
       <div className="container-custom">
-        <SectionLabel index={7} tone="onBrand" className="mb-10">
+        <SectionLabel index={8} tone="onBrand" className="mb-10">
           Tarif simple
         </SectionLabel>
 

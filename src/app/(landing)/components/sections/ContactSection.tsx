@@ -42,7 +42,7 @@ export function ContactSection() {
       <div className="container-custom">
         <div className="grid gap-12 lg:grid-cols-[1fr_auto] lg:items-end lg:gap-20">
           <div>
-            <SectionLabel index={9}>Contact</SectionLabel>
+            <SectionLabel index={10}>Contact</SectionLabel>
 
             <DisplayTitle
               as="h2"

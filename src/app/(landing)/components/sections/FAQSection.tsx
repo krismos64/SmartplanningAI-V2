@@ -31,7 +31,7 @@ export function FAQSection() {
         <div className="grid items-start gap-12 lg:grid-cols-[24rem_1fr] lg:gap-20">
           {/* Colonne titre */}
           <div className="lg:sticky lg:top-32">
-            <SectionLabel index={8}>Questions fréquentes</SectionLabel>
+            <SectionLabel index={9}>Questions fréquentes</SectionLabel>
 
             <DisplayTitle
               as="h2"

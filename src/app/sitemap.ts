@@ -24,7 +24,7 @@ const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://smartplanning.fr'
  * ignore par Google).
  */
 const PAGE_LAST_MODIFIED = {
-  home: new Date('2026-08-12'),
+  home: new Date('2026-08-13'),
   tarifs: new Date('2026-08-11'),
   aPropos: new Date('2026-08-11'),
   contact: new Date('2026-08-12'),
