@@ -15,8 +15,13 @@
  * gauche et resultat sur aplat bleu a droite, comme le prototype. Il sert
  * aussi la landing, ou sa variante `compact` garde la colonne unique.
  *
- * PricingCard a ete retiree de cette page : elle repetait le prix du
- * simulateur et sa liste de fonctionnalites dans le meme ecran.
+ * PricingCard a ete retiree de cette page, puis de la landing en SP-574 :
+ * elle repetait le prix du simulateur et sa liste de fonctionnalites dans le
+ * meme ecran. Plus aucun appelant.
+ *
+ * Mise en page rapprochee du prototype en SP-574 : hero sur aplat bleu nuit
+ * avec titre sur deux lignes, en-tete du simulateur reduit a une ligne, liste
+ * des inclus posee a droite du titre plutot qu'en dessous.
  *
  * @ticket SP-358
  * @see SP-571 - Tarifs, a-propos et pages legales
@@ -41,24 +46,32 @@ export function PricingPageContent() {
 
   return (
     <PublicPageShell breadcrumb={[{ label: 'Tarifs' }]}>
-      {/* Hero prix */}
-      <section aria-labelledby="pricing-hero-title" className="pb-16 pt-10">
+      {/* Hero prix.
+          Aplat bleu nuit et titre sur deux lignes, comme le prototype : le
+          fond creme et le titre sur une ligne ne posaient aucun contraste a
+          l'entree de page. */}
+      <section
+        aria-labelledby="pricing-hero-title"
+        className="bg-public-surface-dark py-20 lg:py-28"
+      >
         <div className="container-custom">
-          <SectionLabel index={1}>Tarification</SectionLabel>
+          <SectionLabel index={1} tone="onDark">
+            Tarification
+          </SectionLabel>
 
           <h1
             id="pricing-hero-title"
-            className="mt-8 max-w-4xl font-geist text-4xl font-bold leading-[0.98] tracking-[-0.03em] text-public-content sm:text-5xl lg:text-6xl"
+            className="mt-8 max-w-3xl font-geist text-4xl font-bold leading-[0.95] tracking-[-0.045em] text-public-content-on-dark sm:text-5xl lg:text-7xl"
           >
-            Un tarif unique,{' '}
-            <span className="font-editorial italic text-public-accent">
-              simple et transparent
+            Un tarif unique.
+            <span className="mt-1 block font-editorial italic text-public-accent-on-dark">
+              Aucune petite ligne.
             </span>
           </h1>
 
           <p
             data-testid="pricing-hero-description"
-            className="mt-8 max-w-3xl font-geist text-lg leading-relaxed text-public-content-muted"
+            className="mt-8 max-w-xl font-geist text-lg leading-relaxed text-public-content-on-dark/80"
           >
             SmartPlanning coûte 2,90&nbsp;&euro; HT par employé par mois. Toutes
             les fonctionnalités sont incluses. Sans engagement. Essai gratuit{' '}
@@ -73,27 +86,26 @@ export function PricingPageContent() {
         className="bg-public-surface-subtle py-16 lg:py-24"
       >
         <div className="container-custom">
-          <div className="grid gap-8 lg:grid-cols-[auto_1fr] lg:items-start lg:gap-16">
+          {/*
+            En-tete reduit a une ligne, comme le prototype, qui va droit au
+            curseur. Un titre display et un chapo au-dessus du simulateur
+            repoussaient l'element interactif hors du premier ecran, et
+            expliquaient un mecanisme que le curseur montre de lui-meme.
+
+            `#simulator-title` est conserve, le page object E2E le cible.
+          */}
+          <div className="flex flex-wrap items-baseline justify-between gap-4">
             <SectionLabel index={2}>Calculez votre tarif</SectionLabel>
 
-            <div>
-              <DisplayTitle
-                as="h2"
-                id="simulator-title"
-                accent="interactif."
-                className="text-public-content"
-              >
-                Simulateur
-              </DisplayTitle>
-
-              <p className="mt-6 max-w-xl font-geist text-lg leading-relaxed text-public-content-muted">
-                Ajustez le nombre d&rsquo;employés pour découvrir votre tarif
-                mensuel.
-              </p>
-            </div>
+            <h2
+              id="simulator-title"
+              className="font-geist text-sm uppercase tracking-[0.1em] text-public-content-muted"
+            >
+              Simulateur interactif
+            </h2>
           </div>
 
-          <div className="mt-12">
+          <div className="mt-10">
             <PricingSimulator size="full" onEmployeesChange={setEmployees} />
 
             {/* Message au-dela du seuil, toujours dans le DOM */}
@@ -140,55 +152,61 @@ export function PricingPageContent() {
         className="bg-public-surface py-16 lg:py-24"
       >
         <div className="container-custom">
-          <div className="grid gap-8 lg:grid-cols-[auto_1fr] lg:items-start lg:gap-16">
-            <SectionLabel index={3}>Tout inclus</SectionLabel>
-
+          {/* Titre a gauche, liste a droite, disposition du prototype. Le
+              chapo est retire : « toutes les fonctionnalites sont comprises »
+              redit le titre, et la liste qui suit le prouve. */}
+          <div className="grid gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:items-start lg:gap-20">
             <div>
+              <SectionLabel index={3}>Tout inclus</SectionLabel>
+
               <DisplayTitle
                 as="h2"
                 id="features-title"
                 accent="Aucun supplément."
-                className="text-public-content"
+                className="mt-8 text-public-content"
               >
                 Un seul tarif.
               </DisplayTitle>
-
-              <p className="mt-6 max-w-xl font-geist text-lg leading-relaxed text-public-content-muted">
-                Toutes les fonctionnalités sont comprises, quel que soit votre
-                effectif.
-              </p>
             </div>
-          </div>
 
-          {/*
-            Liste numerotee sur deux colonnes, comme le prototype.
+            {/*
+              Liste numerotee sur deux colonnes, dans la colonne de droite.
 
-            `PricingCard` a ete retiree d'ici : elle repetait le prix deja
-            porte par le simulateur juste au-dessus, et redonnait cette meme
-            liste de fonctionnalites dans le meme ecran. Elle sert toujours la
-            section tarifs de la landing, ou elle est seule a porter le prix.
-          */}
-          <ul
-            className="mt-12 grid gap-x-16 border-t border-public-border sm:grid-cols-2"
-            aria-label="Fonctionnalités incluses"
-          >
-            {INCLUDED_FEATURES.map((feature, index) => (
-              <li
-                key={feature}
-                className="flex items-baseline gap-4 border-b border-public-border py-4"
-              >
-                <span
-                  aria-hidden="true"
-                  className="font-geist text-xs font-bold tabular-nums text-public-accent"
+              `PricingCard` a ete retiree d'ici, puis de la landing en SP-574 :
+              elle repetait le prix porte par le simulateur et redonnait cette
+              liste dans le meme ecran. Plus aucun appelant.
+
+              Le filet est porte en haut de chaque entree et non en bas : avec
+              13 entrees, une colonne en compte 7 et l'autre 6, un filet bas
+              laissait un trait orphelin sous la colonne courte.
+
+              `min-h` uniforme, calee sur l'entree la plus longue qui tient
+              sur deux lignes : sans hauteur commune les filets des deux
+              colonnes se decalent progressivement et la grille se lit de
+              travers.
+            */}
+            <ul
+              className="grid gap-x-16 sm:grid-cols-2"
+              aria-label="Fonctionnalités incluses"
+            >
+              {INCLUDED_FEATURES.map((feature, index) => (
+                <li
+                  key={feature}
+                  className="flex min-h-[4.5rem] items-center gap-5 border-t border-public-border py-3"
                 >
-                  {String(index + 1).padStart(2, '0')}
-                </span>
-                <span className="font-geist text-base text-public-content">
-                  {feature}
-                </span>
-              </li>
-            ))}
-          </ul>
+                  <span
+                    aria-hidden="true"
+                    className="font-geist text-[0.625rem] font-bold tabular-nums text-public-accent"
+                  >
+                    {String(index + 1).padStart(2, '0')}
+                  </span>
+                  <span className="font-geist text-base text-public-content">
+                    {feature}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       </section>
 
@@ -198,17 +216,17 @@ export function PricingPageContent() {
         className="bg-public-surface-subtle py-16 lg:py-24"
       >
         <div className="container-custom">
-          <div className="grid items-start gap-12 lg:grid-cols-[24rem_1fr] lg:gap-20">
+          <div className="grid items-start gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:gap-20">
             <div className="lg:sticky lg:top-32">
               <SectionLabel index={4}>Questions fréquentes</SectionLabel>
 
               <DisplayTitle
                 as="h2"
                 id="faq-title"
-                accent="les tarifs."
+                accent="sur les tarifs."
                 className="mt-8 text-public-content"
               >
-                Vos questions sur
+                Vos questions
               </DisplayTitle>
             </div>
 
