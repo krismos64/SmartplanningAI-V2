@@ -19,6 +19,22 @@ vi.mock('@/lib/rate-limit', () => ({
   getRateLimitHeaders: vi.fn(),
 }))
 
+// Mock Prisma manuel via vi.hoisted(), jamais mockDeep : le projet a des
+// problemes de hoisting connus avec ce dernier.
+//
+// Sans ce mock, ces tests ecrivaient reellement dans la base de developpement
+// a chaque execution, une ligne contact_messages par cas.
+const prismaMock = vi.hoisted(() => ({
+  contactMessage: {
+    create: vi.fn(),
+    update: vi.fn(),
+  },
+}))
+
+vi.mock('@/lib/prisma', () => ({
+  prisma: prismaMock,
+}))
+
 // Helper pour créer une requête mock
 function createMockRequest(
   body: unknown,
@@ -88,6 +104,13 @@ describe('POST /api/contact', () => {
     sendContactEmails.mockResolvedValue({
       confirmation: { success: true, messageId: 'conf-123' },
       notification: { success: true, messageId: 'notif-456' },
+    })
+
+    prismaMock.contactMessage.create.mockResolvedValue({
+      id: 'cl000000000000000000msg1',
+    })
+    prismaMock.contactMessage.update.mockResolvedValue({
+      id: 'cl000000000000000000msg1',
     })
 
     // Importer la route
@@ -316,6 +339,110 @@ describe('POST /api/contact', () => {
 
   // ==========================================================================
   // Erreurs SMTP
+  // ==========================================================================
+
+  describe('Persistance en base', () => {
+    it('enregistre le message avant de tenter le moindre envoi', async () => {
+      const request = createMockRequest(validFormData)
+      await POST(request)
+
+      expect(prismaMock.contactMessage.create).toHaveBeenCalledTimes(1)
+      expect(prismaMock.contactMessage.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            name: 'Jean Dupont',
+            email: 'jean@example.com',
+            subject: validFormData.subject,
+            message: validFormData.message,
+          }),
+        })
+      )
+
+      // L'ordre est le coeur de la garantie : ecrire d'abord, envoyer ensuite.
+      const ordreCreate =
+        prismaMock.contactMessage.create.mock.invocationCallOrder[0]!
+      const ordreEnvoi = sendContactEmails.mock.invocationCallOrder[0]!
+      expect(ordreCreate).toBeLessThan(ordreEnvoi)
+    })
+
+    it('conserve le message meme quand la notification admin echoue', async () => {
+      sendContactEmails.mockResolvedValue({
+        confirmation: { success: false, error: 'SMTP down' },
+        notification: { success: false, error: 'SMTP connection refused' },
+      })
+
+      const request = createMockRequest(validFormData)
+      const response = await POST(request)
+
+      // La reponse reste un echec cote visiteur...
+      expect(response.status).toBe(500)
+
+      // ...mais la demande n'est pas perdue pour autant, et la ligne porte la
+      // trace de la notification jamais partie.
+      expect(prismaMock.contactMessage.create).toHaveBeenCalledTimes(1)
+      expect(prismaMock.contactMessage.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            emailStatus: 'FAILED',
+            emailError: 'SMTP connection refused',
+          }),
+        })
+      )
+    })
+
+    it('marque la notification comme envoyee en cas de succes', async () => {
+      const request = createMockRequest(validFormData)
+      await POST(request)
+
+      expect(prismaMock.contactMessage.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            emailStatus: 'SENT',
+            emailError: null,
+          }),
+        })
+      )
+    })
+
+    it('n enregistre rien quand la validation echoue', async () => {
+      const request = createMockRequest({ name: 'x', email: 'pas-un-email' })
+      const response = await POST(request)
+
+      expect(response.status).toBe(400)
+      expect(prismaMock.contactMessage.create).not.toHaveBeenCalled()
+    })
+
+    it('n enregistre rien quand le rate limit bloque la requete', async () => {
+      checkRateLimit.mockResolvedValue({
+        allowed: false,
+        remaining: 0,
+        resetAt: Date.now() + 60000,
+      })
+
+      const request = createMockRequest(validFormData)
+      const response = await POST(request)
+
+      expect(response.status).toBe(429)
+      expect(prismaMock.contactMessage.create).not.toHaveBeenCalled()
+    })
+
+    it('repond 500 sans planter si l ecriture en base echoue', async () => {
+      prismaMock.contactMessage.create.mockRejectedValue(
+        new Error('Connexion base perdue')
+      )
+
+      const request = createMockRequest(validFormData)
+      const response = await POST(request)
+      const data = await response.json()
+
+      expect(response.status).toBe(500)
+      expect(data.success).toBe(false)
+      // Aucun email ne part si le message n'a pas pu etre conserve : le
+      // visiteur est invite a reessayer plutot que de croire sa demande recue.
+      expect(sendContactEmails).not.toHaveBeenCalled()
+    })
+  })
+
   // ==========================================================================
 
   describe('Erreurs SMTP', () => {

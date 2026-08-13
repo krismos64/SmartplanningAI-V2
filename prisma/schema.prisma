@@ -1111,3 +1111,55 @@ model Message {
   @@index([companyId])
   @@map("messages")
 }
+
+// ============================================================================
+// MESSAGES DU FORMULAIRE DE CONTACT PUBLIC
+// ============================================================================
+// Les messages envoyés depuis /contact par des visiteurs du site.
+//
+// Avant ce modèle, la route POST /api/contact ne faisait qu'envoyer deux
+// emails : une notification à contact@smartplanning.fr et une confirmation à
+// l'expéditeur. Rien n'était conservé. Une panne SMTP, des credentials
+// expirés ou une boîte pleine faisaient donc disparaître une demande
+// commerciale sans laisser la moindre trace.
+//
+// La ligne est désormais écrite AVANT la tentative d'envoi. L'email devient
+// une notification, la base reste la source de vérité.
+//
+// Pas de companyId ici, contrairement à presque toutes les autres tables :
+// l'expéditeur est un visiteur anonyme qui n'appartient à aucune entreprise.
+// La conséquence côté sécurité est que la lecture de ces messages est
+// réservée au SYSTEM_ADMIN, le seul rôle qui n'est pas borné à une company.
+// ============================================================================
+
+model ContactMessage {
+  id      String @id @default(cuid())
+  name    String
+  email   String
+  subject String
+  message String @db.Text
+
+  // Statut de la notification envoyée à l'équipe, indépendant du message
+  // lui-même : une ligne en FAILED signale une demande reçue que personne
+  // n'a vue passer par email, donc à traiter à la main.
+  emailStatus String  @default("PENDING") // PENDING, SENT ou FAILED
+  emailError  String? @db.Text
+
+  // Traçabilité anti-abus, alignée sur le rate limiting de la route.
+  // Données personnelles au sens du RGPD, purgées avec le message.
+  ipAddress String?
+  userAgent String? @db.Text
+
+  // Suivi du traitement commercial : une demande lue et répondue ne doit pas
+  // se confondre avec une demande en attente.
+  isRead     Boolean   @default(false)
+  handledAt  DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([createdAt(sort: Desc)]) // Liste admin, les plus récents d'abord
+  @@index([isRead, createdAt(sort: Desc)]) // Filtre « non lus »
+  @@index([emailStatus]) // Retrouver les notifications jamais parties
+  @@map("contact_messages")
+}

@@ -9,6 +9,7 @@
  * Fonctionnalités :
  * - Validation Zod côté serveur
  * - Rate limiting (5 requêtes/minute par IP)
+ * - Persistance du message en base avant tout envoi
  * - Envoi email de confirmation à l'expéditeur
  * - Envoi email de notification au Super Admin
  * - Gestion d'erreurs avec messages appropriés
@@ -23,6 +24,7 @@ import {
   getRateLimitHeaders,
 } from '@/lib/rate-limit'
 import { sendContactEmails } from '@/lib/email/templates/contact'
+import { prisma } from '@/lib/prisma'
 import type { ContactApiResponse } from '@/types/contact'
 
 /**
@@ -121,7 +123,28 @@ export async function POST(
 
     const { name, email, subject, message } = validationResult.data
 
-    // 4. Envoyer les emails (confirmation + notification)
+    // 4. Persister le message AVANT toute tentative d'envoi.
+    //
+    // L'ordre compte : tant que la route ne faisait qu'envoyer des emails, une
+    // panne SMTP faisait disparaître la demande sans laisser de trace. La base
+    // est désormais la source de vérité, l'email n'est qu'une notification.
+    //
+    // L'écriture est volontairement bloquante, contrairement aux emails : si
+    // elle échoue, on préfère demander au visiteur de réessayer plutôt que de
+    // perdre son message en silence.
+    const contactMessage = await prisma.contactMessage.create({
+      data: {
+        name,
+        email,
+        subject,
+        message,
+        ipAddress: clientIp === 'unknown' ? null : clientIp,
+        userAgent: request.headers.get('user-agent'),
+      },
+      select: { id: true },
+    })
+
+    // 5. Envoyer les emails (confirmation + notification)
     const { confirmation, notification } = await sendContactEmails({
       name,
       email,
@@ -129,19 +152,34 @@ export async function POST(
       message,
     })
 
-    // 5. Vérifier les résultats
+    // 6. Consigner le sort de la notification sur la ligne créée.
+    // Fire-and-forget : le message est déjà en base, cette mise à jour ne
+    // conditionne pas la réponse au visiteur.
+    prisma.contactMessage
+      .update({
+        where: { id: contactMessage.id },
+        data: {
+          emailStatus: notification.success ? 'SENT' : 'FAILED',
+          emailError: notification.success ? null : notification.error,
+        },
+      })
+      .catch(console.error)
+
+    // 7. Vérifier les résultats
     // On considère l'opération réussie si au moins la notification admin est envoyée
     // La confirmation à l'expéditeur est secondaire
     if (!notification.success) {
       console.error(
         '[API Contact] Échec notification admin:',
-        notification.error
+        notification.error,
+        '- message conservé en base:',
+        contactMessage.id
       )
 
-      // Si les emails ne fonctionnent pas, on log mais on ne bloque pas
-      // L'utilisateur reçoit quand même une confirmation côté UI
-      // En production, on pourrait stocker le message en BDD pour traitement ultérieur
-
+      // Le message n'est pas perdu pour autant, il est en base avec
+      // emailStatus FAILED. On invite quand même le visiteur à écrire
+      // directement, sans lui promettre une réponse qui dépendrait d'une
+      // notification jamais partie.
       return NextResponse.json(
         {
           success: false,
@@ -163,7 +201,7 @@ export async function POST(
       )
     }
 
-    // 6. Succès
+    // 8. Succès
     return NextResponse.json(
       {
         success: true,
