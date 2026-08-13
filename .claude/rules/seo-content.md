@@ -76,7 +76,7 @@ focusable est masqué, sinon il reste atteignable à la tabulation.
 
 ## Identité visuelle des pages publiques
 
-Refonte d'août 2026, SP-565 à SP-573. Trois règles à tenir sur toute page
+Refonte d'août 2026, SP-565 à SP-575. Trois règles à tenir sur toute page
 publique, nouvelle ou modifiée.
 
 **Pas de mode sombre.** Les pages publiques n'ont qu'un mode clair. Ne jamais y
@@ -92,6 +92,13 @@ sombre chez un utilisateur qui l'a choisi.
 Aucune opacité sur les aplats vifs : sur le bleu franc, le blanc plein ne donne
 déjà que 4,88:1, sur le corail la limite tombe dès 80 %.
 
+Corollaire mesuré en SP-575 : **sur le bleu franc, seul le blanc pur passe.**
+`content-on-dark`, le crème, n'y donne que 4,13:1, et `content-on-vivid`, le
+bleu nuit, 3,54:1, tous deux sous le seuil AA. Un aplat bleu prend donc
+`text-white` en dur, comme le fait déjà `BentoCard`, et non le token de texte
+commun aux autres aplats. C'est la seule teinte de la palette où le token
+attendu ne convient pas.
+
 Les primitives vivent dans `src/components/public/` : `PublicPageShell`,
 `DisplayTitle`, `SectionLabel`, `BentoCard`, `FaqAccordion`. Les importer par
 leur chemin exact, pas par le barrel `@/components/public`, qui réexporte
@@ -100,6 +107,26 @@ leur chemin exact, pas par le barrel `@/components/public`, qui réexporte
 Les pages d'authentification (`src/app/(auth)/`) suivent la même identité
 depuis SP-574 : `/login` et `/register` sont atteintes depuis le site public
 et sont la dernière étape avant conversion. Leur layout porte `.public-scope`.
+
+Leurs deux moitiés sont **alignées en haut**, jamais centrées verticalement.
+Chaque colonne prend la hauteur de la plus grande, imposée par le formulaire :
+un centrage y produit un décalage qui varie selon la longueur du formulaire,
+300 px sur `/register` et 37 px sur `/login` avant SP-575.
+
+### Le fil d'Ariane vit dans le hero
+
+`PublicPageShell` pose le fil d'Ariane **dans l'aplat du hero**, pas dans une
+bande à lui. Il occupait auparavant 112 px de retrait sur du crème, où il
+flottait seul en gris.
+
+Le supprimer coûterait le `BreadcrumbList` que Google affiche sous les
+résultats : il reste donc rendu, en petites capitales de 11 px, liens en crème,
+chevrons corail et page courante en lime.
+
+Les sept pages de contenu ouvrent toutes sur un hero bleu nuit, d'où le défaut
+`onDark` de `breadcrumbTone`. Une page qui ouvrirait sur crème doit passer
+`onLight`, sinon le lime devient illisible sur fond clair. Le hero qui suit
+porte un retrait haut réduit, le fil portant déjà l'écart sous le header fixe.
 
 ### Les constantes de style partagées se démodent en silence
 
