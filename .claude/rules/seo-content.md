@@ -101,10 +101,35 @@ Les pages d'authentification (`src/app/(auth)/`) suivent la même identité
 depuis SP-574 : `/login` et `/register` sont atteintes depuis le site public
 et sont la dernière étape avant conversion. Leur layout porte `.public-scope`.
 
-`PRIMARY_BUTTON_CLASSES` (`src/app/(landing)/components/styles.ts`) sert les
-hubs `/solutions` et `/guides` **et** les formulaires auth. Une modification y
-touche les trois : vérifier les usages réels avant d'y toucher, le commentaire
-d'en-tête a déjà été périmé une fois.
+### Les constantes de style partagées se démodent en silence
+
+`src/app/(landing)/components/styles.ts` porte des constantes de classes qui
+servent plusieurs familles de pages. Deux y sont restées au style d'avant la
+refonte, chacune découverte des semaines après :
+
+- `PRIMARY_BUTTON_CLASSES` sert les hubs `/solutions` et `/guides` **et** les
+  formulaires auth. Un bouton bleu arrondi y a survécu sur trois pages
+  refondues, corrigé le 12 août.
+- `HIGHLIGHT_TEXT_CLASSES_PUBLIC` valait `text-blue-600`, une couleur Tailwind
+  brute et non un token. Corrigé le 13 août.
+
+**Le garde-fou des tokens `public-*` ne peut rien contre ce défaut** :
+`text-blue-600` est une classe parfaitement valide, simplement hors palette. Le
+scan de classes hors-refonte ne regarde pas non plus les constantes, seulement
+le JSX.
+
+Avant de toucher une de ces constantes, suivre ses usages réels : elle sert
+probablement plus de pages que son commentaire ne le dit, celui-ci ayant déjà
+été périmé deux fois.
+
+### Une page hors périmètre de ticket reste en l'état
+
+Les deux hubs ont traversé toute la refonte sans être touchés, parce qu'aucun
+ticket ne les nommait. Ils ont été repris le 13 août, avec les mêmes marqueurs
+qu'au premier jour : titre centré, cartes blanches arrondies, badges à icône.
+
+Après une refonte, parcourir les pages rendues une par une plutôt que se fier à
+la liste des fichiers modifiés.
 
 ## Navigation
 

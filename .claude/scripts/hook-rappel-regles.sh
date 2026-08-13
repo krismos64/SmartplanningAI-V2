@@ -55,8 +55,12 @@ esac
 # 2026 apres SP-574 : login et register suivent desormais l'identite publique,
 # le simulateur de tarifs sert la landing, et le pied de page des emails a
 # porte un lien mort vers une route inexistante pendant des mois.
+# tailwind.config.ts et styles/tokens/ ajoutes le 13 aout 2026 : ces deux
+# fichiers portent les tokens `public-*` et les animations des pages publiques,
+# et ne declenchaient aucun rappel alors qu'une valeur fausse s'y propage a
+# toutes les pages d'un coup.
 case "$relatif" in
-    *"(sectors)"*|*"(guides)"*|*"(about)"*|*"(legal)"*|*"(auth)"*|*components/public/*|*components/auth/*|*components/pricing/*|emails/*|*sitemap.ts|*robots.ts|public/llms*|*landing*|*Landing*|*Footer*|*footer*)
+    *"(sectors)"*|*"(guides)"*|*"(about)"*|*"(legal)"*|*"(auth)"*|*components/public/*|*components/auth/*|*components/pricing/*|emails/*|*sitemap.ts|*robots.ts|public/llms*|*landing*|*Landing*|*Footer*|*footer*|tailwind.config.ts|*styles/tokens/*)
         regles+=("seo-content.md : registre data-driven, aucun concurrent nomme, llms.txt et sitemap a mettre a jour") ;;
 esac
 

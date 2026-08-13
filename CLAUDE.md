@@ -122,3 +122,9 @@ Sur une page publique, l'accessibilité se vérifie avec axe-core, jamais avec u
 calcul de contraste écrit pour l'occasion : celui-ci ignore les opacités et ne
 voit aucun défaut de structure. `npx playwright test e2e/specs/landing/`, ces
 specs ne sont pas dans la whitelist CI.
+
+Ne jamais lancer `npm run build` pendant qu'un serveur de dev tourne : les deux
+se disputent `.next` et la page servie part en 500, ce qui ressemble à s'y
+méprendre à une régression du code. Et un audit lancé contre un serveur de
+production démarré avant la dernière modification teste l'ancien build : couper,
+rebâtir, relancer, sinon le verdict porte sur autre chose que ce qu'on croit.

@@ -42,7 +42,7 @@ Plateforme SaaS multi-tenant de gestion intelligente des plannings et des ressou
 - **Notes & Incidents** : Taches personnelles (drag & drop), notes d'incidents avec visibilite RBAC
 - **SEO / GEO** : Metadata API, JSON-LD Schema.org (@graph, Article, HowTo, FAQPage, BreadcrumbList), sitemap data-driven avec `lastModified` reels, robots.txt ouvert aux crawlers IA, `llms.txt` et `llms-full.txt`
 - **Contenu editorial** : Pages secteur `/solutions/[slug]` (restauration, commerce, BTP) et guides pratiques `/guides/[slug]`, chacune sous son hub (`/solutions`, `/guides`), generes depuis des registres data-driven en SSG strict. Ajouter une page = 1 fichier de donnees + 1 ligne au registre (sitemap, footer, navigation et garde-fous de tests suivent automatiquement)
-- **Landing** : Design "Cyber Glass 3D", simulateur tarifs, FAQ, pages legales RGPD, demos video par role (Directeur/Manager/Employe) avec onglets et JSON-LD VideoObject. Navigation en pattern disclosure (liens toujours dans le DOM pour le maillage interne, `inert` a l'etat ferme)
+- **Pages publiques** : Identite editoriale depuis SP-565 a SP-574, aplats pleine largeur, angles vifs, mode clair unique. Landing en dix sections numerotees, FAQ, page contact dediee, pages legales RGPD, demos video par role (Directeur/Manager/Employe) avec onglets et JSON-LD VideoObject. Le simulateur de tarifs vit sur `/tarifs`, la landing y renvoie. Navigation en pattern disclosure (liens toujours dans le DOM pour le maillage interne, `inert` a l'etat ferme)
 - **Accessibilite** : WCAG 2.1 AA, touch targets 44px, Lighthouse A11y 97-100%
 
 > Historique detaille du developpement : [`docs/journal/`](docs/journal/)

@@ -513,9 +513,39 @@ modifier signalerait à tort un contenu réécrit à Google.
 
 ## Prochaine étape
 
-Les trois autres points du 12 août restent ouverts, inchangés :
+### Ce qui bloque
 
-1. **La whitelist E2E de la CI ne couvre pas les specs `landing/`**. Arbitrage
-   jamais pris, revenu à chaque session depuis le 7 août
-2. **61 commits non poussés** (mesuré par `git rev-list --count main..HEAD`), la CI n'a jamais tourné sur la refonte
-3. **SP-574 passera à Terminé au merge**, avec SP-565 à SP-573
+**62 commits non poussés**, mesuré par `git rev-list --count main..HEAD`. La CI
+n'a **jamais** tourné sur ce travail, ni sur la refonte SP-565 à SP-573 qui le
+précède. C'est le point à traiter en premier : ouvrir une PR, même en draft,
+puisqu'un push sans PR ne déclenche aucun workflow.
+
+Deux vrais défauts d'accessibilité ont été trouvés le 13 août par des audits qui
+n'existaient pas la veille, sur des pages en production depuis des semaines. Rien
+ne garantit qu'il n'en reste pas.
+
+### Arbitrage en attente
+
+**La whitelist E2E de la CI ne couvre pas les specs `landing/`**, page contact,
+hubs et audits axe compris. La question revient à chaque session depuis le
+7 août sans être tranchée : ces 24 specs tournent-elles à chaque PR, ou
+seulement en nightly ? Neuf d'entre elles sont des audits axe, dont deux ajoutés
+le 13 août.
+
+### Signalé, non traité
+
+`PricingCard` (`src/components/pricing/PricingCard.tsx`) n'a plus **aucun
+appelant** depuis son retrait de la landing. Seul le barrel l'exporte encore.
+Code mort à supprimer, hors périmètre des demandes du jour.
+
+### Traçabilité
+
+**SP-574 passera à Terminé au merge**, avec SP-565 à SP-573. Il est en
+« En cours », le travail ayant commencé avant la création du ticket.
+
+### Où reprendre
+
+Le prototype reste la référence : `https://smartplanning-nouvelle-identite.krismos.chatgpt.site`.
+Les écrans publics ont tous été comparés au 13 août, landing, `/tarifs`,
+`/solutions`, `/guides`, pages secteur et pages légales. Les sections restantes
+du prototype non portées sont un choix assumé, pas un oubli.
