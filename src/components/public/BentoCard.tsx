@@ -81,8 +81,13 @@ export function BentoCard({
         className
       )}
     >
+      {/* Filet de 5 px, valeur du prototype : a 4 px il se lit comme une
+          bordure, a 5 il devient un marqueur graphique. */}
       {rule ? (
-        <span aria-hidden="true" className={cn('block h-1 w-full', colors.rule)} />
+        <span
+          aria-hidden="true"
+          className={cn('block h-[5px] w-full', colors.rule)}
+        />
       ) : null}
 
       <div className="flex h-full flex-col gap-3 p-6 sm:p-8">
