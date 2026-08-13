@@ -103,10 +103,13 @@ export function useContactForm(
             setState('error')
           }
         } else {
-          // Mode démo / mock
-          await new Promise((resolve) => setTimeout(resolve, 1500))
-          setSubmittedName(data.name)
-          setState('success')
+          // Aucun envoi fourni : ne jamais afficher un succès, aucun message
+          // n'est parti. Un mode démo simulait un succès ici, ce qui a masqué
+          // pendant des semaines un formulaire non branché sur /api/contact.
+          setError(
+            "Le formulaire n'est pas configuré. Écrivez-nous à contact@smartplanning.fr"
+          )
+          setState('error')
         }
       } catch (err) {
         const errorMessage =
