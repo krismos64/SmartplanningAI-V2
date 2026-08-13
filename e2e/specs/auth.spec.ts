@@ -57,9 +57,14 @@ test.describe('Login Page', () => {
     // Vérifie le titre de la page
     await expect(page).toHaveTitle(/Connexion/i)
 
-    // Vérifie les éléments du formulaire
+    /*
+      Le panneau editorial dit « Bon retour » puis « dans votre equipe. » en
+      italique depuis SP-574, la ou il disait « Bon retour ! ». L'assertion
+      est souple sur la suite du titre, comme celle de `middleware-rbac`, pour
+      ne pas rougir au prochain changement de la seconde ligne.
+    */
     await expect(
-      page.getByRole('heading', { name: 'Bon retour !' })
+      page.getByRole('heading', { name: /Bon retour/i })
     ).toBeVisible()
     await expect(page.getByPlaceholder('vous@entreprise.com')).toBeVisible()
     await expect(page.getByPlaceholder('••••••••')).toBeVisible()
