@@ -1,12 +1,12 @@
-# 13 août 2026, numérotation des sections, maquette du hero et bandeau défilant
+# 13 août 2026, la landing rapprochée du prototype
 
 | Champ | Valeur |
 |---|---|
 | Ticket | SP-574, point 2 laissé ouvert par la session du 12 août |
 | Documents produits | `src/components/public/__tests__/section-numbering.test.ts`, `src/app/(landing)/components/sections/TickerSection.tsx` |
-| Documents modifiés | `RoleDemosSection.tsx`, `FeaturesSection.tsx`, `MobileSection.tsx`, `HowItWorksSection.tsx`, `BenefitsSection.tsx`, `VideoSection.tsx`, `a-propos/AboutContent.tsx`, `PlanningMockup.tsx`, `HeroSection.tsx`, `LandingPageContent.tsx`, `tailwind.config.ts`, `sections/index.ts` |
+| Documents modifiés | `RoleDemosSection.tsx`, `FeaturesSection.tsx`, `MobileSection.tsx`, `HowItWorksSection.tsx`, `BenefitsSection.tsx`, `VideoSection.tsx`, `a-propos/AboutContent.tsx`, `PlanningMockup.tsx`, `HeroSection.tsx`, `LandingPageContent.tsx`, `tailwind.config.ts`, `sections/index.ts`, `RoleDemosSection.tsx`, `(landing)/data/index.ts` |
 | Contrôles | type-check vert, 3163 tests unitaires (188 fichiers), 22 specs publiques dont 7 axe-core, build de production, rangs et dimensions relevés au navigateur |
-| Jira | SP-574, trois commentaires : clôture du point 2, maquette du hero, bandeau défilant |
+| Jira | SP-574, quatre commentaires : clôture du point 2, maquette du hero, bandeau défilant, section des rôles |
 | Mémoire | `refonte-publique-angles-morts` mise à jour |
 
 ## Ce qui a été fait
@@ -183,11 +183,59 @@ restent vertes.
 est du CSS déclaré dans `tailwind.config.ts` et la section un Server Component
 sans JavaScript client.
 
+## Quatrième partie : la section des rôles
+
+Christophe a demandé que la section « pour chaque rôle » ressemble au
+prototype, plus compacte et plus simple. Mesure : **1466 px de haut contre
+555**, presque trois fois plus.
+
+L'écart venait de trois blocs que le prototype ne porte pas. Un titre de
+section avec son chapô, la vidéo en pleine largeur sous le texte au lieu d'être
+à côté, et cinq points clés par rôle listés dessous.
+
+### Deux arbitrages soumis à Christophe
+
+**Les cinq points clés sont retirés**, soit 15 lignes de texte indexable sur
+les trois rôles. Ils ne servaient que cette section : aucun JSON-LD, aucun test,
+absents de `llms.txt`. Le contenu qu'ils portent, audit, RGPD, import CSV, est
+déjà couvert par les pages secteur et les guides, qui sont les pages réellement
+classées sur ces requêtes. La landing ne l'est pas. Le champ `highlights` reste
+dans les données.
+
+**Le h2 porte le titre du rôle actif** et non plus un titre de section fixe.
+« Une vue claire de l'entreprise » plutôt que « SmartPlanning s'adapte à chaque
+rôle » : il change avec l'onglet, reste unique à tout instant, et dit quelque
+chose de concret. Vérifié après coup, la page garde un seul h1, une hiérarchie
+de titres cohérente et aucun identifiant dupliqué.
+
+Deux champs ajoutés aux données, `headline` et `pitch`, repris des formulations
+du prototype. `description` reste en place, le JSON-LD des vidéos l'utilise.
+
+### Un piège ARIA évité de justesse
+
+En sortant le `SectionLabel` du bloc des onglets, je l'avais d'abord placé
+**dans** le conteneur `role="tablist"`. Ce rôle n'admet que des éléments `tab`
+parmi ses enfants : un paragraphe y aurait cassé le motif. Corrigé avant
+vérification, le label vit dans la colonne et le `tablist` ne contient que les
+trois boutons.
+
+Le motif tablist est conservé intégralement, navigation par flèches comprise.
+Vérifié au clic et au clavier : `aria-selected` suit la sélection, le panneau
+change, `ArrowRight` déplace le focus et la sélection ensemble.
+
+### Mesures
+
+| | Prototype | Avant | Après |
+|---|---|---|---|
+| Hauteur | 555 px | 1466 px | **550 px** |
+
+Landing inchangée à 167 kB. Les 7 specs axe-core restent vertes.
+
 ## Prochaine étape
 
 Les trois autres points du 12 août restent ouverts, inchangés :
 
 1. **La whitelist E2E de la CI ne couvre pas les specs `landing/`**. Arbitrage
    jamais pris, revenu à chaque session depuis le 7 août
-2. **49 commits non poussés** (mesuré par `git rev-list --count main..HEAD`), la CI n'a jamais tourné sur la refonte
+2. **51 commits non poussés** (mesuré par `git rev-list --count main..HEAD`), la CI n'a jamais tourné sur la refonte
 3. **SP-574 passera à Terminé au merge**, avec SP-565 à SP-573
