@@ -37,8 +37,15 @@ export const HIGHLIGHT_TEXT_CLASSES = 'text-blue-600 dark:text-blue-400'
  * Les pages publiques n'ont pas de mode sombre (SP-573) : la variante
  * `dark:` y ferait varier la couleur selon un theme que le visiteur ne
  * peut plus choisir sur ces pages.
+ *
+ * SP-574 : la couleur passe du `blue-600` de Tailwind au token public.
+ * Le bleu brut etait reste apres la refonte, et le garde-fou des tokens ne
+ * pouvait pas le voir, `text-blue-600` etant une classe valide, simplement
+ * hors palette. C'est le meme motif que `PRIMARY_BUTTON_CLASSES`, restee
+ * elle aussi en style d'avant refonte alors qu'elle servait des pages
+ * refondues.
  */
-export const HIGHLIGHT_TEXT_CLASSES_PUBLIC = 'text-blue-600'
+export const HIGHLIGHT_TEXT_CLASSES_PUBLIC = 'text-public-brand-on-light'
 
 /**
  * CTA des formulaires d'authentification.

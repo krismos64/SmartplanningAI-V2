@@ -139,6 +139,11 @@ test.describe('Landing — accessibilité axe-core', () => {
   for (const { path, label } of [
     { path: '/tarifs', label: 'tarifs' },
     { path: '/cgu', label: 'legale' },
+    // Les deux hubs n'avaient aucun audit et portent depuis SP-574 des
+    // cartes en aplats corail et lime, ou le contraste du texte est le
+    // point sensible.
+    { path: '/solutions', label: 'hub solutions' },
+    { path: '/guides', label: 'hub guides' },
   ]) {
     test(`aucune violation WCAG AA sur la page ${label}`, async ({ page }) => {
       /*

@@ -79,50 +79,59 @@ export function SectorContent({ sector }: SectorContentProps) {
 
   return (
     <PublicPageShell breadcrumb={[{ label: sector.name }]}>
-      {/* Hero : H1 et reponse directe citable */}
-      <article aria-labelledby="hero-title" className="pb-16 pt-10">
-        <div className="container-custom">
-          <SectionLabel index={1}>{sector.badge}</SectionLabel>
+      {/* Hero : H1 et reponse directe citable.
+          Aplat bleu nuit depuis SP-574, comme le prototype et comme les
+          heros de /tarifs et /solutions. Sur creme, l'entree de page ne
+          posait aucun contraste. */}
+      <article aria-labelledby="hero-title">
+        <div className="bg-public-surface-dark py-20 lg:py-28">
+          <div className="container-custom">
+            <SectionLabel index={1} tone="onDark">
+              {sector.badge}
+            </SectionLabel>
 
-          <h1
-            id="hero-title"
-            className="mt-8 max-w-4xl font-geist text-4xl font-bold leading-[0.98] tracking-[-0.03em] text-public-content sm:text-5xl lg:text-6xl"
-          >
-            {sector.h1}{' '}
-            <span className="font-editorial italic text-public-accent">
-              {sector.h1Highlight}
-            </span>
-          </h1>
-
-          {/*
-            Reponse directe : la reponse a la requete, citable, dans les 100
-            premiers mots de la page. Elle contient le prix, fait verifiable.
-          */}
-          <p className="mt-8 max-w-3xl font-geist text-lg leading-relaxed text-public-content-muted">
-            {sector.directAnswer}
-          </p>
-
-          <div className="mt-10 flex flex-col gap-4 sm:flex-row">
-            <Link
-              href="/register"
-              aria-label="Créer un compte SmartPlanning gratuitement"
-              className="inline-flex min-h-[3.5rem] items-center justify-center gap-3 bg-public-surface-dark px-8 font-geist text-base font-semibold text-public-content-on-dark transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-public-accent focus-visible:ring-offset-2 focus-visible:ring-offset-public-surface"
+            <h1
+              id="hero-title"
+              className="mt-8 max-w-3xl font-geist text-4xl font-bold leading-[0.95] tracking-[-0.045em] text-public-content-on-dark sm:text-5xl lg:text-6xl"
             >
-              Essayer gratuitement
-              <ArrowUpRight className="h-5 w-5" aria-hidden="true" />
-            </Link>
+              {sector.h1}{' '}
+              <span className="font-editorial italic text-public-accent-on-dark">
+                {sector.h1Highlight}
+              </span>
+            </h1>
 
-            <Link
-              href="/tarifs"
-              aria-label="Consulter les tarifs de SmartPlanning"
-              className="inline-flex min-h-[3.5rem] items-center justify-center border border-public-content px-8 font-geist text-base font-semibold text-public-content transition-colors hover:bg-public-content hover:text-public-content-on-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-public-accent focus-visible:ring-offset-2 focus-visible:ring-offset-public-surface"
-            >
-              Voir les tarifs
-            </Link>
+            {/*
+              Reponse directe : la reponse a la requete, citable, dans les 100
+              premiers mots de la page. Elle contient le prix, fait verifiable.
+            */}
+            <p className="mt-8 max-w-2xl font-geist text-lg leading-relaxed text-public-content-on-dark/80">
+              {sector.directAnswer}
+            </p>
+
+            <div className="mt-10 flex flex-col gap-4 sm:flex-row">
+              <Link
+                href="/register"
+                aria-label="Créer un compte SmartPlanning gratuitement"
+                className="inline-flex min-h-[3.5rem] items-center justify-center gap-3 bg-public-highlight-surface px-8 font-geist text-base font-semibold text-public-content-on-vivid transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-public-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-public-surface-dark"
+              >
+                Essayer gratuitement
+                <ArrowUpRight className="h-5 w-5" aria-hidden="true" />
+              </Link>
+
+              <Link
+                href="/tarifs"
+                aria-label="Consulter les tarifs de SmartPlanning"
+                className="inline-flex min-h-[3.5rem] items-center justify-center px-2 font-geist text-base font-semibold text-public-content-on-dark underline underline-offset-8 transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-public-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-public-surface-dark"
+              >
+                Voir les tarifs
+              </Link>
+            </div>
           </div>
+        </div>
 
-          {/* Introduction metier */}
-          <div className="mt-16 max-w-3xl space-y-6 border-t border-public-border pt-10">
+        {/* Introduction metier, sur creme */}
+        <div className="container-custom py-16 lg:py-20">
+          <div className="grid gap-8 lg:grid-cols-2 lg:gap-16">
             {sector.intro.map((paragraph, index) => (
               <p
                 key={index}
