@@ -58,12 +58,6 @@ export interface Benefit {
   description: string
 }
 
-export interface VideoFeature {
-  id: string
-  title: string
-  description: string
-}
-
 export interface RoleDemo {
   id: 'director' | 'manager' | 'employee'
   icon: LucideIcon
@@ -359,24 +353,3 @@ export const roleDemos: RoleDemo[] = [
   },
 ]
 
-// ============================================================================
-// VIDEO FEATURES (Demo section)
-// ============================================================================
-
-export const videoFeatures: VideoFeature[] = [
-  {
-    id: 'intuitive',
-    title: 'Interface intuitive',
-    description: 'Dashboard clair, prise en main immédiate',
-  },
-  {
-    id: 'key-features',
-    title: 'Tout en un',
-    description: 'Plannings, congés, messagerie et imports centralisés',
-  },
-  {
-    id: 'results',
-    title: 'Résultats concrets',
-    description: 'Gagnez du temps dès le premier jour',
-  },
-]
