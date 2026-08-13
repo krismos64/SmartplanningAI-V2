@@ -8,6 +8,7 @@ export { LandingFooter as Footer } from '@/components/layout/LandingFooter'
 
 // Section components
 export { HeroSection } from './HeroSection'
+export { TickerSection } from './TickerSection'
 export { VideoSection } from './VideoSection'
 export { RoleDemosSection } from './RoleDemosSection'
 export { FeaturesSection } from './FeaturesSection'
