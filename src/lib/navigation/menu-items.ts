@@ -33,6 +33,7 @@ import {
   Upload,
   MessageSquare,
   MailCheck,
+  Inbox,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -139,6 +140,14 @@ export const navigationItems: NavigationItem[] = [
     href: '/app/admin/emails',
     roles: ['SYSTEM_ADMIN'],
     keywords: ['email', 'mail', 'délivrabilité', 'smtp', 'journal', 'log'],
+  },
+  {
+    id: 'admin-contact-messages',
+    label: 'Messages de contact',
+    icon: Inbox,
+    href: '/app/admin/messages-contact',
+    roles: ['SYSTEM_ADMIN'],
+    keywords: ['contact', 'demande', 'formulaire', 'prospect', 'message'],
   },
   {
     id: 'monitoring',
