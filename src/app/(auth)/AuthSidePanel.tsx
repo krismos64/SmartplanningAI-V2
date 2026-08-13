@@ -15,7 +15,19 @@
  * prototype ne montre le panneau qu'a partir du grand ecran. `hidden`
  * suffit, le contenu est decoratif et repris par le texte des pages.
  *
+ * Le contenu est aligne en haut, et non centre verticalement (SP-575).
+ * Le panneau prend la hauteur de la colonne voisine, imposee par le
+ * formulaire : sur /register celui-ci fait 1329 px pour un panneau de
+ * 500, et `justify-center` repoussait le texte a 490 px du haut quand la
+ * carte de droite commencait a 190. La moitie gauche se lisait comme si
+ * elle avait glisse. Le defaut ne se voyait pas sur /login, dont le
+ * formulaire fait moitie moins.
+ *
+ * `lg:pt-24` reprend le `lg:py-24` de la colonne de droite, pour que les
+ * deux moities demarrent au meme niveau.
+ *
  * @see SP-574
+ * @see SP-575 - Panneau aligne en haut
  */
 
 import { usePathname } from 'next/navigation'
@@ -59,10 +71,10 @@ export function AuthSidePanel() {
   if (!copy) return null
 
   return (
-    <div className="hidden bg-public-surface-dark px-8 py-16 lg:flex lg:flex-col lg:justify-center lg:px-16 lg:py-24 xl:px-24">
+    <div className="hidden bg-public-surface-dark px-8 py-16 lg:flex lg:flex-col lg:px-16 lg:pb-24 lg:pt-24 xl:px-24">
       <AuthBrand />
 
-      <p className="mt-16 flex items-center gap-4 font-geist text-xs uppercase tracking-[0.14em] text-public-content-on-dark/75">
+      <p className="mt-12 flex items-center gap-4 font-geist text-xs uppercase tracking-[0.14em] text-public-content-on-dark/75">
         <span className="border border-public-border-on-dark px-3 py-1.5 text-public-highlight">
           {copy.action}
         </span>
@@ -76,7 +88,7 @@ export function AuthSidePanel() {
         </span>
       </h2>
 
-      <ul className="mt-16 border-t border-public-border-on-dark">
+      <ul className="mt-12 border-t border-public-border-on-dark">
         {POINTS.map((point) => (
           <li
             key={point}

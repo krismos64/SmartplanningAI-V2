@@ -51,8 +51,16 @@ export function AuthLayoutClient({ children }: AuthLayoutClientProps) {
           */}
           <AuthSidePanel />
 
-          {/* Panneau formulaire */}
-          <div className="flex items-center justify-center bg-public-surface-subtle px-4 py-16 lg:px-12 lg:py-24">
+          {/*
+            Panneau formulaire.
+
+            Aligne en haut et non centre verticalement (SP-575) : la carte
+            se centrait dans une colonne dont la hauteur vient du plus haut
+            des deux panneaux, donc elle descendait de 37 px sur /login, ou
+            le formulaire est court. Les deux moities ne pouvaient pas
+            s'aligner tant que l'une se centrait et l'autre non.
+          */}
+          <div className="flex items-start justify-center bg-public-surface-subtle px-4 py-16 lg:px-12 lg:py-24">
             <div className="w-full max-w-lg">
               {/*
                 Ombre corail portee sans flou, decalee de 15 px et 17 px. Un
