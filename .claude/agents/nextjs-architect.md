@@ -58,4 +58,4 @@ src/
 
 ## 📖 Livrables
 
-/docs/architecture.md (choix + flux de données), README à jour, actions/endpoints documentés.
+`docs/database-architecture.md` pour les modèles et les flux de données, README à jour, actions et endpoints documentés. Une entrée dans `docs/journal/` pour la session.

@@ -209,15 +209,68 @@ Deux pièges rencontrés en vérifiant le correctif en local :
   `emailVerified = null`, et passait en CI. Différence d'environnement, pas
   régression : vérifié dans les logs du premier run avant de conclure
 
+## Mergé, déployé, clôturé
+
+PR #73 sortie du draft et mergée en **merge commit** (`d1620df`) plutôt qu'en
+squash : les 69 commits restent lisibles dans l'historique de `main`, chaque
+décision de design et chaque contraste mesuré avec eux. Le dépôt sert de
+vitrine technique, un squash aurait effacé ce raisonnement.
+
+CI verte sur `main`, puis CD vert en 5 min 17. **Vérifié en production** plutôt
+que supposé : dix pages en 200, et les marqueurs de la refonte réellement
+servis, 0 dégradé contre 36, 0 variante `dark:` contre 212, 25 `rounded-`
+contre 136. Manifeste lime présent sur `/a-propos`, fil d'Ariane sur
+`bg-public-surface-dark` avec son `BreadcrumbList`, ancienne bande crème
+disparue.
+
+### SP-575 n'existait pas dans Jira
+
+Découvert en ouvrant le projet pour clore les tickets : soixante-neuf commits,
+le journal, le README et la règle SEO référençaient tous SP-575, sans que le
+ticket ait jamais été créé. **Un `SP-XXX` inventé ne déclenche aucune erreur**,
+ni au commit, ni au hook de traçabilité.
+
+Créé a posteriori avec la description complète du travail, puis clos. Les onze
+tickets SP-565 à SP-575 sont désormais Terminé(e), chacun avec un commentaire
+de clôture.
+
+### Branches, trier par diff réel et non par `--merged`
+
+Onze branches locales et trois références distantes supprimées, chacune
+vérifiée par ses commits absents de `main` et non par son diff : les diffs
+affichaient des milliers de lignes, mais c'était du retard sur `main`, pas du
+travail à sauver. Seule `docs/journal-deploiement-sp563` portait deux commits
+absents, dont le contenu était déjà sur `main` sous un autre SHA.
+
+Reste `main` et `backup-main-20251203`, gardé comme filet de sécurité.
+
+Deux pièges : GitHub avait déjà supprimé les branches des PRs #70 et #71 à leur
+merge, les références locales étaient périmées (`git remote prune`). Et
+`git push --delete` a renvoyé une **« Internal Server Error »** sur la branche
+de refonte, incident de plateforme et non problème de droits :
+`gh api -X DELETE repos/.../git/refs/heads/<branche>` a fonctionné.
+
+### Sitemap, six dates en retard
+
+Relevé en vérifiant la documentation après coup : `/contact` était daté du
+12 août alors que le fil d'Ariane l'a modifiée le 13, et les cinq pages légales
+du 11 alors que `LegalSection` a changé le 13, les liens y passant d'un
+soulignement au survol à un soulignement permanent (défaut axe
+`link-in-text-block`, 2,3:1). Les six dates alignées sur le 13.
+
+Le piège : `git log -1 -- <fichier>` renvoie la date du commit de merge et non
+celle du dernier changement réel. Il faut `--no-merges`.
+
 ## Ce qui reste ouvert
 
-1. **Sortir la PR #73 du mode draft et merger**, quand la relecture est faite.
-   La CI est verte, la branche est mergeable
-2. **Whitelist E2E** : les 26 specs publiques, dont 11 audits axe, ne tournent
+1. **Whitelist E2E** : les 26 specs publiques, dont 11 audits axe, ne tournent
    ni en CI ni ailleurs qu'en local et en nightly. Arbitrage revenu à chaque
    session depuis le 7 août, jamais tranché
-3. **Exports morts de `src/lib`**, voir plus haut, demande son ticket
-4. **Captures produit sur les pages secteur**, le vrai manque visuel identifié
+2. **Exports morts de `src/lib`**, voir plus haut, demande son ticket
+3. **Captures produit sur les pages secteur**, le vrai manque visuel identifié
+4. **Nightly** : les runs des 12 et 13 août échouaient sur deux tests de
+   `sector-pages.spec.ts` qui tournaient contre l'ancien `main`. Les deux
+   passent sur le code mergé, à confirmer au prochain run plutôt qu'à supposer
 5. **Liens entrants**, toujours le goulot réel : 2730 impressions pour 71 clics,
    position moyenne 21,4. La refonte améliore la conversion des visiteurs qui
    arrivent, elle n'en fait pas venir davantage

@@ -27,12 +27,12 @@ const PAGE_LAST_MODIFIED = {
   home: new Date('2026-08-13'),
   tarifs: new Date('2026-08-13'),
   aPropos: new Date('2026-08-13'),
-  contact: new Date('2026-08-12'),
-  cgu: new Date('2026-08-11'),
-  cgv: new Date('2026-08-11'),
-  confidentialite: new Date('2026-08-11'),
-  mentionsLegales: new Date('2026-08-11'),
-  cookies: new Date('2026-08-11'),
+  contact: new Date('2026-08-13'),
+  cgu: new Date('2026-08-13'),
+  cgv: new Date('2026-08-13'),
+  confidentialite: new Date('2026-08-13'),
+  mentionsLegales: new Date('2026-08-13'),
+  cookies: new Date('2026-08-13'),
 } as const
 
 // Pages secteur /solutions/[slug] : chaque secteur porte sa propre date
