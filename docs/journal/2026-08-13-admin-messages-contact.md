@@ -6,7 +6,9 @@
 | Documents produits | `src/app/app/admin/messages-contact/` (page + 3 composants + barrel), `src/lib/actions/admin-contact-messages.ts`, `src/lib/validations/contact-messages.ts`, `__tests__/lib/actions/admin-contact-messages.test.ts`, `e2e/specs/admin-messages-contact.spec.ts` |
 | Documents modifiés | `src/lib/navigation/menu-items.ts` |
 | Contrôles | type-check vert, 3189 tests unitaires (190 fichiers), 8 specs E2E, lint propre, page vue au navigateur, deux preuves par mutation |
-| Jira | SP-577 |
+| Jira | SP-577, clos |
+| PR | [#75](https://github.com/krismos64/SmartplanningAI-V2/pull/75), mergee, CI verte au premier run |
+| Deploiement | production le 13 aout 2026 a 16:55 UTC |
 
 ## Pourquoi cet écran
 
@@ -72,3 +74,17 @@ Le spec n'est pas ajouté à `playwright.ci.config.ts`, par cohérence avec
 `admin-emails.spec.ts` qui n'y est pas non plus. La whitelist CI reste courte,
 auth, RBAC, CRUD et congés. Le nightly prend `**/*.spec.ts`, donc le spec y est
 capté sans configuration.
+
+## Deploiement
+
+CD reussi sur ses trois jobs, aucune migration a appliquer cette fois, la PR
+n'apportant que du code applicatif. Conteneur redemarre a 16:55:29, sain.
+
+Verifie en production : la route `messages-contact` est presente dans le build
+deploye aux cotes des autres pages admin, la page redirige vers `/login` pour
+un visiteur non connecte, et aucune erreur applicative n'apparait dans les logs.
+
+La table portait deja une vraie demande, arrivee a 16:14 par le formulaire
+public entre les deux deploiements. Notification envoyee, message conserve :
+la premiere demande que le nouveau dispositif sauvegarde pour de bon. Laissee
+en place, elle appartient a Christophe.
