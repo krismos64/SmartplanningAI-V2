@@ -54,8 +54,23 @@ En test Vitest, mocker `next/server` : `after()` lève hors d'un request scope.
 Mocks manuels avec `vi.hoisted()`, jamais `mockDeep` : problèmes de hoisting
 connus sur ce projet.
 
+Exception existante : `__tests__/mocks/prisma.ts` est un mock partagé bâti sur
+`mockDeep`, utilisé par les tests de Server Actions. Il fonctionne, ne pas le
+réécrire au passage. La règle vise les nouveaux mocks ad hoc.
+
 Tests messagerie : utiliser de faux CUID valides, `cl000000000000000000user1`,
 la validation Zod `.cuid()` rejette les chaînes arbitraires.
+
+### Un test sans mock Prisma écrit dans la vraie base
+
+Rien ne le signale : le test passe, simplement il touche la base de
+développement et y laisse des lignes à chaque exécution. Découvert en août 2026
+sur `__tests__/app/api/contact/route.test.ts`, qui créait un
+`contact_messages` par cas.
+
+Deux signes : une durée anormale pour un test unitaire (487 ms contre 59 ms
+après correction) et un identifiant réaliste dans les logs là où on attendait
+une valeur mockée. Vérifier en base au moindre doute.
 
 ## Scripts `src/scripts/*.ts` non exécutables en production
 
