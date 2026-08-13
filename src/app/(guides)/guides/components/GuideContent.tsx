@@ -50,7 +50,7 @@ export function GuideContent({ guide }: GuideContentProps) {
         {/* Hero sur aplat bleu nuit, comme le hub et les pages secteur.
             SP-570 laissait le titre sur creme, sans rupture d'aplat entre
             le fil d'Ariane et la prose. */}
-        <header className="bg-public-surface-dark py-16 lg:py-24">
+        <header className="bg-public-surface-dark pb-16 pt-8 lg:pb-24 lg:pt-12">
           <div className="container-custom">
             <SectionLabel index={1} tone="onDark">
               Guide pratique

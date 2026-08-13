@@ -61,7 +61,7 @@ export function AboutContent() {
       {/* Hero, aplat bleu nuit pleine largeur comme /solutions et /guides */}
       <section
         aria-labelledby="hero-title"
-        className="bg-public-surface-dark py-20 lg:py-28"
+        className="bg-public-surface-dark pb-20 pt-10 lg:pb-28 lg:pt-14"
       >
         <div className="container-custom">
           <SectionLabel index={1} tone="onDark">

@@ -52,7 +52,7 @@ export function PricingPageContent() {
           l'entree de page. */}
       <section
         aria-labelledby="pricing-hero-title"
-        className="bg-public-surface-dark py-20 lg:py-28"
+        className="bg-public-surface-dark pb-20 pt-10 lg:pb-28 lg:pt-14"
       >
         <div className="container-custom">
           <SectionLabel index={1} tone="onDark">

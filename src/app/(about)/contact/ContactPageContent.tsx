@@ -62,7 +62,7 @@ export function ContactPageContent() {
   return (
     <PublicPageShell breadcrumb={[{ label: 'Contact' }]}>
       {/* Hero */}
-      <section className="mt-8 bg-public-surface-dark py-20 lg:py-28">
+      <section className="bg-public-surface-dark pb-20 pt-10 lg:pb-28 lg:pt-14">
         <div className="container-custom">
           <SectionLabel index={1} tone="onDark">
             Parlons de votre organisation

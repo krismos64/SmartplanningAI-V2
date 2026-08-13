@@ -45,7 +45,7 @@ export function GuidesHubContent({ guides }: GuidesHubContentProps) {
       {/* Hero sur aplat bleu nuit, comme /solutions et /tarifs. Cette page
           avait echappe a la refonte : titre centre a accent bleu brut et
           badge arrondi. */}
-      <section className="bg-public-surface-dark py-20 lg:py-28">
+      <section className="bg-public-surface-dark pb-20 pt-10 lg:pb-28 lg:pt-14">
         <div className="container-custom">
           <SectionLabel index={1} tone="onDark">
             Ressources
