@@ -4,9 +4,9 @@
 |---|---|
 | Ticket | SP-574, point 2 laissé ouvert par la session du 12 août |
 | Documents produits | `src/components/public/__tests__/section-numbering.test.ts`, `src/app/(landing)/components/sections/TickerSection.tsx`, `src/components/public/mockups/MiniWeek.tsx`, `src/app/(landing)/components/sections/SecuritySection.tsx` |
-| Documents modifiés | `RoleDemosSection.tsx`, `FeaturesSection.tsx`, `MobileSection.tsx`, `HowItWorksSection.tsx`, `BenefitsSection.tsx`, `VideoSection.tsx`, `a-propos/AboutContent.tsx`, `PlanningMockup.tsx`, `HeroSection.tsx`, `LandingPageContent.tsx`, `tailwind.config.ts`, `sections/index.ts`, `RoleDemosSection.tsx`, `(landing)/data/index.ts`, `FeaturesSection.tsx`, `BentoCard.tsx`, `PricingSection.tsx`, `LegalSection.tsx`, `a11y.spec.ts`, `FAQSection.tsx`, `ContactSection.tsx`, `sitemap.ts` |
+| Documents modifiés | `RoleDemosSection.tsx`, `FeaturesSection.tsx`, `MobileSection.tsx`, `HowItWorksSection.tsx`, `BenefitsSection.tsx`, `VideoSection.tsx`, `a-propos/AboutContent.tsx`, `PlanningMockup.tsx`, `HeroSection.tsx`, `LandingPageContent.tsx`, `tailwind.config.ts`, `sections/index.ts`, `RoleDemosSection.tsx`, `(landing)/data/index.ts`, `FeaturesSection.tsx`, `BentoCard.tsx`, `PricingSection.tsx`, `LegalSection.tsx`, `a11y.spec.ts`, `FAQSection.tsx`, `ContactSection.tsx`, `sitemap.ts`, `tarifs/PricingPageContent.tsx` |
 | Contrôles | type-check vert, 3163 tests unitaires (188 fichiers), 22 specs publiques dont 7 axe-core, build de production, rangs et dimensions relevés au navigateur |
-| Jira | SP-574, sept commentaires : clôture du point 2, maquette du hero, bandeau défilant, section des rôles, section produit, section tarifs, bande sécurité |
+| Jira | SP-574, huit commentaires : clôture du point 2, maquette du hero, bandeau défilant, section des rôles, section produit, section tarifs, bande sécurité, page /tarifs |
 | Mémoire | `refonte-publique-angles-morts` mise à jour |
 
 ## Ce qui a été fait
@@ -405,11 +405,61 @@ registres secteurs et guides : ni l'un ni l'autre n'est concerné, vérifié.
 **607 px** contre 630 au prototype. Audit axe ciblé sur la section : zéro
 violation, texte bleu nuit sur lime à 13,90:1. Landing inchangée à 167 kB.
 
+## Huitième partie : la page /tarifs
+
+Christophe préfère la page du prototype. **3776 px contre 3042**, même découpage
+en cinq sections mais chacune plus haute et moins tenue. Quatre corrections.
+
+**Le hero était fade** : fond crème, titre sur une ligne, 324 px. Il passe sur
+aplat bleu nuit avec un titre sur deux lignes, et fait désormais **560 px**,
+exactement le prototype. C'est la correction qui change le plus la page :
+l'entrée posait zéro contraste.
+
+**L'en-tête du simulateur** portait un titre display et un chapô qui
+expliquaient un mécanisme que le curseur montre de lui-même, tout en repoussant
+l'élément interactif hors du premier écran. Réduit à une ligne. `#simulator-title`
+est conservé, le page object E2E le cible.
+
+**La liste des inclus** vivait sous son titre sur toute la largeur. Elle passe à
+droite, rapport 0,8 / 1,2 du prototype, et son chapô disparaît : « toutes les
+fonctionnalités sont comprises » redisait le titre que la liste prouve.
+
+**Le titre de FAQ** tenait sur trois lignes, sa colonne étant bornée à 24rem.
+Passée au même rapport, et l'accent déplacé pour couper en deux lignes.
+
+### Un défaut d'alignement trouvé au rendu
+
+Avec 13 entrées dont deux passent sur deux lignes, les filets des deux colonnes
+se décalaient progressivement et la grille se lisait de travers. Invisible dans
+le code, évident sur la capture. Corrigé par une hauteur de ligne uniforme calée
+sur l'entrée la plus longue.
+
+### Vérifications propres à cette page
+
+Les huit sélecteurs du page object E2E (`e2e/pages/pricing.page.ts`) ont été
+contrôlés un par un sur la page rendue, tous présents, 13 items dans la liste.
+Aucun spec ne l'utilise aujourd'hui, mais il reste dans le dépôt et doit rester
+valide.
+
+`PAGE_LAST_MODIFIED.tarifs` passe au 13 août.
+
+**Signalé, hors périmètre :** `PricingCard` n'a plus aucun appelant depuis son
+retrait de la landing à la passe précédente. Seul le barrel l'exporte encore.
+Le commentaire d'en-tête de `/tarifs`, qui la présentait comme servant toujours
+la landing, est corrigé.
+
+| | Prototype | Avant | Après |
+|---|---|---|---|
+| Page | 3042 px | 3776 px | **3690 px** |
+| Hero | 560 px | 324 px | **560 px** |
+
+`/tarifs` inchangée à 200 kB, 22 specs publiques vertes dont son audit axe.
+
 ## Prochaine étape
 
 Les trois autres points du 12 août restent ouverts, inchangés :
 
 1. **La whitelist E2E de la CI ne couvre pas les specs `landing/`**. Arbitrage
    jamais pris, revenu à chaque session depuis le 7 août
-2. **57 commits non poussés** (mesuré par `git rev-list --count main..HEAD`), la CI n'a jamais tourné sur la refonte
+2. **59 commits non poussés** (mesuré par `git rev-list --count main..HEAD`), la CI n'a jamais tourné sur la refonte
 3. **SP-574 passera à Terminé au merge**, avec SP-565 à SP-573
