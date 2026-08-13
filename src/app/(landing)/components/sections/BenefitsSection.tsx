@@ -39,7 +39,7 @@ export function BenefitsSection() {
         <div className="grid gap-12 lg:grid-cols-2 lg:gap-20">
           {/* Colonne titre */}
           <div>
-            <SectionLabel index={5}>Le changement</SectionLabel>
+            <SectionLabel index={6}>Le changement</SectionLabel>
 
             <DisplayTitle
               as="h2"

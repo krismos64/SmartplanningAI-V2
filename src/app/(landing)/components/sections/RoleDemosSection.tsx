@@ -72,7 +72,7 @@ export function RoleDemosSection() {
     >
       <div className="container-custom">
         <div className="grid gap-8 lg:grid-cols-[auto_1fr] lg:items-start lg:gap-16">
-          <SectionLabel index={3} tone="onDark">
+          <SectionLabel index={2} tone="onDark">
             Pour chaque rôle
           </SectionLabel>
 

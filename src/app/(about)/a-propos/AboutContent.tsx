@@ -188,7 +188,7 @@ export function AboutContent() {
       >
         <div className="container-custom">
           <div className="grid gap-8 lg:grid-cols-[auto_1fr] lg:items-start lg:gap-16">
-            <SectionLabel index={4}>Suivez-nous</SectionLabel>
+            <SectionLabel index={5}>Suivez-nous</SectionLabel>
 
             <div>
               <DisplayTitle

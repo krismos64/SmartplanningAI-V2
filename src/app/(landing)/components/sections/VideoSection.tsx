@@ -12,7 +12,12 @@
  * Utilisee uniquement par /a-propos, malgre son emplacement dans
  * (landing)/components, ou elle est restee depuis SP-285.
  *
+ * Le rang du label est une prop et non une constante : il depend de la place
+ * de la section dans la page qui la monte, pas de la section elle-meme. Il
+ * etait fige a 5 alors que /a-propos la rend en quatrieme position.
+ *
  * @see SP-571 - Tarifs, a-propos et pages legales
+ * @see SP-574 - Numerotation des sections
  */
 
 import { useState } from 'react'
@@ -22,7 +27,12 @@ import { DisplayTitle } from '@/components/public/DisplayTitle'
 import { SectionLabel } from '@/components/public/SectionLabel'
 import { videoFeatures } from '../../data'
 
-export function VideoSection() {
+interface VideoSectionProps {
+  /** Rang du label dans la page qui monte la section */
+  index?: number
+}
+
+export function VideoSection({ index = 4 }: VideoSectionProps) {
   const [isPlaying, setIsPlaying] = useState(false)
 
   return (
@@ -33,7 +43,7 @@ export function VideoSection() {
     >
       <div className="container-custom">
         <div className="grid gap-8 lg:grid-cols-[auto_1fr] lg:items-start lg:gap-16">
-          <SectionLabel index={5} tone="onDark">
+          <SectionLabel index={index} tone="onDark">
             Vidéo de présentation
           </SectionLabel>
 

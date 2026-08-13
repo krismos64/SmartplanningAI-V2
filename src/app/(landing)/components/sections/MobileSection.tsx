@@ -49,7 +49,7 @@ export function MobileSection() {
         <div className="grid items-center gap-16 lg:grid-cols-2 lg:gap-20">
           {/* Colonne editoriale */}
           <div>
-            <SectionLabel index={3} tone="onDark">
+            <SectionLabel index={4} tone="onDark">
               Sur le terrain
             </SectionLabel>
 

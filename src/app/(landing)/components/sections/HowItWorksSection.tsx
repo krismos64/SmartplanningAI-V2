@@ -27,7 +27,7 @@ export function HowItWorksSection() {
         <div className="grid gap-12 lg:grid-cols-2 lg:gap-20">
           {/* Colonne titre */}
           <div>
-            <SectionLabel index={4}>Mise en route</SectionLabel>
+            <SectionLabel index={5}>Mise en route</SectionLabel>
 
             <DisplayTitle
               as="h2"

@@ -41,7 +41,7 @@ export function FeaturesSection() {
       <div className="container-custom">
         {/* En-tete de section */}
         <div className="grid gap-8 lg:grid-cols-[auto_1fr_20rem] lg:items-start">
-          <SectionLabel index={2}>Le produit</SectionLabel>
+          <SectionLabel index={3}>Le produit</SectionLabel>
 
           <DisplayTitle
             as="h2"
