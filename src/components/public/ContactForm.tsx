@@ -60,13 +60,46 @@ const inputVariants: Variants = {
 }
 
 export interface ContactFormProps {
-  /** Callback appelé lors de la soumission (API SP-288) */
+  /** Callback appelé lors de la soumission. Par défaut, POST vers /api/contact */
   onSubmit?: (data: ContactFormData) => Promise<ContactApiResponse>
   /** Classes CSS additionnelles */
   className?: string
 }
 
+/**
+ * Envoi par défaut vers la route POST /api/contact.
+ *
+ * Sans cet envoi, le formulaire retombait sur le mode démo du hook et
+ * affichait un succès sans qu'aucun email ne parte.
+ */
+async function postContactMessage(
+  data: ContactFormData
+): Promise<ContactApiResponse> {
+  const response = await fetch('/api/contact', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  })
+
+  const payload = (await response.json().catch(() => null)) as
+    | ContactApiResponse
+    | { success: boolean; message?: string }
+    | null
+
+  if (!response.ok || !payload?.success) {
+    return {
+      success: false,
+      error:
+        payload?.message ||
+        "L'envoi a échoué. Vous pouvez nous écrire directement à contact@smartplanning.fr",
+    }
+  }
+
+  return { success: true, message: payload.message }
+}
+
 export function ContactForm({ onSubmit, className }: ContactFormProps) {
+  const submitHandler = onSubmit ?? postContactMessage
   const {
     state,
     error,
@@ -74,7 +107,7 @@ export function ContactForm({ onSubmit, className }: ContactFormProps) {
     submit,
     reset: resetState,
     retry,
-  } = useContactForm(onSubmit)
+  } = useContactForm(submitHandler)
 
   const {
     register,
