@@ -306,10 +306,11 @@ animations.
 1. **La whitelist E2E de la CI ne couvre pas les specs `landing/`**, page
    contact comprise. Arbitrage jamais pris, revenu à chaque session depuis le
    7 août. Inchangé ici volontairement, c'est une décision distincte
-2. **Numérotation des sections de la landing incohérente** avec l'ordre de
-   rendu : Hero 1, RoleDemos 3, Features 2, et `VideoSection` porte l'index 5
-   sans être montée. La section mobile prend 3 comme dans le prototype, ce qui
-   ajoute un doublon. Cosmétique, à reprendre d'un bloc
+2. ~~**Numérotation des sections de la landing incohérente**~~ **Corrigé le
+   13 août**, voir `2026-08-13-numerotation-sections-landing.md`. Une réserve
+   de cette entrée était fausse : `VideoSection` est bien montée, sur
+   `/a-propos` et non sur la landing, et c'est cette page qui portait le
+   second défaut de numérotation
 3. **Les 20 commits de la refonte plus les 7 de cette session ne sont pas
    poussés**, la CI n'a jamais tourné dessus
 4. **SP-574 passera à Terminé au merge**, avec SP-565 à SP-573. Il est en
