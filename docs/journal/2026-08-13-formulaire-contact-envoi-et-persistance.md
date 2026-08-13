@@ -7,7 +7,8 @@
 | Documents modifiés | `prisma/schema.prisma`, `src/app/api/contact/route.ts`, `src/components/public/ContactForm.tsx`, `src/hooks/use-contact-form.ts`, `__tests__/app/api/contact/route.test.ts` |
 | Contrôles | type-check vert, 3171 tests unitaires (189 fichiers), build de production, bout en bout contre un SMTP injoignable, deux preuves par mutation |
 | Jira | SP-576 |
-| PR | [#74](https://github.com/krismos64/SmartplanningAI-V2/pull/74), CI verte au premier run (lint, unit, E2E critiques, build) |
+| PR | [#74](https://github.com/krismos64/SmartplanningAI-V2/pull/74), mergee, CI verte |
+| Deploiement | production le 13 aout 2026 a 16:09 UTC, migration appliquee puis app redemarree, verifie de bout en bout |
 | Mémoire | `formulaire-contact-jamais-branche` écrite |
 
 ## Le symptôme
@@ -111,3 +112,22 @@ depuis SP-287, tous les envois de la période ont été perdus de la même faço
 Aucune interface d'administration ne lit encore `contact_messages`. Les
 messages sont conservés, la notification email reste le canal de lecture. Une
 page admin réservée au SYSTEM_ADMIN reste à faire, hors périmètre de ce ticket.
+
+## Deploiement
+
+Merge le 13 aout a 16:05, CD reussi sur ses trois jobs. La migration
+`20260813152748_add_contact_message` s'applique a 16:09:39, l'app redemarre a
+16:09:57, donc apres la migration : aucune fenetre ou le nouveau code aurait
+tourne sur l'ancien schema.
+
+Verifie sur la production, pas seulement au vert du pipeline :
+
+```
+POST https://smartplanning.fr/api/contact -> HTTP 200
+contact_messages : 1 ligne, emailStatus SENT, IP et horodatage captures
+[Email] Envoi reussi a contact@smartplanning.fr
+[Email] Envoi reussi a l'expediteur
+```
+
+La chaine complete fonctionne, du formulaire a la boite de reception, avec le
+message conserve en base.
