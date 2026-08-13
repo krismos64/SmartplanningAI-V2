@@ -40,7 +40,7 @@ export function HeroSection() {
       />
 
       <div className="container-custom pb-20 pt-28 lg:pb-28 lg:pt-32">
-        <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
+        <div className="grid items-center gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.16fr)] lg:gap-14">
           {/* Colonne texte */}
           <div className="max-w-2xl">
             <SectionLabel index={1} tone="onDark">
@@ -92,13 +92,18 @@ export function HeroSection() {
           </div>
 
           {/* Colonne illustration.
-              `aspect-ratio` reserve la hauteur des le premier rendu : le
-              mockup ne provoque aucun decalage de mise en page. */}
-          <div className="relative lg:pl-4">
+              La maquette deborde vers la droite au-dela du conteneur, comme
+              le prototype ou elle fait 703 px pour 570 au texte. Sans ce
+              debordement, une colonne de grille a parts egales la bornait a
+              560 px et elle flottait au milieu du vide.
+
+              `min-height` reserve sa hauteur des le premier rendu, le mockup
+              ne provoque aucun decalage de mise en page. */}
+          <div className="relative min-w-0 lg:-mr-16 lg:pl-2 xl:-mr-24">
             <p className="mb-4 hidden text-right font-geist text-xs uppercase tracking-[0.2em] text-public-content-on-dark/75 lg:block">
               Une semaine en un coup d&rsquo;œil
             </p>
-            <div className="aspect-[4/3] sm:aspect-[16/11]">
+            <div className="min-h-[16rem] sm:min-h-[20rem] lg:min-h-[22rem]">
               <PlanningMockup />
             </div>
           </div>

@@ -16,8 +16,16 @@
  *
  * Server Component, aucun JavaScript envoye au client.
  *
+ * Dimensions relevees sur le DOM du prototype en 1440 px (SP-574) : le cadre
+ * fait 703 x 347 pour des lignes de 78 px. La premiere version tenait en
+ * 560 x 217 avec des lignes de 56 px, soit 37 % de hauteur en moins, et
+ * l'illustration flottait au milieu du vide a droite du titre.
+ *
  * @see SP-567 - Landing, hero et sections hautes
+ * @see SP-574 - Hero, maquette a l'echelle du prototype
  */
+
+import { Fragment } from 'react'
 
 import { cn } from '@/lib/utils'
 
@@ -81,98 +89,117 @@ const ROWS: MockupRow[] = [
 ]
 
 /**
- * Teintes des cellules. Volontairement en valeurs Tailwind fixes plutot
- * qu'en tokens publics : ce sont les couleurs de l'application reelle que
- * le mockup represente, pas celles de l'identite editoriale.
+ * Teintes des cellules, relevees sur le prototype et non sur la palette
+ * Tailwind : le bleu y vaut #dfe8ff et le jaune #fff0ad, deux pastels plus
+ * satures que `blue-50` et `amber-50` qui delavaient la maquette. Le filet
+ * de gauche reprend le bleu franc et le corail de l'identite publique.
+ *
+ * Valeurs fixes assumees plutot que tokens publics : ce sont les couleurs
+ * de l'application reelle que le mockup represente, pas celles de la
+ * direction editoriale.
  */
 const SLOT_TONE: Record<MockupSlot['tone'], string> = {
-  blue: 'border-l-blue-500 bg-blue-50',
-  amber: 'border-l-amber-400 bg-amber-50',
-  green: 'border-l-emerald-500 bg-emerald-50',
-  grey: 'border-l-slate-400 bg-slate-100',
+  blue: 'border-l-[#2670ff] bg-[#dfe8ff]',
+  amber: 'border-l-[#ffb020] bg-[#fff0ad]',
+  green: 'border-l-[#59c000] bg-[#e4ffc4]',
+  grey: 'border-l-[#8890a0] bg-[#eceef2]',
 }
 
 const AVATAR_TONE: Record<MockupRow['avatarTone'], string> = {
-  rose: 'bg-rose-100 text-rose-700',
-  lime: 'bg-lime-100 text-lime-800',
-  blue: 'bg-blue-100 text-blue-700',
+  rose: 'bg-[#ffd5cc]',
+  lime: 'bg-[#ddff9c]',
+  blue: 'bg-[#dfe8ff]',
 }
 
 export function PlanningMockup({ className }: { className?: string }) {
   return (
     <div aria-hidden="true" className={cn('relative select-none', className)}>
-      {/* Bloc decale, effet de profondeur du prototype */}
-      <div className="absolute inset-0 translate-x-3 translate-y-4 rounded-lg bg-public-brand-surface sm:translate-x-4 sm:translate-y-6" />
-
-      <div className="relative overflow-hidden rounded-lg bg-white shadow-2xl ring-1 ring-black/5">
+      {/*
+       * Cadre pose sur le creme et non sur du blanc, comme le prototype, avec
+       * son ombre bleu franc decalee de 20/30 px sans flou. `shadow-2xl`
+       * diffus appartenait a l'identite d'avant la refonte.
+       */}
+      <div className="relative rounded-lg bg-public-surface p-[1.0625rem] shadow-[20px_30px_0_0_hsl(var(--public-brand-surface))]">
         {/* Barre de titre */}
-        <div className="flex items-center justify-between gap-3 border-b border-slate-200 px-4 py-3 sm:px-5">
-          <p className="text-sm font-semibold text-slate-900">Planning équipe</p>
-          <p className="hidden text-xs text-slate-500 sm:block">12 - 18 août</p>
-          <span className="rounded bg-slate-900 px-2 py-1 text-[0.65rem] font-medium text-white">
+        <div className="flex items-center justify-between gap-3 px-1 pb-4">
+          <p className="font-geist text-[0.8125rem] font-extrabold text-public-content">
+            Planning équipe
+          </p>
+          <p className="hidden items-center gap-2 font-geist text-[0.8125rem] font-bold text-public-content sm:flex">
+            <span className="text-public-content-muted">‹</span>
+            12 - 18 août
+            <span className="text-public-content-muted">›</span>
+          </p>
+          <span className="rounded-[3px] bg-public-content px-3 py-2 font-geist text-[0.6875rem] text-white">
             + Créneau
           </span>
         </div>
 
-        {/* Lignes du planning */}
-        <div className="divide-y divide-slate-100">
+        {/*
+         * Grille a quatre colonnes avec un ecart de 6 px : les cellules sont
+         * separees et non jointives, ce qui aere la maquette a cette taille.
+         *
+         * Sous `sm`, la quatrieme colonne est masquee : a 390 px de large,
+         * quatre colonnes tronquaient les prenoms et les horaires en
+         * « Lea … » et « 09:00 - … », illisibles.
+         */}
+        <div className="grid grid-cols-[1.3fr_1fr_1fr] gap-[6px] sm:grid-cols-[1.4fr_1fr_1fr_1fr]">
           {ROWS.map((row) => (
-            <div
-              key={row.initials}
-              className="grid grid-cols-[7.5rem_1fr] items-stretch gap-px sm:grid-cols-[10rem_1fr]"
-            >
+            <Fragment key={row.initials}>
               {/* Colonne employe */}
-              <div className="flex items-center gap-2 px-3 py-3 sm:px-4">
+              <div className="flex min-h-[4.875rem] min-w-0 items-center gap-2.5 border border-public-content/20 px-2.5 py-3">
                 <span
                   className={cn(
-                    'flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[0.6rem] font-semibold',
+                    'flex h-[1.9375rem] w-[1.9375rem] shrink-0 items-center justify-center rounded-full font-geist text-[0.5625rem] font-extrabold text-public-content',
                     AVATAR_TONE[row.avatarTone]
                   )}
                 >
                   {row.initials}
                 </span>
                 <span className="min-w-0">
-                  <span className="block truncate text-xs font-medium text-slate-900">
+                  <span className="block truncate font-geist text-[0.625rem] font-bold text-public-content">
                     {row.name}
                   </span>
-                  <span className="block truncate text-[0.65rem] text-slate-500">
+                  <span className="block truncate font-geist text-[0.5rem] text-public-content-muted">
                     {row.role}
                   </span>
                 </span>
               </div>
 
               {/* Creneaux */}
-              <div className="grid grid-cols-3 gap-px bg-slate-100">
-                {row.slots.map((slot, index) => (
-                  <div
-                    key={`${row.initials}-${index}`}
-                    className={cn(
-                      'border-l-2 px-2 py-3 sm:px-3',
-                      SLOT_TONE[slot.tone]
-                    )}
-                  >
-                    <span className="block truncate text-[0.65rem] font-semibold text-slate-900">
-                      {slot.time}
-                    </span>
-                    <span className="block truncate text-[0.6rem] text-slate-600">
-                      {slot.detail}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
+              {row.slots.map((slot, index) => (
+                <div
+                  key={`${row.initials}-${index}`}
+                  className={cn(
+                    'min-h-[4.875rem] min-w-0 flex-col justify-center border-l-[3px] px-2.5 py-3',
+                    // Le troisieme creneau n'apparait qu'a partir de `sm`
+                    index === 2 ? 'hidden sm:flex' : 'flex',
+                    SLOT_TONE[slot.tone]
+                  )}
+                >
+                  <span className="block truncate font-geist text-[0.625rem] font-bold text-public-content">
+                    {slot.time}
+                  </span>
+                  <span className="block truncate font-geist text-[0.5rem] text-public-content-muted">
+                    {slot.detail}
+                  </span>
+                </div>
+              ))}
+            </Fragment>
           ))}
         </div>
       </div>
 
-      {/* Badge flottant, repris du prototype */}
-      <div className="absolute -bottom-4 right-2 flex items-center gap-2 rounded bg-public-accent-surface px-3 py-2 shadow-lg sm:right-4">
-        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-slate-900 text-[0.6rem] text-white">
+      {/* Badge flottant, repris du prototype : aplat corail, angles vifs */}
+      <div className="absolute -bottom-8 right-4 flex items-center gap-3 bg-public-accent-surface px-[1.125rem] py-[0.8125rem] sm:-bottom-9 sm:right-8">
+        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-public-content text-[0.75rem] text-white">
           ✓
         </span>
-        <span className="text-[0.65rem] font-semibold leading-tight text-slate-900">
+        <span className="font-geist text-[0.6875rem] font-bold leading-tight text-public-content-on-vivid">
           Planning publié
-          <span className="block font-normal">3 personnes notifiées</span>
+          <span className="block text-[0.5625rem] font-normal">
+            3 personnes notifiées
+          </span>
         </span>
       </div>
     </div>
