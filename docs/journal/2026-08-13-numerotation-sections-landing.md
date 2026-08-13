@@ -3,10 +3,10 @@
 | Champ | Valeur |
 |---|---|
 | Ticket | SP-574, point 2 laissé ouvert par la session du 12 août |
-| Documents produits | `src/components/public/__tests__/section-numbering.test.ts`, `src/app/(landing)/components/sections/TickerSection.tsx`, `src/components/public/mockups/MiniWeek.tsx` |
-| Documents modifiés | `RoleDemosSection.tsx`, `FeaturesSection.tsx`, `MobileSection.tsx`, `HowItWorksSection.tsx`, `BenefitsSection.tsx`, `VideoSection.tsx`, `a-propos/AboutContent.tsx`, `PlanningMockup.tsx`, `HeroSection.tsx`, `LandingPageContent.tsx`, `tailwind.config.ts`, `sections/index.ts`, `RoleDemosSection.tsx`, `(landing)/data/index.ts`, `FeaturesSection.tsx`, `BentoCard.tsx`, `PricingSection.tsx`, `LegalSection.tsx`, `a11y.spec.ts` |
+| Documents produits | `src/components/public/__tests__/section-numbering.test.ts`, `src/app/(landing)/components/sections/TickerSection.tsx`, `src/components/public/mockups/MiniWeek.tsx`, `src/app/(landing)/components/sections/SecuritySection.tsx` |
+| Documents modifiés | `RoleDemosSection.tsx`, `FeaturesSection.tsx`, `MobileSection.tsx`, `HowItWorksSection.tsx`, `BenefitsSection.tsx`, `VideoSection.tsx`, `a-propos/AboutContent.tsx`, `PlanningMockup.tsx`, `HeroSection.tsx`, `LandingPageContent.tsx`, `tailwind.config.ts`, `sections/index.ts`, `RoleDemosSection.tsx`, `(landing)/data/index.ts`, `FeaturesSection.tsx`, `BentoCard.tsx`, `PricingSection.tsx`, `LegalSection.tsx`, `a11y.spec.ts`, `FAQSection.tsx`, `ContactSection.tsx`, `sitemap.ts` |
 | Contrôles | type-check vert, 3163 tests unitaires (188 fichiers), 22 specs publiques dont 7 axe-core, build de production, rangs et dimensions relevés au navigateur |
-| Jira | SP-574, six commentaires : clôture du point 2, maquette du hero, bandeau défilant, section des rôles, section produit, section tarifs |
+| Jira | SP-574, sept commentaires : clôture du point 2, maquette du hero, bandeau défilant, section des rôles, section produit, section tarifs, bande sécurité |
 | Mémoire | `refonte-publique-angles-morts` mise à jour |
 
 ## Ce qui a été fait
@@ -358,11 +358,58 @@ pas seulement du bruit, il masque de vrais défauts.
 **22 specs vertes sur trois passages consécutifs**, contre un échec
 reproductible avant. Landing inchangée à 167 kB.
 
+## Septième partie : la bande sécurité
+
+Le prototype porte au rang 07 une bande sécurité en aplat lime que la version
+réelle n'avait pas. Christophe l'a demandée avec **le visuel du prototype mais
+un contenu simplifié**, sans jargon, pour rassurer un client sur ses données.
+
+Le visuel est repris tel quel : deux colonnes 1,05 / 0,95, grand titre à gauche,
+trois garanties en filets à droite.
+
+### Pourquoi le contenu du prototype ne pouvait pas être repris
+
+Il s'adresse à un développeur : « chiffrement HTTPS/TLS », « mots de passe
+hachés avec bcrypt », « isolation par entreprise », « les actions sensibles sont
+journalisées ». Exact, et illisible pour le lecteur réel de cette page, qui
+dirige une TPE et se demande si les données de ses salariés sont en sécurité.
+
+Les trois garanties passent de « Isolation / Accès / Traçabilité » à **« Vos
+données / Qui voit quoi / En cas de doute »**, et disent ce que cela change pour
+lui plutôt que comment c'est implémenté. Le titre passe de « Les données de
+chaque entreprise restent dans leur périmètre » à « Vos données RH restent chez
+vous ».
+
+Aucun terme technique conservé sauf ISO 27001 et RGPD, deux repères qu'un
+dirigeant connaît et cherche.
+
+### Chaque affirmation est vérifiable
+
+Une page publique engage, rien n'y est promis que le produit ne tienne. Les
+faits ont été vérifiés dans le dépôt avant rédaction : l'hébergement OVHcloud en
+France et la certification ISO 27001 figurent déjà dans la FAQ et les mentions
+légales, les garanties d'accès support dans l'article 9 des CGU, export et
+suppression dans la politique de confidentialité.
+
+### Le garde-fou a servi
+
+Insérer une section au rang 7 décale Tarifs, FAQ et Contact. Le test de
+numérotation écrit ce matin **a rougi sur l'ajout non déclaré**, en nommant les
+sections dont le rang ne suivait plus. Exactement ce pour quoi il a été écrit,
+quelques heures après.
+
+`PAGE_LAST_MODIFIED.home` passe au 13 août, la landing ayant changé. `llms.txt`
+liste les pages et non leurs sections, `llms-full` est généré depuis les
+registres secteurs et guides : ni l'un ni l'autre n'est concerné, vérifié.
+
+**607 px** contre 630 au prototype. Audit axe ciblé sur la section : zéro
+violation, texte bleu nuit sur lime à 13,90:1. Landing inchangée à 167 kB.
+
 ## Prochaine étape
 
 Les trois autres points du 12 août restent ouverts, inchangés :
 
 1. **La whitelist E2E de la CI ne couvre pas les specs `landing/`**. Arbitrage
    jamais pris, revenu à chaque session depuis le 7 août
-2. **55 commits non poussés** (mesuré par `git rev-list --count main..HEAD`), la CI n'a jamais tourné sur la refonte
+2. **57 commits non poussés** (mesuré par `git rev-list --count main..HEAD`), la CI n'a jamais tourné sur la refonte
 3. **SP-574 passera à Terminé au merge**, avec SP-565 à SP-573
