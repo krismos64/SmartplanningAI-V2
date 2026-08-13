@@ -8,6 +8,7 @@
 | Documents supprimés | 12 composants sans appelant, 2592 lignes |
 | Contrôles | type-check vert, 3163 tests unitaires (188 fichiers), 26 specs publiques dont 11 axe-core, build de production, mesures relevées au navigateur sur le prototype et le rendu réel |
 | Jira | SP-575 |
+| PR | [#73](https://github.com/krismos64/SmartplanningAI-V2/pull/73), draft, CI verte au second run |
 | Mémoire | `ou-en-est-le-projet` et `refonte-publique-angles-morts` à mettre à jour |
 
 ## Ce qui a été fait
@@ -177,11 +178,41 @@ Poids après refonte : landing **167 kB**, `/a-propos` **187 kB** (191 avant le
 retrait des trois arguments vidéo), hubs et pages secteur 185 à 186 kB,
 `/contact` 226 kB, la plus lourde à cause de react-hook-form.
 
+## PR #73, et le seul test que la CI a fait tomber
+
+Branche poussée, PR #73 ouverte en draft, 68 commits. **Premier passage de la
+CI sur ces commits**, après trois journées de travail sans aucun retour
+d'intégration.
+
+Un seul test rouge sur 113 : `auth.spec.ts` attendait un titre « Bon retour ! »
+sur `/login`. Le panneau éditorial dit « Bon retour » puis « dans votre
+équipe. » en italique depuis SP-574, qui a refondu les pages
+d'authentification. Le spec n'avait jamais tourné depuis ce changement.
+
+**C'est le test qui était périmé, pas la page.** L'assertion devient une regex
+souple sur « Bon retour », comme celle que `middleware-rbac.spec.ts` utilise
+déjà au même endroit et qui, elle, passait. Deux specs vérifiaient le même
+titre, l'un souple et l'autre exact : seul le second est tombé.
+
+Second run vert sur les quatre jobs, lint et type-check, tests unitaires, E2E
+critiques, build.
+
+Deux pièges rencontrés en vérifiant le correctif en local :
+
+- `playwright.ci.config.ts` ne réutilise pas un serveur existant, contrairement
+  à la config par défaut. Il faut couper le serveur de dev avant
+- Le `.next` était corrompu (`routesManifest.dataRoutes is not iterable`) pour
+  avoir laissé un serveur de dev tourner pendant un build. `rm -rf .next` puis
+  rebuild. C'est exactement le défaut que `CLAUDE.md` décrit, rencontré pour de
+  vrai
+- Le test SP-526 échoue en local faute d'un compte seedé avec
+  `emailVerified = null`, et passait en CI. Différence d'environnement, pas
+  régression : vérifié dans les logs du premier run avant de conclure
+
 ## Ce qui reste ouvert
 
-1. **Pousser la branche**, 66 commits sur
-   `feat/refonte-visuelle-pages-publiques`. La CI n'a jamais tourné dessus.
-   C'est le seul risque réel qui subsiste, et il grandit à chaque session
+1. **Sortir la PR #73 du mode draft et merger**, quand la relecture est faite.
+   La CI est verte, la branche est mergeable
 2. **Whitelist E2E** : les 26 specs publiques, dont 11 audits axe, ne tournent
    ni en CI ni ailleurs qu'en local et en nightly. Arbitrage revenu à chaque
    session depuis le 7 août, jamais tranché
