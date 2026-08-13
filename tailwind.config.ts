@@ -487,6 +487,14 @@ const config: Config = {
           '0%, 100%': { borderColor: 'rgba(59, 130, 246, 0.3)' },
           '50%': { borderColor: 'rgba(59, 130, 246, 0.6)' },
         },
+        // Bandeau defilant du hero public (SP-574). La translation vaut
+        // -50% et non -100% : le contenu est duplique deux fois, la moitie
+        // parcourue ramene donc exactement au point de depart, sans saut
+        // visible ni vide en fin de boucle.
+        'ticker-scroll': {
+          '0%': { transform: 'translateX(0)' },
+          '100%': { transform: 'translateX(-50%)' },
+        },
       },
 
       animation: {
@@ -510,6 +518,7 @@ const config: Config = {
         'float-slow': 'float-slow 4s ease-in-out infinite',
         'gradient-rotate': 'gradient-rotate 4s linear infinite',
         'border-pulse': 'border-pulse 2s ease-in-out infinite',
+        'ticker-scroll': 'ticker-scroll 25s linear infinite',
       },
 
       // =================================================================
