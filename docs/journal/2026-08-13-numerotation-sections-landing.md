@@ -3,10 +3,10 @@
 | Champ | Valeur |
 |---|---|
 | Ticket | SP-574, point 2 laissé ouvert par la session du 12 août |
-| Documents produits | `src/components/public/__tests__/section-numbering.test.ts`, `src/app/(landing)/components/sections/TickerSection.tsx` |
-| Documents modifiés | `RoleDemosSection.tsx`, `FeaturesSection.tsx`, `MobileSection.tsx`, `HowItWorksSection.tsx`, `BenefitsSection.tsx`, `VideoSection.tsx`, `a-propos/AboutContent.tsx`, `PlanningMockup.tsx`, `HeroSection.tsx`, `LandingPageContent.tsx`, `tailwind.config.ts`, `sections/index.ts`, `RoleDemosSection.tsx`, `(landing)/data/index.ts` |
+| Documents produits | `src/components/public/__tests__/section-numbering.test.ts`, `src/app/(landing)/components/sections/TickerSection.tsx`, `src/components/public/mockups/MiniWeek.tsx` |
+| Documents modifiés | `RoleDemosSection.tsx`, `FeaturesSection.tsx`, `MobileSection.tsx`, `HowItWorksSection.tsx`, `BenefitsSection.tsx`, `VideoSection.tsx`, `a-propos/AboutContent.tsx`, `PlanningMockup.tsx`, `HeroSection.tsx`, `LandingPageContent.tsx`, `tailwind.config.ts`, `sections/index.ts`, `RoleDemosSection.tsx`, `(landing)/data/index.ts`, `FeaturesSection.tsx`, `BentoCard.tsx` |
 | Contrôles | type-check vert, 3163 tests unitaires (188 fichiers), 22 specs publiques dont 7 axe-core, build de production, rangs et dimensions relevés au navigateur |
-| Jira | SP-574, quatre commentaires : clôture du point 2, maquette du hero, bandeau défilant, section des rôles |
+| Jira | SP-574, cinq commentaires : clôture du point 2, maquette du hero, bandeau défilant, section des rôles, section produit |
 | Mémoire | `refonte-publique-angles-morts` mise à jour |
 
 ## Ce qui a été fait
@@ -231,11 +231,71 @@ change, `ArrowRight` déplace le focus et la sélection ensemble.
 
 Landing inchangée à 167 kB. Les 7 specs axe-core restent vertes.
 
+## Cinquième partie : la section produit
+
+Christophe l'a trouvée moins réussie que celle du prototype. La structure était
+pourtant déjà la bonne, grille bento et aplats francs compris : l'écart tenait
+à quatre détails, tous mesurés sur le DOM du prototype.
+
+**La grande carte laissait environ 300 px de vide** sous son texte. Elle est
+deux fois plus haute que ses voisines pour équilibrer la grille, et rien ne
+remplissait cet espace. Le prototype y pose une bande de cinq jours. `MiniWeek`
+la porte, construite en DOM comme `PlanningMockup`, donc aucune requête image,
+et entièrement `aria-hidden` : les horaires illustrent le propos sans rien
+apporter comme information.
+
+**Son titre était au même corps que celui de ses voisines**, alors qu'elle
+domine la grille. Passé à 3xl/4xl contre xl/2xl.
+
+**La quatrième carte éditoriale manquait**, un aplat corail sur la largeur de
+la colonne principale qui ferme le bloc avant la grille régulière.
+`FEATURED_COUNT` passe de 3 à 4, et la grille adopte le rapport 1,25 / 0,75 du
+prototype au lieu de deux colonnes égales.
+
+**Les filets faisaient 4 px au lieu de 5.** À 4 px un filet se lit comme une
+bordure, à 5 il devient un marqueur graphique.
+
+### Un trou introduit par ma propre correction
+
+Passer `FEATURED_COUNT` à 4 a laissé 7 entrées dans la grille régulière au lieu
+de 8. La règle de comblement ne traitait que le reste de 2 : avec un reste de 1,
+deux cellules restaient vides sur la dernière ligne. Le fond de la grille étant
+teinté, elles se lisaient comme un trou beige. La règle traite désormais les
+deux cas.
+
+### Ce qui n'a pas été repris
+
+Le prototype réécrit les intitulés, « Construisez le planning à la vitesse du
+terrain » là où le registre porte « Espaces dédiés ». On porte son identité
+visuelle et jamais son contenu, règle du projet. Les 11 modules sont conservés
+contre 6 au prototype : les réduire supprimerait du texte indexable sans gain
+visuel, la grille les absorbant sans peine.
+
+Le vide résiduel de la carte principale vient de sa description, plus courte
+que celle du prototype. C'est du contenu et non de la mise en page.
+
+### Vérification collatérale
+
+`BentoCard` sert aussi `PricingSimulator`, le filet de 5 px touche donc
+`/tarifs`. Page contrôlée au rendu, aucune régression.
+
+Fausse alerte au passage : `/tarifs` a renvoyé un 500 pendant les
+vérifications. Cause trouvée dans le log, un `npm run build` lancé pendant que
+le serveur de dev tournait, les deux se disputant `.next`. Rien à voir avec le
+code, 200 après redémarrage.
+
+| | Prototype | Avant | Après |
+|---|---|---|---|
+| Carte principale | 767 x 502 | 753 x 398, vide en pied | 753 x 398, remplie |
+| Cartes latérales | 460 x 245 | 452 x 193 | 452 x 193 |
+
+Landing inchangée à 167 kB.
+
 ## Prochaine étape
 
 Les trois autres points du 12 août restent ouverts, inchangés :
 
 1. **La whitelist E2E de la CI ne couvre pas les specs `landing/`**. Arbitrage
    jamais pris, revenu à chaque session depuis le 7 août
-2. **51 commits non poussés** (mesuré par `git rev-list --count main..HEAD`), la CI n'a jamais tourné sur la refonte
+2. **53 commits non poussés** (mesuré par `git rev-list --count main..HEAD`), la CI n'a jamais tourné sur la refonte
 3. **SP-574 passera à Terminé au merge**, avec SP-565 à SP-573
