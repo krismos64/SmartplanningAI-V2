@@ -1,12 +1,28 @@
-'use client'
-
 /**
  * PricingSection Component
  *
- * Tarif unique per-seat avec simulateur, direction editoriale SP-568 :
- * aplat bleu franc pleine largeur.
+ * Tarif unique per-seat, direction editoriale SP-568 : aplat bleu franc
+ * pleine largeur.
  *
- * Reste un Client Component : le simulateur porte l'effectif saisi.
+ * Server Component depuis SP-574. La section etait `'use client'` pour la
+ * seule raison qu'elle portait l'effectif saisi dans le simulateur ; celui-ci
+ * parti, plus aucun etat ne subsiste.
+ *
+ * Le simulateur et `PricingCard` ont ete retires, decision prise avec
+ * Christophe apres comparaison au prototype, qui n'en porte aucun ici :
+ *
+ * - le prix apparaissait trois fois dans le meme ecran, dans le titre, dans
+ *   le simulateur et dans la carte, ce qui dilue au lieu d'appuyer ;
+ * - deux CTA concurrents menaient au meme endroit, « Essayer 21 jours » et
+ *   « Demarrer l'essai gratuit » ;
+ * - la landing dupliquait `/tarifs`, refaite en SP-574 precisement pour
+ *   porter le simulateur. `PricingCard` en avait deja ete retiree pour ce
+ *   meme motif de repetition du prix.
+ *
+ * Rien ne se perd. Le JSON-LD `Offer` vit dans `StructuredData.tsx` et
+ * declare le prix aux moteurs independamment de cette section. Le message
+ * destine aux equipes de plus de 50 employes, qui pousse vers `/contact`,
+ * existe a l'identique sur `/tarifs`.
  *
  * Accessibilite : les liens cyan de la version precedente tombaient sous le
  * seuil AA sur le fond clair (3.64:1 mesure en SP-567). Ils passent au
@@ -14,112 +30,82 @@
  *
  * @ticket SP-358
  * @see SP-568 - Landing, sections basses
+ * @see SP-574 - Section tarifs a la mise en page du prototype
  */
 
-import { useState } from 'react'
 import Link from 'next/link'
-import { ArrowUpRight, MessageSquare } from 'lucide-react'
-import { PricingSimulator } from '@/components/pricing/PricingSimulator'
-import { PricingCard } from '@/components/pricing/PricingCard'
+import { ArrowUpRight } from 'lucide-react'
 import { PRICING } from '@/lib/config/pricing'
 import { DisplayTitle } from '@/components/public/DisplayTitle'
 import { SectionLabel } from '@/components/public/SectionLabel'
 
-const LARGE_TEAM_THRESHOLD = 50
+/**
+ * Ce que le tarif comprend. Liste courte et concrete : elle remplace la
+ * colonne de quatorze lignes de `PricingCard`, qui detaillait ce que
+ * `/tarifs` dit deja mieux.
+ */
+const INCLUDED = [
+  'Plannings glisser-déposer',
+  'Congés avec workflow',
+  'Tâches et incidents',
+  'Exports PDF et Excel',
+  'Notifications et messagerie',
+  'Import CSV et Excel',
+] as const
 
 export function PricingSection() {
-  const [employees, setEmployees] = useState<number>(PRICING.DEFAULT_EMPLOYEES)
-
   return (
     <section
       id="pricing"
       aria-labelledby="pricing-title"
-      className="bg-public-brand-surface py-24 lg:py-32"
+      className="bg-public-brand-surface py-20 lg:py-28"
     >
       <div className="container-custom">
-        <div className="grid gap-8 lg:grid-cols-[auto_1fr] lg:items-start lg:gap-16">
-          <SectionLabel index={7} tone="onBrand">
-            Tarif simple
-          </SectionLabel>
+        <SectionLabel index={7} tone="onBrand" className="mb-10">
+          Tarif simple
+        </SectionLabel>
 
+        <div className="grid gap-12 lg:grid-cols-2 lg:items-start lg:gap-20">
           <div>
             <DisplayTitle as="h2" id="pricing-title" className="text-white">
-              2,90 &euro; HT par employé et par mois
+              {PRICING.PRICE_PER_EMPLOYEE.toLocaleString('fr-FR', {
+                minimumFractionDigits: 2,
+              })}
+              &nbsp;&euro;{' '}
+              <span className="font-geist text-lg font-normal tracking-normal sm:text-xl">
+                HT / employé / mois
+              </span>
             </DisplayTitle>
 
-            <p className="mt-6 max-w-xl font-geist text-lg leading-relaxed text-white">
+            <p className="mt-6 max-w-md font-geist text-lg leading-relaxed text-white">
               Toutes les fonctionnalités, sans engagement. La facture suit
               votre effectif réel.
             </p>
-          </div>
-        </div>
 
-        {/* Simulateur et carte tarif.
-
-            Panneau clair : PricingSimulator et PricingCard sont concus pour
-            un fond clair, avec des fonds translucides et des bordures cyan.
-            Les poser a meme l'aplat bleu ferait tomber leur texte sous
-            1.27:1. Ils servent aussi /tarifs, les modifier ici deborderait
-            sur SP-571. */}
-        <div className="public-scope mt-16 grid items-start gap-8 bg-public-surface p-6 sm:p-8 lg:grid-cols-2 lg:gap-12 lg:p-10">
-          <div>
-            <PricingSimulator
-              size="compact"
-              animated={false}
-              onEmployeesChange={setEmployees}
-            />
-
-            {/* Message au-dela du seuil.
-                Toujours dans le DOM, masque par la hauteur : meme principe
-                que les reponses de FAQ. */}
-            <div
-              data-testid="large-team-message"
-              inert={employees <= LARGE_TEAM_THRESHOLD}
-              className={`grid transition-[grid-template-rows] duration-300 ease-out ${
-                employees > LARGE_TEAM_THRESHOLD
-                  ? 'grid-rows-[1fr]'
-                  : 'grid-rows-[0fr]'
-              }`}
+            {/* CTA unique, vers la page qui porte le simulateur */}
+            <Link
+              href="/tarifs"
+              className="mt-8 inline-flex min-h-[3.5rem] items-center gap-3 bg-public-accent-surface px-8 font-geist text-base font-semibold text-public-content-on-vivid transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-public-brand-surface"
             >
-              <div className="overflow-hidden">
-                <div className="mt-6 flex items-start gap-3 border-l-2 border-public-accent bg-public-surface-subtle p-4">
-                  <MessageSquare
-                    className="mt-0.5 h-5 w-5 shrink-0 text-public-accent"
-                    aria-hidden="true"
-                  />
-                  <div>
-                    <p className="font-geist text-sm font-semibold text-public-content">
-                      Équipe de plus de {LARGE_TEAM_THRESHOLD} employés ?
-                    </p>
-                    <p className="mt-1 font-geist text-sm text-public-content-muted">
-                      Contactez-nous pour un accompagnement personnalisé.
-                    </p>
-                    <Link
-                      href="/contact"
-                      className="mt-2 inline-flex min-h-[2.75rem] items-center gap-2 font-geist text-sm font-semibold text-public-accent underline underline-offset-4 transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-public-accent focus-visible:ring-offset-2 focus-visible:ring-offset-public-surface"
-                    >
-                      Nous contacter
-                      <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            </div>
+              Calculer mon tarif
+              <ArrowUpRight className="h-5 w-5" aria-hidden="true" />
+            </Link>
           </div>
 
-          <div className="flex justify-center lg:justify-start">
-            <PricingCard animated={false} />
-          </div>
-        </div>
-
-        <div className="mt-12">
-          <Link
-            href="/tarifs"
-            className="inline-flex min-h-[2.75rem] items-center gap-2 font-geist text-base font-semibold text-white underline underline-offset-8 transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-public-brand-surface"
-          >
-            Voir le détail des tarifs
-            <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
-          </Link>
+          {/* Ce que le tarif comprend, en filets plutot qu'en carte */}
+          <ul className="grid gap-x-8 sm:grid-cols-2">
+            {INCLUDED.map((item) => (
+              <li
+                key={item}
+                className="flex items-center gap-3 border-b border-white/25 py-4 font-geist text-base text-white"
+              >
+                <span aria-hidden="true" className="text-sm">
+                  ✓
+                </span>
+                {item}
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
     </section>

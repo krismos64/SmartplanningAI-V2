@@ -156,6 +156,35 @@ test.describe('Landing — accessibilité axe-core', () => {
       await page.goto(path)
       await page.waitForLoadState('networkidle')
 
+      /*
+        Attendre que les fondus d'apparition soient termines avant de
+        mesurer. `reducedMotion` ne suffit pas : les pages legales animent
+        leur contenu avec Framer Motion, qui anime en JavaScript sans
+        consulter le media. Le conteneur `.legal-content` reste donc a
+        `opacity: 0` un court instant apres `networkidle`.
+
+        Axe y mesurait un bleu nuit #0f1b2d rendu comme #757980 par
+        l'opacite du parent, soit 3,88:1 au lieu du contraste reel. Le spec
+        rougissait en suite complete, ou la machine est plus chargee et
+        l'animation plus lente, et passait isolement. Un audit qui echoue
+        au hasard ne vaut rien : c'est le spec qui mesurait trop tot, pas
+        la page qui etait fautive.
+
+        L'attente cible `.legal-content` et non tous les elements de la
+        page : une condition globale expire sur les elements laisses
+        volontairement transparents.
+      */
+      await page.waitForFunction(
+        () => {
+          const animated = document.querySelector('.legal-content')
+          // Les pages sans conteneur anime n'ont rien a attendre.
+          if (!animated) return true
+          return Number(getComputedStyle(animated).opacity) > 0.99
+        },
+        undefined,
+        { timeout: 10000 }
+      )
+
       const results = await new AxeBuilder({ page })
         .withTags(A11Y_TAGS)
         .exclude('[data-testid="cookie-accept-all"]')

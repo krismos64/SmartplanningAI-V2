@@ -172,7 +172,7 @@ export function LegalContact({
             <span className="text-public-content-muted">Email : </span>
             <a
               href={`mailto:${email}`}
-              className="text-public-accent hover:underline"
+              className="text-public-accent underline underline-offset-2 hover:opacity-80"
             >
               {email}
             </a>
@@ -189,7 +189,7 @@ export function LegalContact({
             <span className="text-public-content-muted">Téléphone : </span>
             <a
               href={`tel:${phone}`}
-              className="text-public-accent hover:underline"
+              className="text-public-accent underline underline-offset-2 hover:opacity-80"
             >
               {phone}
             </a>
@@ -295,6 +295,12 @@ export function LegalAcceptanceBox({
  * LegalLink Component
  * Lien stylisé pour les pages légales avec support light/dark mode
  */
+/**
+ * Les liens sont soulignes en permanence et non au seul survol : un lien
+ * pose dans un paragraphe ne peut pas se distinguer par la couleur seule,
+ * son contraste avec le texte voisin ne valant que 2,3:1 (regle axe
+ * `link-in-text-block`, relevee en SP-574).
+ */
 export function LegalLink({
   href,
   children,
@@ -313,7 +319,7 @@ export function LegalLink({
   return (
     <a
       href={href}
-      className={cn('text-public-accent hover:underline', className)}
+      className={cn('text-public-accent underline underline-offset-2 hover:opacity-80', className)}
       {...externalProps}
     >
       {children}
