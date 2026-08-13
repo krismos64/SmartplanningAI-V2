@@ -69,6 +69,17 @@ export interface RoleDemo {
   icon: LucideIcon
   label: string
   tagline: string
+  /**
+   * Titre du role, porte le h2 de la section depuis SP-574. Formule comme
+   * un benefice et non comme un intitule de poste : « Une vue claire de
+   * l'entreprise » plutot que « Espace directeur ».
+   */
+  headline: string
+  /**
+   * Accroche courte affichee sous le titre. Plus dense que `description`,
+   * qui reste utilisee pour le JSON-LD des videos.
+   */
+  pitch: string
   videoId: string
   duration: string
   uploadDate: string
@@ -282,6 +293,9 @@ export const roleDemos: RoleDemo[] = [
     icon: Briefcase,
     label: 'Directeur',
     tagline: 'Pilotage global',
+    headline: 'Une vue claire de l’entreprise',
+    pitch:
+      'Suivez les équipes, les congés, les statistiques, l’audit et la facturation depuis un seul espace.',
     videoId: 'K4bidIhB-LI',
     duration: '2:45',
     uploadDate: '2026-05-11T10:00:00+02:00',
@@ -301,7 +315,10 @@ export const roleDemos: RoleDemo[] = [
     id: 'manager',
     icon: UserSquare2,
     label: 'Manager',
-    tagline: 'Pilotage équipe',
+    tagline: 'Pilotage d’équipe',
+    headline: 'Le quotidien opérationnel, sans friction',
+    pitch:
+      'Créez les horaires, traitez les demandes, suivez les incidents et prévenez l’équipe en quelques gestes.',
     videoId: 'sy3ffTIj0ig',
     duration: '2:30',
     uploadDate: '2026-05-11T10:15:00+02:00',
@@ -322,6 +339,9 @@ export const roleDemos: RoleDemo[] = [
     icon: User,
     label: 'Employé',
     tagline: 'Mon quotidien',
+    headline: 'Les bonnes informations, au bon moment',
+    pitch:
+      'Consultez votre planning, posez un congé, gérez vos tâches et échangez avec votre équipe depuis votre téléphone.',
     videoId: '8wJgk8i1uzQ',
     duration: '2:15',
     uploadDate: '2026-05-11T10:30:00+02:00',
