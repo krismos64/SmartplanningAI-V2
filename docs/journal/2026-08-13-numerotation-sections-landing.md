@@ -1,12 +1,12 @@
-# 13 août 2026, numérotation des sections publiques et maquette du hero
+# 13 août 2026, numérotation des sections, maquette du hero et bandeau défilant
 
 | Champ | Valeur |
 |---|---|
 | Ticket | SP-574, point 2 laissé ouvert par la session du 12 août |
-| Documents produits | `src/components/public/__tests__/section-numbering.test.ts` |
-| Documents modifiés | `RoleDemosSection.tsx`, `FeaturesSection.tsx`, `MobileSection.tsx`, `HowItWorksSection.tsx`, `BenefitsSection.tsx`, `VideoSection.tsx`, `a-propos/AboutContent.tsx`, `PlanningMockup.tsx`, `HeroSection.tsx` |
+| Documents produits | `src/components/public/__tests__/section-numbering.test.ts`, `src/app/(landing)/components/sections/TickerSection.tsx` |
+| Documents modifiés | `RoleDemosSection.tsx`, `FeaturesSection.tsx`, `MobileSection.tsx`, `HowItWorksSection.tsx`, `BenefitsSection.tsx`, `VideoSection.tsx`, `a-propos/AboutContent.tsx`, `PlanningMockup.tsx`, `HeroSection.tsx`, `LandingPageContent.tsx`, `tailwind.config.ts`, `sections/index.ts` |
 | Contrôles | type-check vert, 3163 tests unitaires (188 fichiers), 22 specs publiques dont 7 axe-core, build de production, rangs et dimensions relevés au navigateur |
-| Jira | SP-574, deux commentaires : clôture du point 2, puis maquette du hero |
+| Jira | SP-574, trois commentaires : clôture du point 2, maquette du hero, bandeau défilant |
 | Mémoire | `refonte-publique-angles-morts` mise à jour |
 
 ## Ce qui a été fait
@@ -141,11 +141,53 @@ Les 7 specs axe-core restent vertes. La maquette étant `aria-hidden`, axe
 n'audite pas ses contrastes, ce qui est cohérent : aucune information n'y est
 portée par la seule couleur, le texte du hero porte tout.
 
+## Troisième partie : le bandeau défilant
+
+Le prototype pose une `<section class="ticker">` de 58 px en aplat lime entre
+le hero bleu nuit et la section produit crème, faisant défiler les domaines
+couverts séparés par des puces corail. Elle n'avait jamais été portée.
+
+Valeurs relevées sur son DOM : hauteur 58 px, texte de 14 px en graisse 800
+avec 0,06em d'interlettrage, puces corail à 26 px de marge.
+
+### Deux écarts assumés avec le prototype
+
+**Le défilement est plus rapide**, 92 px/s contre 13, à la demande de
+Christophe.
+
+**La boucle est sans couture.** Le prototype rend un seul exemplaire du contenu
+et translate de `-20%`, ce qui laisse un vide traverser l'écran à chaque tour.
+Ici le contenu est rendu quatre fois pour une translation de `-50%` : la moitié
+parcourue ramène exactement au point de départ.
+
+Deux exemplaires ne suffisaient pas, et la première mesure ne l'a pas montré.
+Un exemplaire mesure 1154 px, donc deux couvrent 1154 px par moitié, soit
+286 px de moins qu'un écran de 1440. Le défaut n'apparaît qu'en fin de boucle,
+instant qu'une capture unique a une chance sur quatre de rater. Vérifié en
+mesurant la couverture à cinq instants du cycle, dont le passage de boucle : le
+contenu couvre la section à chacun.
+
+### Accessibilité
+
+Les trois exemplaires surnuméraires portent `aria-hidden` : sans cela le
+lecteur d'écran annoncerait la liste quatre fois. Seul le premier est exposé,
+sous l'`aria-label` « Domaines couverts par SmartPlanning ».
+
+`motion-reduce:animate-none` arrête le défilement. **Prouvé par mesure** et non
+supposé : sous `prefers-reduced-motion: reduce`, `animationName` passe à `none`
+et le contenu reste entièrement lisible, le premier exemplaire remplissant déjà
+la largeur. Le contraste du bleu nuit sur lime passe AA, les 7 specs axe-core
+restent vertes.
+
+**Landing inchangée à 167 kB**, la page passant de 3,94 à 3,96 kB : l'animation
+est du CSS déclaré dans `tailwind.config.ts` et la section un Server Component
+sans JavaScript client.
+
 ## Prochaine étape
 
 Les trois autres points du 12 août restent ouverts, inchangés :
 
 1. **La whitelist E2E de la CI ne couvre pas les specs `landing/`**. Arbitrage
    jamais pris, revenu à chaque session depuis le 7 août
-2. **45 commits non poussés** (mesuré par `git rev-list --count main..HEAD`), la CI n'a jamais tourné sur la refonte
+2. **49 commits non poussés** (mesuré par `git rev-list --count main..HEAD`), la CI n'a jamais tourné sur la refonte
 3. **SP-574 passera à Terminé au merge**, avec SP-565 à SP-573
