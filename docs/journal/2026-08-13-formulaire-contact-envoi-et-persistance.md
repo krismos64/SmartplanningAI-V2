@@ -7,6 +7,7 @@
 | Documents modifiés | `prisma/schema.prisma`, `src/app/api/contact/route.ts`, `src/components/public/ContactForm.tsx`, `src/hooks/use-contact-form.ts`, `__tests__/app/api/contact/route.test.ts` |
 | Contrôles | type-check vert, 3171 tests unitaires (189 fichiers), build de production, bout en bout contre un SMTP injoignable, deux preuves par mutation |
 | Jira | SP-576 |
+| PR | [#74](https://github.com/krismos64/SmartplanningAI-V2/pull/74), CI verte au premier run (lint, unit, E2E critiques, build) |
 | Mémoire | `formulaire-contact-jamais-branche` écrite |
 
 ## Le symptôme
