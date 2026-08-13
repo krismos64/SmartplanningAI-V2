@@ -1,74 +1,102 @@
-'use client'
-
 /**
  * BenefitsSection Component
- * Highlights key benefits with before/after illustration
- * Refactored to use centralized data and SectionHeader
+ *
+ * Section « le changement », direction editoriale SP-567 : aplat clair, titre
+ * a deux registres, liste de benefices en filets plutot qu'en cartes.
+ *
+ * Server Component depuis SP-567.
+ *
+ * L'illustration « AVANT / AVEC SmartPlanning » avait ete retiree en SP-567,
+ * jugee marqueur de « contenu genere » et pesant 2,6 Mo en source. Elle est
+ * retablie en SP-574 : le prototype de reference la porte, et cette section
+ * expose le seul argument du site qui se montre mieux qu'il ne se raconte.
+ * Le fichier WebP pese 261 Ko, pas 2,6 Mo, la source PNG ayant ete convertie
+ * entre-temps.
+ *
+ * SP-572 avait supprime le fichier, devenu orphelin apres SP-567. Restaure
+ * depuis l'historique git plutot que regenere.
+ *
+ * Les donnees viennent du registre `benefits` : leur contenu n'est pas
+ * modifie, seul le rendu change.
+ *
+ * @see SP-567 - Landing, hero et sections hautes
+ * @see SP-574 - Retablissement de l'illustration
  */
 
 import Image from 'next/image'
-import { motion, fadeInUp, staggerContainer } from '@/lib/animations'
+import { DisplayTitle } from '@/components/public/DisplayTitle'
+import { SectionLabel } from '@/components/public/SectionLabel'
 import { benefits } from '../../data'
-import { SectionHeader } from '../index'
 
 export function BenefitsSection() {
   return (
-    <section id="benefits" className="py-24 lg:py-32">
+    <section
+      id="benefits"
+      aria-labelledby="benefits-title"
+      className="bg-public-surface-subtle py-24 lg:py-32"
+    >
       <div className="container-custom">
-        {/* Section Header - Using reusable component */}
-        <SectionHeader
-          badge="Pourquoi SmartPlanning ?"
-          title="Ce que SmartPlanning"
-          titleHighlight="change pour vous"
-          description="Gagnez du temps et offrez à vos équipes une organisation claire."
-        />
+        <div className="grid gap-12 lg:grid-cols-2 lg:gap-20">
+          {/* Colonne titre */}
+          <div>
+            <SectionLabel index={6}>Le changement</SectionLabel>
 
-        {/* Content Grid: Image + Benefits */}
-        <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
-          {/* Before/After Image */}
-          <motion.div
-            initial={{ opacity: 0, x: -40 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="relative"
-          >
-            <div className="absolute inset-0 rounded-3xl bg-blue-600/10 dark:bg-blue-400/10 blur-3xl" />
+            <DisplayTitle
+              as="h2"
+              id="benefits-title"
+              accent="au planning maîtrisé."
+              className="mt-8 text-public-content"
+            >
+              Du planning subi
+            </DisplayTitle>
+
+            <p className="mt-8 max-w-xl font-geist text-lg leading-relaxed text-public-content-muted">
+              Une seule vue remplace les tableaux dispersés, les messages de
+              dernière minute et les versions imprimées qui ne sont déjà plus à
+              jour.
+            </p>
+
+            {/*
+              Comparaison avant/apres. L'illustration existait avant la
+              refonte, SP-567 a retire sa reference en reecrivant la section
+              et SP-572 a supprime le fichier devenu orphelin. La section
+              porte pourtant le seul argument du site qui se montre mieux
+              qu'il ne se raconte.
+
+              `sizes` borne le telechargement : sans lui, Next sert le 3840w
+              a tout le monde alors que la colonne fait au plus 640 px.
+            */}
             <Image
-              src="/images/avant-après-sp.png"
-              alt="Avant et après SmartPlanning - Comparaison visuelle"
-              width={600}
-              height={450}
-              className="relative z-10 rounded-2xl shadow-2xl"
+              src="/images/avant-apres-sp.webp"
+              alt="À gauche, une organisation dispersée entre tableurs, messages et impressions. À droite, la même équipe sur une vue unique SmartPlanning."
+              width={1536}
+              height={1024}
+              sizes="(min-width: 1024px) 40vw, 90vw"
+              className="mt-10 w-full border border-public-border"
             />
-          </motion.div>
+          </div>
 
-          {/* Benefits Grid */}
-          <motion.div
-            variants={staggerContainer}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            className="grid gap-6 sm:grid-cols-2"
-          >
+          {/* Colonne benefices */}
+          <ul className="divide-y divide-public-border border-y border-public-border">
             {benefits.map((benefit) => (
-              <motion.div
-                key={benefit.id}
-                variants={fadeInUp}
-                className="group flex gap-4 rounded-xl border border-border/50 bg-card/50 p-4 transition-all hover:border-blue-600/30 dark:hover:border-blue-400/30 hover:bg-card"
-              >
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-blue-600/10 ring-1 ring-blue-600/15 dark:bg-blue-400/15 dark:ring-blue-400/15">
-                  <benefit.icon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+              <li key={benefit.id} className="py-6">
+                <div className="flex gap-4">
+                  <span
+                    aria-hidden="true"
+                    className="mt-1.5 h-2 w-2 shrink-0 bg-public-accent"
+                  />
+                  <div>
+                    <h3 className="font-geist text-lg font-semibold text-public-content">
+                      {benefit.title}
+                    </h3>
+                    <p className="mt-1 font-geist text-base leading-relaxed text-public-content-muted">
+                      {benefit.description}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="mb-1 font-semibold">{benefit.title}</h3>
-                  <p className="text-sm text-muted-foreground">
-                    {benefit.description}
-                  </p>
-                </div>
-              </motion.div>
+              </li>
             ))}
-          </motion.div>
+          </ul>
         </div>
       </div>
     </section>

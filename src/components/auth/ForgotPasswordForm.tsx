@@ -103,22 +103,22 @@ export function ForgotPasswordForm() {
   if (isSuccess) {
     return (
       <div className="space-y-6 text-center">
-        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-cyan-500/20">
-          <CheckCircle2 className="h-8 w-8 text-cyan-600 dark:text-cyan-400" />
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-public-accent/20">
+          <CheckCircle2 className="h-8 w-8 text-public-content-on-vivid" />
         </div>
 
         <div className="space-y-2">
-          <h2 className="text-xl font-semibold text-foreground">
+          <h2 className="text-xl font-semibold text-public-content">
             Vérifiez votre boîte mail
           </h2>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-public-content-muted">
             Si un compte existe avec cet email, vous recevrez un lien de
             réinitialisation dans quelques minutes.
           </p>
         </div>
 
         <div className="space-y-3">
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-public-content-muted">
             Vous n&apos;avez pas reçu l&apos;email ? Vérifiez vos spams ou
           </p>
           <Button
@@ -135,7 +135,7 @@ export function ForgotPasswordForm() {
 
         <Link
           href="/login"
-          className="inline-flex items-center gap-1 text-sm font-medium text-cyan-600 transition-colors hover:text-cyan-500 dark:text-cyan-400 dark:hover:text-cyan-300"
+          className="inline-flex items-center gap-1 text-sm font-medium text-public-content underline underline-offset-4 transition-colors hover:text-public-accent"
         >
           <ArrowLeft className="h-4 w-4" />
           Retour à la connexion
@@ -148,7 +148,7 @@ export function ForgotPasswordForm() {
     <Form {...form}>
       <form onSubmit={handleFormSubmit} className="space-y-4" noValidate>
         {/* Description */}
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-public-content-muted">
           Entrez votre adresse email et nous vous enverrons un lien pour
           réinitialiser votre mot de passe.
         </p>
@@ -162,7 +162,7 @@ export function ForgotPasswordForm() {
               <FormLabel>Email</FormLabel>
               <FormControl>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-public-content-muted" />
                   <Input
                     type="email"
                     placeholder="vous@entreprise.com"
@@ -198,7 +198,7 @@ export function ForgotPasswordForm() {
         <div className="text-center">
           <Link
             href="/login"
-            className="inline-flex items-center gap-1 text-sm font-medium text-cyan-600 transition-colors hover:text-cyan-500 dark:text-cyan-400 dark:hover:text-cyan-300"
+            className="inline-flex items-center gap-1 text-sm font-medium text-public-content underline underline-offset-4 transition-colors hover:text-public-accent"
           >
             <ArrowLeft className="h-4 w-4" />
             Retour à la connexion

@@ -10,8 +10,20 @@
 
 import { test, expect } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
+import { getSectorBySlug } from '../../../src/app/(sectors)/solutions/data'
+
+// Les titres viennent du registre plutot que d'etre figes ici : SP-563 a
+// reecrit les metaTitle pour le taux de clic, ce qui avait casse ces deux
+// assertions sans qu'aucun defaut produit n'existe.
+const restauration = getSectorBySlug('planning-restaurant')!
+const commerce = getSectorBySlug('planning-commerce')!
 
 const A11Y_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']
+
+/** Echappe les caracteres speciaux d'une chaine utilisee comme motif. */
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
 const SECTOR_URL = '/solutions/planning-restaurant'
 
 test.describe('Page secteur restauration', () => {
@@ -21,7 +33,7 @@ test.describe('Page secteur restauration', () => {
     await page.goto(SECTOR_URL)
 
     await expect(page).toHaveTitle(
-      /Logiciel de planning pour restaurant et hôtel/
+      new RegExp(escapeRegExp(restauration.metaTitle))
     )
     await expect(
       page.getByRole('heading', {
@@ -109,7 +121,7 @@ test.describe('Page secteur restauration', () => {
     await page.goto('/solutions/planning-commerce')
 
     await expect(page).toHaveTitle(
-      /Logiciel de planning pour commerce et retail/
+      new RegExp(escapeRegExp(commerce.metaTitle))
     )
     await expect(
       page.getByRole('heading', { level: 1, name: /commerce et le retail/ })

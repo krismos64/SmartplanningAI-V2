@@ -1,130 +1,112 @@
-'use client'
-
 /**
  * PricingSection Component
  *
- * Section tarif unique per-seat avec simulateur interactif.
- * Remplace l'ancienne grille 3 plans (Starter/Pro/Enterprise).
+ * Tarif unique per-seat, direction editoriale SP-568 : aplat bleu franc
+ * pleine largeur.
+ *
+ * Server Component depuis SP-574. La section etait `'use client'` pour la
+ * seule raison qu'elle portait l'effectif saisi dans le simulateur ; celui-ci
+ * parti, plus aucun etat ne subsiste.
+ *
+ * Le simulateur et `PricingCard` ont ete retires, decision prise avec
+ * Christophe apres comparaison au prototype, qui n'en porte aucun ici :
+ *
+ * - le prix apparaissait trois fois dans le meme ecran, dans le titre, dans
+ *   le simulateur et dans la carte, ce qui dilue au lieu d'appuyer ;
+ * - deux CTA concurrents menaient au meme endroit, « Essayer 21 jours » et
+ *   « Demarrer l'essai gratuit » ;
+ * - la landing dupliquait `/tarifs`, refaite en SP-574 precisement pour
+ *   porter le simulateur. `PricingCard` en avait deja ete retiree pour ce
+ *   meme motif de repetition du prix.
+ *
+ * Rien ne se perd. Le JSON-LD `Offer` vit dans `StructuredData.tsx` et
+ * declare le prix aux moteurs independamment de cette section. Le message
+ * destine aux equipes de plus de 50 employes, qui pousse vers `/contact`,
+ * existe a l'identique sur `/tarifs`.
+ *
+ * Accessibilite : les liens cyan de la version precedente tombaient sous le
+ * seuil AA sur le fond clair (3.64:1 mesure en SP-567). Ils passent au
+ * blanc sur l'aplat bleu, et portent une hauteur minimale de 44 px.
  *
  * @ticket SP-358
+ * @see SP-568 - Landing, sections basses
+ * @see SP-574 - Section tarifs a la mise en page du prototype
  */
 
-import { useState } from 'react'
 import Link from 'next/link'
-import { ArrowRight, MessageSquare } from 'lucide-react'
-import {
-  motion,
-  FramerAnimatePresence,
-  fadeInUp,
-  staggerContainer,
-} from '@/lib/animations'
-import { PricingSimulator } from '@/components/pricing/PricingSimulator'
-import { PricingCard } from '@/components/pricing/PricingCard'
+import { ArrowUpRight } from 'lucide-react'
 import { PRICING } from '@/lib/config/pricing'
-import { SectionHeader } from '../index'
+import { DisplayTitle } from '@/components/public/DisplayTitle'
+import { SectionLabel } from '@/components/public/SectionLabel'
 
-const LARGE_TEAM_THRESHOLD = 50
+/**
+ * Ce que le tarif comprend. Liste courte et concrete : elle remplace la
+ * colonne de quatorze lignes de `PricingCard`, qui detaillait ce que
+ * `/tarifs` dit deja mieux.
+ */
+const INCLUDED = [
+  'Plannings glisser-déposer',
+  'Congés avec workflow',
+  'Tâches et incidents',
+  'Exports PDF et Excel',
+  'Notifications et messagerie',
+  'Import CSV et Excel',
+] as const
 
 export function PricingSection() {
-  const [employees, setEmployees] = useState<number>(PRICING.DEFAULT_EMPLOYEES)
-
   return (
     <section
       id="pricing"
-      className="bg-gradient-to-b from-transparent via-blue-600/5 dark:via-blue-400/5 to-transparent py-24 lg:py-32"
+      aria-labelledby="pricing-title"
+      className="bg-public-brand-surface py-20 lg:py-28"
     >
       <div className="container-custom">
-        {/* Section Header */}
-        <SectionHeader
-          badge="Tarification"
-          title="Un tarif simple et"
-          titleHighlight="transparent"
-          description="2,90 € par employé par mois. Toutes les fonctionnalités incluses, sans engagement."
-          marginBottom="mb-16 lg:mb-24"
-        />
+        <SectionLabel index={8} tone="onBrand" className="mb-10">
+          Tarif simple
+        </SectionLabel>
 
-        {/* Pricing Content — 2 colonnes desktop, stack mobile */}
-        <motion.div
-          variants={staggerContainer}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          className="mx-auto grid max-w-5xl items-start gap-8 lg:grid-cols-2 lg:gap-12"
-        >
-          {/* Simulateur */}
-          <motion.div variants={fadeInUp} whileHover={{ y: -5 }}>
-            <PricingSimulator
-              size="compact"
-              animated={false}
-              onEmployeesChange={setEmployees}
-            />
+        <div className="grid gap-12 lg:grid-cols-2 lg:items-start lg:gap-20">
+          <div>
+            <DisplayTitle as="h2" id="pricing-title" className="text-white">
+              {PRICING.PRICE_PER_EMPLOYEE.toLocaleString('fr-FR', {
+                minimumFractionDigits: 2,
+              })}
+              &nbsp;&euro;{' '}
+              <span className="font-geist text-lg font-normal tracking-normal sm:text-xl">
+                HT / employé / mois
+              </span>
+            </DisplayTitle>
 
-            {/* Message contact > 50 employes */}
-            <FramerAnimatePresence>
-              {employees > LARGE_TEAM_THRESHOLD && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  transition={{ duration: 0.3 }}
-                  className="overflow-hidden"
-                  data-testid="large-team-message"
-                >
-                  <div className="mt-6 flex items-start gap-3 rounded-xl border border-cyan-500/20 bg-cyan-500/5 p-4">
-                    <MessageSquare
-                      className="mt-0.5 h-5 w-5 shrink-0 text-cyan-400"
-                      aria-hidden="true"
-                    />
-                    <div>
-                      <p className="text-sm font-medium text-foreground">
-                        Équipe de plus de {LARGE_TEAM_THRESHOLD} employés ?
-                      </p>
-                      <p className="mt-1 text-sm text-muted-foreground">
-                        Contactez-nous pour un accompagnement personnalisé.
-                      </p>
-                      <Link
-                        href="/#contact"
-                        className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-cyan-400 transition-colors hover:text-cyan-300"
-                      >
-                        Nous contacter
-                        <ArrowRight
-                          className="h-3.5 w-3.5"
-                          aria-hidden="true"
-                        />
-                      </Link>
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-            </FramerAnimatePresence>
-          </motion.div>
+            <p className="mt-6 max-w-md font-geist text-lg leading-relaxed text-white">
+              Toutes les fonctionnalités, sans engagement. La facture suit
+              votre effectif réel.
+            </p>
 
-          {/* Carte tarif */}
-          <motion.div
-            variants={fadeInUp}
-            whileHover={{ y: -5 }}
-            className="flex justify-center lg:justify-start"
-          >
-            <PricingCard animated={false} />
-          </motion.div>
-        </motion.div>
+            {/* CTA unique, vers la page qui porte le simulateur */}
+            <Link
+              href="/tarifs"
+              className="mt-8 inline-flex min-h-[3.5rem] items-center gap-3 bg-public-accent-surface px-8 font-geist text-base font-semibold text-public-content-on-vivid transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-public-brand-surface"
+            >
+              Calculer mon tarif
+              <ArrowUpRight className="h-5 w-5" aria-hidden="true" />
+            </Link>
+          </div>
 
-        {/* Lien vers page pricing dédiée */}
-        <motion.div
-          variants={fadeInUp}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          className="mt-12 text-center"
-        >
-          <Link
-            href="/tarifs"
-            className="inline-flex items-center gap-2 text-sm font-medium text-cyan-400 transition-colors hover:text-cyan-300"
-          >
-            Voir le détail des tarifs
-            <ArrowRight className="h-4 w-4" aria-hidden="true" />
-          </Link>
-        </motion.div>
+          {/* Ce que le tarif comprend, en filets plutot qu'en carte */}
+          <ul className="grid gap-x-8 sm:grid-cols-2">
+            {INCLUDED.map((item) => (
+              <li
+                key={item}
+                className="flex items-center gap-3 border-b border-white/25 py-4 font-geist text-base text-white"
+              >
+                <span aria-hidden="true" className="text-sm">
+                  ✓
+                </span>
+                {item}
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
     </section>
   )

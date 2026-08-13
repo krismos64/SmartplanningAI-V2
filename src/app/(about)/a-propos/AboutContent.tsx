@@ -1,398 +1,316 @@
-'use client'
-
 /**
  * AboutContent Component
- * Client component with animations for the About page
+ * Page A propos /a-propos
  *
- * @description Composant principal de la page À propos avec :
- * - Sémantique HTML5 optimisée (article, section, header)
- * - Accessibilité WCAG 2.1 AA (aria-labels, roles, landmarks)
- * - Animations Framer Motion
- * - Structure optimisée pour SEO et LLMs
- * - Support mode light/dark via variables CSS
- * - Réutilisation des composants landing (DRY)
+ * Server Component depuis SP-571 : la page ne portait plus aucun etat
+ * depuis le retrait de `isScrolled` (SP-570), seules subsistaient des
+ * animations d'apparition qui tiraient Framer Motion dans le bundle.
  *
- * @see SP-285 - Page À propos
+ * L'illustration `manager.webp` avait ete retiree en SP-571, jugee marqueur
+ * du registre visuel dont la refonte sortait. Retablie en SP-574 : le
+ * prototype de reference la conserve, avec sa legende, aux cotes du texte
+ * de mission.
+ *
+ * Mise en page rapprochee du prototype en SP-575 : hero sur aplat bleu
+ * nuit, manifeste sur aplat lime, valeurs en aplats alternes et bande
+ * reseaux sur bleu nuit. SP-574 laissait la page en creme d'un bout a
+ * l'autre, sans le rythme d'aplats qui porte l'identite ailleurs.
+ *
+ * Le contenu vient du registre `../data` : ce fichier ne fait que le mettre
+ * en page, il n'en modifie aucun texte.
+ *
+ * @ticket SP-285
+ * @see SP-571 - Tarifs, a-propos et pages legales
+ * @see SP-574 - Retablissement de l'illustration
+ * @see SP-575 - A propos a la mise en page du prototype
  */
 
-import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowRight, Target, Linkedin, Youtube } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { motion, fadeInUp, staggerContainer, scaleIn } from '@/lib/animations'
-import {
-  SectionHeader,
-  AnimatedBackground,
-  PRIMARY_BUTTON_CLASSES,
-  HIGHLIGHT_TEXT_CLASSES,
-} from '@/app/(landing)/components'
+import { ArrowUpRight, Linkedin, Youtube } from 'lucide-react'
+import { DisplayTitle } from '@/components/public/DisplayTitle'
+import { SectionLabel } from '@/components/public/SectionLabel'
+import { PublicPageShell } from '@/components/public/PublicPageShell'
 import { VideoSection } from '@/app/(landing)/components/sections/VideoSection'
-import { LandingHeader } from '@/components/layout/LandingHeader'
-import { LandingFooter } from '@/components/layout/LandingFooter'
 import { ValueCard, TargetCard } from '../components'
 import { values, targets, mission } from '../data'
 
+/** Reseaux, ouverts dans un nouvel onglet. */
+const socialLinks = [
+  {
+    icon: Linkedin,
+    network: 'LinkedIn',
+    handle: 'SmartPlanning',
+    description: 'Actualités produit et conseils RH',
+    href: 'https://www.linkedin.com/company/smartplanning-fr',
+    ariaLabel: 'Suivez SmartPlanning sur LinkedIn (nouvel onglet)',
+  },
+  {
+    icon: Youtube,
+    network: 'YouTube',
+    handle: '@SmartPlanning',
+    description: 'Démos produit et tutoriels vidéo',
+    href: 'https://www.youtube.com/@SmartPlanning-x2c',
+    ariaLabel: 'Abonnez-vous à SmartPlanning sur YouTube (nouvel onglet)',
+  },
+] as const
+
 export function AboutContent() {
-  const [isScrolled, setIsScrolled] = useState(false)
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50)
-    }
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
-
   return (
-    <div className="relative min-h-screen bg-background text-foreground">
-      {/* Background Effects - Decorative, hidden from screen readers */}
-      <div aria-hidden="true">
-        <AnimatedBackground />
-      </div>
-
-      {/* Header with scroll-aware background */}
-      <LandingHeader isScrolled={isScrolled} />
-
-      {/* Skip to main content link for accessibility */}
-      <a
-        href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-blue-600 focus:px-4 focus:py-2 focus:text-white"
+    <PublicPageShell breadcrumb={[{ label: 'À propos' }]}>
+      {/* Hero, aplat bleu nuit pleine largeur comme /solutions et /guides */}
+      <section
+        aria-labelledby="hero-title"
+        className="bg-public-surface-dark pb-20 pt-10 lg:pb-28 lg:pt-14"
       >
-        Aller au contenu principal
-      </a>
+        <div className="container-custom">
+          <SectionLabel index={1} tone="onDark">
+            Notre mission
+          </SectionLabel>
 
-      <main id="main-content" role="main">
-        {/* Hero Section - Article principal */}
-        <article
-          aria-labelledby="hero-title"
-          className="relative flex min-h-[70vh] items-center pb-16 pt-24"
-        >
-          <div className="container-custom">
-            <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
-              {/* Text Content */}
-              <motion.header
-                variants={staggerContainer}
-                initial="hidden"
-                animate="visible"
-                className="text-center lg:text-left"
+          <h1
+            id="hero-title"
+            className="mt-8 max-w-4xl font-geist text-4xl font-bold leading-[0.95] tracking-[-0.045em] text-public-content-on-dark sm:text-5xl lg:text-6xl"
+          >
+            {mission.title}
+            <span className="mt-1 block font-editorial italic text-public-accent-on-dark">
+              {mission.highlight}
+            </span>
+            <span className="mt-3 block text-3xl text-public-content-on-dark/80 sm:text-4xl">
+              {mission.subtitle}
+            </span>
+          </h1>
+        </div>
+      </section>
+
+      {/*
+        Manifeste sur aplat lime, geste central de la page au prototype :
+        le texte y passe en grand corps gras a gauche, l'illustration a
+        droite. La version SP-574 le laissait en prose grise sur creme,
+        sans rupture d'aplat.
+
+        L'image avait ete retiree en SP-571, jugee marqueur du registre
+        visuel dont la refonte sortait, retablie en SP-574 : le prototype
+        de reference la conserve, avec sa legende.
+      */}
+      <section
+        aria-label="Notre conviction"
+        className="bg-public-highlight-surface py-20 lg:py-28"
+      >
+        <div className="container-custom">
+          <div className="grid gap-12 lg:grid-cols-[1fr_auto] lg:items-start lg:gap-20">
+            <div className="max-w-2xl">
+              <p className="font-geist text-2xl font-bold leading-[1.08] tracking-[-0.04em] text-public-content-on-vivid sm:text-3xl lg:text-[2.625rem]">
+                {mission.description}
+              </p>
+              <p className="mt-6 font-geist text-lg leading-relaxed text-public-content-on-vivid">
+                {mission.solution}
+              </p>
+
+              <Link
+                href="/register"
+                aria-label="Créer un compte SmartPlanning gratuitement"
+                className="mt-10 inline-flex min-h-[3.5rem] items-center justify-center gap-3 bg-public-surface-dark px-8 font-geist text-base font-semibold text-public-content-on-dark transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-public-content-on-vivid focus-visible:ring-offset-2 focus-visible:ring-offset-public-highlight-surface"
               >
-                {/* Badge - Decorative */}
-                <motion.div
-                  variants={fadeInUp}
-                  className="mb-6 inline-block"
-                  aria-hidden="true"
-                >
-                  <span className="inline-flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/10 px-4 py-2 text-sm text-blue-600 dark:border-blue-500/20 dark:text-blue-400">
-                    <Target className="h-4 w-4" aria-hidden="true" />
-                    Notre histoire
-                  </span>
-                </motion.div>
+                Essayer gratuitement
+                <ArrowUpRight className="h-5 w-5" aria-hidden="true" />
+              </Link>
+            </div>
 
-                {/* Title - H1 unique de la page */}
-                <motion.h1
-                  id="hero-title"
-                  variants={fadeInUp}
-                  className="mb-6 text-4xl font-bold leading-tight sm:text-5xl lg:text-6xl"
-                >
-                  {mission.title}{' '}
-                  <span className={HIGHLIGHT_TEXT_CLASSES}>
-                    {mission.highlight}
-                  </span>
-                  <br />
-                  <span className="text-foreground/90">{mission.subtitle}</span>
-                </motion.h1>
+            <figure className="lg:w-[24rem]">
+              <Image
+                src="/images/manager.webp"
+                alt="Une responsable d'équipe organise les plannings de la semaine sur SmartPlanning."
+                width={1024}
+                height={1024}
+                sizes="(min-width: 1024px) 24rem, 90vw"
+                className="w-full"
+              />
+              <figcaption className="mt-3 font-geist text-xs uppercase tracking-[0.12em] text-public-content-on-vivid">
+                Un outil pensé pour le quotidien des responsables d&rsquo;équipe
+              </figcaption>
+            </figure>
+          </div>
+        </div>
+      </section>
 
-                {/* Description - Paragraphes sémantiques */}
-                <motion.p
-                  variants={fadeInUp}
-                  className="mx-auto max-w-xl text-lg leading-relaxed text-muted-foreground lg:mx-0"
-                >
-                  {mission.description}
-                </motion.p>
+      {/* Valeurs, en aplats alternes comme au prototype */}
+      <section
+        aria-labelledby="values-title"
+        className="bg-public-surface py-20 lg:py-28"
+      >
+        <div className="container-custom">
+          <div className="grid gap-8 lg:grid-cols-[auto_1fr] lg:items-start lg:gap-16">
+            <SectionLabel index={2}>Nos valeurs</SectionLabel>
 
-                {/* Solution */}
-                <motion.p
-                  variants={fadeInUp}
-                  className="mx-auto mt-4 max-w-xl text-lg leading-relaxed text-muted-foreground lg:mx-0"
-                >
-                  {mission.solution}
-                </motion.p>
+            <DisplayTitle
+              as="h2"
+              id="values-title"
+              accent="qui nous guident."
+              className="text-public-content"
+            >
+              Les principes
+            </DisplayTitle>
+          </div>
 
-                {/* CTA avec aria-label descriptif */}
-                <motion.div
-                  variants={fadeInUp}
-                  className="mt-8 flex justify-center gap-4 lg:justify-start"
-                >
-                  <Button size="lg" className={PRIMARY_BUTTON_CLASSES} asChild>
-                    <Link
-                      href="/register"
-                      aria-label="Créer un compte SmartPlanning gratuitement"
-                    >
-                      Essayer gratuitement
-                      <ArrowRight className="ml-2 h-5 w-5" aria-hidden="true" />
-                    </Link>
-                  </Button>
-                </motion.div>
-              </motion.header>
+          {/* Gouttiere de 12 px plutot qu'un filet d'un pixel : les aplats
+              se touchaient et la serie se lisait comme un seul bloc. */}
+          <div className="mt-14 grid gap-3 md:grid-cols-3">
+            {values.map((value, index) => (
+              <ValueCard
+                key={value.title}
+                title={value.title}
+                description={value.description}
+                index={index + 1}
+              />
+            ))}
+          </div>
+        </div>
+      </section>
 
-              {/* Illustration avec figure sémantique */}
-              <motion.figure
-                variants={scaleIn}
-                initial="hidden"
-                animate="visible"
-                className="relative flex items-center justify-center"
+      {/* Public vise, sur creme contraste comme la bande audience du
+          prototype. Les segments restent en filets : le prototype les pose
+          en pastilles, mais il n'y met que leur nom, la ou le registre
+          porte une description par segment qu'une pastille ne peut pas
+          tenir. */}
+      <section
+        aria-labelledby="targets-title"
+        className="bg-public-surface-subtle py-20 lg:py-28"
+      >
+        <div className="container-custom">
+          <div className="grid gap-8 lg:grid-cols-2 lg:gap-20">
+            <div>
+              <SectionLabel index={3}>Pour qui</SectionLabel>
+
+              <DisplayTitle
+                as="h2"
+                id="targets-title"
+                accent="qui gèrent des équipes."
+                className="mt-8 text-public-content"
               >
-                {/* Glow Effect - Decorative */}
-                <div
-                  className="absolute inset-0 rounded-3xl bg-gradient-to-r from-blue-600/20 to-blue-500/20 blur-3xl"
-                  aria-hidden="true"
+                Les structures
+              </DisplayTitle>
+            </div>
+
+            <div className="border-b border-public-border">
+              {targets.map((target) => (
+                <TargetCard
+                  key={target.title}
+                  icon={target.icon}
+                  title={target.title}
+                  description={target.description}
                 />
-
-                {/* Manager illustration */}
-                <div className="relative z-10 overflow-hidden rounded-2xl border border-border">
-                  <Image
-                    src="/images/manager.png"
-                    alt="Manager utilisant le logiciel SmartPlanning sur ordinateur pour organiser les plannings de son équipe dans un bureau moderne"
-                    width={500}
-                    height={400}
-                    className="object-cover"
-                    priority
-                    sizes="(max-width: 768px) 100vw, 500px"
-                  />
-                </div>
-                <figcaption className="sr-only">
-                  Illustration d&apos;un manager utilisant SmartPlanning pour
-                  gérer les plannings de son équipe
-                </figcaption>
-              </motion.figure>
+              ))}
             </div>
           </div>
-        </article>
+        </div>
+      </section>
 
-        {/* Values Section */}
-        <section aria-labelledby="values-title" className="py-24 lg:py-32">
-          <div className="container-custom">
-            <SectionHeader
-              badge="Ce qui nous définit"
-              badgeIcon={
-                <span className="text-lg" aria-hidden="true">
-                  💎
-                </span>
-              }
-              title="Nos"
-              titleHighlight="valeurs"
-              titleId="values-title"
-              description="Les principes qui guident chaque décision dans la conception de SmartPlanning."
-            />
+      <VideoSection />
 
-            <motion.ul
-              variants={staggerContainer}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-              className="grid gap-8 md:grid-cols-3"
-              role="list"
-              aria-label="Liste des valeurs de SmartPlanning"
-            >
-              {values.map((value, index) => (
-                <li key={value.id}>
-                  <ValueCard
-                    icon={value.icon}
-                    title={value.title}
-                    description={value.description}
-                    gradient={value.gradient}
-                    delay={index * 0.1}
-                  />
-                </li>
-              ))}
-            </motion.ul>
+      {/* Reseaux, bande bleu nuit pleine largeur comme au prototype, la ou
+          SP-574 la laissait en cartes creme peu distinctes du fond. */}
+      <section
+        aria-labelledby="social-title"
+        className="bg-public-surface-dark py-20 lg:py-24"
+      >
+        <div className="container-custom">
+          <div className="grid gap-8 lg:grid-cols-[auto_1fr] lg:items-start lg:gap-16">
+            <SectionLabel index={5} tone="onDark">
+              Suivez-nous
+            </SectionLabel>
+
+            <div>
+              <DisplayTitle
+                as="h2"
+                id="social-title"
+                accent="connectés."
+                tone="onDark"
+                className="text-public-content-on-dark"
+              >
+                Restons
+              </DisplayTitle>
+
+              <p className="mt-6 max-w-xl font-geist text-lg leading-relaxed text-public-content-on-dark/80">
+                Retrouvez SmartPlanning sur nos réseaux pour suivre les
+                nouveautés, démos produit et conseils RH.
+              </p>
+            </div>
           </div>
-        </section>
 
-        {/* Target Audience Section */}
-        <section aria-labelledby="targets-title" className="py-24 lg:py-32">
-          <div className="container-custom">
-            <SectionHeader
-              badge="Pour qui ?"
-              badgeIcon={
-                <span className="text-lg" aria-hidden="true">
-                  🎯
-                </span>
-              }
-              title="SmartPlanning s'adresse aux"
-              titleHighlight="TPE et PME"
-              titleId="targets-title"
-              description="Quel que soit votre secteur, SmartPlanning s'adapte aux besoins des petites et moyennes entreprises."
-            />
-
-            <motion.ul
-              variants={staggerContainer}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-              className="mx-auto grid max-w-4xl gap-6 sm:grid-cols-2 lg:grid-cols-3"
-              role="list"
-              aria-label="Secteurs d'activité ciblés par SmartPlanning"
-            >
-              {targets.map((target) => (
-                <li key={target.id}>
-                  <TargetCard
-                    icon={target.icon}
-                    title={target.title}
-                    description={target.description}
-                    color={target.color}
-                  />
-                </li>
-              ))}
-            </motion.ul>
-          </div>
-        </section>
-
-        {/* Video Section - Démo produit (déplacée depuis la landing, SP-527) */}
-        <VideoSection />
-
-        {/* CTA Section */}
-        <section aria-labelledby="cta-title" className="py-24 lg:py-32">
-          <div className="container-custom">
-            <motion.aside
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-              className="relative overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-blue-600/10 via-blue-500/10 to-blue-400/10 p-12 text-center lg:p-20"
-              role="complementary"
-              aria-label="Appel à l'action pour essayer SmartPlanning"
-            >
-              {/* Background glow - Decorative */}
-              <div
-                className="absolute inset-0 bg-gradient-to-r from-blue-600/5 via-transparent to-blue-400/5"
-                aria-hidden="true"
-              />
-
-              <div className="relative z-10">
-                <h2
-                  id="cta-title"
-                  className="mb-4 text-3xl font-bold sm:text-4xl lg:text-5xl"
-                >
-                  Prêt à{' '}
-                  <span className={HIGHLIGHT_TEXT_CLASSES}>simplifier</span> vos
-                  plannings ?
-                </h2>
-                <p className="mx-auto mb-8 max-w-2xl text-lg text-muted-foreground">
-                  Créez votre compte et testez SmartPlanning gratuitement
-                  pendant 21 jours, sans carte bancaire.
-                </p>
-                <div className="flex flex-col justify-center gap-4 sm:flex-row">
-                  <Button size="lg" className={PRIMARY_BUTTON_CLASSES} asChild>
-                    <Link
-                      href="/register"
-                      aria-label="Créer un compte et démarrer gratuitement avec SmartPlanning"
-                    >
-                      Démarrer gratuitement
-                      <ArrowRight className="ml-2 h-5 w-5" aria-hidden="true" />
-                    </Link>
-                  </Button>
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    className="h-14 px-8 text-base"
-                    asChild
-                  >
-                    <Link
-                      href="/#features"
-                      aria-label="Voir toutes les fonctionnalités de SmartPlanning"
-                    >
-                      Découvrir les fonctionnalités
-                    </Link>
-                  </Button>
-                </div>
-              </div>
-            </motion.aside>
-          </div>
-        </section>
-
-        {/* Social Section - LinkedIn & YouTube */}
-        <section
-          aria-labelledby="social-title"
-          className="pb-24 lg:pb-32"
-        >
-          <div className="container-custom">
-            <SectionHeader
-              badge="Suivez-nous"
-              badgeIcon={
-                <span className="text-lg" aria-hidden="true">
-                  👋
-                </span>
-              }
-              title="Restons"
-              titleHighlight="connectés"
-              titleId="social-title"
-              description="Retrouvez SmartPlanning sur nos réseaux pour suivre les nouveautés, démos produit et conseils RH."
-            />
-
-            <motion.ul
-              variants={staggerContainer}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-              className="mx-auto grid max-w-3xl gap-6 sm:grid-cols-2"
-              role="list"
-              aria-label="Réseaux sociaux SmartPlanning"
-            >
-              <li>
-                <motion.a
-                  variants={fadeInUp}
-                  href="https://www.linkedin.com/company/smartplanning-fr"
+          <ul
+            className="mt-14 grid gap-px bg-public-border-on-dark sm:grid-cols-2"
+            aria-label="Réseaux sociaux SmartPlanning"
+          >
+            {socialLinks.map((social) => (
+              <li key={social.href}>
+                <a
+                  href={social.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  aria-label="Suivez SmartPlanning sur LinkedIn (nouvel onglet)"
-                  className="group flex h-full items-center gap-4 rounded-2xl border border-border/50 bg-card/50 p-6 backdrop-blur-sm transition-all duration-300 hover:border-[#0A66C2]/40 hover:bg-card"
+                  aria-label={social.ariaLabel}
+                  className="flex h-full items-start gap-4 bg-public-surface-dark p-6 transition-colors hover:bg-public-border-on-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-public-highlight sm:p-8"
                 >
-                  <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#0A66C2]/20 to-[#0077B5]/20 transition-transform duration-300 group-hover:scale-110">
-                    <Linkedin className="h-7 w-7 text-[#0A66C2]" aria-hidden="true" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm text-muted-foreground">LinkedIn</p>
-                    <p className="text-lg font-medium text-foreground transition-colors group-hover:text-[#0A66C2]">
-                      SmartPlanning
-                    </p>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      Actualités produit et conseils RH
-                    </p>
-                  </div>
-                </motion.a>
+                  <social.icon
+                    className="mt-1 h-6 w-6 shrink-0 text-public-accent-on-dark"
+                    aria-hidden="true"
+                  />
+                  <span>
+                    <span className="block font-geist text-xs uppercase tracking-[0.12em] text-public-highlight">
+                      {social.network}
+                    </span>
+                    <span className="mt-1 block font-geist text-lg font-semibold text-public-content-on-dark">
+                      {social.handle}
+                    </span>
+                    <span className="mt-1 block font-geist text-sm text-public-content-on-dark/80">
+                      {social.description}
+                    </span>
+                  </span>
+                </a>
               </li>
-              <li>
-                <motion.a
-                  variants={fadeInUp}
-                  href="https://www.youtube.com/@SmartPlanning-x2c"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="Abonnez-vous à SmartPlanning sur YouTube (nouvel onglet)"
-                  className="group flex h-full items-center gap-4 rounded-2xl border border-border/50 bg-card/50 p-6 backdrop-blur-sm transition-all duration-300 hover:border-[#FF0000]/40 hover:bg-card"
-                >
-                  <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#FF0000]/20 to-[#CC0000]/20 transition-transform duration-300 group-hover:scale-110">
-                    <Youtube className="h-7 w-7 text-[#FF0000]" aria-hidden="true" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm text-muted-foreground">YouTube</p>
-                    <p className="text-lg font-medium text-foreground transition-colors group-hover:text-[#FF0000]">
-                      @SmartPlanning
-                    </p>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      Démos produit et tutoriels vidéo
-                    </p>
-                  </div>
-                </motion.a>
-              </li>
-            </motion.ul>
-          </div>
-        </section>
-      </main>
+            ))}
+          </ul>
+        </div>
+      </section>
 
-      {/* Footer */}
-      <LandingFooter />
-    </div>
+      {/* CTA final */}
+      <section
+        aria-labelledby="cta-title"
+        className="bg-public-accent-surface py-20 lg:py-28"
+      >
+        <div className="container-custom">
+          <div className="flex flex-col gap-10 lg:flex-row lg:items-center lg:justify-between">
+            <DisplayTitle
+              as="h2"
+              id="cta-title"
+              accent="vos plannings ?"
+              tone="onVivid"
+              className="max-w-2xl text-public-content-on-vivid"
+            >
+              Prêt à simplifier
+            </DisplayTitle>
+
+            <div className="flex flex-col gap-4 sm:flex-row lg:shrink-0">
+              <Link
+                href="/register"
+                aria-label="Créer un compte et démarrer gratuitement avec SmartPlanning"
+                className="inline-flex min-h-[3.5rem] items-center justify-center gap-3 bg-public-surface-dark px-8 font-geist text-base font-semibold text-public-content-on-dark transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-public-surface-dark focus-visible:ring-offset-2 focus-visible:ring-offset-public-accent-surface"
+              >
+                Démarrer gratuitement
+                <ArrowUpRight className="h-5 w-5" aria-hidden="true" />
+              </Link>
+
+              <Link
+                href="/#features"
+                aria-label="Voir toutes les fonctionnalités de SmartPlanning"
+                className="inline-flex min-h-[3.5rem] items-center justify-center px-6 font-geist text-base font-semibold text-public-content-on-vivid underline underline-offset-8 transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-public-surface-dark focus-visible:ring-offset-2 focus-visible:ring-offset-public-accent-surface"
+              >
+                Découvrir les fonctionnalités
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+    </PublicPageShell>
   )
 }

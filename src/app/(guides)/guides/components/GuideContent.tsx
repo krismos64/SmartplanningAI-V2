@@ -1,30 +1,34 @@
-'use client'
-
 /**
  * GuideContent Component
  * Template des guides pratiques /guides/[slug]
  *
- * @description Article long format optimisé lecture et SEO/GEO :
- * réponse directe en ouverture, sommaire ancré, sections H2, FAQ,
- * date de mise à jour visible. Volontairement sans animations
- * whileInView : prose 100 % statique côté serveur (CLS nul, audit
- * axe stable).
+ * Article long format optimise lecture et SEO/GEO, structure inchangee
+ * depuis SP-555 : reponse directe en ouverture, sommaire ancre, sections
+ * H2 avec identifiants stables, FAQ, date de mise a jour visible.
+ *
+ * Server Component depuis SP-570 : la page n'etait cliente que pour l'etat
+ * de l'accordeon de FAQ, desormais isole dans FaqAccordion. La prose, qui
+ * porte le referencement, est rendue cote serveur sans JavaScript.
+ *
+ * Mise en page reprise du prototype en SP-575 : hero sur aplat bleu nuit,
+ * puis sommaire collant a gauche et prose a droite. La version SP-570
+ * empilait tout dans une colonne centree de 48rem, sans rupture d'aplat ni
+ * reperage possible dans un guide de neuf sections.
+ *
+ * Le contenu vient du registre `data/` : ce fichier ne fait que le mettre
+ * en page, il n'en modifie aucun texte.
  *
  * @ticket SP-555
+ * @see SP-570 - Pages secteur et guides
+ * @see SP-575 - Guides a la mise en page du prototype
  */
 
-import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { ArrowRight, BookOpen, ChevronRight, Clock3 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import {
-  AnimatedBackground,
-  FAQItem,
-  PRIMARY_BUTTON_CLASSES,
-  HIGHLIGHT_TEXT_CLASSES,
-} from '@/app/(landing)/components'
-import { LandingHeader } from '@/components/layout/LandingHeader'
-import { LandingFooter } from '@/components/layout/LandingFooter'
+import { ArrowUpRight, Clock3 } from 'lucide-react'
+import { DisplayTitle } from '@/components/public/DisplayTitle'
+import { SectionLabel } from '@/components/public/SectionLabel'
+import { FaqAccordion } from '@/components/public/FaqAccordion'
+import { PublicPageShell } from '@/components/public/PublicPageShell'
 import { PRICING } from '@/lib/config/pricing'
 import type { GuideData } from '../data'
 
@@ -35,232 +39,185 @@ interface GuideContentProps {
 }
 
 export function GuideContent({ guide }: GuideContentProps) {
-  const [isScrolled, setIsScrolled] = useState(false)
-  const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null)
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50)
-    }
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
-
   return (
-    <div className="relative min-h-screen bg-background text-foreground">
-      {/* Background Effects - Decorative, hidden from screen readers */}
-      <div aria-hidden="true">
-        <AnimatedBackground />
-      </div>
-
-      <LandingHeader isScrolled={isScrolled} />
-
-      {/* Skip to main content link for accessibility */}
-      <a
-        href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-blue-600 focus:px-4 focus:py-2 focus:text-white"
-      >
-        Aller au contenu principal
-      </a>
-
-      <main id="main-content" role="main">
-        <article
-          aria-labelledby="guide-title"
-          className="relative pb-16 pt-28 lg:pt-32"
-        >
+    <PublicPageShell
+      breadcrumb={[
+        { label: 'Guides', href: '/guides' },
+        { label: guide.title },
+      ]}
+    >
+      <article aria-labelledby="guide-title">
+        {/* Hero sur aplat bleu nuit, comme le hub et les pages secteur.
+            SP-570 laissait le titre sur creme, sans rupture d'aplat entre
+            le fil d'Ariane et la prose. */}
+        <header className="bg-public-surface-dark pb-16 pt-8 lg:pb-24 lg:pt-12">
           <div className="container-custom">
-            {/* Fil d'Ariane */}
-            <nav aria-label="Fil d'Ariane" className="mb-8">
-              <ol className="flex flex-wrap items-center gap-1 text-sm text-muted-foreground">
-                <li>
-                  <Link
-                    href="/"
-                    className="transition-colors hover:text-foreground"
-                  >
-                    Accueil
-                  </Link>
-                </li>
-                <li aria-hidden="true">
-                  <ChevronRight className="h-4 w-4" />
-                </li>
-                <li>
-                  <Link
-                    href="/guides"
-                    className="transition-colors hover:text-foreground"
-                  >
-                    Guides
-                  </Link>
-                </li>
-                <li aria-hidden="true">
-                  <ChevronRight className="h-4 w-4" />
-                </li>
-                <li aria-current="page" className="text-foreground">
-                  {guide.title}
-                </li>
+            <SectionLabel index={1} tone="onDark">
+              Guide pratique
+            </SectionLabel>
+
+            <h1
+              id="guide-title"
+              className="mt-8 max-w-4xl font-geist text-3xl font-bold leading-[1.02] tracking-[-0.04em] text-public-content-on-dark sm:text-4xl lg:text-5xl"
+            >
+              {guide.title}
+            </h1>
+
+            {/* Reponse directe (GEO) : la reponse a la requete, citable */}
+            <p className="mt-8 max-w-2xl font-geist text-lg leading-relaxed text-public-content-on-dark/80">
+              {guide.directAnswer}
+            </p>
+
+            <p className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 font-geist text-sm text-public-content-on-dark/70">
+              <span className="inline-flex items-center gap-2">
+                <Clock3 className="h-4 w-4" aria-hidden="true" />
+                {guide.readingMinutes} min de lecture
+              </span>
+              <span>
+                Mis à jour le{' '}
+                <time dateTime={guide.lastModified}>
+                  {dateFormatter.format(new Date(guide.lastModified))}
+                </time>
+              </span>
+            </p>
+          </div>
+        </header>
+
+        {/* Sommaire collant a gauche, prose a droite, comme au prototype.
+            En dessous de `lg` la grille retombe en une colonne et le
+            sommaire reprend sa place au fil du document. */}
+        <div className="container-custom py-16 lg:py-20">
+          <div className="grid gap-12 lg:grid-cols-[16rem_minmax(0,42rem)] lg:gap-20">
+            <nav
+              aria-label="Sommaire du guide"
+              className="lg:sticky lg:top-28 lg:self-start"
+            >
+              <h2 className="font-geist text-xs font-semibold uppercase tracking-[0.14em] text-public-accent">
+                Dans ce guide
+              </h2>
+              <ol className="mt-4 space-y-0.5">
+                {guide.sections.map((section, index) => (
+                  <li key={section.id}>
+                    <a
+                      href={`#${section.id}`}
+                      className="flex min-h-[2.75rem] items-center gap-3 font-geist text-sm leading-snug text-public-content-muted transition-colors hover:text-public-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-public-accent"
+                    >
+                      <span
+                        aria-hidden="true"
+                        className="text-xs tabular-nums text-public-accent"
+                      >
+                        {String(index + 1).padStart(2, '0')}
+                      </span>
+                      {section.title}
+                    </a>
+                  </li>
+                ))}
               </ol>
             </nav>
 
-            <div className="mx-auto max-w-3xl">
-              {/* En-tête de l'article */}
-              <header className="mb-12">
-                <p className="mb-6" aria-hidden="true">
-                  <span className="inline-flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/10 px-4 py-2 text-sm text-blue-700 dark:border-blue-500/20 dark:text-blue-400">
-                    <BookOpen className="h-4 w-4" aria-hidden="true" />
-                    Guide pratique
-                  </span>
-                </p>
-
-                <h1
-                  id="guide-title"
-                  className="mb-6 text-3xl font-bold leading-tight sm:text-4xl lg:text-5xl"
-                >
-                  {guide.title}
-                </h1>
-
-                <p className="mb-6 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
-                  <span className="inline-flex items-center gap-1">
-                    <Clock3 className="h-4 w-4" aria-hidden="true" />
-                    {guide.readingMinutes} min de lecture
-                  </span>
-                  <span>
-                    Mis à jour le{' '}
-                    <time dateTime={guide.lastModified}>
-                      {dateFormatter.format(new Date(guide.lastModified))}
-                    </time>
-                  </span>
-                </p>
-
-                {/* Réponse directe (GEO) : la réponse à la requête, citable */}
-                <p className="border-l-4 border-blue-600 pl-4 text-lg leading-relaxed text-muted-foreground dark:border-blue-400">
-                  {guide.directAnswer}
-                </p>
-              </header>
-
-              {/* Sommaire */}
-              <nav
-                aria-label="Sommaire du guide"
-                className="mb-12 rounded-2xl border border-border/50 bg-card/50 p-6 backdrop-blur-sm"
-              >
-                <h2 className="mb-4 text-lg font-semibold">Sommaire</h2>
-                <ol className="list-inside list-decimal space-y-2 text-muted-foreground">
-                  {guide.sections.map((section) => (
-                    <li key={section.id}>
-                      <a
-                        href={`#${section.id}`}
-                        className="transition-colors hover:text-foreground"
-                      >
-                        {section.title}
-                      </a>
-                    </li>
-                  ))}
-                </ol>
-              </nav>
-
-              {/* Sections */}
+            <div>
+              {/* Sections, separees par un filet comme au prototype */}
               {guide.sections.map((section) => (
                 <section
                   key={section.id}
                   id={section.id}
                   aria-labelledby={`${section.id}-title`}
-                  className="mb-12 scroll-mt-28"
+                  className="mb-11 scroll-mt-28 border-b border-public-border pb-11 last:border-b-0"
                 >
                   <h2
                     id={`${section.id}-title`}
-                    className="mb-4 text-2xl font-bold sm:text-3xl"
+                    className="mb-5 font-geist text-2xl font-bold leading-[1.1] tracking-[-0.035em] text-public-content sm:text-3xl"
                   >
                     {section.title}
                   </h2>
                   {section.paragraphs.map((paragraph, index) => (
                     <p
                       key={index}
-                      className="mb-4 text-lg leading-relaxed text-muted-foreground"
+                      className="mb-4 font-geist text-lg leading-relaxed text-public-content-muted"
                     >
                       {paragraph}
                     </p>
                   ))}
                   {section.bullets && (
-                    <ul className="mb-4 list-disc space-y-2 pl-6 text-lg leading-relaxed text-muted-foreground">
+                    <ul className="mb-4 space-y-3 border-l border-public-border pl-6">
                       {section.bullets.map((bullet) => (
-                        <li key={bullet}>{bullet}</li>
+                        <li
+                          key={bullet}
+                          className="font-geist text-lg leading-relaxed text-public-content-muted"
+                        >
+                          {bullet}
+                        </li>
                       ))}
                     </ul>
                   )}
                 </section>
               ))}
 
-              {/* FAQ */}
+              {/* FAQ, alimente le schema FAQPage */}
               <section
                 id="faq"
                 aria-labelledby="faq-title"
-                className="mb-16 scroll-mt-28"
+                className="scroll-mt-28 pt-4"
               >
                 <h2
                   id="faq-title"
-                  className="mb-6 text-2xl font-bold sm:text-3xl"
+                  className="mb-6 font-geist text-2xl font-bold leading-[1.1] tracking-[-0.035em] text-public-content sm:text-3xl"
                 >
                   Questions fréquentes
                 </h2>
-                <div className="space-y-4">
-                  {guide.faqs.map((faq, index) => (
-                    <FAQItem
-                      key={faq.question}
-                      question={faq.question}
-                      answer={faq.answer}
-                      isOpen={openFaqIndex === index}
-                      onClick={() =>
-                        setOpenFaqIndex(openFaqIndex === index ? null : index)
-                      }
-                    />
-                  ))}
-                </div>
+                <FaqAccordion items={[...guide.faqs]} idPrefix="guide-faq" />
               </section>
-
-              {/* CTA final */}
-              <aside
-                className="relative overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-blue-600/10 via-blue-500/10 to-blue-400/10 p-10 text-center"
-                role="complementary"
-                aria-label="Appel à l'action pour essayer SmartPlanning"
-              >
-                <h2 className="mb-4 text-2xl font-bold sm:text-3xl">
-                  Passez de la théorie à la{' '}
-                  <span className={HIGHLIGHT_TEXT_CLASSES}>pratique</span>
-                </h2>
-                <p className="mx-auto mb-8 max-w-xl text-muted-foreground">
-                  Plannings, congés et messagerie d&apos;équipe dans un seul
-                  outil. Essai gratuit {PRICING.TRIAL_DAYS} jours, sans carte
-                  bancaire.
-                </p>
-                <div className="flex flex-col justify-center gap-4 sm:flex-row">
-                  <Button size="lg" className={PRIMARY_BUTTON_CLASSES} asChild>
-                    <Link
-                      href="/register"
-                      aria-label="Créer un compte SmartPlanning gratuitement"
-                    >
-                      Essayer gratuitement
-                      <ArrowRight className="ml-2 h-5 w-5" aria-hidden="true" />
-                    </Link>
-                  </Button>
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    className="h-14 px-8 text-base"
-                    asChild
-                  >
-                    <Link
-                      href="/guides"
-                      aria-label="Voir tous les guides pratiques"
-                    >
-                      Tous les guides
-                    </Link>
-                  </Button>
-                </div>
-              </aside>
             </div>
           </div>
-        </article>
-      </main>
+        </div>
+      </article>
 
-      <LandingFooter />
-    </div>
+      {/* CTA final */}
+      <section
+        aria-labelledby="guide-cta-title"
+        className="bg-public-accent-surface py-16 lg:py-20"
+      >
+        <div className="container-custom">
+          <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
+            <div className="max-w-2xl">
+              <DisplayTitle
+                as="h2"
+                id="guide-cta-title"
+                accent="à la pratique."
+                tone="onVivid"
+                className="text-public-content-on-vivid"
+              >
+                Passez de la théorie
+              </DisplayTitle>
+
+              <p className="mt-6 font-geist text-public-content-on-vivid">
+                Plannings, congés et messagerie d&rsquo;équipe dans un seul
+                outil. Essai gratuit {PRICING.TRIAL_DAYS} jours, sans carte
+                bancaire.
+              </p>
+            </div>
+
+            <div className="flex flex-col gap-4 sm:flex-row lg:shrink-0">
+              <Link
+                href="/register"
+                aria-label="Créer un compte SmartPlanning gratuitement"
+                className="inline-flex min-h-[3.5rem] items-center justify-center gap-3 bg-public-surface-dark px-8 font-geist text-base font-semibold text-public-content-on-dark transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-public-surface-dark focus-visible:ring-offset-2 focus-visible:ring-offset-public-accent-surface"
+              >
+                Essayer gratuitement
+                <ArrowUpRight className="h-5 w-5" aria-hidden="true" />
+              </Link>
+
+              <Link
+                href="/guides"
+                aria-label="Voir tous les guides pratiques"
+                className="inline-flex min-h-[3.5rem] items-center justify-center px-6 font-geist text-base font-semibold text-public-content-on-vivid underline underline-offset-8 transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-public-surface-dark focus-visible:ring-offset-2 focus-visible:ring-offset-public-accent-surface"
+              >
+                Tous les guides
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+    </PublicPageShell>
   )
 }

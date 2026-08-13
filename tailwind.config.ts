@@ -19,6 +19,7 @@ import {
   violet,
 } from './src/styles/tokens/colors'
 import { fontFamily, fontSize } from './src/styles/tokens/typography'
+import { publicFontFamily } from './src/styles/tokens/brand-public'
 import {
   spacing,
   breakpoints,
@@ -72,6 +73,12 @@ const config: Config = {
         mono: [...fontFamily.mono],
         // Police serif
         serif: [...fontFamily.serif],
+
+        // Pages publiques uniquement (SP-565).
+        // `sans` et `display` restent inchangees : elles sont partagees
+        // avec l'application privee, ou 65 fichiers en dependent.
+        geist: [...publicFontFamily.geist],
+        editorial: [...publicFontFamily.editorial],
       },
 
       fontSize: {
@@ -180,6 +187,29 @@ const config: Config = {
         amber,
         rose,
         violet,
+
+        // Pages publiques uniquement (SP-565).
+        // Prefixe `public-` pour qu'un usage hors pages publiques soit
+        // visible en relecture. Palette unique : pas de mode sombre sur
+        // les pages publiques (SP-573).
+        public: {
+          surface: 'hsl(var(--public-surface))',
+          'surface-subtle': 'hsl(var(--public-surface-subtle))',
+          'surface-dark': 'hsl(var(--public-surface-dark))',
+          content: 'hsl(var(--public-content))',
+          'content-muted': 'hsl(var(--public-content-muted))',
+          'content-on-dark': 'hsl(var(--public-content-on-dark))',
+          'content-on-vivid': 'hsl(var(--public-content-on-vivid))',
+          accent: 'hsl(var(--public-accent))',
+          'accent-on-dark': 'hsl(var(--public-accent-on-dark))',
+          'accent-surface': 'hsl(var(--public-accent-surface))',
+          highlight: 'hsl(var(--public-highlight))',
+          'highlight-surface': 'hsl(var(--public-highlight-surface))',
+          'brand-surface': 'hsl(var(--public-brand-surface))',
+          'brand-on-light': 'hsl(var(--public-brand-on-light))',
+          border: 'hsl(var(--public-border))',
+          'border-on-dark': 'hsl(var(--public-border-on-dark))',
+        },
 
         // Couleurs sémantiques via CSS variables
         border: 'hsl(var(--border))',
@@ -457,6 +487,14 @@ const config: Config = {
           '0%, 100%': { borderColor: 'rgba(59, 130, 246, 0.3)' },
           '50%': { borderColor: 'rgba(59, 130, 246, 0.6)' },
         },
+        // Bandeau defilant du hero public (SP-574). La translation vaut
+        // -50% et non -100% : le contenu est duplique deux fois, la moitie
+        // parcourue ramene donc exactement au point de depart, sans saut
+        // visible ni vide en fin de boucle.
+        'ticker-scroll': {
+          '0%': { transform: 'translateX(0)' },
+          '100%': { transform: 'translateX(-50%)' },
+        },
       },
 
       animation: {
@@ -480,6 +518,7 @@ const config: Config = {
         'float-slow': 'float-slow 4s ease-in-out infinite',
         'gradient-rotate': 'gradient-rotate 4s linear infinite',
         'border-pulse': 'border-pulse 2s ease-in-out infinite',
+        'ticker-scroll': 'ticker-scroll 25s linear infinite',
       },
 
       // =================================================================

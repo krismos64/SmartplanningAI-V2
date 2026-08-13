@@ -21,13 +21,13 @@ export const metadata: Metadata = {
 
 export default function ForgotPasswordPage() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Header */}
-      <div className="text-center">
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">
+      <div>
+        <h1 className="font-geist text-3xl font-bold tracking-[-0.02em] text-public-content">
           Mot de passe oublié ?
         </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
+        <p className="mt-3 font-geist text-base text-public-content-muted">
           Pas de panique, nous allons vous aider
         </p>
       </div>

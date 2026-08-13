@@ -155,24 +155,24 @@ export function ActivateAccountForm({ token }: ActivateAccountFormProps) {
   if (isSuccess) {
     return (
       <div className="space-y-6 text-center">
-        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-cyan-500/20">
-          <CheckCircle2 className="h-8 w-8 text-cyan-600 dark:text-cyan-400" />
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-public-accent/20">
+          <CheckCircle2 className="h-8 w-8 text-public-content-on-vivid" />
         </div>
 
         <div className="space-y-2">
-          <h2 className="text-xl font-semibold text-foreground">
+          <h2 className="text-xl font-semibold text-public-content">
             Compte activé !
           </h2>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-public-content-muted">
             Votre compte a été activé avec succès. Vous allez être redirigé vers
             la page de connexion.
           </p>
         </div>
 
         <div className="space-y-3">
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-public-content-muted">
             Redirection dans{' '}
-            <span className="font-semibold text-cyan-600 dark:text-cyan-400">
+            <span className="font-semibold text-public-content">
               {countdown}
             </span>{' '}
             secondes...
@@ -191,13 +191,15 @@ export function ActivateAccountForm({ token }: ActivateAccountFormProps) {
   if (isTokenExpired) {
     return (
       <div className="space-y-6 text-center">
-        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-amber-500/20">
-          <RefreshCw className="h-8 w-8 text-amber-600 dark:text-amber-400" />
+        <div className="mx-auto flex h-16 w-16 items-center justify-center bg-public-highlight-surface">
+          <RefreshCw className="h-8 w-8 text-public-content-on-vivid" />
         </div>
 
         <div className="space-y-2">
-          <h2 className="text-xl font-semibold text-foreground">Lien expiré</h2>
-          <p className="text-sm text-muted-foreground">
+          <h2 className="text-xl font-semibold text-public-content">
+            Lien expiré
+          </h2>
+          <p className="text-sm text-public-content-muted">
             Ce lien d&apos;activation a expiré. Vous pouvez demander un nouveau
             lien d&apos;activation.
           </p>
@@ -205,10 +207,10 @@ export function ActivateAccountForm({ token }: ActivateAccountFormProps) {
 
         {isResendSuccess ? (
           <div className="space-y-3">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-500/20">
-              <Mail className="h-6 w-6 text-green-600 dark:text-green-400" />
+            <div className="mx-auto flex h-12 w-12 items-center justify-center bg-public-highlight-surface">
+              <Mail className="h-6 w-6 text-public-content-on-vivid" />
             </div>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-public-content-muted">
               Nouveau lien envoyé ! Vérifiez votre boîte mail.
             </p>
           </div>
@@ -235,7 +237,7 @@ export function ActivateAccountForm({ token }: ActivateAccountFormProps) {
         <div className="text-center">
           <Link
             href="/login"
-            className="inline-flex items-center gap-1 text-sm font-medium text-cyan-600 transition-colors hover:text-cyan-500 dark:text-cyan-400 dark:hover:text-cyan-300"
+            className="inline-flex items-center gap-1 text-sm font-medium text-public-content underline underline-offset-4 transition-colors hover:text-public-accent"
           >
             <ArrowLeft className="h-4 w-4" />
             Retour à la connexion
@@ -281,9 +283,9 @@ export function ActivateAccountForm({ token }: ActivateAccountFormProps) {
                     }
                   >
                     {showPassword ? (
-                      <EyeOff className="h-4 w-4 text-muted-foreground" />
+                      <EyeOff className="h-4 w-4 text-public-content-muted" />
                     ) : (
-                      <Eye className="h-4 w-4 text-muted-foreground" />
+                      <Eye className="h-4 w-4 text-public-content-muted" />
                     )}
                   </Button>
                 </div>
@@ -327,9 +329,9 @@ export function ActivateAccountForm({ token }: ActivateAccountFormProps) {
                     }
                   >
                     {showConfirmPassword ? (
-                      <EyeOff className="h-4 w-4 text-muted-foreground" />
+                      <EyeOff className="h-4 w-4 text-public-content-muted" />
                     ) : (
-                      <Eye className="h-4 w-4 text-muted-foreground" />
+                      <Eye className="h-4 w-4 text-public-content-muted" />
                     )}
                   </Button>
                 </div>
@@ -359,7 +361,7 @@ export function ActivateAccountForm({ token }: ActivateAccountFormProps) {
         <div className="text-center">
           <Link
             href="/login"
-            className="inline-flex items-center gap-1 text-sm font-medium text-cyan-600 transition-colors hover:text-cyan-500 dark:text-cyan-400 dark:hover:text-cyan-300"
+            className="inline-flex items-center gap-1 text-sm font-medium text-public-content underline underline-offset-4 transition-colors hover:text-public-accent"
           >
             <ArrowLeft className="h-4 w-4" />
             Retour à la connexion

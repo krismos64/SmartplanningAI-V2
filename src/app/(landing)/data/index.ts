@@ -58,17 +58,22 @@ export interface Benefit {
   description: string
 }
 
-export interface VideoFeature {
-  id: string
-  title: string
-  description: string
-}
-
 export interface RoleDemo {
   id: 'director' | 'manager' | 'employee'
   icon: LucideIcon
   label: string
   tagline: string
+  /**
+   * Titre du role, porte le h2 de la section depuis SP-574. Formule comme
+   * un benefice et non comme un intitule de poste : « Une vue claire de
+   * l'entreprise » plutot que « Espace directeur ».
+   */
+  headline: string
+  /**
+   * Accroche courte affichee sous le titre. Plus dense que `description`,
+   * qui reste utilisee pour le JSON-LD des videos.
+   */
+  pitch: string
   videoId: string
   duration: string
   uploadDate: string
@@ -89,7 +94,7 @@ export const navLinks = [
   { href: '#benefits', label: 'Avantages' },
   { href: '#pricing', label: 'Tarifs' },
   { href: '#faq', label: 'FAQ' },
-  { href: '#contact', label: 'Contact' },
+  { href: '/contact', label: 'Contact' },
 ]
 
 // ============================================================================
@@ -282,6 +287,9 @@ export const roleDemos: RoleDemo[] = [
     icon: Briefcase,
     label: 'Directeur',
     tagline: 'Pilotage global',
+    headline: 'Une vue claire de l’entreprise',
+    pitch:
+      'Suivez les équipes, les congés, les statistiques, l’audit et la facturation depuis un seul espace.',
     videoId: 'K4bidIhB-LI',
     duration: '2:45',
     uploadDate: '2026-05-11T10:00:00+02:00',
@@ -295,13 +303,16 @@ export const roleDemos: RoleDemo[] = [
       'Audit logs complets et conformité RGPD',
     ],
     color: 'from-blue-600 to-blue-500',
-    thumbnail: '/images/demo-directeur.png',
+    thumbnail: '/images/demo-directeur.webp',
   },
   {
     id: 'manager',
     icon: UserSquare2,
     label: 'Manager',
-    tagline: 'Pilotage équipe',
+    tagline: 'Pilotage d’équipe',
+    headline: 'Le quotidien opérationnel, sans friction',
+    pitch:
+      'Créez les horaires, traitez les demandes, suivez les incidents et prévenez l’équipe en quelques gestes.',
     videoId: 'sy3ffTIj0ig',
     duration: '2:30',
     uploadDate: '2026-05-11T10:15:00+02:00',
@@ -315,13 +326,16 @@ export const roleDemos: RoleDemo[] = [
       'Suivi des incidents et notes employés',
     ],
     color: 'from-blue-500 to-blue-400',
-    thumbnail: '/images/demo-manager.png',
+    thumbnail: '/images/demo-manager.webp',
   },
   {
     id: 'employee',
     icon: User,
     label: 'Employé',
     tagline: 'Mon quotidien',
+    headline: 'Les bonnes informations, au bon moment',
+    pitch:
+      'Consultez votre planning, posez un congé, gérez vos tâches et échangez avec votre équipe depuis votre téléphone.',
     videoId: '8wJgk8i1uzQ',
     duration: '2:15',
     uploadDate: '2026-05-11T10:30:00+02:00',
@@ -335,28 +349,7 @@ export const roleDemos: RoleDemo[] = [
       'Export PDF du planning pour consultation offline',
     ],
     color: 'from-blue-400 to-blue-300',
-    thumbnail: '/images/demo-employe.png',
+    thumbnail: '/images/demo-employe.webp',
   },
 ]
 
-// ============================================================================
-// VIDEO FEATURES (Demo section)
-// ============================================================================
-
-export const videoFeatures: VideoFeature[] = [
-  {
-    id: 'intuitive',
-    title: 'Interface intuitive',
-    description: 'Dashboard clair, prise en main immédiate',
-  },
-  {
-    id: 'key-features',
-    title: 'Tout en un',
-    description: 'Plannings, congés, messagerie et imports centralisés',
-  },
-  {
-    id: 'results',
-    title: 'Résultats concrets',
-    description: 'Gagnez du temps dès le premier jour',
-  },
-]

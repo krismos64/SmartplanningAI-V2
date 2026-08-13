@@ -42,7 +42,7 @@ Plateforme SaaS multi-tenant de gestion intelligente des plannings et des ressou
 - **Notes & Incidents** : Taches personnelles (drag & drop), notes d'incidents avec visibilite RBAC
 - **SEO / GEO** : Metadata API, JSON-LD Schema.org (@graph, Article, HowTo, FAQPage, BreadcrumbList), sitemap data-driven avec `lastModified` reels, robots.txt ouvert aux crawlers IA, `llms.txt` et `llms-full.txt`
 - **Contenu editorial** : Pages secteur `/solutions/[slug]` (restauration, commerce, BTP) et guides pratiques `/guides/[slug]`, chacune sous son hub (`/solutions`, `/guides`), generes depuis des registres data-driven en SSG strict. Ajouter une page = 1 fichier de donnees + 1 ligne au registre (sitemap, footer, navigation et garde-fous de tests suivent automatiquement)
-- **Landing** : Design "Cyber Glass 3D", simulateur tarifs, FAQ, pages legales RGPD, demos video par role (Directeur/Manager/Employe) avec onglets et JSON-LD VideoObject. Navigation en pattern disclosure (liens toujours dans le DOM pour le maillage interne, `inert` a l'etat ferme)
+- **Pages publiques** : Identite editoriale depuis SP-565 a SP-575, aplats pleine largeur, angles vifs, mode clair unique. Landing en dix sections numerotees, FAQ, page contact dediee, pages legales RGPD, demos video par role (Directeur/Manager/Employe) avec onglets et JSON-LD VideoObject. Le simulateur de tarifs vit sur `/tarifs`, la landing y renvoie. Navigation en pattern disclosure (liens toujours dans le DOM pour le maillage interne, `inert` a l'etat ferme). Le fil d'Ariane est pose dans le hero et non dans une bande a lui : il garde son `BreadcrumbList` sans couter de hauteur. Les pages d'authentification partagent la meme identite, leurs deux moities alignees en haut
 - **Accessibilite** : WCAG 2.1 AA, touch targets 44px, Lighthouse A11y 97-100%
 
 > Historique detaille du developpement : [`docs/journal/`](docs/journal/)
@@ -127,21 +127,22 @@ npm run email:dev        # Previsualisation des templates React Email
 
 ```
 src/
-├── app/              # Next.js 15 App Router (63 pages, 5 layouts, 17 API routes)
+├── app/              # Next.js 15 App Router (64 pages, 5 layouts, 17 API routes)
 │   ├── (auth)/       # Login, register, verify-email, activate-account
-│   ├── (about)/      # A propos, tarifs
+│   ├── (about)/      # A propos, tarifs, contact
 │   ├── (landing)/    # Landing page
 │   ├── (legal)/      # Pages legales RGPD
 │   ├── (sectors)/    # Pages secteur /solutions/[slug] (registre data-driven)
 │   ├── (guides)/     # Hub et guides pratiques /guides/[slug] (registre data-driven)
 │   ├── app/          # Routes protegees par role
 │   └── api/          # API Routes (avatar, webhooks, health, SSE, messages...)
-├── components/       # 205 composants React
+├── components/       # 184 composants React
+│   ├── public/       # Primitives des pages publiques (identite editoriale)
 │   ├── messaging/    # Messagerie (8 composants)
-│   ├── import/       # Import CSV (4 composants)
+│   ├── import/       # Import CSV (2 composants + utilitaires)
 │   └── ui/           # Shadcn/ui (41 composants)
-├── lib/              # Actions (31), services (18), validations Zod, email (28 templates)
-├── hooks/            # 23 hooks custom (SSE, SWR, messagerie, import CSV)
+├── lib/              # Actions (31), services (19), validations Zod, email (22 fichiers de templates)
+├── hooks/            # 22 hooks custom (SSE, SWR, messagerie, import CSV)
 ├── types/            # Types TypeScript globaux
 └── styles/           # Design tokens centralises
 ```
@@ -166,11 +167,16 @@ Voir [`docs/database-architecture.md`](docs/database-architecture.md) pour le de
 
 | Type      | Framework  | Fichiers | Tests     |
 | --------- | ---------- | -------- | --------- |
-| Unitaires | Vitest     | 178      | 3 066     |
-| E2E       | Playwright | 21       | 238       |
-| **Total** |            | **199**  | **3 304** |
+| Unitaires | Vitest     | 188      | 3 163     |
+| E2E       | Playwright | 21       | 247       |
+| **Total** |            | **209**  | **3 410** |
 
-La CI execute une whitelist E2E (8 specs, 123 tests) ; la suite complete (21 specs, 238 tests) tourne en nightly. `testMatch` de `playwright.ci.config.ts` etant une liste explicite, un spec renomme ou supprime disparait silencieusement de la CI : verifier cette liste apres chaque ajout ou suppression.
+La CI execute une whitelist E2E (8 specs, 123 tests) ; la suite complete (21 specs, 247 tests) tourne en nightly. `testMatch` de `playwright.ci.config.ts` etant une liste explicite, un spec renomme ou supprime disparait silencieusement de la CI : verifier cette liste apres chaque ajout ou suppression.
+
+**Les specs publiques ne sont pas dans la whitelist CI.** Les 26 tests de
+`e2e/specs/landing/`, dont 11 audits axe-core, ne tournent donc qu'en nightly
+et en local (`npx playwright test e2e/specs/landing/`). L'arbitrage sur leur
+entree en CI n'est pas tranche.
 
 Focus sur la logique metier critique : RBAC, Zod, Server Actions, Stripe, workflows E2E, messagerie, import CSV, registres SEO/GEO.
 

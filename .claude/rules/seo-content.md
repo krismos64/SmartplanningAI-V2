@@ -57,16 +57,106 @@ Pour être cité par un assistant, une page doit répondre avant de convaincre.
 - **FAQ** avec schéma `FAQPage`
 - **Dates de fraîcheur réelles**, et `dateModified` en JSON-LD
 
-## FAQItem, la réponse reste dans le DOM
+## FaqAccordion, la réponse reste dans le DOM
 
-L'accordéon anime une hauteur et bascule `aria-hidden`. La réponse est
+`src/components/public/FaqAccordion.tsx` est l'accordéon unique des pages
+publiques depuis la refonte d'août 2026. Il anime une hauteur par
+`grid-template-rows` en CSS et bascule `aria-hidden`. La réponse est
 **toujours** présente dans le DOM.
 
 Un montage conditionnel la rendrait invisible aux crawlers et aux assistants,
 annulant tout l'intérêt du schéma `FAQPage`.
 
+Le déclencheur est un `<button>` avec `aria-expanded` et `aria-controls`, pas
+une `<div>` cliquable : sans cela l'accordéon est inutilisable au clavier.
+
 Même principe pour les panneaux de la navbar : `inert` à l'état fermé, liens
-toujours présents.
+toujours présents. `inert` plutôt qu'`aria-hidden` seul dès qu'un élément
+focusable est masqué, sinon il reste atteignable à la tabulation.
+
+## Identité visuelle des pages publiques
+
+Refonte d'août 2026, SP-565 à SP-575. Trois règles à tenir sur toute page
+publique, nouvelle ou modifiée.
+
+**Pas de mode sombre.** Les pages publiques n'ont qu'un mode clair. Ne jamais y
+écrire de variante `dark:`. L'application privée conserve le sien, avec ses
+propres tokens.
+
+**La classe `.public-scope` est obligatoire** sur le conteneur racine, ou via
+`PublicPageShell` qui la porte déjà. Le `ThemeProvider` reste monté au layout
+racine : sans cette classe, la page suit le thème de l'application et vire au
+sombre chez un utilisateur qui l'a choisi.
+
+**Tokens `public-*` uniquement**, définis dans `src/styles/tokens/brand-public.ts`.
+Aucune opacité sur les aplats vifs : sur le bleu franc, le blanc plein ne donne
+déjà que 4,88:1, sur le corail la limite tombe dès 80 %.
+
+Corollaire mesuré en SP-575 : **sur le bleu franc, seul le blanc pur passe.**
+`content-on-dark`, le crème, n'y donne que 4,13:1, et `content-on-vivid`, le
+bleu nuit, 3,54:1, tous deux sous le seuil AA. Un aplat bleu prend donc
+`text-white` en dur, comme le fait déjà `BentoCard`, et non le token de texte
+commun aux autres aplats. C'est la seule teinte de la palette où le token
+attendu ne convient pas.
+
+Les primitives vivent dans `src/components/public/` : `PublicPageShell`,
+`DisplayTitle`, `SectionLabel`, `BentoCard`, `FaqAccordion`. Les importer par
+leur chemin exact, pas par le barrel `@/components/public`, qui réexporte
+`ContactForm` et tire react-hook-form dans le bundle initial.
+
+Les pages d'authentification (`src/app/(auth)/`) suivent la même identité
+depuis SP-574 : `/login` et `/register` sont atteintes depuis le site public
+et sont la dernière étape avant conversion. Leur layout porte `.public-scope`.
+
+Leurs deux moitiés sont **alignées en haut**, jamais centrées verticalement.
+Chaque colonne prend la hauteur de la plus grande, imposée par le formulaire :
+un centrage y produit un décalage qui varie selon la longueur du formulaire,
+300 px sur `/register` et 37 px sur `/login` avant SP-575.
+
+### Le fil d'Ariane vit dans le hero
+
+`PublicPageShell` pose le fil d'Ariane **dans l'aplat du hero**, pas dans une
+bande à lui. Il occupait auparavant 112 px de retrait sur du crème, où il
+flottait seul en gris.
+
+Le supprimer coûterait le `BreadcrumbList` que Google affiche sous les
+résultats : il reste donc rendu, en petites capitales de 11 px, liens en crème,
+chevrons corail et page courante en lime.
+
+Les sept pages de contenu ouvrent toutes sur un hero bleu nuit, d'où le défaut
+`onDark` de `breadcrumbTone`. Une page qui ouvrirait sur crème doit passer
+`onLight`, sinon le lime devient illisible sur fond clair. Le hero qui suit
+porte un retrait haut réduit, le fil portant déjà l'écart sous le header fixe.
+
+### Les constantes de style partagées se démodent en silence
+
+`src/app/(landing)/components/styles.ts` porte des constantes de classes qui
+servent plusieurs familles de pages. Deux y sont restées au style d'avant la
+refonte, chacune découverte des semaines après :
+
+- `PRIMARY_BUTTON_CLASSES` sert les hubs `/solutions` et `/guides` **et** les
+  formulaires auth. Un bouton bleu arrondi y a survécu sur trois pages
+  refondues, corrigé le 12 août.
+- `HIGHLIGHT_TEXT_CLASSES_PUBLIC` valait `text-blue-600`, une couleur Tailwind
+  brute et non un token. Corrigé le 13 août.
+
+**Le garde-fou des tokens `public-*` ne peut rien contre ce défaut** :
+`text-blue-600` est une classe parfaitement valide, simplement hors palette. Le
+scan de classes hors-refonte ne regarde pas non plus les constantes, seulement
+le JSX.
+
+Avant de toucher une de ces constantes, suivre ses usages réels : elle sert
+probablement plus de pages que son commentaire ne le dit, celui-ci ayant déjà
+été périmé deux fois.
+
+### Une page hors périmètre de ticket reste en l'état
+
+Les deux hubs ont traversé toute la refonte sans être touchés, parce qu'aucun
+ticket ne les nommait. Ils ont été repris le 13 août, avec les mêmes marqueurs
+qu'au premier jour : titre centré, cartes blanches arrondies, badges à icône.
+
+Après une refonte, parcourir les pages rendues une par une plutôt que se fier à
+la liste des fichiers modifiés.
 
 ## Navigation
 

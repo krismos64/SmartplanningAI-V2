@@ -1,46 +1,41 @@
-'use client'
-
 /**
  * TargetCard Component
- * Displays a target audience segment with icon and description
- * Reusable card component following the landing page design system
- * Supports light/dark mode via CSS variables
+ *
+ * Segment d'audience de la page A propos, direction editoriale SP-571 :
+ * filets plutot que carte arrondie a pastille coloree.
+ *
+ * Server Component depuis SP-571, pour les memes raisons que ValueCard.
+ *
+ * @see SP-571 - Tarifs, a-propos et pages legales
  */
 
 import { LucideIcon } from 'lucide-react'
-import { cn } from '@/lib/utils'
-import { motion, fadeInUp } from '@/lib/animations'
 
 interface TargetCardProps {
   icon: LucideIcon
   title: string
   description: string
-  color: string
 }
 
 export function TargetCard({
   icon: Icon,
   title,
   description,
-  color,
 }: TargetCardProps) {
   return (
-    <motion.div
-      variants={fadeInUp}
-      className="flex items-start gap-4 rounded-xl border border-border bg-card p-6 transition-all hover:border-border/80 hover:bg-accent/50"
-    >
-      <div
-        className={cn(
-          'flex h-12 w-12 shrink-0 items-center justify-center rounded-xl',
-          color
-        )}
-      >
-        <Icon className="h-6 w-6 text-white" />
-      </div>
+    <div className="flex items-start gap-4 border-t border-public-border py-6">
+      <Icon
+        className="mt-1 h-5 w-5 shrink-0 text-public-accent"
+        aria-hidden="true"
+      />
       <div>
-        <h4 className="mb-1 font-semibold text-foreground">{title}</h4>
-        <p className="text-sm text-muted-foreground">{description}</p>
+        <h3 className="font-geist font-semibold text-public-content">
+          {title}
+        </h3>
+        <p className="mt-1 font-geist text-sm leading-relaxed text-public-content-muted">
+          {description}
+        </p>
       </div>
-    </motion.div>
+    </div>
   )
 }

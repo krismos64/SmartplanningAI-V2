@@ -1,11 +1,7 @@
 /**
  * Barrel export pour tous les composants de formulaire
- * Import unique : import { FormInput, FormSelect, ... } from '@/components/forms'
+ * Import unique : import { FormField, FormInput } from '@/components/forms'
  */
 
 export * from './FormField'
 export * from './FormInput'
-export * from './FormTextarea'
-export * from './FormSelect'
-
-export * from './FormDatePicker'

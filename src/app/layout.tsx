@@ -28,6 +28,7 @@ import { ThemeProvider } from '@/components/providers'
 import { ToastProvider } from '@/components/toast'
 import type { Metadata, Viewport } from 'next'
 import { Inter, Rajdhani } from 'next/font/google'
+import { publicFontVariables } from './(public)/fonts'
 import './globals.css'
 
 /**
@@ -246,7 +247,7 @@ export default function RootLayout({
   return (
     <html
       lang="fr"
-      className={`${inter.variable} ${rajdhani.variable}`}
+      className={`${inter.variable} ${rajdhani.variable} ${publicFontVariables}`}
       suppressHydrationWarning
     >
       <head>

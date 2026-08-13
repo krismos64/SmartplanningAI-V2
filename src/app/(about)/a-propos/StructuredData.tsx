@@ -29,7 +29,7 @@ export const organizationSchema = {
     width: 512,
     height: 512,
   },
-  image: `${baseUrl}/images/og-about.png`,
+  image: `${baseUrl}/og-image.png`,
   foundingDate: '2024',
   foundingLocation: {
     '@type': 'Place',
@@ -85,7 +85,7 @@ export const softwareSchema = {
     'Application mobile responsive',
     'Synchronisation en temps réel',
   ],
-  screenshot: `${baseUrl}/images/manager.png`,
+  screenshot: `${baseUrl}/images/manager.webp`,
   softwareVersion: '1.0',
   releaseNotes: 'Version initiale avec gestion complète des plannings',
   provider: {

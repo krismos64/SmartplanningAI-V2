@@ -33,6 +33,7 @@ describe('sitemap', () => {
         (guide) => `https://smartplanning.fr/guides/${guide.slug}`
       ),
       'https://smartplanning.fr/a-propos',
+      'https://smartplanning.fr/contact',
       'https://smartplanning.fr/cgu',
       'https://smartplanning.fr/cgv',
       'https://smartplanning.fr/confidentialite',

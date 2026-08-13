@@ -11,24 +11,28 @@
 'use client'
 
 import dynamic from 'next/dynamic'
-import { useEffect, useState } from 'react'
 
 // Composants above-the-fold : import statique direct (pas via le barrel) pour
 // un rendu immédiat du LCP sans tirer le code des sections below-the-fold.
 import { LandingHeader as Header } from '@/components/layout/LandingHeader'
-import { AnimatedBackground } from './(landing)/components'
 import { HeroSection } from './(landing)/components/sections/HeroSection'
 
 /**
  * Sections below-the-fold : import dynamique (code-splitting).
  *
- * Perf (TBT mobile) : ces 9 sections embarquent toutes Framer Motion. En
+ * Perf (TBT mobile) : ces sections embarquent pour la plupart Framer
+ * Motion. En
  * import statique, leur JS était parsé/exécuté dans le bundle initial alors
  * qu'elles ne sont pas visibles au chargement. `next/dynamic` les isole dans
  * des chunks séparés chargés à la demande, ce qui réduit le Total Blocking
  * Time sans toucher au SSR (ssr conservé par défaut → HTML rendu serveur
  * intact pour le SEO et zéro CLS).
  */
+const TickerSection = dynamic(() =>
+  import('./(landing)/components/sections/TickerSection').then(
+    (m) => m.TickerSection
+  )
+)
 const RoleDemosSection = dynamic(() =>
   import('./(landing)/components/sections/RoleDemosSection').then(
     (m) => m.RoleDemosSection
@@ -39,6 +43,11 @@ const FeaturesSection = dynamic(() =>
     (m) => m.FeaturesSection
   )
 )
+const MobileSection = dynamic(() =>
+  import('./(landing)/components/sections/MobileSection').then(
+    (m) => m.MobileSection
+  )
+)
 const HowItWorksSection = dynamic(() =>
   import('./(landing)/components/sections/HowItWorksSection').then(
     (m) => m.HowItWorksSection
@@ -47,6 +56,11 @@ const HowItWorksSection = dynamic(() =>
 const BenefitsSection = dynamic(() =>
   import('./(landing)/components/sections/BenefitsSection').then(
     (m) => m.BenefitsSection
+  )
+)
+const SecuritySection = dynamic(() =>
+  import('./(landing)/components/sections/SecuritySection').then(
+    (m) => m.SecuritySection
   )
 )
 const PricingSection = dynamic(() =>
@@ -70,30 +84,22 @@ const Footer = dynamic(() =>
 )
 
 export default function LandingPageContent() {
-  const [isScrolled, setIsScrolled] = useState(false)
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50)
-    }
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
 
   return (
-    <div className="min-h-screen overflow-x-hidden bg-background text-foreground">
-      {/* Background */}
-      <AnimatedBackground />
-
+    <div className="public-scope min-h-screen overflow-x-hidden bg-public-surface text-public-content">
       {/* Header */}
-      <Header isScrolled={isScrolled} />
+      <Header />
 
       {/* Sections */}
       <HeroSection />
+      <TickerSection />
       <RoleDemosSection />
       <FeaturesSection />
+      <MobileSection />
       <HowItWorksSection />
       <BenefitsSection />
+      <SecuritySection />
       <PricingSection />
       <FAQSection />
       <ContactSection />

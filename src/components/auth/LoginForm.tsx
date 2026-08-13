@@ -47,7 +47,7 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { cn } from '@/lib/utils'
-import { PRIMARY_BUTTON_CLASSES } from '@/app/(landing)/components'
+import { AUTH_BUTTON_CLASSES } from '@/app/(landing)/components'
 
 /**
  * LoginForm Component
@@ -185,8 +185,8 @@ export function LoginForm() {
             <AlertTitle>Email non vérifié</AlertTitle>
             <AlertDescription className="space-y-3">
               <p>
-                Votre email n&apos;est pas encore vérifié. Consultez votre
-                boîte mail pour activer votre compte.
+                Votre email n&apos;est pas encore vérifié. Consultez votre boîte
+                mail pour activer votre compte.
               </p>
               <Button
                 type="button"
@@ -239,7 +239,7 @@ export function LoginForm() {
                 <FormLabel>Mot de passe</FormLabel>
                 <Link
                   href="/forgot-password"
-                  className="text-xs text-cyan-600 hover:text-cyan-500 dark:text-cyan-400 dark:hover:text-cyan-300"
+                  className="font-geist text-xs font-medium text-public-content underline underline-offset-4 transition-colors hover:text-public-accent"
                   tabIndex={-1}
                 >
                   Mot de passe oublié ?
@@ -268,9 +268,9 @@ export function LoginForm() {
                     }
                   >
                     {showPassword ? (
-                      <EyeOff className="h-4 w-4 text-muted-foreground" />
+                      <EyeOff className="h-4 w-4 text-public-content-muted" />
                     ) : (
-                      <Eye className="h-4 w-4 text-muted-foreground" />
+                      <Eye className="h-4 w-4 text-public-content-muted" />
                     )}
                   </Button>
                 </div>
@@ -303,7 +303,7 @@ export function LoginForm() {
         {/* Submit Button */}
         <Button
           type="submit"
-          className={cn('w-full', PRIMARY_BUTTON_CLASSES)}
+          className={cn('w-full', AUTH_BUTTON_CLASSES)}
           disabled={isLoading}
         >
           {isLoading ? (

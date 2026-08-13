@@ -1,64 +1,57 @@
-'use client'
-
 /**
  * CTASection Component
- * Call to action section before footer
+ *
+ * Appel a l'action avant le pied de page, direction editoriale SP-568 :
+ * aplat corail pleine largeur, titre a deux registres.
+ *
+ * Server Component depuis SP-568.
+ *
+ * Le texte est pose en bleu nuit et non en blanc : sur le corail, le blanc
+ * tombe a 3.19:1, insuffisant hors grands titres. C'est ce que porte le
+ * token `content-on-vivid`.
+ *
+ * @see SP-568 - Landing, sections basses
  */
 
+import { DisplayTitle } from '@/components/public/DisplayTitle'
+import { ArrowUpRight } from 'lucide-react'
 import Link from 'next/link'
-import { ArrowRight } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { motion } from '@/lib/animations'
 
 export function CTASection() {
   return (
-    <section className="py-24 lg:py-32">
+    <section
+      aria-labelledby="cta-title"
+      className="bg-public-accent-surface py-20 lg:py-28"
+    >
       <div className="container-custom">
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="relative overflow-hidden rounded-3xl bg-blue-700 p-12 lg:p-20"
-        >
-          {/* Background dot pattern */}
-          <div
-            className="absolute inset-0 opacity-20"
-            style={{
-              backgroundImage:
-                'radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px)',
-              backgroundSize: '24px 24px',
-            }}
-          />
+        <div className="flex flex-col gap-10 lg:flex-row lg:items-center lg:justify-between">
+          <DisplayTitle
+            as="h2"
+            id="cta-title"
+            accent="votre équipe."
+            tone="onVivid"
+            className="max-w-2xl text-public-content-on-vivid"
+          >
+            21 jours pour réunir la gestion de
+          </DisplayTitle>
 
-          <div className="relative z-10 text-center text-white">
-            <h2 className="mb-6 text-3xl font-bold sm:text-4xl lg:text-5xl">
-              Essayez SmartPlanning gratuitement pendant 21 jours
-            </h2>
-            <p className="mx-auto mb-10 max-w-2xl text-lg text-white/90">
-              Sans carte bancaire. Toutes les fonctionnalités incluses.
-            </p>
-            <div className="flex flex-col justify-center gap-4 sm:flex-row">
-              <Button
-                size="lg"
-                className="h-14 bg-white px-8 text-base font-semibold text-blue-700 hover:bg-white/90"
-                asChild
-              >
-                <Link href="/register">
-                  Démarrer gratuitement
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </Link>
-              </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                className="h-14 border-2 border-white bg-transparent px-8 text-base font-semibold text-white hover:bg-white hover:text-blue-700"
-                asChild
-              >
-                <Link href="#contact">Poser une question</Link>
-              </Button>
-            </div>
+          <div className="flex flex-col gap-4 sm:flex-row lg:shrink-0">
+            <Link
+              href="/register"
+              className="inline-flex min-h-[3.5rem] items-center justify-center gap-3 bg-public-surface-dark px-8 font-geist text-base font-semibold text-public-content-on-dark transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-public-surface-dark focus-visible:ring-offset-2 focus-visible:ring-offset-public-accent-surface"
+            >
+              Essayer gratuitement
+              <ArrowUpRight className="h-5 w-5" aria-hidden="true" />
+            </Link>
+
+            <Link
+              href="/contact"
+              className="inline-flex min-h-[3.5rem] items-center justify-center px-6 font-geist text-base font-semibold text-public-content-on-vivid underline underline-offset-8 transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-public-surface-dark focus-visible:ring-offset-2 focus-visible:ring-offset-public-accent-surface"
+            >
+              Poser une question
+            </Link>
           </div>
-        </motion.div>
+        </div>
       </div>
     </section>
   )

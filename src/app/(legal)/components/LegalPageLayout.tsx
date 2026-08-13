@@ -17,7 +17,6 @@
 import { useState, useEffect } from 'react'
 import { ChevronUp, FileText } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { AnimatedBackground } from '@/app/(landing)/components'
 import { LandingHeader } from '@/components/layout/LandingHeader'
 import { LandingFooter } from '@/components/layout/LandingFooter'
 import { motion, fadeInUp, staggerContainer } from '@/lib/animations'
@@ -55,14 +54,12 @@ export function LegalPageLayout({
   tableOfContents = [],
   children,
 }: LegalPageLayoutProps) {
-  const [isScrolled, setIsScrolled] = useState(false)
   const [activeSection, setActiveSection] = useState<string>('')
   const [showScrollTop, setShowScrollTop] = useState(false)
 
-  // Gestion du scroll pour le header et le bouton scroll-to-top
+  // Bouton scroll-to-top et detection de la section active
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50)
       setShowScrollTop(window.scrollY > 500)
 
       // Détection de la section active
@@ -101,14 +98,9 @@ export function LegalPageLayout({
   }
 
   return (
-    <div className="relative min-h-screen overflow-x-hidden bg-background text-foreground">
-      {/* Background animé - Decorative, hidden from screen readers */}
-      <div aria-hidden="true">
-        <AnimatedBackground />
-      </div>
-
+    <div className="public-scope relative min-h-screen overflow-x-hidden bg-public-surface font-geist text-public-content">
       {/* Header with scroll-aware background */}
-      <LandingHeader isScrolled={isScrolled} />
+      <LandingHeader />
 
       {/* Contenu principal */}
       <main className="relative pb-20 pt-24">
@@ -122,9 +114,9 @@ export function LegalPageLayout({
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.5, delay: 0.2 }}
-                    className="rounded-xl border border-border bg-card p-6 backdrop-blur-sm"
+                    className="border border-public-border bg-public-surface-subtle p-6 backdrop-blur-sm"
                   >
-                    <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                    <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-public-content-muted">
                       Sommaire
                     </h3>
                     <nav className="space-y-2">
@@ -137,8 +129,8 @@ export function LegalPageLayout({
                             item.level === 2 && 'pl-4',
                             item.level === 3 && 'pl-8',
                             activeSection === item.id
-                              ? 'text-blue-600 dark:text-blue-400'
-                              : 'text-muted-foreground hover:text-foreground'
+                              ? 'font-semibold text-public-content'
+                              : 'text-public-content-muted hover:text-public-content'
                           )}
                         >
                           {item.title}
@@ -160,7 +152,7 @@ export function LegalPageLayout({
               {/* En-tête du document */}
               <motion.div variants={fadeInUp} className="mb-12">
                 {/* Badge avec icône */}
-                <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/10 px-4 py-2 text-sm text-blue-600 dark:border-blue-500/20 dark:text-blue-400">
+                <div className="mb-6 inline-flex items-center gap-2 border-l-4 border-public-accent bg-public-surface-subtle px-4 py-2 font-geist text-sm font-medium text-public-content">
                   {icon}
                   Document légal
                 </div>
@@ -171,18 +163,18 @@ export function LegalPageLayout({
                 </h1>
 
                 {/* Sous-titre */}
-                <p className="mb-6 max-w-2xl text-lg text-muted-foreground">
+                <p className="mb-6 max-w-2xl text-lg text-public-content-muted">
                   {subtitle}
                 </p>
 
                 {/* Métadonnées */}
-                <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground/70">
+                <div className="flex flex-wrap items-center gap-4 text-sm text-public-content-muted">
                   <span className="flex items-center gap-2">
-                    <span className="h-1.5 w-1.5 rounded-full bg-blue-600 dark:bg-blue-400" />
+                    <span className="h-1.5 w-1.5 bg-public-accent" />
                     Version {version}
                   </span>
                   <span className="flex items-center gap-2">
-                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400" />
+                    <span className="h-1.5 w-1.5 bg-public-highlight" />
                     Mis à jour le {lastUpdated}
                   </span>
                 </div>
@@ -192,9 +184,9 @@ export function LegalPageLayout({
               {tableOfContents.length > 0 && (
                 <motion.div
                   variants={fadeInUp}
-                  className="mb-8 rounded-xl border border-border bg-card p-6 lg:hidden"
+                  className="mb-8 border border-public-border bg-public-surface-subtle p-6 lg:hidden"
                 >
-                  <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                  <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-public-content-muted">
                     Sommaire
                   </h3>
                   <nav className="grid grid-cols-1 gap-2 sm:grid-cols-2">
@@ -204,7 +196,7 @@ export function LegalPageLayout({
                         <button
                           key={item.id}
                           onClick={() => scrollToSection(item.id)}
-                          className="text-left text-sm text-muted-foreground hover:text-blue-600 dark:hover:text-blue-400"
+                          className="text-left text-sm text-public-content-muted hover:text-public-content"
                         >
                           {item.title}
                         </button>
@@ -216,7 +208,7 @@ export function LegalPageLayout({
               {/* Contenu du document */}
               <motion.div
                 variants={fadeInUp}
-                className="legal-content prose prose-neutral dark:prose-invert max-w-none"
+                className="legal-content prose prose-neutral max-w-none"
               >
                 {children}
               </motion.div>
@@ -234,7 +226,10 @@ export function LegalPageLayout({
         animate={{ opacity: showScrollTop ? 1 : 0 }}
         onClick={scrollToTop}
         className={cn(
-          'fixed bottom-8 right-8 z-40 flex h-12 w-12 items-center justify-center rounded-full border border-border bg-background/90 text-muted-foreground shadow-lg backdrop-blur-sm transition-all hover:border-blue-600/50 hover:bg-blue-600/20 hover:text-blue-600 dark:hover:text-blue-400',
+          // Aplat franc et angles vifs : le bouton portait un fond
+          // translucide avec flou et un survol bleu, d'avant la refonte.
+          // WCAG 2.5.5 : 48 px, au-dessus du minimum de 44.
+          'fixed bottom-8 right-8 z-40 flex h-12 w-12 items-center justify-center bg-public-surface-dark text-public-content-on-dark transition-colors hover:bg-public-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-public-accent focus-visible:ring-offset-2',
           !showScrollTop && 'pointer-events-none'
         )}
         aria-label="Retour en haut"
