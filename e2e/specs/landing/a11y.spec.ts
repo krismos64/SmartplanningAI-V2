@@ -144,6 +144,15 @@ test.describe('Landing — accessibilité axe-core', () => {
     // point sensible.
     { path: '/solutions', label: 'hub solutions' },
     { path: '/guides', label: 'hub guides' },
+    /*
+      Ajoutees en SP-575, qui rapproche ces deux pages du prototype et
+      change leurs aplats : `/a-propos` passe en manifeste lime, valeurs en
+      creme, bleu franc et corail, bande reseaux sur bleu nuit, et le
+      guide prend un hero sombre. Chacun de ces aplats porte du texte, donc
+      un contraste a verifier, et ni l'une ni l'autre n'avait d'audit.
+    */
+    { path: '/a-propos', label: 'a propos' },
+    { path: '/guides/faire-un-planning-equipe', label: 'guide' },
   ]) {
     test(`aucune violation WCAG AA sur la page ${label}`, async ({ page }) => {
       /*

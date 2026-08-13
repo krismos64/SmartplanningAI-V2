@@ -10,11 +10,17 @@
  * de l'accordeon de FAQ, desormais isole dans FaqAccordion. La prose, qui
  * porte le referencement, est rendue cote serveur sans JavaScript.
  *
+ * Mise en page reprise du prototype en SP-575 : hero sur aplat bleu nuit,
+ * puis sommaire collant a gauche et prose a droite. La version SP-570
+ * empilait tout dans une colonne centree de 48rem, sans rupture d'aplat ni
+ * reperage possible dans un guide de neuf sections.
+ *
  * Le contenu vient du registre `data/` : ce fichier ne fait que le mettre
  * en page, il n'en modifie aucun texte.
  *
  * @ticket SP-555
  * @see SP-570 - Pages secteur et guides
+ * @see SP-575 - Guides a la mise en page du prototype
  */
 
 import Link from 'next/link'
@@ -40,52 +46,61 @@ export function GuideContent({ guide }: GuideContentProps) {
         { label: guide.title },
       ]}
     >
-      <article aria-labelledby="guide-title" className="pb-20 pt-10">
-        <div className="container-custom">
-          <div className="mx-auto max-w-3xl">
-            <header className="mb-12">
-              <SectionLabel index={1}>Guide pratique</SectionLabel>
+      <article aria-labelledby="guide-title">
+        {/* Hero sur aplat bleu nuit, comme le hub et les pages secteur.
+            SP-570 laissait le titre sur creme, sans rupture d'aplat entre
+            le fil d'Ariane et la prose. */}
+        <header className="bg-public-surface-dark py-16 lg:py-24">
+          <div className="container-custom">
+            <SectionLabel index={1} tone="onDark">
+              Guide pratique
+            </SectionLabel>
 
-              <h1
-                id="guide-title"
-                className="mt-8 font-geist text-3xl font-bold leading-[1.05] tracking-[-0.02em] text-public-content sm:text-4xl lg:text-5xl"
-              >
-                {guide.title}
-              </h1>
+            <h1
+              id="guide-title"
+              className="mt-8 max-w-4xl font-geist text-3xl font-bold leading-[1.02] tracking-[-0.04em] text-public-content-on-dark sm:text-4xl lg:text-5xl"
+            >
+              {guide.title}
+            </h1>
 
-              <p className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 font-geist text-sm text-public-content-muted">
-                <span className="inline-flex items-center gap-2">
-                  <Clock3 className="h-4 w-4" aria-hidden="true" />
-                  {guide.readingMinutes} min de lecture
-                </span>
-                <span>
-                  Mis à jour le{' '}
-                  <time dateTime={guide.lastModified}>
-                    {dateFormatter.format(new Date(guide.lastModified))}
-                  </time>
-                </span>
-              </p>
+            {/* Reponse directe (GEO) : la reponse a la requete, citable */}
+            <p className="mt-8 max-w-2xl font-geist text-lg leading-relaxed text-public-content-on-dark/80">
+              {guide.directAnswer}
+            </p>
 
-              {/* Reponse directe (GEO) : la reponse a la requete, citable */}
-              <p className="mt-8 border-l-2 border-public-accent pl-6 font-geist text-lg leading-relaxed text-public-content-muted">
-                {guide.directAnswer}
-              </p>
-            </header>
+            <p className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 font-geist text-sm text-public-content-on-dark/70">
+              <span className="inline-flex items-center gap-2">
+                <Clock3 className="h-4 w-4" aria-hidden="true" />
+                {guide.readingMinutes} min de lecture
+              </span>
+              <span>
+                Mis à jour le{' '}
+                <time dateTime={guide.lastModified}>
+                  {dateFormatter.format(new Date(guide.lastModified))}
+                </time>
+              </span>
+            </p>
+          </div>
+        </header>
 
-            {/* Sommaire */}
+        {/* Sommaire collant a gauche, prose a droite, comme au prototype.
+            En dessous de `lg` la grille retombe en une colonne et le
+            sommaire reprend sa place au fil du document. */}
+        <div className="container-custom py-16 lg:py-20">
+          <div className="grid gap-12 lg:grid-cols-[16rem_minmax(0,42rem)] lg:gap-20">
             <nav
               aria-label="Sommaire du guide"
-              className="mb-14 border-y border-public-border py-6"
+              className="lg:sticky lg:top-28 lg:self-start"
             >
               <h2 className="font-geist text-xs font-semibold uppercase tracking-[0.14em] text-public-accent">
-                Sommaire
+                Dans ce guide
               </h2>
-              <ol className="mt-4 space-y-1">
+              <ol className="mt-4 space-y-0.5">
                 {guide.sections.map((section, index) => (
                   <li key={section.id}>
                     <a
                       href={`#${section.id}`}
-                      className="inline-flex min-h-[2.75rem] items-center gap-3 font-geist text-public-content-muted transition-colors hover:text-public-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-public-accent"
+                      className="flex min-h-[2.75rem] items-center gap-3 font-geist text-sm leading-snug text-public-content-muted transition-colors hover:text-public-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-public-accent"
                     >
                       <span
                         aria-hidden="true"
@@ -100,57 +115,59 @@ export function GuideContent({ guide }: GuideContentProps) {
               </ol>
             </nav>
 
-            {/* Sections */}
-            {guide.sections.map((section) => (
+            <div>
+              {/* Sections, separees par un filet comme au prototype */}
+              {guide.sections.map((section) => (
+                <section
+                  key={section.id}
+                  id={section.id}
+                  aria-labelledby={`${section.id}-title`}
+                  className="mb-11 scroll-mt-28 border-b border-public-border pb-11 last:border-b-0"
+                >
+                  <h2
+                    id={`${section.id}-title`}
+                    className="mb-5 font-geist text-2xl font-bold leading-[1.1] tracking-[-0.035em] text-public-content sm:text-3xl"
+                  >
+                    {section.title}
+                  </h2>
+                  {section.paragraphs.map((paragraph, index) => (
+                    <p
+                      key={index}
+                      className="mb-4 font-geist text-lg leading-relaxed text-public-content-muted"
+                    >
+                      {paragraph}
+                    </p>
+                  ))}
+                  {section.bullets && (
+                    <ul className="mb-4 space-y-3 border-l border-public-border pl-6">
+                      {section.bullets.map((bullet) => (
+                        <li
+                          key={bullet}
+                          className="font-geist text-lg leading-relaxed text-public-content-muted"
+                        >
+                          {bullet}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </section>
+              ))}
+
+              {/* FAQ, alimente le schema FAQPage */}
               <section
-                key={section.id}
-                id={section.id}
-                aria-labelledby={`${section.id}-title`}
-                className="mb-12 scroll-mt-28"
+                id="faq"
+                aria-labelledby="faq-title"
+                className="scroll-mt-28 pt-4"
               >
                 <h2
-                  id={`${section.id}-title`}
-                  className="mb-5 font-geist text-2xl font-bold tracking-[-0.02em] text-public-content sm:text-3xl"
+                  id="faq-title"
+                  className="mb-6 font-geist text-2xl font-bold leading-[1.1] tracking-[-0.035em] text-public-content sm:text-3xl"
                 >
-                  {section.title}
+                  Questions fréquentes
                 </h2>
-                {section.paragraphs.map((paragraph, index) => (
-                  <p
-                    key={index}
-                    className="mb-4 font-geist text-lg leading-relaxed text-public-content-muted"
-                  >
-                    {paragraph}
-                  </p>
-                ))}
-                {section.bullets && (
-                  <ul className="mb-4 space-y-3 border-l border-public-border pl-6">
-                    {section.bullets.map((bullet) => (
-                      <li
-                        key={bullet}
-                        className="font-geist text-lg leading-relaxed text-public-content-muted"
-                      >
-                        {bullet}
-                      </li>
-                    ))}
-                  </ul>
-                )}
+                <FaqAccordion items={[...guide.faqs]} idPrefix="guide-faq" />
               </section>
-            ))}
-
-            {/* FAQ, alimente le schema FAQPage */}
-            <section
-              id="faq"
-              aria-labelledby="faq-title"
-              className="mb-16 scroll-mt-28"
-            >
-              <h2
-                id="faq-title"
-                className="mb-6 font-geist text-2xl font-bold tracking-[-0.02em] text-public-content sm:text-3xl"
-              >
-                Questions fréquentes
-              </h2>
-              <FaqAccordion items={[...guide.faqs]} idPrefix="guide-faq" />
-            </section>
+            </div>
           </div>
         </div>
       </article>

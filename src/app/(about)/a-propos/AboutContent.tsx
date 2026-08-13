@@ -11,12 +11,18 @@
  * prototype de reference la conserve, avec sa legende, aux cotes du texte
  * de mission.
  *
+ * Mise en page rapprochee du prototype en SP-575 : hero sur aplat bleu
+ * nuit, manifeste sur aplat lime, valeurs en aplats alternes et bande
+ * reseaux sur bleu nuit. SP-574 laissait la page en creme d'un bout a
+ * l'autre, sans le rythme d'aplats qui porte l'identite ailleurs.
+ *
  * Le contenu vient du registre `../data` : ce fichier ne fait que le mettre
  * en page, il n'en modifie aucun texte.
  *
  * @ticket SP-285
  * @see SP-571 - Tarifs, a-propos et pages legales
  * @see SP-574 - Retablissement de l'illustration
+ * @see SP-575 - A propos a la mise en page du prototype
  */
 
 import Image from 'next/image'
@@ -52,70 +58,86 @@ const socialLinks = [
 export function AboutContent() {
   return (
     <PublicPageShell breadcrumb={[{ label: 'À propos' }]}>
-      {/* Mission */}
-      <article aria-labelledby="hero-title" className="pb-16 pt-10">
+      {/* Hero, aplat bleu nuit pleine largeur comme /solutions et /guides */}
+      <section
+        aria-labelledby="hero-title"
+        className="bg-public-surface-dark py-20 lg:py-28"
+      >
         <div className="container-custom">
-          <SectionLabel index={1}>Notre mission</SectionLabel>
+          <SectionLabel index={1} tone="onDark">
+            Notre mission
+          </SectionLabel>
 
           <h1
             id="hero-title"
-            className="mt-8 max-w-4xl font-geist text-4xl font-bold leading-[0.98] tracking-[-0.03em] text-public-content sm:text-5xl lg:text-6xl"
+            className="mt-8 max-w-4xl font-geist text-4xl font-bold leading-[0.95] tracking-[-0.045em] text-public-content-on-dark sm:text-5xl lg:text-6xl"
           >
             {mission.title}
-            <span className="mt-1 block font-editorial italic text-public-accent">
+            <span className="mt-1 block font-editorial italic text-public-accent-on-dark">
               {mission.highlight}
             </span>
-            <span className="mt-3 block text-3xl text-public-content-muted sm:text-4xl">
+            <span className="mt-3 block text-3xl text-public-content-on-dark/80 sm:text-4xl">
               {mission.subtitle}
             </span>
           </h1>
+        </div>
+      </section>
 
-          {/*
-            Texte et illustration cote a cote, comme le manifeste du
-            prototype. L'image avait ete retiree en SP-571, jugee marqueur du
-            registre visuel dont la refonte sortait, mais le prototype de
-            reference la conserve avec sa legende.
-          */}
-          <div className="mt-10 grid gap-10 border-t border-public-border pt-10 lg:grid-cols-[1fr_auto] lg:items-start lg:gap-16">
-            <div className="max-w-3xl space-y-6">
-              <p className="font-geist text-lg leading-relaxed text-public-content-muted">
+      {/*
+        Manifeste sur aplat lime, geste central de la page au prototype :
+        le texte y passe en grand corps gras a gauche, l'illustration a
+        droite. La version SP-574 le laissait en prose grise sur creme,
+        sans rupture d'aplat.
+
+        L'image avait ete retiree en SP-571, jugee marqueur du registre
+        visuel dont la refonte sortait, retablie en SP-574 : le prototype
+        de reference la conserve, avec sa legende.
+      */}
+      <section
+        aria-label="Notre conviction"
+        className="bg-public-highlight-surface py-20 lg:py-28"
+      >
+        <div className="container-custom">
+          <div className="grid gap-12 lg:grid-cols-[1fr_auto] lg:items-start lg:gap-20">
+            <div className="max-w-2xl">
+              <p className="font-geist text-2xl font-bold leading-[1.08] tracking-[-0.04em] text-public-content-on-vivid sm:text-3xl lg:text-[2.625rem]">
                 {mission.description}
               </p>
-              <p className="font-geist text-lg leading-relaxed text-public-content-muted">
+              <p className="mt-6 font-geist text-lg leading-relaxed text-public-content-on-vivid">
                 {mission.solution}
               </p>
+
+              <Link
+                href="/register"
+                aria-label="Créer un compte SmartPlanning gratuitement"
+                className="mt-10 inline-flex min-h-[3.5rem] items-center justify-center gap-3 bg-public-surface-dark px-8 font-geist text-base font-semibold text-public-content-on-dark transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-public-content-on-vivid focus-visible:ring-offset-2 focus-visible:ring-offset-public-highlight-surface"
+              >
+                Essayer gratuitement
+                <ArrowUpRight className="h-5 w-5" aria-hidden="true" />
+              </Link>
             </div>
 
-            <figure className="lg:w-[22rem]">
+            <figure className="lg:w-[24rem]">
               <Image
                 src="/images/manager.webp"
                 alt="Une responsable d'équipe organise les plannings de la semaine sur SmartPlanning."
                 width={1024}
                 height={1024}
-                sizes="(min-width: 1024px) 22rem, 90vw"
-                className="w-full border border-public-border"
+                sizes="(min-width: 1024px) 24rem, 90vw"
+                className="w-full"
               />
-              <figcaption className="mt-3 font-geist text-sm text-public-content-muted">
+              <figcaption className="mt-3 font-geist text-xs uppercase tracking-[0.12em] text-public-content-on-vivid">
                 Un outil pensé pour le quotidien des responsables d&rsquo;équipe
               </figcaption>
             </figure>
           </div>
-
-          <Link
-            href="/register"
-            aria-label="Créer un compte SmartPlanning gratuitement"
-            className="mt-10 inline-flex min-h-[3.5rem] items-center justify-center gap-3 bg-public-surface-dark px-8 font-geist text-base font-semibold text-public-content-on-dark transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-public-accent focus-visible:ring-offset-2 focus-visible:ring-offset-public-surface"
-          >
-            Essayer gratuitement
-            <ArrowUpRight className="h-5 w-5" aria-hidden="true" />
-          </Link>
         </div>
-      </article>
+      </section>
 
-      {/* Valeurs */}
+      {/* Valeurs, en aplats alternes comme au prototype */}
       <section
         aria-labelledby="values-title"
-        className="bg-public-surface-subtle py-20 lg:py-28"
+        className="bg-public-surface py-20 lg:py-28"
       >
         <div className="container-custom">
           <div className="grid gap-8 lg:grid-cols-[auto_1fr] lg:items-start lg:gap-16">
@@ -131,11 +153,12 @@ export function AboutContent() {
             </DisplayTitle>
           </div>
 
-          <div className="mt-14 grid gap-px bg-public-border md:grid-cols-3">
+          {/* Gouttiere de 12 px plutot qu'un filet d'un pixel : les aplats
+              se touchaient et la serie se lisait comme un seul bloc. */}
+          <div className="mt-14 grid gap-3 md:grid-cols-3">
             {values.map((value, index) => (
               <ValueCard
                 key={value.title}
-                icon={value.icon}
                 title={value.title}
                 description={value.description}
                 index={index + 1}
@@ -145,10 +168,14 @@ export function AboutContent() {
         </div>
       </section>
 
-      {/* Public vise */}
+      {/* Public vise, sur creme contraste comme la bande audience du
+          prototype. Les segments restent en filets : le prototype les pose
+          en pastilles, mais il n'y met que leur nom, la ou le registre
+          porte une description par segment qu'une pastille ne peut pas
+          tenir. */}
       <section
         aria-labelledby="targets-title"
-        className="bg-public-surface py-20 lg:py-28"
+        className="bg-public-surface-subtle py-20 lg:py-28"
       >
         <div className="container-custom">
           <div className="grid gap-8 lg:grid-cols-2 lg:gap-20">
@@ -181,26 +208,30 @@ export function AboutContent() {
 
       <VideoSection />
 
-      {/* Reseaux */}
+      {/* Reseaux, bande bleu nuit pleine largeur comme au prototype, la ou
+          SP-574 la laissait en cartes creme peu distinctes du fond. */}
       <section
         aria-labelledby="social-title"
-        className="bg-public-surface-subtle py-20 lg:py-28"
+        className="bg-public-surface-dark py-20 lg:py-24"
       >
         <div className="container-custom">
           <div className="grid gap-8 lg:grid-cols-[auto_1fr] lg:items-start lg:gap-16">
-            <SectionLabel index={5}>Suivez-nous</SectionLabel>
+            <SectionLabel index={5} tone="onDark">
+              Suivez-nous
+            </SectionLabel>
 
             <div>
               <DisplayTitle
                 as="h2"
                 id="social-title"
                 accent="connectés."
-                className="text-public-content"
+                tone="onDark"
+                className="text-public-content-on-dark"
               >
                 Restons
               </DisplayTitle>
 
-              <p className="mt-6 max-w-xl font-geist text-lg leading-relaxed text-public-content-muted">
+              <p className="mt-6 max-w-xl font-geist text-lg leading-relaxed text-public-content-on-dark/80">
                 Retrouvez SmartPlanning sur nos réseaux pour suivre les
                 nouveautés, démos produit et conseils RH.
               </p>
@@ -208,7 +239,7 @@ export function AboutContent() {
           </div>
 
           <ul
-            className="mt-14 grid gap-px bg-public-border sm:grid-cols-2"
+            className="mt-14 grid gap-px bg-public-border-on-dark sm:grid-cols-2"
             aria-label="Réseaux sociaux SmartPlanning"
           >
             {socialLinks.map((social) => (
@@ -218,20 +249,20 @@ export function AboutContent() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={social.ariaLabel}
-                  className="flex h-full items-start gap-4 bg-public-surface p-6 transition-colors hover:bg-public-surface-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-public-accent sm:p-8"
+                  className="flex h-full items-start gap-4 bg-public-surface-dark p-6 transition-colors hover:bg-public-border-on-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-public-highlight sm:p-8"
                 >
                   <social.icon
-                    className="mt-1 h-6 w-6 shrink-0 text-public-accent"
+                    className="mt-1 h-6 w-6 shrink-0 text-public-accent-on-dark"
                     aria-hidden="true"
                   />
                   <span>
-                    <span className="block font-geist text-xs uppercase tracking-[0.12em] text-public-content-muted">
+                    <span className="block font-geist text-xs uppercase tracking-[0.12em] text-public-highlight">
                       {social.network}
                     </span>
-                    <span className="mt-1 block font-geist text-lg font-semibold text-public-content">
+                    <span className="mt-1 block font-geist text-lg font-semibold text-public-content-on-dark">
                       {social.handle}
                     </span>
-                    <span className="mt-1 block font-geist text-sm text-public-content-muted">
+                    <span className="mt-1 block font-geist text-sm text-public-content-on-dark/80">
                       {social.description}
                     </span>
                   </span>
