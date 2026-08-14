@@ -14,26 +14,9 @@ import type { MetadataRoute } from 'next'
 
 import { getAllSectors } from '@/app/(sectors)/solutions/data'
 import { getAllGuides } from '@/app/(guides)/guides/data'
+import { PAGE_LAST_MODIFIED } from './page-last-modified'
 
 const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://smartplanning.fr'
-
-/**
- * Dates reelles de derniere modification du CONTENU de chaque page.
- * A mettre a jour manuellement dans toute PR qui modifie le contenu
- * d'une page publique (un lastmod qui change a chaque requete est
- * ignore par Google).
- */
-const PAGE_LAST_MODIFIED = {
-  home: new Date('2026-08-13'),
-  tarifs: new Date('2026-08-13'),
-  aPropos: new Date('2026-08-13'),
-  contact: new Date('2026-08-13'),
-  cgu: new Date('2026-08-13'),
-  cgv: new Date('2026-08-13'),
-  confidentialite: new Date('2026-08-13'),
-  mentionsLegales: new Date('2026-08-13'),
-  cookies: new Date('2026-08-13'),
-} as const
 
 // Pages secteur /solutions/[slug] : chaque secteur porte sa propre date
 const sectorEntries: MetadataRoute.Sitemap = getAllSectors().map((sector) => ({

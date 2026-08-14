@@ -19,7 +19,7 @@ const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://smartplanning.fr'
 // SEO Metadata - Optimisé pour moteurs de recherche et LLMs
 export const metadata: Metadata = {
   // Title optimisé (60 caractères max)
-  title: 'À propos de SmartPlanning | Logiciel de gestion de planning',
+  title: 'À propos : notre logiciel de planning',
 
   // Description optimisée (155 caractères max) - riche en mots-clés
   description:
