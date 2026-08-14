@@ -274,22 +274,29 @@ describe('LandingHeader - navbar desktop (disclosure)', () => {
       ).toBeInTheDocument()
     })
 
-    it('donne accès aux pages secteur et aux guides depuis le menu mobile', async () => {
+    it('donne accès aux deux hubs de contenu depuis le menu mobile', async () => {
       const user = userEvent.setup()
       render(<LandingHeader />)
 
       await user.click(screen.getByTestId('landing-mobile-menu-button'))
 
-      // Les pages de contenu SEO/GEO ne doivent pas être joignables
-      // uniquement par le footer sur mobile.
-      const mobileLinks = [
-        ['Restauration et hôtellerie', '/solutions/planning-restaurant'],
-        ['Commerce et retail', '/solutions/planning-commerce'],
-        ['BTP et chantiers', '/solutions/planning-btp'],
+      /*
+       * Les pages de contenu SEO/GEO ne doivent pas etre joignables uniquement
+       * par le footer sur mobile. Depuis le 14 aout 2026, le menu porte les
+       * deux HUBS plutot que chaque page secteur : le menu listait treize
+       * liens de meme poids, dont les deux CTA sortaient de l'ecran.
+       *
+       * Ce test visait auparavant les trois libelles de secteur. Il a survecu
+       * a leur retrait sans rien signaler, parce qu'il les trouvait dans le
+       * panneau desktop, monte en permanence dans le DOM pour le maillage
+       * interne : il ne verifiait donc plus ce que son nom annoncait.
+       */
+      const hubs = [
+        ['Solutions par secteur', '/solutions'],
         ['Guides pratiques', '/guides'],
       ] as const
 
-      for (const [label, href] of mobileLinks) {
+      for (const [label, href] of hubs) {
         const links = screen.getAllByRole('link', {
           name: new RegExp(`^${label}$`, 'i'),
         })
