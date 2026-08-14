@@ -29,8 +29,21 @@ export const geist = Geist({
   subsets: ['latin'],
   display: 'swap',
   variable: '--font-geist',
-  // Charge a la demande : seules les pages publiques consomment la variable
-  preload: false,
+  /*
+   * Prechargee depuis l'audit Lighthouse du 14 aout 2026.
+   *
+   * Elle etait `preload: false`, ce qui se defendait tant que Rajdhani et
+   * Inter occupaient le preload : la variable n'est declaree qu'ici, donc
+   * seules les pages publiques la consomment. Mais le layout racine precharge
+   * sur TOUTES les routes, si bien que les polices de l'application privee
+   * partaient en priorite haute pendant que Geist, seule police reellement
+   * peinte sur ces pages, attendait la resolution du CSS.
+   *
+   * Le preload est desormais porte par la police qui rend le texte visible.
+   * Geist est en poids variable : un seul fichier couvre 100-900, le cout du
+   * prechargement reste donc une requete.
+   */
+  preload: true,
 })
 
 /**
