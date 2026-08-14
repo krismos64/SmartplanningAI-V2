@@ -35,6 +35,9 @@ export const commerceSector: SectorData = {
   h1: 'Un logiciel de planning pensé pour le',
   h1Highlight: 'commerce et le retail',
 
+  teaser:
+    'Ouverture 7 jours sur 7, temps partiels et contrats étudiants, pics des soldes : des horaires équitables par magasin, consultables par chaque vendeur depuis son téléphone.',
+
   directAnswer:
     "SmartPlanning permet aux boutiques, franchises et enseignes multi-magasins de construire leurs plannings en quelques minutes : amplitude d'ouverture 7 jours sur 7, temps partiels multiples, rotation équitable des samedis et renforts saisonniers. Chaque vendeur consulte ses horaires en ligne et reçoit une notification à chaque changement. Le tarif est de 2,90 € HT par employé et par mois, toutes fonctionnalités incluses, avec un essai gratuit de 21 jours sans carte bancaire.",
 

@@ -26,11 +26,20 @@ const sectorEntries: MetadataRoute.Sitemap = getAllSectors().map((sector) => ({
   priority: 0.8,
 }))
 
-// Hub /solutions : prend la date du secteur le plus recent
+/*
+ * Hub /solutions : la plus recente entre la date du hub lui-meme et celle du
+ * secteur le plus recent.
+ *
+ * La derivation depuis les seuls secteurs ne voyait pas une modification
+ * PROPRE au hub. Le 14 aout 2026, le texte de ses cartes a ete raccourci sans
+ * qu'aucune page secteur ne bouge : le `lastmod` serait reste au 11 aout,
+ * annoncant a Google un contenu inchange alors qu'il avait change.
+ */
 const sectorsHubEntry: MetadataRoute.Sitemap[number] = {
   url: `${baseUrl}/solutions`,
   lastModified: new Date(
     Math.max(
+      PAGE_LAST_MODIFIED.solutionsHub.getTime(),
       ...getAllSectors().map((sector) =>
         new Date(sector.lastModified).getTime()
       )

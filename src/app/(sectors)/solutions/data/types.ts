@@ -69,6 +69,22 @@ export interface SectorData {
   h1: string
   h1Highlight: string
   /**
+   * Résumé affiché sur la carte du hub `/solutions`, 25 à 30 mots.
+   *
+   * Pendant à `excerpt` côté guides, dont il reprend le calibre. La carte
+   * affichait auparavant `intro[0]`, soit le premier paragraphe entier de la
+   * page de destination : 88 à 104 mots selon le secteur, trois à quatre fois
+   * la longueur d'un aperçu. Le visiteur lisait le texte sur le hub puis
+   * retombait dessus à l'identique après avoir cliqué, et ce paragraphe pose
+   * le problème du métier sans dire ce que l'outil apporte, donc sans donner
+   * de raison d'ouvrir la page.
+   *
+   * Écrire une phrase qui nomme les contraintes du secteur puis ce que
+   * SmartPlanning en fait. Ne pas répéter le nom du secteur, le titre de la
+   * carte le porte déjà.
+   */
+  teaser: string
+  /**
    * Réponse directe citable (règle GEO : la réponse à la requête dans
    * les 100 premiers mots de la page)
    */

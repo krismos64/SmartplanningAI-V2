@@ -24,6 +24,7 @@ function collectTexts(sector: ReturnType<typeof getAllSectors>[number]) {
     sector.metaDescription,
     sector.h1,
     sector.h1Highlight,
+    sector.teaser,
     sector.directAnswer,
     ...sector.intro,
     ...sector.keywords,
@@ -67,6 +68,20 @@ describe.each(getAllSectors().map((sector) => [sector.slug, sector] as const))(
       expect(sector.metaDescription.length).toBeLessThanOrEqual(165)
       expect(sector.metaDescription.length).toBeGreaterThanOrEqual(120)
       expect(sector.keywords.length).toBeGreaterThanOrEqual(5)
+    })
+
+    it('a un teaser au calibre d une carte de hub', () => {
+      // Le teaser alimente la carte du hub /solutions. Il tenait auparavant
+      // dans intro[0], le premier paragraphe entier de la page : 88 a 104 mots
+      // selon le secteur, soit trois a quatre fois la longueur d un apercu.
+      // Bornes calees sur les excerpt des guides, qui rendent bien : 24 a 30
+      // mots. La borne haute est le garde-fou reel, la borne basse empeche un
+      // teaser vide ou reduit a quelques mots.
+      const words = countWords([sector.teaser])
+      expect(words).toBeGreaterThanOrEqual(18)
+      expect(words).toBeLessThanOrEqual(32)
+      // Le titre de la carte porte deja le nom du secteur
+      expect(sector.teaser).not.toContain(sector.name)
     })
 
     it('a une reponse directe citable (regle GEO des 100 premiers mots)', () => {

@@ -35,6 +35,9 @@ export const restaurationSector: SectorData = {
   h1: 'Un logiciel de planning pensé pour la',
   h1Highlight: "restauration et l'hôtellerie",
 
+  teaser:
+    'Coupures du midi et du soir, extras, remplacements de dernière minute : construisez le planning de votre équipe en ligne et notifiez chaque changement automatiquement.',
+
   directAnswer:
     'SmartPlanning permet aux restaurants, bars et hôtels de construire leurs plannings de service en quelques minutes : shifts en coupure, rotations de week-end, remplacements de dernière minute et congés des saisonniers. Chaque employé consulte ses horaires en ligne et reçoit une notification à chaque changement. Le tarif est de 2,90 € HT par employé et par mois, toutes fonctionnalités incluses, avec un essai gratuit de 21 jours sans carte bancaire.',
 

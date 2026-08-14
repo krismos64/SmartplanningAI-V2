@@ -33,6 +33,13 @@ export const PAGE_LAST_MODIFIED = {
   confidentialite: new Date('2026-08-13'),
   mentionsLegales: new Date('2026-08-13'),
   cookies: new Date('2026-08-13'),
+  /*
+   * Date PROPRE au hub /solutions, distincte de celle de ses pages filles.
+   * Son entree de sitemap prend la plus recente des deux : le hub peut changer
+   * seul, comme le 14 aout 2026 ou le texte de ses cartes a ete raccourci sans
+   * qu'aucune page secteur ne bouge.
+   */
+  solutionsHub: new Date('2026-08-14'),
 } as const
 
 /**
