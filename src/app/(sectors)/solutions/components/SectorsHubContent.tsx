@@ -122,8 +122,14 @@ export function SectorsHubContent({ sectors, guides }: SectorsHubContentProps) {
                     {sector.name}
                   </h2>
 
+                  {/*
+                    `teaser` et non `intro[0]` : ce dernier est le premier
+                    paragraphe entier de la page de destination, 88 à 104 mots
+                    selon le secteur. La carte redisait donc mot pour mot ce
+                    que le visiteur allait lire après avoir cliqué.
+                  */}
                   <p className="flex-1 font-geist leading-relaxed text-public-content-on-vivid">
-                    {sector.intro[0]}
+                    {sector.teaser}
                   </p>
 
                   <span className="mt-4 inline-flex items-center gap-2 font-geist text-sm font-semibold text-public-content-on-vivid underline underline-offset-8">

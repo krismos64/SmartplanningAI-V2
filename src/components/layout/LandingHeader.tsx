@@ -17,6 +17,7 @@ import {
   BookOpen,
   Building2,
   ChevronDown,
+  ChevronRight,
   CircleHelp,
   Mail,
   Menu,
@@ -25,23 +26,38 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-// Flat navigation kept for the mobile menu.
-// Inclut les pages secteur et le hub des guides : sans elles, les pages de
-// contenu SEO/GEO n'étaient atteignables que par le footer sur mobile.
+/*
+ * Navigation du menu mobile, en deux niveaux depuis le 14 aout 2026.
+ *
+ * Elle listait treize liens de meme poids, centres, dans une seule couleur :
+ * « Tarifs » ne se distinguait pas de « BTP et chantiers », et les deux
+ * boutons d'action sortaient de l'ecran sur un telephone.
+ *
+ * Les trois pages secteur n'y figurent plus. Elles avaient ete ajoutees parce
+ * que, sans elles, les pages de contenu SEO/GEO n'etaient atteignables que par
+ * le footer sur mobile. Le lien « Solutions par secteur » couvre desormais ce
+ * besoin : il mene au hub qui les liste toutes les trois, un clic de plus pour
+ * trois lignes de moins. Le maillage interne, lui, reste porte par le footer,
+ * present sur les dix-sept pages (SP-552), et par le panneau desktop.
+ *
+ * `isHub` marque les liens qui ouvrent sur une page listant d'autres pages :
+ * ils portent un chevron, qui annonce qu'on ne va pas au bout du chemin.
+ */
 const mobileNavLinks = [
   { href: '/#role-demos', label: 'Démos par rôle' },
   { href: '/#features', label: 'Fonctionnalités' },
   { href: '/#how-it-works', label: 'Comment ça marche' },
   { href: '/#benefits', label: 'Avantages' },
-  { href: '/solutions', label: 'Solutions par secteur' },
-  {
-    href: '/solutions/planning-restaurant',
-    label: 'Restauration et hôtellerie',
-  },
-  { href: '/solutions/planning-commerce', label: 'Commerce et retail' },
-  { href: '/solutions/planning-btp', label: 'BTP et chantiers' },
-  { href: '/guides', label: 'Guides pratiques' },
+  { href: '/solutions', label: 'Solutions par secteur', isHub: true },
+  { href: '/guides', label: 'Guides pratiques', isHub: true },
   { href: '/tarifs', label: 'Tarifs' },
+]
+
+/*
+ * Liens secondaires, en une seule ligne sous un filet. Ils restent
+ * atteignables sans occuper chacun une ligne de 44 px.
+ */
+const mobileSecondaryLinks = [
   { href: '/#faq', label: 'FAQ' },
   { href: '/contact', label: 'Contact' },
   { href: '/a-propos', label: 'À propos' },
@@ -400,9 +416,20 @@ export function LandingHeader({
                       const isAnchor = link.href.startsWith('/#')
                       // min-h-[44px] : les liens mesuraient environ 20 px de
                       // haut, sous le minimum tactile WCAG 2.5.5
+                      // Les liens principaux passent en 17 px semi-gras :
+                      // ils portaient la meme graisse et la meme taille que
+                      // les liens secondaires, rien ne les distinguait.
                       const className =
-                        'flex min-h-[44px] items-center font-geist text-[15px] font-medium text-public-content transition-colors hover:text-public-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-public-accent'
+                        'flex min-h-[44px] items-center gap-2 font-geist text-[17px] font-semibold text-public-content transition-colors hover:text-public-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-public-accent'
                       const closeMenu = () => setIsMobileMenuOpen(false)
+                      // Chevron sur les liens de hub : ils ouvrent sur une
+                      // page qui en liste d'autres, le trajet continue.
+                      const chevron = link.isHub ? (
+                        <ChevronRight
+                          className="h-4 w-4 text-public-accent"
+                          aria-hidden="true"
+                        />
+                      ) : null
 
                       return (
                         <motion.div
@@ -418,6 +445,7 @@ export function LandingHeader({
                               onClick={closeMenu}
                             >
                               {link.label}
+                              {chevron}
                             </a>
                           ) : (
                             <Link
@@ -426,11 +454,57 @@ export function LandingHeader({
                               onClick={closeMenu}
                             >
                               {link.label}
+                              {chevron}
                             </Link>
                           )}
                         </motion.div>
                       )
                     })}
+
+                  {/*
+                    Liens secondaires : une seule ligne sous un filet, au lieu
+                    de trois lignes de 44 px. La cible tactile est conservee
+                    par le `py` de chaque lien, la hauteur economisee vient de
+                    la mise en ligne, pas du rognage.
+                  */}
+                  {showNavLinks && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 15 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: mobileNavLinks.length * 0.05 }}
+                      className="mt-3 flex w-full max-w-xs flex-col items-center gap-3 border-t border-public-border pt-4"
+                    >
+                      <ul className="flex flex-wrap items-center justify-center gap-x-5 gap-y-1">
+                        {mobileSecondaryLinks.map((link) => {
+                          const isAnchor = link.href.startsWith('/#')
+                          const cls =
+                            'flex min-h-[44px] items-center font-geist text-sm text-public-content-muted transition-colors hover:text-public-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-public-accent'
+                          const close = () => setIsMobileMenuOpen(false)
+                          return (
+                            <li key={link.href}>
+                              {isAnchor ? (
+                                <a
+                                  href={link.href}
+                                  className={cls}
+                                  onClick={close}
+                                >
+                                  {link.label}
+                                </a>
+                              ) : (
+                                <Link
+                                  href={link.href}
+                                  className={cls}
+                                  onClick={close}
+                                >
+                                  {link.label}
+                                </Link>
+                              )}
+                            </li>
+                          )
+                        })}
+                      </ul>
+                    </motion.div>
+                  )}
 
                   {/* CTA Buttons */}
                   <motion.div
@@ -453,7 +527,14 @@ export function LandingHeader({
                     <Link
                       href="/register"
                       onClick={() => setIsMobileMenuOpen(false)}
-                      className="flex min-h-[2.75rem] w-full items-center justify-center gap-2 bg-public-highlight-surface font-geist text-sm font-semibold text-public-content-on-vivid transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-public-accent focus-visible:ring-offset-2"
+                      /*
+                        Le couple `highlight-surface` / `content-on-vivid` est
+                        conserve tel quel : il sert deja une vingtaine d'aplats
+                        publics et passe les audits axe-core. Le CTA gagne en
+                        presence par la taille et la graisse, pas par une
+                        teinte inedite dont le contraste resterait a mesurer.
+                      */
+                      className="flex min-h-[3rem] w-full items-center justify-center gap-2 bg-public-highlight-surface font-geist text-base font-bold text-public-content-on-vivid transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-public-accent focus-visible:ring-offset-2"
                     >
                       Essayer 21 jours
                       <ArrowUpRight className="h-4 w-4" aria-hidden="true" />

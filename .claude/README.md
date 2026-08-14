@@ -12,9 +12,10 @@ par diverger.
 ├── settings.json        permissions et déclaration des hooks (versionné)
 ├── settings.local.json  spécificités machine (ignoré par git)
 ├── rules/               règles détaillées, chargées selon les chemins touchés
-├── scripts/             les quatre hooks
+├── scripts/             les six hooks
 ├── agents/              agents spécialisés du projet
-└── skills/sprint/       le cycle de travail, du ticket à la clôture
+└── skills/              sprint (cycle de travail) et revue-pre-pr (balayage
+                         avant PR)
 ```
 
 ## Le principe : charger le contexte à la demande
@@ -34,12 +35,12 @@ Le découpage retenu sépare deux natures d'information :
 Modifier une page publique ne charge donc pas les règles d'isolation
 multi-tenant, et l'inverse est vrai.
 
-| Règle | Domaine |
-|---|---|
-| `multi-tenant.md` | isolation `companyId`, RBAC, sélection de destinataires |
-| `prisma-pieges.md` | `'use server'`, backfills en production, SQL, Nginx |
-| `seo-content.md` | pages secteur, guides, sitemap, contenu citable par les IA |
-| `tests.md` | conventions Vitest et Playwright, tests négatifs |
+| Règle              | Domaine                                                    |
+| ------------------ | ---------------------------------------------------------- |
+| `multi-tenant.md`  | isolation `companyId`, RBAC, sélection de destinataires    |
+| `prisma-pieges.md` | `'use server'`, backfills en production, SQL, Nginx        |
+| `seo-content.md`   | pages secteur, guides, sitemap, contenu citable par les IA |
+| `tests.md`         | conventions Vitest et Playwright, tests négatifs           |
 
 ## Le risque de ce découpage, et le hook qui le ferme
 
@@ -51,23 +52,49 @@ chemin du fichier et signale la règle applicable. Il reste silencieux sur les
 chemins sans enjeu, un hook qui parle à chaque écriture devient un bruit qu'on
 apprend à ignorer.
 
-## Les quatre hooks
+## Les six hooks
 
-| Déclencheur | Script | Rôle |
-|---|---|---|
-| `PreToolUse` | `hook-block-secret-files.sh` | bloque la **lecture** des secrets |
-| `PostToolUse` | `hook-rappel-regles.sh` | rappelle la règle du domaine touché |
-| `Stop` | `hook-warn-unpushed.sh` | signale le travail non poussé |
-| `Stop` | `hook-tracabilite.sh` | signale le journal et les tickets à clore |
+| Déclencheur    | Script                       | Rôle                                        |
+| -------------- | ---------------------------- | ------------------------------------------- |
+| `SessionStart` | `hook-etat-session.sh`       | pose l'état de départ dans le contexte      |
+| `PreToolUse`   | `hook-block-secret-files.sh` | bloque la **lecture** des secrets           |
+| `PostToolUse`  | `hook-rappel-regles.sh`      | rappelle la règle du domaine touché         |
+| `PostToolUse`  | `hook-verif-mecanique.sh`    | **vérifie** whitelist E2E et `'use server'` |
+| `Stop`         | `hook-warn-unpushed.sh`      | signale le travail non poussé               |
+| `Stop`         | `hook-tracabilite.sh`        | signale le journal et les tickets à clore   |
 
-Le premier porte une nuance qu'une règle de permission ne sait pas exprimer :
+`SessionStart` a une propriété qu'aucun autre hook ne partage : son stdout est
+injecté comme contexte visible par l'assistant. `CLAUDE.md` demandait de lire la
+dernière entrée de `docs/journal/` en début de session sans qu'aucun mécanisme
+ne l'applique ; le hook le fait, et pose au passage la branche, l'état du
+working tree et les derniers commits. Ce qui coûtait trois ou quatre appels
+d'outils, ou partait d'un état périmé quand ils étaient sautés, est acquis avant
+le premier message. Il reste tenu à un écran : un hook de démarrage verbeux paie
+du contexte à chaque session, y compris les courtes qui n'en font rien.
+
+`hook-verif-mecanique.sh` diffère de `hook-rappel-regles.sh` sur un point de
+nature. Le second **rappelle** une règle à lire, ce qui convient à une
+convention demandant du jugement. Les deux pièges du premier ne demandent aucun
+jugement, ils se constatent : un rappel les traiterait moins bien, parce qu'un
+rappel répété à chaque écriture se lit comme du bruit, alors qu'un constat ne
+parle que lorsque le défaut est présent. Tous deux étaient documentés trois fois
+dans `rules/` et se sont quand même produits. Ils partagent un profil :
+invisibles à `type-check`, à `lint` et aux tests. Un spec hors du `testMatch`
+laisse la CI verte en testant moins qu'on croit, et un export non-async dans un
+fichier `'use server'` donne un 503 en production sans jamais casser le build.
+
+Le contrôle `'use server'` a été mesuré contre les 29 fichiers concernés du
+dépôt : aucun faux positif, et il rougit bien sur un cas fautif construit.
+
+`hook-block-secret-files.sh` porte une nuance qu'une règle de permission ne sait
+pas exprimer :
 l'**écriture** dans un `.env` est autorisée, la **lecture** est bloquée. Ajouter
 une variable ou générer un secret avec `openssl` n'exige pas de lire l'existant,
 alors qu'une valeur lue entrerait dans l'historique de session sur disque. Clés
 privées et certificats sont bloqués dans les deux sens : une clé se génère, elle
 ne s'édite pas.
 
-Le dernier répond au même raisonnement que le hook de règles : une consigne
+`hook-tracabilite.sh` répond au même raisonnement que le hook de règles : une consigne
 écrite mais non vérifiée s'érode en silence, parce que chaque oubli ressemble à
 un cas isolé. Le journal précédent en est la démonstration, il a cessé d'être
 tenu au 12 mai 2026 et personne ne l'a vu pendant trois mois. Le hook ne
@@ -76,7 +103,7 @@ secret de plus sur un dépôt public, lu par le hook qui bloque justement la
 lecture des `.env`. Extraire les clés `SP-XXX` des commits du jour couvre le cas
 réel, oublier de commenter un ticket sur lequel on vient de travailler.
 
-C'est le hook qui porte la protection, pas les règles `deny` de `settings.json`,
+C'est ce hook qui porte la protection, pas les règles `deny` de `settings.json`,
 qui restent en seconde ligne. Un hook sortant en code 2 bloque l'appel **avant**
 l'évaluation des permissions, et il peut normaliser le chemin avant de le
 comparer. Les motifs du hook sont insensibles à la casse : macOS monte par défaut
@@ -89,8 +116,7 @@ lettre.
 Elles ne sont pas théoriques. Chaque entrée correspond à un défaut qui a coûté du
 temps ou provoqué un incident.
 
-La plus importante vient d'une fuite de données entre clients survenue en août
-2026. Dans la sélection des managers à notifier d'une demande de congé :
+La plus importante vient d'une fuite de données entre clients survenue en août 2026. Dans la sélection des managers à notifier d'une demande de congé :
 
 ```ts
 managedTeams: teamId ? { some: { id: teamId } } : undefined
@@ -113,20 +139,33 @@ ligne et laissé croire à un nettoyage effectif.
 
 ## Agents
 
-Quatre agents spécialisés, calibrés sur cette stack précise, Next.js 15,
+Cinq agents spécialisés, calibrés sur cette stack précise, Next.js 15,
 NextAuth v5, PostgreSQL 16, Redis 7 et multi-tenant : `test-writer`,
-`security-auditor`, `nextjs-architect`, `docker-devops`.
+`security-auditor`, `nextjs-architect`, `docker-devops` et
+`public-content-reviewer`.
+
+Le dernier relit une page publique **rendue**, pas lue. Il porte la leçon de la
+refonte d'août 2026 : douze zones oubliées, toutes trouvées à l'écran et aucune
+par la lecture des fichiers modifiés.
 
 Ils vivent dans le projet plutôt qu'au niveau utilisateur, précisément parce
 qu'ils sont calibrés : proposés sur un projet mono-tenant sans Redis, ils
 donneraient de mauvais conseils avec assurance.
 
-## Skill `sprint`
+## Skills
 
-Porte le cycle complet : lire le ticket **et ses commentaires**, un commentaire
-récent rectifiant souvent une description non réécrite, charger les règles du
-domaine, coder, vérifier avec la preuve à l'appui, puis clore la traçabilité sur
-les canaux applicables (dépôt, journal, Jira, mémoire).
+`sprint` porte le cycle complet : lire le ticket **et ses commentaires**, un
+commentaire récent rectifiant souvent une description non réécrite, charger les
+règles du domaine, coder, vérifier avec la preuve à l'appui, puis clore la
+traçabilité sur les canaux applicables (dépôt, journal, Jira, mémoire).
+
+`revue-pre-pr` s'intercale entre la vérification et le push, et ne remplace ni
+l'une ni l'autre. Les commandes y sont déjà vertes : il balaie ce qu'elles ne
+voient pas. Sur ce projet, les défauts coûteux ont tous franchi `type-check` et
+`npm run test` sans broncher, parce qu'ils partagent un profil, du code valide
+et simplement faux. `text-blue-600` est une classe Tailwind légitime, hors
+palette. Une page sans `.public-scope` s'affiche correctement chez son auteur et
+vire au sombre chez un utilisateur ayant choisi ce thème.
 
 ## Ce qui reste hors du dépôt
 

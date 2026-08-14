@@ -18,7 +18,7 @@ const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://smartplanning.fr'
 const hubUrl = `${baseUrl}/solutions`
 
 export const metadata: Metadata = {
-  title: 'Logiciel de planning par secteur : restauration, commerce, BTP',
+  title: 'Logiciel de planning par secteur d’activité',
   description:
     'Restauration, commerce, BTP : chaque secteur a ses règles de planning. Découvrez la solution adaptée à votre métier, 2,90 € HT par employé et essai 21 jours.',
   keywords: [
@@ -46,7 +46,7 @@ export const metadata: Metadata = {
     },
   },
   openGraph: {
-    title: 'Logiciel de planning par secteur : restauration, commerce, BTP',
+    title: 'Logiciel de planning par secteur d’activité',
     description:
       'Restauration, commerce, BTP : chaque secteur a ses règles de planning. Découvrez la solution adaptée à votre métier.',
     type: 'website',
@@ -65,7 +65,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Logiciel de planning par secteur : restauration, commerce, BTP',
+    title: 'Logiciel de planning par secteur d’activité',
     description:
       'Restauration, commerce, BTP : chaque secteur a ses règles de planning. Découvrez la solution adaptée à votre métier.',
     images: [`${baseUrl}/og-image.png`],

@@ -17,6 +17,8 @@
 import { PRICING, INCLUDED_FEATURES } from '@/lib/config/pricing'
 import { faqs, roleDemos } from './(landing)/data'
 
+import { PAGE_LAST_MODIFIED, toSchemaDate } from '@/app/page-last-modified'
+
 const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://smartplanning.fr'
 
 // WebSite Schema
@@ -96,6 +98,34 @@ export const softwareAppSchema = {
   },
 }
 
+/**
+ * WebPage de l'accueil.
+ *
+ * Ajoute apres l'audit SEO du 14 aout 2026 : l'accueil etait la seule page
+ * publique sans noeud WebPage, donc sans `dateModified`. Les pages secteur,
+ * les guides et les pages legales en portaient un, la page la plus visitee
+ * n'annoncait aucune fraicheur.
+ *
+ * La date vient de la meme constante que le `lastmod` du sitemap, les deux ne
+ * peuvent donc plus diverger.
+ */
+export const webPageSchema = {
+  '@type': 'WebPage',
+  '@id': `${baseUrl}/#webpage`,
+  url: baseUrl,
+  name: 'SmartPlanning',
+  description:
+    'Logiciel français de gestion des plannings et congés pour TPE et PME.',
+  inLanguage: 'fr-FR',
+  isPartOf: {
+    '@id': `${baseUrl}/#website`,
+  },
+  about: {
+    '@id': `${baseUrl}/#software`,
+  },
+  dateModified: toSchemaDate(PAGE_LAST_MODIFIED.home),
+}
+
 // Convertit "2:45" en duration ISO 8601 (PT2M45S)
 function durationToIso(duration: string): string {
   const [minutes, seconds] = duration.split(':').map(Number)
@@ -136,6 +166,7 @@ export function StructuredData() {
     '@graph': [
       webSiteSchema,
       organizationSchema,
+      webPageSchema,
       softwareAppSchema,
       ...videoSchemas,
       faqPageSchema,

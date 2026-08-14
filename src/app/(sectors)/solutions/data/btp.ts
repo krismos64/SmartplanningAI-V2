@@ -35,6 +35,9 @@ export const btpSector: SectorData = {
   h1: 'Un logiciel de planning pensé pour le',
   h1Highlight: 'BTP et les chantiers',
 
+  teaser:
+    'Compagnons répartis sur plusieurs chantiers, affectations qui bougent chaque jour, arrêts intempéries : suivez qui travaille où, et exportez les heures pour la facturation.',
+
   directAnswer:
     "SmartPlanning permet aux entreprises du BTP d'affecter leurs compagnons par chantier en quelques minutes : plannings multi-chantiers, congés intempéries, export des heures par créneau (durée et lieu) et notes d'incidents pour tracer un accident ou un retard. Chaque compagnon consulte son planning depuis son téléphone et le chef de chantier ajuste les affectations par glisser-déposer. Le tarif est de 2,90 € HT par employé et par mois, toutes fonctionnalités incluses, avec un essai gratuit de 21 jours sans carte bancaire.",
 

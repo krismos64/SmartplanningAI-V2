@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   title: 'SmartPlanning : plannings, congés et RH pour entreprises',
 
   description:
-    'Simplifiez la gestion des plannings, congés et communication de vos équipes. Messagerie interne, import CSV/Excel. Solution SaaS française pour TPE et PME. Essai gratuit 21 jours, à partir de 2,90\u00a0\u20ac/employé/mois.',
+    'Logiciel français de gestion des plannings et congés pour TPE et PME. À partir de 2,90\u00a0\u20ac par employé et par mois, essai gratuit de 21 jours.',
 
   keywords: [
     'logiciel gestion planning entreprise',

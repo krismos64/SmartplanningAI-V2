@@ -13,6 +13,7 @@ import { describe, expect, it } from 'vitest'
 import sitemap from '../sitemap'
 import { getAllSectors } from '../(sectors)/solutions/data'
 import { getAllGuides } from '../(guides)/guides/data'
+import { PAGE_LAST_MODIFIED } from '../page-last-modified'
 
 const TEST_START = new Date()
 
@@ -59,7 +60,7 @@ describe('sitemap', () => {
     }
   })
 
-  it('inclut le hub solutions avec la date du secteur le plus recent', () => {
+  it('inclut le hub solutions a la plus recente entre sa date et celle de ses pages filles', () => {
     const entries = sitemap()
 
     const hub = entries.find(
@@ -67,12 +68,32 @@ describe('sitemap', () => {
     )
     expect(hub).toBeDefined()
     expect(hub?.priority).toBe(0.8)
+
+    // Le hub prenait auparavant la seule date du secteur le plus recent, ce
+    // qui ne voyait pas une modification PROPRE au hub : le 14 aout 2026, le
+    // texte de ses cartes a ete raccourci sans qu'aucune page secteur ne
+    // bouge, et le lastmod serait reste au 11 aout.
     const newestSector = Math.max(
       ...getAllSectors().map((sector) =>
         new Date(sector.lastModified).getTime()
       )
     )
-    expect((hub?.lastModified as Date).getTime()).toBe(newestSector)
+    const attendu = Math.max(
+      PAGE_LAST_MODIFIED.solutionsHub.getTime(),
+      newestSector
+    )
+    expect((hub?.lastModified as Date).getTime()).toBe(attendu)
+
+    // Le hub porte AUJOURD'HUI une date qui lui est propre, posterieure a
+    // celle de ses pages filles. Cette assertion tombe si quelqu'un remet la
+    // derivation depuis les seuls secteurs : le hub redirait alors la date de
+    // ses filles au lieu de la sienne, ce qui est le defaut corrige ici.
+    expect(PAGE_LAST_MODIFIED.solutionsHub.getTime()).toBeGreaterThan(
+      newestSector
+    )
+    expect((hub?.lastModified as Date).getTime()).toBe(
+      PAGE_LAST_MODIFIED.solutionsHub.getTime()
+    )
   })
 
   it('inclut le hub guides et chaque guide avec sa date propre', () => {

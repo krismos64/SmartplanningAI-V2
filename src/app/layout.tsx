@@ -10,7 +10,8 @@
  * FONCTIONNALITÉS :
  * - Metadata SEO (title, description, Open Graph, Twitter Cards)
  * - Import des styles globaux (Tailwind CSS)
- * - Police Google Fonts (Inter)
+ * - Polices Google Fonts (Rajdhani pour l'application, Geist et Instrument
+ *   Serif pour les pages publiques)
  * - Structure HTML sémantique
  * - Viewport responsive
  *
@@ -27,23 +28,9 @@ import { SkipLink } from '@/components/layout/skip-link'
 import { ThemeProvider } from '@/components/providers'
 import { ToastProvider } from '@/components/toast'
 import type { Metadata, Viewport } from 'next'
-import { Inter, Rajdhani } from 'next/font/google'
+import { Rajdhani } from 'next/font/google'
 import { publicFontVariables } from './(public)/fonts'
 import './globals.css'
-
-/**
- * Configuration Google Font Inter
- *
- * Inter est une police optimisée pour les interfaces web
- * - Excellente lisibilité
- * - Chargement optimisé par Next.js (auto-hébergée)
- * - Variable font pour poids dynamiques
- */
-const inter = Inter({
-  subsets: ['latin'],
-  display: 'swap',
-  variable: '--font-inter',
-})
 
 /**
  * Configuration Google Font Rajdhani (SmartPlanning)
@@ -55,12 +42,25 @@ const inter = Inter({
  * - Excellente pour les titres et interfaces
  * - Weights : 400 (Regular), 500 (Medium), 600 (SemiBold), 700 (Bold)
  * - Chargement optimisé par Next.js (auto-hébergée)
+ *
+ * `preload: false` (audit Lighthouse du 14 août 2026). Les quatre graisses
+ * pèsent 40 Kio préchargés en priorité haute sur TOUTES les routes, le layout
+ * racine préchargeant partout. Or les pages publiques peignent en Geist : ces
+ * 40 Kio passaient devant les polices réellement affichées, sur le chemin
+ * critique qui précède le LCP.
+ *
+ * Sans preload, le @font-face reste généré et la police se charge à la
+ * demande : l'application privée, qui peint bien en Rajdhani, la reçoit
+ * toujours. Elle y perd le gain du préchargement, ce qui est le bon arbitrage,
+ * le back-office étant derrière un écran de connexion là où les pages
+ * publiques portent l'acquisition.
  */
 const rajdhani = Rajdhani({
   weight: ['400', '500', '600', '700'],
   subsets: ['latin'],
   variable: '--font-rajdhani',
   display: 'swap',
+  preload: false,
 })
 
 /**
@@ -247,7 +247,7 @@ export default function RootLayout({
   return (
     <html
       lang="fr"
-      className={`${inter.variable} ${rajdhani.variable} ${publicFontVariables}`}
+      className={`${rajdhani.variable} ${publicFontVariables}`}
       suppressHydrationWarning
     >
       <head>

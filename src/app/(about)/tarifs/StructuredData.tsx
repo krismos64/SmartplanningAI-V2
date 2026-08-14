@@ -14,6 +14,8 @@
 
 import { PRICING, INCLUDED_FEATURES } from '@/lib/config/pricing'
 
+import { PAGE_LAST_MODIFIED, toSchemaDate } from '@/app/page-last-modified'
+
 const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://smartplanning.fr'
 
 // SoftwareApplication + Offer Schema
@@ -123,6 +125,12 @@ const webPageSchema = {
   description:
     'Tarif unique et transparent : 2,90\u00a0\u20ac HT par employé par mois. Toutes les fonctionnalités incluses.',
   inLanguage: 'fr-FR',
+  /*
+   * Fraicheur affichee aux moteurs et aux assistants. Une page de tarifs est
+   * precisement celle dont un assistant doit pouvoir dater le prix avant de
+   * le citer. Lue depuis la meme constante que le `lastmod` du sitemap.
+   */
+  dateModified: toSchemaDate(PAGE_LAST_MODIFIED.tarifs),
   isPartOf: {
     '@type': 'WebSite',
     '@id': `${baseUrl}/#website`,

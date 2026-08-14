@@ -32,12 +32,12 @@ Le détail applicable se charge selon ce que touche le travail. Lire la règle
 correspondante **avant** de modifier ces chemins, plutôt que de reconstruire la
 convention de mémoire.
 
-| Fichier | Charger avant de toucher |
-|---|---|
-| `.claude/rules/multi-tenant.md` | Server Action, route API, requête Prisma, auth, choix de destinataires |
-| `.claude/rules/prisma-pieges.md` | `'use server'`, backfill, SQL de diagnostic, cache dashboard, Nginx |
-| `.claude/rules/seo-content.md` | pages secteur, guides, landing, sitemap, `llms.txt`, texte public |
-| `.claude/rules/tests.md` | écriture de tests, et avant de conclure un travail |
+| Fichier                          | Charger avant de toucher                                               |
+| -------------------------------- | ---------------------------------------------------------------------- |
+| `.claude/rules/multi-tenant.md`  | Server Action, route API, requête Prisma, auth, choix de destinataires |
+| `.claude/rules/prisma-pieges.md` | `'use server'`, backfill, SQL de diagnostic, cache dashboard, Nginx    |
+| `.claude/rules/seo-content.md`   | pages secteur, guides, landing, sitemap, `llms.txt`, texte public      |
+| `.claude/rules/tests.md`         | écriture de tests, et avant de conclure un travail                     |
 
 Documentation longue : `docs/deployment.md` pour le déploiement,
 `docs/database-architecture.md` pour la base.
@@ -91,23 +91,31 @@ pour obtenir le retour de la CI.
 - `security-auditor` : revue OWASP, isolation multi-tenant, NextAuth
 - `nextjs-architect` : architecture Next.js 15 / React 19 / Prisma
 - `docker-devops` : conteneurisation, CI/CD, déploiement VPS
+- `public-content-reviewer` : relecture d'une page publique rendue, contraste
+  mesuré, structure GEO
 
-Ces quatre agents sont calibrés sur cette stack précise. Ne pas les invoquer
+Ces cinq agents sont calibrés sur cette stack précise. Ne pas les invoquer
 depuis un autre projet.
 
 ## Conduite du travail
 
 Le skill `sprint` porte le cycle complet, du ticket à la clôture. L'utiliser pour
-tout travail significatif, ticket SP-XXX ou exploration.
+tout travail significatif, ticket SP-XXX ou exploration. Le skill `revue-pre-pr`
+s'intercale entre la vérification et le push : il balaie ce que type-check, lint
+et les tests ne voient pas, sans les remplacer.
 
 Travailler sans demander de validation à chaque commande, enchaîner librement les
 outils à l'intérieur d'une étape. Faire un point à la fin de chaque étape
 significative, et proposer la suite plutôt que de l'enchaîner d'office.
 
-Quatre hooks appuient ce cycle : `PreToolUse` bloque la lecture des secrets,
-`PostToolUse` rappelle la règle applicable au chemin modifié, et deux hooks
-`Stop` avertissent s'il reste du travail non poussé ou de la traçabilité à
-clore.
+Six hooks appuient ce cycle. `SessionStart` pose l'état de départ, branche,
+working tree, derniers commits et dernière entrée de journal, sans qu'il soit
+besoin de le demander. `PreToolUse` bloque la lecture des secrets. Deux
+`PostToolUse` se partagent l'écriture : l'un rappelle la règle applicable au
+chemin modifié, l'autre vérifie mécaniquement deux pièges que rien d'autre ne
+voit, un spec absent de la whitelist E2E et un export non-async dans un fichier
+`'use server'`. Deux `Stop` avertissent s'il reste du travail non poussé ou de
+la traçabilité à clore.
 
 ## Vérification avant de conclure
 
