@@ -6,7 +6,7 @@
 | Documents produits | `.claude/scripts/hook-etat-session.sh`, `.claude/scripts/hook-verif-mecanique.sh`, `.claude/skills/revue-pre-pr/SKILL.md`, `.claude/agents/public-content-reviewer.md`, `src/app/page-last-modified.ts`                                                                                                                                                                                                                              |
 | Documents modifiés | `CLAUDE.md`, `.claude/README.md`, `.claude/settings.json`, `layout.tsx`, `(public)/fonts.ts`, `page.tsx`, `StructuredData.tsx`, `(about)/tarifs/StructuredData.tsx`, `(about)/a-propos/page.tsx`, `(sectors)/solutions/page.tsx`, `SectorsHubContent.tsx`, les trois fichiers de données secteur, `types.ts`, `sitemap.ts`, `LandingFooter.tsx`, `LandingHeader.tsx`, `sectors.test.ts`, `sitemap.test.ts`, `LandingHeader.test.tsx` |
 | Contrôles          | type-check vert, Prettier conforme, 3192 tests unitaires sur 190 fichiers, 26 specs publiques dont 7 audits axe-core WCAG AA, Lighthouse mobile sur 5 pages de production, mesures au navigateur aux trois points de rupture                                                                                                                                                                                                         |
-| Jira               | Aucun ticket. Six commits sans clé SP-XXX, à rattacher si un ticket est ouvert a posteriori                                                                                                                                                                                                                                                                                                                                          |
+| Jira               | Aucun ticket, exploration hors ticket assumée par Christophe. Les huit commits ne portent aucune clé SP-XXX                                                                                                                                                                                                                                                                                                                          |
 | Mémoire            | `claude-code-config` réécrite, `ou-en-est-le-projet` mise à jour                                                                                                                                                                                                                                                                                                                                                                     |
 
 ## Ce qui a été fait
@@ -142,12 +142,32 @@ production sur du code intact. Et un `routesManifest.dataRoutes is not
 iterable` venait d'un `.next` corrompu par un `pkill`, réglé par un build depuis
 zéro.
 
-## Prochaine étape
+## Livraison
 
-**Rien n'est poussé.** Six commits locaux sur `chore/config-claude-code`, à la
-demande explicite de Christophe. La CI n'a donc pas tourné, et le gain de LCP
-mesuré est local : la production ne le verra qu'après déploiement, où Nginx et
-la latence VPS pèseront aussi.
+Les commits sont restés locaux pendant toute la session, à la demande explicite
+de Christophe, puis poussés en fin de session. **PR #76 mergée, déployée et
+vérifiée en production le 14 août.**
+
+CI verte sur la branche puis sur `main`, quatre jobs dont les E2E. CD vert sur
+les trois étapes, image, migrations et déploiement VPS. Conteneur
+`smartplanning-app` en `healthy`.
+
+Vérifié sur `smartplanning.fr` après déploiement, et non déduit du statut du
+workflow : 1 preload de police au lieu de 5, descriptions et titles aux
+longueurs corrigées, `dateModified` présent sur `/` et `/tarifs`, cartes du hub
+à 39, 40 et 41 mots, `/solutions` daté du 14 août au sitemap quand ses pages
+filles restent au 11, menu mobile à 12 liens sans aucun hors écran, footer à
+940 px, et les trois liens secteur toujours dans le footer.
+
+**Le gain de LCP ne se transpose pas tel quel en production.** La page secteur
+gagne nettement, 4,4 s à 2,9 s et un score de 83 à 95. L'accueil et `/tarifs`,
+non : trois passes sur l'accueil donnent 3,2 s, 4,2 s puis 3,2 s, une dispersion
+du même ordre que l'écart mesuré. Une passe unique n'y prouve donc rien. Ce qui
+est structurel et non sujet à mesure, c'est le passage de 5 polices préchargées
+à 1. Les Core Web Vitals de la Search Console, calculés sur le trafic réel sur
+28 jours, trancheront mieux que Lighthouse.
+
+## Prochaine étape
 
 Deux sujets restent ouverts, aucun n'est un défaut :
 
