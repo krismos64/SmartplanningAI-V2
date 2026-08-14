@@ -91,23 +91,31 @@ pour obtenir le retour de la CI.
 - `security-auditor` : revue OWASP, isolation multi-tenant, NextAuth
 - `nextjs-architect` : architecture Next.js 15 / React 19 / Prisma
 - `docker-devops` : conteneurisation, CI/CD, déploiement VPS
+- `public-content-reviewer` : relecture d'une page publique rendue, contraste
+  mesuré, structure GEO
 
-Ces quatre agents sont calibrés sur cette stack précise. Ne pas les invoquer
+Ces cinq agents sont calibrés sur cette stack précise. Ne pas les invoquer
 depuis un autre projet.
 
 ## Conduite du travail
 
 Le skill `sprint` porte le cycle complet, du ticket à la clôture. L'utiliser pour
-tout travail significatif, ticket SP-XXX ou exploration.
+tout travail significatif, ticket SP-XXX ou exploration. Le skill `revue-pre-pr`
+s'intercale entre la vérification et le push : il balaie ce que type-check, lint
+et les tests ne voient pas, sans les remplacer.
 
 Travailler sans demander de validation à chaque commande, enchaîner librement les
 outils à l'intérieur d'une étape. Faire un point à la fin de chaque étape
 significative, et proposer la suite plutôt que de l'enchaîner d'office.
 
-Quatre hooks appuient ce cycle : `PreToolUse` bloque la lecture des secrets,
-`PostToolUse` rappelle la règle applicable au chemin modifié, et deux hooks
-`Stop` avertissent s'il reste du travail non poussé ou de la traçabilité à
-clore.
+Six hooks appuient ce cycle. `SessionStart` pose l'état de départ, branche,
+working tree, derniers commits et dernière entrée de journal, sans qu'il soit
+besoin de le demander. `PreToolUse` bloque la lecture des secrets. Deux
+`PostToolUse` se partagent l'écriture : l'un rappelle la règle applicable au
+chemin modifié, l'autre vérifie mécaniquement deux pièges que rien d'autre ne
+voit, un spec absent de la whitelist E2E et un export non-async dans un fichier
+`'use server'`. Deux `Stop` avertissent s'il reste du travail non poussé ou de
+la traçabilité à clore.
 
 ## Vérification avant de conclure
 
