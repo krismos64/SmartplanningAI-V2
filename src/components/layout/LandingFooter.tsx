@@ -78,11 +78,19 @@ const LINK_CLASSES =
 
 export function LandingFooter() {
   return (
-    <footer className="bg-public-surface-dark py-16 font-geist">
+    <footer className="bg-public-surface-dark py-10 font-geist md:py-16">
       <div className="container-custom">
-        <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-4 lg:gap-12">
-          {/* Marque */}
-          <div>
+        {/*
+          Deux colonnes des le mobile, quatre a partir de `lg`. La grille n'en
+          declarait aucune sous 768 px : les quatre blocs s'empilaient et le
+          footer mesurait 1424 px, soit 1,69 ecran de telephone. Les liens
+          portent une cible tactile de 44 px (WCAG 2.1 AA, voir LINK_CLASSES)
+          qu'il n'est pas question de reduire : c'est la mise en colonnes qui
+          rend la hauteur, pas le rognage des zones cliquables.
+        */}
+        <div className="grid grid-cols-2 gap-x-6 gap-y-8 md:gap-10 lg:grid-cols-4 lg:gap-12">
+          {/* Marque : pleine largeur tant que la grille n'a que deux colonnes */}
+          <div className="col-span-2 lg:col-span-1">
             <Link
               href="/"
               className="inline-flex min-h-[2.75rem] items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-public-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-public-surface-dark"
@@ -94,8 +102,7 @@ export function LandingFooter() {
             </Link>
 
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-public-content-on-dark/75">
-              Le planning d&rsquo;équipe qui laisse moins de place aux
-              imprévus.
+              Le planning d&rsquo;équipe qui laisse moins de place aux imprévus.
             </p>
 
             <ul className="mt-6 flex gap-3">
@@ -115,9 +122,22 @@ export function LandingFooter() {
             </ul>
           </div>
 
-          {/* Colonnes de liens */}
+          {/*
+            Produit compte 7 liens, Entreprise 2 et Legal 5. Sur deux colonnes,
+            les empiler dans l'ordre du registre laisse Entreprise seule face a
+            Produit, donc un vide a droite et Legal repartant en pleine largeur.
+            Produit occupe donc les deux rangees de la colonne de gauche, et les
+            deux autres se suivent a droite : 7 liens de chaque cote. A partir
+            de `lg`, la grille passe a quatre colonnes et ce placement tombe.
+          */}
           {columns.map((column) => (
-            <nav key={column.title} aria-labelledby={`footer-${column.title}`}>
+            <nav
+              key={column.title}
+              aria-labelledby={`footer-${column.title}`}
+              className={
+                column.title === 'Produit' ? 'row-span-2 lg:row-span-1' : ''
+              }
+            >
               <h2
                 id={`footer-${column.title}`}
                 className="text-xs font-semibold uppercase tracking-[0.14em] text-public-highlight"
@@ -138,7 +158,7 @@ export function LandingFooter() {
         </div>
 
         {/* Contact */}
-        <div className="mt-12 border-t border-public-border-on-dark pt-8">
+        <div className="mt-8 border-t border-public-border-on-dark pt-6 md:mt-12 md:pt-8">
           <a
             href="mailto:contact@smartplanning.fr"
             className="inline-flex min-h-[2.75rem] items-center gap-2 text-sm font-semibold text-public-content-on-dark underline underline-offset-4 transition-colors hover:text-public-accent-on-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-public-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-public-surface-dark"
@@ -152,7 +172,7 @@ export function LandingFooter() {
         </div>
 
         {/* Mentions */}
-        <div className="mt-8 flex flex-col gap-4 border-t border-public-border-on-dark pt-8 md:flex-row md:items-center md:justify-between">
+        <div className="mt-6 flex flex-col gap-4 border-t border-public-border-on-dark pt-6 md:mt-8 md:flex-row md:items-center md:justify-between md:pt-8">
           <p className="text-sm text-public-content-on-dark/75">
             &copy; {new Date().getFullYear()} SmartPlanning. Tous droits
             réservés.
