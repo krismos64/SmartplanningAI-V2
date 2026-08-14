@@ -35,12 +35,12 @@ Le découpage retenu sépare deux natures d'information :
 Modifier une page publique ne charge donc pas les règles d'isolation
 multi-tenant, et l'inverse est vrai.
 
-| Règle | Domaine |
-|---|---|
-| `multi-tenant.md` | isolation `companyId`, RBAC, sélection de destinataires |
-| `prisma-pieges.md` | `'use server'`, backfills en production, SQL, Nginx |
-| `seo-content.md` | pages secteur, guides, sitemap, contenu citable par les IA |
-| `tests.md` | conventions Vitest et Playwright, tests négatifs |
+| Règle              | Domaine                                                    |
+| ------------------ | ---------------------------------------------------------- |
+| `multi-tenant.md`  | isolation `companyId`, RBAC, sélection de destinataires    |
+| `prisma-pieges.md` | `'use server'`, backfills en production, SQL, Nginx        |
+| `seo-content.md`   | pages secteur, guides, sitemap, contenu citable par les IA |
+| `tests.md`         | conventions Vitest et Playwright, tests négatifs           |
 
 ## Le risque de ce découpage, et le hook qui le ferme
 
@@ -54,14 +54,14 @@ apprend à ignorer.
 
 ## Les six hooks
 
-| Déclencheur | Script | Rôle |
-|---|---|---|
-| `SessionStart` | `hook-etat-session.sh` | pose l'état de départ dans le contexte |
-| `PreToolUse` | `hook-block-secret-files.sh` | bloque la **lecture** des secrets |
-| `PostToolUse` | `hook-rappel-regles.sh` | rappelle la règle du domaine touché |
-| `PostToolUse` | `hook-verif-mecanique.sh` | **vérifie** whitelist E2E et `'use server'` |
-| `Stop` | `hook-warn-unpushed.sh` | signale le travail non poussé |
-| `Stop` | `hook-tracabilite.sh` | signale le journal et les tickets à clore |
+| Déclencheur    | Script                       | Rôle                                        |
+| -------------- | ---------------------------- | ------------------------------------------- |
+| `SessionStart` | `hook-etat-session.sh`       | pose l'état de départ dans le contexte      |
+| `PreToolUse`   | `hook-block-secret-files.sh` | bloque la **lecture** des secrets           |
+| `PostToolUse`  | `hook-rappel-regles.sh`      | rappelle la règle du domaine touché         |
+| `PostToolUse`  | `hook-verif-mecanique.sh`    | **vérifie** whitelist E2E et `'use server'` |
+| `Stop`         | `hook-warn-unpushed.sh`      | signale le travail non poussé               |
+| `Stop`         | `hook-tracabilite.sh`        | signale le journal et les tickets à clore   |
 
 `SessionStart` a une propriété qu'aucun autre hook ne partage : son stdout est
 injecté comme contexte visible par l'assistant. `CLAUDE.md` demandait de lire la
@@ -116,8 +116,7 @@ lettre.
 Elles ne sont pas théoriques. Chaque entrée correspond à un défaut qui a coûté du
 temps ou provoqué un incident.
 
-La plus importante vient d'une fuite de données entre clients survenue en août
-2026. Dans la sélection des managers à notifier d'une demande de congé :
+La plus importante vient d'une fuite de données entre clients survenue en août 2026. Dans la sélection des managers à notifier d'une demande de congé :
 
 ```ts
 managedTeams: teamId ? { some: { id: teamId } } : undefined

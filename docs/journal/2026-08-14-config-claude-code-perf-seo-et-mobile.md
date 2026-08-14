@@ -1,13 +1,13 @@
 # 14 août 2026, configuration Claude Code, polices, SEO et navigation mobile
 
-| Champ | Valeur |
-|---|---|
-| Ticket | Aucun. Session d'exploration partie d'une question sur la configuration Claude Code, puis six correctifs enchaînés sur demande |
-| Documents produits | `.claude/scripts/hook-etat-session.sh`, `.claude/scripts/hook-verif-mecanique.sh`, `.claude/skills/revue-pre-pr/SKILL.md`, `.claude/agents/public-content-reviewer.md`, `src/app/page-last-modified.ts` |
+| Champ              | Valeur                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Ticket             | Aucun. Session d'exploration partie d'une question sur la configuration Claude Code, puis six correctifs enchaînés sur demande                                                                                                                                                                                                                                                                                                       |
+| Documents produits | `.claude/scripts/hook-etat-session.sh`, `.claude/scripts/hook-verif-mecanique.sh`, `.claude/skills/revue-pre-pr/SKILL.md`, `.claude/agents/public-content-reviewer.md`, `src/app/page-last-modified.ts`                                                                                                                                                                                                                              |
 | Documents modifiés | `CLAUDE.md`, `.claude/README.md`, `.claude/settings.json`, `layout.tsx`, `(public)/fonts.ts`, `page.tsx`, `StructuredData.tsx`, `(about)/tarifs/StructuredData.tsx`, `(about)/a-propos/page.tsx`, `(sectors)/solutions/page.tsx`, `SectorsHubContent.tsx`, les trois fichiers de données secteur, `types.ts`, `sitemap.ts`, `LandingFooter.tsx`, `LandingHeader.tsx`, `sectors.test.ts`, `sitemap.test.ts`, `LandingHeader.test.tsx` |
-| Contrôles | type-check vert, Prettier conforme, 3192 tests unitaires sur 190 fichiers, 26 specs publiques dont 7 audits axe-core WCAG AA, Lighthouse mobile sur 5 pages de production, mesures au navigateur aux trois points de rupture |
-| Jira | Aucun ticket. Six commits sans clé SP-XXX, à rattacher si un ticket est ouvert a posteriori |
-| Mémoire | `claude-code-config` réécrite, `ou-en-est-le-projet` mise à jour |
+| Contrôles          | type-check vert, Prettier conforme, 3192 tests unitaires sur 190 fichiers, 26 specs publiques dont 7 audits axe-core WCAG AA, Lighthouse mobile sur 5 pages de production, mesures au navigateur aux trois points de rupture                                                                                                                                                                                                         |
+| Jira               | Aucun ticket. Six commits sans clé SP-XXX, à rattacher si un ticket est ouvert a posteriori                                                                                                                                                                                                                                                                                                                                          |
+| Mémoire            | `claude-code-config` réécrite, `ou-en-est-le-projet` mise à jour                                                                                                                                                                                                                                                                                                                                                                     |
 
 ## Ce qui a été fait
 
@@ -54,11 +54,11 @@ page, pour un texte que personne ne peignait.
 
 Résultat mesuré, même machine, `git stash` pour rebâtir l'ancien code :
 
-| Page | LCP avant | LCP après |
-|---|---|---|
-| Accueil | 5,0 s | 4,0 s |
-| `/tarifs` | 4,2 s | 3,6 s |
-| Secteur | 4,5 s | 3,5 s |
+| Page      | LCP avant | LCP après |
+| --------- | --------- | --------- |
+| Accueil   | 5,0 s     | 4,0 s     |
+| `/tarifs` | 4,2 s     | 3,6 s     |
+| Secteur   | 4,5 s     | 3,5 s     |
 
 1 police préchargée (28 Kio) au lieu de 5 (88 Kio).
 

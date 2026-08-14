@@ -14,10 +14,7 @@
 
 import { PRICING, INCLUDED_FEATURES } from '@/lib/config/pricing'
 
-import {
-  PAGE_LAST_MODIFIED,
-  toSchemaDate,
-} from '@/app/page-last-modified'
+import { PAGE_LAST_MODIFIED, toSchemaDate } from '@/app/page-last-modified'
 
 const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://smartplanning.fr'
 

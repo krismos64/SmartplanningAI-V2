@@ -32,12 +32,12 @@ Le détail applicable se charge selon ce que touche le travail. Lire la règle
 correspondante **avant** de modifier ces chemins, plutôt que de reconstruire la
 convention de mémoire.
 
-| Fichier | Charger avant de toucher |
-|---|---|
-| `.claude/rules/multi-tenant.md` | Server Action, route API, requête Prisma, auth, choix de destinataires |
-| `.claude/rules/prisma-pieges.md` | `'use server'`, backfill, SQL de diagnostic, cache dashboard, Nginx |
-| `.claude/rules/seo-content.md` | pages secteur, guides, landing, sitemap, `llms.txt`, texte public |
-| `.claude/rules/tests.md` | écriture de tests, et avant de conclure un travail |
+| Fichier                          | Charger avant de toucher                                               |
+| -------------------------------- | ---------------------------------------------------------------------- |
+| `.claude/rules/multi-tenant.md`  | Server Action, route API, requête Prisma, auth, choix de destinataires |
+| `.claude/rules/prisma-pieges.md` | `'use server'`, backfill, SQL de diagnostic, cache dashboard, Nginx    |
+| `.claude/rules/seo-content.md`   | pages secteur, guides, landing, sitemap, `llms.txt`, texte public      |
+| `.claude/rules/tests.md`         | écriture de tests, et avant de conclure un travail                     |
 
 Documentation longue : `docs/deployment.md` pour le déploiement,
 `docs/database-architecture.md` pour la base.
