@@ -1,0 +1,15 @@
+# Surveillance de l'expiration des certificats TLS servis par smartplanning.fr
+# Installe dans /etc/cron.d/smartplanning-tls-check
+#
+# Deux executions par jour. Le certificat sert de facade publique au SaaS :
+# une detection sous 12 h vaut mieux qu'une decouverte par un prospect.
+# Horaires decales des minutes rondes pour eviter la contention.
+#
+# La sortie n'est pas redirigee vers /dev/null : cron la conserve dans le
+# journal systeme, ce qui laisse une trace consultable meme si l'envoi SMTP
+# echoue. C'est volontaire, le script est silencieux quand tout va bien.
+
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+17 7,19 * * * root /opt/smartplanning/ops/check-tls-expiry.sh 2>&1 | /usr/bin/logger -t smartplanning-tls
