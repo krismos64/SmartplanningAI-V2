@@ -210,6 +210,19 @@ Le CD ne se declenche que si le CI reussit entierement, E2E comprises : meme un 
 
 > Guide complet : [`docs/deployment.md`](docs/deployment.md)
 
+### Surveillance TLS
+
+Le DNS du domaine est gere chez Hostinger alors que le serveur est chez OVH.
+Une bascule de la zone DNS rend le site inaccessible sans que rien ne casse
+cote VPS : c'est la panne du 18 aout 2026, ou le trafic partait vers un CDN
+tiers servant un certificat expire pendant que certbot renouvelait
+correctement.
+
+`scripts/ops/check-tls-expiry.sh` tourne en cron sur le VPS deux fois par jour
+et alerte par email. Il interroge le certificat **tel qu'il est servi en
+HTTPS**, resolution DNS comprise, un controle lisant `/etc/letsencrypt/`
+n'ayant rien vu de cette panne. Voir [`scripts/ops/README.md`](scripts/ops/README.md).
+
 ## Securite
 
 - RBAC 4 niveaux avec `checkPermission()` sur chaque Server Action

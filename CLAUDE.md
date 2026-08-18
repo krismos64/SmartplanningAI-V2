@@ -85,6 +85,18 @@ Le CD ne se déclenche que si le CI passe entièrement, E2E comprises. Un push s
 une branche sans PR ne déclenche aucun workflow : ouvrir une PR, même en draft,
 pour obtenir le retour de la CI.
 
+**Le DNS du domaine vit chez Hostinger, le serveur chez OVH.** Devant une erreur
+de certificat, comparer les deux points de vue avant de toucher à certbot :
+`certbot certificates` lit le disque du VPS, `openssl s_client` interroge ce qui
+est réellement servi. S'ils divergent, le trafic n'atteint pas le VPS et le
+problème est dans la zone DNS. `dig +short smartplanning.fr A` doit renvoyer
+`51.77.146.72`. C'est la panne du 18 août 2026, détaillée dans
+`docs/deployment.md`. Surveillance : `scripts/ops/check-tls-expiry.sh`.
+
+Pour dater une panne, lire `/var/log/nginx/access.log*`. La date d'expiration
+d'un certificat dit quand il a cessé d'être valide, jamais depuis quand il est
+servi.
+
 ## Agents projet
 
 - `test-writer` : tests Vitest et Playwright aux conventions du dépôt
