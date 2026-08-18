@@ -10,10 +10,15 @@ sur `smartplanning.fr`, `www.smartplanning.fr` et `analytics.smartplanning.fr`.
 
 ### Pourquoi ce script existe
 
-Le 18 aout 2026, le site a servi pendant pres de six mois un certificat expire
-le 23 fevrier. Certbot fonctionnait pourtant parfaitement : le certificat sur le
-disque du VPS etait valide jusqu'au 4 octobre. Le DNS avait bascule vers le CDN
-Hostinger, qui presentait son propre certificat perime.
+Dans la nuit du 17 au 18 aout 2026, le DNS de `smartplanning.fr` a bascule vers
+le CDN Hostinger, qui a presente un vieux certificat expire depuis le
+23 fevrier. Les journaux Nginx datent la coupure precisement : 2997 requetes le
+17 aout, puis un effondrement des minuit.
+
+Certbot fonctionnait pourtant parfaitement. L'archive du VPS montre une
+couverture continue, janvier a avril, mars a juin, mai a aout, juillet a
+octobre, sans le moindre trou. Le VPS n'a jamais servi de certificat expire :
+le certificat perime appartenait a l'infrastructure Hostinger.
 
 Un controle portant sur `/etc/letsencrypt/` ou sur `certbot certificates`
 n'aurait rien detecte. C'est la raison pour laquelle ce script interroge le

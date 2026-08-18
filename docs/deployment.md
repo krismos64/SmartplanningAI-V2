@@ -408,10 +408,11 @@ lit le disque du VPS, `openssl s_client` interroge ce qui est réellement servi
 au visiteur, résolution DNS comprise. Quand elles divergent, le trafic
 n'atteint pas le VPS : vérifier le DNS avant de toucher à certbot.
 
-C'est exactement ce qui s'est produit le 18 août 2026. Le DNS avait basculé
-vers le CDN Hostinger, qui présentait un certificat expiré depuis le
-23 février, alors que certbot renouvelait correctement. `dig +short
-smartplanning.fr A` doit renvoyer `51.77.146.72`.
+C'est exactement ce qui s'est produit dans la nuit du 17 au 18 août 2026. Le
+DNS a basculé vers le CDN Hostinger, qui a présenté un vieux certificat expiré
+depuis le 23 février, alors que certbot renouvelait correctement et que le VPS
+n'a jamais servi de certificat expiré. `dig +short smartplanning.fr A` doit
+renvoyer `51.77.146.72`.
 
 Surveillance automatique depuis cet incident : `scripts/ops/check-tls-expiry.sh`,
 deux fois par jour en cron, alerte email sous 12 h.
