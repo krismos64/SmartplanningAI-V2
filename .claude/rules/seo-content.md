@@ -38,6 +38,44 @@ clics et position moyenne par page. Une position au-delà de 15 signifie que le
 contenu existant n'est pas encore classé, et qu'une page de plus ne changera pas
 le résultat. Le levier est alors l'autorité de domaine.
 
+**Afficher les colonnes CTR et Position, pas seulement clics et impressions.**
+Elles sont décochées par défaut, et sans elles le diagnostic est impossible : un
+CTR nul à la position 21 est normal, le même à la position 5 signale un titre
+qui échoue. Ne pas conclure sur les deux colonnes visibles par défaut.
+
+Mesures du 26 août 2026, sur 3 mois : 4860 impressions, 83 clics, CTR 1,7 pour
+cent, position moyenne 18,4. La progression depuis le 11 août est réelle (2730
+impressions, position 21,4) mais reste au-dessus du seuil.
+
+Les requêtes métier sortent toutes autour de la position 21 : « logiciel planning
+restauration » 261 impressions et 0 clic à la position 21,8, « planning
+restauration » 224 impressions et 0 clic à la position 21,6. Réécrire un titre
+n'y change rien, personne ne va en page 3.
+
+Attention aussi aux impressions qui ne convertiront jamais : `planning.fr` (223)
+et `plannings.fr` (80) sont des recherches de navigation vers un autre site.
+Elles gonflent le total et tirent la position moyenne vers le bas.
+
+## Les variantes de marque sont des requêtes distinctes
+
+Google traite `smartplanning` et `smart planning` comme deux requêtes séparées.
+Au 26 août 2026, la forme accolée sortait en position 6,5, la forme espacée en
+position 41 sur 191 impressions.
+
+La variante n'existait alors que dans un `alternateName` du JSON-LD, signal
+faible réservé surtout au Knowledge Panel, et **nulle part dans le contenu
+visible** : 56 occurrences accolées contre 2 espacées dans le HTML servi.
+
+Une variante de marque doit vivre dans le contenu rendu, pas seulement dans les
+métadonnées. Elle est portée par la meta description de l'accueil, une réponse
+de la FAQ (qui alimente le `FAQPage`), les `alternateName` de l'`Organization`
+et du `WebSite`, et les deux `llms*.txt`. Garde-fou dans
+`__tests__/app/brand-variant.test.ts` : « Smart Planning » est une chaîne
+valide, aucun scan ne verrait sa disparition.
+
+Ne pas remanier le `<title>` ni le H1 pour y caser une variante : ils portent la
+forme qui se classe déjà.
+
 ## Aucun concurrent nommé
 
 Le contenu public ne cite jamais un concurrent nominativement. Positionnement
