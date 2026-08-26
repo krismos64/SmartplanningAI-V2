@@ -190,10 +190,20 @@ export async function createCheckoutSession(
         },
       ],
       subscription_data: {
-        // Trial Stripe aligné sur le trial SmartPlanning restant
-        // - Pendant le trial : jours restants jusqu'à trialEndsAt
-        // - Après le trial expiré : facturation immédiate (pas de trial)
-        ...(trialEndsAt && trialEndsAt.getTime() > Date.now()
+        // Trial Stripe aligné sur le trial SmartPlanning restant.
+        //
+        // Stripe exige que `trial_end` soit au moins 48 heures dans le futur.
+        // Un simple test « dans le futur » laissait passer les essais qui se
+        // terminent le jour même, et Stripe refusait alors toute la session :
+        // le dirigeant voyait « Erreur Stripe : The `trial_end` date has to be
+        // at least 2 days in the future » au moment précis où il décidait
+        // d'acheter, c'est-à-dire au pire moment possible.
+        //
+        // Sous ce seuil on omet `trial_end` : la souscription démarre en
+        // facturation immédiate, ce qui est le comportement attendu pour un
+        // essai qui s'achève dans les heures qui suivent.
+        ...(trialEndsAt &&
+        trialEndsAt.getTime() - Date.now() >= STRIPE_PRICING.MIN_TRIAL_END_MS
           ? {
               trial_end: Math.ceil(trialEndsAt.getTime() / 1000),
             }

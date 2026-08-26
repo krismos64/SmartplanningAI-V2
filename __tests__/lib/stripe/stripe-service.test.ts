@@ -46,6 +46,7 @@ vi.mock('@/lib/stripe', () => ({
     TRIAL_PERIOD_DAYS: 21,
     MIN_QUANTITY: 1,
     MAX_QUANTITY: 250,
+    MIN_TRIAL_END_MS: 48 * 60 * 60 * 1000,
   },
   STRIPE_STATUS_MAP: {
     trialing: 'TRIAL',
@@ -345,6 +346,65 @@ describe('Stripe Service', () => {
           cancel_url: 'https://app.test/cancel',
         })
       )
+    })
+
+    // ========================================================================
+    // trial_end et le minimum de 48 heures imposé par Stripe
+    //
+    // Stripe rejette la session entière si `trial_end` est à moins de 2 jours.
+    // Le dirigeant dont l'essai se termine le jour même est précisément celui
+    // qui vient payer : c'est le cas qui doit marcher.
+    // ========================================================================
+    describe('trial_end', () => {
+      beforeEach(() => {
+        prismaMock.subscription.findUnique.mockResolvedValue({
+          stripeCustomerId: 'cus_existing',
+        } as never)
+        mockStripe.checkout.sessions.create.mockResolvedValue({
+          id: 'cs_test',
+          url: 'https://checkout.stripe.com/test',
+        })
+      })
+
+      it('répercute trial_end quand la fin d essai est à plus de 48 heures', async () => {
+        const trialEndsAt = new Date(Date.now() + 5 * 24 * 60 * 60 * 1000)
+
+        await createCheckoutSession(makeCheckoutInput({ trialEndsAt }))
+
+        expect(mockStripe.checkout.sessions.create).toHaveBeenCalledWith(
+          expect.objectContaining({
+            subscription_data: expect.objectContaining({
+              trial_end: Math.ceil(trialEndsAt.getTime() / 1000),
+            }),
+          })
+        )
+      })
+
+      it("omet trial_end quand l'essai se termine dans quelques heures", async () => {
+        // Cas de production du 26 août 2026 : essai finissant à 15h05 pour un
+        // clic à 14h43. L'ancien code envoyait trial_end et Stripe refusait.
+        const trialEndsAt = new Date(Date.now() + 3 * 60 * 60 * 1000)
+
+        const result = await createCheckoutSession(
+          makeCheckoutInput({ trialEndsAt })
+        )
+
+        expect(result.success).toBe(true)
+        const call = mockStripe.checkout.sessions.create.mock.calls[0][0]
+        expect(call.subscription_data).not.toHaveProperty('trial_end')
+      })
+
+      it('omet trial_end quand la fin d essai est déjà passée', async () => {
+        const trialEndsAt = new Date(Date.now() - 24 * 60 * 60 * 1000)
+
+        const result = await createCheckoutSession(
+          makeCheckoutInput({ trialEndsAt })
+        )
+
+        expect(result.success).toBe(true)
+        const call = mockStripe.checkout.sessions.create.mock.calls[0][0]
+        expect(call.subscription_data).not.toHaveProperty('trial_end')
+      })
     })
   })
 
