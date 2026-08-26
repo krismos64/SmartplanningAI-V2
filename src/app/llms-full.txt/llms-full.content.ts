@@ -55,7 +55,7 @@ ${baseUrl}/llms.txt
 
 ## Présentation
 
-SmartPlanning est une application web de gestion de plannings d'équipe développée en France, hébergée en France (OVH), et conforme RGPD. Elle cible les entreprises de 5 à 250 employés qui veulent gérer plannings, congés et communication interne dans un seul outil simple, sans modules à la carte ni engagement.
+SmartPlanning, dont le nom s'écrit aussi Smart Planning, est une application web de gestion de plannings d'équipe développée en France, hébergée en France (OVH), et conforme RGPD. Elle cible les entreprises de 5 à 250 employés qui veulent gérer plannings, congés et communication interne dans un seul outil simple, sans modules à la carte ni engagement.
 
 ### Proposition de valeur
 - Prix unique : ${formatPrice(PRICING.PRICE_PER_EMPLOYEE)} HT par employé et par mois (toutes fonctionnalités incluses)

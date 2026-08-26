@@ -203,8 +203,12 @@ export const steps: Step[] = [
 export const faqs: FAQ[] = [
   {
     question: "Comment fonctionne l'essai gratuit ?",
+    // « Smart Planning » en deux mots est volontaire : Google traite la forme
+    // espacée comme une requête distincte de « smartplanning », et elle
+    // n'apparaissait nulle part dans le contenu visible. Voir le commentaire
+    // dans src/app/page.tsx pour les chiffres Search Console.
     answer:
-      "L'essai gratuit de 21 jours vous donne accès à toutes les fonctionnalités, sans restriction et sans carte bancaire.",
+      "L'essai gratuit de 21 jours vous donne accès à toutes les fonctionnalités de SmartPlanning (aussi écrit Smart Planning), sans restriction et sans carte bancaire.",
   },
   {
     question: 'Puis-je importer mes employés existants ?',
@@ -352,4 +356,3 @@ export const roleDemos: RoleDemo[] = [
     thumbnail: '/images/demo-employe.webp',
   },
 ]
-
