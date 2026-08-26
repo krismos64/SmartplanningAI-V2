@@ -13,7 +13,6 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { differenceInDays } from 'date-fns'
 
 import { prisma } from '@/lib/prisma'
 import { formatAmountEuros } from '@/lib/email/billing/format'
@@ -26,6 +25,30 @@ export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 const TRIAL_REMINDER_DAYS = [14, 7, 3, 1] as const
+
+/** Millisecondes dans un jour */
+const MS_PER_DAY = 86_400_000
+
+/**
+ * Jours restants avant la fin d'essai, arrondis vers le haut.
+ *
+ * `differenceInDays` de date-fns tronque vers zéro : à 7 heures de la fin il
+ * renvoyait 0, donc `daysRemaining <= 0` déclenchait l'expiration alors que
+ * l'essai courait encore. Chaque entreprise perdait sa dernière journée, celle
+ * où le dirigeant décide d'acheter, et se voyait refuser l'accès à
+ * l'application avec un « essai terminé » prématuré.
+ *
+ * L'arrondi vers le haut rend `daysRemaining` strictement positif tant que la
+ * date de fin n'est pas atteinte, et le fait passer à 0 ou moins ensuite. Les
+ * seuils de rappel (J-14, J-7, J-3, J-1) gardent le même sens : il reste
+ * « 1 jour » pendant toute la dernière journée.
+ *
+ * Constaté en production le 26 août 2026, cron de 08h00 UTC sur un essai
+ * expirant à 15h05.
+ */
+function getTrialDaysRemaining(trialEndsAt: Date, now: Date): number {
+  return Math.ceil((trialEndsAt.getTime() - now.getTime()) / MS_PER_DAY)
+}
 
 interface CronResult {
   sent: number
@@ -123,7 +146,10 @@ export async function POST(request: NextRequest) {
 
   // 3. Pour chaque company, calculer daysRemaining et envoyer l'email
   for (const company of trialCompanies) {
-    const daysRemaining = differenceInDays(company.trialEndsAt!, new Date())
+    const daysRemaining = getTrialDaysRemaining(
+      company.trialEndsAt!,
+      new Date()
+    )
 
     // Une company dont l'essai est fini mais sans directeur joignable ne doit
     // pas rester bloquée en TRIAL : on corrige son statut avant de sortir.
