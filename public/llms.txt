@@ -2,7 +2,7 @@
 
 > Logiciel SaaS français de gestion de plannings, congés et RH pour TPE et PME. Tarif unique de 2,90 EUR HT par employé et par mois, toutes fonctionnalités incluses, hébergé en France et conforme RGPD.
 
-SmartPlanning simplifie la gestion des plannings d'équipe, des congés et des ressources humaines pour les petites et moyennes entreprises françaises (5 à 250 employés).
+SmartPlanning, aussi écrit Smart Planning, simplifie la gestion des plannings d'équipe, des congés et des ressources humaines pour les petites et moyennes entreprises françaises (5 à 250 employés).
 
 ## Docs
 

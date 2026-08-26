@@ -26,6 +26,12 @@ export const webSiteSchema = {
   '@type': 'WebSite',
   '@id': `${baseUrl}/#website`,
   name: 'SmartPlanning',
+  /*
+   * La variante espacee est portee ici en plus de l'Organization : les deux
+   * noeuds sont lus separement, et `WebSite` est celui qui sert la Sitelinks
+   * Searchbox et le rapprochement nom de site / requete de marque.
+   */
+  alternateName: ['Smart Planning', 'SmartPlanning.fr'],
   url: baseUrl,
   description:
     'Logiciel SaaS français de gestion de plannings pour TPE et PME.',
@@ -38,7 +44,7 @@ export const organizationSchema = {
   '@type': 'Organization',
   '@id': `${baseUrl}/#organization`,
   name: 'SmartPlanning',
-  alternateName: 'Smart Planning',
+  alternateName: ['Smart Planning', 'Smartplanning'],
   description:
     'SmartPlanning est un logiciel SaaS français de gestion de planning pour entreprises. Solution moderne et intuitive pour TPE, PME et grandes entreprises.',
   url: baseUrl,

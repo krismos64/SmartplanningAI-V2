@@ -18,9 +18,19 @@ export const metadata: Metadata = {
   title: 'SmartPlanning : plannings, congés et RH pour entreprises',
 
   description:
-    'Logiciel français de gestion des plannings et congés pour TPE et PME. À partir de 2,90\u00a0\u20ac par employé et par mois, essai gratuit de 21 jours.',
+    'SmartPlanning (Smart Planning), logiciel français de gestion des plannings et congés pour TPE et PME. Dès 2,90\u00a0\u20ac par employé et par mois, essai 21 jours.',
 
   keywords: [
+    /*
+     * « smart planning » en deux mots est volontaire, ce n'est pas une faute.
+     *
+     * Google traite `smartplanning` et `smart planning` comme deux requetes
+     * distinctes : au 26 aout 2026 la premiere sortait en position 6,5, la
+     * seconde en position 41 sur 191 impressions. La variante n'existait que
+     * dans les `alternateName` du JSON-LD, signal faible, et nulle part dans
+     * le contenu visible (56 occurrences accolees contre 2 espacees).
+     */
+    'smart planning',
     'logiciel gestion planning entreprise',
     'outil planning équipe en ligne',
     'SaaS planning français',
