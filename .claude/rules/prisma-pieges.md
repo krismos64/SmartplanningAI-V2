@@ -105,6 +105,43 @@ rate silencieusement les lignes concernées.
 Utiliser `IS DISTINCT FROM` dans tout diagnostic portant sur
 `Notification.companyId`, `Employee.teamId` ou `User.companyId`.
 
+## `differenceInDays` tronque, et vole la dernière journée
+
+`differenceInDays` de date-fns compte les journées **entières** et tronque vers
+zéro. À 7 heures d'une échéance, il renvoie `0`.
+
+Le cron `/api/cron/trial-emails` en a fait un `daysRemaining <= 0`, donc une
+bascule en `EXPIRED` alors que l'essai courait encore. Chaque entreprise perdait
+sa dernière journée, celle où le dirigeant décide d'acheter, et se retrouvait
+bloquée par le subscription guard le jour même de sa décision.
+
+Pour toute échéance qui doit rester ouverte jusqu'à la seconde près, calculer en
+millisecondes et arrondir vers le haut :
+
+```ts
+Math.ceil((echeance.getTime() - now.getTime()) / MS_PER_DAY)
+```
+
+Les seuils de rappel (J-14, J-7, J-3, J-1) gardent le même sens : il reste
+« 1 jour » pendant toute la dernière journée.
+
+Corrigé le 26 août 2026. Un défaut de ce type ne se voit ni en développement ni
+sur un compte récent : il ne se déclenche que le dernier jour.
+
+## Stripe impose des contraintes sur les dates transmises
+
+`subscription_data.trial_end` doit être à **au moins 48 heures** dans le futur.
+En dessous, Stripe rejette la session Checkout entière avec « The `trial_end`
+date has to be at least 2 days in the future », et le dirigeant voit une erreur
+brute au moment de payer.
+
+Un test « la date est dans le futur » ne suffit donc pas. Constante
+`STRIPE_PRICING.MIN_TRIAL_END_MS`, sous le seuil on omet le champ et la
+souscription part en facturation immédiate.
+
+Corollaire général : avant de transmettre une date à une API tierce, vérifier ses
+contraintes de validité plutôt que de supposer que « futur » suffit.
+
 ## Whitelist E2E de la CI
 
 `testMatch` de `playwright.ci.config.ts` est une liste explicite. Un spec renommé
