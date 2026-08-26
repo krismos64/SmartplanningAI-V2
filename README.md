@@ -16,7 +16,7 @@ Plateforme SaaS multi-tenant de gestion intelligente des plannings et des ressou
 | Frontend        | Next.js 15.5.9 (App Router), React 19, TypeScript 5.7.2, Tailwind + Shadcn/ui |
 | Backend         | NextAuth v5 (Auth.js), Prisma 6.18.0, Zod, Stripe v20.3.1                     |
 | Base de donnees | PostgreSQL 16, Redis 7 (ioredis 5.10)                                         |
-| Emails          | React Email (28 templates transactionnels), Nodemailer SMTP                   |
+| Emails          | React Email (30 envois transactionnels), Nodemailer SMTP                      |
 | Temps reel      | Server-Sent Events (SSE) — notifications + messagerie sur un stream unique     |
 | DevOps          | Docker, GitHub Actions (CI/CD), VPS OVH (Ubuntu 24.04), Nginx, Let's Encrypt  |
 
@@ -141,7 +141,7 @@ src/
 │   ├── messaging/    # Messagerie (8 composants)
 │   ├── import/       # Import CSV (2 composants + utilitaires)
 │   └── ui/           # Shadcn/ui (41 composants)
-├── lib/              # Actions (31), services (19), validations Zod, email (22 fichiers de templates)
+├── lib/              # Actions (32), services (19), validations Zod, email (21 fichiers de templates)
 ├── hooks/            # 22 hooks custom (SSE, SWR, messagerie, import CSV)
 ├── types/            # Types TypeScript globaux
 └── styles/           # Design tokens centralises
@@ -171,10 +171,10 @@ Voir [`docs/database-architecture.md`](docs/database-architecture.md) pour le de
 | E2E       | Playwright | 21       | 247       |
 | **Total** |            | **209**  | **3 410** |
 
-La CI execute une whitelist E2E (8 specs, 123 tests) ; la suite complete (21 specs, 247 tests) tourne en nightly. `testMatch` de `playwright.ci.config.ts` etant une liste explicite, un spec renomme ou supprime disparait silencieusement de la CI : verifier cette liste apres chaque ajout ou suppression.
+La CI execute une whitelist E2E (8 specs, 122 tests) ; la suite complete (22 specs, 248 tests) tourne en nightly. `testMatch` de `playwright.ci.config.ts` etant une liste explicite, un spec renomme ou supprime disparait silencieusement de la CI : verifier cette liste apres chaque ajout ou suppression.
 
-**Les specs publiques ne sont pas dans la whitelist CI.** Les 26 tests de
-`e2e/specs/landing/`, dont 11 audits axe-core, ne tournent donc qu'en nightly
+**Les specs publiques ne sont pas dans la whitelist CI.** Les 20 tests de
+`e2e/specs/landing/`, dont 7 audits axe-core, ne tournent donc qu'en nightly
 et en local (`npx playwright test e2e/specs/landing/`). L'arbitrage sur leur
 entree en CI n'est pas tranche.
 
