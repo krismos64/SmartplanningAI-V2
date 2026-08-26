@@ -31,6 +31,15 @@ export const STRIPE_PRICING = {
   /** Limites de sièges */
   MIN_QUANTITY: PRICING.MIN_EMPLOYEES, // 1
   MAX_QUANTITY: PRICING.MAX_EMPLOYEES, // 250
+  /**
+   * Marge minimale exigée par Stripe pour `subscription_data.trial_end`.
+   *
+   * Stripe rejette la session avec « The `trial_end` date has to be at least
+   * 2 days in the future ». Un essai SmartPlanning qui se termine dans moins
+   * de 48 heures ne peut donc pas être répercuté tel quel : la souscription
+   * part sans trial Stripe, donc en facturation immédiate.
+   */
+  MIN_TRIAL_END_MS: 48 * 60 * 60 * 1000,
 } as const
 
 // =============================================================================

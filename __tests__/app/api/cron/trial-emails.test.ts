@@ -6,7 +6,7 @@
  * daysRemaining, et l'envoi des emails trial/expiration
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { mockDeep, mockReset, type DeepMockProxy } from 'vitest-mock-extended'
 import type { PrismaClient } from '@prisma/client'
 
@@ -14,12 +14,10 @@ import type { PrismaClient } from '@prisma/client'
 // Mocks hoistés
 // ============================================================================
 
-const { mockSendTrialEndingSoon, mockSendTrialExpired, mockDifferenceInDays } =
-  vi.hoisted(() => ({
-    mockSendTrialEndingSoon: vi.fn().mockResolvedValue({ success: true }),
-    mockSendTrialExpired: vi.fn().mockResolvedValue({ success: true }),
-    mockDifferenceInDays: vi.fn().mockReturnValue(14),
-  }))
+const { mockSendTrialEndingSoon, mockSendTrialExpired } = vi.hoisted(() => ({
+  mockSendTrialEndingSoon: vi.fn().mockResolvedValue({ success: true }),
+  mockSendTrialExpired: vi.fn().mockResolvedValue({ success: true }),
+}))
 
 vi.mock('@/lib/prisma', () => ({
   prisma: mockDeep<PrismaClient>(),
@@ -33,10 +31,6 @@ vi.mock('@/lib/email/billing/format', () => ({
 vi.mock('@/lib/email/templates/billing', () => ({
   sendTrialEndingSoonEmail: mockSendTrialEndingSoon,
   sendTrialExpiredEmail: mockSendTrialExpired,
-}))
-
-vi.mock('date-fns', () => ({
-  differenceInDays: mockDifferenceInDays,
 }))
 
 // ============================================================================
@@ -64,11 +58,35 @@ function makeRequest(token?: string): NextRequest {
   })
 }
 
+/**
+ * Instant figé pour tous les tests, afin que `trialEndsAt` soit calculé par
+ * rapport à une horloge stable. Correspond à un passage du cron de 08h00 UTC.
+ */
+const NOW = new Date('2026-08-26T08:00:00.000Z')
+
+const MS_PER_DAY = 86_400_000
+
+/**
+ * Construit une date de fin d'essai située à `heures` de NOW.
+ *
+ * Les tests pilotent désormais le temps réel plutôt qu'un mock de date-fns :
+ * le calcul de `daysRemaining` vit dans la route et doit être exercé, pas
+ * court-circuité.
+ */
+function trialEndingIn(heures: number): Date {
+  return new Date(NOW.getTime() + heures * 3_600_000)
+}
+
+/** Date de fin d'essai à N jours pleins de NOW */
+function trialEndingInDays(jours: number): Date {
+  return new Date(NOW.getTime() + jours * MS_PER_DAY)
+}
+
 function makeTrialCompany(overrides: Record<string, unknown> = {}) {
   return {
     id: 'company-trial-1',
     name: 'Acme Trial',
-    trialEndsAt: new Date('2026-03-01'),
+    trialEndsAt: trialEndingInDays(14),
     subscription: {
       id: 'sub-db-1',
       stripeSubscriptionId: 'sub_stripe_1',
@@ -88,8 +106,14 @@ describe('POST /api/cron/trial-emails', () => {
   beforeEach(() => {
     mockReset(prismaMock)
     vi.clearAllMocks()
+    vi.useFakeTimers()
+    vi.setSystemTime(NOW)
     process.env.CRON_SECRET = 'test-cron-secret'
     process.env.NEXT_PUBLIC_APP_URL = 'https://smartplanning.fr'
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
   })
 
   // ---- Auth tests ----
@@ -116,10 +140,11 @@ describe('POST /api/cron/trial-emails', () => {
   // ---- Trial reminder tests ----
 
   it('Company trial J-14 → sendTrialEndingSoonEmail appelé avec daysRemaining=14', async () => {
-    mockDifferenceInDays.mockReturnValue(14)
     ;(
       prismaMock.company.findMany as ReturnType<typeof vi.fn>
-    ).mockResolvedValue([makeTrialCompany()])
+    ).mockResolvedValue([
+      makeTrialCompany({ trialEndsAt: trialEndingInDays(14) }),
+    ])
 
     await POST(makeRequest('test-cron-secret'))
 
@@ -133,10 +158,11 @@ describe('POST /api/cron/trial-emails', () => {
   })
 
   it('Company trial J-7 → sendTrialEndingSoonEmail appelé', async () => {
-    mockDifferenceInDays.mockReturnValue(7)
     ;(
       prismaMock.company.findMany as ReturnType<typeof vi.fn>
-    ).mockResolvedValue([makeTrialCompany()])
+    ).mockResolvedValue([
+      makeTrialCompany({ trialEndsAt: trialEndingInDays(7) }),
+    ])
 
     await POST(makeRequest('test-cron-secret'))
 
@@ -146,10 +172,11 @@ describe('POST /api/cron/trial-emails', () => {
   })
 
   it('Company trial J-3 → sendTrialEndingSoonEmail appelé', async () => {
-    mockDifferenceInDays.mockReturnValue(3)
     ;(
       prismaMock.company.findMany as ReturnType<typeof vi.fn>
-    ).mockResolvedValue([makeTrialCompany()])
+    ).mockResolvedValue([
+      makeTrialCompany({ trialEndsAt: trialEndingInDays(3) }),
+    ])
 
     await POST(makeRequest('test-cron-secret'))
 
@@ -157,10 +184,11 @@ describe('POST /api/cron/trial-emails', () => {
   })
 
   it('Company trial J-1 → sendTrialEndingSoonEmail appelé', async () => {
-    mockDifferenceInDays.mockReturnValue(1)
     ;(
       prismaMock.company.findMany as ReturnType<typeof vi.fn>
-    ).mockResolvedValue([makeTrialCompany()])
+    ).mockResolvedValue([
+      makeTrialCompany({ trialEndsAt: trialEndingInDays(1) }),
+    ])
 
     await POST(makeRequest('test-cron-secret'))
 
@@ -172,10 +200,11 @@ describe('POST /api/cron/trial-emails', () => {
   // ---- Trial expired test ----
 
   it('Company trial J0 (expiré) → sendTrialExpiredEmail appelé', async () => {
-    mockDifferenceInDays.mockReturnValue(0)
     ;(
       prismaMock.company.findMany as ReturnType<typeof vi.fn>
-    ).mockResolvedValue([makeTrialCompany()])
+    ).mockResolvedValue([
+      makeTrialCompany({ trialEndsAt: trialEndingInDays(0) }),
+    ])
 
     await POST(makeRequest('test-cron-secret'))
 
@@ -191,10 +220,11 @@ describe('POST /api/cron/trial-emails', () => {
   // ---- Skip tests ----
 
   it('Company trial J-20 (pas de rappel) → aucun email envoyé, skipped++', async () => {
-    mockDifferenceInDays.mockReturnValue(20)
     ;(
       prismaMock.company.findMany as ReturnType<typeof vi.fn>
-    ).mockResolvedValue([makeTrialCompany()])
+    ).mockResolvedValue([
+      makeTrialCompany({ trialEndsAt: trialEndingInDays(20) }),
+    ])
 
     const response = await POST(makeRequest('test-cron-secret'))
     const body = await response.json()
@@ -218,11 +248,12 @@ describe('POST /api/cron/trial-emails', () => {
   })
 
   it('Doublon → sendBillingEmail retourne skipped, compteur skipped++', async () => {
-    mockDifferenceInDays.mockReturnValue(7)
     mockSendTrialEndingSoon.mockResolvedValue({ success: true, skipped: true })
     ;(
       prismaMock.company.findMany as ReturnType<typeof vi.fn>
-    ).mockResolvedValue([makeTrialCompany()])
+    ).mockResolvedValue([
+      makeTrialCompany({ trialEndsAt: trialEndingInDays(7) }),
+    ])
 
     const response = await POST(makeRequest('test-cron-secret'))
     const body = await response.json()
@@ -253,6 +284,9 @@ describe('POST /api/cron/trial-emails', () => {
     /** Essai fini, aucune souscription Stripe : le cas à corriger */
     function makeExpiredTrialCompany(overrides: Record<string, unknown> = {}) {
       return makeTrialCompany({
+        // Essai terminé depuis une heure, conforme au nom du helper : sans
+        // cette date le défaut à 14 jours produisait un essai en cours.
+        trialEndsAt: trialEndingIn(-1),
         subscription: {
           id: 'sub-db-1',
           stripeSubscriptionId: null,
@@ -263,10 +297,11 @@ describe('POST /api/cron/trial-emails', () => {
     }
 
     it('essai terminé sans abonnement Stripe → subscription passée en EXPIRED', async () => {
-      mockDifferenceInDays.mockReturnValue(0)
       ;(
         prismaMock.company.findMany as ReturnType<typeof vi.fn>
-      ).mockResolvedValue([makeExpiredTrialCompany()])
+      ).mockResolvedValue([
+        makeExpiredTrialCompany({ trialEndsAt: trialEndingIn(-1) }),
+      ])
 
       const response = await POST(makeRequest('test-cron-secret'))
       const body = await response.json()
@@ -279,7 +314,6 @@ describe('POST /api/cron/trial-emails', () => {
     })
 
     it("l'email d'expiration part avant la bascule (sinon il ne partirait jamais)", async () => {
-      mockDifferenceInDays.mockReturnValue(0)
       const callOrder: string[] = []
       mockSendTrialExpired.mockImplementation(() => {
         callOrder.push('email')
@@ -300,11 +334,48 @@ describe('POST /api/cron/trial-emails', () => {
       expect(callOrder).toEqual(['email', 'update'])
     })
 
-    it('essai en cours → statut inchangé', async () => {
-      mockDifferenceInDays.mockReturnValue(7)
+    it('essai à 7 heures de la fin → statut inchangé, la dernière journée est due', async () => {
+      // Cas de production du 26 août 2026 : cron de 08h00 UTC, essai expirant
+      // à 15h05. `differenceInDays` tronquait à 0 et le compte passait en
+      // EXPIRED avec 7 heures d'essai encore devant lui. Le dirigeant se
+      // retrouvait bloqué le jour même où il venait souscrire.
       ;(
         prismaMock.company.findMany as ReturnType<typeof vi.fn>
-      ).mockResolvedValue([makeExpiredTrialCompany()])
+      ).mockResolvedValue([
+        makeExpiredTrialCompany({ trialEndsAt: trialEndingIn(7) }),
+      ])
+
+      const response = await POST(makeRequest('test-cron-secret'))
+      const body = await response.json()
+
+      expect(prismaMock.subscription.update).not.toHaveBeenCalled()
+      expect(mockSendTrialExpired).not.toHaveBeenCalled()
+      expect(body.expired).toBe(0)
+    })
+
+    it('essai expiré depuis une minute → bascule en EXPIRED', async () => {
+      ;(
+        prismaMock.company.findMany as ReturnType<typeof vi.fn>
+      ).mockResolvedValue([
+        makeExpiredTrialCompany({ trialEndsAt: trialEndingIn(-1 / 60) }),
+      ])
+
+      const response = await POST(makeRequest('test-cron-secret'))
+      const body = await response.json()
+
+      expect(prismaMock.subscription.update).toHaveBeenCalledWith({
+        where: { id: 'sub-db-1' },
+        data: { status: 'EXPIRED' },
+      })
+      expect(body.expired).toBe(1)
+    })
+
+    it('essai en cours → statut inchangé', async () => {
+      ;(
+        prismaMock.company.findMany as ReturnType<typeof vi.fn>
+      ).mockResolvedValue([
+        makeExpiredTrialCompany({ trialEndsAt: trialEndingInDays(7) }),
+      ])
 
       const response = await POST(makeRequest('test-cron-secret'))
       const body = await response.json()
@@ -314,11 +385,11 @@ describe('POST /api/cron/trial-emails', () => {
     })
 
     it('abonnement Stripe existant → statut laissé aux webhooks', async () => {
-      mockDifferenceInDays.mockReturnValue(0)
       ;(
         prismaMock.company.findMany as ReturnType<typeof vi.fn>
       ).mockResolvedValue([
-        makeTrialCompany(), // stripeSubscriptionId: 'sub_stripe_1'
+        // stripeSubscriptionId: 'sub_stripe_1', essai terminé
+        makeTrialCompany({ trialEndsAt: trialEndingIn(-1) }),
       ])
 
       const response = await POST(makeRequest('test-cron-secret'))
@@ -329,10 +400,11 @@ describe('POST /api/cron/trial-emails', () => {
     })
 
     it('company sans directeur joignable → statut corrigé quand même', async () => {
-      mockDifferenceInDays.mockReturnValue(0)
       ;(
         prismaMock.company.findMany as ReturnType<typeof vi.fn>
-      ).mockResolvedValue([makeExpiredTrialCompany({ users: [] })])
+      ).mockResolvedValue([
+        makeExpiredTrialCompany({ users: [], trialEndsAt: trialEndingIn(-1) }),
+      ])
 
       const response = await POST(makeRequest('test-cron-secret'))
       const body = await response.json()
