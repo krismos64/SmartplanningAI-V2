@@ -33,6 +33,22 @@ export interface AdminUserRow {
   companyName: string | null
   createdAt: Date
   lastLoginAt: Date | null
+  /**
+   * Dernier email refusé par le serveur du destinataire, s'il y en a un.
+   *
+   * SP-579 : cet écran sert à diagnostiquer un compte qui n'arrive pas à
+   * s'activer, et c'est depuis lui qu'on relance une vérification. Sans ce
+   * signal, « Non vérifié » ne dit pas si la personne n'a pas cliqué ou si
+   * elle n'a jamais rien reçu, deux situations qui appellent des actions
+   * opposées.
+   *
+   * Absent quand le dernier envoi vers cette adresse a été accepté.
+   */
+  lastBounce: {
+    status?: string
+    kind?: 'PERMANENT' | 'TRANSIENT'
+    sentAt: Date
+  } | null
 }
 
 export interface GetAllUsersAdminResult {
@@ -129,6 +145,11 @@ export async function getAllUsersAdmin(
     prisma.user.count({ where }),
   ])
 
+  // SP-579 : dernier email refuse par adresse, pour la page courante
+  // uniquement. Une requete groupee plutot qu'une par utilisateur : la page
+  // affiche jusqu'a 50 lignes.
+  const lastBounces = await getLastBouncesByEmail(users.map((u) => u.email))
+
   return {
     users: users.map((u) => ({
       id: u.id,
@@ -141,9 +162,86 @@ export async function getAllUsersAdmin(
       companyName: u.company?.name ?? null,
       createdAt: u.createdAt,
       lastLoginAt: u.lastLoginAt,
+      lastBounce: lastBounces.get(u.email.toLowerCase()) ?? null,
     })),
     total,
   }
+}
+
+/**
+ * Dernier email refuse pour chaque adresse fournie.
+ *
+ * Cet ecran est reserve au SYSTEM_ADMIN et couvre toutes les entreprises : la
+ * lecture de `EmailLog` n'y est donc volontairement pas filtree par
+ * `companyId`, contrairement au meme signal cote liste des employes.
+ *
+ * Ne remonte que si le dernier envoi vers l'adresse a rebondi : un envoi
+ * accepte posterieurement efface le signal, ce qui fait disparaitre l'alerte
+ * des qu'une adresse corrigee recoit son premier email.
+ */
+async function getLastBouncesByEmail(
+  emails: string[]
+): Promise<
+  Map<
+    string,
+    { status?: string; kind?: 'PERMANENT' | 'TRANSIENT'; sentAt: Date }
+  >
+> {
+  const result = new Map<
+    string,
+    { status?: string; kind?: 'PERMANENT' | 'TRANSIENT'; sentAt: Date }
+  >()
+
+  const unique = [
+    ...new Set(emails.map((e) => e.toLowerCase()).filter(Boolean)),
+  ]
+  if (unique.length === 0) return result
+
+  // Ce signal est un confort de diagnostic : son echec ne doit pas faire
+  // tomber la liste des utilisateurs.
+  let logs
+  try {
+    logs = await prisma.emailLog.findMany({
+      where: { recipientEmail: { in: unique } },
+      orderBy: { sentAt: 'desc' },
+      select: {
+        recipientEmail: true,
+        status: true,
+        sentAt: true,
+        metadata: true,
+      },
+    })
+  } catch (error) {
+    console.error('[getAllUsersAdmin] Lecture EmailLog echouee:', error)
+    return result
+  }
+
+  if (!Array.isArray(logs)) return result
+
+  const seen = new Set<string>()
+
+  for (const log of logs) {
+    const key = log.recipientEmail.toLowerCase()
+    // Tri decroissant : la premiere ligne vue est la plus recente
+    if (seen.has(key)) continue
+    seen.add(key)
+
+    if (log.status !== 'BOUNCED') continue
+
+    const bounce = (log.metadata as { bounce?: Record<string, unknown> } | null)
+      ?.bounce
+
+    result.set(key, {
+      status: typeof bounce?.status === 'string' ? bounce.status : undefined,
+      kind:
+        bounce?.kind === 'PERMANENT' || bounce?.kind === 'TRANSIENT'
+          ? bounce.kind
+          : undefined,
+      sentAt: log.sentAt,
+    })
+  }
+
+  return result
 }
 
 /**

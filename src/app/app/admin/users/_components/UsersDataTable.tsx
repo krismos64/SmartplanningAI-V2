@@ -141,6 +141,42 @@ function VerifiedBadge({ verified }: { verified: boolean }) {
 }
 
 // ============================================================================
+// BounceBadge (SP-579)
+// ============================================================================
+
+/**
+ * Signale que le dernier email envoyé à cette adresse a été refusé.
+ *
+ * Sans lui, « Non vérifié » ne distingue pas une personne qui n'a pas cliqué
+ * d'une personne qui n'a jamais rien reçu. Les deux appellent des actions
+ * opposées : relancer dans un cas, corriger l'adresse dans l'autre.
+ */
+function BounceBadge({
+  bounce,
+}: {
+  bounce: NonNullable<AdminUserRow['lastBounce']>
+}) {
+  const permanent = bounce.kind !== 'TRANSIENT'
+  const code = bounce.status ? ` (${bounce.status})` : ''
+
+  return (
+    <Badge
+      variant="destructive"
+      size="sm"
+      className="gap-1"
+      title={
+        permanent
+          ? `Le dernier email a été refusé définitivement${code}. Relancer vers cette adresse échouera à l'identique.`
+          : `Le dernier email n'a pas pu être remis temporairement${code}.`
+      }
+    >
+      <BadgeX className="h-3 w-3" aria-hidden="true" />
+      {permanent ? 'Adresse invalide' : 'Envoi différé'}
+    </Badge>
+  )
+}
+
+// ============================================================================
 // RowActions — Renvoi vérification + impersonation (SP-543)
 // ============================================================================
 
@@ -183,7 +219,14 @@ function RowActions({
               <MailPlus className="h-4 w-4" aria-hidden="true" />
             </Button>
           </TooltipTrigger>
-          <TooltipContent>Renvoyer l&apos;email de vérification</TooltipContent>
+          <TooltipContent>
+            {/* SP-579 : sur un refus definitif, relancer vers la meme adresse
+                echouera a l'identique. Le bouton reste actif, la decision
+                revient a l'administrateur. */}
+            {user.lastBounce && user.lastBounce.kind !== 'TRANSIENT'
+              ? 'Adresse refusée par le serveur destinataire, à corriger avant de relancer'
+              : "Renvoyer l'email de vérification"}
+          </TooltipContent>
         </Tooltip>
       )}
       {canImpersonate && (
@@ -264,6 +307,7 @@ function UserCard({
                 {ROLE_LABELS_SHORT[user.role]}
               </Badge>
               <VerifiedBadge verified={Boolean(user.emailVerified)} />
+              {user.lastBounce && <BounceBadge bounce={user.lastBounce} />}
               {user.companyName && (
                 <Link
                   href="/app/admin/companies"
@@ -660,6 +704,9 @@ export function UsersDataTable() {
                     </TableCell>
                     <TableCell>
                       <VerifiedBadge verified={Boolean(user.emailVerified)} />
+                      {user.lastBounce && (
+                        <BounceBadge bounce={user.lastBounce} />
+                      )}
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">
                       {new Date(user.createdAt).toLocaleDateString('fr-FR')}
