@@ -372,6 +372,103 @@ async function canAccessEmployee(
   }
 }
 
+/**
+ * Attache a chaque employe le dernier email refuse vers son adresse.
+ *
+ * SP-579, lot 3. `EmailLog` ne porte pas de relation vers `Employee`, le
+ * rapprochement se fait donc par adresse, comme le fait deja la releve IMAP.
+ *
+ * Une seule requete pour toute la page plutot qu'une par employe : la liste
+ * affiche jusqu'a 100 lignes, et autant d'allers-retours seraient payes a
+ * chaque chargement.
+ *
+ * Le signal ne remonte que si le dernier envoi vers cette adresse a rebondi.
+ * Un envoi accepte posterieurement l'efface, ce qui fait disparaitre l'alerte
+ * des qu'une adresse corrigee recoit son premier email.
+ */
+async function attachLastBounce<
+  T extends { email: string | null; user?: { email: string } | null },
+>(employees: T[], companyId: string | null): Promise<T[]> {
+  // Adresses reellement portees par la page, en minuscules : la releve IMAP
+  // normalise de la meme facon.
+  const emails = [
+    ...new Set(
+      employees
+        .map((e) => (e.email ?? e.user?.email ?? '').trim().toLowerCase())
+        .filter(Boolean)
+    ),
+  ]
+
+  if (emails.length === 0) return employees
+
+  // Le signal est un confort d'affichage : son echec ne doit jamais faire
+  // tomber la liste des employes, qui est une fonction centrale.
+  let logs: {
+    recipientEmail: string
+    status: string
+    sentAt: Date
+    metadata: unknown
+  }[]
+
+  try {
+    logs = await prisma.emailLog.findMany({
+      where: {
+        recipientEmail: { in: emails },
+        // Isolation : un SYSTEM_ADMIN voit toutes les entreprises, les autres
+        // sont bornes a la leur. Meme pattern que le reste du fichier.
+        ...(companyId ? { companyId } : {}),
+      },
+      orderBy: { sentAt: 'desc' },
+      select: {
+        recipientEmail: true,
+        status: true,
+        sentAt: true,
+        metadata: true,
+      },
+    })
+  } catch (error) {
+    console.error('[attachLastBounce] Lecture EmailLog echouee:', error)
+    return employees
+  }
+
+  if (!Array.isArray(logs)) return employees
+
+  // Seul le dernier envoi par adresse compte, d'ou le tri decroissant et le
+  // premier gagnant.
+  const latest = new Map<string, (typeof logs)[number]>()
+  for (const log of logs) {
+    const key = log.recipientEmail.toLowerCase()
+    if (!latest.has(key)) latest.set(key, log)
+  }
+
+  return employees.map((employee) => {
+    const email = (employee.email ?? employee.user?.email ?? '')
+      .trim()
+      .toLowerCase()
+    const log = email ? latest.get(email) : undefined
+
+    if (!log || log.status !== 'BOUNCED') {
+      return { ...employee, lastBounce: null }
+    }
+
+    const bounce = (log.metadata as { bounce?: Record<string, unknown> } | null)
+      ?.bounce
+
+    return {
+      ...employee,
+      lastBounce: {
+        email: log.recipientEmail,
+        status: typeof bounce?.status === 'string' ? bounce.status : undefined,
+        kind:
+          bounce?.kind === 'PERMANENT' || bounce?.kind === 'TRANSIENT'
+            ? bounce.kind
+            : undefined,
+        sentAt: log.sentAt,
+      },
+    }
+  })
+}
+
 // ============================================================================
 // LIST - Recuperer les Employees avec pagination
 // ============================================================================
@@ -460,9 +557,12 @@ export async function listEmployees(
       }),
     ])
 
+    // SP-579 : signale une adresse ayant refuse le dernier email envoye
+    const withBounces = await attachLastBounce(employees, user.companyId)
+
     return {
       success: true,
-      data: formatPaginatedResult(employees, total, params),
+      data: formatPaginatedResult(withBounces, total, params),
     }
   } catch (error) {
     console.error('[listEmployees] Error:', error)
@@ -508,9 +608,12 @@ export async function getEmployee(
       }
     }
 
+    // SP-579 : meme signal que dans la liste, pour la fiche individuelle
+    const [withBounce] = await attachLastBounce([employee], user.companyId)
+
     return {
       success: true,
-      data: employee,
+      data: withBounce ?? employee,
     }
   } catch (error) {
     console.error('[getEmployee] Error:', error)

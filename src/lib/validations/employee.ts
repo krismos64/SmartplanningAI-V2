@@ -260,6 +260,27 @@ export interface EmployeeWithCounts {
      */
     isEmailVerified?: boolean
   } | null
+  /**
+   * Dernier email refusé par le serveur du destinataire, s'il y en a un.
+   *
+   * SP-579, lot 3 : sans ce signal, une adresse erronée reste invisible des
+   * deux côtés. Le dirigeant croit avoir invité quelqu'un, l'invité n'a jamais
+   * rien reçu, et le token expire en 48 heures. Constaté chez Sunlight puis
+   * chez Super U Bordeaux, où le cas est passé inaperçu 26 jours.
+   *
+   * Absent quand le dernier envoi vers cette adresse a été accepté : une
+   * adresse corrigée cesse donc d'être signalée dès l'envoi suivant.
+   */
+  lastBounce?: {
+    /** Adresse ayant refusé, celle du compte au moment de l'envoi */
+    email: string
+    /** Code d'état RFC 3463, par exemple « 5.1.1 » */
+    status?: string
+    /** Refus définitif ou temporaire */
+    kind?: 'PERMANENT' | 'TRANSIENT'
+    /** Date de l'envoi refusé */
+    sentAt: Date
+  } | null
   company?: {
     id: string
     name: string

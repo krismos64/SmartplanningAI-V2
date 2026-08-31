@@ -2,12 +2,12 @@
 
 | Champ | Valeur |
 |---|---|
-| Ticket | SP-579, lots 1 et 2 sur 3 |
+| Ticket | SP-579, les trois lots |
 | Documents produits | ce journal, `src/lib/email/bounce/` |
-| Documents modifiés | `send.ts`, `types.ts`, `log-auth-email.ts`, `invitation.ts`, `welcome.ts`, `verification-email.ts`, `send-billing.ts`, `employees.ts`, `docs/deployment.md` |
-| Contrôles | type-check vert, lint sans erreur, 3258 tests Vitest verts sur 195 fichiers, CI verte sur les deux PR |
-| Jira | SP-579 créé, commenté trois fois, en cours |
-| Mémoire | fiche sur les bounces réécrite |
+| Documents modifiés | `send.ts`, `types.ts`, `log-auth-email.ts`, `invitation.ts`, `welcome.ts`, `verification-email.ts`, `send-billing.ts`, `employees.ts`, `admin-users.ts`, `columns.tsx`, `UsersDataTable.tsx`, `docs/deployment.md`, `README.md` |
+| Contrôles | type-check vert, lint sans erreur, 3269 tests Vitest verts sur 195 fichiers, E2E 25 passés, CI verte sur les trois PR |
+| Jira | SP-579 créé, commenté et clos |
+| Mémoire | fiche sur les bounces réécrite, fiche Sunlight mise à jour |
 
 ## Ce qui a été fait
 
@@ -137,17 +137,57 @@ Nuance à conserver : la ligne testée est de type `EMAIL_VERIFICATION`, pas
 faisant sur l'adresse, la chaîne est prouvée à l'identique, mais le chemin
 `INVITATION` lui-même n'a pas été exercé en production.
 
+### Le lot 3
+
+Le critère 4 : rendre le rebond visible à qui peut agir. Le badge affiche
+« Adresse invalide » sur un refus définitif, « Envoi différé » sur un temporaire,
+code SMTP en infobulle. Il prime sur « Invitation en attente » du lot précédent,
+dont il est la cause, et l'entrée de menu devient « Corriger l'adresse puis
+relancer » sans être désactivée.
+
+Le signal s'efface de lui-même dès qu'un envoi vers la même adresse est accepté :
+seule la dernière ligne `EmailLog` compte. Pas de champ à nettoyer, pas d'alerte
+qui reste collée à un compte corrigé.
+
+Une question de Christophe a élargi le lot en cours de route : « et l'admin
+verra cela également ? ». Vérification faite plutôt que supposée, trois écrans,
+trois situations. `/app/dashboard/employees` est ouvert aux trois rôles, le
+badge y est donc visible d'un SYSTEM_ADMIN. `/app/admin/emails` savait afficher
+`BOUNCED` depuis SP-545, il lui manquait seulement des données. Mais
+**`/app/admin/users` n'affichait rien**, ni activation ni rebond, alors que
+c'est l'écran depuis lequel on relance une vérification. Il a été ajouté au lot.
+
+La lecture d'`EmailLog` y est volontairement **non filtrée** par `companyId`,
+cet écran étant réservé au SYSTEM_ADMIN et cross-tenant par conception. Un test
+l'affirme explicitement, en miroir du test négatif côté employés qui exige le
+filtre : sans cela, le choix se relirait plus tard comme un oubli.
+
+## Les écarts, suite
+
+**Une requête d'affichage ne doit pas pouvoir casser une liste.** Ma lecture
+d'`EmailLog` a fait tomber cinq tests existants de la liste des employés. Ce
+n'était pas un artefact de test : en production, une requête en échec aurait
+privé l'utilisateur de toute sa liste pour un simple badge. Les deux lectures
+sont désormais enveloppées dans un `try/catch` qui renvoie les données
+inchangées.
+
 ## Prochaine étape
 
-**Lot 3**, le critère 4 du ticket : afficher dans la fiche employé qu'une adresse
-a rebondi, pour que le dirigeant voie sa typo sans passer par l'écran admin
-cross-tenant. C'est le lot qui ferme la boucle ouverte par Sunlight.
+Rien d'ouvert sur SP-579, les trois lots sont livrés et le ticket est clos.
 
-Les deux vérifications prévues sont faites, résultats ci-dessus.
+Reste ouvert sans ticket, hérité de SP-578 : la relance automatique avant
+expiration du token à 48 heures.
 
-Le compte de Cassy Bouson reste bloqué : son adresse est fausse, il faut la
-corriger dans la fiche employé avant toute relance. C'est précisément ce que le
-lot 3 rendra visible au dirigeant.
+Deux sujets méritent un arbitrage, aucun n'est bloquant :
 
-Reste ouvert sans ticket : la relance automatique avant expiration du token à
-48 heures, héritée de SP-578.
+- `LOOKBACK_DAYS` vaut 7 jours. Avec un cron toutes les 6 heures, un bounce reçu
+  en fin de fenêtre peut être manqué de quelques heures, ce qui s'est produit
+  avec le message du 24 août. Porter la fenêtre à 10 jours coûterait peu
+- `admin-users.spec.ts` n'est pas dans la whitelist `playwright.ci.config.ts` et
+  ne tourne donc qu'en nightly, alors que le lot 3 modifie cet écran. L'y
+  ajouter change le périmètre CI, décision qui revient à Christophe
+
+**Action à la main de Christophe** : le token de Cassy Bouson expire le
+2 septembre. Son adresse doit être corrigée puis l'invitation relancée, sans quoi
+le compte reste bloqué. Le badge « Adresse invalide » le signale désormais dans
+les deux écrans.

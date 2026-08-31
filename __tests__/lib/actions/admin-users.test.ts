@@ -168,8 +168,100 @@ describe('toggleUserStatusAdmin (SP-472)', () => {
   it('throw Unauthorized si non SYSTEM_ADMIN', async () => {
     mockAuth.mockResolvedValue(DIRECTOR_SESSION)
 
-    await expect(
-      toggleUserStatusAdmin('user-1', false)
-    ).rejects.toThrow('Unauthorized')
+    await expect(toggleUserStatusAdmin('user-1', false)).rejects.toThrow(
+      'Unauthorized'
+    )
+  })
+})
+
+// ============================================================================
+// SP-579 - Signalement des adresses ayant refusé le dernier envoi
+// ============================================================================
+
+describe('getAllUsersAdmin — lastBounce (SP-579)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mockAuth.mockResolvedValue(ADMIN_SESSION)
+    prismaMock.user.findMany.mockResolvedValue([mockUsers[0]] as never)
+    prismaMock.user.count.mockResolvedValue(1)
+  })
+
+  it('signale une adresse dont le dernier envoi a rebondi', async () => {
+    prismaMock.emailLog.findMany.mockResolvedValue([
+      {
+        recipientEmail: 'alice@acme.com',
+        status: 'BOUNCED',
+        sentAt: new Date('2026-08-31T08:24:58Z'),
+        metadata: { bounce: { status: '5.1.1', kind: 'PERMANENT' } },
+      },
+    ] as never)
+
+    const result = await getAllUsersAdmin()
+
+    expect(result.users[0]?.lastBounce).toMatchObject({
+      status: '5.1.1',
+      kind: 'PERMANENT',
+    })
+  })
+
+  it("n'alerte plus quand un envoi ultérieur a été accepté", async () => {
+    // Une adresse corrigée cesse d'être signalée dès le premier envoi accepté.
+    prismaMock.emailLog.findMany.mockResolvedValue([
+      {
+        recipientEmail: 'alice@acme.com',
+        status: 'SENT',
+        sentAt: new Date('2026-08-31T10:00:00Z'),
+        metadata: null,
+      },
+      {
+        recipientEmail: 'alice@acme.com',
+        status: 'BOUNCED',
+        sentAt: new Date('2026-08-31T08:24:58Z'),
+        metadata: { bounce: { status: '5.1.1', kind: 'PERMANENT' } },
+      },
+    ] as never)
+
+    const result = await getAllUsersAdmin()
+
+    expect(result.users[0]?.lastBounce).toBeNull()
+  })
+
+  it('vaut null quand aucun email n a été journalisé', async () => {
+    prismaMock.emailLog.findMany.mockResolvedValue([] as never)
+
+    const result = await getAllUsersAdmin()
+
+    expect(result.users[0]?.lastBounce).toBeNull()
+  })
+
+  it('ne filtre pas par entreprise, cet écran étant cross-tenant', async () => {
+    // Contrairement à la liste des employés, cet écran est réservé au
+    // SYSTEM_ADMIN et couvre toutes les entreprises : le filtre companyId y
+    // serait une régression fonctionnelle, pas une protection.
+    prismaMock.emailLog.findMany.mockResolvedValue([] as never)
+
+    await getAllUsersAdmin()
+
+    const where = (
+      prismaMock.emailLog.findMany.mock.calls[0]?.[0] as {
+        where: Record<string, unknown>
+      }
+    ).where
+    expect('companyId' in where).toBe(false)
+    expect(where.recipientEmail).toEqual({ in: ['alice@acme.com'] })
+  })
+
+  it('ne fait pas tomber la liste si la lecture EmailLog échoue', async () => {
+    // Le signal est un confort de diagnostic : son échec ne doit pas priver
+    // l'administrateur de la liste des utilisateurs.
+    prismaMock.emailLog.findMany.mockRejectedValue(new Error('DB down'))
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+
+    const result = await getAllUsersAdmin()
+
+    expect(result.users).toHaveLength(1)
+    expect(result.users[0]?.lastBounce).toBeNull()
+
+    errorSpy.mockRestore()
   })
 })
