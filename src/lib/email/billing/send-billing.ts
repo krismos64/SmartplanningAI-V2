@@ -111,13 +111,19 @@ export async function sendBillingEmail(
         subscriptionId: subscriptionId ?? null,
         emailType: effectiveEmailType,
         recipientEmail,
-        status: emailResult.success ? 'SENT' : 'FAILED',
+        // SP-579 : `outcome` distingue une adresse refusée d'une panne
+        // technique. Repli sur `success` si l'information n'est pas remontée.
+        status:
+          emailResult.outcome ?? (emailResult.success ? 'SENT' : 'FAILED'),
         metadata: metadata
           ? {
               ...metadata,
               ...(emailResult.error ? { error: emailResult.error } : {}),
               ...(emailResult.messageId
                 ? { messageId: emailResult.messageId }
+                : {}),
+              ...(emailResult.rejected?.length
+                ? { rejected: emailResult.rejected }
                 : {}),
             }
           : emailResult.error

@@ -200,8 +200,11 @@ export async function verifyEmailAction(data: {
             emailType: AuthEmailType.WELCOME,
             recipientEmail,
             success: welcomeResult.success,
+            outcome: welcomeResult.outcome,
             messageId: welcomeResult.messageId,
             error: welcomeResult.error,
+            rejected: welcomeResult.rejected,
+            smtpResponse: welcomeResult.smtpResponse,
           })
         })
         .catch((err) => {

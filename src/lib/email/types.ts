@@ -50,11 +50,40 @@ export interface EmailAttachment {
 
 /**
  * Résultat de l'envoi d'un email
+ *
+ * SP-579 : `success: false` ne distinguait pas une panne technique (SMTP
+ * injoignable, authentification refusée) d'un destinataire refusé par le
+ * serveur distant. Le champ `outcome` porte cette distinction, parce qu'elle
+ * n'appelle pas la même réaction : une panne se retente, une adresse invalide
+ * doit être corrigée par un humain.
+ */
+export type EmailOutcome =
+  /** Accepté par le relais SMTP. Ne préjuge pas de la livraison finale. */
+  | 'SENT'
+  /** Destinataire refusé par le serveur, l'adresse est invalide. */
+  | 'BOUNCED'
+  /** Échec technique : configuration, réseau, authentification. */
+  | 'FAILED'
+
+/**
+ * Résultat de l'envoi d'un email
  */
 export interface EmailResult {
   success: boolean
   messageId?: string
   error?: string
+  /**
+   * Nature du résultat, alimente le statut de `EmailLog`.
+   *
+   * Un envoi `SENT` reste susceptible de rebondir plus tard : le relais
+   * accepte avant que le serveur du destinataire se prononce. Ces bounces
+   * asynchrones ne sont pas visibles ici.
+   */
+  outcome?: EmailOutcome
+  /** Adresses explicitement refusées par le serveur SMTP. */
+  rejected?: string[]
+  /** Dernière réponse SMTP brute, conservée pour le diagnostic. */
+  smtpResponse?: string
 }
 
 /**

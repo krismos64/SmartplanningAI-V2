@@ -9,6 +9,8 @@ import { render } from '@react-email/components'
 
 import { sendEmail } from '@/lib/email'
 import { getBaseUrl } from '@/lib/email/config'
+import { AuthEmailType, logAuthEmail } from '@/lib/email/auth/log-auth-email'
+import type { EmailResult } from '@/lib/email/types'
 
 import { InvitationEmail } from '../../../../emails/templates/InvitationEmail'
 
@@ -25,6 +27,14 @@ export interface SendInvitationEmailParams {
   roleName: string
   /** Duree de validite du lien (defaut: "48 heures") */
   expiresIn?: string
+  /**
+   * Identifiant de l'entreprise, pour journaliser l'envoi dans `EmailLog`.
+   *
+   * SP-579 : optionnel pour ne pas casser un appelant qui l'ignore, mais sans
+   * lui l'invitation reste absente du journal de delivrabilite. La colonne
+   * `companyId` de `EmailLog` est NOT NULL, il n'y a pas de repli possible.
+   */
+  companyId?: string
 }
 
 /**
@@ -35,7 +45,7 @@ export interface SendInvitationEmailParams {
  */
 export async function sendInvitationEmail(
   params: SendInvitationEmailParams
-): Promise<{ success: boolean; messageId?: string; error?: string }> {
+): Promise<EmailResult> {
   const {
     firstName,
     email,
@@ -43,6 +53,7 @@ export async function sendInvitationEmail(
     companyName,
     roleName,
     expiresIn = '48 heures',
+    companyId,
   } = params
   const baseUrl = getBaseUrl()
   const activationUrl = `${baseUrl}/activate-account?token=${encodeURIComponent(token)}`
@@ -65,6 +76,24 @@ export async function sendInvitationEmail(
       html,
     })
 
+    // SP-579 : le journal ne doit jamais faire echouer l'envoi, d'ou le
+    // fire-and-forget conforme au pattern email du projet.
+    if (companyId) {
+      logAuthEmail({
+        companyId,
+        emailType: AuthEmailType.INVITATION,
+        recipientEmail: email,
+        success: result.success,
+        outcome: result.outcome,
+        messageId: result.messageId,
+        error: result.error,
+        rejected: result.rejected,
+        smtpResponse: result.smtpResponse,
+      }).catch((err) => {
+        console.error('[sendInvitationEmail] Log failed:', err)
+      })
+    }
+
     return result
   } catch (error) {
     const errorMessage =
@@ -72,6 +101,19 @@ export async function sendInvitationEmail(
 
     if (process.env.NODE_ENV === 'development') {
       console.error('[sendInvitationEmail] Error:', error)
+    }
+
+    if (companyId) {
+      logAuthEmail({
+        companyId,
+        emailType: AuthEmailType.INVITATION,
+        recipientEmail: email,
+        success: false,
+        outcome: 'FAILED',
+        error: errorMessage,
+      }).catch((err) => {
+        console.error('[sendInvitationEmail] Log failed:', err)
+      })
     }
 
     return {
