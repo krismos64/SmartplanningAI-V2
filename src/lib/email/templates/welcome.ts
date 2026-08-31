@@ -9,6 +9,7 @@ import { render } from '@react-email/components'
 
 import { sendEmail } from '@/lib/email'
 import { getBaseUrl } from '@/lib/email/config'
+import type { EmailResult } from '@/lib/email/types'
 
 import { WelcomeEmail } from '../../../../emails/templates/WelcomeEmail'
 
@@ -33,7 +34,7 @@ export interface SendWelcomeEmailParams {
  */
 export async function sendWelcomeEmail(
   params: SendWelcomeEmailParams
-): Promise<{ success: boolean; messageId?: string; error?: string }> {
+): Promise<EmailResult> {
   const { firstName, email } = params
   const baseUrl = getBaseUrl()
   const loginUrl = `${baseUrl}/login`

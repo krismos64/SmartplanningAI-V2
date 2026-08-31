@@ -122,8 +122,11 @@ export async function sendVerificationEmailCore(
         emailType: AuthEmailType.EMAIL_VERIFICATION,
         recipientEmail: normalizedEmail,
         success: verificationResult.success,
+        outcome: verificationResult.outcome,
         messageId: verificationResult.messageId,
         error: verificationResult.error,
+        rejected: verificationResult.rejected,
+        smtpResponse: verificationResult.smtpResponse,
       })
     }
 

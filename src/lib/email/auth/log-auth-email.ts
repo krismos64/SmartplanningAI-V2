@@ -15,6 +15,7 @@
  */
 
 import { prisma } from '@/lib/prisma'
+import type { EmailOutcome } from '../types'
 
 /**
  * Types d'emails d'authentification loggés
@@ -24,6 +25,14 @@ export const AuthEmailType = {
   WELCOME: 'WELCOME',
   /** Email de vérification d'adresse (inscription + renvois) */
   EMAIL_VERIFICATION: 'EMAIL_VERIFICATION',
+  /**
+   * Invitation d'un collaborateur à activer son compte (création + relance).
+   *
+   * SP-579 : ce type manquait, donc aucune invitation n'apparaissait dans le
+   * journal de délivrabilité. C'est précisément une invitation qui a rebondi
+   * chez Sunlight sans laisser de trace exploitable.
+   */
+  INVITATION: 'INVITATION',
 } as const
 
 export type AuthEmailType = (typeof AuthEmailType)[keyof typeof AuthEmailType]
@@ -37,10 +46,22 @@ export interface LogAuthEmailParams {
   recipientEmail: string
   /** Succès de l'envoi SMTP */
   success: boolean
+  /**
+   * Nature du résultat, telle que remontée par `sendEmail`.
+   *
+   * SP-579 : sans ce champ, le statut valait `success ? 'SENT' : 'FAILED'` et
+   * `BOUNCED` n'était jamais écrit, alors qu'il est géré partout ailleurs
+   * (schéma, validations, filtre et badge de l'écran admin).
+   */
+  outcome?: EmailOutcome
   /** MessageId SMTP retourné par Nodemailer (optionnel) */
   messageId?: string
   /** Message d'erreur si l'envoi a échoué (optionnel) */
   error?: string
+  /** Adresses refusées par le serveur SMTP (optionnel) */
+  rejected?: string[]
+  /** Réponse SMTP brute, conservée pour le diagnostic (optionnel) */
+  smtpResponse?: string
 }
 
 /**
@@ -50,8 +71,21 @@ export interface LogAuthEmailParams {
  * perturber le flux d'inscription appelant.
  */
 export async function logAuthEmail(params: LogAuthEmailParams): Promise<void> {
-  const { companyId, emailType, recipientEmail, success, messageId, error } =
-    params
+  const {
+    companyId,
+    emailType,
+    recipientEmail,
+    success,
+    outcome,
+    messageId,
+    error,
+    rejected,
+    smtpResponse,
+  } = params
+
+  // `outcome` fait foi quand il est fourni. Le repli sur `success` garde
+  // compatibles les appelants qui ne le passent pas encore.
+  const status = outcome ?? (success ? 'SENT' : 'FAILED')
 
   try {
     await prisma.emailLog.create({
@@ -60,10 +94,12 @@ export async function logAuthEmail(params: LogAuthEmailParams): Promise<void> {
         subscriptionId: null,
         emailType,
         recipientEmail,
-        status: success ? 'SENT' : 'FAILED',
+        status,
         metadata: {
           ...(messageId ? { messageId } : {}),
           ...(error ? { error } : {}),
+          ...(rejected?.length ? { rejected } : {}),
+          ...(smtpResponse ? { smtpResponse } : {}),
         },
       },
     })

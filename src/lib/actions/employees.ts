@@ -846,6 +846,7 @@ export async function createEmployee(
         token: invitationToken,
         companyName: company.name,
         roleName: roleLabels[inviteRole] || 'Employé',
+        companyId: company.id,
       }).catch((err) => {
         console.error('[createEmployee] Invitation email failed:', err)
       })
@@ -2214,7 +2215,7 @@ export async function resendInvitation(data: {
         role: true,
         isEmailVerified: true,
         company: {
-          select: { name: true },
+          select: { id: true, name: true },
         },
       },
     })
@@ -2265,6 +2266,7 @@ export async function resendInvitation(data: {
       token: newToken,
       companyName: targetUser.company?.name || 'SmartPlanning',
       roleName: roleLabels[targetUser.role] || 'Employé',
+      companyId: targetUser.company?.id,
     }).catch((err) => {
       console.error('[resendInvitation] Email failed:', err)
     })
@@ -2363,7 +2365,7 @@ export async function resendInvitationByEmployee(data: {
         name: true,
         role: true,
         isEmailVerified: true,
-        company: { select: { name: true } },
+        company: { select: { id: true, name: true } },
       },
     })
 
@@ -2412,6 +2414,7 @@ export async function resendInvitationByEmployee(data: {
       token: newToken,
       companyName: targetUser.company?.name || 'SmartPlanning',
       roleName: roleLabels[targetUser.role] || 'Employé',
+      companyId: targetUser.company?.id,
     }).catch((err) => {
       console.error('[resendInvitationByEmployee] Email failed:', err)
     })

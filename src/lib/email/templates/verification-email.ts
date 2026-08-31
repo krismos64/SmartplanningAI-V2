@@ -10,6 +10,7 @@ import { render } from '@react-email/components'
 
 import { sendEmail } from '@/lib/email'
 import { getBaseUrl } from '@/lib/email/config'
+import type { EmailResult } from '@/lib/email/types'
 
 import { VerificationEmail } from '../../../../emails/templates/VerificationEmail'
 
@@ -40,7 +41,7 @@ export interface SendVerificationEmailParams {
  */
 export async function sendVerificationEmail(
   params: SendVerificationEmailParams
-): Promise<{ success: boolean; messageId?: string; error?: string }> {
+): Promise<EmailResult> {
   const { firstName, email, token, expiresIn = '24 heures' } = params
   const baseUrl = getBaseUrl()
   const verificationUrl = `${baseUrl}/verify-email?token=${encodeURIComponent(token)}`

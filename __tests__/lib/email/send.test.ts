@@ -555,4 +555,190 @@ describe('email/send', () => {
       consoleSpy.mockRestore()
     })
   })
+
+  // ==========================================================================
+  // SP-579 - Destinataire refusé par le serveur SMTP
+  //
+  // Le cast `as { messageId: string }` jetait `rejected` et `response`, donc
+  // une adresse invalide ressortait comme un envoi réussi. C'est ce qui s'est
+  // produit chez Sunlight : Gmail a refusé l'adresse, le log a dit « Envoi
+  // réussi », et personne n'a pu voir la typo.
+  // ==========================================================================
+
+  describe('sendEmail - destinataire refusé (SP-579)', () => {
+    const mockTransport = (sendMail: ReturnType<typeof vi.fn>) => {
+      vi.doMock('nodemailer', () => ({
+        default: {
+          createTransport: vi.fn(() => ({
+            sendMail,
+            verify: vi.fn(),
+            close: vi.fn(),
+          })),
+        },
+      }))
+    }
+
+    it('marque BOUNCED quand le retour SMTP contient un rejected', async () => {
+      const mockSendMail = vi.fn().mockResolvedValue({
+        messageId: 'msg-1',
+        accepted: [],
+        rejected: ['inconnu@gmail.com'],
+        response: '550 5.1.1 No Such User',
+      })
+      mockTransport(mockSendMail)
+
+      const { sendEmail } = await import('@/lib/email/send')
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+      const result = await sendEmail({
+        to: 'inconnu@gmail.com',
+        subject: 'Test',
+        html: '<p>Test</p>',
+      })
+
+      expect(result.success).toBe(false)
+      expect(result.outcome).toBe('BOUNCED')
+      expect(result.rejected).toEqual(['inconnu@gmail.com'])
+      expect(result.smtpResponse).toContain('550')
+      // Une adresse invalide ne se retente pas : trois essais seraient inutiles
+      expect(mockSendMail).toHaveBeenCalledTimes(1)
+
+      warnSpy.mockRestore()
+    })
+
+    it('marque BOUNCED sur une erreur EENVELOPE, le cas mono-destinataire', async () => {
+      // Quand TOUS les destinataires sont refusés, Nodemailer lève au lieu de
+      // renseigner `rejected`. Nos envois étant mono-destinataire, c'est le
+      // chemin réellement emprunté en production.
+      const envelopeError = Object.assign(
+        new Error(
+          '550 5.1.1 The email account that you tried to reach does not exist'
+        ),
+        { code: 'EENVELOPE', rejected: ['inconnu@gmail.com'] }
+      )
+      const mockSendMail = vi.fn().mockRejectedValue(envelopeError)
+      mockTransport(mockSendMail)
+
+      const { sendEmail } = await import('@/lib/email/send')
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+      const result = await sendEmail({
+        to: 'inconnu@gmail.com',
+        subject: 'Test',
+        html: '<p>Test</p>',
+      })
+
+      expect(result.success).toBe(false)
+      expect(result.outcome).toBe('BOUNCED')
+      expect(result.rejected).toEqual(['inconnu@gmail.com'])
+      expect(mockSendMail).toHaveBeenCalledTimes(1)
+
+      warnSpy.mockRestore()
+    })
+
+    it('normalise les adresses fournies sous forme d objet', async () => {
+      const mockSendMail = vi.fn().mockResolvedValue({
+        messageId: 'msg-2',
+        rejected: [{ address: 'inconnu@gmail.com', name: 'Inconnu' }],
+        response: '550 5.1.1',
+      })
+      mockTransport(mockSendMail)
+
+      const { sendEmail } = await import('@/lib/email/send')
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+      const result = await sendEmail({
+        to: 'inconnu@gmail.com',
+        subject: 'Test',
+        html: '<p>Test</p>',
+      })
+
+      expect(result.outcome).toBe('BOUNCED')
+      expect(result.rejected).toEqual(['inconnu@gmail.com'])
+
+      warnSpy.mockRestore()
+    })
+
+    it('marque SENT quand rejected est vide', async () => {
+      const mockSendMail = vi.fn().mockResolvedValue({
+        messageId: 'msg-3',
+        accepted: ['ok@test.com'],
+        rejected: [],
+        response: '250 OK',
+      })
+      mockTransport(mockSendMail)
+
+      const { sendEmail } = await import('@/lib/email/send')
+      const infoSpy = vi.spyOn(console, 'info').mockImplementation(() => {})
+
+      const result = await sendEmail({
+        to: 'ok@test.com',
+        subject: 'Test',
+        html: '<p>Test</p>',
+      })
+
+      expect(result.success).toBe(true)
+      expect(result.outcome).toBe('SENT')
+      expect(result.rejected).toBeUndefined()
+
+      infoSpy.mockRestore()
+    })
+
+    it('distingue une panne technique d une adresse invalide', async () => {
+      // ECONNREFUSED n'est pas un refus de destinataire : il doit rester
+      // FAILED et passer par le retry, sinon une panne réseau passagère
+      // marquerait à tort des adresses valides comme invalides.
+      const networkError = Object.assign(new Error('connect ECONNREFUSED'), {
+        code: 'ECONNECTION',
+      })
+      const mockSendMail = vi.fn().mockRejectedValue(networkError)
+      mockTransport(mockSendMail)
+
+      const { sendEmail } = await import('@/lib/email/send')
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+      const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+
+      const promise = sendEmail({
+        to: 'ok@test.com',
+        subject: 'Test',
+        html: '<p>Test</p>',
+      })
+      await vi.runAllTimersAsync()
+      const result = await promise
+
+      expect(result.success).toBe(false)
+      expect(result.outcome).toBe('FAILED')
+      expect(result.rejected).toBeUndefined()
+
+      warnSpy.mockRestore()
+      errorSpy.mockRestore()
+    })
+
+    it('ne confond pas un expediteur refuse avec un destinataire invalide', async () => {
+      // EENVELOPE couvre aussi l'expéditeur refusé, qui est une erreur de
+      // configuration. Sans `rejected`, on ne doit pas conclure au bounce.
+      const senderError = Object.assign(new Error('550 sender rejected'), {
+        code: 'EENVELOPE',
+      })
+      const mockSendMail = vi.fn().mockRejectedValue(senderError)
+      mockTransport(mockSendMail)
+
+      const { sendEmail } = await import('@/lib/email/send')
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+      const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+
+      const promise = sendEmail({
+        to: 'ok@test.com',
+        subject: 'Test',
+        html: '<p>Test</p>',
+      })
+      await vi.runAllTimersAsync()
+      const result = await promise
+
+      expect(result.outcome).toBe('FAILED')
+
+      warnSpy.mockRestore()
+      errorSpy.mockRestore()
+    })
+  })
 })

@@ -83,7 +83,28 @@ export async function sendEmail(options: EmailOptions): Promise<EmailResult> {
         text: options.text || stripHtml(options.html),
         replyTo: options.replyTo,
         attachments: options.attachments,
-      })) as { messageId: string }
+      })) as SendMailInfo
+
+      const rejected = normalizeAddresses(info.rejected)
+
+      // SP-579 : un destinataire refuse pendant le dialogue SMTP figure dans
+      // `rejected`. L'ancien cast en `{ messageId: string }` jetait ce champ,
+      // et un refus ressortait donc comme un envoi reussi.
+      if (rejected.length > 0) {
+        console.warn(
+          `[Email] Destinataire refusé par le serveur SMTP : ${rejected.join(', ')}`,
+          info.response ?? ''
+        )
+
+        return {
+          success: false,
+          outcome: 'BOUNCED',
+          messageId: info.messageId,
+          rejected,
+          smtpResponse: info.response,
+          error: `Adresse refusée par le serveur destinataire : ${rejected.join(', ')}`,
+        }
+      }
 
       // eslint-disable-next-line no-console
       console.info(
@@ -92,10 +113,34 @@ export async function sendEmail(options: EmailOptions): Promise<EmailResult> {
 
       return {
         success: true,
+        outcome: 'SENT',
         messageId: info.messageId,
+        smtpResponse: info.response,
       }
     } catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error))
+
+      // SP-579 : quand TOUS les destinataires sont refuses, Nodemailer leve une
+      // erreur EENVELOPE au lieu de renseigner `rejected` sur un retour normal.
+      // C'est le chemin emprunte par nos envois, qui sont mono-destinataire :
+      // sans ce cas, un refus ressortirait en FAILED et serait retente trois
+      // fois pour rien, l'adresse etant definitivement invalide.
+      const envelopeRejection = extractEnvelopeRejection(lastError)
+
+      if (envelopeRejection) {
+        console.warn(
+          `[Email] Enveloppe refusée pour ${options.to}:`,
+          lastError.message
+        )
+
+        return {
+          success: false,
+          outcome: 'BOUNCED',
+          rejected: envelopeRejection,
+          smtpResponse: lastError.message,
+          error: `Adresse refusée par le serveur destinataire : ${envelopeRejection.join(', ')}`,
+        }
+      }
 
       console.warn(
         `[Email] Tentative ${attempt}/${MAX_RETRIES} échouée pour ${options.to}:`,
@@ -122,6 +167,7 @@ export async function sendEmail(options: EmailOptions): Promise<EmailResult> {
 
   return {
     success: false,
+    outcome: 'FAILED',
     error: lastError?.message || "Erreur inconnue lors de l'envoi",
   }
 }
@@ -136,6 +182,62 @@ export async function sendEmails(
   emailsList: EmailOptions[]
 ): Promise<EmailResult[]> {
   return Promise.all(emailsList.map(sendEmail))
+}
+
+/**
+ * Retour de `transporter.sendMail` pour un transport SMTP.
+ *
+ * Les champs varient selon le transport, d'où le typage permissif sur
+ * `accepted` et `rejected` : Nodemailer y met des chaînes, ou des objets
+ * `{ address }` quand le message porte des noms d'affichage.
+ */
+interface SendMailInfo {
+  messageId?: string
+  response?: string
+  accepted?: unknown[]
+  rejected?: unknown[]
+}
+
+/**
+ * Normalise une liste d'adresses Nodemailer en chaînes.
+ */
+function normalizeAddresses(addresses: unknown[] | undefined): string[] {
+  if (!Array.isArray(addresses)) return []
+
+  return addresses
+    .map((entry) => {
+      if (typeof entry === 'string') return entry
+      if (
+        entry &&
+        typeof entry === 'object' &&
+        'address' in entry &&
+        typeof (entry as { address: unknown }).address === 'string'
+      ) {
+        return (entry as { address: string }).address
+      }
+      return null
+    })
+    .filter((address): address is string => Boolean(address))
+}
+
+/**
+ * Extrait les adresses refusées d'une erreur d'enveloppe SMTP.
+ *
+ * Renvoie `null` quand l'erreur n'est pas un refus de destinataire, pour ne
+ * pas confondre une adresse invalide avec une panne de transport.
+ */
+function extractEnvelopeRejection(error: Error): string[] | null {
+  const candidate = error as Error & { code?: string; rejected?: unknown[] }
+
+  if (candidate.code !== 'EENVELOPE') {
+    return null
+  }
+
+  const rejected = normalizeAddresses(candidate.rejected)
+
+  // EENVELOPE couvre aussi l'expediteur refuse, qui est une erreur de
+  // configuration et non une adresse destinataire invalide.
+  return rejected.length > 0 ? rejected : null
 }
 
 /**
