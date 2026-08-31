@@ -282,6 +282,28 @@ export function createEmployeeColumns(
         // un responsable croit son collaborateur operationnel alors que
         // celui-ci n'a jamais pu se connecter, et le lien expire en 48 h.
         const invitationPending = user ? user.isEmailVerified === false : false
+        const bounce = row.original.lastBounce
+
+        // SP-579 : le rebond prime sur l'invitation en attente. C'en est la
+        // cause, et il appelle une action differente : corriger l'adresse
+        // plutot que relancer vers la meme.
+        if (isActive && bounce) {
+          const permanent = bounce.kind !== 'TRANSIENT'
+
+          return (
+            <Badge
+              variant="outline"
+              className="border-destructive text-destructive"
+              title={
+                permanent
+                  ? `L'adresse ${bounce.email} a refusé le dernier email${bounce.status ? ` (${bounce.status})` : ''}. Corrigez-la avant de relancer.`
+                  : `L'adresse ${bounce.email} n'a pas pu être jointe temporairement${bounce.status ? ` (${bounce.status})` : ''}. Réessayez plus tard.`
+              }
+            >
+              {permanent ? 'Adresse invalide' : 'Envoi différé'}
+            </Badge>
+          )
+        }
 
         if (isActive && invitationPending) {
           return (
@@ -370,20 +392,36 @@ export function createEmployeeColumns(
 
               {/* SP-578 : proposee uniquement tant que le compte n'est pas active */}
               {onResendInvitation &&
-                employee.user?.isEmailVerified === false && (
-                  <DropdownMenuItem
-                    onClick={() => onResendInvitation(employee)}
-                    disabled={isImpersonating}
-                    title={
-                      isImpersonating
-                        ? 'Non disponible en mode support'
-                        : undefined
-                    }
-                  >
-                    <Send className="mr-2 h-4 w-4" />
-                    Relancer l&apos;invitation
-                  </DropdownMenuItem>
-                )}
+                employee.user?.isEmailVerified === false &&
+                (() => {
+                  // SP-579 : sur un refus definitif, relancer vers la meme
+                  // adresse echouera a l'identique. L'action reste accessible,
+                  // le responsable pouvant vouloir reessayer, mais elle dit ce
+                  // qu'il faut faire d'abord.
+                  const blocked =
+                    employee.lastBounce?.kind !== 'TRANSIENT'
+                      ? employee.lastBounce
+                      : null
+
+                  return (
+                    <DropdownMenuItem
+                      onClick={() => onResendInvitation(employee)}
+                      disabled={isImpersonating}
+                      title={
+                        isImpersonating
+                          ? 'Non disponible en mode support'
+                          : blocked
+                            ? `L'adresse ${blocked.email} a refusé le dernier envoi. Modifiez-la avant de relancer.`
+                            : undefined
+                      }
+                    >
+                      <Send className="mr-2 h-4 w-4" />
+                      {blocked
+                        ? "Corriger l'adresse puis relancer"
+                        : "Relancer l'invitation"}
+                    </DropdownMenuItem>
+                  )
+                })()}
 
               {onDelete && canDelete && (
                 <>

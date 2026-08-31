@@ -54,14 +54,18 @@ vi.mock('@/lib/notifications/emit-notification', () => ({
 }))
 vi.mock('@/lib/impersonation', () => ({
   assertNotImpersonating: vi.fn(),
-  getEffectiveSessionData: vi.fn().mockImplementation(
-    (session: { user: { id: string; role: string; companyId?: string | null } }) =>
-      Promise.resolve({
-        userId: session.user.id,
-        role: session.user.role,
-        companyId: session.user.companyId ?? null,
-      })
-  ),
+  getEffectiveSessionData: vi
+    .fn()
+    .mockImplementation(
+      (session: {
+        user: { id: string; role: string; companyId?: string | null }
+      }) =>
+        Promise.resolve({
+          userId: session.user.id,
+          role: session.user.role,
+          companyId: session.user.companyId ?? null,
+        })
+    ),
 }))
 vi.mock('@/lib/services/audit', () => ({
   logAuditAction: vi.fn().mockResolvedValue(undefined),
@@ -828,7 +832,9 @@ describe('SP-439 - Stripe quantity sync', () => {
   it('appelle syncEmployeeCountToStripe après createEmployee', async () => {
     setMockUser('DIRECTOR', COMPANY_ID)
     prismaMock.company.findUnique.mockResolvedValue(mockCompany as never)
-    prismaMock.employee.create.mockResolvedValue(mockEmployeeWithRelations as never)
+    prismaMock.employee.create.mockResolvedValue(
+      mockEmployeeWithRelations as never
+    )
 
     await createEmployee({
       firstName: 'Jean',
@@ -859,8 +865,12 @@ describe('SP-439 - Stripe quantity sync', () => {
 
   it('appelle syncEmployeeCountToStripe après toggleEmployeeStatus', async () => {
     setMockUser('DIRECTOR', COMPANY_ID)
-    prismaMock.employee.findUnique.mockResolvedValue(mockEmployeeWithRelations as never)
-    prismaMock.employee.update.mockResolvedValue(mockEmployeeWithRelations as never)
+    prismaMock.employee.findUnique.mockResolvedValue(
+      mockEmployeeWithRelations as never
+    )
+    prismaMock.employee.update.mockResolvedValue(
+      mockEmployeeWithRelations as never
+    )
 
     await toggleEmployeeStatus(EMP_ID, false)
 
@@ -887,7 +897,9 @@ describe('SP-439 - Stripe quantity sync', () => {
     setMockUser('DIRECTOR', COMPANY_ID)
     mockSyncEmployeeCountToStripe.mockRejectedValue(new Error('Stripe down'))
     prismaMock.company.findUnique.mockResolvedValue(mockCompany as never)
-    prismaMock.employee.create.mockResolvedValue(mockEmployeeWithRelations as never)
+    prismaMock.employee.create.mockResolvedValue(
+      mockEmployeeWithRelations as never
+    )
 
     // Ne doit PAS throw — fire-and-forget
     const result = await createEmployee({
@@ -908,7 +920,9 @@ describe('SP-439 - Stripe quantity sync', () => {
       companyId: COMPANY_ID_2,
       _count: { schedules: 0, leaveRequests: 0 },
     }
-    prismaMock.employee.findUnique.mockResolvedValue(empWithOtherCompany as never)
+    prismaMock.employee.findUnique.mockResolvedValue(
+      empWithOtherCompany as never
+    )
     prismaMock.employee.delete.mockResolvedValue(mockEmployee as never)
 
     await deleteEmployee(EMP_ID)
@@ -1018,7 +1032,7 @@ describe('resendInvitationByEmployee (SP-578)', () => {
     expect(prismaMock.$transaction).not.toHaveBeenCalled()
   })
 
-  it("refuse la relance sur un employe sans compte utilisateur", async () => {
+  it('refuse la relance sur un employe sans compte utilisateur', async () => {
     setMockUser('DIRECTOR', COMPANY_ID)
     prismaMock.employee.findUnique.mockResolvedValue({
       ...pendingEmployee,
@@ -1032,7 +1046,7 @@ describe('resendInvitationByEmployee (SP-578)', () => {
     expect(prismaMock.$transaction).not.toHaveBeenCalled()
   })
 
-  it('rejette un employeeId qui n\'est pas un CUID (validation Zod)', async () => {
+  it("rejette un employeeId qui n'est pas un CUID (validation Zod)", async () => {
     setMockUser('DIRECTOR', COMPANY_ID)
 
     const result = await resendInvitationByEmployee({
@@ -1041,5 +1055,131 @@ describe('resendInvitationByEmployee (SP-578)', () => {
 
     expect(result.success).toBe(false)
     expect(prismaMock.employee.findUnique).not.toHaveBeenCalled()
+  })
+})
+
+// ============================================================================
+// SP-579 lot 3 - Signalement d'une adresse ayant refusé le dernier envoi
+// ============================================================================
+
+describe('lastBounce sur la liste des employés (SP-579)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    setMockUser('DIRECTOR', COMPANY_ID)
+  })
+
+  /** Prépare listEmployees avec un employé et les lignes EmailLog données. */
+  const arrange = (logs: unknown[]) => {
+    prismaMock.employee.count.mockResolvedValue(1)
+    prismaMock.employee.findMany.mockResolvedValue([
+      mockEmployeeWithRelations,
+    ] as never)
+    prismaMock.emailLog.findMany.mockResolvedValue(logs as never)
+  }
+
+  it('signale une adresse dont le dernier envoi a rebondi', async () => {
+    arrange([
+      {
+        recipientEmail: 'jean.dupont@acme.com',
+        status: 'BOUNCED',
+        sentAt: new Date('2026-08-31T08:24:58Z'),
+        metadata: { bounce: { status: '5.1.1', kind: 'PERMANENT' } },
+      },
+    ])
+
+    const result = await listEmployees({}, {})
+
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(result.data.data[0]?.lastBounce).toMatchObject({
+        email: 'jean.dupont@acme.com',
+        status: '5.1.1',
+        kind: 'PERMANENT',
+      })
+    }
+  })
+
+  it("n'alerte plus quand un envoi ultérieur a été accepté", async () => {
+    // Une adresse corrigée doit cesser d'être signalée dès le premier envoi
+    // accepté, sans quoi l'alerte resterait collée au compte indéfiniment.
+    arrange([
+      {
+        recipientEmail: 'jean.dupont@acme.com',
+        status: 'SENT',
+        sentAt: new Date('2026-08-31T10:00:00Z'),
+        metadata: null,
+      },
+      {
+        recipientEmail: 'jean.dupont@acme.com',
+        status: 'BOUNCED',
+        sentAt: new Date('2026-08-31T08:24:58Z'),
+        metadata: { bounce: { status: '5.1.1', kind: 'PERMANENT' } },
+      },
+    ])
+
+    const result = await listEmployees({}, {})
+
+    if (result.success) {
+      expect(result.data.data[0]?.lastBounce).toBeNull()
+    }
+  })
+
+  it('distingue un refus temporaire d un refus définitif', async () => {
+    arrange([
+      {
+        recipientEmail: 'jean.dupont@acme.com',
+        status: 'BOUNCED',
+        sentAt: new Date('2026-08-31T08:00:00Z'),
+        metadata: { bounce: { status: '4.2.2', kind: 'TRANSIENT' } },
+      },
+    ])
+
+    const result = await listEmployees({}, {})
+
+    if (result.success) {
+      expect(result.data.data[0]?.lastBounce?.kind).toBe('TRANSIENT')
+    }
+  })
+
+  it("borne la recherche des bounces à l'entreprise du DIRECTOR", async () => {
+    // Test négatif d'isolation : EmailLog est cross-tenant, la requête doit
+    // porter le companyId sous peine d'exposer l'activité d'un autre client.
+    arrange([])
+
+    await listEmployees({}, {})
+
+    const where = (
+      prismaMock.emailLog.findMany.mock.calls[0]?.[0] as {
+        where: { companyId?: string }
+      }
+    ).where
+    expect(where.companyId).toBe(COMPANY_ID)
+  })
+
+  it('ne filtre pas par entreprise pour un SYSTEM_ADMIN', async () => {
+    // Seul rôle dont companyId vaut null : le filtre doit disparaître, sans
+    // quoi la clause `companyId: undefined` élargirait silencieusement.
+    setMockUser('SYSTEM_ADMIN', null)
+    arrange([])
+
+    await listEmployees({}, {})
+
+    const where = (
+      prismaMock.emailLog.findMany.mock.calls[0]?.[0] as {
+        where: Record<string, unknown>
+      }
+    ).where
+    expect('companyId' in where).toBe(false)
+  })
+
+  it('ne requête pas EmailLog quand aucun employé n a d adresse', async () => {
+    prismaMock.employee.count.mockResolvedValue(1)
+    prismaMock.employee.findMany.mockResolvedValue([
+      { ...mockEmployeeWithRelations, email: null, user: null },
+    ] as never)
+
+    await listEmployees({}, {})
+
+    expect(prismaMock.emailLog.findMany).not.toHaveBeenCalled()
   })
 })
