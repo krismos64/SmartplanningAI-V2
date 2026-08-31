@@ -104,19 +104,50 @@ lot 1 sait créer, et le lot 1 ne journalise que les envois postérieurs à son
 déploiement. Le dispositif devient effectif pour toute invitation envoyée
 désormais.
 
+## La boucle validée en production
+
+Le déploiement seul ne prouvait rien : les deux bounces de Sunlight sortaient en
+`unmatched`, faute de ligne `EmailLog` à raccrocher, le journal ne contenant
+avant le lot 1 que du billing et deux types d'auth.
+
+Test de bout en bout mené le 31 août, sans aucune écriture manuelle en base.
+Christophe a renvoyé l'email de validation à l'adresse fautive depuis son compte
+admin, `assertNotImpersonating` bloquant l'action en mode support.
+
+| Heure | Événement | Preuve |
+|---|---|---|
+| 08:24:58 | La ligne `EmailLog` est créée | `SENT`, `smtpResponse: "250 2.0.0 Ok: queued"` |
+| 08:24:58 | Le log applicatif dit « Envoi réussi » | le relais a accepté |
+| 08:25:01 | Gmail refuse, le bounce revient | classé **directement en corbeille** |
+| 08:26:53 | Passage du cron | `bounces: 1, updated: 1, errors: []` |
+| 08:27:05 | Second passage | `bounces: 0`, pas de retraitement |
+
+La ligne porte désormais `status: BOUNCED` et un `metadata.bounce` complet, avec
+`kind: PERMANENT`, `status: 5.1.1` et le diagnostic SMTP. La base passe de 42
+lignes toutes en `SENT` à 42 `SENT` et **1 `BOUNCED`, la première du projet**.
+
+Trois enseignements de ce test. Le bounce est allé directement en corbeille,
+donc la correction multi-dossiers du matin n'était pas théorique : sans elle le
+test aurait échoué et le dispositif serait resté silencieux. Le délai entre
+l'envoi accepté et le refus est de **trois secondes**, ce que le lot 1 ne peut
+structurellement pas voir. Et l'idempotence tient sur données réelles.
+
+Nuance à conserver : la ligne testée est de type `EMAIL_VERIFICATION`, pas
+`INVITATION`, le renvoi ayant été fait depuis l'écran admin. Le rapprochement se
+faisant sur l'adresse, la chaîne est prouvée à l'identique, mais le chemin
+`INVITATION` lui-même n'a pas été exercé en production.
+
 ## Prochaine étape
 
 **Lot 3**, le critère 4 du ticket : afficher dans la fiche employé qu'une adresse
 a rebondi, pour que le dirigeant voie sa typo sans passer par l'écran admin
 cross-tenant. C'est le lot qui ferme la boucle ouverte par Sunlight.
 
-Deux vérifications à faire une fois le déploiement passé :
+Les deux vérifications prévues sont faites, résultats ci-dessus.
 
-- Déclencher un passage manuel du cron et lire son compte rendu, plutôt que de
-  supposer qu'il fonctionne
-- Relancer l'invitation de Cassy Bouson depuis la fiche employé, ce qui doit
-  produire une ligne `INVITATION` puis un `BOUNCED` au passage suivant. C'est le
-  seul test de bout en bout qui prouve la chaîne complète
+Le compte de Cassy Bouson reste bloqué : son adresse est fausse, il faut la
+corriger dans la fiche employé avant toute relance. C'est précisément ce que le
+lot 3 rendra visible au dirigeant.
 
 Reste ouvert sans ticket : la relance automatique avant expiration du token à
 48 heures, héritée de SP-578.
