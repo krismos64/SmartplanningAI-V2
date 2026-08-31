@@ -172,6 +172,18 @@ SMTP_FROM="SmartPlanning <contact@smartplanning.fr>"
 CONTACT_EMAIL=contact@smartplanning.fr
 
 # ----------------------------------------------
+# RELEVE IMAP DES BOUNCES (SP-579)
+# ----------------------------------------------
+# Lecture de la boite d'expedition pour detecter les adresses qui ont refuse
+# un email. Hostinger n'expose aucun webhook de delivrabilite, c'est le seul
+# chemin possible pour les refus asynchrones.
+# Sans ces variables, /api/cron/bounce-sync repond 200 sans rien faire.
+IMAP_HOST=imap.hostinger.com
+IMAP_PORT=993
+IMAP_USER=contact@smartplanning.fr
+IMAP_PASSWORD=<SMTP_PASSWORD>
+
+# ----------------------------------------------
 # UMAMI ANALYTICS
 # ----------------------------------------------
 NEXT_PUBLIC_UMAMI_WEBSITE_ID=3a177239-31b0-4201-a1cb-e9938326d52b
@@ -218,6 +230,10 @@ HEALTH_API_KEY=<GENERER_AVEC_openssl_rand_base64_32>
 | `SMTP_PASSWORD`         | `src/lib/email/config.ts` | Mot de passe SMTP          |
 | `SMTP_FROM`             | `src/lib/email/config.ts` | Adresse d'expédition       |
 | `CONTACT_EMAIL`         | `src/lib/email/config.ts` | Email de réception contact |
+| `IMAP_HOST`             | `src/lib/email/bounce/bounce-sync.service.ts` | Serveur IMAP de la boîte relevée |
+| `IMAP_PORT`             | `src/lib/email/bounce/bounce-sync.service.ts` | Port IMAP (993 par défaut) |
+| `IMAP_USER`             | `src/lib/email/bounce/bounce-sync.service.ts` | Compte de la boîte relevée |
+| `IMAP_PASSWORD`         | `src/lib/email/bounce/bounce-sync.service.ts` | Mot de passe IMAP, identique au SMTP |
 | `CLOUDINARY_CLOUD_NAME` | `src/lib/cloudinary.ts`   | Nom du cloud Cloudinary    |
 | `CLOUDINARY_API_KEY`    | `src/lib/cloudinary.ts`   | Clé API Cloudinary         |
 | `CLOUDINARY_API_SECRET` | `src/lib/cloudinary.ts`   | Secret API Cloudinary      |
@@ -238,6 +254,38 @@ Les secrets suivants doivent être configurés dans GitHub (Settings → Secrets
 | `VPS_SSH_PORT` | Port SSH                | `22`            |
 
 > **Note** : Les secrets applicatifs (DB, Redis, SMTP) sont gérés via le `.env` sur le VPS, pas via GitHub Secrets. C'est une approche valide car le CD ne fait que `docker pull` + `docker compose up`.
+
+### Tâches planifiées (crontab du VPS)
+
+Les traitements périodiques passent par des routes `/api/cron/*`, appelées en
+HTTP et authentifiées par `CRON_SECRET`. Le secret vit dans
+`/etc/smartplanning/cron.env` et n'apparaît jamais en clair dans la crontab.
+
+```bash
+# crontab -l (utilisateur deploy)
+0 8 * * * . /etc/smartplanning/cron.env && curl -s -X POST -H "Authorization: Bearer $CRON_SECRET" https://smartplanning.fr/api/cron/trial-emails >> /var/log/smartplanning-cron.log 2>&1
+
+# SP-579 : releve des bounces, toutes les 6 heures
+0 */6 * * * . /etc/smartplanning/cron.env && curl -s -X POST -H "Authorization: Bearer $CRON_SECRET" https://smartplanning.fr/api/cron/bounce-sync >> /var/log/smartplanning-cron.log 2>&1
+```
+
+La relève parcourt `INBOX`, `INBOX.Trash` et `INBOX.Junk`. Relever INBOX seul
+ne suffit pas : au 31 août 2026, les 9 messages de non-remise reçus depuis le
+5 août étaient tous en corbeille, et aucun en boîte de réception. L'un d'eux y
+était arrivé sans avoir été lu, donc sans geste humain.
+
+Elle est idempotente : un bounce traité reçoit le mot-clé
+`SmartPlanningBounceSynced`, et la relève écarte les messages qui le portent
+déjà. Le marquage n'utilise pas `\Seen` volontairement, l'état « lu »
+appartenant à la personne qui relève la boîte. Un message ordinaire n'est ni
+marqué ni modifié.
+
+Une exécution supplémentaire ne produit donc aucun doublon, et une exécution
+manquée est rattrapée au passage suivant dans la limite de la fenêtre de
+7 jours.
+
+Sans les variables `IMAP_*`, la route répond `200` avec `skipped: true` plutôt
+que d'échouer : c'est le comportement attendu en développement.
 
 ---
 
