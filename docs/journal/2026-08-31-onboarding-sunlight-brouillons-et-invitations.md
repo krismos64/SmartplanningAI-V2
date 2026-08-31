@@ -6,7 +6,7 @@
 | Documents produits | ce journal |
 | Documents modifiés | `SchedulesFilters.tsx`, `ExportDropdown.tsx`, routes export PDF et Excel, `employees.ts` (actions), `employee.ts` (validations), `columns.tsx`, `EmployeesDataTable.tsx`, deux fichiers de tests |
 | Contrôles | type-check vert, 3209 tests Vitest verts sur 191 fichiers, E2E `crud/employees.spec.ts` 18/18 sur deux passages |
-| Jira | SP-578 créé |
+| Jira | SP-578 créé, commenté et passé en cours. SP-579 créé sur les bounces, lié à SP-578 |
 | Mémoire | fiches sur l'acquisition ChatGPT, sur les bounces invisibles dans les logs applicatifs, sur le fuseau des logs face à la base |
 
 ## Ce qui a été fait
@@ -118,16 +118,27 @@ Chercher dans le premier donne l'impression qu'il n'y a pas de trafic.
 
 Ouvrir la PR pour SP-578 et laisser la CI se prononcer.
 
-Deux sujets restent ouverts, non traités ici :
+**SP-579 créé** sur le traitement des bounces, lié à SP-578. La fouille menée
+pour rédiger le ticket a montré un sujet plus large que prévu, trois défauts
+distincts vérifiés en production :
 
-- **Le traitement des bounces.** Une adresse invalide reste invisible côté
-  application. Les bounces arrivent sur `contact@smartplanning.fr` et personne
-  ne les relie au compte concerné. Un `EmailLog` en statut `BOUNCED` alimenté
-  par un webhook du relais rendrait la typo visible dans l'écran admin emails
-  bâti en SP-545
-- **La relance automatique avant expiration.** Le token vit 48 heures et personne
-  n'est prévenu qu'il va expirer. Un rappel au dirigeant sur les invitations
-  restées en attente prolongerait l'effet du correctif de cette session
+1. `send.ts` caste le retour de `sendMail` en `as { messageId: string }` et perd
+   `accepted`, `rejected` et `response` que Nodemailer fournit. Un refus
+   immédiat pendant le dialogue SMTP est indistinguable d'un succès
+2. Le statut `BOUNCED` existe dans le schéma, les validations, le filtre et le
+   badge de l'écran admin de SP-545, et **rien ne l'écrit jamais**. Mesure en
+   base : 41 lignes `email_logs`, toutes en `SENT`, zéro `FAILED`, zéro
+   `BOUNCED`. Le widget « échecs sur 7 jours » affiche donc zéro par
+   construction, et le taux de délivrabilité vaut 100 pour cent sans rien
+   mesurer
+3. `logAuthEmail` ne couvre que `WELCOME` et `EMAIL_VERIFICATION`.
+   `invitation.ts` ne l'appelle pas, donc les 3 invitations de Sunlight, dont
+   celle qui a rebondi, sont absentes du journal censé servir au diagnostic
+
+Reste ouvert, sans ticket pour l'instant : **la relance automatique avant
+expiration**. Le token vit 48 heures et personne n'est prévenu qu'il va expirer.
+Un rappel au dirigeant sur les invitations restées en attente prolongerait
+l'effet du correctif de cette session.
 
 Sunlight garde son essai jusqu'au 21 septembre. Rien ne dit que ces correctifs
 la feront revenir, mais ils retirent les deux obstacles qu'elle a rencontrés.
