@@ -27,6 +27,7 @@ import {
   ArrowUp,
   ArrowDown,
   ArrowUpDown,
+  Send,
 } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
@@ -57,6 +58,8 @@ export interface EmployeeActionsProps {
   onEdit?: (employee: EmployeeWithCounts) => void
   onDelete?: (employee: EmployeeWithCounts) => void
   onToggleStatus?: (employee: EmployeeWithCounts) => void
+  /** SP-578 : relance de l'invitation d'un compte jamais active */
+  onResendInvitation?: (employee: EmployeeWithCounts) => void
   /** MANAGER ne peut pas supprimer, seulement desactiver */
   canDelete?: boolean
   /** Mode impersonation - desactive les actions de mutation */
@@ -111,6 +114,7 @@ export function createEmployeeColumns(
     onEdit,
     onDelete,
     onToggleStatus,
+    onResendInvitation,
     canDelete = true,
     isImpersonating = false,
   } = actions
@@ -272,7 +276,25 @@ export function createEmployeeColumns(
       accessorKey: 'isActive',
       header: 'Statut',
       cell: ({ row }) => {
-        const isActive = row.original.isActive
+        const { isActive, user } = row.original
+
+        // SP-578 : une invitation jamais activee se voit ici. Sans ce badge,
+        // un responsable croit son collaborateur operationnel alors que
+        // celui-ci n'a jamais pu se connecter, et le lien expire en 48 h.
+        const invitationPending = user ? user.isEmailVerified === false : false
+
+        if (isActive && invitationPending) {
+          return (
+            <Badge
+              variant="outline"
+              className="border-amber-500 text-amber-700 dark:text-amber-400"
+              title="Le compte a été créé mais l'invitation n'a pas encore été activée"
+            >
+              Invitation en attente
+            </Badge>
+          )
+        }
+
         return (
           <Badge variant={isActive ? 'default' : 'secondary'}>
             {isActive ? 'Actif' : 'Inactif'}
@@ -345,6 +367,23 @@ export function createEmployeeColumns(
                   )}
                 </DropdownMenuItem>
               )}
+
+              {/* SP-578 : proposee uniquement tant que le compte n'est pas active */}
+              {onResendInvitation &&
+                employee.user?.isEmailVerified === false && (
+                  <DropdownMenuItem
+                    onClick={() => onResendInvitation(employee)}
+                    disabled={isImpersonating}
+                    title={
+                      isImpersonating
+                        ? 'Non disponible en mode support'
+                        : undefined
+                    }
+                  >
+                    <Send className="mr-2 h-4 w-4" />
+                    Relancer l&apos;invitation
+                  </DropdownMenuItem>
+                )}
 
               {onDelete && canDelete && (
                 <>

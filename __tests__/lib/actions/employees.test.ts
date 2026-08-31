@@ -77,6 +77,7 @@ import {
   toggleEmployeeStatus,
   getTeamsForSelect,
   bulkDeleteEmployees,
+  resendInvitationByEmployee,
 } from '@/lib/actions/employees'
 
 // ============================================================================
@@ -915,5 +916,130 @@ describe('SP-439 - Stripe quantity sync', () => {
     await new Promise((r) => setTimeout(r, 10))
 
     expect(mockSyncEmployeeCountToStripe).toHaveBeenCalledWith(COMPANY_ID_2)
+  })
+})
+
+// ============================================================================
+// SP-578 - Relance d'invitation depuis la fiche employe
+// ============================================================================
+
+describe('resendInvitationByEmployee (SP-578)', () => {
+  const INVITED_USER_ID = 'cltest000000000000user002'
+
+  /** Employe dont le compte existe mais n'a jamais ete active */
+  const pendingEmployee = {
+    ...mockEmployeeWithRelations,
+    userId: INVITED_USER_ID,
+    user: {
+      id: INVITED_USER_ID,
+      name: 'Cassy Bouson',
+      email: 'cassy@acme.com',
+      image: null,
+      isEmailVerified: false,
+    },
+  }
+
+  const pendingUser = {
+    id: INVITED_USER_ID,
+    email: 'cassy@acme.com',
+    name: 'Cassy Bouson',
+    role: 'EMPLOYEE',
+    isEmailVerified: false,
+    company: { name: 'Acme Corp' },
+  }
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+    prismaMock.$transaction.mockResolvedValue([] as never)
+  })
+
+  it('renvoie une invitation pour un compte non active de sa propre entreprise', async () => {
+    setMockUser('DIRECTOR', COMPANY_ID)
+    prismaMock.employee.findUnique.mockResolvedValue(pendingEmployee as never)
+    prismaMock.user.findUnique.mockResolvedValue(pendingUser as never)
+
+    const result = await resendInvitationByEmployee({ employeeId: EMP_ID })
+
+    expect(result.success).toBe(true)
+    // Le token est remplace : l'ancien lien ne doit plus fonctionner
+    expect(prismaMock.$transaction).toHaveBeenCalled()
+  })
+
+  it("refuse la relance sur un employe d'une autre entreprise (isolation)", async () => {
+    setMockUser('DIRECTOR', COMPANY_ID)
+    // L'employe cible appartient a l'entreprise 2
+    prismaMock.employee.findUnique.mockResolvedValue({
+      ...pendingEmployee,
+      companyId: COMPANY_ID_2,
+    } as never)
+
+    const result = await resendInvitationByEmployee({ employeeId: EMP_ID })
+
+    expect(result.success).toBe(false)
+    // Aucun token cree, aucun email declenche pour un tenant etranger
+    expect(prismaMock.$transaction).not.toHaveBeenCalled()
+  })
+
+  it("refuse la relance a un MANAGER sur une equipe qu'il ne gere pas", async () => {
+    setMockUser('MANAGER', COMPANY_ID)
+    prismaMock.employee.findUnique
+      // 1er appel : resolution des equipes gerees par le manager
+      .mockResolvedValueOnce({
+        id: EMP_ID,
+        teamId: TEAM_ID,
+        managedTeams: [{ id: TEAM_ID }],
+      } as never)
+      // 2e appel : l'employe cible est dans une equipe qu'il ne gere pas
+      .mockResolvedValueOnce({
+        ...pendingEmployee,
+        teamId: TEAM_ID_2,
+      } as never)
+
+    const result = await resendInvitationByEmployee({ employeeId: EMP_ID })
+
+    expect(result.success).toBe(false)
+    expect(prismaMock.$transaction).not.toHaveBeenCalled()
+  })
+
+  it('refuse la relance sur un compte deja active', async () => {
+    setMockUser('DIRECTOR', COMPANY_ID)
+    prismaMock.employee.findUnique.mockResolvedValue(pendingEmployee as never)
+    prismaMock.user.findUnique.mockResolvedValue({
+      ...pendingUser,
+      isEmailVerified: true,
+    } as never)
+
+    const result = await resendInvitationByEmployee({ employeeId: EMP_ID })
+
+    expect(result.success).toBe(false)
+    if (!result.success) {
+      expect(result.error).toContain('déjà activé')
+    }
+    expect(prismaMock.$transaction).not.toHaveBeenCalled()
+  })
+
+  it("refuse la relance sur un employe sans compte utilisateur", async () => {
+    setMockUser('DIRECTOR', COMPANY_ID)
+    prismaMock.employee.findUnique.mockResolvedValue({
+      ...pendingEmployee,
+      userId: null,
+      user: null,
+    } as never)
+
+    const result = await resendInvitationByEmployee({ employeeId: EMP_ID })
+
+    expect(result.success).toBe(false)
+    expect(prismaMock.$transaction).not.toHaveBeenCalled()
+  })
+
+  it('rejette un employeeId qui n\'est pas un CUID (validation Zod)', async () => {
+    setMockUser('DIRECTOR', COMPANY_ID)
+
+    const result = await resendInvitationByEmployee({
+      employeeId: 'pas-un-cuid',
+    })
+
+    expect(result.success).toBe(false)
+    expect(prismaMock.employee.findUnique).not.toHaveBeenCalled()
   })
 })

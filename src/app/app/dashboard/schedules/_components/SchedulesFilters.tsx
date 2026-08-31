@@ -41,6 +41,16 @@ const statusOptions = [
   { value: 'CONFIRMED', label: 'Confirmé' },
 ]
 
+/**
+ * Statut selectionne au montage et au reset.
+ *
+ * SP-578 : valait 'CONFIRMED', ce qui rendait invisibles les creneaux que
+ * l'utilisateur venait lui-meme de creer en brouillon. Le filtre n'est de
+ * toute facon pas un controle d'acces : pour un EMPLOYEE, la restriction aux
+ * creneaux confirmes est imposee cote serveur.
+ */
+const DEFAULT_STATUS = 'all'
+
 const typeOptions = [
   { value: 'all', label: 'Tous les types' },
   { value: 'WORK', label: 'Travail' },
@@ -64,7 +74,10 @@ export function SchedulesFilters({
   showStatusFilter = true,
 }: SchedulesFiltersProps) {
   const [search, setSearch] = useState('')
-  const [status, setStatus] = useState<string>('CONFIRMED')
+  // SP-578 : defaut « tous les statuts ». Un defaut CONFIRMED masquait les
+  // brouillons a leur propre auteur, y compris dans les exports PDF et Excel
+  // qui reprennent les filtres actifs de la vue.
+  const [status, setStatus] = useState<string>(DEFAULT_STATUS)
   const [type, setType] = useState<string>('all')
   const [teamId, setTeamId] = useState<string>('all')
   const [employeeId, setEmployeeId] = useState<string>('all')
@@ -109,15 +122,12 @@ export function SchedulesFilters({
     [applyFilters]
   )
 
-  // Appliquer le filtre statut par défaut au mount
+  // SP-578 : plus de filtre applique au montage. Le defaut est « tous les
+  // statuts », donc il n'y a aucun critere a pousser au parent.
   useEffect(() => {
-    if (showStatusFilter) {
-      applyFilters({ status: 'CONFIRMED' })
-    }
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Les selects appliquent immédiatement
@@ -155,14 +165,14 @@ export function SchedulesFilters({
 
   const handleReset = useCallback(() => {
     setSearch('')
-    setStatus(showStatusFilter ? 'CONFIRMED' : 'all')
+    setStatus(DEFAULT_STATUS)
     setType('all')
     setTeamId('all')
     setEmployeeId('all')
-    onFiltersChange(showStatusFilter ? { status: 'CONFIRMED' } : {})
-  }, [onFiltersChange, showStatusFilter])
+    onFiltersChange({})
+  }, [onFiltersChange])
 
-  const defaultStatus = showStatusFilter ? 'CONFIRMED' : 'all'
+  const defaultStatus = DEFAULT_STATUS
   const hasFilters =
     search.trim() ||
     status !== defaultStatus ||

@@ -86,6 +86,27 @@ export function ExportDropdown({
 
   const dateSuffix = `${startDate.toISOString().split('T')[0]}-${endDate.toISOString().split('T')[0]}`
 
+  /**
+   * Message de fin d'export, adapte au nombre de creneaux reellement inclus.
+   *
+   * SP-578 : un export ne contenant aucun creneau partait avec un message de
+   * succes indistinct, alors que la cause habituelle est un filtre actif qui
+   * exclut tout ce qui existe (typiquement « Confirme » face a des brouillons).
+   */
+  const notifyExportDone = (response: Response, label: string) => {
+    const rawCount = response.headers.get('X-Schedule-Count')
+    const count = rawCount === null ? null : Number(rawCount)
+
+    if (count === 0) {
+      toastError(
+        `Le ${label} a été téléchargé, mais il ne contient aucun créneau. Vérifiez les filtres actifs, notamment le statut.`
+      )
+      return
+    }
+
+    success(`Le ${label} a été téléchargé.`)
+  }
+
   const handleExportPdf = async () => {
     setIsExporting('pdf')
     try {
@@ -105,7 +126,7 @@ export function ExportDropdown({
 
       const blob = await response.blob()
       downloadBlob(blob, `planning-${dateSuffix}.pdf`)
-      success('Le planning PDF a été téléchargé.')
+      notifyExportDone(response, 'planning PDF')
     } catch (err) {
       console.error('[ExportDropdown] PDF error:', err)
       toastError(
@@ -134,7 +155,7 @@ export function ExportDropdown({
 
       const blob = await response.blob()
       downloadBlob(blob, `planning-${dateSuffix}.xlsx`)
-      success('Le fichier Excel a été téléchargé.')
+      notifyExportDone(response, 'fichier Excel')
     } catch (err) {
       console.error('[ExportDropdown] Excel error:', err)
       toastError(

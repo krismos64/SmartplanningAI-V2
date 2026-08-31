@@ -56,7 +56,9 @@ import {
   toggleEmployeeStatus,
   getTeamsForSelect,
   exportEmployeesCsv,
+  resendInvitationByEmployee,
 } from '@/lib/actions/employees'
+import { useToast } from '@/components/toast/use-toast'
 import { ExportCsvButton, ExportPdfButton } from '@/components/exports'
 import { EmptyState } from '@/components/ui/empty-state'
 import type {
@@ -80,6 +82,7 @@ interface EmployeesDataTableProps {
 export function EmployeesDataTable({ userRole }: EmployeesDataTableProps) {
   const router = useRouter()
   const isImpersonating = useIsImpersonating()
+  const { success: toastSuccess, error: toastError } = useToast()
 
   // Etat local
   const [data, setData] = useState<EmployeeWithCounts[]>([])
@@ -210,6 +213,38 @@ export function EmployeesDataTable({ userRole }: EmployeesDataTableProps) {
     })()
   }, [toggleEmployee, fetchData])
 
+  /**
+   * SP-578 : relance de l'invitation d'un compte jamais active.
+   *
+   * L'ancien lien cesse de fonctionner, la fiche est donc rafraichie pour
+   * refleter l'etat reel apres l'envoi.
+   */
+  const handleResendInvitation = useCallback(
+    (employee: EmployeeWithCounts) => {
+      void (async () => {
+        try {
+          const result = await resendInvitationByEmployee({
+            employeeId: employee.id,
+          })
+
+          if (!result.success) {
+            toastError(result.error)
+            return
+          }
+
+          toastSuccess(
+            `Une nouvelle invitation a été envoyée à ${employee.email || employee.user?.email || 'ce collaborateur'}.`
+          )
+          await fetchData()
+        } catch (error) {
+          console.error('Erreur relance invitation:', error)
+          toastError("Impossible de relancer l'invitation.")
+        }
+      })()
+    },
+    [fetchData, toastSuccess, toastError]
+  )
+
   // MANAGER ne peut pas supprimer, seulement desactiver
   const canDelete = userRole !== 'MANAGER'
 
@@ -220,6 +255,7 @@ export function EmployeesDataTable({ userRole }: EmployeesDataTableProps) {
       onEdit: handleEdit,
       onDelete: canDelete ? handleDelete : undefined,
       onToggleStatus: handleToggleStatus,
+      onResendInvitation: handleResendInvitation,
       canDelete,
       isImpersonating,
     })
@@ -228,6 +264,7 @@ export function EmployeesDataTable({ userRole }: EmployeesDataTableProps) {
     handleEdit,
     handleDelete,
     handleToggleStatus,
+    handleResendInvitation,
     canDelete,
     isImpersonating,
   ])
@@ -509,7 +546,8 @@ export function EmployeesDataTable({ userRole }: EmployeesDataTableProps) {
                 !hasActiveFilters && !isImpersonating
                   ? {
                       label: 'Ajouter un employé',
-                      onClick: () => router.push('/app/dashboard/employees/new'),
+                      onClick: () =>
+                        router.push('/app/dashboard/employees/new'),
                     }
                   : undefined
               }

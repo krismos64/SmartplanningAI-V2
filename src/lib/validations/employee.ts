@@ -253,6 +253,12 @@ export interface EmployeeWithCounts {
     name: string | null
     email: string
     image: string | null
+    /**
+     * SP-578 : distingue un compte active d'une invitation restee en attente.
+     * Sans ce signal, un responsable ne pouvait pas voir qu'un collaborateur
+     * n'avait jamais recu ou ouvert son invitation.
+     */
+    isEmailVerified?: boolean
   } | null
   company?: {
     id: string
@@ -290,3 +296,14 @@ export type UpdateEmployeeResult =
       }
     }
   | { success: false; error: string; field?: string }
+
+/**
+ * Relance d'invitation depuis la fiche employe (SP-578)
+ */
+export const resendInvitationByEmployeeSchema = z.object({
+  employeeId: z.string().cuid(),
+})
+
+export type ResendInvitationByEmployeeInput = z.infer<
+  typeof resendInvitationByEmployeeSchema
+>

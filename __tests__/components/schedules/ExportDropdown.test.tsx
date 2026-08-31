@@ -224,4 +224,71 @@ describe('ExportDropdown', () => {
       expect(screen.getByTestId('export-button')).toBeInTheDocument()
     })
   })
+
+  /**
+   * SP-578 : un export ne contenant aucun creneau annoncait un succes
+   * indistinct. Le cas s'est produit en production, ou un dirigeant a exporte
+   * deux fois de suite un PDF vide sans comprendre pourquoi, son filtre etant
+   * reste sur « Confirme » face a des creneaux en brouillon.
+   */
+  describe('Export vide (SP-578)', () => {
+    const mockPdfResponse = (scheduleCount: string | null) => {
+      const headers = new Headers()
+      if (scheduleCount !== null) {
+        headers.set('X-Schedule-Count', scheduleCount)
+      }
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        headers,
+        blob: () => Promise.resolve(new Blob(['pdf'])),
+      }) as unknown as typeof fetch
+    }
+
+    it('avertit quand le PDF ne contient aucun creneau', async () => {
+      mockPdfResponse('0')
+      const user = userEvent.setup()
+      render(<ExportDropdown {...defaultProps} />)
+
+      await user.click(screen.getByTestId('export-button'))
+      await user.click(screen.getByTestId('export-pdf'))
+
+      await waitFor(() => {
+        expect(mockError).toHaveBeenCalledWith(
+          expect.stringContaining('aucun créneau')
+        )
+      })
+      expect(mockSuccess).not.toHaveBeenCalled()
+    })
+
+    it('annonce un succes simple quand le PDF contient des creneaux', async () => {
+      mockPdfResponse('4')
+      const user = userEvent.setup()
+      render(<ExportDropdown {...defaultProps} />)
+
+      await user.click(screen.getByTestId('export-button'))
+      await user.click(screen.getByTestId('export-pdf'))
+
+      await waitFor(() => {
+        expect(mockSuccess).toHaveBeenCalledWith(
+          expect.stringContaining('téléchargé')
+        )
+      })
+      expect(mockError).not.toHaveBeenCalled()
+    })
+
+    it("n'avertit pas quand l'en-tete de comptage est absent", async () => {
+      // Compatibilite : une reponse sans X-Schedule-Count reste un succes
+      mockPdfResponse(null)
+      const user = userEvent.setup()
+      render(<ExportDropdown {...defaultProps} />)
+
+      await user.click(screen.getByTestId('export-button'))
+      await user.click(screen.getByTestId('export-pdf'))
+
+      await waitFor(() => {
+        expect(mockSuccess).toHaveBeenCalled()
+      })
+      expect(mockError).not.toHaveBeenCalled()
+    })
+  })
 })
