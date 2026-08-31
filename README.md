@@ -16,7 +16,7 @@ Plateforme SaaS multi-tenant de gestion intelligente des plannings et des ressou
 | Frontend        | Next.js 15.5.9 (App Router), React 19, TypeScript 5.7.2, Tailwind + Shadcn/ui |
 | Backend         | NextAuth v5 (Auth.js), Prisma 6.18.0, Zod, Stripe v20.3.1                     |
 | Base de donnees | PostgreSQL 16, Redis 7 (ioredis 5.10)                                         |
-| Emails          | React Email (30 envois transactionnels), Nodemailer SMTP                      |
+| Emails          | React Email (30 envois transactionnels), Nodemailer SMTP, releve IMAP des rejets |
 | Temps reel      | Server-Sent Events (SSE) — notifications + messagerie sur un stream unique     |
 | DevOps          | Docker, GitHub Actions (CI/CD), VPS OVH (Ubuntu 24.04), Nginx, Let's Encrypt  |
 
@@ -36,6 +36,7 @@ Plateforme SaaS multi-tenant de gestion intelligente des plannings et des ressou
 - **Audit** : Journal d'audit complet, export CSV, protection anti-injection
 - **Impersonation** : Mode support SYSTEM_ADMIN "Voir espace client" lecture seule (cookie `sp-impersonation` TTL 1h, audit trail start/stop, billing accessible en lecture, fallback cookie pour race condition JWT)
 - **Monitoring** : Health check DB + Redis (PING/PONG), KPIs SaaS, graphiques admin, service MRR unifie
+- **Delivrabilite** : Un envoi accepte par le relais SMTP ne prouve pas la livraison. `EmailResult.outcome` distingue une adresse refusee (`BOUNCED`) d'une panne technique (`FAILED`), et le cron `/api/cron/bounce-sync` releve la boite d'expedition toutes les 6 heures pour capter les refus asynchrones, qui arrivent plusieurs secondes apres l'acceptation. Le rapprochement avec `EmailLog` se fait par adresse et la releve couvre INBOX, la corbeille et les indesirables : les bounces y sont tries automatiquement et n'atteignent pas la boite de reception. Une adresse rejetee est signalee dans la liste des employes et dans l'espace admin
 - **Admin** : Page utilisateurs cross-tenant, essais a risque, broadcast email, stats + export PDF, journal des emails, suivi des messages de contact (`/app/admin/messages-contact`, reserve au SYSTEM_ADMIN : la table ne porte pas de `companyId`, l'expediteur etant un visiteur anonyme)
 - **Profil** : Avatar Cloudinary (affiche dans le header et la sidebar), RGPD (export donnees, suppression compte), preferences affichage. Le poste (`jobTitle`) renseigne au profil s'affiche a la place du libelle de role dans l'interface
 - **Settings** : Apparence, notifications, entreprise (jours travailles, horaires)
@@ -80,6 +81,7 @@ Copier `.env.example` vers `.env.local` et renseigner au minimum :
 | `AUTH_SECRET` | Cle JWT — `openssl rand -base64 32` | Oui |
 | `AUTH_URL` | URL de l'app (`http://localhost:3000`) | Oui |
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD` | Config SMTP pour emails transactionnels | Oui |
+| `IMAP_HOST`, `IMAP_PORT`, `IMAP_USER`, `IMAP_PASSWORD` | Releve de la boite d'expedition pour detecter les adresses rejetees (SP-579). Memes identifiants que le SMTP chez Hostinger. Sans elles, `/api/cron/bounce-sync` repond 200 sans rien faire | Non |
 | `STRIPE_SECRET_KEY`, `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Cles API Stripe (mode test en dev) | Oui |
 | `STRIPE_WEBHOOK_SECRET` | Webhook Stripe — `stripe listen --forward-to localhost:3000/api/webhooks/stripe` | Oui |
 | `STRIPE_PRICE_ID` | Price ID du tarif per-seat | Oui |
@@ -167,11 +169,11 @@ Voir [`docs/database-architecture.md`](docs/database-architecture.md) pour le de
 
 | Type      | Framework  | Fichiers | Tests     |
 | --------- | ---------- | -------- | --------- |
-| Unitaires | Vitest     | 188      | 3 163     |
-| E2E       | Playwright | 21       | 247       |
-| **Total** |            | **209**  | **3 410** |
+| Unitaires | Vitest     | 195      | 3 269     |
+| E2E       | Playwright | 22       | 255       |
+| **Total** |            | **217**  | **3 524** |
 
-La CI execute une whitelist E2E (8 specs, 122 tests) ; la suite complete (22 specs, 248 tests) tourne en nightly. `testMatch` de `playwright.ci.config.ts` etant une liste explicite, un spec renomme ou supprime disparait silencieusement de la CI : verifier cette liste apres chaque ajout ou suppression.
+La CI execute une whitelist E2E (8 specs, 123 tests) ; la suite complete (22 specs, 255 tests) tourne en nightly. `testMatch` de `playwright.ci.config.ts` etant une liste explicite, un spec renomme ou supprime disparait silencieusement de la CI : verifier cette liste apres chaque ajout ou suppression.
 
 **Les specs publiques ne sont pas dans la whitelist CI.** Les 20 tests de
 `e2e/specs/landing/`, dont 7 audits axe-core, ne tournent donc qu'en nightly

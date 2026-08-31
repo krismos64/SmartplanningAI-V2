@@ -35,7 +35,7 @@ convention de mémoire.
 | Fichier                          | Charger avant de toucher                                               |
 | -------------------------------- | ---------------------------------------------------------------------- |
 | `.claude/rules/multi-tenant.md`  | Server Action, route API, requête Prisma, auth, choix de destinataires |
-| `.claude/rules/prisma-pieges.md` | `'use server'`, backfill, SQL de diagnostic, cache dashboard, Nginx    |
+| `.claude/rules/prisma-pieges.md` | `'use server'`, backfill, SQL de diagnostic, cache dashboard, envoi d'emails, Nginx |
 | `.claude/rules/seo-content.md`   | pages secteur, guides, landing, sitemap, `llms.txt`, texte public      |
 | `.claude/rules/tests.md`         | écriture de tests, et avant de conclure un travail                     |
 
@@ -65,9 +65,12 @@ récente en début de session** donne l'état du projet plus vite que Jira.
 - Barrel exports, imports absolus `@/`
 - Optimistic UI avec rollback
 - Fire-and-forget (`.catch(console.error)`) pour Stripe, emails, notifications, cache Redis
-- Emails : `canSendEmailToUser(userId, category)` avant tout envoi métier. Les emails
-  sécurité, RGPD et billing partent toujours. Idempotence billing via `EmailLog`,
-  contrainte unique `(subscriptionId, emailType)`
+- Emails : `canSendEmailToUser(userId, category)` avant tout envoi métier. Un envoi
+  accepté par le relais n'est pas délivré pour autant : `EmailResult.outcome`
+  distingue `SENT`, `BOUNCED` et `FAILED`, et le cron `/api/cron/bounce-sync`
+  relève la boîte pour capter les refus asynchrones. Pièges dans `prisma-pieges.md`.
+  Les emails sécurité, RGPD et billing partent toujours. Idempotence billing via
+  `EmailLog`, contrainte unique `(subscriptionId, emailType)`
 - Redis : `withCache()` en cache-aside, rate limiting `INCR` + `EXPIRE` avec repli
   mémoire si Redis est indisponible. `/api/health` renvoie alors « degraded », pas
   « unhealthy »

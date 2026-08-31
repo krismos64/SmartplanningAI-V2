@@ -142,6 +142,35 @@ souscription part en facturation immédiate.
 Corollaire général : avant de transmettre une date à une API tierce, vérifier ses
 contraintes de validité plutôt que de supposer que « futur » suffit.
 
+## Un email accepté par le relais n'est pas un email délivré
+
+`sendMail` retourne dès que le relais SMTP accepte le message. Le log
+`[Email] Envoi réussi` ne dit donc rien de la livraison finale : le serveur du
+destinataire se prononce ensuite, et son refus revient sous forme de message de
+non-remise, quelques secondes plus tard.
+
+Trois pièges, tous rencontrés en production le 31 août 2026 (SP-579).
+
+**Nodemailer lève au lieu de renseigner `rejected`.** Quand *tous* les
+destinataires sont refusés, l'erreur est `EENVELOPE` et porte `err.rejected`.
+Nos envois étant mono-destinataire, c'est toujours ce chemin. Un code qui ne
+lirait que `info.rejected` paraîtrait complet sans jamais rien détecter.
+
+**Les bounces n'arrivent pas dans INBOX.** Les neuf reçus entre le 5 et le
+31 août étaient tous en corbeille, dont un sans le drapeau `\Seen`, donc déplacé
+par un tri automatique et non par un humain. Toute relève doit couvrir
+`INBOX`, `INBOX.Trash` et `INBOX.Junk`, et son idempotence reposer sur un
+mot-clé applicatif plutôt que sur l'état lu, qui appartient à la personne
+relevant la boîte.
+
+**Le SMTP est Hostinger, sans webhook.** MailChannels n'apparaît dans les
+bounces que comme relais sortant, sans compte de notre côté. Le relevé IMAP par
+`/api/cron/bounce-sync` est le seul chemin possible.
+
+Corollaire : `EmailResult.outcome` distingue `SENT`, `BOUNCED` et `FAILED`. La
+distinction n'est pas cosmétique, une adresse invalide ne se retente pas, une
+panne réseau si.
+
 ## Whitelist E2E de la CI
 
 `testMatch` de `playwright.ci.config.ts` est une liste explicite. Un spec renommé
