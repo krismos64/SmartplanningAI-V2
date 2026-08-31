@@ -16,8 +16,13 @@
  *    fourni par le message : une ligne d'une entreprise ne peut donc être
  *    modifiée qu'à partir d'un bounce portant l'adresse qu'elle a réellement
  *    reçue.
- * 2. **Idempotence.** Les messages traités sont marqués `\Seen` et la relève
- *    ne lit que les non lus. Une ligne déjà en `BOUNCED` n'est pas réécrite.
+ * 2. **Idempotence.** Les bounces traités portent un mot-clé applicatif, et la
+ *    relève écarte les messages qui le portent déjà. Une ligne déjà en
+ *    `BOUNCED` n'est jamais réécrite.
+ *
+ * La relève couvre INBOX, la corbeille et les indésirables : sur la boîte de
+ * production, les 9 bounces reçus depuis le 5 août 2026 étaient tous hors
+ * d'INBOX.
  */
 
 import { ImapFlow } from 'imapflow'
@@ -29,14 +34,37 @@ import { parseBounce, type ParsedBounce } from './parse-bounce'
 /**
  * Fenêtre de relève.
  *
- * Le filtre `unseen` suffit à l'idempotence, mais une borne temporelle évite de
- * parcourir un historique entier au premier passage, ou après une longue
- * interruption du cron.
+ * Le marqueur applicatif suffit à l'idempotence, mais une borne temporelle
+ * évite de parcourir un historique entier au premier passage, ou après une
+ * longue interruption du cron.
  */
 const LOOKBACK_DAYS = 7
 
 /** Nombre maximum de messages analysés par passage, garde-fou mémoire. */
 const MAX_MESSAGES_PER_RUN = 200
+
+/**
+ * Dossiers relevés, dans l'ordre.
+ *
+ * INBOX ne suffit pas. Mesure faite sur la boîte de production le 31 août
+ * 2026 : les 9 messages de non-remise reçus depuis le 5 août étaient tous dans
+ * la corbeille, et aucun dans INBOX. L'un d'eux y était même arrivé sans avoir
+ * été lu, donc sans geste humain, ce qui indique un tri automatique côté
+ * fournisseur ou client. Une relève limitée à INBOX n'aurait rien vu.
+ *
+ * Un dossier absent du serveur est ignoré sans faire échouer le passage : la
+ * nomenclature varie d'un fournisseur à l'autre.
+ */
+const MAILBOXES = ['INBOX', 'INBOX.Trash', 'INBOX.Junk'] as const
+
+/**
+ * Marqueur posé sur un bounce déjà traité.
+ *
+ * Un mot-clé applicatif plutôt que `\\Seen` : un bounce peut arriver déjà lu,
+ * et l'état « lu » appartient à la personne qui relève la boîte, pas à
+ * l'application. Le marquer lu le ferait disparaître de sa vue.
+ */
+const PROCESSED_FLAG = 'SmartPlanningBounceSynced'
 
 /**
  * Un bounce ne peut mettre à jour qu'une ligne envoyée avant lui, et pas trop
@@ -46,7 +74,7 @@ const MAX_MESSAGES_PER_RUN = 200
 const MATCH_WINDOW_DAYS = 30
 
 export interface BounceSyncResult {
-  /** Messages non lus examinés */
+  /** Messages examinés, tous dossiers confondus */
   examined: number
   /** Messages reconnus comme bounces exploitables */
   bounces: number
@@ -56,6 +84,8 @@ export interface BounceSyncResult {
   unmatched: number
   /** Bounces dont la ligne était déjà en BOUNCED */
   alreadyMarked: number
+  /** Dossiers effectivement relevés sur ce passage */
+  mailboxes: string[]
   /** Anomalies rencontrées, sans interrompre le passage */
   errors: string[]
 }
@@ -145,7 +175,87 @@ async function applyBounce(
 }
 
 /**
- * Relève la boîte et rapproche les bounces trouvés du journal.
+ * Relève un dossier et rapproche les bounces trouvés du journal.
+ *
+ * Renvoie `false` quand le dossier n'existe pas sur le serveur, ce qui n'est
+ * pas une erreur : la nomenclature varie d'un fournisseur à l'autre.
+ */
+async function syncMailbox(
+  client: ImapFlow,
+  mailbox: string,
+  result: BounceSyncResult
+): Promise<boolean> {
+  let lock: { release: () => void }
+
+  try {
+    lock = await client.getMailboxLock(mailbox)
+  } catch {
+    return false
+  }
+
+  try {
+    const since = new Date(Date.now() - LOOKBACK_DAYS * 86_400_000)
+
+    // Le filtre porte sur le marqueur applicatif et non sur `\Seen` : un
+    // bounce peut arriver déjà lu, notamment en corbeille, et resterait
+    // invisible à une relève qui ne regarderait que les non lus.
+    const candidates = await client.search(
+      { since, unKeyword: PROCESSED_FLAG },
+      { uid: true }
+    )
+
+    if (!candidates || candidates.length === 0) return true
+
+    const batch = candidates.slice(-MAX_MESSAGES_PER_RUN)
+    const processed: number[] = []
+
+    for await (const message of client.fetch(
+      batch,
+      { source: true, envelope: true },
+      { uid: true }
+    )) {
+      result.examined++
+
+      try {
+        const source = message.source?.toString() ?? ''
+        const bounces = parseBounce(source)
+
+        if (bounces.length === 0) {
+          // Message ordinaire : ni marqué ni modifié. Poser un drapeau ici
+          // ferait grossir la boîte de marqueurs inutiles, et le relire à
+          // chaque passage coûte moins cher que de risquer d'en masquer un.
+          continue
+        }
+
+        const receivedAt = message.envelope?.date ?? new Date()
+
+        for (const bounce of bounces) {
+          result.bounces++
+          await applyBounce(bounce, receivedAt, result)
+        }
+
+        processed.push(message.uid)
+      } catch (error) {
+        result.errors.push(
+          `${mailbox} uid ${message.uid}: ${error instanceof Error ? error.message : 'erreur inconnue'}`
+        )
+      }
+    }
+
+    // Marquer uniquement les bounces traités : c'est ce qui garantit qu'un
+    // second passage ne les recompte pas.
+    if (processed.length > 0) {
+      await client.messageFlagsAdd(processed, [PROCESSED_FLAG], { uid: true })
+    }
+
+    return true
+  } finally {
+    lock.release()
+  }
+}
+
+/**
+ * Relève les dossiers configurés et rapproche les bounces trouvés du journal.
  *
  * Ne lève pas sur un message isolé : une anomalie de parsing ou une écriture
  * refusée est consignée dans `errors` et le passage se poursuit, pour qu'un
@@ -160,6 +270,7 @@ export async function syncBounces(
     updated: 0,
     unmatched: 0,
     alreadyMarked: 0,
+    mailboxes: [],
     errors: [],
   }
 
@@ -176,59 +287,16 @@ export async function syncBounces(
   await client.connect()
 
   try {
-    const lock = await client.getMailboxLock('INBOX')
-
-    try {
-      const since = new Date(Date.now() - LOOKBACK_DAYS * 86_400_000)
-      // `seen: false` est la forme typée de « non lus » chez ImapFlow.
-      const uids = await client.search({ seen: false, since }, { uid: true })
-
-      if (!uids || uids.length === 0) {
-        return result
+    for (const mailbox of MAILBOXES) {
+      try {
+        const opened = await syncMailbox(client, mailbox, result)
+        if (opened) result.mailboxes.push(mailbox)
+      } catch (error) {
+        // Un dossier en échec ne doit pas empêcher les suivants d'être relevés.
+        result.errors.push(
+          `${mailbox}: ${error instanceof Error ? error.message : 'erreur inconnue'}`
+        )
       }
-
-      const batch = uids.slice(-MAX_MESSAGES_PER_RUN)
-      const processed: number[] = []
-
-      for await (const message of client.fetch(
-        batch,
-        { source: true, envelope: true },
-        { uid: true }
-      )) {
-        result.examined++
-
-        try {
-          const source = message.source?.toString() ?? ''
-          const bounces = parseBounce(source)
-
-          if (bounces.length === 0) {
-            // Message ordinaire : laissé non lu pour ne pas masquer un
-            // courrier que personne n'aurait encore vu.
-            continue
-          }
-
-          const receivedAt = message.envelope?.date ?? new Date()
-
-          for (const bounce of bounces) {
-            result.bounces++
-            await applyBounce(bounce, receivedAt, result)
-          }
-
-          processed.push(message.uid)
-        } catch (error) {
-          result.errors.push(
-            `uid ${message.uid}: ${error instanceof Error ? error.message : 'erreur inconnue'}`
-          )
-        }
-      }
-
-      // Marquer lus uniquement les bounces traités : c'est ce qui garantit
-      // qu'un second passage ne les recompte pas.
-      if (processed.length > 0) {
-        await client.messageFlagsAdd(processed, ['\\Seen'], { uid: true })
-      }
-    } finally {
-      lock.release()
     }
   } finally {
     await client.logout()

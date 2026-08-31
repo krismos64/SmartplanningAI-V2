@@ -16,32 +16,52 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 const { mockFindFirst, mockUpdate, mockImapFlow, imapState } = vi.hoisted(
   () => {
     const imapState = {
-      searchResult: [] as number[],
-      messages: [] as any[],
-      flagsAdded: [] as unknown[][],
+      /** Messages par dossier. Un dossier absent de la table n'existe pas. */
+      byMailbox: {} as Record<string, any[]>,
+      /** Dossiers dont l'ouverture doit échouer (dossier inexistant). */
+      missing: [] as string[],
+      flagsAdded: [] as { mailbox: string; uids: unknown[]; flags: string[] }[],
+      searchArgs: [] as unknown[],
+      opened: [] as string[],
       loggedOut: false,
-      lockReleased: false,
+      locksReleased: 0,
+      current: 'INBOX',
     }
 
     const mockImapFlow = vi.fn().mockImplementation(() => ({
       connect: vi.fn().mockResolvedValue(undefined),
-      getMailboxLock: vi.fn().mockResolvedValue({
-        release: () => {
-          imapState.lockReleased = true
-        },
+      getMailboxLock: vi.fn().mockImplementation((mailbox: string) => {
+        if (imapState.missing.includes(mailbox)) {
+          return Promise.reject(new Error(`Mailbox doesn't exist: ${mailbox}`))
+        }
+        imapState.current = mailbox
+        imapState.opened.push(mailbox)
+        return Promise.resolve({
+          release: () => {
+            imapState.locksReleased++
+          },
+        })
       }),
-      search: vi
-        .fn()
-        .mockImplementation(() => Promise.resolve(imapState.searchResult)),
+      search: vi.fn().mockImplementation((query: unknown) => {
+        imapState.searchArgs.push(query)
+        const messages = imapState.byMailbox[imapState.current] ?? []
+        return Promise.resolve(messages.map((m) => (m as { uid: number }).uid))
+      }),
       fetch: vi.fn().mockImplementation(function* () {
-        for (const message of imapState.messages) {
+        for (const message of imapState.byMailbox[imapState.current] ?? []) {
           yield message
         }
       }),
-      messageFlagsAdd: vi.fn().mockImplementation((range: unknown[]) => {
-        imapState.flagsAdded.push(range)
-        return Promise.resolve(true)
-      }),
+      messageFlagsAdd: vi
+        .fn()
+        .mockImplementation((uids: unknown[], flags: string[]) => {
+          imapState.flagsAdded.push({
+            mailbox: imapState.current,
+            uids,
+            flags,
+          })
+          return Promise.resolve(true)
+        }),
       logout: vi.fn().mockImplementation(() => {
         imapState.loggedOut = true
         return Promise.resolve()
@@ -110,17 +130,19 @@ const makeMessage = (
 describe('syncBounces (SP-579)', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    imapState.searchResult = []
-    imapState.messages = []
+    imapState.byMailbox = {}
+    imapState.missing = []
     imapState.flagsAdded = []
+    imapState.searchArgs = []
+    imapState.opened = []
     imapState.loggedOut = false
-    imapState.lockReleased = false
+    imapState.locksReleased = 0
+    imapState.current = 'INBOX'
     mockUpdate.mockResolvedValue({ id: 'log_1' })
   })
 
   it('bascule en BOUNCED la ligne correspondant au destinataire', async () => {
-    imapState.searchResult = [42]
-    imapState.messages = [makeMessage(42, BOUNCE_SOURCE)]
+    imapState.byMailbox.INBOX = [makeMessage(42, BOUNCE_SOURCE)]
     mockFindFirst.mockResolvedValue({ id: 'log_1', status: 'SENT' })
 
     const result = await syncBounces(CREDENTIALS)
@@ -139,8 +161,7 @@ describe('syncBounces (SP-579)', () => {
     // Test négatif d'isolation : la boîte est cross-tenant. Si le rapprochement
     // acceptait un identifiant porté par le message, un bounce forgé pourrait
     // désigner la ligne d'une autre entreprise.
-    imapState.searchResult = [42]
-    imapState.messages = [
+    imapState.byMailbox.INBOX = [
       makeMessage(
         42,
         `X-Company-Id: entreprise-etrangere
@@ -165,8 +186,7 @@ Status: 5.1.1`
   })
 
   it('ne réécrit pas une ligne déjà marquée BOUNCED (idempotence)', async () => {
-    imapState.searchResult = [42]
-    imapState.messages = [makeMessage(42, BOUNCE_SOURCE)]
+    imapState.byMailbox.INBOX = [makeMessage(42, BOUNCE_SOURCE)]
     mockFindFirst.mockResolvedValue({ id: 'log_1', status: 'BOUNCED' })
 
     const result = await syncBounces(CREDENTIALS)
@@ -177,8 +197,7 @@ Status: 5.1.1`
   })
 
   it('compte un bounce sans ligne correspondante sans échouer', async () => {
-    imapState.searchResult = [42]
-    imapState.messages = [makeMessage(42, BOUNCE_SOURCE)]
+    imapState.byMailbox.INBOX = [makeMessage(42, BOUNCE_SOURCE)]
     mockFindFirst.mockResolvedValue(null)
 
     const result = await syncBounces(CREDENTIALS)
@@ -191,8 +210,7 @@ Status: 5.1.1`
   it('laisse un email ordinaire non lu et ne touche à rien', async () => {
     // Marquer lu un message ordinaire le masquerait à la personne qui relève
     // réellement la boîte de contact.
-    imapState.searchResult = [42]
-    imapState.messages = [
+    imapState.byMailbox.INBOX = [
       makeMessage(42, 'From: client@example.com\n\nBonjour, une question.'),
     ]
 
@@ -205,8 +223,7 @@ Status: 5.1.1`
   })
 
   it('marque lus les bounces traités, pour ne pas les recompter', async () => {
-    imapState.searchResult = [42, 43]
-    imapState.messages = [
+    imapState.byMailbox.INBOX = [
       makeMessage(42, BOUNCE_SOURCE),
       makeMessage(43, 'From: client@example.com\n\nMessage ordinaire.'),
     ]
@@ -215,13 +232,18 @@ Status: 5.1.1`
     await syncBounces(CREDENTIALS)
 
     // Seul le bounce est marque lu, pas le message ordinaire
-    expect(imapState.flagsAdded).toEqual([[42]])
+    expect(imapState.flagsAdded).toEqual([
+      {
+        mailbox: 'INBOX',
+        uids: [42],
+        flags: ['SmartPlanningBounceSynced'],
+      },
+    ])
   })
 
   it('borne la recherche dans le temps et antérieurement au bounce', async () => {
     const receivedAt = new Date('2026-08-31T00:37:00Z')
-    imapState.searchResult = [42]
-    imapState.messages = [makeMessage(42, BOUNCE_SOURCE, receivedAt)]
+    imapState.byMailbox.INBOX = [makeMessage(42, BOUNCE_SOURCE, receivedAt)]
     mockFindFirst.mockResolvedValue({ id: 'log_1', status: 'SENT' })
 
     await syncBounces(CREDENTIALS)
@@ -233,8 +255,7 @@ Status: 5.1.1`
   })
 
   it('poursuit le passage malgré une écriture en échec', async () => {
-    imapState.searchResult = [42]
-    imapState.messages = [makeMessage(42, BOUNCE_SOURCE)]
+    imapState.byMailbox.INBOX = [makeMessage(42, BOUNCE_SOURCE)]
     mockFindFirst.mockResolvedValue({ id: 'log_1', status: 'SENT' })
     mockUpdate.mockRejectedValue(new Error('DB down'))
 
@@ -244,27 +265,101 @@ Status: 5.1.1`
     expect(result.errors[0]).toContain('DB down')
     // La connexion doit être refermée proprement malgré l'erreur
     expect(imapState.loggedOut).toBe(true)
-    expect(imapState.lockReleased).toBe(true)
+    expect(imapState.locksReleased).toBeGreaterThan(0)
   })
 
   it('libère le verrou et se déconnecte quand la boîte est vide', async () => {
-    imapState.searchResult = []
-
     const result = await syncBounces(CREDENTIALS)
 
     expect(result.examined).toBe(0)
-    expect(imapState.lockReleased).toBe(true)
+    expect(imapState.locksReleased).toBeGreaterThan(0)
     expect(imapState.loggedOut).toBe(true)
   })
 
   it('désactive le logger IMAP, qui ferait fuiter le contenu des messages', async () => {
-    imapState.searchResult = []
-
     await syncBounces(CREDENTIALS)
 
     expect(mockImapFlow).toHaveBeenCalledWith(
       expect.objectContaining({ logger: false, secure: true })
     )
+  })
+
+  // ==========================================================================
+  // Relève multi-dossiers
+  //
+  // Mesure sur la boîte de production le 31 août 2026 : les 9 bounces reçus
+  // depuis le 5 août étaient tous en corbeille, aucun en INBOX. L'un d'eux y
+  // était arrivé sans avoir été lu, donc sans geste humain. Une relève limitée
+  // à INBOX n'aurait jamais rien vu.
+  // ==========================================================================
+
+  describe('relève multi-dossiers', () => {
+    it('trouve un bounce présent uniquement en corbeille', async () => {
+      imapState.byMailbox['INBOX.Trash'] = [makeMessage(42, BOUNCE_SOURCE)]
+      mockFindFirst.mockResolvedValue({ id: 'log_1', status: 'SENT' })
+
+      const result = await syncBounces(CREDENTIALS)
+
+      expect(result.updated).toBe(1)
+      expect(imapState.flagsAdded[0]?.mailbox).toBe('INBOX.Trash')
+    })
+
+    it('relève aussi les indésirables', async () => {
+      imapState.byMailbox['INBOX.Junk'] = [makeMessage(7, BOUNCE_SOURCE)]
+      mockFindFirst.mockResolvedValue({ id: 'log_1', status: 'SENT' })
+
+      const result = await syncBounces(CREDENTIALS)
+
+      expect(result.updated).toBe(1)
+    })
+
+    it('parcourt les trois dossiers et les rapporte', async () => {
+      const result = await syncBounces(CREDENTIALS)
+
+      expect(result.mailboxes).toEqual(['INBOX', 'INBOX.Trash', 'INBOX.Junk'])
+    })
+
+    it('ignore un dossier absent sans faire échouer le passage', async () => {
+      // La nomenclature varie d'un fournisseur à l'autre : un dossier
+      // inexistant ne doit pas empêcher les autres d'être relevés.
+      imapState.missing = ['INBOX.Junk']
+      imapState.byMailbox['INBOX.Trash'] = [makeMessage(42, BOUNCE_SOURCE)]
+      mockFindFirst.mockResolvedValue({ id: 'log_1', status: 'SENT' })
+
+      const result = await syncBounces(CREDENTIALS)
+
+      expect(result.updated).toBe(1)
+      expect(result.mailboxes).toEqual(['INBOX', 'INBOX.Trash'])
+      expect(result.errors).toEqual([])
+    })
+
+    it('filtre sur le marqueur applicatif et non sur l état lu', async () => {
+      // Un bounce peut arriver déjà lu, notamment en corbeille. Filtrer sur
+      // `seen: false` le rendrait invisible. Et l'état lu appartient à la
+      // personne qui relève la boîte, pas à l'application.
+      imapState.byMailbox.INBOX = [makeMessage(42, BOUNCE_SOURCE)]
+      mockFindFirst.mockResolvedValue({ id: 'log_1', status: 'SENT' })
+
+      await syncBounces(CREDENTIALS)
+
+      const query = imapState.searchArgs[0] as {
+        unKeyword?: string
+        seen?: boolean
+      }
+      expect(query.unKeyword).toBe('SmartPlanningBounceSynced')
+      expect(query.seen).toBeUndefined()
+      // Le marqueur posé ne doit pas être \\Seen
+      expect(imapState.flagsAdded[0]?.flags).toEqual([
+        'SmartPlanningBounceSynced',
+      ])
+    })
+
+    it('libère un verrou par dossier ouvert', async () => {
+      await syncBounces(CREDENTIALS)
+
+      expect(imapState.locksReleased).toBe(3)
+      expect(imapState.loggedOut).toBe(true)
+    })
   })
 })
 

@@ -269,10 +269,20 @@ HTTP et authentifiées par `CRON_SECRET`. Le secret vit dans
 0 */6 * * * . /etc/smartplanning/cron.env && curl -s -X POST -H "Authorization: Bearer $CRON_SECRET" https://smartplanning.fr/api/cron/bounce-sync >> /var/log/smartplanning-cron.log 2>&1
 ```
 
-La relève des bounces est idempotente : les messages traités sont marqués lus,
-et seuls les non lus sont relevés. Une exécution supplémentaire ne produit donc
-aucun doublon, et une exécution manquée est rattrapée au passage suivant dans la
-limite de la fenêtre de 7 jours.
+La relève parcourt `INBOX`, `INBOX.Trash` et `INBOX.Junk`. Relever INBOX seul
+ne suffit pas : au 31 août 2026, les 9 messages de non-remise reçus depuis le
+5 août étaient tous en corbeille, et aucun en boîte de réception. L'un d'eux y
+était arrivé sans avoir été lu, donc sans geste humain.
+
+Elle est idempotente : un bounce traité reçoit le mot-clé
+`SmartPlanningBounceSynced`, et la relève écarte les messages qui le portent
+déjà. Le marquage n'utilise pas `\Seen` volontairement, l'état « lu »
+appartenant à la personne qui relève la boîte. Un message ordinaire n'est ni
+marqué ni modifié.
+
+Une exécution supplémentaire ne produit donc aucun doublon, et une exécution
+manquée est rattrapée au passage suivant dans la limite de la fenêtre de
+7 jours.
 
 Sans les variables `IMAP_*`, la route répond `200` avec `skipped: true` plutôt
 que d'échouer : c'est le comportement attendu en développement.
