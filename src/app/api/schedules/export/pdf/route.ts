@@ -198,11 +198,15 @@ export async function GET(request: NextRequest) {
     /* eslint-enable @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any */
 
     // Return PDF
+    // SP-578 : X-Schedule-Count permet au client d'avertir quand l'export ne
+    // contient aucun creneau, cas ou le filtre actif exclut tout ce qui existe.
+    // Le telechargement reste servi : un export vide peut etre legitime.
     const filename = `planning-${startDateStr}-${endDateStr}.pdf`
     return new NextResponse(new Uint8Array(buffer), {
       headers: {
         'Content-Type': 'application/pdf',
         'Content-Disposition': `attachment; filename="${filename}"`,
+        'X-Schedule-Count': String(schedules.length),
       },
     })
   } catch (error) {

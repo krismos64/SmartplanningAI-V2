@@ -30,6 +30,7 @@ import {
   createEmployeeSchema,
   updateEmployeeSchema,
   employeeFiltersSchema,
+  resendInvitationByEmployeeSchema,
   type CreateEmployeeInput,
   type UpdateEmployeeInput,
   type EmployeeFilters,
@@ -321,6 +322,7 @@ async function canAccessEmployee(
           name: true,
           email: true,
           image: true,
+          isEmailVerified: true,
         },
       },
       company: {
@@ -433,6 +435,7 @@ export async function listEmployees(
               name: true,
               email: true,
               image: true,
+              isEmailVerified: true,
             },
           },
           company: {
@@ -719,6 +722,7 @@ export async function createEmployee(
                 name: true,
                 email: true,
                 image: true,
+                isEmailVerified: true,
               },
             },
             company: {
@@ -780,6 +784,7 @@ export async function createEmployee(
               name: true,
               email: true,
               image: true,
+              isEmailVerified: true,
             },
           },
           company: {
@@ -999,6 +1004,7 @@ export async function updateEmployee(
             name: true,
             email: true,
             image: true,
+            isEmailVerified: true,
           },
         },
         company: {
@@ -1230,6 +1236,7 @@ export async function toggleEmployeeStatus(
             name: true,
             email: true,
             image: true,
+            isEmailVerified: true,
           },
         },
         company: {
@@ -2268,6 +2275,156 @@ export async function resendInvitation(data: {
     }
   } catch (error) {
     console.error('[resendInvitation] Error:', error)
+    return {
+      success: false,
+      error: 'Une erreur est survenue. Veuillez réessayer.',
+    }
+  }
+}
+
+// ============================================================================
+// RESEND INVITATION BY EMPLOYEE - Relance depuis la fiche employe
+// ============================================================================
+
+/**
+ * Relance l'invitation d'un employe dont le compte n'est pas encore active.
+ *
+ * SP-578 : `resendInvitation` part du token, que seul l'invite possede. Un
+ * dirigeant dont le collaborateur n'a jamais recu son email (adresse erronee,
+ * message en spam) n'avait donc aucun moyen de relancer, et le token expirait
+ * en silence au bout de 48 heures.
+ *
+ * Cette action part de l'employeeId et passe par `canAccessEmployee`, qui porte
+ * le controle multi-tenant : un utilisateur ne relance jamais l'invitation d'un
+ * employe d'une autre entreprise, ni d'une equipe qu'il ne gere pas.
+ *
+ * Le token existant est remplace, l'ancien lien cesse donc de fonctionner.
+ */
+export async function resendInvitationByEmployee(data: {
+  employeeId: string
+}): Promise<CrudActionResult<null>> {
+  const authResult = await getAuthenticatedUser()
+
+  if (!authResult.success) {
+    return {
+      success: false,
+      error: authResult.error,
+    }
+  }
+
+  const impersonationBlock = await assertNotImpersonating()
+  if (impersonationBlock) return impersonationBlock
+
+  const user = authResult.user
+
+  try {
+    const validation = validateData(resendInvitationByEmployeeSchema, data)
+    if (!validation.success) {
+      return {
+        success: false,
+        error: validation.error,
+        field: validation.field,
+      }
+    }
+
+    const { employeeId } = validation.data
+
+    // Controle d'acces multi-tenant et RBAC
+    const { hasAccess, employee } = await canAccessEmployee(user, employeeId)
+
+    if (!hasAccess || !employee) {
+      return {
+        success: false,
+        error: 'Employé non trouvé ou accès non autorisé',
+      }
+    }
+
+    // Un EMPLOYEE ne relance l'invitation de personne, pas meme la sienne
+    if (user.role === 'EMPLOYEE') {
+      return {
+        success: false,
+        error: "Vous n'avez pas les droits pour relancer une invitation",
+      }
+    }
+
+    if (!employee.userId) {
+      return {
+        success: false,
+        error:
+          "Cet employé n'a pas de compte utilisateur. Ajoutez-lui une adresse email pour l'inviter.",
+      }
+    }
+
+    const targetUser = await prisma.user.findUnique({
+      where: { id: employee.userId },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        isEmailVerified: true,
+        company: { select: { name: true } },
+      },
+    })
+
+    if (!targetUser) {
+      return {
+        success: false,
+        error: 'Utilisateur introuvable.',
+      }
+    }
+
+    if (targetUser.isEmailVerified) {
+      return {
+        success: false,
+        error: 'Ce compte est déjà activé.',
+      }
+    }
+
+    // Remplacer les tokens d'activation existants par un seul token neuf
+    const newToken = crypto.randomUUID()
+    const expires = new Date(Date.now() + 48 * 60 * 60 * 1000) // 48h
+
+    await prisma.$transaction([
+      prisma.verificationToken.deleteMany({
+        where: { identifier: `activate:${targetUser.id}` },
+      }),
+      prisma.verificationToken.create({
+        data: {
+          identifier: `activate:${targetUser.id}`,
+          token: newToken,
+          expires,
+        },
+      }),
+    ])
+
+    const roleLabels: Record<string, string> = {
+      EMPLOYEE: 'Employé',
+      MANAGER: 'Manager',
+      DIRECTOR: 'Directeur',
+    }
+    const firstName = targetUser.name?.split(' ')[0] || 'Utilisateur'
+
+    // Fire-and-forget, conformement au pattern email du projet
+    sendInvitationEmail({
+      firstName,
+      email: targetUser.email,
+      token: newToken,
+      companyName: targetUser.company?.name || 'SmartPlanning',
+      roleName: roleLabels[targetUser.role] || 'Employé',
+    }).catch((err) => {
+      console.error('[resendInvitationByEmployee] Email failed:', err)
+    })
+
+    revalidatePath('/app/dashboard/employees')
+    revalidatePath(`/app/dashboard/employees/${employeeId}`)
+
+    return {
+      success: true,
+      data: null,
+    }
+  } catch (error) {
+    console.error('[resendInvitationByEmployee] Error:', error)
     return {
       success: false,
       error: 'Une erreur est survenue. Veuillez réessayer.',

@@ -173,11 +173,13 @@ export async function GET(request: NextRequest) {
     // Return Excel response
     const filename = `planning-${format(startDate, 'yyyy-MM-dd')}-${format(endDate, 'yyyy-MM-dd')}.xlsx`
 
+    // SP-578 : voir la route PDF, meme en-tete pour avertir d'un export vide
     return new NextResponse(new Uint8Array(buffer), {
       headers: {
         'Content-Type':
           'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         'Content-Disposition': `attachment; filename="${filename}"`,
+        'X-Schedule-Count': String(schedules.length),
       },
     })
   } catch (error) {
