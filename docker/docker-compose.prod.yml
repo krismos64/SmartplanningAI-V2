@@ -56,8 +56,14 @@ services:
     # 🔒 SECURITY HARDENING (OWASP Docker Security Best Practices)
     read_only: true
     tmpfs:
+      # SP-580 : chemin ET propriétaire comptent tous les deux.
+      # Next.js ecrit ses images optimisees dans /app/.next/cache/images, pas
+      # dans /.next/cache. Et un tmpfs se monte en root:root par defaut, alors
+      # que le conteneur tourne en nextjs : sans uid/gid le montage est au bon
+      # endroit mais reste en lecture seule pour l'application.
+      # uid/gid 1001 = nextjs:nodejs, cree dans docker/Dockerfile.
       - /tmp:rw,size=100m,mode=1777
-      - /app/.next/cache:rw,size=500m,mode=0755
+      - /app/.next/cache:rw,size=500m,mode=0755,uid=1001,gid=1001
     security_opt:
       - no-new-privileges:true
     cap_drop:
@@ -90,6 +96,29 @@ services:
 
       # Health check protection (SP-470)
       HEALTH_API_KEY: ${HEALTH_API_KEY}
+
+      # Umami Analytics (SP-345)
+      NEXT_PUBLIC_UMAMI_WEBSITE_ID: ${NEXT_PUBLIC_UMAMI_WEBSITE_ID}
+      NEXT_PUBLIC_UMAMI_SCRIPT_URL: ${NEXT_PUBLIC_UMAMI_SCRIPT_URL}
+      NEXT_PUBLIC_UMAMI_DOMAINS: ${NEXT_PUBLIC_UMAMI_DOMAINS}
+
+      # Cloudinary (SP-272)
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET}
+
+      # SMTP Email (Sprint 9)
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT}
+      SMTP_USER: ${SMTP_USER}
+      SMTP_PASSWORD: ${SMTP_PASSWORD}
+      SMTP_FROM: ${SMTP_FROM}
+      # SP-579 : releve IMAP des bounces
+      IMAP_HOST: ${IMAP_HOST}
+      IMAP_PORT: ${IMAP_PORT}
+      IMAP_USER: ${IMAP_USER}
+      IMAP_PASSWORD: ${IMAP_PASSWORD}
+      CONTACT_EMAIL: ${CONTACT_EMAIL}
 
       # Mode production
       NODE_ENV: production

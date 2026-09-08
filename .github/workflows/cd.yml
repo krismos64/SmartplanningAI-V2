@@ -235,6 +235,12 @@ jobs:
     if: ${{ always() && needs.build-and-push.result == 'success' && (needs.migrate.result == 'success' || needs.migrate.result == 'skipped') }}
 
     steps:
+      # SP-580 : le compose doit venir du dépôt, pas du VPS.
+      # Sans ce checkout, /var/www/smartplanning/docker-compose.yml n'était
+      # jamais mis à jour et dérivait à chaque édition manuelle sur le serveur.
+      - name: Checkout
+        uses: actions/checkout@v4
+
       # Connexion SSH au VPS et exécution des commandes
       # Créer le fichier de clé SSH
       - name: Setup SSH key
@@ -243,6 +249,17 @@ jobs:
           echo "${{ secrets.VPS_SSH_KEY }}" | base64 -d > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
+
+      # SP-580 : le dépôt fait autorité sur la configuration d'infrastructure.
+      # Le fichier est copié avant le up, donc le conteneur est recréé avec la
+      # configuration versionnée. Une édition manuelle sur le VPS est écrasée
+      # au déploiement suivant, ce qui est le comportement voulu.
+      - name: Synchroniser le docker-compose depuis le dépôt
+        run: |
+          scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no \
+            -P ${{ secrets.VPS_SSH_PORT || 22 }} \
+            docker/docker-compose.prod.yml \
+            ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/var/www/smartplanning/docker-compose.yml
 
       - name: Deploy to VPS via SSH
         timeout-minutes: 10
