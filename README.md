@@ -169,9 +169,9 @@ Voir [`docs/database-architecture.md`](docs/database-architecture.md) pour le de
 
 | Type      | Framework  | Fichiers | Tests     |
 | --------- | ---------- | -------- | --------- |
-| Unitaires | Vitest     | 195      | 3 269     |
+| Unitaires | Vitest     | 196      | 3 276     |
 | E2E       | Playwright | 22       | 255       |
-| **Total** |            | **217**  | **3 524** |
+| **Total** |            | **218**  | **3 531** |
 
 La CI execute une whitelist E2E (8 specs, 123 tests) ; la suite complete (22 specs, 255 tests) tourne en nightly. `testMatch` de `playwright.ci.config.ts` etant une liste explicite, un spec renomme ou supprime disparait silencieusement de la CI : verifier cette liste apres chaque ajout ou suppression.
 

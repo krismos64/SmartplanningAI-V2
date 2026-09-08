@@ -171,6 +171,55 @@ Corollaire : `EmailResult.outcome` distingue `SENT`, `BOUNCED` et `FAILED`. La
 distinction n'est pas cosmétique, une adresse invalide ne se retente pas, une
 panne réseau si.
 
+## Le fire-and-forget entre en conflit avec la transaction qui suit
+
+Le pattern `.catch(console.error)` est la règle du projet pour Stripe, les
+emails, les notifications et Redis, qui ne partagent aucune ligne avec la
+transaction en cours.
+
+**Il devient un défaut dès que l'appel écrit sur une ligne que la transaction
+qui suit va modifier ou supprimer.** Les deux écritures portent alors sur la
+même clé sans ordre garanti, et Postgres abandonne la transaction :
+
+```
+Transaction failed due to a write conflict or a deadlock.
+Please retry your transaction   (code P2034)
+```
+
+`deleteAccount` lançait `logAuditAction` en fire-and-forget juste avant la
+transaction qui supprime le même `User`, et `audit_logs` référence `User` par
+clé étrangère. Mesuré en production le 7 septembre 2026 : deux échecs
+consécutifs, l'utilisateur voyant deux fois « une erreur est survenue » avant
+que le troisième essai passe, celui-ci ne réussissant que parce que l'audit
+avait fini d'écrire entre-temps.
+
+Dans ce cas, awaiter avant d'ouvrir la transaction. C'est sans risque quand la
+fonction avale déjà ses propres erreurs, ce que fait `logAuditAction`.
+
+Un test qui vérifie seulement que l'appel a lieu ne prouve rien : le défaut
+porte sur l'ordonnancement. Il faut enregistrer l'ordre réel des deux
+opérations.
+
+## Un audit effacé avec son auteur ne trace rien
+
+`AuditLog.userId` était NOT NULL avec `onDelete: Cascade`. Supprimer un compte
+effaçait donc les lignes d'audit le concernant, **y compris l'audit `DELETE`
+écrit juste avant**. Mesure avant correctif : 1517 lignes en base, dont zéro
+action `DELETE` sur `entityType` USER. La suppression de compte, l'événement
+qui justifie le plus une trace, était le seul du produit à n'en laisser aucune.
+
+Depuis SP-580, la colonne est nullable en `SET NULL`, et l'identité est déposée
+dans `details` avant la suppression. Deux conséquences :
+
+- la relation `user` d'un `AuditLogEntry` **peut être nulle**, tout écran qui
+  affiche l'auteur passe par `resolveAuditAuthor` (`src/lib/audit-author.ts`)
+- un `LOGOUT` émis après la suppression viole toujours la clé étrangère, celle-ci
+  étant vérifiée à l'insertion et non à la suppression. Ce `P2003` est un cas
+  attendu, traité en `warn` pour ne pas noyer les vraies erreurs d'audit
+
+Corollaire général : avant de poser `onDelete: Cascade` sur une table de
+traçabilité, vérifier que la trace doit bien disparaître avec ce qu'elle trace.
+
 ## Whitelist E2E de la CI
 
 `testMatch` de `playwright.ci.config.ts` est une liste explicite. Un spec renommé
