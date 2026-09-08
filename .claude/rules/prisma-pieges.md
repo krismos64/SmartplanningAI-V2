@@ -237,3 +237,33 @@ plus. Limite actuelle : 100, avec exemption sur `/_next/static/*`.
 
 Bloc 443 dédié en 301. Ne jamais remettre `www` dans le `server_name` du bloc
 principal : contenu dupliqué, pénalité SEO.
+
+## `ufw` ne filtre pas les ports publiés par Docker
+
+Docker insère ses règles DNAT dans `iptables` **en amont** de la chaîne d'`ufw`.
+Un `-p 3000:3000` publie donc sur toutes les interfaces, et le pare-feu de
+l'hôte ne s'y applique pas. `ufw status` montre un port fermé qui répond
+pourtant depuis Internet.
+
+Mesuré le 8 septembre 2026 (SP-583) : `smartplanning-app` et
+`smartplanning-umami` servaient l'application complète sur les ports 3000 et
+3001 de l'adresse publique, `/api/auth/session` compris, en contournant TLS et
+les zones de limitation de débit posées par SP-157.
+
+Tout port qui n'a pas à être joignable de l'extérieur se publie sur la boucle
+locale, Nginx restant le seul point d'entrée :
+
+```yaml
+ports:
+  - '127.0.0.1:3000:3000'   # et non '3000:3000'
+```
+
+**Se vérifier depuis l'extérieur, jamais depuis le VPS.** `curl localhost:3000`
+répondra toujours 200 sur la machine et ne prouve rien. La mesure qui compte
+est `curl http://<ip publique>:<port>` depuis une autre machine, ou
+`ss -tlnp | grep -E '0\.0\.0\.0|\[::\]'` qui liste ce qui écoute réellement sur
+toutes les interfaces.
+
+Avant de basculer un port sur la boucle locale, lire la cible du `proxy_pass`
+ou du bloc `upstream` : `localhost` ne vaut `127.0.0.1` que si `/etc/hosts` ne
+donne pas ce nom à `::1`. Sinon Nginx tente l'IPv6 et sert un 502 permanent.

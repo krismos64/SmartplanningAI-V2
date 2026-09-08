@@ -254,6 +254,10 @@ jobs:
       # Le fichier est copié avant le up, donc le conteneur est recréé avec la
       # configuration versionnée. Une édition manuelle sur le VPS est écrasée
       # au déploiement suivant, ce qui est le comportement voulu.
+      # SP-583 : seul le compose de l'application est synchronisé. Umami tourne
+      # depuis /home/deploy/umami/docker-compose.yml, hors du dépôt, avec ses
+      # secrets en clair et sans BASE_PATH. Toute correction le concernant
+      # s'applique à la main sur le VPS, ce fichier-ci ne la porterait pas.
       - name: Synchroniser le docker-compose depuis le dépôt
         run: |
           scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no \

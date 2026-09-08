@@ -88,6 +88,20 @@ Let's Encrypt, Fail2ban, UFW) · Cloudinary (avatars, pièces jointes) · Umami
 Accès VPS par alias SSH : `ssh smartplanning`, clé `~/.ssh/id_ed25519`. Ne jamais
 écrire un mot de passe en clair dans la configuration.
 
+**Le VPS héberge un second projet depuis septembre 2026**, la boutique Lune &
+Soleil, avec son propre bloc Nginx et son port. Ne plus supposer que tout ce qui
+tourne sur cette machine appartient à SmartPlanning.
+
+**UFW ne filtre pas les ports publiés par Docker**, qui écrit ses règles en amont
+de sa chaîne : un port peut répondre depuis Internet alors qu'`ufw status` le dit
+fermé. Tout port qui n'a pas à être joignable de l'extérieur se publie en
+`127.0.0.1:` et se vérifie depuis une autre machine, jamais depuis le VPS. C'est
+SP-583, règle dans `prisma-pieges.md`.
+
+Le CD ne synchronise que `docker-compose.prod.yml`. **Umami tourne depuis
+`/home/deploy/umami/docker-compose.yml`, hors du dépôt** : toute correction le
+concernant s'applique à la main sur le VPS.
+
 Le CD ne se déclenche que si le CI passe entièrement, E2E comprises. Un push sur
 une branche sans PR ne déclenche aucun workflow : ouvrir une PR, même en draft,
 pour obtenir le retour de la CI.
