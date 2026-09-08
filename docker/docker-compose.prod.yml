@@ -52,7 +52,11 @@ services:
     container_name: smartplanning-app
     restart: always
     ports:
-      - '3000:3000'
+      # Publication sur la boucle locale : Nginx est le seul point d'entrée.
+      # Docker insère ses règles DNAT en amont de la chaîne d'ufw, donc un port
+      # publié sur toutes les interfaces reste joignable depuis Internet malgré
+      # le pare-feu. « ufw status » ne le montre pas.
+      - '127.0.0.1:3000:3000'
     # 🔒 SECURITY HARDENING (OWASP Docker Security Best Practices)
     read_only: true
     tmpfs:
