@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/dialog'
 import { AuditActionBadge, ENTITY_TYPE_LABELS } from './audit-action-badge'
 import type { AuditLogEntry } from '@/types/audit'
+import { resolveAuditAuthor } from '@/lib/audit-author'
 
 interface AuditLogDetailModalProps {
   log: AuditLogEntry | null
@@ -32,6 +33,8 @@ export function AuditLogDetailModal({
     dateStyle: 'long',
     timeStyle: 'medium',
   }).format(new Date(log.createdAt))
+
+  const author = resolveAuditAuthor(log)
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -53,8 +56,13 @@ export function AuditLogDetailModal({
             </div>
             <div>
               <p className="font-medium text-muted-foreground">Utilisateur</p>
-              <p>{log.user.name ?? log.user.email}</p>
-              <p className="text-xs text-muted-foreground">{log.user.email}</p>
+              {/* SP-580 : l'auteur peut avoir supprimé son compte */}
+              <p className={author.isDeleted ? 'italic' : undefined}>
+                {author.label}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {author.isDeleted ? 'Compte supprimé' : author.email}
+              </p>
             </div>
             <div>
               <p className="font-medium text-muted-foreground">Entité</p>

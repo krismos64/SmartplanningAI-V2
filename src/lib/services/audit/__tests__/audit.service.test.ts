@@ -23,6 +23,8 @@ vi.mock('@/lib/prisma', () => ({
   },
 }))
 
+import { Prisma } from '@prisma/client'
+
 import { prisma } from '@/lib/prisma'
 import { logAuditAction } from '../audit.service'
 
@@ -138,6 +140,64 @@ describe('logAuditAction', () => {
     )
 
     consoleSpy.mockRestore()
+  })
+
+  // SP-580 : un LOGOUT part apres la suppression du compte, avec un userId qui
+  // n'existe plus. C'est un deroulement normal, il ne doit pas ressortir comme
+  // une erreur d'audit et noyer les vraies.
+  it('journalise en warn, et non en error, quand l auteur a ete supprime', async () => {
+    const fkError = new Prisma.PrismaClientKnownRequestError(
+      'Foreign key constraint violated on the constraint: `audit_logs_userId_fkey`',
+      { code: 'P2003', clientVersion: '6.18.0' }
+    )
+    vi.mocked(prisma.auditLog.create).mockRejectedValue(fkError)
+
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+    await expect(
+      logAuditAction({
+        action: 'LOGOUT',
+        entityType: 'USER',
+        userId: 'cluser00000000000001',
+      })
+    ).resolves.toBeUndefined()
+
+    expect(warnSpy).toHaveBeenCalledOnce()
+    expect(warnSpy).toHaveBeenCalledWith(
+      '[AuditLog] Utilisateur supprimé, action non journalisée:',
+      expect.objectContaining({ action: 'LOGOUT', entityType: 'USER' })
+    )
+    // Le point du test : ce cas attendu ne remonte pas en error
+    expect(errorSpy).not.toHaveBeenCalled()
+
+    errorSpy.mockRestore()
+    warnSpy.mockRestore()
+  })
+
+  // Test negatif : une autre erreur Prisma doit continuer a sortir en error,
+  // sinon le traitement du P2003 masquerait toutes les pannes d'audit.
+  it('journalise en error une erreur Prisma autre que P2003', async () => {
+    const autreErreur = new Prisma.PrismaClientKnownRequestError(
+      'Unique constraint failed',
+      { code: 'P2002', clientVersion: '6.18.0' }
+    )
+    vi.mocked(prisma.auditLog.create).mockRejectedValue(autreErreur)
+
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+    await logAuditAction({
+      action: 'CREATE',
+      entityType: 'EMPLOYEE',
+      userId: 'cluser00000000000001',
+    })
+
+    expect(errorSpy).toHaveBeenCalledOnce()
+    expect(warnSpy).not.toHaveBeenCalled()
+
+    errorSpy.mockRestore()
+    warnSpy.mockRestore()
   })
 
   it('loggue une erreur non-Error en console sans crash', async () => {

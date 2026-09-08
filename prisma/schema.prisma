@@ -411,8 +411,14 @@ model AuditLog {
   entityType AuditEntityType // Sur quel type d'objet porte l'action (COMPANY, EMPLOYEE, etc.)
   entityId   String? // L'id de l'objet concerné (null pour les actions générales comme LOGIN)
 
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // SP-580 : userId est nullable et la suppression met la reference a null,
+  // au lieu de la cascader. Un audit efface avec son auteur ne trace rien :
+  // la suppression de compte, l'evenement qui justifie le plus une trace,
+  // etait justement le seul a n'en laisser aucune. L'identite reste dans
+  // details (email et role), et la FK ne pointe plus vers une personne
+  // supprimee, ce qui sert aussi la minimisation RGPD.
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   // companyId est nullable parce que le SYSTEM_ADMIN n'a pas d'entreprise
   companyId String?

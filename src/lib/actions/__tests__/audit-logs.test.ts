@@ -373,7 +373,7 @@ describe('getAuditLogs', () => {
       expect(entry.action).toBe('CREATE')
       expect(entry.entityType).toBe('EMPLOYEE')
       expect(entry.entityId).toBe('emp-001')
-      expect(entry.user.email).toBe('admin@test.com')
+      expect(entry.user?.email).toBe('admin@test.com')
       expect(entry.company?.name).toBe('Acme Corp')
       expect(entry.details).toEqual({ name: 'Jean Dupont' })
     }
@@ -830,7 +830,7 @@ describe('getUserActivity', () => {
       expect(entry.id).toBe('log-001')
       expect(entry.action).toBe('CREATE')
       expect(entry.entityType).toBe('EMPLOYEE')
-      expect(entry.user.email).toBe('admin@test.com')
+      expect(entry.user?.email).toBe('admin@test.com')
       expect(entry.details).toEqual({ name: 'Jean Dupont' })
     }
   })

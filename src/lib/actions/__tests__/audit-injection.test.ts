@@ -561,6 +561,91 @@ describe('SP-444 Audit Injection - Profile', () => {
     )
   })
 
+  // SP-580 : le defaut n'etait pas l'absence d'appel, que le test precedent
+  // couvrait deja, mais son ordonnancement. L'audit partait en fire-and-forget
+  // et s'executait en parallele de la transaction qui supprime le meme User.
+  // Les deux ecritures portaient sur la meme ligne, et Postgres abandonnait la
+  // suppression en P2034 : mesure en production le 7 septembre 2026, deux
+  // echecs avant que le troisieme essai passe.
+  it("deleteAccount attend la fin de l'audit avant d'ouvrir la transaction", async () => {
+    vi.mocked(auth).mockResolvedValue({
+      user: { id: USER_ID, role: 'EMPLOYEE', companyId: COMPANY_ID },
+      expires: new Date(Date.now() + 86400000).toISOString(),
+    } as any)
+
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({
+      id: USER_ID,
+      email: 'user@test.com',
+      password: '$2b$existinghash',
+      name: 'Test User',
+      role: 'EMPLOYEE',
+      company: { name: 'Acme' },
+    } as any)
+
+    // On enregistre l'ordre reel des deux operations. L'audit est resolu au
+    // tick suivant : un appel non attendu laisserait donc la transaction
+    // demarrer avant que l'ecriture d'audit soit terminee.
+    const ordre: string[] = []
+    mockLogAuditAction.mockImplementation(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0))
+      ordre.push('audit')
+    })
+    vi.mocked(prisma.$transaction).mockImplementation((async () => {
+      ordre.push('transaction')
+    }) as any)
+
+    const { deleteAccount } = await import('../profile')
+    const result = await deleteAccount({
+      confirmEmail: 'user@test.com',
+      password: 'Password123!',
+      confirmDeletion: true,
+    })
+
+    expect(result.success).toBe(true)
+    expect(ordre).toEqual(['audit', 'transaction'])
+  })
+
+  // SP-580 : l'identite doit etre dans details, car userId passe a null quand
+  // la suppression cascade la reference. Sans ces champs, l'audit survit mais
+  // ne designe plus personne.
+  it("deleteAccount depose l'identite dans details pour survivre a la suppression", async () => {
+    vi.mocked(auth).mockResolvedValue({
+      user: { id: USER_ID, role: 'DIRECTOR', companyId: COMPANY_ID },
+      expires: new Date(Date.now() + 86400000).toISOString(),
+    } as any)
+
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({
+      id: USER_ID,
+      email: 'director@test.com',
+      password: '$2b$existinghash',
+      name: 'Test Director',
+      role: 'DIRECTOR',
+      company: { name: 'Acme Corp' },
+    } as any)
+
+    vi.mocked(prisma.$transaction).mockResolvedValue(undefined as any)
+
+    const { deleteAccount } = await import('../profile')
+    const result = await deleteAccount({
+      confirmEmail: 'director@test.com',
+      password: 'Password123!',
+      confirmDeletion: true,
+    })
+
+    expect(result.success).toBe(true)
+    expect(mockLogAuditAction).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: 'DELETE',
+        details: {
+          email: 'director@test.com',
+          role: 'DIRECTOR',
+          companyName: 'Acme Corp',
+          selfDeletion: true,
+        },
+      })
+    )
+  })
+
   it('exportUserData appelle logAuditAction avec action EXPORT', async () => {
     vi.mocked(auth).mockResolvedValue({
       user: {

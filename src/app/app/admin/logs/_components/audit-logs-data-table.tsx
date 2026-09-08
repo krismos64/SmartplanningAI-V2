@@ -34,6 +34,7 @@ import {
 } from '@/components/ui/select'
 import type { AuditLogEntry } from '@/types/audit'
 import type { PaginatedResult } from '@/types'
+import { resolveAuditAuthor } from '@/lib/audit-author'
 import { AuditActionBadge, ENTITY_TYPE_LABELS } from './audit-action-badge'
 import { AuditLogDetailModal } from './audit-log-detail-modal'
 import { AuditLogFilterBar } from './audit-log-filter-bar'
@@ -74,15 +75,27 @@ function createColumns(
       accessorKey: 'user',
       header: 'Utilisateur',
       cell: ({ row }) => {
-        const user = row.original.user
+        // SP-580 : l'auteur peut avoir supprimé son compte, le log lui survit
+        const author = resolveAuditAuthor(row.original)
+        // Le nom reste en tête et l'email en dessous quand il ajoute quelque
+        // chose. Sur un compte supprimé, la mention prend la place de l'email.
+        const sousTitre = author.isDeleted
+          ? 'Compte supprimé'
+          : author.label !== author.email
+            ? author.email
+            : null
         return (
           <div className="min-w-0">
-            <p className="truncate text-sm font-medium">
-              {user.name ?? user.email}
+            <p
+              className={`truncate text-sm font-medium ${
+                author.isDeleted ? 'italic text-muted-foreground' : ''
+              }`}
+            >
+              {author.label}
             </p>
-            {user.name && (
+            {sousTitre && (
               <p className="truncate text-xs text-muted-foreground">
-                {user.email}
+                {sousTitre}
               </p>
             )}
           </div>

@@ -37,7 +37,9 @@ export interface AuditLogEntry {
   action: AuditAction
   entityType: AuditEntityType
   entityId: string | null
-  userId: string
+  // SP-580 : null quand l'auteur a supprimé son compte. L'audit lui survit,
+  // son identité restant dans details.
+  userId: string | null
   companyId: string | null
   details: Record<string, unknown> | null
   createdAt: Date
@@ -45,7 +47,7 @@ export interface AuditLogEntry {
     id: string
     email: string
     name: string | null
-  }
+  } | null
   company: {
     id: string
     name: string
