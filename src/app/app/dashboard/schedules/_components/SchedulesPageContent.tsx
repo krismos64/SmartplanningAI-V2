@@ -270,6 +270,12 @@ export function SchedulesPageContent({
     [teams]
   )
 
+  // SP-582 : la liste d'identifiants passée à WeeklyGridView est mémoïsée.
+  // Écrite en `teams.map(...)` dans le JSX, elle produisait un tableau neuf à
+  // chaque rendu, donc une dépendance qui change toujours pour l'effet de
+  // chargement des congés de la grille, qui repartait à chaque rendu du parent.
+  const teamIds = useMemo(() => teams.map((t) => t.id), [teams])
+
   // Charger les indisponibilités et congés au changement de période
   // On utilise getTime() pour des dépendances primitives stables
   const rangeStartTime = dateRange.start.getTime()
@@ -571,7 +577,7 @@ export function SchedulesPageContent({
               availabilities={availabilities}
               showAvailabilities={showAvailabilities}
               onRangeChange={handleRangeChange}
-              teamIds={teams.map((t) => t.id)}
+              teamIds={teamIds}
               companyId={companyId}
               leaveRequests={leaveRequests}
               showLeaves={true}
