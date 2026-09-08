@@ -1,19 +1,19 @@
-# 8 septembre 2026, une désinscription qui révèle trois défauts sans rapport
+# 8 septembre 2026, une désinscription qui révèle quatre défauts sans rapport
 
 | Champ | Valeur |
 |---|---|
-| Ticket | SP-580 (deux lots), SP-581 |
+| Ticket | SP-580 (deux lots), SP-581, SP-582 |
 | Documents produits | ce journal, `src/lib/audit-author.ts`, migration `20260908085434_sp580_audit_log_survit_a_son_auteur`, `events-service-plugin-contract.test.ts` |
 | Documents modifiés | `docker-compose.prod.yml`, `Dockerfile`, `cd.yml`, `schema.prisma`, `profile.ts`, `audit.service.ts`, `audit-logs.ts`, `types/audit.ts`, trois écrans d'administration, trois fichiers de tests |
-| Contrôles | type-check vert, lint sans erreur, 3276 tests Vitest verts sur 196 fichiers, CI complète verte sur la PR #83 (run 34210579843), E2E comprises |
-| Jira | SP-580 créé et commenté, SP-581 créé |
+| Contrôles | type-check vert, lint sans erreur, 3276 tests Vitest verts sur 196 fichiers, CI complète verte sur la PR #83 (run 34212783506), E2E comprises |
+| Jira | SP-580 et SP-581 créés et commentés, SP-582 créé |
 | Mémoire | 4 fiches créées, 1 corrigée (`lire-les-logs-du-vps`) |
 
 ## Ce qui a été fait
 
 Session ouverte sur une question de Christophe : « hier j'ai eu une inscription
 puis un désabonnement, tu peux analyser son parcours ». L'analyse n'a rien
-trouvé sur le départ lui-même, et trois défauts sérieux à côté.
+trouvé sur le départ lui-même, et quatre défauts sérieux à côté.
 
 ### Le parcours mesuré
 
@@ -166,6 +166,30 @@ qui correspond aux rafales de 10 par seconde vues dans ses logs et aux 78
 réponses de 98 octets sur 159, soit des réponses vides. Et la navigation entre
 semaines ne répond pas toujours au premier clic.
 
+### Le volume de requêtes, mesuré plutôt que supposé
+
+Première des deux observations laissées par SP-581. Les Server Actions ont été
+instrumentées temporairement sur le même compte neuf. Un chargement de page :
+8 appels, dont **5 pour la seule `getTeamAbsences`**, sur un compte n'ayant
+qu'**une seule équipe**. Le `Promise.all` qui parcourt les équipes ne pouvant
+en produire qu'un par déclenchement, l'écart venait d'ailleurs.
+
+L'effet du parent a donc été instrumenté à son tour. Il ne part que deux fois,
+dont une qui sort immédiatement faute d'équipes chargées. Ce n'était pas lui.
+
+Le volume venait de `WeeklyGridView`, qui charge les mêmes congés de son côté
+dans un effet dépendant de `teamIds`. Or le parent lui passait
+`teams.map((t) => t.id)` écrit dans le JSX, donc un tableau neuf à chaque
+rendu : la dépendance changeait toujours, et l'effet repartait à chaque rendu
+du parent quel qu'en soit le motif. Un `useMemo` suffit.
+
+Mesure après correctif : `getTeamAbsences` passe de 5 à 2, le total de 8 à 5.
+
+**Le code était pourtant correct.** Type-check vert, tests verts, aucune erreur
+nulle part : il faisait simplement beaucoup plus de travail que nécessaire.
+Seule la mesure pouvait le voir, et la mesure a corrigé deux fois mon
+hypothèse, d'abord sur le `Promise.all`, puis sur l'effet du parent.
+
 ## Ce qui reste ouvert
 
 Le critère 3 du lot 1 ne peut se vérifier qu'après merge et redéploiement :
@@ -186,10 +210,14 @@ secondes après l'inscription, avant que l'email ait pu être lu : c'est le
 comportement voulu depuis SP-526, mais c'est la première interaction après
 inscription et c'est un échec.
 
-La piste des 159 requêtes sur le planning a été instruite et a donné SP-581,
-livré dans la même PR. Restent ouvertes les deux observations qu'elle a
-soulevées, le volume de requêtes de la page et la navigation entre semaines qui
-ne répond pas toujours.
+La piste des 159 requêtes sur le planning a donné SP-581 puis SP-582, tous deux
+livrés dans la même PR.
+
+Reste ouvert sur SP-582 : il subsiste 2 appels de congés pour une seule équipe,
+deux composants chargeant la même donnée en parallèle. Le supprimer demande de
+remonter l'état au parent et touche l'interface de deux composants, donc mérite
+son propre ticket. Et la seconde observation de SP-581 n'est pas instruite, la
+navigation entre semaines qui ne répond pas toujours au premier clic.
 
 Sur le départ lui-même, la question reste sans réponse et le restera : demander
 la raison au moment de la suppression donnerait ce qu'aucun log ne porte.
