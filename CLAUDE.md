@@ -64,7 +64,11 @@ récente en début de session** donne l'état du projet plus vite que Jira.
 - React Hook Form + Zod pour tous les formulaires
 - Barrel exports, imports absolus `@/`
 - Optimistic UI avec rollback
-- Fire-and-forget (`.catch(console.error)`) pour Stripe, emails, notifications, cache Redis
+- Fire-and-forget (`.catch(console.error)`) pour Stripe, emails, notifications, cache Redis.
+  **Exception** : il devient un défaut dès que l'appel écrit sur une ligne que la
+  transaction qui suit va modifier ou supprimer, les deux écritures entrant en
+  conflit. C'est ce qui faisait échouer `deleteAccount` en `P2034` (SP-580) :
+  dans ce cas, awaiter avant d'ouvrir la transaction
 - Emails : `canSendEmailToUser(userId, category)` avant tout envoi métier. Un envoi
   accepté par le relais n'est pas délivré pour autant : `EmailResult.outcome`
   distingue `SENT`, `BOUNCED` et `FAILED`, et le cron `/api/cron/bounce-sync`

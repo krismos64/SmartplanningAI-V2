@@ -110,13 +110,27 @@ ssh deploy@51.77.146.72
 
 ```
 /var/www/smartplanning/
-├── .env                    # Variables d'environnement (SECRETS)
-├── docker-compose.yml      # Orchestration des conteneurs
+├── .env                    # Variables d'environnement (SECRETS), edite a la main
+├── docker-compose.yml      # Copie depuis le depot par le CD, ne pas editer ici
 └── prisma/                 # Schema et migrations (copié depuis l'image)
 
 /home/deploy/umami/
 ├── docker-compose.yml      # Configuration Umami Analytics
 ```
+
+**Le `docker-compose.yml` de production vient du depot.** Depuis SP-580, le job
+`deploy` du CD copie `docker/docker-compose.prod.yml` par `scp` avant le
+`docker compose up`. Toute edition faite directement sur le VPS sera donc
+ecrasee au deploiement suivant : modifier le fichier dans le depot.
+
+Avant SP-580, ce fichier vivait uniquement sur le serveur et le CD ne le
+copiait pas. Il avait derive du depot dans les deux sens, et le tmpfs du cache
+d'images pointait sur `/.next/cache` au lieu de `/app/.next/cache`, ce qui
+produisait 10 a 17 erreurs `ENOENT` par jour sans que rien ne les signale.
+
+Le `.env` reste edite a la main sur le serveur, il porte les secrets. Avant
+d'ajouter une variable au compose, verifier qu'elle y figure, sinon le
+conteneur demarre avec une valeur vide.
 
 ### Conteneurs Docker
 
