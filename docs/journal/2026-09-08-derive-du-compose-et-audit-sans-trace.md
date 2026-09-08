@@ -1,19 +1,19 @@
-# 8 septembre 2026, une désinscription qui révèle deux défauts sans rapport
+# 8 septembre 2026, une désinscription qui révèle trois défauts sans rapport
 
 | Champ | Valeur |
 |---|---|
-| Ticket | SP-580, deux lots |
-| Documents produits | ce journal, `src/lib/audit-author.ts`, migration `20260908085434_sp580_audit_log_survit_a_son_auteur` |
+| Ticket | SP-580 (deux lots), SP-581 |
+| Documents produits | ce journal, `src/lib/audit-author.ts`, migration `20260908085434_sp580_audit_log_survit_a_son_auteur`, `events-service-plugin-contract.test.ts` |
 | Documents modifiés | `docker-compose.prod.yml`, `Dockerfile`, `cd.yml`, `schema.prisma`, `profile.ts`, `audit.service.ts`, `audit-logs.ts`, `types/audit.ts`, trois écrans d'administration, trois fichiers de tests |
-| Contrôles | type-check vert, lint sans erreur, 3273 tests Vitest verts sur 195 fichiers, CI complète verte sur la PR #83 (run 34207890590), E2E comprises |
-| Jira | SP-580 créé |
+| Contrôles | type-check vert, lint sans erreur, 3276 tests Vitest verts sur 196 fichiers, CI complète verte sur la PR #83 (run 34210579843), E2E comprises |
+| Jira | SP-580 créé et commenté, SP-581 créé |
 | Mémoire | 4 fiches créées, 1 corrigée (`lire-les-logs-du-vps`) |
 
 ## Ce qui a été fait
 
 Session ouverte sur une question de Christophe : « hier j'ai eu une inscription
 puis un désabonnement, tu peux analyser son parcours ». L'analyse n'a rien
-trouvé sur le départ lui-même, et deux défauts sérieux à côté.
+trouvé sur le départ lui-même, et trois défauts sérieux à côté.
 
 ### Le parcours mesuré
 
@@ -128,6 +128,44 @@ vérification de la whitelist E2E annonçait 8 entrées mortes sur 8. C'était m
 script qui testait les chemins depuis la racine au lieu du `testDir`. La
 whitelist est saine.
 
+### La piste du planning, instruite
+
+Les 159 requêtes sur `/app/dashboard/schedules` désignaient un endroit, pas une
+cause. Le parcours a donc été rejoué au navigateur sur un compte neuf
+reproduisant sa situation : une entreprise, une équipe, un employé, aucun
+planning.
+
+**Changer de vue jour, semaine ou mois casse la page entière.** L'error boundary
+remplace tout l'écran par « Une erreur est survenue », avec
+`Cannot read properties of undefined (reading 'set')`. Le calendrier disparaît,
+il faut recharger. Reproduit plusieurs fois.
+
+La cause est un garde qui teste la mauvaise chose. Le calendrier resynchronise
+ses events après le montage, et l'effet vérifiait seulement que le plugin
+existe. Or `createEventsServicePlugin()` renvoie un objet dont `$app` vaut
+`undefined` jusqu'au `beforeRender($app)` de Schedule-X, et `set()` le
+déréférence sans garde. Lu directement dans le code du paquet, et confirmé par
+la documentation via Context7.
+
+Le déclenchement dépend du timing, ce qui explique qu'il soit passé inaperçu :
+sur une machine rapide et un compte déjà peuplé la fenêtre est étroite, elle
+s'élargit quand les données arrivent tardivement, donc sur un compte neuf. Soit
+exactement la situation de quelqu'un qui découvre le produit.
+
+Cela ne prouve pas que ce défaut a causé son départ, aucune donnée ne le dira.
+Mais il a passé sept minutes sur cet écran, et cet écran cassait.
+
+**Le test de composant ne pouvait pas voir le défaut** : son mock de
+`@schedule-x/events-service` renvoie un objet toujours prêt, donc il simulait
+un plugin qui ne se comporte pas comme le vrai. Le test ajouté porte sur le
+contrat du paquet réel, sans mock.
+
+Deux observations connexes consignées dans SP-581, non traitées. La page émet
+10 requêtes POST par chargement sur un compte vide, mesuré au navigateur, ce
+qui correspond aux rafales de 10 par seconde vues dans ses logs et aux 78
+réponses de 98 octets sur 159, soit des réponses vides. Et la navigation entre
+semaines ne répond pas toujours au premier clic.
+
 ## Ce qui reste ouvert
 
 Le critère 3 du lot 1 ne peut se vérifier qu'après merge et redéploiement :
@@ -148,9 +186,10 @@ secondes après l'inscription, avant que l'email ait pu être lu : c'est le
 comportement voulu depuis SP-526, mais c'est la première interaction après
 inscription et c'est un échec.
 
-Surtout, **159 requêtes sur `/app/dashboard/schedules`** concentrent l'essentiel
-de la session, et l'écran de planning est le dernier consulté avant la
-suppression. Le log ne dit pas si c'est un usage intensif ou une difficulté,
-mais il désigne l'endroit à regarder si l'on veut comprendre ce départ. C'est la
-piste à instruire, et elle demande autre chose qu'un log : demander la raison au
-moment de la suppression, ou rejouer ce parcours sur l'écran en question.
+La piste des 159 requêtes sur le planning a été instruite et a donné SP-581,
+livré dans la même PR. Restent ouvertes les deux observations qu'elle a
+soulevées, le volume de requêtes de la page et la navigation entre semaines qui
+ne répond pas toujours.
+
+Sur le départ lui-même, la question reste sans réponse et le restera : demander
+la raison au moment de la suppression donnerait ce qu'aucun log ne porte.
