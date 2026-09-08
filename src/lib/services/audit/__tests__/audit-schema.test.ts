@@ -285,7 +285,7 @@ describe('AuditLog Schema', () => {
     })
 
     expect(result).toHaveLength(1)
-    expect(result[0]!.user.email).toBe('admin@test.com')
+    expect(result[0]!.user?.email).toBe('admin@test.com')
     expect(result[0]!.company?.name).toBe('TechCorp')
   })
 

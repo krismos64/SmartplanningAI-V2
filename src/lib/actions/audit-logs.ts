@@ -245,8 +245,23 @@ export async function exportAuditLogsCsv(
       'Date,Utilisateur,Email,Action,Type Entité,ID Entité,Entreprise,Détails'
     const rows = logs.map((log) => {
       const date = log.createdAt.toISOString()
-      const userName = (log.user.name ?? '').replace(/"/g, '""')
-      const email = log.user.email.replace(/"/g, '""')
+      // SP-580 : l'auteur est null quand il a supprimé son compte. Son email
+      // reste dans details, on l'y reprend plutôt que d'exporter une ligne
+      // anonyme.
+      const detailsEmail =
+        log.user === null &&
+        log.details !== null &&
+        typeof log.details === 'object' &&
+        'email' in log.details &&
+        typeof log.details.email === 'string'
+          ? log.details.email
+          : null
+      const userName = (log.user?.name ?? '').replace(/"/g, '""')
+      const email = (
+        log.user?.email ??
+        detailsEmail ??
+        'compte supprimé'
+      ).replace(/"/g, '""')
       const action = log.action
       const entityType = log.entityType
       const entityId = log.entityId ?? ''

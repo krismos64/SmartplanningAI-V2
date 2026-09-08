@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/table'
 import { getAuditLogs } from '@/lib/actions/audit-logs'
 import { AuditActionBadge } from '../../../logs/_components/audit-action-badge'
+import { resolveAuditAuthor } from '@/lib/audit-author'
 
 export interface CompanyAuditTabProps {
   companyId: string
@@ -77,7 +78,8 @@ export async function CompanyAuditTab({ companyId }: CompanyAuditTabProps) {
                     </TableCell>
                     <TableCell className="text-sm">{log.entityType}</TableCell>
                     <TableCell className="text-sm">
-                      {log.user.name ?? log.user.email}
+                      {/* SP-580 : l'auteur peut avoir supprimé son compte */}
+                      {resolveAuditAuthor(log).label}
                     </TableCell>
                   </TableRow>
                 ))}

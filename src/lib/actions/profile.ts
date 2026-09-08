@@ -530,14 +530,30 @@ export async function deleteAccount(
       `[deleteAccount] User ${user.id} (${user.email}) requested account deletion at ${new Date().toISOString()}`
     )
 
-    // SP-444 : Audit trail avant suppression (fire-and-forget)
-    logAuditAction({
+    // SP-444 : Audit trail avant suppression
+    // SP-580 : awaité, et non fire-and-forget. L'audit écrit dans audit_logs,
+    // qui porte une clé étrangère vers User : lancé en parallèle de la
+    // transaction qui supprime ce même utilisateur, il entrait en conflit avec
+    // elle et Postgres abandonnait la suppression en P2034. Mesuré en
+    // production le 7 septembre 2026, deux échecs avant que le troisième essai
+    // passe, l'utilisateur voyant deux fois « une erreur est survenue ».
+    // Le fire-and-forget reste valable pour Stripe, les emails ou Redis, qui
+    // ne partagent aucune ligne avec la transaction. Ici il créait une course
+    // sur la même clé. logAuditAction avale déjà ses propres erreurs, donc
+    // l'attendre n'expose pas la suppression à un échec de l'audit.
+    // details porte l'identité parce que userId passe à null à la suppression.
+    await logAuditAction({
       action: 'DELETE',
       entityType: 'USER',
       entityId: user.id,
       userId: user.id,
-      details: { email: user.email, selfDeletion: true },
-    }).catch(console.error)
+      details: {
+        email: user.email,
+        role: user.role,
+        companyName: user.company?.name ?? null,
+        selfDeletion: true,
+      },
+    })
 
     // 7. Transaction : Nettoyer les FK puis supprimer
     await prisma.$transaction(async (tx) => {

@@ -60,8 +60,12 @@ ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
 # Créer un utilisateur non-root pour la sécurité
+# SP-580 : --ingroup est obligatoire. Sans lui, adduser --system place nextjs
+# dans nogroup (gid 65533) et non dans nodejs, ce qui rend le chown -R
+# nextjs:nodejs plus bas sans effet au runtime, et empeche le montage tmpfs
+# du cache d'images d'etre inscriptible.
 RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
+RUN adduser --system --uid 1001 --ingroup nodejs nextjs
 
 # Copier les fichiers nécessaires depuis le builder
 COPY --from=builder /app/public ./public
