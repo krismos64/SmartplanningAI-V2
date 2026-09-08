@@ -590,8 +590,9 @@ describe('SP-444 Audit Injection - Profile', () => {
       await new Promise((resolve) => setTimeout(resolve, 0))
       ordre.push('audit')
     })
-    vi.mocked(prisma.$transaction).mockImplementation((async () => {
+    vi.mocked(prisma.$transaction).mockImplementation((() => {
       ordre.push('transaction')
+      return Promise.resolve(undefined)
     }) as any)
 
     const { deleteAccount } = await import('../profile')

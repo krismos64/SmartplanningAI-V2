@@ -39,7 +39,7 @@ function readDetailString(
   key: string
 ): string | null {
   if (details === null || typeof details !== 'object') return null
-  const value = (details as Record<string, unknown>)[key]
+  const value = details[key]
   return typeof value === 'string' && value.length > 0 ? value : null
 }
 
