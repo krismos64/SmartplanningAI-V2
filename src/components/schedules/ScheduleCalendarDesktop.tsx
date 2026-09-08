@@ -1039,11 +1039,21 @@ export function ScheduleCalendarDesktop({
   // dans un second temps, dépendants de `teams` résolu de façon asynchrone)
   // ne s'affichaient jamais tant que le calendrier n'était pas totalement
   // recréé (changement de vue jour/semaine/mois).
+  // SP-581 : le garde porte sur `$app`, pas sur l'existence du plugin.
+  // createEventsServicePlugin() renvoie un objet dont `$app` vaut undefined
+  // jusqu'à ce que Schedule-X appelle beforeRender($app) au montage. Or
+  // set() fait `this.$app.calendarEvents.list.value = ...` sans garde :
+  // appelé trop tôt, il lève « Cannot read properties of undefined
+  // (reading 'set') » et l'error boundary remplace toute la page par
+  // « Une erreur est survenue ». Reproduit en changeant de vue.
   useEffect(() => {
-    if (!eventsServiceRef.current) return
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-    eventsServiceRef.current.set(events)
-  }, [events])
+    const service = eventsServiceRef.current as {
+      $app?: unknown
+      set: (events: unknown[]) => void
+    } | null
+    if (!service || service.$app === undefined) return
+    service.set(events)
+  }, [events, calendar])
 
   // Sauvegarder les events originaux pour rollback après drag & drop
   useEffect(() => {
