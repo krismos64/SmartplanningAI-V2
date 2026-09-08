@@ -225,6 +225,20 @@ et alerte par email. Il interroge le certificat **tel qu'il est servi en
 HTTPS**, resolution DNS comprise, un controle lisant `/etc/letsencrypt/`
 n'ayant rien vu de cette panne. Voir [`scripts/ops/README.md`](scripts/ops/README.md).
 
+### Publication des ports Docker
+
+Le VPS heberge un second projet depuis septembre 2026. Les conteneurs publient
+donc leurs ports sur la boucle locale (`127.0.0.1:3000:3000`), Nginx restant le
+seul point d'entree.
+
+UFW ne filtre pas les ports publies par Docker, qui ecrit ses regles en amont de
+sa chaine : un port peut repondre depuis Internet alors qu'`ufw status` le dit
+ferme. C'est SP-583, ou l'application et Umami etaient joignables sur les ports
+3000 et 3001 de l'adresse publique, hors TLS et hors limitation de debit.
+
+Un port se verifie **depuis une autre machine**, jamais depuis le VPS ou
+`curl localhost:3000` repond toujours 200 sans rien prouver.
+
 ## Securite
 
 - RBAC 4 niveaux avec `checkPermission()` sur chaque Server Action

@@ -89,6 +89,7 @@ npm outdated
 
 - **RGPD** : `AccountDeleted` (art. 17) et `DataExport` (art. 20) doivent toujours être envoyés, jamais soumis aux préférences email de l'utilisateur
 - **Messagerie cross-tenant** : seul `SYSTEM_ADMIN` peut avoir des conversations `companyId: null` — vérifier que `checkMembership()` ne bypasse le lookup `ConversationMember` que pour ce rôle précis
+- **Ports publiés par Docker** : `ufw status` ne prouve rien, Docker insère ses règles DNAT en amont de sa chaîne. Un conteneur publié en `-p 3000:3000` répond depuis Internet, hors TLS et hors limitation de débit Nginx. Vérifier depuis l'extérieur du VPS, jamais depuis la machine. SP-583, où `/api/auth/session` était joignable en clair sur l'IP publique
 - **Fichiers `'use server'`** : ne doivent exporter QUE des fonctions async — un export non-async (type, const, schema Zod) provoque un 503 en production, ce n'est pas qu'une question de style
 
 ## 📋 Format de rapport
