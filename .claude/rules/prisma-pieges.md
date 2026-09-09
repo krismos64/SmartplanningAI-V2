@@ -220,6 +220,92 @@ dans `details` avant la suppression. Deux conséquences :
 Corollaire général : avant de poser `onDelete: Cascade` sur une table de
 traçabilité, vérifier que la trace doit bien disparaître avec ce qu'elle trace.
 
+## `docker cp` est refusé sur un conteneur en lecture seule
+
+Le conteneur PostgreSQL tourne en `read_only: true` depuis le durcissement OWASP
+de SP-157. Le démon Docker refuse alors **toute** copie de fichier vers lui, avec
+« container rootfs is marked read-only », y compris vers un tmpfs pourtant
+inscriptible (`/tmp`, monté en `rw` avec 100 Mo).
+
+Mesuré le 9 septembre 2026, première exécution du script de sauvegarde.
+
+La parade n'est pas d'affaiblir le durcissement, mais d'écrire par le processus
+plutôt que par l'API de copie :
+
+```bash
+# REFUSE
+docker cp fichier.dump smartplanning-postgres:/tmp/fichier.dump
+
+# FONCTIONNE
+docker exec -i smartplanning-postgres sh -c 'cat > /tmp/fichier.dump' < fichier.dump
+```
+
+Vaut pour toute manipulation de fichier vers ce conteneur, pas seulement pour la
+sauvegarde. Le tmpfs faisant 100 Mo, prévoir un garde-fou de taille en amont.
+
+## `gpg --decrypt | head` sort en code 2 sans que rien ne soit cassé
+
+`head -c 5` ferme le tuyau dès les cinq premiers octets lus, gpg reçoit SIGPIPE
+et sort en **code 2** alors que le déchiffrement est parfaitement valide. Sous
+`set -euo pipefail`, le script échoue sur du bon travail.
+
+Mesuré le 9 septembre 2026 : le contrôle d'intégrité rejetait une sauvegarde
+saine dont l'en-tête était bien `PGDMP`.
+
+```bash
+# FAUX : sort en 2 par SIGPIPE
+gpg --batch --decrypt --passphrase-file "$CLE" "$ARCHIVE" | head -c 5 | grep -q PGDMP
+
+# JUSTE : déchiffrer vers un fichier, puis lire
+gpg --batch --decrypt --passphrase-file "$CLE" --output "$TEMOIN" "$ARCHIVE"
+[ "$(head -c 5 "$TEMOIN")" = "PGDMP" ]
+```
+
+Un garde-fou qui échoue sur du bon travail est pire qu'absent : il aurait fait
+échouer toutes les sauvegardes en annonçant une corruption inexistante. Piège
+générique de shell, il vaut pour tout `commande | head` sous `pipefail`.
+
+## `pg_restore --list -` ne lit pas l'entrée standard
+
+Contrairement à la convention Unix, `pg_restore` cherche un fichier
+littéralement nommé « - » et rend « could not open input file ». `/dev/stdin`
+échoue autrement, par « did not find magic string in file header » : une archive
+au format `custom` doit être **navigable**, pas lue en flux.
+
+Il faut donc écrire l'archive dans un fichier avant de la valider, ce qui, sur
+un conteneur en lecture seule, se combine au piège du `docker cp` ci-dessus.
+
+## Umami rejette silencieusement une requête serveur
+
+L'API `/api/send` répond **HTTP 200 avec `{"beep":"boop"}`** et n'enregistre rien
+quand le `User-Agent` ne ressemble pas à un navigateur. Ni erreur, ni trace, ni
+code d'échec.
+
+```
+User-Agent: SmartPlanning-Server/1.0        -> {"beep":"boop"}           perdu
+User-Agent: Mozilla/5.0 (X11; Linux ...)    -> {"cache":…,"sessionId":…} accepte
+```
+
+La présence de `sessionId` dans la réponse est la seule marque d'un événement
+accepté. Détail et contrôle dans `docs/analytics.md`.
+
+Même famille que « un email accepté par le relais n'est pas un email délivré » :
+un appel accepté par un service tiers n'est pas un appel traité.
+
+## Un rollback d'image ne défait pas les migrations
+
+Le job `migrate` du CD s'exécute **avant** le remplacement du conteneur, et
+Prisma ne revient pas en arrière. Le rollback automatique de SP-588 restaure donc
+le code sur un schéma qui, lui, reste en avant.
+
+Sans conséquence pour une migration additive (colonne nullable, nouvelle table).
+**Cassant pour une migration destructive** : l'ancienne image cherchera une
+colonne supprimée ou renommée.
+
+D'où la règle : toute migration destructive se découpe en deux temps, une PR qui
+ajoute sans retirer, une seconde qui retire une fois l'ancienne version hors
+production. Rien ne l'impose mécaniquement aujourd'hui.
+
 ## Whitelist E2E de la CI
 
 `testMatch` de `playwright.ci.config.ts` est une liste explicite. Un spec renommé

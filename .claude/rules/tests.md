@@ -61,10 +61,42 @@ suite complète tourne en nightly, la CI ne joue que la whitelist.
 Ne jamais citer un nombre de tests de mémoire, il périme à chaque sprint.
 Mesurer avec `npm run test` et lire la sortie.
 
+## La couverture est un garde-fou bloquant
+
+Depuis SP-592, `vitest.config.ts` porte des seuils que la CI evalue a chaque
+execution, par `npm run test:coverage` :
+
+```
+lines 50   branches 73   functions 73   statements 50
+```
+
+**La CI peut donc rougir sur la couverture seule, alors que tous les tests
+passent.** Supprimer du code bien teste, ou ajouter du code sans test, suffit.
+
+Le perimetre mesure inclut `src/lib/`, `src/hooks/` et `src/lib/validations/`,
+c'est-a-dire l'authentification, le RBAC, l'isolation, la facturation et la
+validation. Les pages et layouts de `src/app/` en sont exclus, ils sont couverts
+par les E2E, mais `src/app/api/` est mesure.
+
+Consequence pratique : un test sur `src/lib/` compte, un test de rendu de page
+ne compte pas et n'a pas a etre ecrit.
+
+**Relever un seuil demande de mesurer d'abord** (`npx vitest run --coverage`),
+jamais de viser un chiffre rond. Les seuils actuels sont poses deux a trois
+points sous le reel mesure (52,38 % de lignes, 75,65 % de branches) : assez de
+marge pour absorber une variation, assez de serrage pour rougir si une zone
+perd sa couverture. L'ancien seuil de 20 % laissait passer une chute de moitie.
+
+Contre-intuitif et mesure : les dossiers longtemps exclus de la mesure etaient
+les **mieux** couverts du projet. Ce qui tirait le chiffre vers le bas, ce sont
+les composants de page. Devant une couverture qui parait basse, mesurer par
+dossier avant de conclure.
+
 ## Avant de conclure
 
 Types, lint et tests concernés au vert. Critères d'acceptation vérifiés un par
-un.
+un. Sur un travail qui ajoute ou retire du code dans le périmètre mesuré,
+lancer aussi `npm run test:coverage` : la CI le fera, autant le savoir avant.
 
 **Montrer la preuve** : sortie de commande et résultat. Ne jamais affirmer que
 ça marche sans l'avoir exécuté. Si un test échoue, le dire avec sa sortie plutôt

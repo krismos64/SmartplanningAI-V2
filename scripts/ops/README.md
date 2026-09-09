@@ -162,3 +162,148 @@ second doit sortir en 0.
 ```bash
 ssh smartplanning 'sudo journalctl -t smartplanning-ports --since "7 days ago"'
 ```
+
+---
+
+## `backup-database.sh`
+
+Sauvegarde quotidienne chiffrée de la base de production, déclenchée par
+`smartplanning-backup.timer` à 03:20 UTC.
+
+### Pourquoi ce script existe
+
+Le 9 septembre 2026, en vérifiant l'affirmation « Sauvegardes régulières et
+chiffrées » de la politique de confidentialité, constat : **la base de
+production n'était sauvegardée nulle part**. Aucune tâche cron, aucun timer,
+aucun fichier de dump. Le second projet de la machine, lui, avait dix
+sauvegardes quotidiennes.
+
+Douze entreprises clientes et soixante-et-onze utilisateurs étaient sans filet :
+une panne disque, un `DROP` malheureux ou un rançongiciel emportait tout, sans
+recours.
+
+### Pourquoi il chiffre, alors que le script voisin de Lune & Soleil ne le fait pas
+
+Un dump contient l'intégralité des données personnelles des salariés de toutes
+les entreprises clientes. Le disque du VPS n'est **pas** chiffré (`ext4` nu,
+aucun volume LUKS, vérifié le 9 septembre 2026) et la machine est partagée. Un
+dump en clair y est une base de données personnelles lisible par quiconque
+obtient un accès fichier.
+
+### Ce qu'il vérifie avant de conclure
+
+| Contrôle | Ce qu'il attrape |
+|---|---|
+| Conteneur `running` | Un `down` manuel laissé en place |
+| Taille minimale | Un dump vide ou tronqué à la première ligne |
+| Taille maximale (90 Mo) | Un dump trop gros pour le tmpfs de vérification |
+| `pg_restore --list` | Une archive corrompue en cours d'écriture |
+| Nombre d'objets ≥ 20 | Une base vide ou une restauration en cours |
+| Déchiffrement + en-tête `PGDMP` | Une clé qui ne rouvre pas ce qu'elle a fermé |
+
+Chaque étape qui ne peut pas conclure **arrête le script en erreur**. Une
+sauvegarde qui échoue en silence est pire que pas de sauvegarde : le système
+paraît protégé et ne l'est pas. C'est le défaut du healthcheck du CD corrigé par
+SP-588.
+
+### Deux pièges rencontrés à la première exécution
+
+**`docker cp` est refusé** sur un conteneur `read_only: true` (durcissement
+OWASP de SP-157), avec « container rootfs is marked read-only », même vers un
+tmpfs inscriptible. On écrit donc par `docker exec` avec redirection.
+
+**`gpg --decrypt | head -c 5` fait sortir gpg en code 2 par SIGPIPE**, alors que
+le déchiffrement est parfaitement valide : `head` ferme le tuyau dès les cinq
+octets lus. Le contrôle rejetait une sauvegarde saine dont l'en-tête était bien
+« PGDMP ». Le déchiffrement va désormais dans un fichier témoin.
+
+### Vérifier
+
+```bash
+ssh smartplanning 'systemctl list-timers smartplanning-backup.timer'
+ssh smartplanning 'sudo journalctl -u smartplanning-backup.service -n 20'
+ssh smartplanning 'sudo find /var/backups/smartplanning -name "*.dump.gpg" | wc -l'
+```
+
+**Ne pas utiliser `sudo ls /var/backups/smartplanning/*.gpg`** : le shell
+développe le joker avant `sudo`, donc sans les droits sur un répertoire en
+`0700`, et renvoie 0 à tort.
+
+### Limite connue
+
+Les archives et la clé (`/etc/smartplanning/backup.key`) vivent sur le même
+disque que la base. La perte du VPS emporte les trois. C'est SP-594.
+
+---
+
+## `test-backup-restore.sh`
+
+Le pendant obligatoire du précédent : **une sauvegarde jamais restaurée ne
+prouve rien.**
+
+`backup-database.sh` vérifie que l'archive est lisible par `pg_restore --list`,
+ce qui contrôle son en-tête et sa table des matières, pas qu'elle se **reverse**
+dans une base vivante. Entre les deux se cachent les défauts qui ne se voient
+que le jour de la panne : un dump tronqué après l'en-tête, une extension absente
+de l'image, un propriétaire de table qui n'existe pas sur la cible.
+
+Le script déchiffre la dernière archive, crée une base temporaire dans le
+conteneur PostgreSQL, y restaure l'archive, compte les tables et les lignes de
+quelques tables métier, puis supprime la base de test, y compris en cas d'échec.
+
+Il **refuse de s'exécuter** si le nom de la base cible est celui de la
+production.
+
+```bash
+ssh smartplanning 'sudo /opt/smartplanning/ops/test-backup-restore.sh'
+```
+
+Sortie de la première exécution réelle, le 9 septembre 2026 :
+
+```
+Tables restaurees   : 23
+Entreprises         : 12
+Utilisateurs        : 71
+Restauration verifiee, base de test supprimee.
+```
+
+À lancer périodiquement, et systématiquement avant une migration risquée.
+Procédure de restauration réelle :
+[`docs/runbooks/restauration-base-production.md`](../../docs/runbooks/restauration-base-production.md).
+
+---
+
+## `test-cd-rollback.sh`
+
+Teste le comportement du script de déploiement du CD **sans VPS et sans casser
+la production**.
+
+Il extrait le corps du heredoc `DEPLOY_SCRIPT` depuis `.github/workflows/cd.yml`
+lui-même, donc le code réellement déployé et non une copie qui se périmerait,
+puis le rejoue avec des `docker`, `curl` et `sleep` simulés.
+
+Quatre scénarios :
+
+| Scénario | Attendu |
+|---|---|
+| Healthcheck OK | sortie 0, une seule recréation, pas de rollback |
+| Healthcheck en échec | sortie 1, rollback vers le tag précédent |
+| Rollback en échec aussi | sortie 1, intervention manuelle demandée |
+| Premier déploiement | sortie 1, aucune tentative de rollback |
+
+Le scénario 2 vérifie le **tag exact** passé à `docker compose`, pas seulement
+qu'un rollback a eu lieu : c'est la différence entre « le rollback a tourné » et
+« le rollback a restauré la bonne version ».
+
+Vérifié par mutation : rejoué avec l'ancien code, le scénario d'échec sort en 0
+(le workflow serait vert sur une production morte) contre 1 avec le code
+corrigé.
+
+```bash
+./scripts/ops/test-cd-rollback.sh
+```
+
+Il tourne en local, sans accès au VPS. Ce qu'il **ne** couvre **pas** : le
+nommage des tags. Le premier déploiement réel après SP-588 a échoué sur un tag
+inexistant (`github.sha` en 40 caractères contre un tag de 7) alors que ces
+quatre scénarios étaient verts. Regarder aussi le déploiement réel.

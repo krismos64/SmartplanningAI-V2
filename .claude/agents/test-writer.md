@@ -131,6 +131,13 @@ Certaines fonctionnalités (panneau sessions actives) ne s'affichent que si Redi
 8. Pour un test de non-régression, vérifier qu'il **échoue sur le code d'avant le correctif**
    (`git stash push <fichier corrigé>`, relancer, `git stash pop`). Un test qui passe dans les
    deux cas ne protège de rien
+9. **La couverture est bloquante depuis SP-592.** `vitest.config.ts` porte des seuils
+   (lines 50, branches 73, functions 73, statements 50) que la CI évalue par
+   `npm run test:coverage` : elle rougit sur la couverture seule, même quand tous les
+   tests passent. Le périmètre mesuré inclut `src/lib/`, `src/hooks/` et
+   `src/lib/validations/`, et exclut les pages et layouts. Un test sur `src/lib/`
+   compte donc, un test de rendu de page ne compte pas et n'a pas à être écrit.
+   Relever un seuil demande de mesurer d'abord, jamais de viser un chiffre rond
 
 ## 🎯 Objectif
 

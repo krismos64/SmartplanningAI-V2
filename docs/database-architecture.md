@@ -1182,6 +1182,43 @@ enum ConversationMemberRole {
 
 ---
 
+## 💾 Sauvegarde et restauration
+
+Mises en place par SP-593, le 9 septembre 2026. **Avant cette date, la base de
+production n'était sauvegardée nulle part** : aucune tâche cron, aucun timer,
+aucun fichier de dump.
+
+| Élément | Valeur |
+|---|---|
+| Script | `/opt/smartplanning/ops/backup-database.sh` |
+| Déclenchement | `smartplanning-backup.timer`, quotidien à 03:20 UTC |
+| Format | PostgreSQL `custom` (`pg_dump --format=custom`) |
+| Chiffrement | GPG symétrique AES256 |
+| Emplacement | `/var/backups/smartplanning/`, en `0700` |
+| Rétention | 30 jours |
+
+**Pourquoi le format `custom` et non du SQL brut** : il est validable par
+`pg_restore --list`, qui lit l'en-tête et la table des matières sans restaurer,
+et il permet une restauration sélective, table par table. Un dump SQL brut ne
+permet ni l'un ni l'autre.
+
+**Pourquoi le chiffrement** : le disque du VPS n'est pas chiffré (`ext4` nu,
+aucun volume LUKS) et la machine est partagée avec un second projet. Un dump en
+clair y serait une base de données personnelles lisible par tout accès fichier.
+
+**Il n'y a aucun chiffrement des données au repos dans la base** : ni
+`pgcrypto`, ni chiffrement applicatif. Seules les archives le sont.
+
+Le script vérifie l'intégrité de chaque archive avant de la conserver, et
+`test-backup-restore.sh` la restaure dans une base temporaire pour prouver
+qu'elle est exploitable. Procédure de restauration complète :
+[`docs/runbooks/restauration-base-production.md`](runbooks/restauration-base-production.md).
+
+**Limite connue** : les archives et la clé vivent sur le même disque que la
+base. La perte du VPS emporte les trois (SP-594).
+
+---
+
 ## ✅ Statistiques Actuelles
 
 | Métrique              | Valeur |
