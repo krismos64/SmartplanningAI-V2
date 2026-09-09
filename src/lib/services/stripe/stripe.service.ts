@@ -47,6 +47,7 @@ import type {
   BillingPortalResult,
   WebhookHandlerResult,
 } from '@/types/stripe'
+import { trackCompanyMilestone } from '@/lib/services/funnel-milestones.service'
 
 // ============================================================================
 // Helpers Stripe SDK v20
@@ -219,6 +220,13 @@ export async function createCheckoutSession(
         [STRIPE_METADATA_KEYS.COMPANY_ID]: companyId,
       },
     })
+
+    // SP-591 : etape 8 du tunnel. L'ouverture du Checkout est le moment ou le
+    // dirigeant decide d'acheter. L'ecart entre cette etape et la 9 mesure les
+    // abandons au paiement, invisibles autrement.
+    trackCompanyMilestone('funnel-checkout-opened', companyId).catch(
+      console.error
+    )
 
     if (!session.url) {
       return {
@@ -641,6 +649,13 @@ async function handleCheckoutCompleted(
       })
     )
     .catch(console.error)
+
+  // SP-591 : etape 9, la fin du tunnel. Emise depuis le webhook, seul endroit
+  // ou la confirmation de Stripe est certaine : le retour du navigateur sur
+  // success_url ne prouve pas que le paiement a abouti.
+  trackCompanyMilestone('funnel-subscription-confirmed', companyId).catch(
+    console.error
+  )
 
   return {
     success: true,

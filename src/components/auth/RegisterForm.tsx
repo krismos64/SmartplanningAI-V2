@@ -26,6 +26,7 @@ import { toast } from 'sonner'
 
 import { signupSchema, type SignupFormData } from '@/lib/validations'
 import { registerAction } from '@/lib/actions'
+import { useUmamiTrack } from '@/hooks/use-umami-track'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -51,6 +52,8 @@ import { AUTH_BUTTON_CLASSES } from '@/app/(landing)/components'
 export function RegisterForm() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
+  // SP-591 : instrumentation du tunnel, etapes 2 et 3
+  const { track } = useUmamiTrack()
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
@@ -78,6 +81,12 @@ export function RegisterForm() {
   async function onSubmit(data: SignupFormData) {
     setIsLoading(true)
 
+    // SP-591 : etape 2 du tunnel. Emise a la soumission et non au montage de
+    // la page : ouvrir /register sans rien remplir n'est pas une intention
+    // d'inscription, et compter les deux ensemble ecraserait l'abandon de
+    // formulaire, qui est justement ce qu'on cherche a mesurer.
+    track('funnel-signup-start', { stepRank: 2, source: 'client' })
+
     try {
       // 1. Appeler la Server Action pour créer Company + User
       const result = await registerAction(data)
@@ -94,6 +103,10 @@ export function RegisterForm() {
         }
         return
       }
+
+      // SP-591 : etape 3 du tunnel, le compte est cree. L'ecart avec l'etape 2
+      // mesure les echecs de creation, refus de validation compris.
+      track('funnel-signup-complete', { stepRank: 3, source: 'client' })
 
       // 2. Succès : auto-login avec les credentials
       toast.success('Compte créé avec succès !', {

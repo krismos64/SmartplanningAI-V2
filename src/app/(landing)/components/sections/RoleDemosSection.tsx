@@ -35,7 +35,7 @@
 
 import { useRef, useState } from 'react'
 import Image from 'next/image'
-import Link from 'next/link'
+import { TrackedCtaLink } from '@/components/analytics/TrackedCtaLink'
 import { ArrowUpRight, Play } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { SectionLabel } from '@/components/public/SectionLabel'
@@ -162,13 +162,14 @@ export function RoleDemosSection() {
                 {activeRole.pitch}
               </p>
 
-              <Link
+              <TrackedCtaLink
+                location="role-demos"
                 href="/register"
                 className="mt-6 inline-flex items-center gap-2 font-geist text-base font-semibold text-public-content-on-dark underline underline-offset-8 transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-public-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-public-surface-dark"
               >
                 Découvrir cet espace
                 <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
-              </Link>
+              </TrackedCtaLink>
             </div>
 
             {/* Video : miniature tant que la lecture n'est pas demandee */}

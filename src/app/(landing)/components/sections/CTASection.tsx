@@ -16,6 +16,7 @@
 import { DisplayTitle } from '@/components/public/DisplayTitle'
 import { ArrowUpRight } from 'lucide-react'
 import Link from 'next/link'
+import { TrackedCtaLink } from '@/components/analytics/TrackedCtaLink'
 
 export function CTASection() {
   return (
@@ -36,13 +37,14 @@ export function CTASection() {
           </DisplayTitle>
 
           <div className="flex flex-col gap-4 sm:flex-row lg:shrink-0">
-            <Link
+            <TrackedCtaLink
+              location="cta-section"
               href="/register"
               className="inline-flex min-h-[3.5rem] items-center justify-center gap-3 bg-public-surface-dark px-8 font-geist text-base font-semibold text-public-content-on-dark transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-public-surface-dark focus-visible:ring-offset-2 focus-visible:ring-offset-public-accent-surface"
             >
               Essayer gratuitement
               <ArrowUpRight className="h-5 w-5" aria-hidden="true" />
-            </Link>
+            </TrackedCtaLink>
 
             <Link
               href="/contact"

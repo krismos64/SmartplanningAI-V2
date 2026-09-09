@@ -19,6 +19,7 @@ import { UserRole, Prisma } from '@prisma/client'
 import { auth } from '@/lib/auth'
 import { validateData, handlePrismaError } from './crud-helpers'
 import { logAuditAction } from '@/lib/services/audit'
+import { trackFirstScheduleIfApplicable } from '@/lib/services/funnel-milestones.service'
 import {
   createScheduleSchema,
   updateScheduleSchema,
@@ -1095,6 +1096,14 @@ export async function createSchedule(
     revalidatePath('/app/manager/dashboard')
     revalidatePath('/app/director/dashboard')
     invalidateDashboardCache(validated.companyId).catch(console.error)
+
+    // SP-591 : etape 6 du tunnel, le jalon d'activation le plus fort. Une
+    // entreprise qui a publie un planning a compris a quoi sert le produit.
+    // Le detecteur ne laisse passer que le premier.
+    trackFirstScheduleIfApplicable(
+      validated.companyId,
+      schedules.length
+    ).catch(console.error)
 
     return {
       success: true,

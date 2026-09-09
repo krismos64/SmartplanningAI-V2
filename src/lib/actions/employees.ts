@@ -45,6 +45,10 @@ import type {
 } from '@/types'
 import { logAuditAction } from '@/lib/services/audit'
 import { syncEmployeeCountToStripe } from '@/lib/services/stripe'
+import {
+  trackFirstEmployeeIfApplicable,
+  trackCompanyMilestone,
+} from '@/lib/services/funnel-milestones.service'
 import { assertNotImpersonating } from '@/lib/impersonation'
 import { hashPassword } from '@/lib/password'
 import { sendInvitationEmail } from '@/lib/email/templates/invitation'
@@ -916,6 +920,14 @@ export async function createEmployee(
     syncEmployeeCountToStripe(validData.companyId).catch((err) => {
       console.error('[SP-439] Stripe sync failed after employee creation:', err)
     })
+
+    // SP-591 : etape 5 du tunnel, si c'est le premier collaborateur de
+    // l'entreprise. `manual` distingue ce chemin de l'import CSV : les deux
+    // n'ont pas le meme cout pour l'utilisateur, et savoir lequel decroche
+    // oriente les corrections d'onboarding.
+    trackFirstEmployeeIfApplicable(validData.companyId, 'manual').catch(
+      console.error
+    )
 
     // Audit trail (fire-and-forget)
     const roleLabels: Record<string, string> = {
@@ -2245,6 +2257,16 @@ export async function activateAccount(data: {
           companyName: company.name,
         }).catch(console.error)
       }
+    }
+
+    // SP-591 : etape 7 du tunnel. Une invitation acceptee prouve que le
+    // dirigeant a reussi a embarquer un salarie, ce qui n'a rien d'acquis :
+    // c'est precisement la ou l'onboarding Sunlight avait echoue (SP-578).
+    if (targetUser.companyId) {
+      trackCompanyMilestone(
+        'funnel-invitation-accepted',
+        targetUser.companyId
+      ).catch(console.error)
     }
 
     return {

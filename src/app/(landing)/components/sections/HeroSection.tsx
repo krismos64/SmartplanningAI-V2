@@ -22,6 +22,7 @@ import { PlanningMockup } from '@/components/public/mockups/PlanningMockup'
 import { SectionLabel } from '@/components/public/SectionLabel'
 import { ArrowUpRight } from 'lucide-react'
 import Link from 'next/link'
+import { TrackedCtaLink } from '@/components/analytics/TrackedCtaLink'
 
 /** Faits verifiables, sans promesse chiffree. */
 const REASSURANCE = [
@@ -62,13 +63,14 @@ export function HeroSection() {
             </p>
 
             <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:items-center">
-              <Link
+              <TrackedCtaLink
+                location="hero"
                 href="/register"
                 className="inline-flex min-h-[3.5rem] items-center justify-center gap-3 bg-public-highlight-surface px-8 font-geist text-base font-semibold text-public-content-on-vivid transition-colors hover:bg-public-highlight-surface/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-public-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-public-surface-dark"
               >
                 Démarrer gratuitement
                 <ArrowUpRight className="h-5 w-5" aria-hidden="true" />
-              </Link>
+              </TrackedCtaLink>
 
               <Link
                 href="#features"
