@@ -16,8 +16,10 @@ import Papa from 'papaparse'
 import {
   normalizeHeaders,
   MAX_IMPORT_ROWS,
+  MAX_IMPORT_FILE_SIZE,
   PREVIEW_ROW_COUNT,
   ACCEPTED_FIELDS,
+  formatFileSize,
   type CsvField,
 } from '@/components/import/csv-import.utils'
 import { importEmployeesFromCsv } from '@/lib/actions/csv-import'
@@ -178,6 +180,34 @@ export function useCsvImport() {
    */
   const processFile = useCallback(
     async (file: File) => {
+      // SP-590 : la taille se vérifie AVANT toute lecture du contenu.
+      //
+      // MAX_IMPORT_ROWS n'intervient qu'après `file.arrayBuffer()` (XLSX) ou
+      // `readAsText` (CSV) et le parsing complet. Un fichier de plusieurs
+      // centaines de mégaoctets était donc entièrement chargé en mémoire avant
+      // d'être refusé pour son nombre de lignes, ce qui gèle l'onglet du
+      // dirigeant au moment où il importe ses collaborateurs.
+      //
+      // La garde est placée hors du try : c'est un refus d'entrée, pas une
+      // erreur de traitement, et rien n'a encore été lu à ce stade.
+      if (file.size > MAX_IMPORT_FILE_SIZE) {
+        setState((prev) => ({
+          ...prev,
+          isLoading: false,
+          error: `Ce fichier fait ${formatFileSize(file.size)}, au-delà de la limite de ${formatFileSize(MAX_IMPORT_FILE_SIZE)}. Un import de ${MAX_IMPORT_ROWS} collaborateurs pèse normalement moins de 200 Ko : vérifiez que le fichier ne contient pas d'images ou de feuilles supplémentaires.`,
+        }))
+        return
+      }
+
+      if (file.size === 0) {
+        setState((prev) => ({
+          ...prev,
+          isLoading: false,
+          error: 'Ce fichier est vide.',
+        }))
+        return
+      }
+
       setState((prev) => ({ ...prev, isLoading: true, error: null }))
 
       try {
