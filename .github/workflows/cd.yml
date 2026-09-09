@@ -69,6 +69,20 @@ permissions:
   packages: write
 
 # ----------------------------------------------
+# SÉRIALISATION DES DÉPLOIEMENTS (SP-588)
+# ----------------------------------------------
+# Sans cette clause, deux merges rapprochés lancent deux CD en parallèle, qui
+# appliquent leurs migrations Prisma en même temps sur la même base.
+#
+# cancel-in-progress reste à false volontairement : un déploiement en cours a
+# déjà migré la base et peut être en train de recréer le conteneur. L'annuler
+# à mi-chemin laisserait la production dans un état indéterminé. Le second
+# déploiement attend donc que le premier finisse.
+concurrency:
+  group: cd-production
+  cancel-in-progress: false
+
+# ----------------------------------------------
 # VARIABLES D'ENVIRONNEMENT
 # ----------------------------------------------
 env:
@@ -196,14 +210,21 @@ jobs:
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
 
+      # SP-588 : l'image est désignée par son SHA de commit, jamais par latest.
+      # Le tag latest est mouvant : entre le build de ce workflow et ce pull, un
+      # autre build a pu le déplacer, et les migrations s'appliqueraient depuis
+      # une image inattendue.
       - name: Run Prisma migrations via SSH
         timeout-minutes: 5
+        env:
+          IMAGE_TAG: sha-${{ github.sha }}
         run: |
-          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no -o ServerAliveInterval=30 -o ServerAliveCountMax=10 -o ConnectTimeout=30 -p ${{ secrets.VPS_SSH_PORT || 22 }} ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'MIGRATE_SCRIPT'
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no -o ServerAliveInterval=30 -o ServerAliveCountMax=10 -o ConnectTimeout=30 -p ${{ secrets.VPS_SSH_PORT || 22 }} ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "IMAGE_TAG='$IMAGE_TAG' bash -s" << 'MIGRATE_SCRIPT'
           set -e
-          echo "🗄️ Pull de la nouvelle image pour les migrations..."
+          IMAGE="ghcr.io/krismos64/smartplanningai-v2:${IMAGE_TAG}"
+          echo "🗄️ Pull de l'image $IMAGE pour les migrations..."
           cd /var/www/smartplanning
-          docker pull --quiet ghcr.io/krismos64/smartplanningai-v2:latest
+          docker pull --quiet "$IMAGE"
 
           echo "🗄️ Exécution des migrations Prisma (conteneur éphémère)..."
           # Lire DATABASE_URL depuis le conteneur app running (environnement déjà résolu,
@@ -213,7 +234,7 @@ jobs:
           docker run --rm \
             --network "$DB_NETWORK" \
             -e DATABASE_URL="$DATABASE_URL" \
-            ghcr.io/krismos64/smartplanningai-v2:latest \
+            "$IMAGE" \
             npx prisma migrate deploy
           echo "✅ Migrations terminées !"
           MIGRATE_SCRIPT
@@ -265,23 +286,46 @@ jobs:
             docker/docker-compose.prod.yml \
             ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/var/www/smartplanning/docker-compose.yml
 
+      # SP-588 : trois changements par rapport à la version d'origine.
+      #
+      # 1. L'image est désignée par son SHA de commit, et le compose lit déjà
+      #    ${IMAGE_TAG:-latest}. On déploie donc exactement l'image construite
+      #    par ce workflow, pas "la dernière poussée quelle qu'elle soit".
+      # 2. Le tag en place est capturé AVANT le remplacement, ce qui donne une
+      #    cible de rollback.
+      # 3. Un healthcheck en échec déclenche le rollback puis sort en code 1.
+      #    L'ancienne version écrivait "Déploiement terminé (avec warnings)" et
+      #    laissait le job réussir : un conteneur qui ne démarrait pas devenait
+      #    la production, annoncée comme un succès.
       - name: Deploy to VPS via SSH
         timeout-minutes: 10
+        env:
+          IMAGE_TAG: sha-${{ github.sha }}
         run: |
-          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no -o ServerAliveInterval=30 -o ServerAliveCountMax=10 -o ConnectTimeout=30 -p ${{ secrets.VPS_SSH_PORT || 22 }} ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'DEPLOY_SCRIPT'
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no -o ServerAliveInterval=30 -o ServerAliveCountMax=10 -o ConnectTimeout=30 -p ${{ secrets.VPS_SSH_PORT || 22 }} ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "IMAGE_TAG='$IMAGE_TAG' bash -s" << 'DEPLOY_SCRIPT'
           set -e
-          echo "🚀 Début du déploiement SmartPlanning..."
+          REPO="ghcr.io/krismos64/smartplanningai-v2"
+          IMAGE="${REPO}:${IMAGE_TAG}"
+          echo "🚀 Début du déploiement SmartPlanning ($IMAGE_TAG)..."
           cd /var/www/smartplanning
 
-          echo "📦 Pull de la nouvelle image (déjà en cache si migrate a tourné)..."
-          docker pull --quiet ghcr.io/krismos64/smartplanningai-v2:latest
-          echo "📋 Image digest:"
-          docker images ghcr.io/krismos64/smartplanningai-v2:latest --format "{{.ID}} {{.CreatedAt}}"
+          # --- Capture de la version en place, cible du rollback ---
+          # On lit l'image du conteneur running plutôt que le .env : c'est ce qui
+          # tourne réellement qui fait foi, pas ce que le fichier prétend.
+          PREVIOUS_IMAGE=$(docker inspect smartplanning-app --format '{{.Config.Image}}' 2>/dev/null || echo "")
+          if [ -n "$PREVIOUS_IMAGE" ]; then
+            echo "📌 Version en place, cible de rollback : $PREVIOUS_IMAGE"
+          else
+            echo "📌 Aucun conteneur en place (premier déploiement), rollback impossible"
+          fi
+
+          echo "📦 Pull de l'image $IMAGE (déjà en cache si migrate a tourné)..."
+          docker pull --quiet "$IMAGE"
 
           echo "♻️ Redémarrage du conteneur app avec la nouvelle image..."
           # On ne fait PAS down/up complet : seul le conteneur app est recréé
           # PostgreSQL et Redis restent up = pas de coupure DB
-          docker compose --env-file .env up -d --no-deps --force-recreate app
+          IMAGE_TAG="$IMAGE_TAG" docker compose --env-file .env up -d --no-deps --force-recreate app
           # Downtime réduit à ~5-10s (temps de recréation du conteneur)
 
           echo "⏳ Attente du healthcheck..."
@@ -289,10 +333,12 @@ jobs:
           HEALTH_KEY=$(grep -oP 'HEALTH_API_KEY=\K.*' .env 2>/dev/null || echo "")
           RETRIES=0
           MAX_RETRIES=30
+          HEALTHY=0
           until [ $RETRIES -ge $MAX_RETRIES ]; do
             HEALTH_RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer $HEALTH_KEY" http://localhost:3000/api/health 2>/dev/null || echo "000")
             if [ "$HEALTH_RESPONSE" = "200" ]; then
-              echo "✅ Application déployée avec succès ! (healthcheck OK en ~$((RETRIES * 5))s)"
+              echo "✅ Healthcheck OK en ~$((RETRIES * 5))s"
+              HEALTHY=1
               break
             fi
             RETRIES=$((RETRIES + 1))
@@ -300,29 +346,84 @@ jobs:
             sleep 5
           done
 
-          if [ $RETRIES -ge $MAX_RETRIES ]; then
-            echo "⚠️ Healthcheck timeout après $((MAX_RETRIES * 5))s"
+          if [ "$HEALTHY" -ne 1 ]; then
+            echo "❌ Healthcheck en échec après $((MAX_RETRIES * 5))s"
             echo "📋 Logs récents:"
-            docker compose --env-file .env logs app --tail 30
+            docker compose --env-file .env logs app --tail 50
             echo "📋 Status des conteneurs:"
             docker compose --env-file .env ps
-            echo "✅ Déploiement terminé (avec warnings)"
+
+            if [ -n "$PREVIOUS_IMAGE" ]; then
+              PREVIOUS_TAG="${PREVIOUS_IMAGE##*:}"
+              echo "⏮️ Rollback vers $PREVIOUS_IMAGE..."
+              # set -e est neutralisé sur ce bloc : un rollback qui échoue ne doit
+              # pas masquer l'échec du déploiement, qui reste l'information utile.
+              set +e
+              IMAGE_TAG="$PREVIOUS_TAG" docker compose --env-file .env up -d --no-deps --force-recreate app
+              ROLLBACK_RC=$?
+              set -e
+              if [ $ROLLBACK_RC -ne 0 ]; then
+                echo "🔥 Le rollback a échoué (code $ROLLBACK_RC). Intervention manuelle requise."
+              else
+                echo "⏳ Vérification du healthcheck après rollback..."
+                RB_RETRIES=0
+                RB_HEALTHY=0
+                until [ $RB_RETRIES -ge 20 ]; do
+                  RB_RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer $HEALTH_KEY" http://localhost:3000/api/health 2>/dev/null || echo "000")
+                  if [ "$RB_RESPONSE" = "200" ]; then
+                    RB_HEALTHY=1
+                    break
+                  fi
+                  RB_RETRIES=$((RB_RETRIES + 1))
+                  sleep 5
+                done
+                if [ "$RB_HEALTHY" -eq 1 ]; then
+                  echo "✅ Rollback réussi, la version précédente répond."
+                else
+                  echo "🔥 La version précédente ne répond pas non plus. Intervention manuelle requise."
+                fi
+              fi
+            fi
+
+            # ATTENTION : le rollback restaure le CODE, jamais le SCHÉMA.
+            # Le job migrate a déjà appliqué ses migrations, et Prisma ne les
+            # défait pas. Si l'échec vient d'une migration, l'ancienne image
+            # tourne sur un schéma plus récent qu'elle. Vérifier la base.
+            echo "⚠️ Migrations NON annulées par ce rollback, vérifier l'état du schéma."
+            exit 1
           fi
 
           echo "🧹 Nettoyage des anciennes images..."
-          docker image prune -f
-          echo "🎉 Déploiement terminé !"
+          # --filter until=168h : garde une semaine d'images, donc les cibles de
+          # rollback récentes. Un prune -f nu supprimait l'image de la version
+          # précédente dès qu'elle n'était plus référencée.
+          docker image prune -f --filter "until=168h"
+          echo "🎉 Déploiement terminé et vérifié !"
           DEPLOY_SCRIPT
 
-      # Notification de succès (optionnel)
-      # Peut être remplacé par Slack, Discord, email...
+      # SP-588 : ce résumé n'est écrit que si l'étape de déploiement a réussi,
+      # healthcheck compris. Auparavant il était inconditionnel et annonçait
+      # "Déploiement réussi" même quand l'application ne répondait pas.
       - name: Deployment Summary
+        if: success()
         run: |
-          echo "## Déploiement réussi ! 🚀" >> $GITHUB_STEP_SUMMARY
+          echo "## Déploiement réussi et vérifié 🚀" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Image:** ghcr.io/${{ github.repository }}:latest" >> $GITHUB_STEP_SUMMARY
+          echo "**Image:** ghcr.io/${{ github.repository }}:sha-${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
           echo "**Digest:** ${{ needs.build-and-push.outputs.image_digest }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Healthcheck:** 200 sur /api/health" >> $GITHUB_STEP_SUMMARY
           echo "**URL:** https://smartplanning.fr" >> $GITHUB_STEP_SUMMARY
+
+      # Le pendant du précédent : rendre l'échec lisible sans ouvrir les logs.
+      - name: Deployment Failure Summary
+        if: failure()
+        run: |
+          echo "## Déploiement en échec ❌" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Image visée:** ghcr.io/${{ github.repository }}:sha-${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "Un rollback vers la version précédente a été tenté, voir les logs de l'étape de déploiement." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Les migrations Prisma ne sont pas annulées par le rollback.** Vérifier l'état du schéma avant de rejouer un déploiement." >> $GITHUB_STEP_SUMMARY
 
 # ==============================================
 # RÉSUMÉ DU PIPELINE CD
@@ -361,9 +462,27 @@ jobs:
 # - SSH avec clé privée (pas de mot de passe)
 # - workflow_run garantit l'exécution séquentielle CI → CD
 #
-# ROLLBACK :
-# En cas de problème, vous pouvez revenir à une version précédente :
-# 1. Trouver le tag sha-xxxx de la version stable
-# 2. Sur le VPS : docker pull ghcr.io/krismos64/smartplanning:sha-xxxx
-# 3. Redémarrer : docker compose up -d
+# ROLLBACK (SP-588) :
+# ────────────────────
+# AUTOMATIQUE : si le healthcheck ne passe pas dans les 150 secondes, le
+# déploiement restaure l'image précédente, revérifie qu'elle répond, puis sort
+# en code 1. Le workflow apparaît en rouge et le résumé d'échec l'explique.
+#
+# MANUEL, si le rollback automatique a lui aussi échoué :
+# 1. Trouver le tag de la version stable : docker images ghcr.io/krismos64/smartplanningai-v2
+# 2. Sur le VPS, dans /var/www/smartplanning :
+#    IMAGE_TAG=sha-xxxx docker compose --env-file .env up -d --no-deps --force-recreate app
+# 3. Vérifier : curl -H "Authorization: Bearer $HEALTH_KEY" http://localhost:3000/api/health
+#
+# LIMITE CONNUE, LES MIGRATIONS NE SONT PAS ANNULÉES :
+# Le job migrate s'exécute AVANT le déploiement et Prisma ne défait pas une
+# migration appliquée. Un rollback restaure donc le code sur un schéma qui,
+# lui, reste en avant. C'est sans conséquence pour une migration additive
+# (nouvelle colonne nullable, nouvelle table), et cassant pour une migration
+# destructive (colonne supprimée ou renommée) : l'ancienne image cherchera une
+# colonne qui n'existe plus.
+#
+# D'où la règle : toute migration destructive se fait en deux temps (expand /
+# contract), une première PR qui ajoute sans retirer, une seconde qui retire
+# une fois l'ancienne version hors production.
 # ==============================================
