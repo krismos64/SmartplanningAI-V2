@@ -35,7 +35,7 @@ convention de mémoire.
 | Fichier                          | Charger avant de toucher                                               |
 | -------------------------------- | ---------------------------------------------------------------------- |
 | `.claude/rules/multi-tenant.md`  | Server Action, route API, requête Prisma, auth, choix de destinataires |
-| `.claude/rules/prisma-pieges.md` | `'use server'`, backfill, SQL de diagnostic, cache dashboard, envoi d'emails, Nginx |
+| `.claude/rules/prisma-pieges.md` | `'use server'`, backfill, SQL de diagnostic, cache dashboard, envoi d'emails, Nginx, workflow CD, script de `scripts/ops/`, manipulation de fichier vers un conteneur |
 | `.claude/rules/seo-content.md`   | pages secteur, guides, landing, sitemap, `llms.txt` et la route `llms-full.txt`, texte public |
 | `.claude/rules/tests.md`         | écriture de tests, et avant de conclure un travail                     |
 
@@ -78,6 +78,13 @@ récente en début de session** donne l'état du projet plus vite que Jira.
 - Redis : `withCache()` en cache-aside, rate limiting `INCR` + `EXPIRE` avec repli
   mémoire si Redis est indisponible. `/api/health` renvoie alors « degraded », pas
   « unhealthy »
+- Analytics : le tunnel de conversion (SP-591) a deux chemins. Les étapes du
+  navigateur passent par `useUmamiTrack`, conditionné au consentement. Les
+  étapes serveur, en Server Action ou webhook, passent par
+  `funnel-analytics.service.ts` et n'émettent **aucune donnée personnelle**,
+  ce qui les rend licites sans consentement. Ajouter un champ à
+  `FunnelEventData` demande de vérifier qu'il n'identifie ni une personne ni
+  une entreprise. Piège du User-Agent dans `prisma-pieges.md`
 
 ## DevOps
 
@@ -100,6 +107,10 @@ SP-583, règle dans `prisma-pieges.md`. Rien ne l'impose mécaniquement, la cha�
 `DOCKER-USER` étant vide : `scripts/ops/check-public-ports.sh` le surveille en
 cron quotidien depuis SP-587.
 
+`scripts/ops/` porte cinq scripts de production, tous décrits dans son README :
+surveillance TLS et ports, sauvegarde de la base et son test de restauration,
+et le test hors ligne du script de déploiement.
+
 Le CD ne synchronise que `docker-compose.prod.yml`. **Umami tourne depuis
 `/home/deploy/umami/docker-compose.yml`, hors du dépôt** : toute correction le
 concernant s'applique à la main sur le VPS.
@@ -107,6 +118,26 @@ concernant s'applique à la main sur le VPS.
 Le CD ne se déclenche que si le CI passe entièrement, E2E comprises. Un push sur
 une branche sans PR ne déclenche aucun workflow : ouvrir une PR, même en draft,
 pour obtenir le retour de la CI.
+
+**Un déploiement en échec est désormais rouge, et la production restaurée**
+(SP-588). Le healthcheck sort en code 1 après 150 secondes sans réponse, après
+avoir remis l'image précédente et vérifié qu'elle répond. Avant, le script
+écrivait « Déploiement terminé (avec warnings) » et le job réussissait. Le
+déploiement vise `sha-<commit court>`, exposé en sortie du job `build` plutôt
+que reconstruit, et une clause `concurrency` sérialise les déploiements.
+**Le rollback restaure le code, jamais le schéma** : une migration destructive
+se découpe en expand puis contract. Comportement couvert hors ligne par
+`scripts/ops/test-cd-rollback.sh`.
+
+**La base est sauvegardée depuis SP-593, elle ne l'était pas avant.**
+`scripts/ops/backup-database.sh` tourne chaque nuit à 03:20 UTC par
+`smartplanning-backup.timer`, chiffre en AES256 et conserve 30 jours.
+`test-backup-restore.sh` est son pendant obligatoire, une sauvegarde jamais
+restaurée ne prouvant rien : le lancer avant toute migration risquée. Procédure
+complète dans `docs/deployment.md`. **Les archives et la clé sont sur le même
+disque que la base**, donc la perte du VPS emporte les trois, c'est SP-594. Il
+n'y a par ailleurs aucun chiffrement des données au repos, et l'affirmation a
+été retirée de la politique de confidentialité.
 
 **Le DNS du domaine vit chez Hostinger, le serveur chez OVH.** Devant une erreur
 de certificat, comparer les deux points de vue avant de toucher à certbot :

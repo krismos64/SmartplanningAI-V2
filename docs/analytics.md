@@ -103,6 +103,16 @@ function CTAButton() {
 
 ### Events prédéfinis
 
+**Ces événements sont ceux prévus par SP-345, distincts du tunnel de conversion
+décrit plus bas.** Les trois premiers ont un homologue préfixé `funnel-`, qui
+est celui réellement émis depuis SP-591 : `cta-click` et `funnel-cta-click` ne
+sont pas le même événement, et seul le second est branché aujourd'hui.
+
+Ce tableau reste la référence pour un événement ponctuel hors tunnel
+(`login`, `pricing-view`, `contact-submit`, `feature-use`), aucun n'étant
+instrumenté à ce jour.
+
+
 | Event             | Description                   | Données                                         |
 | ----------------- | ----------------------------- | ----------------------------------------------- |
 | `cta-click`       | Clic sur un CTA               | `{ location: 'hero' \| 'pricing' \| 'footer' }` |
@@ -206,17 +216,41 @@ machine de développement.
 
 ## Intégration RGPD
 
-Le tracking est **strictement conditionnel** au consentement :
+Deux chemins coexistent depuis SP-591, et ils ne relèvent pas du même régime.
 
-1. **Catégorie `analytics`** : L'utilisateur doit accepter cette catégorie
-2. **Événement `cookie-consent-changed`** : Le composant réagit en temps réel
-3. **Vérification double** : À chaque appel de `track()`, le consentement est re-vérifié
+### Chemin navigateur, strictement conditionnel au consentement
+
+Tout ce qui passe par le script Umami et par `useUmamiTrack` :
+
+1. **Catégorie `analytics`** : l'utilisateur doit accepter cette catégorie
+2. **Événement `cookie-consent-changed`** : le composant réagit en temps réel
+3. **Vérification double** : à chaque appel de `track()`, le consentement est re-vérifié
 
 ```tsx
 // La fonction track() ne fait RIEN si le consentement n'est pas donné
 const { track } = useUmamiTrack()
 track('event-name') // Silencieusement ignoré si pas de consentement
 ```
+
+Concerne les pages vues et les étapes 1 à 3 du tunnel.
+
+### Chemin serveur, hors du champ du consentement cookies
+
+Les étapes 4 à 9 du tunnel partent de Server Actions et du webhook Stripe, où il
+n'y a ni navigateur, ni cookie. Elles ne sont **pas** conditionnées au
+consentement, et c'est licite pour deux raisons cumulatives :
+
+- **rien n'est déposé sur le poste du visiteur.** Le consentement cookies porte
+  sur la lecture et l'écriture d'informations sur l'équipement de l'utilisateur.
+  Un appel serveur à serveur ne fait ni l'une ni l'autre
+- **aucune donnée personnelle n'est transmise.** Nom de l'étape, rang, ancienneté
+  du compte en jours, tranche d'effectif, méthode. Jamais de `companyId`,
+  d'identifiant utilisateur ni d'email. L'IP vue par Umami est celle du VPS, pas
+  celle d'un visiteur
+
+Un test le vérifie explicitement (`funnel-analytics.test.ts`), et ajouter un
+champ à `FunnelEventData` demande de contrôler qu'il n'identifie ni une personne
+ni une entreprise.
 
 ## Dashboard Umami
 

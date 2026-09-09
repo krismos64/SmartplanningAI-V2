@@ -13,7 +13,7 @@ Plateforme SaaS multi-tenant de gestion intelligente des plannings et des ressou
 
 | Couche          | Technologies                                                                  |
 | --------------- | ----------------------------------------------------------------------------- |
-| Frontend        | Next.js 15.5.9 (App Router), React 19, TypeScript 5.9, Tailwind + Shadcn/ui |
+| Frontend        | Next.js 15.5.25 (App Router), React 19, TypeScript 5.9, Tailwind + Shadcn/ui |
 | Backend         | NextAuth v5 (Auth.js), Prisma 6.18.0, Zod, Stripe v20.3.1                     |
 | Base de donnees | PostgreSQL 16, Redis 7 (ioredis 5.10)                                         |
 | Emails          | React Email (30 envois transactionnels), Nodemailer SMTP, releve IMAP des rejets |
@@ -138,13 +138,13 @@ src/
 │   ├── (guides)/     # Hub et guides pratiques /guides/[slug] (registre data-driven)
 │   ├── app/          # Routes protegees par role
 │   └── api/          # API Routes (avatar, webhooks, health, SSE, messages...)
-├── components/       # 184 composants React
+├── components/       # 207 composants React
 │   ├── public/       # Primitives des pages publiques (identite editoriale)
 │   ├── messaging/    # Messagerie (8 composants)
 │   ├── import/       # Import CSV (2 composants + utilitaires)
 │   └── ui/           # Shadcn/ui (41 composants)
-├── lib/              # Actions (32), services (19), validations Zod, email (21 fichiers de templates)
-├── hooks/            # 22 hooks custom (SSE, SWR, messagerie, import CSV)
+├── lib/              # Actions (32), services (22), validations Zod, email (21 fichiers de templates)
+├── hooks/            # 23 hooks custom (SSE, SWR, messagerie, import CSV, analytics)
 ├── types/            # Types TypeScript globaux
 └── styles/           # Design tokens centralises
 ```
@@ -169,13 +169,22 @@ Voir [`docs/database-architecture.md`](docs/database-architecture.md) pour le de
 
 | Type      | Framework  | Fichiers | Tests     |
 | --------- | ---------- | -------- | --------- |
-| Unitaires | Vitest     | 197      | 3 281     |
+| Unitaires | Vitest     | 201      | 3 327     |
 | E2E       | Playwright | 23       | 261       |
-| **Total** |            | **220**  | **3 542** |
+| **Total** |            | **224**  | **3 588** |
 
-Compteurs mesures le 9 septembre 2026 par `npm run test` et
+Compteurs mesures le 9 septembre 2026 en fin de journee, par `npm run test` et
 `npx playwright test --list`. Ils se periment a chaque sprint : les remesurer
-plutot que les recopier.
+plutot que les recopier. Ils avaient d'ailleurs deja derive dans la journee, la
+premiere mesure ayant precede l'ajout de tests par SP-589 a SP-592.
+
+**La couverture est un garde-fou bloquant depuis SP-592**, et pas seulement une
+commande d'information. `vitest.config.ts` porte des seuils mesures (lines 50,
+branches 73, functions 73, statements 50, pour un reel a 52,38 %) et la CI lance
+`npm run test:coverage` : elle rougit si la couverture baisse, meme quand tous
+les tests passent. Le perimetre mesure inclut `src/lib/`, `src/hooks/` et
+`src/lib/validations/`, et exclut les pages et layouts, couverts par les E2E.
+Relever un seuil demande de mesurer d'abord, jamais de viser un chiffre rond.
 
 La CI execute une whitelist E2E (9 specs, 129 tests) ; la suite complete (23 specs, 261 tests) tourne en nightly. `testMatch` de `playwright.ci.config.ts` etant une liste explicite, un spec renomme ou supprime disparait silencieusement de la CI : verifier cette liste apres chaque ajout ou suppression.
 
@@ -200,8 +209,11 @@ Focus sur la logique metier critique : RBAC, Zod, Server Actions, Stripe, workfl
 ### CI/CD Pipeline
 
 ```
-Push main → CI (lint + tests + build) → CD (Docker build → deploy VPS → Prisma migrate)
+Push main → CI (lint + tests + build) → CD (Docker build → Prisma migrate → deploy VPS)
 ```
+
+L'ordre `migrate` puis `deploy` est deliberé (SP-523) : l'ancien ordre laissait
+une fenetre ou le nouveau code tournait avec l'ancien schema.
 
 | Trigger                  | Tests                            | Deploiement | Temps      |
 | ------------------------ | -------------------------------- | ----------- | ---------- |
@@ -212,7 +224,18 @@ Push main → CI (lint + tests + build) → CD (Docker build → deploy VPS → 
 
 Depuis la revision de juillet 2026, un push sur une branche sans PR ne declenche plus le CI : auparavant, chaque push sur une branche avec PR ouverte lancait deux runs complets pour le meme commit (evenements `push` et `pull_request`). Ouvrir une PR, meme en draft, donne le feedback CI.
 
-Le CD ne se declenche que si le CI reussit entierement, E2E comprises : meme un push direct sur main passe par les tests avant deploiement. Les migrations Prisma sont executees automatiquement dans un conteneur ephemere apres le deploiement.
+Le CD ne se declenche que si le CI reussit entierement, E2E comprises : meme un push direct sur main passe par les tests avant deploiement. Les migrations Prisma sont executees dans un conteneur ephemere, avant le remplacement du conteneur applicatif.
+
+**Un deploiement en echec est rouge, et la production restauree** (SP-588). Si le
+healthcheck ne repond pas dans les 150 secondes, le script remet l'image
+precedente, verifie qu'elle repond, puis sort en erreur. Auparavant il ecrivait
+« Deploiement termine (avec warnings) » et le job reussissait : un conteneur qui
+ne demarrait pas devenait la production, annoncee comme un succes.
+
+Le deploiement vise `sha-<commit court>`, expose en sortie du job de build
+plutot que reconstruit, et une clause `concurrency` empeche deux deploiements
+simultanes. **Le rollback restaure le code, jamais le schema** : une migration
+destructive se decoupe en expand puis contract.
 
 > Guide complet : [`docs/deployment.md`](docs/deployment.md)
 
@@ -248,6 +271,34 @@ donc une ligne mal ecrite dans un futur compose rouvrirait le port.
 `scripts/ops/check-public-ports.sh` tourne en cron une fois par jour et le
 detecte, en interrogeant l'adresse publique du VPS et non `localhost`.
 
+### Sauvegardes de la base
+
+**Jusqu'au 9 septembre 2026, la base de production n'etait sauvegardee nulle
+part** : aucune tache cron, aucun timer, aucun fichier de dump. Le constat a ete
+fait en verifiant une affirmation de la politique de confidentialite (SP-593).
+
+`scripts/ops/backup-database.sh` tourne desormais chaque nuit a 03:20 UTC par
+`smartplanning-backup.timer`. Il produit un dump au format `custom`, verifie son
+integrite par `pg_restore --list`, le chiffre en GPG AES256, controle que le
+fichier chiffre se dechiffre bien, puis fait la rotation sur 30 jours. Chaque
+etape qui ne peut pas conclure arrete le script en erreur.
+
+Le chiffrement n'est pas cosmetique : le disque du VPS n'est pas chiffre
+(`ext4` nu) et la machine est partagee avec un second projet. Un dump en clair y
+serait une base de donnees personnelles lisible par tout acces fichier.
+
+**Une sauvegarde jamais restauree ne prouve rien.**
+`scripts/ops/test-backup-restore.sh` restaure la derniere archive dans une base
+temporaire, compte les objets, puis la supprime. A lancer periodiquement, et
+avant toute migration risquee.
+
+Procedure de restauration :
+[`docs/runbooks/restauration-base-production.md`](docs/runbooks/restauration-base-production.md).
+
+**Limite connue** : les archives et la cle vivent sur le meme disque que la
+base. La perte du VPS emporte les trois. Les sauvegardes couvrent aujourd'hui le
+`DROP` malheureux et la corruption logique, pas la perte de machine (SP-594).
+
 ## Securite
 
 - RBAC 4 niveaux avec `checkPermission()` sur chaque Server Action
@@ -259,6 +310,12 @@ detecte, en interrogeant l'adresse publique du VPS et non `localhost`.
 - Verification email a l'inscription (token 24h, page `/verify-email`)
 - Emails securite envoyes inconditionnellement (changement mot de passe, suppression RGPD)
 - Messagerie : messages prives par conversation, isolation multi-tenant, verification membership sur chaque action
+- Sauvegardes quotidiennes chiffrees (AES256), restauration verifiee (SP-593)
+- Domaines d'images distantes restreints a Cloudinary : `hostname: '**'` ouvrait
+  l'optimiseur `next/image` a n'importe quel domaine HTTPS (SP-589)
+- Import de fichiers plafonne a 5 Mo, verifie **avant** lecture (SP-590)
+- Le middleware exige une identite exploitable (`auth.user.id`) et non la seule
+  presence d'un objet de session (SP-589)
 
 > Documentation securite : [`docs/security/`](docs/security/)
 
@@ -276,8 +333,10 @@ Mesures ponctuelles, non rejouees a chaque build : les rejouer apres toute modif
 - [`docs/deployment.md`](docs/deployment.md) — Guide de deploiement VPS
 - [`docs/database-architecture.md`](docs/database-architecture.md) — Architecture BDD (22 modeles, 16 enums)
 - [`docs/journal/`](docs/journal/) — Journal de developpement, une entree par session
-- [`docs/analytics.md`](docs/analytics.md) — Configuration Umami
+- [`docs/analytics.md`](docs/analytics.md) : Configuration Umami et tunnel de conversion
+- [`docs/runbooks/`](docs/runbooks/) : Procedures d'exploitation, dont la restauration de la base
 - [`docs/security/`](docs/security/) — Plan de securisation, incidents, hardening
+- [`scripts/ops/README.md`](scripts/ops/README.md) : Scripts de production, sauvegarde, surveillance TLS et ports
 - [`.claude/`](.claude/) — Configuration de l'assistant : regles, hooks et conventions du projet
 
 ## Auteur

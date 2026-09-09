@@ -31,7 +31,7 @@ Ne jamais proposer une image Nginx statique pour le frontend : Next.js standalon
 ```
 git push main
   → CI : lint, tests Vitest, tests E2E Playwright (whitelist testMatch), build
-  → CD : build-and-push (image GHCR) → migrate (conteneur Prisma éphémère) → deploy (SSH pull + restart)
+  → CD : build-and-push (image GHCR) → migrate (conteneur Prisma éphémère) → deploy (SSH, pull par tag SHA, restart, healthcheck bloquant)
 ```
 
 L'ordre **migrate avant deploy** est volontaire (SP-523) : si la migration échoue, la prod n'est pas mise à jour avec un schema incompatible.
@@ -55,14 +55,40 @@ Quand le quota GitHub Actions est épuisé, la procédure éprouvée est : commi
 - **Le VPS héberge un second projet** depuis septembre 2026, la boutique Lune & Soleil (`lune-soleil.conf`, port 3002). `docker ps`, `ss -tlnp` et `sites-enabled/` mélangent les deux : filtrer par nom plutôt qu'agir sur l'ensemble
 - **Le CD ne synchronise que `docker-compose.prod.yml`** : Umami tourne depuis `/home/deploy/umami/docker-compose.yml`, hors du dépôt, avec ses secrets en clair et sans `BASE_PATH` alors que la version versionnée en attend un. Appliquer le fichier du dépôt le casserait. Toute correction le concernant s'applique à la main sur le VPS
 - **Surveillance TLS** : `scripts/ops/check-tls-expiry.sh`, cron `/etc/cron.d/smartplanning-tls-check` à 07:17 et 19:17, alerte email. Journal via `journalctl -t smartplanning-tls`. Toute modification passe par le dépôt puis redéploiement, les empreintes SHA-256 des deux copies doivent correspondre
+- **Surveillance des ports publics** : `scripts/ops/check-public-ports.sh`, cron quotidien à 06:43, interroge l'adresse publique et non `localhost` (SP-587)
+- **Sauvegarde de la base** : `scripts/ops/backup-database.sh`, timer systemd `smartplanning-backup.timer` à 03:20 UTC, chiffrement GPG AES256, clé en `/etc/smartplanning/backup.key`, rétention 30 jours. Son pendant `test-backup-restore.sh` restaure dans une base temporaire : une sauvegarde jamais restaurée ne prouve rien. Jusqu'au 9 septembre 2026, **la base n'était sauvegardée nulle part** (SP-593). Procédure : `docs/runbooks/restauration-base-production.md`
+- **Le conteneur PostgreSQL tourne en `read_only: true`** (SP-157) : `docker cp` vers lui est **refusé** par le démon, avec « container rootfs is marked read-only », même vers un tmpfs inscriptible. Écrire par `docker exec -i ... sh -c 'cat > /tmp/f'` à la place. Ne jamais proposer d'affaiblir le `read_only` pour contourner
 
 ## 🔄 Rollback
 
+**Il est automatique depuis SP-588.** Si le healthcheck ne répond pas dans les
+150 secondes, le déploiement restaure de lui-même l'image précédente (capturée
+par `docker inspect` sur le conteneur running, avant remplacement), revérifie
+qu'elle répond, puis sort en code 1. Le workflow passe au rouge.
+
+Ne pas proposer une manœuvre manuelle sans avoir lu les logs du job `deploy` :
+la production s'est peut-être déjà rétablie toute seule.
+
+Rollback manuel, seulement si l'automatique a échoué ou pour viser une version
+plus ancienne :
+
 ```bash
-docker images ghcr.io/krismos64/smartplanningai-v2   # repérer le sha précédent
-# éditer IMAGE_TAG=sha-XXXX dans le .env du VPS, puis :
-docker compose down && docker compose up -d
+cd /var/www/smartplanning
+docker images ghcr.io/krismos64/smartplanningai-v2   # tags = SHA courts, 7 caracteres
+IMAGE_TAG=sha-abc1234 docker compose --env-file .env up -d --no-deps --force-recreate app
 ```
+
+`--no-deps` : PostgreSQL et Redis restent debout, seul le conteneur app est
+recréé. Un `down && up` couperait la base sans raison.
+
+**Le rollback restaure le code, jamais le schéma.** Le job `migrate` tourne
+avant le déploiement et Prisma ne défait pas une migration. Sans conséquence
+pour une migration additive, cassant pour une migration destructive : d'où le
+découpage expand/contract obligatoire sur toute migration qui retire ou renomme.
+
+Le comportement du script est couvert hors ligne par
+`scripts/ops/test-cd-rollback.sh`, qui extrait le heredoc depuis `cd.yml`
+lui-même.
 
 ## 🩺 Vérification post-déploiement
 

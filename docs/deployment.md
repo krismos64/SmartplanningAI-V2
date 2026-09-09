@@ -15,7 +15,8 @@
 4. [Pipeline CI/CD](#4-pipeline-cicd)
 5. [Déploiement manuel](#5-déploiement-manuel)
 6. [Commandes utiles](#6-commandes-utiles)
-7. [Troubleshooting](#7-troubleshooting)
+7. [Sauvegardes et restauration](#7-sauvegardes-et-restauration)
+8. [Troubleshooting](#8-troubleshooting)
 
 ---
 
@@ -57,7 +58,7 @@
 
 | Composant        | Technologie                      | Version      |
 | ---------------- | -------------------------------- | ------------ |
-| Application      | Next.js                          | 15.5.9       |
+| Application      | Next.js                          | 15.5.25      |
 | Runtime          | Node.js                          | 20 Alpine    |
 | Base de données  | PostgreSQL                       | 16 Alpine    |
 | Cache/Sessions   | Redis                            | 7 Alpine     |
@@ -136,7 +137,7 @@ conteneur demarre avec une valeur vide.
 
 | Container              | Image                                          | Publication      | Compose |
 | ---------------------- | ---------------------------------------------- | ---------------- | ------- |
-| smartplanning-app      | ghcr.io/krismos64/smartplanningai-v2:latest    | `127.0.0.1:3000` | dépôt   |
+| smartplanning-app      | ghcr.io/krismos64/smartplanningai-v2:sha-&lt;court&gt; | `127.0.0.1:3000` | dépôt   |
 | smartplanning-postgres | postgres:16-alpine                             | interne          | dépôt   |
 | smartplanning-redis    | redis:7-alpine                                 | interne          | dépôt   |
 | smartplanning-umami    | ghcr.io/umami-software/umami:postgresql-latest | `127.0.0.1:3001` | VPS     |
@@ -234,7 +235,10 @@ CLOUDINARY_API_SECRET=<API_SECRET>
 # APPLICATION
 # ----------------------------------------------
 NODE_ENV=production
-IMAGE_TAG=latest
+# Renseigné par le CD à chaque déploiement, avec le SHA court du commit.
+# NE PAS remettre `latest` : le CD suit un tag précis depuis SP-588, et `latest`
+# remonterait une image qui n'est pas celle que le pipeline déploie.
+IMAGE_TAG=sha-abc1234
 
 # ----------------------------------------------
 # STRIPE (Paiements per-seat 2,90€/employé/mois)
@@ -384,6 +388,34 @@ Cas `workflow_dispatch` manuel : `migrate` skippé, `deploy` s'exécute quand m�
 Push main → CI (Lint + Tests + E2E + Build) → CD (Build & Push → Migrate → Deploy)
 ```
 
+### Ce que le pipeline garantit depuis SP-588
+
+**Un déploiement en échec est rouge, et la production est restaurée.** Si le
+healthcheck ne répond pas 200 dans les 150 secondes, le script restaure l'image
+qui tournait avant, revérifie qu'elle répond, puis sort en code 1. Auparavant il
+écrivait « Déploiement terminé (avec warnings) » et le job réussissait : un
+conteneur qui ne démarrait pas devenait la production, annoncée comme un succès.
+
+**L'image déployée est celle que le workflow vient de construire.** Les jobs
+`migrate` et `deploy` visent `sha-<commit court>`, exposé en sortie du job
+`build` (`image_sha_tag`) plutôt que reconstruit. Les deux formes ont divergé
+une fois, `github.sha` faisant 40 caractères là où `docker/metadata-action`
+produit un tag de 7, et le déploiement a échoué sur un tag inexistant.
+
+**Deux déploiements ne tournent jamais en parallèle.** Clause
+`concurrency: cd-production`, avec `cancel-in-progress: false` : un déploiement
+en cours a déjà migré la base, l'interrompre laisserait la production dans un
+état indéterminé.
+
+**Les images récentes sont conservées.** Le `prune` de fin porte
+`--filter until=168h` : un `prune -f` nu supprimait l'image de la version
+précédente, donc la cible du rollback.
+
+Le comportement du script de déploiement est couvert hors ligne par
+`scripts/ops/test-cd-rollback.sh`, qui extrait le heredoc depuis `cd.yml`
+lui-même et le rejoue avec `docker`, `curl` et `sleep` simulés. Le prouver en
+conditions réelles demanderait de casser la production volontairement.
+
 ---
 
 ## 5. Déploiement manuel
@@ -403,12 +435,12 @@ ssh deploy@51.77.146.72
 # Aller dans le dossier
 cd /var/www/smartplanning
 
-# Pull la dernière image
-docker pull ghcr.io/krismos64/smartplanningai-v2:latest
+# Repérer le tag déployé (SHA court du commit)
+docker inspect smartplanning-app --format '{{.Config.Image}}'
 
-# Redémarrer les conteneurs
-docker compose down
-docker compose up -d
+# Redémarrer sur ce même tag, sans down/up complet :
+# PostgreSQL et Redis restent debout
+IMAGE_TAG=sha-abc1234 docker compose --env-file .env up -d --no-deps --force-recreate app
 
 # Vérifier le status
 docker ps
@@ -417,20 +449,35 @@ curl -H "Authorization: Bearer $HEALTH_API_KEY" http://localhost:3000/api/health
 
 ### Rollback vers une version précédente
 
+**Depuis SP-588, le rollback est automatique.** Si le healthcheck ne passe pas
+dans les 150 secondes qui suivent le remplacement du conteneur, le déploiement
+restaure de lui-même l'image précédente, revérifie qu'elle répond, puis sort en
+erreur. Le workflow apparaît en rouge et le résumé d'échec l'explique.
+
+Un rollback manuel ne sert donc que si le rollback automatique a lui aussi
+échoué, ou pour revenir à une version plus ancienne que la précédente :
+
 ```bash
-# Lister les images disponibles
+# Lister les images disponibles (les tags sont des SHA courts, 7 caractères)
 docker images ghcr.io/krismos64/smartplanningai-v2
 
-# Pull une version spécifique (utiliser le sha)
-docker pull ghcr.io/krismos64/smartplanningai-v2:sha-abc1234
+# Redémarrer sur une version précise, sans down/up complet :
+# PostgreSQL et Redis restent debout, seul le conteneur app est recréé
+cd /var/www/smartplanning
+IMAGE_TAG=sha-abc1234 docker compose --env-file .env up -d --no-deps --force-recreate app
 
-# Modifier le tag dans docker-compose ou .env
-# IMAGE_TAG=sha-abc1234
-
-# Redémarrer
-docker compose down
-docker compose up -d
+# Vérifier
+HEALTH_KEY=$(grep -oP 'HEALTH_API_KEY=\K.*' .env)
+curl -H "Authorization: Bearer $HEALTH_KEY" http://localhost:3000/api/health
 ```
+
+**Le rollback restaure le code, jamais le schéma.** Le job `migrate` s'exécute
+avant le déploiement et Prisma ne défait pas une migration appliquée. C'est sans
+conséquence pour une migration additive, et cassant pour une migration
+destructive : l'ancienne image chercherait une colonne supprimée. D'où la règle,
+toute migration destructive se découpe en deux temps (expand puis contract),
+une PR qui ajoute sans retirer, une seconde qui retire une fois l'ancienne
+version hors production.
 
 ---
 
@@ -458,7 +505,10 @@ curl -H "Authorization: Bearer $HEALTH_API_KEY" https://smartplanning.fr/api/hea
 # Accès PostgreSQL
 docker exec -it smartplanning-postgres psql -U smartplanning -d smartplanning
 
-# Backup
+# Backup ponctuel, NON CHIFFRE : ne pas le laisser trainer sur le disque,
+# il contient les donnees personnelles de toutes les entreprises clientes.
+# Pour une sauvegarde chiffree et verifiee, utiliser le script dedie :
+#   sudo /opt/smartplanning/ops/backup-database.sh
 docker exec smartplanning-postgres pg_dump -U smartplanning smartplanning > backup_$(date +%Y%m%d).sql
 
 # Migrations manuelles
@@ -507,7 +557,97 @@ deux fois par jour en cron, alerte email sous 12 h.
 
 ---
 
-## 7. Troubleshooting
+## 7. Sauvegardes et restauration
+
+Mises en place par SP-593, le 9 septembre 2026. Avant cette date, **la base de
+production n'était sauvegardée nulle part** : aucune tâche cron, aucun timer,
+aucun fichier de dump. Le constat a été fait en vérifiant une affirmation de la
+politique de confidentialité.
+
+### Ce qui tourne
+
+| Élément | Valeur |
+|---|---|
+| Script | `/opt/smartplanning/ops/backup-database.sh` |
+| Déclenchement | `smartplanning-backup.timer`, chaque jour à 03:20 UTC |
+| Destination | `/var/backups/smartplanning/`, en `0700` |
+| Chiffrement | GPG symétrique AES256 |
+| Clé | `/etc/smartplanning/backup.key`, en `0600` |
+| Rétention | 30 jours |
+
+Le script produit un dump au format `custom`, vérifie son intégrité par
+`pg_restore --list`, le chiffre, contrôle que le fichier chiffré se déchiffre
+bien en archive PostgreSQL, puis fait la rotation. **Chaque étape qui ne peut
+pas conclure arrête le script en erreur** : une sauvegarde qui échoue en
+silence est pire que pas de sauvegarde.
+
+### Contrôler l'état
+
+```bash
+systemctl list-timers smartplanning-backup.timer
+journalctl -u smartplanning-backup.service -n 20
+
+# Compter les sauvegardes présentes
+sudo find /var/backups/smartplanning -name "*.dump.gpg" | wc -l
+```
+
+**Ne pas utiliser `sudo ls /var/backups/smartplanning/*.gpg`** : le shell
+développe le joker avant `sudo`, donc sans les droits sur un répertoire en
+`0700`, et renvoie 0 à tort. Utiliser `sudo find` comme ci-dessus.
+
+### Tester une restauration
+
+Une sauvegarde jamais restaurée ne prouve rien. Le script dédié restaure la
+dernière archive dans une base temporaire, compte les objets, puis la supprime :
+
+```bash
+sudo /opt/smartplanning/ops/test-backup-restore.sh
+```
+
+Il refuse de s'exécuter si la base cible porte le nom de la production. À lancer
+périodiquement, et systématiquement avant une migration risquée.
+
+### Restaurer pour de vrai
+
+```bash
+cd /var/backups/smartplanning
+# Déchiffrer l'archive choisie
+sudo gpg --batch --decrypt --passphrase-file /etc/smartplanning/backup.key \
+  --output /tmp/restauration.dump quotidienne-AAAAMMJJ-HHMMSS.dump.gpg
+
+# L'écrire dans le conteneur. `docker cp` est REFUSÉ, le conteneur tournant en
+# read_only depuis le durcissement SP-157 : on passe par docker exec.
+sudo docker exec -i smartplanning-postgres sh -c 'cat > /tmp/r.dump' < /tmp/restauration.dump
+
+# Restaurer (arrêter l'application d'abord pour éviter les écritures concurrentes)
+sudo docker compose --env-file .env stop app
+sudo docker exec -e PGPASSWORD="$POSTGRES_PASSWORD" smartplanning-postgres \
+  pg_restore --username smartplanning --dbname smartplanning --clean --if-exists /tmp/r.dump
+sudo docker compose --env-file .env start app
+
+# Nettoyer le dump en clair, il porte les données personnelles des clients
+sudo docker exec smartplanning-postgres rm -f /tmp/r.dump
+sudo rm -f /tmp/restauration.dump
+```
+
+### Limites connues, à ne pas oublier
+
+**Les archives et la clé vivent sur le même disque que la base.** La perte du
+VPS emporte les trois. Les sauvegardes protègent aujourd'hui du `DROP`
+malheureux et de la corruption logique, pas de la perte de machine. C'est
+l'objet de SP-594, le plus urgent des sujets ouverts.
+
+**Le disque n'est pas chiffré** (`ext4` nu, aucun volume LUKS) et la machine est
+partagée avec un second projet. C'est précisément pourquoi les archives, elles,
+le sont.
+
+**Il n'y a aucun chiffrement des données au repos dans la base** : ni
+`pgcrypto`, ni chiffrement applicatif. L'affirmation a été retirée de la
+politique de confidentialité plutôt que maintenue à tort.
+
+---
+
+## 8. Troubleshooting
 
 ### L'application ne démarre pas
 
@@ -559,6 +699,8 @@ docker exec smartplanning-app node -e "console.log(process.env.DATABASE_URL)"
 2. Vérifier l'authentification GHCR sur le VPS :
 
 ```bash
+# Test d'authentification uniquement : `latest` suffit pour vérifier que le
+# registre répond. NE PAS déployer depuis ce tag, le CD suit `sha-<court>`.
 docker pull ghcr.io/krismos64/smartplanningai-v2:latest
 ```
 
@@ -657,8 +799,10 @@ Le `reload` n'interrompt pas les connexions en cours.
 | 2026-08-18 | 2.7     | Panne DNS et certificat TLS : la zone avait basculé vers le CDN Hostinger, certbot allait bien. Surveillance ajoutée (`scripts/ops/check-tls-expiry.sh`). |
 | 2026-09-08 | 2.8     | SP-580 : le compose de production avait dérivé du dépôt, le CD ne le copiait pas. `scp` ajouté au job de déploiement, cache d'images rendu inscriptible. |
 | 2026-09-08 | 2.9     | SP-583 : les ports 3000 et 3001 répondaient depuis Internet en contournant Nginx, ufw ne filtrant pas les ports publiés par Docker. Publication passée sur la boucle locale. |
-| 2026-09-09 | 2.11    | SP-587 : surveillance quotidienne des ports applicatifs joignables depuis Internet, en filet de SP-583. Le durcissement `iptables` (`DOCKER-USER`) reste écarté, arbitrage documenté. |
 | 2026-09-09 | 2.10    | Correction du document : tableau des conteneurs aligné sur la publication réelle, déclencheurs du CI corrigés (push sur `main` uniquement), compteurs de tests retirés au profit de la mesure. |
+| 2026-09-09 | 2.11    | SP-587 : surveillance quotidienne des ports applicatifs joignables depuis Internet, en filet de SP-583. Le durcissement `iptables` (`DOCKER-USER`) reste écarté, arbitrage documenté. |
+| 2026-09-09 | 2.12    | SP-588 : le CD annonçait un succès sur une production morte. Healthcheck bloquant, rollback automatique vers l'image précédente, déploiement par `sha-<court>` au lieu de `latest`, clause `concurrency`, `prune` borné à 168 h. Limite documentée : le rollback ne défait pas les migrations. |
+| 2026-09-09 | 2.13    | SP-593 : la base de production n'était sauvegardée nulle part. Sauvegarde quotidienne chiffrée (AES256, 03:20 UTC, rétention 30 jours), script de test de restauration, section 7 et runbook dédiés. |
 
 ---
 
