@@ -1,0 +1,32 @@
+# Sauvegarde quotidienne chiffree de la base SmartPlanning. SP-593.
+#
+# S'installe dans /etc/systemd/system/ et se declenche par le timer voisin.
+# Type=oneshot : le service s'execute et se termine, il ne reste pas en vie.
+
+[Unit]
+Description=Sauvegarde chiffree de la base SmartPlanning
+Documentation=file:///opt/smartplanning/ops/backup-database.sh
+
+# LA SAUVEGARDE A BESOIN DE DOCKER, le dump passant par `docker exec`.
+# `After` ordonne sans exiger. On veut qu'une sauvegarde qui ne peut pas
+# s'executer le DISE, et non qu'elle soit sautee en silence : c'est tout
+# l'objet de ce ticket.
+After=docker.service
+Wants=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/opt/smartplanning/ops/backup-database.sh
+
+# La sortie part dans le journal systemd, consultable par
+# `journalctl -u smartplanning-backup.service`.
+StandardOutput=journal
+StandardError=journal
+
+# Le script lit /var/www/smartplanning/.env (0600, root) et
+# /etc/smartplanning/backup.key (0600, root), et pilote Docker.
+User=root
+
+# Une sauvegarde qui traine plus de dix minutes a un probleme : mieux vaut
+# echouer et le signaler que rester accrochee jusqu'au declenchement suivant.
+TimeoutStartSec=600
