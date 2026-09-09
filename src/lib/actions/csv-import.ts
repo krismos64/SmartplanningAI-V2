@@ -30,6 +30,7 @@ import {
 } from '@/lib/impersonation'
 import { validateData, handlePrismaError } from './crud-helpers'
 import { logAuditAction } from '@/lib/services/audit'
+import { trackFirstEmployeeIfApplicable } from '@/lib/services/funnel-milestones.service'
 import { syncEmployeeCountToStripe } from '@/lib/services/stripe/subscription-sync.service'
 import { invalidateDashboardCache, invalidateEmployeesCache } from '@/lib/cache'
 import {
@@ -375,6 +376,16 @@ export async function importEmployeesFromCsv(
     // Sync Stripe (fire-and-forget)
     if (result.created.length > 0) {
       syncEmployeeCountToStripe(companyId).catch(console.error)
+
+      // SP-591 : etape 5 du tunnel, si ces collaborateurs sont les premiers de
+      // l'entreprise. On passe le nombre cree, l'import etant un lot : le
+      // detecteur compare le total en base a ce nombre pour savoir s'il n'y
+      // avait rien avant.
+      trackFirstEmployeeIfApplicable(
+        companyId,
+        'import',
+        result.created.length
+      ).catch(console.error)
     }
 
     // Invalidation cache (fire-and-forget)

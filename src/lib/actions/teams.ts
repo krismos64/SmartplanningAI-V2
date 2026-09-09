@@ -25,6 +25,7 @@ import {
   handlePrismaError,
 } from './crud-helpers'
 import { logAuditAction } from '@/lib/services/audit'
+import { trackFirstTeamIfApplicable } from '@/lib/services/funnel-milestones.service'
 import {
   assertNotImpersonating,
   getEffectiveSessionData,
@@ -663,6 +664,11 @@ export async function createTeam(
       companyId: validData.companyId,
       details: { name: validData.name, managerId: validData.managerId || null },
     }).catch(console.error)
+
+    // SP-591 : etape 4 du tunnel, uniquement s'il s'agit de la premiere equipe.
+    // Fire-and-forget : le service avale ses erreurs, et n'ecrit rien en base,
+    // donc aucun conflit possible avec une transaction voisine.
+    trackFirstTeamIfApplicable(validData.companyId).catch(console.error)
 
     await invalidateTeamCaches(validData.companyId, team.id)
 

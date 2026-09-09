@@ -113,6 +113,97 @@ function CTAButton() {
 | `contact-submit`  | Soumission formulaire contact | `{ subject: string }`                           |
 | `feature-use`     | Utilisation d'une feature     | `{ feature: 'planning' \| 'team' \| 'export' }` |
 
+## Tunnel de conversion (SP-591)
+
+Les neuf étapes qui vont de la visite au paiement. Elles portent toutes le
+préfixe `funnel-` et un rang dans `data.stepRank`, Umami classant les
+événements par volume et non par séquence.
+
+| Rang | Événement | Émis depuis | Déclencheur |
+|---|---|---|---|
+| 1 | `funnel-cta-click` | Navigateur | Clic sur un CTA d'inscription (`TrackedCtaLink`) |
+| 2 | `funnel-signup-start` | Navigateur | Soumission du formulaire d'inscription |
+| 3 | `funnel-signup-complete` | Navigateur | Compte créé |
+| 4 | `funnel-first-team` | Serveur | Première équipe de l'entreprise |
+| 5 | `funnel-first-employee` | Serveur | Premiers collaborateurs (import ou unité) |
+| 6 | `funnel-first-schedule` | Serveur | Premier planning |
+| 7 | `funnel-invitation-accepted` | Serveur | Un salarié active son compte |
+| 8 | `funnel-checkout-opened` | Serveur | Ouverture du Checkout Stripe |
+| 9 | `funnel-subscription-confirmed` | Serveur (webhook) | Paiement confirmé par Stripe |
+
+### Deux chemins d'émission, et pourquoi
+
+Les étapes 1 à 3 se déclenchent dans le navigateur et passent par
+`useUmamiTrack`, donc restent conditionnées au consentement analytics.
+
+Les étapes 4 à 9 vivent dans des Server Actions et dans le webhook Stripe, où
+il n'y a ni `window`, ni hook React, ni cookie de consentement : le webhook n'a
+même pas de navigateur à l'autre bout. Elles passent par
+`src/lib/services/funnel-analytics.service.ts`, qui poste sur l'API `/api/send`
+d'Umami.
+
+**Aucune donnée personnelle ne transite par le chemin serveur.** On envoie le
+nom de l'étape, son rang, et des valeurs non identifiantes : ancienneté du
+compte en jours, tranche d'effectif (`1-5`, `6-20`, `21-50`, `50+`), méthode
+(`import` ou `manual`). Jamais de `companyId`, d'identifiant utilisateur ni
+d'email. L'appel partant du serveur, l'IP vue par Umami est celle du VPS.
+C'est ce qui rend ce chemin licite sans consentement : rien n'est déposé sur le
+poste du visiteur et aucune donnée personnelle n'est transmise. Un garde-fou de
+test le vérifie (`funnel-analytics.test.ts`).
+
+### Le User-Agent conditionne l'enregistrement
+
+Umami rejette **silencieusement** une requête dont le `User-Agent` ne ressemble
+pas à un navigateur : il répond HTTP 200 et `{"beep":"boop"}`, sans rien
+enregistrer. Ni erreur, ni trace.
+
+Mesuré le 9 septembre 2026 contre l'instance de production :
+
+```bash
+# Rejeté : réponse {"beep":"boop"}
+curl -X POST https://analytics.smartplanning.fr/api/send \
+  -H "User-Agent: SmartPlanning-Server/1.0" ...
+
+# Accepté : réponse {"cache":…,"sessionId":…,"visitId":…}
+curl -X POST https://analytics.smartplanning.fr/api/send \
+  -H "User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 …" ...
+```
+
+La présence de `sessionId` dans la réponse est la seule marque d'un événement
+accepté. C'est le contrôle à refaire si les étapes serveur cessent d'apparaître.
+
+### Les jalons ne comptent que la première fois
+
+Les étapes 4 à 6 sont des jalons d'activation. Émettre à chaque création
+d'équipe les noierait sous l'usage courant : une entreprise qui crée sa
+quarantième équipe n'est plus en train de s'activer.
+
+`funnel-milestones.service.ts` compare donc le total en base au nombre créé par
+l'opération. Cela traite correctement les lots : douze collaborateurs importés
+d'un coup sur une entreprise vide restent une seule première fois.
+
+### Lire le tunnel
+
+Dans Umami, onglet **Events**, filtrer sur `funnel-`. Le taux de passage entre
+deux rangs consécutifs donne le décrochage de l'étape.
+
+Deux précautions de lecture :
+
+- **Umami sous-compte**, il ne voit que les visiteurs qui acceptent le tracking
+  et n'ont pas de bloqueur. Sur les mêmes pages en août 2026, il montrait 40
+  vues quand la Search Console en comptait 2730, soit un facteur 40. Comparer
+  les étapes **entre elles**, jamais un volume absolu à une réalité commerciale.
+- Le chemin serveur n'a pas ce biais, les étapes 4 à 9 étant émises quoi qu'il
+  arrive. La marche entre l'étape 3 et l'étape 4 mélange donc deux effets, un
+  décrochage réel et un changement de méthode de comptage. Ne pas la lire comme
+  un taux d'abandon.
+
+### Activation
+
+L'émission serveur est coupée hors production, un parcours de développement ou
+de test E2E polluerait le tunnel. `UMAMI_SERVER_TRACKING=1` la force depuis une
+machine de développement.
+
 ## Intégration RGPD
 
 Le tracking est **strictement conditionnel** au consentement :
