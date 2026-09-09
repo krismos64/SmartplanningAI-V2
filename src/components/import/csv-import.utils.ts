@@ -402,5 +402,34 @@ export function parseWeeklyHours(
 /** Nombre maximum de lignes acceptees par import */
 export const MAX_IMPORT_ROWS = 1000
 
+/**
+ * Taille maximale d'un fichier d'import, en octets (SP-590)
+ *
+ * Ce plafond se vérifie AVANT toute lecture. La limite de MAX_IMPORT_ROWS
+ * n'intervenait qu'après `file.arrayBuffer()` et le parsing complet : un
+ * fichier de plusieurs centaines de mégaoctets était donc chargé en mémoire
+ * avant d'être refusé pour son nombre de lignes, ce qui gelait l'onglet du
+ * dirigeant en plein onboarding.
+ *
+ * Dimensionnement : une ligne de collaborateur (nom, prénom, email, poste,
+ * équipe) pèse de l'ordre de 100 à 150 octets en CSV, donc environ 150 Ko pour
+ * 1000 lignes. Un XLSX porte en plus sa structure XML compressée. 5 Mo laisse
+ * donc une marge large sur le cas légitime tout en écartant les fichiers
+ * aberrants. C'est aussi le plafond déjà retenu pour les avatars.
+ */
+export const MAX_IMPORT_FILE_SIZE = 5 * 1024 * 1024
+
+/**
+ * Formate une taille en octets pour un message destiné à l'utilisateur.
+ *
+ * « 12,4 Mo » plutôt que « 13001523 octets » : le message d'erreur est lu par
+ * un dirigeant en train d'importer ses collaborateurs, pas par un développeur.
+ */
+export function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} octets`
+  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} Ko`
+  return `${(bytes / (1024 * 1024)).toFixed(1).replace('.', ',')} Mo`
+}
+
 /** Nombre de lignes affichees dans la preview */
 export const PREVIEW_ROW_COUNT = 10
