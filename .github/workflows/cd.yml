@@ -109,6 +109,11 @@ jobs:
       # Output = valeur transmise aux jobs suivants
       image_tag: ${{ steps.meta.outputs.tags }}
       image_digest: ${{ steps.build.outputs.digest }}
+      # SP-588 : le SHA court tel que docker/metadata-action l'a REELLEMENT
+      # produit, et non une reconstruction a partir de github.sha. Les deux ont
+      # diverge une fois, en 7 contre 40 caracteres, et le deploiement a
+      # echoue sur un tag inexistant.
+      image_sha_tag: ${{ steps.short_sha.outputs.value }}
 
     steps:
       - name: Checkout code
@@ -149,6 +154,12 @@ jobs:
 
       # Build multi-stage avec cache GitHub Actions
       # Le cache accélère les builds suivants (~50% plus rapide)
+      # Le SHA court, dans la meme forme que celle utilisee par
+      # `type=sha,prefix=sha-` : les 7 premiers caracteres du SHA de commit.
+      - name: Calculer le tag SHA court
+        id: short_sha
+        run: echo "value=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+
       - name: Build and push Docker image
         id: build
         uses: docker/build-push-action@v6
@@ -217,7 +228,11 @@ jobs:
       - name: Run Prisma migrations via SSH
         timeout-minutes: 5
         env:
-          IMAGE_TAG: sha-${{ github.sha }}
+          # `type=sha,prefix=sha-` de docker/metadata-action produit un SHA COURT
+          # (7 caracteres). `github.sha` en fait 40 : le tag demande n'existait pas,
+          # et le pull echouait en « not found ». Mesure du 9 septembre 2026, premier
+          # deploiement reel de SP-588.
+          IMAGE_TAG: sha-${{ needs.build-and-push.outputs.image_sha_tag }}
         run: |
           ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no -o ServerAliveInterval=30 -o ServerAliveCountMax=10 -o ConnectTimeout=30 -p ${{ secrets.VPS_SSH_PORT || 22 }} ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "IMAGE_TAG='$IMAGE_TAG' bash -s" << 'MIGRATE_SCRIPT'
           set -e
@@ -300,7 +315,11 @@ jobs:
       - name: Deploy to VPS via SSH
         timeout-minutes: 10
         env:
-          IMAGE_TAG: sha-${{ github.sha }}
+          # `type=sha,prefix=sha-` de docker/metadata-action produit un SHA COURT
+          # (7 caracteres). `github.sha` en fait 40 : le tag demande n'existait pas,
+          # et le pull echouait en « not found ». Mesure du 9 septembre 2026, premier
+          # deploiement reel de SP-588.
+          IMAGE_TAG: sha-${{ needs.build-and-push.outputs.image_sha_tag }}
         run: |
           ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no -o ServerAliveInterval=30 -o ServerAliveCountMax=10 -o ConnectTimeout=30 -p ${{ secrets.VPS_SSH_PORT || 22 }} ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "IMAGE_TAG='$IMAGE_TAG' bash -s" << 'DEPLOY_SCRIPT'
           set -e
@@ -320,7 +339,15 @@ jobs:
           fi
 
           echo "📦 Pull de l'image $IMAGE (déjà en cache si migrate a tourné)..."
-          docker pull --quiet "$IMAGE"
+          # Un tag absent doit le DIRE. Sans ce message, l'echec se lit
+          # « failed to resolve reference », qui ressemble a une panne de
+          # registre alors que c'est une erreur de nommage cote workflow.
+          if ! docker pull --quiet "$IMAGE"; then
+            echo "❌ Image introuvable : $IMAGE" >&2
+            echo "   Tags disponibles sur cette machine :" >&2
+            docker images "$REPO" --format '     {{.Tag}}' | head -10 >&2
+            exit 1
+          fi
 
           echo "♻️ Redémarrage du conteneur app avec la nouvelle image..."
           # On ne fait PAS down/up complet : seul le conteneur app est recréé
