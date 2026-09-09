@@ -152,7 +152,7 @@ export const features: Feature[] = [
     icon: ShieldCheck,
     title: 'Sécurité des données RH',
     description:
-      'Données cryptées et protégées. Conformité RGPD stricte, hébergement sécurisé en France. Confidentialité garantie.',
+      'Données chiffrées en transit (HTTPS/TLS), hébergées en France chez OVHcloud. Isolation stricte entre entreprises, export et suppression de vos données à tout moment.',
   },
   {
     icon: MessagesSquare,
@@ -223,7 +223,7 @@ export const faqs: FAQ[] = [
   {
     question: 'Mes données sont-elles sécurisées ?',
     answer:
-      'Absolument. Vos données sont chiffrées en transit (HTTPS/TLS), hébergées en France chez OVHcloud (datacenters certifiés ISO 27001) et traitées en conformité totale avec le RGPD : hébergement souverain, export et suppression de vos données à tout moment.',
+      'Vos données sont chiffrées en transit (HTTPS/TLS) et hébergées en France chez OVHcloud, dans des datacenters certifiés ISO 27001. Les mots de passe sont hachés avec bcrypt, et chaque entreprise est isolée des autres. Conformément au RGPD, vous exportez ou supprimez vos données à tout moment depuis votre espace.',
   },
   {
     question: 'Quel support est disponible ?',
@@ -247,9 +247,9 @@ export const benefits: Benefit[] = [
   {
     id: 'no-excel',
     icon: FolderX,
-    title: 'Tout automatisé',
+    title: 'Fini les tableurs',
     description:
-      'Vos plannings se construisent et se mettent à jour automatiquement, sans saisie manuelle.',
+      'Plannings récurrents, duplication d\'une semaine sur l\'autre et import de vos collaborateurs par fichier : vous ne ressaisissez rien deux fois.',
   },
   {
     id: 'communication',

@@ -545,12 +545,13 @@ export default function ConfidentialitePage() {
         </LegalParagraph>
         <LegalList
           items={[
-            'Chiffrement des données en transit (HTTPS/TLS)',
-            'Chiffrement des données sensibles au repos',
+            'Chiffrement des données en transit (HTTPS/TLS, certificat Let&apos;s Encrypt renouvelé automatiquement)',
             'Authentification sécurisée avec hachage des mots de passe (bcrypt)',
+            'Isolation stricte des données entre entreprises clientes',
             'Protection contre les attaques courantes (XSS, CSRF, injection SQL)',
-            'Sauvegardes régulières et chiffrées',
-            'Surveillance et détection des intrusions',
+            'Sauvegardes quotidiennes chiffrées de la base de données, conservées 30 jours',
+            'Hébergement en France chez OVHcloud, datacenters certifiés ISO 27001',
+            'Surveillance des accès et journalisation des actions sensibles',
           ]}
         />
 
