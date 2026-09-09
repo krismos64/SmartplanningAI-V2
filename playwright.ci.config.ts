@@ -60,6 +60,11 @@ export default defineConfig({
     // 🟡 IMPORTANT : Workflow congés (création + validation manager)
     'leaves/create-request.spec.ts',
     'leaves/review-request.spec.ts',
+
+    // 🟡 IMPORTANT : Plannings, l'écran le plus sollicité de l'application
+    // (159 des 566 requêtes de la session analysée en SP-580). Trois défauts
+    // y ont été trouvés en deux sessions, aucun par un test. Ajouté en SP-585.
+    'schedules/grid-navigation.spec.ts',
   ],
 
   // === CONFIGURATION GLOBALE ===

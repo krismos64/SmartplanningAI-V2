@@ -128,3 +128,85 @@ Reste ouvert par ailleurs : le compose de production de Lune & Soleil, qui
 devra publier son port en `127.0.0.1:3002`, et le durcissement `iptables` face
 à Docker, écarté tant qu'aucun conteneur n'a besoin d'être joignable de
 l'extérieur.
+
+---
+
+# 9 septembre 2026, seconde partie : couvrir l'écran plutôt que le corriger encore
+
+| Champ | Valeur |
+|---|---|
+| Ticket | SP-585 |
+| Documents produits | `e2e/specs/schedules/grid-navigation.spec.ts` |
+| Documents modifiés | `e2e/pages/schedules.page.ts`, `playwright.ci.config.ts`, `ScheduleCalendar.test.tsx` |
+| Contrôles | type-check vert, lint sans erreur, 3281 tests Vitest sur 197 fichiers, 3 passages E2E en local et 3 sous la config CI, trois mutations |
+| Jira | SP-585 créé et commenté |
+| Mémoire | 2 fiches créées |
+| Pull request | #87 |
+
+## Ce qui a été fait
+
+Suite directe de SP-584 : les trois défauts trouvés sur l'écran plannings en
+deux sessions l'avaient tous été au navigateur ou à la mesure, aucun par un
+test. L'écran n'avait aucun spec Playwright.
+
+### Le Page Object était mort
+
+Constat fait avant d'écrire quoi que ce soit : **11 des 21 sélecteurs**
+pointaient vers des `data-testid` supprimés du code, dont toute la navigation.
+C'est probablement pour cela qu'aucun spec ne l'utilisait, chaque tentative
+ayant dû échouer au premier clic.
+
+Rien ne le signalait, exactement comme une entrée morte dans la whitelist
+`testMatch`. Les sélecteurs passent désormais au rôle et au nom accessible là
+où ils existent, ce qui les rend vérifiables au navigateur.
+
+### Six specs, et deux tests retirés
+
+Les specs couvrent ce que les incidents ont révélé : rendu sans error boundary,
+changement de vue qui ne casse pas la page, navigation, et deux tests négatifs
+d'autorisation.
+
+Deux tests ont été écrits puis **retirés**, la mutation ayant montré qu'ils ne
+contrôlaient rien. Le constat est écrit dans le spec à leur place.
+
+### Un maillon que rien ne couvrait
+
+En cherchant à prouver un test par mutation, découverte que le défaut de SP-584
+n'était couvert nulle part : `WeeklyGridView.test.tsx` monte la grille
+directement, donc il ne voit pas la chaîne `ScheduleCalendar` → `WeeklyGridView`,
+et c'est ce maillon qui était coupé.
+
+Un test unitaire a été ajouté sur `ScheduleCalendar`. Sa mutation donne
+`expected undefined to be [ ... ]`.
+
+## Les écarts
+
+**J'ai écrit une affirmation fausse dans un commentaire de test.** Le spec E2E
+disait que la couverture des congés existait au niveau unitaire. Elle n'existait
+pas. Seule la mutation l'a montré, et c'est ce qui a conduit au test ajouté
+ci-dessus. Un commentaire qui documente une couverture inexistante est pire que
+pas de commentaire.
+
+**Le défaut de navigation de SP-584 n'est pas reproductible en E2E.** Deux
+mutations le prouvent, dont la première était de plus incomplète : j'avais figé
+`weekDate` sans rétablir le `setWeekDate` que la navigation appelait. Refaite
+fidèlement, elle laisse les tests verts quand même. L'état local et la prop ne
+divergent jamais, le seul chemin qui change la période sans démonter la grille
+étant la navigation de la grille elle-même.
+
+**Trois causes d'instabilité, aucune résolue par un retry.** Les premiers
+passages donnaient 3 flaky sur 8. La compilation initiale sous charge, un
+locator strict qui résout à deux éléments en mode production seulement, et une
+assertion `not.toHaveText` satisfaite par l'absence de l'élément. Les trois se
+lisent dans `error-context.md` : le snapshot d'échec ne contenait que 12
+éléments, ce qui disait immédiatement que la page n'était pas rendue.
+
+**Le mode production révèle ce que le développement cache.** Le doublon de
+`schedules-page` ne se voit qu'avec `npm run start`. Lancer au moins une fois
+sous `playwright.ci.config.ts` avant de conclure.
+
+## Prochaine étape
+
+Le spec entre dans la whitelist CI, 9 entrées, aucune morte. Reste ouvert le
+compose de production de Lune & Soleil et le durcissement `iptables`, tous deux
+inchangés depuis SP-583.
