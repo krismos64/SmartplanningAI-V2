@@ -243,6 +243,11 @@ ferme. C'est SP-583, ou l'application et Umami etaient joignables sur les ports
 Un port se verifie **depuis une autre machine**, jamais depuis le VPS ou
 `curl localhost:3000` repond toujours 200 sans rien prouver.
 
+Rien n'impose cette convention mecaniquement : la chaine `DOCKER-USER` est vide,
+donc une ligne mal ecrite dans un futur compose rouvrirait le port.
+`scripts/ops/check-public-ports.sh` tourne en cron une fois par jour et le
+detecte, en interrogeant l'adresse publique du VPS et non `localhost`.
+
 ## Securite
 
 - RBAC 4 niveaux avec `checkPermission()` sur chaque Server Action

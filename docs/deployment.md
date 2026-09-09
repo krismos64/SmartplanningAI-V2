@@ -152,6 +152,14 @@ machine, jamais depuis le VPS, où `curl localhost:3000` répondra toujours.
 `/home/deploy/umami/docker-compose.yml` et le CD ne le synchronise pas. Toute
 correction le concernant s'applique à la main sur le VPS.
 
+**Surveillance (SP-587).** Rien n'impose cette convention mécaniquement, la
+chaîne `DOCKER-USER` étant vide sur cette machine : une seule ligne mal écrite
+dans un futur compose rouvrirait le port sur Internet.
+`scripts/ops/check-public-ports.sh` tourne en cron une fois par jour à 06:43 et
+alerte par email. Il interroge l'adresse publique du VPS et non `localhost`,
+seul point de vue qui distingue un port restreint d'un port ouvert. Détail dans
+`scripts/ops/README.md`.
+
 ---
 
 ## 3. Variables d'environnement
@@ -649,6 +657,7 @@ Le `reload` n'interrompt pas les connexions en cours.
 | 2026-08-18 | 2.7     | Panne DNS et certificat TLS : la zone avait basculé vers le CDN Hostinger, certbot allait bien. Surveillance ajoutée (`scripts/ops/check-tls-expiry.sh`). |
 | 2026-09-08 | 2.8     | SP-580 : le compose de production avait dérivé du dépôt, le CD ne le copiait pas. `scp` ajouté au job de déploiement, cache d'images rendu inscriptible. |
 | 2026-09-08 | 2.9     | SP-583 : les ports 3000 et 3001 répondaient depuis Internet en contournant Nginx, ufw ne filtrant pas les ports publiés par Docker. Publication passée sur la boucle locale. |
+| 2026-09-09 | 2.11    | SP-587 : surveillance quotidienne des ports applicatifs joignables depuis Internet, en filet de SP-583. Le durcissement `iptables` (`DOCKER-USER`) reste écarté, arbitrage documenté. |
 | 2026-09-09 | 2.10    | Correction du document : tableau des conteneurs aligné sur la publication réelle, déclencheurs du CI corrigés (push sur `main` uniquement), compteurs de tests retirés au profit de la mesure. |
 
 ---
