@@ -1,0 +1,22 @@
+# Declenchement quotidien de la sauvegarde. SP-593.
+
+[Unit]
+Description=Declenche la sauvegarde quotidienne de SmartPlanning
+
+[Timer]
+# 03:20 UTC, un creux d'activite pour un produit de planification francais,
+# et decale de la sauvegarde du second projet de la machine pour ne pas faire
+# tourner deux pg_dump en meme temps sur le meme disque.
+OnCalendar=*-*-* 03:20:00 UTC
+
+# SI LA MACHINE ETAIT ETEINTE A L'HEURE PREVUE, la sauvegarde part au
+# demarrage suivant. Sans cette ligne, un VPS redemarre a 04:00 sauterait
+# purement et simplement la journee.
+Persistent=true
+
+# Jusqu'a 10 minutes d'ecart aleatoire : evite que sauvegarde, renouvellement
+# de certificat et taches de paquets ne tombent a la meme seconde.
+RandomizedDelaySec=600
+
+[Install]
+WantedBy=timers.target
