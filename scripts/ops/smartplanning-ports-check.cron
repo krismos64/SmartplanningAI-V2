@@ -1,0 +1,20 @@
+# Surveillance des ports applicatifs joignables depuis Internet
+# Installe dans /etc/cron.d/smartplanning-ports-check
+#
+# Une execution par jour. Le defaut que ce controle attrape (SP-583) ne
+# survient qu'au deploiement d'un service, jamais spontanement : une detection
+# sous 24 h suffit, la ou le certificat TLS justifie deux passages quotidiens.
+#
+# Horaire decale de celui de check-tls-expiry.sh (17 7,19) pour eviter que les
+# deux scripts sollicitent le SMTP en meme temps.
+#
+# La sortie n'est pas redirigee vers /dev/null : cron la conserve dans le
+# journal systeme, ce qui laisse une trace consultable meme si l'envoi SMTP
+# echoue. C'est volontaire, le script est silencieux quand tout va bien.
+#
+#   sudo journalctl -t smartplanning-ports --since '2 days ago'
+
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+43 6 * * * root /opt/smartplanning/ops/check-public-ports.sh 2>&1 | /usr/bin/logger -t smartplanning-ports
