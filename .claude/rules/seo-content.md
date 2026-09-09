@@ -2,8 +2,8 @@
 
 Charger ce fichier avant de toucher : `src/app/(sectors)/`, `src/app/(guides)/`,
 la landing, le header ou le footer public, `src/app/sitemap.ts`,
-`src/app/robots.ts`, `public/llms*.txt`, ou tout texte visible par un visiteur
-non connecté.
+`src/app/robots.ts`, `public/llms.txt`, `src/app/llms-full.txt/`, ou tout
+texte visible par un visiteur non connecté.
 
 Le contenu public sert deux canaux d'acquisition : la recherche classique et la
 citation par les assistants IA. Les deux imposent des contraintes différentes,
@@ -206,13 +206,23 @@ jour le header.
 
 ## `llms.txt` et `llms-full.txt`
 
-Dans `public/`, à mettre à jour à **chaque** nouvelle page publique.
+Les deux ne vivent pas au même endroit, et un seul se met à jour à la main.
+
+`llms.txt` est un fichier statique dans `public/`, à mettre à jour à **chaque**
+nouvelle page publique.
+
+`llms-full.txt` est une **route**, `src/app/llms-full.txt/route.ts`, dont le
+contenu est bâti par `llms-full.content.ts` depuis les mêmes registres que le
+sitemap (SP-564). Une page ajoutée au registre y entre donc toute seule : il n'y
+a rien à y écrire, et le modifier à la main serait une erreur. Ses garde-fous
+sont dans `src/app/__tests__/llms-full.test.ts`.
 
 Orthographe française complète, accents compris. Jamais de concurrent.
 
 ## Sitemap
 
-Dates réelles dans `PAGE_LAST_MODIFIED` (`src/app/sitemap.ts`). Toute PR qui
+Dates réelles dans `PAGE_LAST_MODIFIED`, défini dans
+`src/app/page-last-modified.ts` et importé par `src/app/sitemap.ts`. Toute PR qui
 modifie une page publique met à jour sa date.
 
 Jamais `new Date()` : un `lastmod` qui bouge à chaque build est ignoré par

@@ -1,6 +1,6 @@
 # Guide de Déploiement SmartPlanning V2
 
-**Dernière mise à jour** : 12 mai 2026
+**Dernière mise à jour** : 9 septembre 2026
 **Version** : 2.0.0
 **Environnement** : Production
 **URL** : https://smartplanning.fr
@@ -134,12 +134,23 @@ conteneur demarre avec une valeur vide.
 
 ### Conteneurs Docker
 
-| Container              | Image                                          | Port | Status  |
-| ---------------------- | ---------------------------------------------- | ---- | ------- |
-| smartplanning-app      | ghcr.io/krismos64/smartplanningai-v2:latest    | 3000 | Running |
-| smartplanning-postgres | postgres:16-alpine                             | 5432 | Running |
-| smartplanning-redis    | redis:7-alpine                                 | 6379 | Running |
-| smartplanning-umami    | ghcr.io/umami-software/umami:postgresql-latest | 3001 | Running |
+| Container              | Image                                          | Publication      | Compose |
+| ---------------------- | ---------------------------------------------- | ---------------- | ------- |
+| smartplanning-app      | ghcr.io/krismos64/smartplanningai-v2:latest    | `127.0.0.1:3000` | dépôt   |
+| smartplanning-postgres | postgres:16-alpine                             | interne          | dépôt   |
+| smartplanning-redis    | redis:7-alpine                                 | interne          | dépôt   |
+| smartplanning-umami    | ghcr.io/umami-software/umami:postgresql-latest | `127.0.0.1:3001` | VPS     |
+
+**Tous les ports applicatifs sont publiés sur la boucle locale depuis SP-583**
+(8 septembre 2026), Nginx restant le seul point d'entrée. Publier sur toutes
+les interfaces les rendait joignables depuis Internet en contournant TLS et la
+limitation de débit, `ufw status` les donnant pourtant fermés : Docker insère
+ses règles DNAT en amont de la chaîne d'ufw. Se vérifier depuis une autre
+machine, jamais depuis le VPS, où `curl localhost:3000` répondra toujours.
+
+**Umami ne fait pas partie du compose du dépôt** : il tourne depuis
+`/home/deploy/umami/docker-compose.yml` et le CD ne le synchronise pas. Toute
+correction le concernant s'applique à la main sur le VPS.
 
 ---
 
@@ -309,17 +320,24 @@ que d'échouer : c'est le comportement attendu en développement.
 
 **Déclencheurs** :
 
-- Push sur toutes les branches
+- Push sur `main` uniquement
 - Pull requests vers `main`
+- Déclenchement manuel (`workflow_dispatch`)
+
+**Un push sur une branche sans PR ne déclenche donc aucun workflow** : ouvrir
+une PR, même en draft, pour obtenir le retour de la CI.
 
 **Jobs** :
 
-| Job        | Description                    | Condition                     |
-| ---------- | ------------------------------ | ----------------------------- |
-| `lint`     | ESLint + TypeScript            | Tous les push                 |
-| `test`     | Tests unitaires Vitest (~2 785, 157 fichiers) | Tous les push                 |
-| `test-e2e` | Tests E2E Playwright (~189, 13 fichiers)      | PR vers main OU push sur main |
-| `build`    | Build Next.js                  | Tous les push                 |
+| Job        | Description                | Condition                     |
+| ---------- | -------------------------- | ----------------------------- |
+| `lint`     | ESLint + TypeScript        | Tous les déclenchements       |
+| `test`     | Tests unitaires Vitest     | Tous les déclenchements       |
+| `test-e2e` | Tests E2E Playwright, whitelist `testMatch` | PR vers main OU push sur main |
+| `build`    | Build Next.js              | Tous les déclenchements       |
+
+Les compteurs de tests ne sont pas repris ici : ils se périment à chaque
+sprint. Les mesurer avec `npm run test` et `npx playwright test --list`.
 
 ### CD Pipeline (`.github/workflows/cd.yml`)
 
@@ -628,6 +646,10 @@ Le `reload` n'interrompt pas les connexions en cours.
 | 2026-04-17 | 2.4     | Fix admin : changement statut abonnement sans Stripe, correction redirects 404 |
 | 2026-04-20 | 2.5     | CI/CD : ordre `migrate → deploy` inversé (SP-523), pattern `docker run --rm` avec image éphémère, lecture `DATABASE_URL` depuis `docker exec printenv` (sans parse `.env`) |
 | 2026-05-12 | 2.6     | Fix Nginx HTTP/2 : `limit_conn` 10 → 100 sur `location /` et `/api/`, exempt sur `/_next/static/*`, codes 429 au lieu de 503. Backport repo des additions VPS (`proxy_cache`, include Umami). Procédure de push config Nginx documentée. |
+| 2026-08-18 | 2.7     | Panne DNS et certificat TLS : la zone avait basculé vers le CDN Hostinger, certbot allait bien. Surveillance ajoutée (`scripts/ops/check-tls-expiry.sh`). |
+| 2026-09-08 | 2.8     | SP-580 : le compose de production avait dérivé du dépôt, le CD ne le copiait pas. `scp` ajouté au job de déploiement, cache d'images rendu inscriptible. |
+| 2026-09-08 | 2.9     | SP-583 : les ports 3000 et 3001 répondaient depuis Internet en contournant Nginx, ufw ne filtrant pas les ports publiés par Docker. Publication passée sur la boucle locale. |
+| 2026-09-09 | 2.10    | Correction du document : tableau des conteneurs aligné sur la publication réelle, déclencheurs du CI corrigés (push sur `main` uniquement), compteurs de tests retirés au profit de la mesure. |
 
 ---
 

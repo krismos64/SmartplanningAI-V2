@@ -13,7 +13,7 @@ Plateforme SaaS multi-tenant de gestion intelligente des plannings et des ressou
 
 | Couche          | Technologies                                                                  |
 | --------------- | ----------------------------------------------------------------------------- |
-| Frontend        | Next.js 15.5.9 (App Router), React 19, TypeScript 5.7.2, Tailwind + Shadcn/ui |
+| Frontend        | Next.js 15.5.9 (App Router), React 19, TypeScript 5.9, Tailwind + Shadcn/ui |
 | Backend         | NextAuth v5 (Auth.js), Prisma 6.18.0, Zod, Stripe v20.3.1                     |
 | Base de donnees | PostgreSQL 16, Redis 7 (ioredis 5.10)                                         |
 | Emails          | React Email (30 envois transactionnels), Nodemailer SMTP, releve IMAP des rejets |
@@ -64,7 +64,7 @@ git clone https://github.com/krismos64/SmartplanningAI-V2.git
 cd SmartplanningAI-V2
 npm install
 cp .env.example .env.local    # Configurer les variables
-docker-compose up -d           # PostgreSQL + Redis + Adminer
+npm run docker:dev             # PostgreSQL + Redis + Adminer (compose dans docker/)
 npx prisma migrate dev
 npx prisma generate
 npm run db:seed                # Donnees de demonstration
@@ -97,9 +97,9 @@ Voir `.env.example` pour la liste complete et les variables optionnelles (Umami,
 | Service     | URL                   | Identifiants                                              |
 | ----------- | --------------------- | --------------------------------------------------------- |
 | Application | http://localhost:3000 | `contact@smartplanning.fr` / `Password123!` (admin)       |
-| Adminer     | http://localhost:8081 | smartplanning / smartplanning_password / smartplanning_db |
-| PostgreSQL  | localhost:5433        | —                                                         |
-| Redis       | localhost:6380        | —                                                         |
+| Adminer     | http://localhost:8080 | smartplanning / smartplanning / smartplanning              |
+| PostgreSQL  | localhost:5432        | —                                                         |
+| Redis       | localhost:6379        | —                                                         |
 
 > Tous les comptes du seed partagent le mot de passe `Password123!`. Voir `prisma/seed.ts` pour la liste complete.
 
@@ -129,7 +129,7 @@ npm run email:dev        # Previsualisation des templates React Email
 
 ```
 src/
-├── app/              # Next.js 15 App Router (64 pages, 5 layouts, 17 API routes)
+├── app/              # Next.js 15 App Router (65 pages, 5 layouts, 18 API routes)
 │   ├── (auth)/       # Login, register, verify-email, activate-account
 │   ├── (about)/      # A propos, tarifs, contact
 │   ├── (landing)/    # Landing page
@@ -151,7 +151,7 @@ src/
 
 ## Base de donnees
 
-21 modeles Prisma (17 core + 4 NextAuth), 16 enums, 55+ index, 22 migrations.
+22 modeles Prisma (18 core + 4 NextAuth), 16 enums, 65 index, 24 migrations.
 
 | Categorie | Modeles |
 |---|---|
@@ -161,7 +161,7 @@ src/
 | Conges | LeaveRequest, LeaveBalance |
 | Notes | PersonalTask, IncidentNote |
 | Messagerie | Conversation, ConversationMember, Message |
-| Systeme | Notification, Subscription, Payment, AuditLog, EmailLog |
+| Systeme | Notification, Subscription, Payment, AuditLog, EmailLog, ContactMessage |
 
 Voir [`docs/database-architecture.md`](docs/database-architecture.md) pour le detail complet.
 
@@ -169,13 +169,17 @@ Voir [`docs/database-architecture.md`](docs/database-architecture.md) pour le de
 
 | Type      | Framework  | Fichiers | Tests     |
 | --------- | ---------- | -------- | --------- |
-| Unitaires | Vitest     | 196      | 3 276     |
-| E2E       | Playwright | 22       | 255       |
-| **Total** |            | **218**  | **3 531** |
+| Unitaires | Vitest     | 197      | 3 281     |
+| E2E       | Playwright | 23       | 261       |
+| **Total** |            | **220**  | **3 542** |
 
-La CI execute une whitelist E2E (8 specs, 123 tests) ; la suite complete (22 specs, 255 tests) tourne en nightly. `testMatch` de `playwright.ci.config.ts` etant une liste explicite, un spec renomme ou supprime disparait silencieusement de la CI : verifier cette liste apres chaque ajout ou suppression.
+Compteurs mesures le 9 septembre 2026 par `npm run test` et
+`npx playwright test --list`. Ils se periment a chaque sprint : les remesurer
+plutot que les recopier.
 
-**Les specs publiques ne sont pas dans la whitelist CI.** Les 20 tests de
+La CI execute une whitelist E2E (9 specs, 129 tests) ; la suite complete (23 specs, 261 tests) tourne en nightly. `testMatch` de `playwright.ci.config.ts` etant une liste explicite, un spec renomme ou supprime disparait silencieusement de la CI : verifier cette liste apres chaque ajout ou suppression.
+
+**Les specs publiques ne sont pas dans la whitelist CI.** Les 26 tests de
 `e2e/specs/landing/`, dont 7 audits axe-core, ne tournent donc qu'en nightly
 et en local (`npx playwright test e2e/specs/landing/`). L'arbitrage sur leur
 entree en CI n'est pas tranche.
@@ -265,7 +269,7 @@ Mesures ponctuelles, non rejouees a chaque build : les rejouer apres toute modif
 ## Documentation
 
 - [`docs/deployment.md`](docs/deployment.md) — Guide de deploiement VPS
-- [`docs/database-architecture.md`](docs/database-architecture.md) — Architecture BDD (21 modeles, 16 enums)
+- [`docs/database-architecture.md`](docs/database-architecture.md) — Architecture BDD (22 modeles, 16 enums)
 - [`docs/journal/`](docs/journal/) — Journal de developpement, une entree par session
 - [`docs/analytics.md`](docs/analytics.md) — Configuration Umami
 - [`docs/security/`](docs/security/) — Plan de securisation, incidents, hardening
