@@ -317,7 +317,24 @@ export const authConfig: NextAuthConfig = {
      */
     authorized({ auth, request }) {
       const { nextUrl } = request
-      const isLoggedIn = !!auth
+      // SP-589 : on exige une identité exploitable, et non la seule présence
+      // d'un objet auth.
+      //
+      // `!!auth` suffisait auparavant. L'avis publié sur next-auth le décrit
+      // ainsi : « Configuration errors can cause existence-based auth checks to
+      // fail open (auth object populated with an error) ». Auth.js peut peupler
+      // `auth` avec un objet porteur d'une erreur, sans `user` exploitable :
+      // le middleware le lisait alors comme une session valide et laissait
+      // passer une requête qu'il aurait dû rediriger vers /login.
+      //
+      // `auth.user.id` est le champ dont dépend tout le reste de la chaîne :
+      // le RBAC lit `role`, les Server Actions relisent l'identité. Sans `id`,
+      // il n'y a personne à autoriser.
+      //
+      // Les Server Actions refont leur propre checkPermission(), ce qui limitait
+      // l'impact à la couche middleware. C'est de la défense en profondeur qui
+      // était perdue, pas la seule barrière.
+      const isLoggedIn = !!auth?.user?.id
       const pathname = nextUrl.pathname
       const userRole = auth?.user?.role
 

@@ -58,14 +58,30 @@ const nextConfig: NextConfig = {
   },
 
   // Configuration des images Next.js
+  //
+  // SP-589 : la liste était `hostname: '**'`, avec en commentaire « à
+  // restreindre en prod ». Tout domaine HTTPS pouvait donc servir d'entrée à
+  // l'optimiseur d'images, qui télécharge et retraite le fichier distant sur
+  // le serveur. Un avis critique de Next.js porte précisément sur un déni de
+  // service par cette voie.
+  //
+  // Seul Cloudinary sert des images distantes ici (avatars et pièces jointes),
+  // le reste vient de public/. Une nouvelle source d'images doit être ajoutée
+  // explicitement, sans quoi next/image la refusera : c'est le comportement
+  // voulu.
   images: {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: '**', // Autoriser toutes les images en dev (à restreindre en prod)
+        hostname: 'res.cloudinary.com',
+        pathname: '/**',
       },
     ],
-    formats: ['image/webp', 'image/avif'], // Formats modernes pour la performance
+    // AVIF retiré le temps de la montée de version de Next.js : l'avis
+    // critique sur l'optimiseur vise ce décodeur. WebP couvre les mêmes
+    // besoins de compression, avec un support navigateur plus large.
+    // À rétablir une fois la 15.5 corrective en place (temps 2 de SP-589).
+    formats: ['image/webp'],
   },
 
   // Redirections 301 permanentes pour les anciennes URLs / variantes
