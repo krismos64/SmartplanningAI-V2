@@ -36,7 +36,7 @@ convention de mémoire.
 | -------------------------------- | ---------------------------------------------------------------------- |
 | `.claude/rules/multi-tenant.md`  | Server Action, route API, requête Prisma, auth, choix de destinataires |
 | `.claude/rules/prisma-pieges.md` | `'use server'`, backfill, SQL de diagnostic, cache dashboard, envoi d'emails, Nginx |
-| `.claude/rules/seo-content.md`   | pages secteur, guides, landing, sitemap, `llms.txt`, texte public      |
+| `.claude/rules/seo-content.md`   | pages secteur, guides, landing, sitemap, `llms.txt` et la route `llms-full.txt`, texte public |
 | `.claude/rules/tests.md`         | écriture de tests, et avant de conclure un travail                     |
 
 Documentation longue : `docs/deployment.md` pour le déploiement,
