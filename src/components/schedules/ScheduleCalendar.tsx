@@ -55,8 +55,6 @@ export interface ScheduleCalendarProps {
   onLeaveClick?: (leave: LeaveRequestWithEmployee) => void
   /** Callback quand Schedule-X change de période (navigation interne) */
   onRangeChange?: (start: Date, end: Date) => void
-  /** IDs des équipes pour charger les congés (vue grille) */
-  teamIds?: string[]
   /** ID entreprise */
   companyId?: string
 }
@@ -93,7 +91,7 @@ export function ScheduleCalendar(props: ScheduleCalendarProps) {
           onRangeChange={props.onRangeChange}
           canEdit={props.canEdit}
           isLoading={props.isLoading}
-          teamIds={props.teamIds}
+          leaveRequests={props.leaveRequests}
         />
       ) : (
         <ScheduleCalendarDesktop {...props} />
