@@ -10,7 +10,7 @@
 
 'use client'
 
-import { useMemo, useState, useCallback, useEffect } from 'react'
+import { useMemo, useCallback } from 'react'
 import {
   format,
   startOfWeek,
@@ -33,7 +33,6 @@ import {
 import { ChevronLeft, ChevronRight, Palmtree } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { ScheduleWithRelations } from '@/lib/actions/schedules'
-import { getTeamAbsences } from '@/lib/actions/leaves'
 import type { LeaveRequest } from '@prisma/client'
 import { LEAVE_TYPE_LABELS } from '@/lib/validations/leave'
 
@@ -67,7 +66,12 @@ interface WeeklyGridViewProps {
   canEdit?: boolean
   isLoading?: boolean
   companyId?: string
-  teamIds?: string[]
+  /**
+   * Congés approuvés de la semaine, chargés par le parent (SP-584).
+   * La grille ne les charge plus elle-même : le parent couvre déjà la même
+   * fenêtre, et un chargement autonome doublait chaque appel à getTeamAbsences.
+   */
+  leaveRequests?: LeaveRequestWithEmployee[]
 }
 
 // ============================================================================
@@ -134,43 +138,32 @@ export function WeeklyGridView({
   onRangeChange,
   canEdit = false,
   isLoading = false,
-  teamIds = [],
+  leaveRequests = [],
 }: WeeklyGridViewProps) {
-  const [weekDate, setWeekDate] = useState(currentDate)
-  const [leaves, setLeaves] = useState<LeaveRequestWithEmployee[]>([])
-
+  // SP-584 : la semaine affichée vient du parent et n'est plus dupliquée en
+  // état local. Deux états de la même semaine se désynchronisaient dès que la
+  // période changeait ailleurs (filtres, vue jour ou mois, rechargement), et
+  // le premier clic sur les flèches ne faisait que rattraper l'écart.
   const weekStart = useMemo(
-    () => startOfWeek(weekDate, { weekStartsOn: 1 }),
-    [weekDate]
+    () => startOfWeek(currentDate, { weekStartsOn: 1 }),
+    [currentDate]
   )
   const weekEnd = useMemo(
-    () => endOfWeek(weekDate, { weekStartsOn: 1 }),
-    [weekDate]
+    () => endOfWeek(currentDate, { weekStartsOn: 1 }),
+    [currentDate]
   )
   const days = useMemo(
     () => eachDayOfInterval({ start: weekStart, end: weekEnd }),
     [weekStart, weekEnd]
   )
 
-  // Charger les congés approuvés pour la semaine
-  useEffect(() => {
-    if (teamIds.length === 0) return
-    const loadLeaves = async () => {
-      const results = await Promise.all(
-        teamIds.map((tid) => getTeamAbsences(tid, weekStart, weekEnd))
-      )
-      const allLeaves: LeaveRequestWithEmployee[] = []
-      for (const r of results) {
-        if (r.success) allLeaves.push(...r.data)
-      }
-      // Dédupliquer par ID
-      const unique = Array.from(
-        new Map(allLeaves.map((l) => [l.id, l])).values()
-      )
-      setLeaves(unique)
-    }
-    void loadLeaves()
-  }, [teamIds, weekStart, weekEnd])
+  // Congés de la semaine, dédupliqués par identifiant : le parent interroge
+  // une équipe par appel, et un même congé peut revenir deux fois quand un
+  // employé change d'équipe sur la période.
+  const leaves = useMemo(
+    () => Array.from(new Map(leaveRequests.map((l) => [l.id, l])).values()),
+    [leaveRequests]
+  )
 
   // Extraire la liste unique des employés depuis schedules + leaves
   const employees = useMemo(() => {
@@ -226,29 +219,22 @@ export function WeeklyGridView({
     return idx
   }, [leaves])
 
-  // Navigation
+  // Navigation. La grille ne stocke plus la semaine : elle remonte la nouvelle
+  // période au parent, qui la redescend par currentDate. Les flèches partent
+  // de weekStart, déjà normalisé au lundi, et non d'une date arbitraire.
   const goToPrev = useCallback(() => {
-    const prev = subWeeks(weekDate, 1)
-    setWeekDate(prev)
-    const s = startOfWeek(prev, { weekStartsOn: 1 })
-    const e = endOfWeek(prev, { weekStartsOn: 1 })
-    onRangeChange?.(s, e)
-  }, [weekDate, onRangeChange])
+    const prev = subWeeks(weekStart, 1)
+    onRangeChange?.(prev, endOfWeek(prev, { weekStartsOn: 1 }))
+  }, [weekStart, onRangeChange])
 
   const goToNext = useCallback(() => {
-    const next = addWeeks(weekDate, 1)
-    setWeekDate(next)
-    const s = startOfWeek(next, { weekStartsOn: 1 })
-    const e = endOfWeek(next, { weekStartsOn: 1 })
-    onRangeChange?.(s, e)
-  }, [weekDate, onRangeChange])
+    const next = addWeeks(weekStart, 1)
+    onRangeChange?.(next, endOfWeek(next, { weekStartsOn: 1 }))
+  }, [weekStart, onRangeChange])
 
   const goToToday = useCallback(() => {
-    const today = new Date()
-    setWeekDate(today)
-    const s = startOfWeek(today, { weekStartsOn: 1 })
-    const e = endOfWeek(today, { weekStartsOn: 1 })
-    onRangeChange?.(s, e)
+    const today = startOfWeek(new Date(), { weekStartsOn: 1 })
+    onRangeChange?.(today, endOfWeek(today, { weekStartsOn: 1 }))
   }, [onRangeChange])
 
   if (isLoading) {
@@ -269,9 +255,10 @@ export function WeeklyGridView({
               variant="outline"
               size="icon"
               onClick={goToPrev}
+              aria-label="Semaine précédente"
               className="h-9 w-9"
             >
-              <ChevronLeft className="h-4 w-4" />
+              <ChevronLeft aria-hidden="true" className="h-4 w-4" />
             </Button>
             <Button variant="outline" size="sm" onClick={goToToday}>
               Aujourd&apos;hui
@@ -280,14 +267,22 @@ export function WeeklyGridView({
               variant="outline"
               size="icon"
               onClick={goToNext}
+              aria-label="Semaine suivante"
               className="h-9 w-9"
             >
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRight aria-hidden="true" className="h-4 w-4" />
             </Button>
           </div>
-          <h3 className="text-sm font-semibold capitalize">
-            {format(weekStart, 'd MMM', { locale: fr })} –{' '}
-            {format(weekEnd, 'd MMM yyyy', { locale: fr })}
+          {/* `capitalize` porte sur les seules dates : appliqué au titre entier,
+              il capitalisait aussi le « au » de liaison. */}
+          <h3 className="text-sm font-semibold">
+            <span className="capitalize">
+              {format(weekStart, 'd MMM', { locale: fr })}
+            </span>{' '}
+            au{' '}
+            <span className="capitalize">
+              {format(weekEnd, 'd MMM yyyy', { locale: fr })}
+            </span>
           </h3>
         </div>
 
