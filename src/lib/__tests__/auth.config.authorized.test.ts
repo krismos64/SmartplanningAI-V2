@@ -24,6 +24,7 @@ import type { NextRequest } from 'next/server'
 import type { Session } from 'next-auth'
 
 import { authConfig } from '../auth.config'
+import { IMPERSONATION_COOKIE_NAME } from '@/types/auth'
 
 type AuthorizedFn = NonNullable<
   NonNullable<typeof authConfig.callbacks>['authorized']
@@ -40,11 +41,17 @@ if (!authorized) {
  * le strict nécessaire plutôt qu'un NextRequest complet, impossible à
  * construire hors d'un contexte de requête.
  */
-function requestFor(pathname: string): NextRequest {
+function requestFor(
+  pathname: string,
+  impersonationCookie?: string
+): NextRequest {
   return {
     nextUrl: new URL(`https://smartplanning.fr${pathname}`),
     cookies: {
-      get: () => undefined,
+      get: (name: string) =>
+        name === IMPERSONATION_COOKIE_NAME && impersonationCookie !== undefined
+          ? { name, value: impersonationCookie }
+          : undefined,
     },
   } as unknown as NextRequest
 }
@@ -179,6 +186,110 @@ describe('authorized() — le chemin nominal reste ouvert', () => {
     const result = await authorized({
       auth: {} as Session,
       request: requestFor('/login'),
+    })
+
+    expect(result).toBe(true)
+  })
+})
+
+describe('authorized() — garde d\'impersonation sur /app/admin (SP-592)', () => {
+  // Ces deux branches n'etaient couvertes par aucun test : les cas de SP-589
+  // passaient un `cookies.get` qui retournait toujours undefined, le corps du
+  // `if` n'etait donc jamais atteint. Ce sont pourtant des branches
+  // d'autorisation, et la regle du projet impose de prouver le refus.
+  const adminSession = (): Session =>
+    ({
+      user: {
+        id: 'cl000000000000000000admin',
+        role: 'SYSTEM_ADMIN',
+        companyId: null,
+      },
+      expires: new Date(Date.now() + 86400_000).toISOString(),
+    }) as unknown as Session
+
+  const impersonationCookie = JSON.stringify({
+    originalAdminId: 'cl000000000000000000admin',
+    impersonatedCompanyId: 'cl00000000000000000comp1',
+  })
+
+  it("detourne un SYSTEM_ADMIN hors de /app/admin pendant une impersonation", () => {
+    const result = authorized({
+      auth: adminSession(),
+      request: requestFor('/app/admin/companies', impersonationCookie),
+    })
+
+    expect(result).toBeInstanceOf(Response)
+    const location = (result as Response).headers.get('location') ?? ''
+    expect(location).toContain('/app/dashboard')
+  })
+
+  it('laisse le meme admin acceder a /app/admin hors impersonation', () => {
+    const result = authorized({
+      auth: adminSession(),
+      request: requestFor('/app/admin/companies'),
+    })
+
+    expect(result).toBe(true)
+  })
+
+  it("laisse passer quand le cookie est illisible, le RBAC prenant le relais", () => {
+    // Un cookie corrompu ne doit pas bloquer l'admin : le JSON.parse leve, et
+    // le catch laisse continuer. Sans ce test, la branche d'erreur n'est
+    // jamais exercee.
+    const result = authorized({
+      auth: adminSession(),
+      request: requestFor('/app/admin/companies', 'ceci-nest-pas-du-json'),
+    })
+
+    expect(result).toBe(true)
+  })
+
+  it("ignore un cookie JSON valide mais sans originalAdminId", () => {
+    // Un objet JSON quelconque ne doit pas etre pris pour une impersonation.
+    const result = authorized({
+      auth: adminSession(),
+      request: requestFor('/app/admin/companies', JSON.stringify({ a: 1 })),
+    })
+
+    expect(result).toBe(true)
+  })
+})
+
+describe('authorized() — le guard d\'abonnement est court-circuite en impersonation (SP-592)', () => {
+  // SP-456 : en impersonation, les donnees d'abonnement du JWT sont celles de
+  // l'admin et non de l'entreprise consultee. Appliquer le guard bloquerait a
+  // tort. Cette branche n'etait pas couverte non plus.
+  const expiredDirector = (): Session =>
+    ({
+      user: {
+        id: 'cl000000000000000000user1',
+        role: 'DIRECTOR',
+        companyId: 'cl00000000000000000comp1',
+        subscriptionStatus: 'CANCELED',
+        trialEndsAt: new Date(Date.now() - 30 * 86400_000).toISOString(),
+        currentPeriodEnd: new Date(Date.now() - 30 * 86400_000).toISOString(),
+      },
+      expires: new Date(Date.now() + 86400_000).toISOString(),
+    }) as unknown as Session
+
+  it('redirige vers billing un abonnement expire, hors impersonation', () => {
+    const result = authorized({
+      auth: expiredDirector(),
+      request: requestFor('/app/dashboard/employees'),
+    })
+
+    expect(result).toBeInstanceOf(Response)
+    const location = (result as Response).headers.get('location') ?? ''
+    expect(location).toContain('/app/dashboard/billing')
+  })
+
+  it("ne le redirige pas quand une impersonation est en cours", () => {
+    const result = authorized({
+      auth: expiredDirector(),
+      request: requestFor(
+        '/app/dashboard/employees',
+        JSON.stringify({ originalAdminId: 'cl000000000000000000admin' })
+      ),
     })
 
     expect(result).toBe(true)
