@@ -26,8 +26,19 @@ vi.mock('../ScheduleCalendarMobile', () => ({
   ),
 }))
 
+// Le mock expose les props reçues : sans cela, un maillon coupé dans la chaîne
+// `SchedulesPageContent` -> `ScheduleCalendar` -> `WeeklyGridView` ne se voit
+// nulle part. C'est exactement le défaut de SP-584, où `leaveRequests` arrivait
+// jusqu'à ce composant sans être transmis plus loin (SP-585).
+const weeklyGridProps = vi.hoisted(() => ({
+  current: null as Record<string, unknown> | null,
+}))
+
 vi.mock('../WeeklyGridView', () => ({
-  WeeklyGridView: () => <div data-testid="weekly-grid">Weekly Grid</div>,
+  WeeklyGridView: (props: Record<string, unknown>) => {
+    weeklyGridProps.current = props
+    return <div data-testid="weekly-grid">Weekly Grid</div>
+  },
 }))
 
 // ============================================================================
@@ -91,6 +102,31 @@ describe('ScheduleCalendar', () => {
       await waitFor(() => {
         expect(screen.getByTestId('weekly-grid')).toBeInTheDocument()
       })
+    })
+
+    // SP-585 : couvre le maillon que ni `WeeklyGridView.test.tsx` (qui monte la
+    // grille directement) ni les tests E2E ne voient. Retirer la prop du rendu
+    // de `ScheduleCalendar` fait rougir ce test, et lui seul.
+    it('transmet les congés reçus à la grille semaine', async () => {
+      mockUseMediaQuery.mockReturnValue(true)
+      const leaveRequests = [
+        { id: 'cl000000000000000000leav1' },
+      ] as never
+
+      render(
+        <ScheduleCalendar
+          schedules={mockSchedules}
+          viewMode="week"
+          currentDate={new Date('2026-01-26')}
+          leaveRequests={leaveRequests}
+        />
+      )
+
+      await waitFor(() => {
+        expect(screen.getByTestId('weekly-grid')).toBeInTheDocument()
+      })
+
+      expect(weeklyGridProps.current?.leaveRequests).toBe(leaveRequests)
     })
 
     it('affiche le calendrier desktop quand isDesktop=true et viewMode=day', async () => {
