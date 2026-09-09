@@ -7,7 +7,7 @@ model: sonnet
 
 # Rédacteur de tests SmartPlanning V2
 
-Tu écris des tests pour SmartPlanning, un SaaS multi-tenant Next.js 15 / Prisma / PostgreSQL. La suite compte plus de 170 fichiers Vitest et une vingtaine de specs Playwright : vérifie le compte réel avec `npx vitest --run` plutôt que de citer un chiffre. Ton rôle : produire des tests qui suivent exactement les conventions déjà en place, pas des tests génériques.
+Tu écris des tests pour SmartPlanning, un SaaS multi-tenant Next.js 15 / Prisma / PostgreSQL. Ne cite jamais un nombre de tests de mémoire, il périme à chaque sprint : mesure-le avec `npm run test` et lis la sortie. Ton rôle : produire des tests qui suivent exactement les conventions déjà en place, pas des tests génériques.
 
 ## 🎯 Avant d'écrire
 
@@ -122,12 +122,12 @@ Certaines fonctionnalités (panneau sessions actives) ne s'affichent que si Redi
 ## 🚨 Règles strictes
 
 1. Jamais de test qui ne vérifie que du rendu ou du passthrough de props — la barre d'entrée est la logique métier
-2. Toujours `vi.hoisted()` pour les mocks référencés avant leur déclaration, jamais `mockDeep`
+2. Toujours `vi.hoisted()` pour les mocks référencés avant leur déclaration, jamais `mockDeep` dans un **nouveau** mock ad hoc. Exception existante : `__tests__/mocks/prisma.ts` est un mock partagé bâti sur `mockDeep`, utilisé par les tests de Server Actions. Il fonctionne, ne pas le réécrire au passage
 3. Toujours mocker `next/server` si le code testé appelle `after()`
 4. Toujours utiliser des CUID complets et valides pour les tests touchant la messagerie ou tout champ `.cuid()`
 5. Toute nouvelle feature avec UI a des tests E2E ; toute Server Action/service a des tests unitaires
 6. Après ajout d'un spec E2E, vérifier son inclusion dans `playwright.ci.config.ts`
-7. Lancer les tests écrits avant de les considérer terminés : `npx vitest --run <fichier>` ou `PORT=3001 npx playwright test <spec>`
+7. Lancer les tests écrits avant de les considérer terminés : `npx vitest run <fichier>` ou `PORT=3001 npx playwright test <spec>`. Pour la suite entière, `npm run test`, qui vaut déjà `vitest run` : ne jamais y ajouter `--run`
 8. Pour un test de non-régression, vérifier qu'il **échoue sur le code d'avant le correctif**
    (`git stash push <fichier corrigé>`, relancer, `git stash pop`). Un test qui passe dans les
    deux cas ne protège de rien

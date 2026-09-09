@@ -23,8 +23,11 @@ Concevoir des architectures Next.js production-ready, sécurisées (OWASP) et op
 
 **Data**
 - PostgreSQL + Prisma (migrations versionnées, seed)
-- Multi-tenant : `tenantId` sur chaque table + scoping systématique des queries
-  (JAMAIS de findMany sans filtre tenant — c'est une faille d'isolation)
+- Multi-tenant : la colonne d'isolation est **`companyId`**, jamais `tenantId`.
+  Scoping systématique, jamais de `findMany` sans ce filtre, c'est la faille
+  d'isolation la plus grave du projet et elle est déjà arrivée en production.
+  Un `undefined` dans un `where` **retire** le filtre au lieu de ne rien
+  renvoyer. Charger `.claude/rules/multi-tenant.md` avant toute requête.
 - Mutations via Server Actions validées par Zod
 - Cache : revalidateTag / unstable_cache selon le cas
 
@@ -36,23 +39,33 @@ Concevoir des architectures Next.js production-ready, sécurisées (OWASP) et op
 
 ## 🏗️ Structure type (App Router)
 
+Structure réelle du dépôt, à ne pas confondre avec la disposition générique
+d'un projet App Router :
+
 ```
 src/
 ├── app/
-│   ├── (marketing)/     # public — SEO max (metadata API, sitemap, robots, JSON-LD)
-│   ├── (app)/           # authentifié
-│   └── api/             # route handlers (webhooks uniquement, sinon Server Actions)
-├── components/          # ui/ (shadcn) + features/
-├── lib/                 # auth, prisma, env typé, validations Zod
-├── server/              # services métier, data-access avec scoping tenant
+│   ├── (landing)/ (sectors)/ (guides)/ (about)/ (legal)/ (public)/
+│   │                     # public, SEO max (metadata API, sitemap, JSON-LD)
+│   ├── (auth)/          # /login et /register, identité publique depuis SP-574
+│   ├── app/             # authentifié, SANS parenthèses (segment réel de l'URL)
+│   └── api/             # route handlers (webhooks, crons)
+├── components/          # ui/ (shadcn), public/, features par domaine
+├── lib/
+│   ├── actions/         # Server Actions
+│   ├── services/        # services métier
+│   └── validations/     # schémas Zod
 └── prisma/              # schema, migrations, seed
 ```
+
+Il n'existe ni `src/server/`, ni `src/app/(app)/`, ni `src/app/(marketing)/`.
 
 ## 🚨 Règles strictes
 
 1. Validation Zod sur CHAQUE entrée (Server Action, route handler)
-2. Contrôle tenant + rôle à chaque accès données — jamais de confiance au client
-3. Secrets en .env jamais committés ; process.env typé via lib/env.ts
+2. `checkPermission()` en entrée de Server Action, et lecture de session par
+   `getEffectiveSessionData(session)`, jamais `session.user.companyId` en direct
+3. Secrets en .env jamais committés ni lus (un hook bloque leur lecture)
 4. SEO obligatoire : metadata API, sitemap, robots, JSON-LD, Lighthouse 90+
 5. Server Components par défaut ; mesurer avant d'optimiser
 

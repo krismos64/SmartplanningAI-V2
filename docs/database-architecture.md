@@ -1,9 +1,9 @@
 # 🗄️ Architecture Base de Données - SmartPlanning V2
 
-**Dernière mise à jour** : 19 avril 2026
+**Dernière mise à jour** : 9 septembre 2026
 **ORM** : Prisma 6.18.0
 **Base** : PostgreSQL 16
-**Migrations** : 23 migrations appliquées
+**Migrations** : 24 migrations appliquées
 
 ---
 
@@ -11,7 +11,7 @@
 
 **Type :** Architecture **multi-tenant** avec isolation par entreprise
 **Pattern :** SaaS avec abonnements Stripe
-**Modèles :** 20 tables principales + 4 tables NextAuth
+**Modèles :** 18 tables principales + 4 tables NextAuth
 
 ---
 
@@ -626,6 +626,7 @@ Employee = Métier RH (job, équipe, contrat, compétences)
 | Visibilité         | Qui peut voir         |
 | ------------------ | --------------------- |
 | `DIRECTOR_ONLY`    | Directeurs uniquement |
+| `MANAGER_ONLY`     | Managers de l'équipe concernée |
 | `MANAGER_DIRECTOR` | Managers + Directeurs |
 | `ALL`              | Tous (info générale)  |
 
@@ -642,11 +643,25 @@ Employee = Métier RH (job, équipe, contrat, compétences)
 - action: AuditAction              // CREATE, UPDATE, DELETE, LOGIN, EXPORT...
 - entityType: AuditEntityType      // COMPANY, EMPLOYEE, TEAM, CONVERSATION, MESSAGE...
 - entityId: String?                // ID de l'objet concerné
-- userId: String
+- userId: String?                  // Nullable en SetNull depuis SP-580, voir ci-dessous
 - companyId: String?               // Nullable (SYSTEM_ADMIN)
 - details: Json?                   // Anciennes valeurs, IP, etc.
 - createdAt: DateTime              // Pas de updatedAt (un log ne se modifie jamais)
 ```
+
+**SP-580, 8 septembre 2026 : `userId` est passé nullable en `onDelete: SetNull`.**
+Il était NOT NULL en `Cascade`, si bien que supprimer un compte effaçait les
+lignes d'audit le concernant, **y compris l'audit `DELETE` écrit juste avant**.
+Mesure avant correctif : 1517 lignes en base, dont zéro action `DELETE` sur
+`entityType` USER.
+
+Deux conséquences pour tout code qui lit cette table :
+
+- la relation `user` **peut être nulle**. Tout écran qui affiche l'auteur passe
+  par `resolveAuditAuthor` (`src/lib/audit-author.ts`), l'identité étant déposée
+  dans `details` avant la suppression
+- un `LOGOUT` émis après la suppression viole toujours la clé étrangère, celle-ci
+  étant vérifiée à l'insertion. Ce `P2003` est un cas attendu, traité en `warn`
 
 ---
 
@@ -855,6 +870,41 @@ Employee = Métier RH (job, équipe, contrat, compétences)
 
 - `[companyId]` — recherche par entreprise
 - `[emailType, sentAt]` — recherche par type et date
+
+---
+
+### 1️⃣9️⃣ **ContactMessage** (Formulaire de contact public - SP-576)
+
+**Rôle :** Persiste les demandes du formulaire de contact public. Seul modèle
+sans `companyId` : il porte des messages de visiteurs non connectés, donc hors
+de toute entreprise. L'isolation multi-tenant ne s'y applique pas, la lecture
+est réservée au `SYSTEM_ADMIN` (écran admin livré par SP-577).
+
+**Champs principaux :**
+
+```
+- id: String (cuid)
+- name, email, subject: String
+- message: String (Text)
+- emailStatus: String              // PENDING, SENT ou FAILED, défaut PENDING
+- emailError: String? (Text)
+- ipAddress: String?               // Traçabilité anti-abus, données RGPD
+- userAgent: String? (Text)        // purgées avec le message
+- isRead: Boolean                  // Suivi du traitement commercial
+- handledAt: DateTime?
+- createdAt, updatedAt: DateTime
+```
+
+**Le statut d'envoi est distinct du message.** Une ligne en `FAILED` signale une
+demande bien reçue que personne n'a vue passer par email, donc à traiter à la
+main. Le formulaire affichait un succès sans rien envoyer ni persister depuis
+SP-287, défaut corrigé par SP-576.
+
+**Index :**
+
+- `[createdAt desc]` — liste admin, les plus récents d'abord
+- `[isRead, createdAt desc]` — filtre « non lus »
+- `[emailStatus]` — retrouver les notifications jamais parties
 
 ---
 
@@ -1136,11 +1186,11 @@ enum ConversationMemberRole {
 
 | Métrique              | Valeur |
 | --------------------- | ------ |
-| Tables principales    | 20     |
+| Tables principales    | 18     |
 | Tables NextAuth       | 4      |
 | Enums                 | 16     |
-| Migrations appliquées | 23     |
-| Index                 | 55+    |
+| Migrations appliquées | 24     |
+| Index                 | 65     |
 
 ---
 
@@ -1151,6 +1201,9 @@ enum ConversationMemberRole {
 | 19/04/2026 | Sprint 13 — `companyId` nullable sur Conversation et Message (SP-513). Messagerie SYSTEM_ADMIN cross-tenant. 22→23 migrations |
 | 03/04/2026 | Ajout Messagerie : Conversation, ConversationMember, Message (SP-500) + avatarUrl + isArchived. AuditLog documenté. 17→20 tables, 12→16 enums, 16→19 migrations |
 | 10/02/2026 | Ajout EmailLog (SP-368), correction compteur 16→17 tables, mise à jour diagramme et relations Company |
+| 09/09/2026 | Correction du document : `AuditLog.userId` nullable en SetNull (SP-580), ajout de ContactMessage (SP-576), `MANAGER_ONLY` rétabli dans IncidentNoteVisibility, compteurs remesurés (22 modèles, 24 migrations, 65 index) |
+| 08/09/2026 | `AuditLog.userId` passe nullable en `onDelete: SetNull` (SP-580), l'audit survit à la suppression de son auteur |
+| 13/08/2026 | Ajout ContactMessage (SP-576), formulaire de contact persisté |
 | 10/02/2026 | Correction Subscription per-seat, Payment typé, SubscriptionStatus +INCOMPLETE, diagramme Subscription→Payment |
 | 04/02/2026 | Ajout User.image (Cloudinary SP-272), mise à jour complète documentation |
 | 01/2026    | Ajout IncidentNote (SP-424), PersonalTask (SP-417)                       |

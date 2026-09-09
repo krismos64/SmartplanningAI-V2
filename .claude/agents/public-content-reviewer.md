@@ -103,7 +103,9 @@ Une page doit répondre avant de convaincre :
   trois pages filles étaient indexées, ce qui les affaiblissait au crawl
 - Header **et** footer mis à jour. La liste des guides du header est tenue à la
   main, un test la confronte au registre
-- `llms.txt` et `llms-full.txt` à jour, accents complets, aucun concurrent
+- `public/llms.txt` à jour, accents complets, aucun concurrent. `llms-full.txt`
+  est une route générée depuis les registres (`src/app/llms-full.txt/`), elle
+  suit toute seule : rien à y écrire à la main
 - `sitemap.ts` : date réelle dans `PAGE_LAST_MODIFIED`, jamais `new Date()`, un
   `lastmod` qui bouge à chaque build est ignoré par Google
 - Fil d'Ariane rendu dans l'aplat du hero, il porte le `BreadcrumbList` que

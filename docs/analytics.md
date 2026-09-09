@@ -161,19 +161,12 @@ Accès : `https://analytics.smartplanning.fr`
 ### Tests unitaires
 
 ```bash
-# Hook useUmamiTrack
-npm test -- --run __tests__/hooks/useUmamiTrack.test.ts
-
-# Composant UmamiAnalytics
-npm test -- --run __tests__/components/analytics/UmamiAnalytics.test.tsx
+# Composant UmamiAnalytics, seul test existant sur cette zone
+npx vitest run __tests__/components/analytics/UmamiAnalytics.test.tsx
 ```
 
-### Tests E2E
-
-```bash
-# Tests analytics complets
-npx playwright test e2e/specs/analytics.spec.ts
-```
+Le hook `use-umami-track.ts` n'a pas de test dédié, et il n'existe pas de spec
+E2E analytics. Les deux restent à écrire.
 
 ### Vérifier en développement
 
@@ -211,7 +204,7 @@ src/
 │   ├── UmamiAnalyticsWrapper.tsx   # Server Component - lecture env vars runtime (utilisé dans layout.tsx)
 │   └── index.ts                    # Barrel export (Analytics + Wrapper + hook + types)
 ├── hooks/
-│   └── useUmamiTrack.ts      # Hook pour events custom
+│   └── use-umami-track.ts    # Hook pour events custom
 ├── lib/cookies/
 │   └── scripts.ts            # notifyConsentChange()
 └── app/
@@ -225,19 +218,15 @@ src/
 └── umami.conf                # Reverse proxy analytics.smartplanning.fr
 
 __tests__/
-├── components/analytics/
-│   ├── UmamiAnalytics.test.tsx
-│   └── UmamiAnalyticsWrapper.test.tsx
-└── hooks/
-    └── useUmamiTrack.test.ts
-
-e2e/specs/
-└── analytics.spec.ts         # Tests E2E
+└── components/analytics/
+    └── UmamiAnalytics.test.tsx
 ```
+
+Pas de test sur le hook, pas de spec E2E analytics à ce jour.
 
 ## Ressources
 
 - [Documentation officielle Umami](https://umami.is/docs)
 - [API Events Umami](https://umami.is/docs/track-events)
 - [GitHub Umami](https://github.com/umami-software/umami)
-- [SP-283 - Système de consentement cookies](./SP-283-cookie-banner-plan.md)
+- SP-283, système de consentement cookies (ticket Jira, le plan n'est pas versionné dans `docs/`)
