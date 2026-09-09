@@ -77,3 +77,88 @@ ssh smartplanning 'sudo /opt/smartplanning/ops/check-tls-expiry.sh'
 ```bash
 ssh smartplanning 'sudo journalctl -t smartplanning-tls --since "7 days ago"'
 ```
+
+---
+
+## `check-public-ports.sh`
+
+Vérifie qu'aucun port applicatif ne répond **depuis Internet**, et que 80 et 443
+répondent toujours.
+
+### Pourquoi ce script existe
+
+Le 8 septembre 2026 (SP-583), `smartplanning-app` et `smartplanning-umami`
+servaient l'application complète sur `http://51.77.146.72:3000` et `:3001`,
+`/api/auth/session` compris, en contournant Nginx, TLS et la limitation de
+débit. Un mot de passe saisi par le port 3000 voyageait en clair.
+
+`ufw status` donnait pourtant ces ports fermés. Docker insère ses règles DNAT
+dans `iptables` **en amont** de la chaîne d'ufw : un `-p 3000:3000` publie sur
+toutes les interfaces, et le pare-feu de l'hôte ne s'y applique pas.
+
+Le correctif tient à une convention d'écriture, `127.0.0.1:3000:3000` plutôt que
+`3000:3000`. Rien ne l'impose mécaniquement, la chaîne `DOCKER-USER` étant vide
+sur cette machine. Ce script ne prévient donc pas la réapparition du défaut, il
+la détecte.
+
+### Pourquoi il vise l'IP publique et non `localhost`
+
+`curl localhost:3000` répond 200 sur le VPS même quand le port est correctement
+restreint. C'est précisément la mesure qui ne prouve rien, et celle qui avait
+laissé passer SP-583. Le script interroge donc l'adresse publique de la machine,
+seul point de vue qui distingue un port restreint d'un port ouvert.
+
+Vérifié par mutation le 9 septembre 2026 : un serveur ouvert sur `0.0.0.0:3009`
+a bien été détecté, tandis que les ports correctement publiés répondent
+« injoignable ».
+
+### Ce qu'il détecte
+
+| Situation | Détecté |
+| --- | --- |
+| Port applicatif (3000-3003, 5432, 6379, 8080) joignable depuis Internet | oui |
+| Nginx arrêté, 80 ou 443 injoignable | oui |
+| Adresse publique indéterminable ou privée | oui, sortie en erreur plutôt qu'un faux négatif |
+
+Un nouveau service se déclare dans `PORTS_INTERDITS`, en tête du script.
+
+### Installation sur le VPS
+
+```bash
+scp scripts/ops/check-public-ports.sh smartplanning:/tmp/
+ssh smartplanning 'sudo mv /tmp/check-public-ports.sh /opt/smartplanning/ops/ \
+  && sudo chown root:root /opt/smartplanning/ops/check-public-ports.sh \
+  && sudo chmod 700 /opt/smartplanning/ops/check-public-ports.sh'
+
+scp scripts/ops/smartplanning-ports-check.cron smartplanning:/tmp/
+ssh smartplanning 'sudo mv /tmp/smartplanning-ports-check.cron \
+  /etc/cron.d/smartplanning-ports-check && sudo chmod 644 /etc/cron.d/smartplanning-ports-check'
+```
+
+Le script tourne une fois par jour, à 06:43. Le défaut qu'il attrape ne survient
+qu'au déploiement d'un service, jamais spontanément : une détection sous 24 h
+suffit, là où le certificat TLS justifie deux passages quotidiens.
+
+### Vérifier qu'il fonctionne toujours
+
+Par mutation, en ouvrant un port temporaire sur toutes les interfaces :
+
+```bash
+# Ouvre un port exposé, lance le contrôle, referme
+ssh smartplanning 'nohup python3 -m http.server 3003 --bind 0.0.0.0 >/dev/null 2>&1 &
+  sleep 2
+  sudo /opt/smartplanning/ops/check-public-ports.sh; echo "code retour: $?"
+  pkill -f "http.server 3003"'
+
+# Doit repasser au vert et effacer la trace
+ssh smartplanning 'sudo /opt/smartplanning/ops/check-public-ports.sh'
+```
+
+Le premier appel doit sortir en 1 et envoyer un email nommant le port 3003. Le
+second doit sortir en 0.
+
+### Consulter le journal
+
+```bash
+ssh smartplanning 'sudo journalctl -t smartplanning-ports --since "7 days ago"'
+```

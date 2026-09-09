@@ -96,7 +96,9 @@ tourne sur cette machine appartient à SmartPlanning.
 de sa chaîne : un port peut répondre depuis Internet alors qu'`ufw status` le dit
 fermé. Tout port qui n'a pas à être joignable de l'extérieur se publie en
 `127.0.0.1:` et se vérifie depuis une autre machine, jamais depuis le VPS. C'est
-SP-583, règle dans `prisma-pieges.md`.
+SP-583, règle dans `prisma-pieges.md`. Rien ne l'impose mécaniquement, la chaîne
+`DOCKER-USER` étant vide : `scripts/ops/check-public-ports.sh` le surveille en
+cron quotidien depuis SP-587.
 
 Le CD ne synchronise que `docker-compose.prod.yml`. **Umami tourne depuis
 `/home/deploy/umami/docker-compose.yml`, hors du dépôt** : toute correction le

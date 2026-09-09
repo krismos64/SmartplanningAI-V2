@@ -210,3 +210,98 @@ sous `playwright.ci.config.ts` avant de conclure.
 Le spec entre dans la whitelist CI, 9 entrées, aucune morte. Reste ouvert le
 compose de production de Lune & Soleil et le durcissement `iptables`, tous deux
 inchangés depuis SP-583.
+
+---
+
+# 9 septembre 2026, troisième partie : la documentation prise en défaut, puis un filet sur les ports
+
+| Champ | Valeur |
+|---|---|
+| Ticket | SP-586, SP-587 |
+| Documents produits | `scripts/ops/check-public-ports.sh`, `scripts/ops/smartplanning-ports-check.cron` |
+| Documents modifiés | `README.md`, `CLAUDE.md`, `docs/deployment.md`, `docs/database-architecture.md`, `docs/analytics.md`, `scripts/ops/README.md`, 4 agents, `seo-content.md` |
+| Contrôles | CI verte sur SP-586 (run 34328307270), script SP-587 prouvé par mutation sur le VPS |
+| Jira | SP-586 créé et clos, SP-587 créé |
+| Mémoire | fiche d'état réécrite, `tableau-recree-a-chaque-rendu` corrigée |
+| Production | cron installé et actif sur le VPS |
+| Pull request | #88 mergée, #89 ouverte |
+
+## Ce qui a été fait
+
+### L'audit de la documentation (SP-586)
+
+Demande de vérifier que README, `CLAUDE.md`, agents, skills, hooks, journal,
+mémoire, `docs/` et Jira étaient à jour. Méthode retenue : confronter chaque
+affirmation chiffrée ou pointant vers un chemin au dépôt **par une commande**,
+jamais la relire. C'est ce qui a fait la différence, la plupart des défauts
+étant invisibles à la lecture.
+
+**Le plus grave était dans un agent.** `nextjs-architect` décrivait une colonne
+d'isolation `tenantId`. Mesure : zéro occurrence dans `schema.prisma`, contre 53
+`companyId`. Plus trois répertoires inexistants et un `lib/env.ts` fantôme. Un
+agent invoqué sur cette base écrivait un filtre d'isolation sur une colonne qui
+n'existe pas, sur la classe de défaut la plus grave du projet.
+
+**Le README empêchait d'installer le projet.** `docker-compose up -d` échoue, il
+n'y a aucun compose à la racine, et les trois ports comme les identifiants
+Adminer étaient faux.
+
+**Deux documents disaient l'inverse du réel.** `deployment.md` donnait les ports
+en publication nue alors que SP-583 les avait passés sur la boucle locale la
+veille : un lecteur en aurait conclu que la faille était toujours ouverte. Et il
+annonçait un CI déclenché sur toutes les branches, alors qu'il ne l'est que sur
+`main`.
+
+Tous les compteurs remesurés. Le tableau des tests du README était déjà périmé
+par SP-585, livré la veille.
+
+### Le filet sur les ports (SP-587)
+
+Question posée sur les deux points laissés ouverts par SP-583. Vérification
+faite sur le VPS plutôt que paraphrase du journal, et **l'un des deux n'était
+plus ouvert** : Lune & Soleil a été déployé depuis, et publie correctement son
+port en `127.0.0.1:3002`. La leçon avait été appliquée au second projet sans
+que le garde-fou existe.
+
+Restait le durcissement `iptables`. La règle `DOCKER-USER` a été écrite,
+montrée, puis **écartée après mesure** : `iptables-persistent` n'est pas
+installé, donc la règle disparaîtrait au premier redémarrage sans bruit, et deux
+des trois ponts Docker portent des noms générés qu'un réseau recréé change. Deux
+modes de panne silencieuse ajoutés pour se prémunir d'un défaut dont la
+fermeture est vérifiée.
+
+Un cron de surveillance a été livré à la place. Il détecte au lieu de prévenir,
+ce qui suffit sur une machine administrée seul dont la surface publique se
+limite à trois ports.
+
+## Les écarts
+
+**J'ai relayé deux points ouverts sans les vérifier.** « Lune & Soleil et le
+durcissement iptables, inchangés depuis SP-583 » : la première moitié était
+fausse depuis le déploiement de la boutique. Recopier une liste de points
+ouverts sans la confronter à l'état réel, c'est exactement le défaut que
+l'audit du même jour venait de corriger dans la documentation.
+
+**Le point de conception du script n'était pas celui attendu.** Le premier
+réflexe était qu'un cron sur le VPS ne pouvait rien prouver, la règle de SP-583
+disant que `curl localhost` répond toujours. Mesure faite, viser l'adresse
+publique **depuis le VPS lui-même** discrimine correctement : `injoignable` sur
+`51.77.146.72:3000` là où `127.0.0.1:3000` répond 200. Aucune machine tierce
+n'était nécessaire.
+
+**Ma première recherche du cron TLS a conclu à tort qu'il n'était pas
+installé.** Je cherchais dans la crontab root et dans `/var/www`, il vit dans
+`/etc/cron.d/` et `/opt/smartplanning/ops/`. Vérifier à plusieurs endroits avant
+de conclure à une absence.
+
+## Prochaine étape
+
+Les essais en cours n'ont toujours pas été regardés en base depuis le 26 août,
+alors que les convertir reste le premier objectif post-CDA.
+
+L'epic SP-342 « Chatbot IA Mistral » et ses deux sous-tickets dorment depuis
+sept mois, sans une ligne de code ni de documentation. À fermer ou à assumer
+comme backlog, c'est une décision produit.
+
+Le durcissement `iptables` reste ouvert, désormais assumé par écrit plutôt que
+simplement reporté.
