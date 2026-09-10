@@ -1,12 +1,15 @@
 /**
  * Configuration Playwright optimisée pour la CI
  *
- * Stratégie : Tests critiques uniquement (~122 tests, 8 specs)
+ * Stratégie : Tests critiques uniquement (129 tests, 9 specs)
  * - Authentification (login + reset password) & RBAC
  * - CRUD principaux
  * - Workflow congés complet (création + validation)
  *
- * Les tests complets (~213 tests, 19 specs) sont exécutés dans le
+ * Compteurs mesurés le 10 septembre 2026 par `npx playwright test --list`.
+ * Les remesurer plutôt que les recopier, ils bougent à chaque sprint.
+ *
+ * Les tests complets (261 tests, 23 specs) sont exécutés dans le
  * workflow nightly. ATTENTION : testMatch est une whitelist explicite —
  * un fichier renommé/supprimé ne fait PAS échouer la config, il disparaît
  * silencieusement de la CI. Vérifier cette liste après chaque

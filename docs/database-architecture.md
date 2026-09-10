@@ -11,7 +11,7 @@
 
 **Type :** Architecture **multi-tenant** avec isolation par entreprise
 **Pattern :** SaaS avec abonnements Stripe
-**Modèles :** 18 tables principales + 4 tables NextAuth
+**Modèles :** 22 au total, 19 métier et 3 propres à NextAuth (`Account`, `Session`, `VerificationToken`), `User` étant partagé et compté parmi les modèles métier
 
 ---
 
@@ -1131,6 +1131,20 @@ enum ConversationMemberRole {
 }
 ```
 
+### PaymentStatus
+
+```prisma
+enum PaymentStatus {
+  PENDING         // Créé, en attente de traitement par Stripe
+  SUCCEEDED       // Encaissé
+  FAILED          // Carte refusée, fonds insuffisants
+  REFUNDED        // Remboursé
+  REQUIRES_ACTION // Action du client requise (3D Secure)
+}
+```
+
+Les seize enums du schéma sont désormais tous décrits ici.
+
 ---
 
 ## 🎓 Points Clés pour la Soutenance CDA
@@ -1233,8 +1247,8 @@ chiffrement au repos reste une décision d'architecture, sans ticket à ce jour.
 
 | Métrique              | Valeur |
 | --------------------- | ------ |
-| Tables principales    | 18     |
-| Tables NextAuth       | 4      |
+| Tables métier         | 19     |
+| Tables NextAuth pures | 3      |
 | Enums                 | 16     |
 | Migrations appliquées | 24     |
 | Index                 | 65     |

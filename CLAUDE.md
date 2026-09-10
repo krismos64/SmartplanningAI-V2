@@ -84,7 +84,13 @@ récente en début de session** donne l'état du projet plus vite que Jira.
   `funnel-analytics.service.ts` et n'émettent **aucune donnée personnelle**,
   ce qui les rend licites sans consentement. Ajouter un champ à
   `FunnelEventData` demande de vérifier qu'il n'identifie ni une personne ni
-  une entreprise. Piège du User-Agent dans `prisma-pieges.md`
+  une entreprise. Piège du User-Agent dans `prisma-pieges.md`.
+  **Les deux chemins ne sont pas sur la même échelle** : mesure du 10 septembre
+  2026, Nginx comptait 401 requêtes et 86 visiteurs quand Umami enregistrait
+  zéro session, la quasi-totalité des visiteurs refusant le consentement.
+  Diviser une étape serveur par une étape navigateur donne donc un taux
+  faussement excellent. Comparer les étapes 4 à 9 entre elles, ou suivre une
+  étape dans le temps. Détail dans `docs/analytics.md`
 
 ## DevOps
 

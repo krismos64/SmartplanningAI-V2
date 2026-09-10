@@ -64,8 +64,8 @@ export default defineConfig({
         'src/components/toast/**',
       ],
       // Seuils fondes sur la mesure du 9 septembre 2026 avec ce perimetre, et
-      // non sur un chiffre rond : lines 52,35 %, branches 75,65 %,
-      // functions 75,83 %.
+      // non sur un chiffre rond : lines 52,38 %, branches 75,65 %,
+      // functions 75,83 %. Remesure le 10 septembre 2026.
       //
       // Ils sont poses deux a trois points sous la mesure : assez de marge pour
       // ne pas rougir sur une variation de quelques lignes, assez de serrage

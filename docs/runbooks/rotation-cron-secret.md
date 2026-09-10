@@ -89,7 +89,10 @@ valeur reste active en mémoire.
 
 ```bash
 cd /var/www/smartplanning
-docker compose up -d --force-recreate smartplanning-app
+# `app` est le nom du SERVICE dans docker-compose.prod.yml.
+# `smartplanning-app` est le container_name : docker compose ne le connait pas
+# et repondrait « no such service », au pire moment d'une rotation de secret.
+docker compose --env-file .env up -d --no-deps --force-recreate app
 ```
 
 Attendre que l'application réponde :

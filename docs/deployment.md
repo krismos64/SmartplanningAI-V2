@@ -279,6 +279,13 @@ HEALTH_API_KEY=<GENERER_AVEC_openssl_rand_base64_32>
 | `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | `src/lib/stripe/`     | Clé publique Stripe        |
 | `STRIPE_PRICE_ID`                | `src/lib/stripe/`         | ID du prix per-seat Stripe |
 
+**`RESEND_API_KEY` est un résidu.** `docker-compose.prod.yml` la déclare encore,
+mais elle n'est utilisée nulle part : `resend` n'est pas une dépendance de
+`package.json`, et la chaîne n'apparaît dans aucun fichier de `src/`. Les envois
+passent par Nodemailer et le SMTP Hostinger. Vérifié le 10 septembre 2026, à
+retirer du compose lors d'un prochain passage dessus. Ne pas la renseigner, elle
+ne servirait à rien.
+
 ### GitHub Secrets requis
 
 Les secrets suivants doivent être configurés dans GitHub (Settings → Secrets → Actions) :

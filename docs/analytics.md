@@ -1,8 +1,8 @@
 # Umami Analytics - Documentation technique
 
-> **Ticket** : SP-345 - Intégration Umami Analytics
+> **Tickets** : SP-345 (intégration Umami), SP-591 (tunnel de conversion)
 > **Statut** : ✅ Implémenté
-> **Dernière mise à jour** : 10 février 2026
+> **Dernière mise à jour** : 10 septembre 2026
 
 ## Vue d'ensemble
 
@@ -71,7 +71,10 @@ docker logs smartplanning-umami --tail 100 -f
 
 ### Composant UmamiAnalytics
 
-Le composant `<UmamiAnalytics />` est déjà intégré dans `layout.tsx`. Il gère :
+C'est `<UmamiAnalyticsWrapper />` qui est intégré dans `layout.tsx`, et non
+`<UmamiAnalytics />` directement : le wrapper est un Server Component, il lit
+les variables d'environnement au runtime et les passe au composant client.
+L'ensemble gère :
 
 - Le chargement conditionnel basé sur le consentement cookies
 - L'écoute des changements de consentement en temps réel
@@ -359,13 +362,19 @@ src/
 ├── components/analytics/
 │   ├── UmamiAnalytics.tsx          # Client Component - chargement du script
 │   ├── UmamiAnalyticsWrapper.tsx   # Server Component - lecture env vars runtime (utilisé dans layout.tsx)
+│   ├── TrackedCtaLink.tsx          # SP-591 - isole la partie cliente au seul lien du CTA (étape 1)
 │   └── index.ts                    # Barrel export (Analytics + Wrapper + hook + types)
 ├── hooks/
-│   └── use-umami-track.ts    # Hook pour events custom
+│   └── use-umami-track.ts    # Hook pour events custom, conditionné au consentement
+├── lib/services/
+│   ├── funnel-analytics.service.ts        # SP-591 - émission serveur des étapes 4 à 9
+│   ├── funnel-analytics.config.ts         # SP-591 - noms d'étapes et condition d'activation
+│   ├── funnel-milestones.service.ts       # SP-591 - détection des premières fois
+│   └── __tests__/funnel-analytics.test.ts # SP-591 - garde-fou « aucune donnée personnelle »
 ├── lib/cookies/
 │   └── scripts.ts            # notifyConsentChange()
 └── app/
-    └── layout.tsx            # <UmamiAnalytics /> intégré
+    └── layout.tsx            # <UmamiAnalyticsWrapper /> intégré
 
 # Sur le VPS (51.77.146.72)
 ~/umami/
