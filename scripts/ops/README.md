@@ -229,10 +229,111 @@ ssh smartplanning 'sudo find /var/backups/smartplanning -name "*.dump.gpg" | wc 
 développe le joker avant `sudo`, donc sans les droits sur un répertoire en
 `0700`, et renvoie 0 à tort.
 
-### Limite connue
+### Limite levée le 10 septembre 2026
 
-Les archives et la clé (`/etc/smartplanning/backup.key`) vivent sur le même
-disque que la base. La perte du VPS emporte les trois. C'est SP-594.
+Les archives et la clé vivaient sur le même disque que la base, donc la perte
+du VPS emportait les trois. `sync-backups-offsite.sh` ci-dessous copie
+désormais chaque archive hors de la machine, et la clé est conservée dans le
+gestionnaire de mots de passe ainsi que sur le poste de développement.
+
+Il reste que le disque du VPS n'est pas chiffré (`ext4` nu, aucun volume
+LUKS) : un accès fichier sur la machine donne accès à la clé, donc aux
+archives locales. Le chiffrement au repos reste une décision d'architecture
+non tranchée, sans ticket à ce jour.
+
+---
+
+## `sync-backups-offsite.sh`
+
+Copie la dernière archive chiffrée vers Backblaze B2, chez un fournisseur
+**distinct d'OVH**.
+
+### Pourquoi ce script existe
+
+SP-593 sauvegardait la base sur le disque qui la porte. Photocopier un document
+et ranger la photocopie dans le même tiroir ne protège pas de l'incendie du
+tiroir : une panne matérielle, un incident OVH ou un chiffrement par
+rançongiciel emportait la base et ses sauvegardes d'un seul coup.
+
+Un stockage objet OVH aurait couvert le disque mort, pas la panne du
+fournisseur. D'où le choix d'un tiers.
+
+### Pourquoi l'API native B2 et non S3
+
+L'API S3-compatible impose une signature AWS v4, soit plusieurs dizaines de
+lignes de HMAC en shell pour rien. L'API native s'utilise en `curl` simple, et
+n'exige **aucun outil supplémentaire** sur le VPS : `curl`, `jq` et `sha1sum`
+y sont déjà.
+
+### Ce qu'il vérifie avant de conclure
+
+| Contrôle | Raison |
+| --- | --- |
+| `b2.conf` lisible, trois variables définies | sans identifiants, rien n'est possible |
+| Archive présente et supérieure à 1 Ko | une archive vide ne protège de rien |
+| **Archive datant de moins de 48 h** | si la sauvegarde locale a cessé, le hors-site paraîtrait sain |
+| La clé donne accès au bucket attendu | une clé trop large ou mal restreinte se voit tout de suite |
+| **Taille et SHA-1 relus depuis B2** | un code 200 dit que la requête a abouti, pas que le fichier est intact |
+
+Le SHA-1 est calculé localement et **vérifié par B2 à la réception** : un
+transfert tronqué est rejeté par le serveur, pas accepté en silence. Même
+distinction qu'entre un email accepté par le relais et un email délivré
+(SP-579).
+
+### Le chiffrement côté serveur du bucket reste désactivé
+
+Contre-intuitif, et délibéré. Les fichiers partent **déjà** chiffrés en AES256
+avec notre passphrase, qui ne quitte jamais le VPS. Activer le chiffrement B2
+ajouterait une couche dont Backblaze détiendrait la clé, sans rien apporter.
+Backblaze ne stocke que des octets illisibles pour lui.
+
+### Vérifier
+
+```bash
+ssh smartplanning 'systemctl list-timers "smartplanning-backup*"'
+ssh smartplanning 'sudo journalctl -u smartplanning-backup-offsite.service -n 20'
+```
+
+Sortie de la première exécution réelle, le 10 septembre 2026 :
+
+```
+Archive : quotidienne-20260910-032029.dump.gpg, 127731 octets
+Envoi vers b2://smartplanning-backups/quotidienne-20260910-032029.dump.gpg
+Verifie hors site : 127731 octets, sha1 concordant
+Rotation distante : 0 supprimee(s), 1 conservee(s) hors site
+```
+
+### Restauration depuis le hors-site
+
+Prouvée le 10 septembre 2026 sur le MacBook, machine autre que le VPS :
+23 tables, 200 objets, et dix comptages identiques à la production
+(`audit_logs` 1519, `schedules` 999, `users` 71, `employees` 85).
+
+**`pg_restore` doit être en version 16.** Un client 15 refuse l'archive avec
+« unsupported version (1.15) in file header », et un `grep` sur sa sortie
+compterait alors zéro objet, ce qui ressemble à une archive vide. Passer par
+un conteneur `postgres:16-alpine`.
+
+Procédure complète :
+[`docs/runbooks/restauration-base-production.md`](../../docs/runbooks/restauration-base-production.md).
+
+### Le piège de la mise en service
+
+La clé d'application, collée depuis un rendu visuel, était arrivée corrompue :
+`K003` était devenu `ЧKOO`, un Tché cyrillique suivi de deux lettres O à la
+place des zéros. Invisible à l'œil, et un contrôle de longueur seul ne l'aurait
+pas vu non plus.
+
+Corriger le préfixe par déduction a fait passer l'erreur de `bad_auth_token` à
+`unauthorized` sans résoudre le problème, d'autres sosies subsistant plus loin.
+**Seul un collage direct, sans affichage intermédiaire, a fonctionné :**
+
+```bash
+pbpaste | tr -d '\n' | ssh smartplanning "sudo tee /etc/smartplanning/b2key.tmp >/dev/null"
+```
+
+Le script affiche désormais un indice de forme quand la clé fait autre chose
+que 31 caractères base64 commençant par `K`.
 
 ---
 

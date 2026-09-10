@@ -1,4 +1,4 @@
-# Restaurer la base de production (SP-593)
+# Restaurer la base de production (SP-593, SP-594)
 
 Procédure à exécuter sur le VPS, en cas de perte ou de corruption des données.
 Elle est écrite pour être suivie sous pression, sans avoir à lire les scripts.
@@ -29,6 +29,8 @@ cassée mais les données saines, le CD restaure l'image précédente tout seul
 | Fréquence | quotidienne, 03:20 UTC |
 | Rétention | 30 jours |
 | Conteneur | `smartplanning-postgres`, en `read_only: true` |
+| **Copie hors site** | Backblaze B2, bucket `smartplanning-backups`, quotidienne 04:10 UTC (SP-594) |
+| **Clé hors VPS** | gestionnaire de mots de passe, et `~/.smartplanning/backup.key` sur le poste |
 
 ## Étape 0, avant tout : sauvegarder l'état actuel
 
@@ -152,10 +154,61 @@ est irrécupérable, il n'y a pas de contournement.
 base ensuite. Les données vivent dans un volume Docker, indépendant du
 conteneur.
 
-## Limite connue, à garder en tête
+## Restaurer quand le VPS est perdu (SP-594)
 
-Les archives et la clé sont sur le **même disque que la base**. Cette procédure
-couvre la perte de données, pas la perte de la machine : si le VPS disparaît,
-les sauvegardes disparaissent avec. C'est l'objet de SP-594.
+La procédure ci-dessus suppose que le VPS répond. S'il a disparu, panne
+matérielle, incident OVH ou rançongiciel, les archives restent disponibles chez
+Backblaze B2 et la clé dans le gestionnaire de mots de passe.
 
-En cas de perte du VPS aujourd'hui, il n'existe aucun moyen de restaurer.
+**Prouvé le 10 septembre 2026** sur un poste de développement : 23 tables,
+200 objets, dix comptages identiques à la production.
+
+```bash
+# 1. S'authentifier (identifiants B2 depuis le gestionnaire de mots de passe)
+R=$(curl -sS -u "<keyID>:<applicationKey>" \
+  https://api.backblazeb2.com/b2api/v4/b2_authorize_account)
+T=$(echo "$R" | jq -r .authorizationToken)
+D=$(echo "$R" | jq -r .apiInfo.storageApi.downloadUrl)
+
+# 2. Lister les archives disponibles
+U=$(echo "$R" | jq -r .apiInfo.storageApi.apiUrl)
+B=$(echo "$R" | jq -r '.apiInfo.storageApi.allowed.buckets[0].id')
+curl -sS -H "Authorization: $T" \
+  "$U/b2api/v4/b2_list_file_names?bucketId=$B&maxFileCount=100" \
+  | jq -r '.files[] | "\(.fileName)  \(.contentLength) octets"'
+
+# 3. Télécharger celle qui convient
+curl -sS -H "Authorization: $T" -o archive.dump.gpg \
+  "$D/file/smartplanning-backups/quotidienne-AAAAMMJJ-HHMMSS.dump.gpg"
+
+# 4. Déchiffrer VERS UN FICHIER, jamais dans un pipe vers head :
+#    `gpg | head` fait sortir gpg en code 2 par SIGPIPE sur une archive saine.
+gpg --batch --decrypt --passphrase-file <cle> --output archive.dump archive.dump.gpg
+head -c 5 archive.dump    # doit afficher PGDMP
+
+# 5. Restaurer dans un PostgreSQL 16
+docker run -d --name pg-restauration -e POSTGRES_PASSWORD=<mdp> \
+  -e POSTGRES_DB=verification postgres:16-alpine
+docker exec -i pg-restauration sh -c 'cat > /tmp/a.dump' < archive.dump
+docker exec pg-restauration pg_restore -U postgres -d verification --no-owner /tmp/a.dump
+
+# 6. Vérifier
+docker exec pg-restauration psql -U postgres -d verification -tAc \
+  "select count(*) from pg_tables where schemaname='public'"   # attendu : 23
+```
+
+**`pg_restore` doit être en version 16.** Un client 15 refuse l'archive avec
+« unsupported version (1.15) in file header ». Un `grep` sur cette sortie
+compterait zéro objet, ce qui ressemble à une archive vide alors que
+l'archive est saine.
+
+Le dump déchiffré contient les données personnelles de tous les salariés de
+toutes les entreprises clientes : le supprimer dès la restauration terminée,
+et arrêter le conteneur de test.
+
+## Limite qui subsiste
+
+Le disque du VPS n'est pas chiffré (`ext4` nu, aucun volume LUKS). Un accès
+fichier sur la machine donne accès à `/etc/smartplanning/backup.key`, donc aux
+archives locales. Les archives distantes restent protégées tant que la clé
+d'application B2 et la passphrase ne sont pas compromises ensemble.

@@ -107,9 +107,9 @@ SP-583, règle dans `prisma-pieges.md`. Rien ne l'impose mécaniquement, la cha�
 `DOCKER-USER` étant vide : `scripts/ops/check-public-ports.sh` le surveille en
 cron quotidien depuis SP-587.
 
-`scripts/ops/` porte cinq scripts de production, tous décrits dans son README :
-surveillance TLS et ports, sauvegarde de la base et son test de restauration,
-et le test hors ligne du script de déploiement.
+`scripts/ops/` porte six scripts de production, tous décrits dans son README :
+surveillance TLS et ports, sauvegarde de la base, sa copie hors site et son
+test de restauration, et le test hors ligne du script de déploiement.
 
 Le CD ne synchronise que `docker-compose.prod.yml`. **Umami tourne depuis
 `/home/deploy/umami/docker-compose.yml`, hors du dépôt** : toute correction le
@@ -134,10 +134,24 @@ se découpe en expand puis contract. Comportement couvert hors ligne par
 `smartplanning-backup.timer`, chiffre en AES256 et conserve 30 jours.
 `test-backup-restore.sh` est son pendant obligatoire, une sauvegarde jamais
 restaurée ne prouvant rien : le lancer avant toute migration risquée. Procédure
-complète dans `docs/deployment.md`. **Les archives et la clé sont sur le même
-disque que la base**, donc la perte du VPS emporte les trois, c'est SP-594. Il
-n'y a par ailleurs aucun chiffrement des données au repos, et l'affirmation a
-été retirée de la politique de confidentialité.
+complète dans `docs/deployment.md`.
+
+**Depuis SP-594, une copie part hors du VPS chaque nuit à 04:10 UTC**, vers
+Backblaze B2, par `sync-backups-offsite.sh` et `smartplanning-backup-offsite.timer`.
+Fournisseur volontairement distinct d'OVH : un stockage objet OVH aurait couvert
+le disque mort, pas la panne du fournisseur. L'envoi est vérifié taille et SHA-1
+relus depuis B2, et le script refuse une archive de plus de 48 h, sinon un
+hors-site paraîtrait sain alors que la sauvegarde locale a cessé. Restauration
+prouvée sur une machine autre que le VPS le 10 septembre 2026.
+
+La clé de chiffrement vit dans le gestionnaire de mots de passe et sur le poste
+de développement, jamais uniquement sur le VPS : une clé rangée à côté de ce
+qu'elle protège ne protège rien. Sans elle, les archives sont illisibles, y
+compris pour nous.
+
+Il n'y a en revanche **aucun chiffrement des données au repos** sur le disque du
+VPS (`ext4` nu, aucun volume LUKS), l'affirmation a été retirée de la politique
+de confidentialité, et le sujet reste une décision d'architecture sans ticket.
 
 **Le DNS du domaine vit chez Hostinger, le serveur chez OVH.** Devant une erreur
 de certificat, comparer les deux points de vue avant de toucher à certbot :

@@ -1196,6 +1196,9 @@ aucun fichier de dump.
 | Chiffrement | GPG symétrique AES256 |
 | Emplacement | `/var/backups/smartplanning/`, en `0700` |
 | Rétention | 30 jours |
+| **Copie hors site** | `sync-backups-offsite.sh`, quotidien à 04:10 UTC (SP-594) |
+| **Destination distante** | Backblaze B2, bucket `smartplanning-backups` |
+| **Rétention distante** | 30 jours |
 
 **Pourquoi le format `custom` et non du SQL brut** : il est validable par
 `pg_restore --list`, qui lit l'en-tête et la table des matières sans restaurer,
@@ -1214,8 +1217,15 @@ Le script vérifie l'intégrité de chaque archive avant de la conserver, et
 qu'elle est exploitable. Procédure de restauration complète :
 [`docs/runbooks/restauration-base-production.md`](runbooks/restauration-base-production.md).
 
-**Limite connue** : les archives et la clé vivent sur le même disque que la
-base. La perte du VPS emporte les trois (SP-594).
+**Depuis SP-594, une copie part hors du VPS chaque nuit**, vers Backblaze B2,
+chez un fournisseur distinct d'OVH. L'envoi est vérifié taille et empreinte
+SHA-1 relues depuis le bucket, et la clé de chiffrement est conservée hors de
+la machine. Restauration prouvée le 10 septembre 2026 sur un poste autre que le
+VPS : 23 tables, 200 objets, dix comptages identiques à la production.
+
+**Limite qui subsiste** : le disque du VPS n'est pas chiffré, donc un accès
+fichier sur la machine donne accès à la clé locale et aux archives locales. Le
+chiffrement au repos reste une décision d'architecture, sans ticket à ce jour.
 
 ---
 

@@ -295,9 +295,24 @@ avant toute migration risquee.
 Procedure de restauration :
 [`docs/runbooks/restauration-base-production.md`](docs/runbooks/restauration-base-production.md).
 
-**Limite connue** : les archives et la cle vivent sur le meme disque que la
-base. La perte du VPS emporte les trois. Les sauvegardes couvrent aujourd'hui le
-`DROP` malheureux et la corruption logique, pas la perte de machine (SP-594).
+**Copie hors site depuis SP-594.** `scripts/ops/sync-backups-offsite.sh` envoie
+chaque nuit a 04:10 UTC la derniere archive vers Backblaze B2, fournisseur
+volontairement distinct d'OVH : un stockage objet OVH aurait couvert le disque
+mort, pas la panne du fournisseur. L'envoi est verifie taille et empreinte
+SHA-1 relues depuis B2, et le script refuse une archive de plus de 48 h, sinon
+un hors-site paraitrait sain alors que la sauvegarde locale a cesse.
+
+La cle de chiffrement vit dans le gestionnaire de mots de passe et sur le poste
+de developpement, jamais uniquement sur le VPS : une cle rangee a cote de ce
+qu'elle protege ne protege rien.
+
+Restauration depuis le hors-site prouvee le 10 septembre 2026 sur une machine
+autre que le VPS : 23 tables, 200 objets, dix comptages identiques a la
+production.
+
+**Limite qui subsiste** : le disque du VPS n'est pas chiffre (`ext4` nu, aucun
+volume LUKS), donc un acces fichier sur la machine donne acces a la cle locale.
+Le chiffrement au repos reste une decision d'architecture, sans ticket.
 
 ## Securite
 
@@ -310,7 +325,9 @@ base. La perte du VPS emporte les trois. Les sauvegardes couvrent aujourd'hui le
 - Verification email a l'inscription (token 24h, page `/verify-email`)
 - Emails securite envoyes inconditionnellement (changement mot de passe, suppression RGPD)
 - Messagerie : messages prives par conversation, isolation multi-tenant, verification membership sur chaque action
-- Sauvegardes quotidiennes chiffrees (AES256), restauration verifiee (SP-593)
+- Sauvegardes quotidiennes chiffrees (AES256), restauration verifiee (SP-593),
+  copiees hors du VPS chaque nuit vers Backblaze B2 avec restauration prouvee
+  sur une autre machine (SP-594)
 - Domaines d'images distantes restreints a Cloudinary : `hostname: '**'` ouvrait
   l'optimiseur `next/image` a n'importe quel domaine HTTPS (SP-589)
 - Import de fichiers plafonne a 5 Mo, verifie **avant** lecture (SP-590)
