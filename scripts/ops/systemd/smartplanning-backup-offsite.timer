@@ -1,0 +1,25 @@
+# Declenchement quotidien de la copie hors site. SP-594.
+
+[Unit]
+Description=Declenche la copie hors site des sauvegardes SmartPlanning
+
+[Timer]
+# 04:10 UTC, soit 50 minutes apres la sauvegarde locale de 03:20.
+#
+# CET ECART EST DELIBERE. La sauvegarde locale dure quelques secondes, mais son
+# timer porte un RandomizedDelaySec de 10 minutes et son service un timeout de
+# 10 minutes : au pire, elle se termine vers 03:40. Partir a 04:10 laisse donc
+# une marge meme dans le cas le plus lent, sans attendre la nuit suivante.
+OnCalendar=*-*-* 04:10:00 UTC
+
+# SI LA MACHINE ETAIT ETEINTE, la copie part au demarrage suivant. Sans cette
+# ligne, un VPS redemarre a 05:00 sauterait la journee, et le hors-site
+# accumulerait des trous invisibles.
+Persistent=true
+
+# Jusqu'a 5 minutes d'ecart aleatoire, moins que la sauvegarde locale : la
+# fenetre doit rester dans l'ecart de 50 minutes calcule ci-dessus.
+RandomizedDelaySec=300
+
+[Install]
+WantedBy=timers.target

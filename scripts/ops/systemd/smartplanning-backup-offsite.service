@@ -1,0 +1,36 @@
+# Copie hors site des sauvegardes chiffrees, vers Backblaze B2. SP-594.
+#
+# S'installe dans /etc/systemd/system/ et se declenche par le timer voisin.
+# Type=oneshot : le service s'execute et se termine, il ne reste pas en vie.
+
+[Unit]
+Description=Copie hors site des sauvegardes SmartPlanning
+Documentation=file:///opt/smartplanning/ops/sync-backups-offsite.sh
+
+# LA COPIE SUIT LA SAUVEGARDE, elle n'a rien a envoyer sans elle.
+# `After` ordonne le demarrage quand les deux sont declenchees ensemble, mais
+# ne declenche rien : c'est le timer qui s'en charge, avec un decalage horaire
+# suffisant pour que la sauvegarde ait termine.
+#
+# Volontairement PAS de `Requires` : si la sauvegarde du jour a echoue, on veut
+# que cette unite s'execute quand meme et REFUSE explicitement d'envoyer une
+# archive perimee, plutot que d'etre sautee sans laisser de trace. La garde des
+# 48 h du script porte cette decision.
+After=network-online.target smartplanning-backup.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/opt/smartplanning/ops/sync-backups-offsite.sh
+
+StandardOutput=journal
+StandardError=journal
+
+# Le script lit /etc/smartplanning/b2.conf (0600, root) et les archives de
+# /var/backups/smartplanning/ (0700, root).
+User=root
+
+# Cinq minutes suffisent tres largement pour quelques centaines de kilo-octets.
+# Au-dela, c'est que le reseau ou l'API ne repond pas : mieux vaut echouer et
+# le signaler que rester accroche jusqu'au declenchement suivant.
+TimeoutStartSec=300
