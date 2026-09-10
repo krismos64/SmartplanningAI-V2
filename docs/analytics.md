@@ -141,6 +141,38 @@ préfixe `funnel-` et un rang dans `data.stepRank`, Umami classant les
 | 8 | `funnel-checkout-opened` | Serveur | Ouverture du Checkout Stripe |
 | 9 | `funnel-subscription-confirmed` | Serveur (webhook) | Paiement confirmé par Stripe |
 
+### Ne jamais comparer une étape navigateur à une étape serveur
+
+**Les deux chemins ne sont pas sur la même échelle**, et le rapport entre eux
+n'est pas un taux de conversion. Mesure du 10 septembre 2026 :
+
+```
+Nginx  : 401 requetes, 86 visiteurs distincts sur la journee
+Umami  : 0 session enregistree
+```
+
+Sur quatorze jours, Umami compte 1 à 8 sessions par jour. Le script n'est
+injecté qu'**après acceptation du consentement analytics**
+(`UmamiAnalytics.tsx`, `if (!shouldLoad) return null`), comportement RGPD
+correct, mais la quasi-totalité des visiteurs refuse. C'est le même ordre de
+grandeur que le facteur 40 mesuré face à la Search Console (SP-563).
+
+Conséquence directe sur la lecture du tunnel : les étapes 1 à 3 ne voient
+qu'une fraction infime des prospects, les étapes 4 à 9 les voient tous.
+Diviser l'étape 9 par l'étape 1 donnerait donc un taux **faussement
+excellent**, le dénominateur étant sous-compté d'un facteur inconnu et
+variable.
+
+Deux lectures restent valables :
+
+- **comparer les étapes 4 à 9 entre elles**, qui partagent la même échelle et
+  répondent à la vraie question, où les essais décrochent après l'inscription
+- **suivre une même étape dans le temps**, chaque étape restant comparable à
+  elle-même
+
+Pour un volume de visite fiable, la source est la Search Console ou les
+journaux Nginx, jamais Umami.
+
 ### Deux chemins d'émission, et pourquoi
 
 Les étapes 1 à 3 se déclenchent dans le navigateur et passent par
