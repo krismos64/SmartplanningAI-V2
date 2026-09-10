@@ -83,8 +83,12 @@ invisibles à `type-check`, à `lint` et aux tests. Un spec hors du `testMatch`
 laisse la CI verte en testant moins qu'on croit, et un export non-async dans un
 fichier `'use server'` donne un 503 en production sans jamais casser le build.
 
-Le contrôle `'use server'` a été mesuré contre les 29 fichiers concernés du
-dépôt : aucun faux positif, et il rougit bien sur un cas fautif construit.
+Le contrôle `'use server'` a été rejoué le 10 septembre 2026 contre les
+13 fichiers que le hook inspecte réellement, ceux dont la première ligne non
+vide porte la directive : aucun faux positif, et il rougit bien sur un cas
+fautif construit. Le dépôt compte par ailleurs 45 fichiers contenant la chaîne
+`use server`, la plupart l'ayant en commentaire ou en import, hors du périmètre
+du contrôle. Remesurer plutôt que recopier ce chiffre, il bouge à chaque sprint.
 
 `hook-block-secret-files.sh` porte une nuance qu'une règle de permission ne sait
 pas exprimer :

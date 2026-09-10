@@ -1,9 +1,9 @@
 # Plan de Sécurisation SmartPlanning V2
 
-**Version** : 1.0
+**Version** : 1.1
 **Créé le** : 15 décembre 2025
-**Dernière mise à jour** : 15 décembre 2025
-**Statut global** : EN COURS
+**Dernière mise à jour** : 10 septembre 2026
+**Statut global** : TERMINÉ, les six phases sont livrées et vérifiées dans le dépôt
 
 ---
 
@@ -17,14 +17,20 @@ Suite à **deux incidents de sécurité** en 10 jours (5 et 15 décembre 2025), 
 
 ## Tableau de Bord
 
-| Phase | Description               | Statut   | Progression |
-| ----- | ------------------------- | -------- | ----------- |
-| 1     | Réponse immédiate         | FAIT     | 100%        |
-| 2     | Blocage IPs malveillantes | EN COURS | 0%          |
-| 3     | Hardening Docker          | PLANIFIÉ | 0%          |
-| 4     | Security Headers Next.js  | PLANIFIÉ | 0%          |
-| 5     | Rate Limiting Nginx       | PLANIFIÉ | 0%          |
-| 6     | Monitoring & Alertes      | PLANIFIÉ | 0%          |
+| Phase | Description               | Statut | Preuve dans le dépôt |
+| ----- | ------------------------- | ------ | -------------------- |
+| 1     | Réponse immédiate         | FAIT   | `docs/security/archive/2025-12-ancien-vps/` |
+| 2     | Blocage IPs malveillantes | FAIT   | Fail2ban + UFW, voir phase 2 ci-dessous (6 janvier 2026) |
+| 3     | Hardening Docker          | FAIT   | `read_only`, `cap_drop: ALL`, `no-new-privileges` sur les 3 services de `docker/docker-compose.prod.yml` |
+| 4     | Security Headers Next.js  | FAIT   | `next.config.ts`, `async headers()` : CSP, HSTS, `X-Frame-Options` |
+| 5     | Rate Limiting Nginx       | FAIT   | `nginx/smartplanning.conf` : `limit_req_zone` general/auth/api, `limit_conn_zone` |
+| 6     | Monitoring & Alertes      | FAIT   | `scripts/ops/check-tls-expiry.sh` et `check-public-ports.sh`, en cron |
+
+**Tableau vérifié le 10 septembre 2026** contre le dépôt, phase par phase. Il
+annonçait auparavant quatre phases « PLANIFIÉ 0 % » qui étaient toutes livrées,
+et se contredisait sur la phase 2, décrite plus bas comme terminée depuis le
+6 janvier 2026. Un plan qui présente comme à faire ce qui est fait fait perdre
+du temps à celui qui le lit, et masque ce qui reste réellement ouvert.
 
 ---
 
@@ -45,7 +51,7 @@ Suite à **deux incidents de sécurité** en 10 jours (5 et 15 décembre 2025), 
 
 ### Preuves Collectées
 
-Voir : `docs/security/incident-2025-12-15-cryptominer.md`
+Voir : `docs/security/archive/2025-12-ancien-vps/incident-2025-12-15-cryptominer.md`
 
 ---
 
@@ -199,7 +205,7 @@ sudo ufw default deny outgoing  # ❌ Incompatible avec Docker
 
 ## Phase 3 : Hardening Docker
 
-**Statut** : PLANIFIÉ
+**Statut** : TERMINÉ, vérifié le 10 septembre 2026 dans `docker/docker-compose.prod.yml`
 **Priorité** : HAUTE
 
 ### 3.1 docker-compose.yml Sécurisé
@@ -296,7 +302,7 @@ ENV NODE_OPTIONS="--max-old-space-size=512"
 
 ## Phase 4 : Security Headers Next.js
 
-**Statut** : PLANIFIÉ
+**Statut** : TERMINÉ, vérifié le 10 septembre 2026 dans `next.config.ts`, fonction `headers()`
 **Priorité** : HAUTE
 
 ### 4.1 Configuration next.config.ts
@@ -410,7 +416,7 @@ export const config = {
 
 ## Phase 5 : Rate Limiting Nginx
 
-**Statut** : PLANIFIÉ
+**Statut** : TERMINÉ, vérifié le 10 septembre 2026 dans `nginx/smartplanning.conf`
 **Priorité** : HAUTE
 
 ### 5.1 Configuration Nginx
@@ -592,7 +598,7 @@ http {
 
 ## Phase 6 : Monitoring & Alertes
 
-**Statut** : PLANIFIÉ
+**Statut** : TERMINÉ, `scripts/ops/check-tls-expiry.sh` et `check-public-ports.sh` tournent en cron
 **Priorité** : MOYENNE
 
 ### 6.1 Script de Monitoring Docker

@@ -1,8 +1,8 @@
 # Umami Analytics - Documentation technique
 
-> **Ticket** : SP-345 - Intégration Umami Analytics
+> **Tickets** : SP-345 (intégration Umami), SP-591 (tunnel de conversion)
 > **Statut** : ✅ Implémenté
-> **Dernière mise à jour** : 10 février 2026
+> **Dernière mise à jour** : 10 septembre 2026
 
 ## Vue d'ensemble
 
@@ -71,7 +71,10 @@ docker logs smartplanning-umami --tail 100 -f
 
 ### Composant UmamiAnalytics
 
-Le composant `<UmamiAnalytics />` est déjà intégré dans `layout.tsx`. Il gère :
+C'est `<UmamiAnalyticsWrapper />` qui est intégré dans `layout.tsx`, et non
+`<UmamiAnalytics />` directement : le wrapper est un Server Component, il lit
+les variables d'environnement au runtime et les passe au composant client.
+L'ensemble gère :
 
 - Le chargement conditionnel basé sur le consentement cookies
 - L'écoute des changements de consentement en temps réel
@@ -140,6 +143,38 @@ préfixe `funnel-` et un rang dans `data.stepRank`, Umami classant les
 | 7 | `funnel-invitation-accepted` | Serveur | Un salarié active son compte |
 | 8 | `funnel-checkout-opened` | Serveur | Ouverture du Checkout Stripe |
 | 9 | `funnel-subscription-confirmed` | Serveur (webhook) | Paiement confirmé par Stripe |
+
+### Ne jamais comparer une étape navigateur à une étape serveur
+
+**Les deux chemins ne sont pas sur la même échelle**, et le rapport entre eux
+n'est pas un taux de conversion. Mesure du 10 septembre 2026 :
+
+```
+Nginx  : 401 requetes, 86 visiteurs distincts sur la journee
+Umami  : 0 session enregistree
+```
+
+Sur quatorze jours, Umami compte 1 à 8 sessions par jour. Le script n'est
+injecté qu'**après acceptation du consentement analytics**
+(`UmamiAnalytics.tsx`, `if (!shouldLoad) return null`), comportement RGPD
+correct, mais la quasi-totalité des visiteurs refuse. C'est le même ordre de
+grandeur que le facteur 40 mesuré face à la Search Console (SP-563).
+
+Conséquence directe sur la lecture du tunnel : les étapes 1 à 3 ne voient
+qu'une fraction infime des prospects, les étapes 4 à 9 les voient tous.
+Diviser l'étape 9 par l'étape 1 donnerait donc un taux **faussement
+excellent**, le dénominateur étant sous-compté d'un facteur inconnu et
+variable.
+
+Deux lectures restent valables :
+
+- **comparer les étapes 4 à 9 entre elles**, qui partagent la même échelle et
+  répondent à la vraie question, où les essais décrochent après l'inscription
+- **suivre une même étape dans le temps**, chaque étape restant comparable à
+  elle-même
+
+Pour un volume de visite fiable, la source est la Search Console ou les
+journaux Nginx, jamais Umami.
 
 ### Deux chemins d'émission, et pourquoi
 
@@ -327,13 +362,19 @@ src/
 ├── components/analytics/
 │   ├── UmamiAnalytics.tsx          # Client Component - chargement du script
 │   ├── UmamiAnalyticsWrapper.tsx   # Server Component - lecture env vars runtime (utilisé dans layout.tsx)
+│   ├── TrackedCtaLink.tsx          # SP-591 - isole la partie cliente au seul lien du CTA (étape 1)
 │   └── index.ts                    # Barrel export (Analytics + Wrapper + hook + types)
 ├── hooks/
-│   └── use-umami-track.ts    # Hook pour events custom
+│   └── use-umami-track.ts    # Hook pour events custom, conditionné au consentement
+├── lib/services/
+│   ├── funnel-analytics.service.ts        # SP-591 - émission serveur des étapes 4 à 9
+│   ├── funnel-analytics.config.ts         # SP-591 - noms d'étapes et condition d'activation
+│   ├── funnel-milestones.service.ts       # SP-591 - détection des premières fois
+│   └── __tests__/funnel-analytics.test.ts # SP-591 - garde-fou « aucune donnée personnelle »
 ├── lib/cookies/
 │   └── scripts.ts            # notifyConsentChange()
 └── app/
-    └── layout.tsx            # <UmamiAnalytics /> intégré
+    └── layout.tsx            # <UmamiAnalyticsWrapper /> intégré
 
 # Sur le VPS (51.77.146.72)
 ~/umami/

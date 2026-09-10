@@ -4,7 +4,7 @@
 |---|---|
 | Ticket | SP-592, cinquième des six tickets issus de l'audit |
 | Documents modifiés | `vitest.config.ts`, `src/lib/__tests__/auth.config.authorized.test.ts` |
-| Contrôles | type-check vert, lint sans erreur, 3327 tests verts sur 202 fichiers, couverture 52,38 % |
+| Contrôles | type-check vert, lint sans erreur, 3327 tests verts sur 201 fichiers, couverture 52,38 % |
 | Jira | SP-592 commenté |
 | Mémoire | fiche sur les dossiers exclus mieux couverts que le reste |
 

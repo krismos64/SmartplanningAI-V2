@@ -279,6 +279,13 @@ HEALTH_API_KEY=<GENERER_AVEC_openssl_rand_base64_32>
 | `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | `src/lib/stripe/`     | Clé publique Stripe        |
 | `STRIPE_PRICE_ID`                | `src/lib/stripe/`         | ID du prix per-seat Stripe |
 
+**`RESEND_API_KEY` est un résidu.** `docker-compose.prod.yml` la déclare encore,
+mais elle n'est utilisée nulle part : `resend` n'est pas une dépendance de
+`package.json`, et la chaîne n'apparaît dans aucun fichier de `src/`. Les envois
+passent par Nodemailer et le SMTP Hostinger. Vérifié le 10 septembre 2026, à
+retirer du compose lors d'un prochain passage dessus. Ne pas la renseigner, elle
+ne servirait à rien.
+
 ### GitHub Secrets requis
 
 Les secrets suivants doivent être configurés dans GitHub (Settings → Secrets → Actions) :
@@ -574,6 +581,11 @@ politique de confidentialité.
 | Chiffrement | GPG symétrique AES256 |
 | Clé | `/etc/smartplanning/backup.key`, en `0600` |
 | Rétention | 30 jours |
+| **Copie hors site** | `/opt/smartplanning/ops/sync-backups-offsite.sh` |
+| **Déclenchement** | `smartplanning-backup-offsite.timer`, chaque jour à 04:10 UTC |
+| **Destination distante** | Backblaze B2, bucket `smartplanning-backups`, région `eu-central-003` |
+| **Identifiants B2** | `/etc/smartplanning/b2.conf`, en `0600` |
+| **Rétention distante** | 30 jours |
 
 Le script produit un dump au format `custom`, vérifie son intégrité par
 `pg_restore --list`, le chiffre, contrôle que le fichier chiffré se déchiffre
@@ -630,16 +642,46 @@ sudo docker exec smartplanning-postgres rm -f /tmp/r.dump
 sudo rm -f /tmp/restauration.dump
 ```
 
-### Limites connues, à ne pas oublier
+### La copie hors site (SP-594, 10 septembre 2026)
 
-**Les archives et la clé vivent sur le même disque que la base.** La perte du
-VPS emporte les trois. Les sauvegardes protègent aujourd'hui du `DROP`
-malheureux et de la corruption logique, pas de la perte de machine. C'est
-l'objet de SP-594, le plus urgent des sujets ouverts.
+Jusqu'au 10 septembre 2026, les archives et la clé vivaient sur le même disque
+que la base : la perte du VPS emportait les trois. Les sauvegardes ne
+protégeaient donc que du `DROP` malheureux et de la corruption logique.
+
+`sync-backups-offsite.sh` envoie désormais chaque nuit la dernière archive vers
+Backblaze B2, **fournisseur volontairement distinct d'OVH** : un stockage objet
+OVH aurait couvert le disque mort, pas la panne du fournisseur.
+
+Trois décisions à connaître avant d'y toucher :
+
+- **API native B2 et non S3.** L'API S3-compatible impose une signature AWS v4,
+  plusieurs dizaines de lignes de HMAC en shell. L'API native s'utilise en
+  `curl`, et n'exige aucun outil supplémentaire sur le VPS.
+- **La vérification porte sur ce que B2 a reçu**, taille et SHA-1 relus depuis
+  le bucket. Un code HTTP 200 dit que la requête a abouti, pas que le fichier
+  est intact : même distinction qu'entre un email accepté par le relais et un
+  email délivré (SP-579).
+- **Le chiffrement côté serveur du bucket reste désactivé.** Les fichiers
+  partent déjà chiffrés avec notre passphrase, qui ne quitte pas le VPS.
+  Activer celui de B2 ajouterait une couche dont Backblaze détiendrait la clé.
+
+Le script **refuse une archive de plus de 48 h** : si la sauvegarde locale
+cessait, le hors-site paraîtrait sain alors qu'il recopierait un vieux fichier.
+
+Restauration prouvée le 10 septembre 2026 depuis B2, sur une machine autre que
+le VPS : 23 tables, 200 objets, dix comptages identiques à la production.
+Procédure dans `docs/runbooks/restauration-base-production.md`.
+
+**La clé de chiffrement vit hors du VPS**, dans le gestionnaire de mots de passe
+et sur le poste de développement. Une clé rangée à côté de ce qu'elle protège ne
+protège rien, et sans elle les archives sont illisibles, y compris pour nous.
+
+### Limites connues, à ne pas oublier
 
 **Le disque n'est pas chiffré** (`ext4` nu, aucun volume LUKS) et la machine est
 partagée avec un second projet. C'est précisément pourquoi les archives, elles,
-le sont.
+le sont. Un accès fichier sur le VPS donne accès à `/etc/smartplanning/backup.key`,
+donc aux archives locales.
 
 **Il n'y a aucun chiffrement des données au repos dans la base** : ni
 `pgcrypto`, ni chiffrement applicatif. L'affirmation a été retirée de la
@@ -803,6 +845,7 @@ Le `reload` n'interrompt pas les connexions en cours.
 | 2026-09-09 | 2.11    | SP-587 : surveillance quotidienne des ports applicatifs joignables depuis Internet, en filet de SP-583. Le durcissement `iptables` (`DOCKER-USER`) reste écarté, arbitrage documenté. |
 | 2026-09-09 | 2.12    | SP-588 : le CD annonçait un succès sur une production morte. Healthcheck bloquant, rollback automatique vers l'image précédente, déploiement par `sha-<court>` au lieu de `latest`, clause `concurrency`, `prune` borné à 168 h. Limite documentée : le rollback ne défait pas les migrations. |
 | 2026-09-09 | 2.13    | SP-593 : la base de production n'était sauvegardée nulle part. Sauvegarde quotidienne chiffrée (AES256, 03:20 UTC, rétention 30 jours), script de test de restauration, section 7 et runbook dédiés. |
+| 2026-09-10 | 2.14    | SP-594 : les archives et la clé vivaient sur le disque de la base. Copie hors site quotidienne vers Backblaze B2 (04:10 UTC, vérifiée taille et SHA-1, rétention 30 jours), clé conservée hors du VPS, restauration prouvée sur une autre machine. |
 
 ---
 
