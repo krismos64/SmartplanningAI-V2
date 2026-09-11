@@ -603,6 +603,13 @@ http {
 
 ### 6.1 Script de Monitoring Docker
 
+> **Proposition jamais mise en oeuvre.** `monitor-security.sh` n'existe ni dans
+> le dépôt ni sur le VPS, et le cron de la section 6.2 n'est pas en place
+> (vérifié le 11 septembre 2026). La surveillance réellement déployée est celle
+> du statut ci-dessus : `check-tls-expiry.sh` deux fois par jour et
+> `check-public-ports.sh` en quotidien, tous deux dans `scripts/ops/`. Ce qui
+> suit reste un modèle si on veut compléter la surveillance des conteneurs.
+
 **Fichier** : `/opt/smartplanning/scripts/monitor-security.sh`
 
 ```bash
