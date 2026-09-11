@@ -2,7 +2,7 @@
 
 > **Tickets** : SP-345 (intégration Umami), SP-591 (tunnel de conversion)
 > **Statut** : ✅ Implémenté
-> **Dernière mise à jour** : 10 septembre 2026
+> **Dernière mise à jour** : 11 septembre 2026
 
 ## Vue d'ensemble
 
@@ -175,6 +175,25 @@ Deux lectures restent valables :
 
 Pour un volume de visite fiable, la source est la Search Console ou les
 journaux Nginx, jamais Umami.
+
+### Lire le tunnel
+
+```bash
+./scripts/ops/read-funnel-steps.sh              # état complet
+./scripts/ops/read-funnel-steps.sh --depuis 1h  # dernière heure
+./scripts/ops/read-funnel-steps.sh --detail     # une ligne par événement
+```
+
+Le script lit la base directement, et non le tableau de bord Umami, pour deux
+raisons. Umami classe les événements par volume et jamais par séquence : une
+étape à zéro y est **absente** plutôt qu'affichée vide, alors que c'est
+précisément l'information cherchée quand on vérifie une instrumentation. Et
+une réponse acceptée par `/api/send` ne prouve pas un événement enregistré,
+seule la base tranche (voir la section sur le User-Agent plus bas).
+
+Le parcours de vérification lui-même est décrit dans
+`docs/runbooks/verification-tunnel-sp591.md`. Au 11 septembre 2026 il n'a
+toujours pas été fait, et la base porte zéro événement `funnel-`.
 
 ### Deux chemins d'émission, et pourquoi
 

@@ -29,7 +29,7 @@ Le découpage retenu sépare deux natures d'information :
 
 - **`CLAUDE.md`**, à la racine, porte les principes et une table d'aiguillage.
   Court, toujours chargé.
-- **`.claude/rules/`** porte le détail par domaine. Quatre fichiers, environ 360
+- **`.claude/rules/`** porte le détail par domaine. Quatre fichiers, environ 830
   lignes, chargés seulement quand le travail touche le domaine concerné.
 
 Modifier une page publique ne charge donc pas les règles d'isolation

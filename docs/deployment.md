@@ -1,6 +1,6 @@
 # Guide de Déploiement SmartPlanning V2
 
-**Dernière mise à jour** : 9 septembre 2026
+**Dernière mise à jour** : 10 septembre 2026
 **Version** : 2.0.0
 **Environnement** : Production
 **URL** : https://smartplanning.fr

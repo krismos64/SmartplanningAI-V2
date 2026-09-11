@@ -7,7 +7,7 @@
 | Documents modifiés | `scripts/ops/README.md`, `prisma/seed.ts`, `e2e/specs/auth.spec.ts`, `README.md`, `.claude/rules/tests.md` |
 | Contrôles | script prouvé par mutation et sur chemin d'erreur, shellcheck sans avertissement, 21 specs auth au vert, 3327 tests unitaires |
 | Jira | SP-595 commenté et clos |
-| Branches | `ops/sp-591-verification-tunnel` (`32ea671`), `fix/sp-595-seed-e2e-local` (`9c54c63`), non poussées |
+| PRs | #100 (SP-591) et #101 (SP-595), mergées et déployées en `sha-adee64c` |
 
 ## SP-591, tout est prêt sauf le parcours humain
 
@@ -77,6 +77,15 @@ variable sans l'exposer.
 garde-fou est bien calibré : la commande détruit irréversiblement une base, et
 seul l'accord de Christophe, après exposé de la cible et des conséquences, l'a
 débloquée.
+
+**Le CD a déployé un commit dont le CI n'était pas fini.** Les deux PRs ayant
+été mergées à dix-huit secondes d'intervalle, le CD s'est déclenché sur la fin
+du CI de `5cc72a2` mais a déployé la tête de `main`, déjà passée à `adee64c`.
+Sans conséquence ici, le CI d'`adee64c` est passé entièrement ensuite, E2E
+comprises. Le risque est le cas où il aurait échoué, la production tournant
+déjà sur ce code, et le rollback de SP-588 ne couvre pas ça : il attrape un
+démarrage raté, pas un code qui démarre et se trompe. Espacer les merges suffit
+à l'éviter.
 
 ## Ce qui reste ouvert
 

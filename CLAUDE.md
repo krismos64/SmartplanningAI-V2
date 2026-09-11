@@ -1,4 +1,4 @@
-# CLAUDE.md – SmartPlanning V2
+# CLAUDE.md : SmartPlanning V2
 
 SaaS multi-tenant de gestion de plannings et RH. Production : https://smartplanning.fr
 Repo : https://github.com/krismos64/SmartplanningAI-V2 · Jira : préfixe `SP-XXX`
@@ -113,9 +113,10 @@ SP-583, règle dans `prisma-pieges.md`. Rien ne l'impose mécaniquement, la cha�
 `DOCKER-USER` étant vide : `scripts/ops/check-public-ports.sh` le surveille en
 cron quotidien depuis SP-587.
 
-`scripts/ops/` porte six scripts de production, tous décrits dans son README :
+`scripts/ops/` porte sept scripts de production, tous décrits dans son README :
 surveillance TLS et ports, sauvegarde de la base, sa copie hors site et son
-test de restauration, et le test hors ligne du script de déploiement.
+test de restauration, le test hors ligne du script de déploiement, et la
+lecture du tunnel de conversion.
 
 Le CD ne synchronise que `docker-compose.prod.yml`. **Umami tourne depuis
 `/home/deploy/umami/docker-compose.yml`, hors du dépôt** : toute correction le

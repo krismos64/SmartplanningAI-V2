@@ -63,33 +63,33 @@ Mesurer avec `npm run test` et lire la sortie.
 
 ## La couverture est un garde-fou bloquant
 
-Depuis SP-592, `vitest.config.ts` porte des seuils que la CI evalue a chaque
-execution, par `npm run test:coverage` :
+Depuis SP-592, `vitest.config.ts` porte des seuils que la CI évalue à chaque
+exécution, par `npm run test:coverage` :
 
 ```
 lines 50   branches 73   functions 73   statements 50
 ```
 
 **La CI peut donc rougir sur la couverture seule, alors que tous les tests
-passent.** Supprimer du code bien teste, ou ajouter du code sans test, suffit.
+passent.** Supprimer du code bien testé, ou ajouter du code sans test, suffit.
 
-Le perimetre mesure inclut `src/lib/`, `src/hooks/` et `src/lib/validations/`,
-c'est-a-dire l'authentification, le RBAC, l'isolation, la facturation et la
+Le périmètre mesuré inclut `src/lib/`, `src/hooks/` et `src/lib/validations/`,
+c'est-à-dire l'authentification, le RBAC, l'isolation, la facturation et la
 validation. Les pages et layouts de `src/app/` en sont exclus, ils sont couverts
-par les E2E, mais `src/app/api/` est mesure.
+par les E2E, mais `src/app/api/` est mesuré.
 
-Consequence pratique : un test sur `src/lib/` compte, un test de rendu de page
-ne compte pas et n'a pas a etre ecrit.
+Conséquence pratique : un test sur `src/lib/` compte, un test de rendu de page
+ne compte pas et n'a pas à être écrit.
 
 **Relever un seuil demande de mesurer d'abord** (`npx vitest run --coverage`),
-jamais de viser un chiffre rond. Les seuils actuels sont poses deux a trois
-points sous le reel mesure (52,38 % de lignes, 75,65 % de branches) : assez de
+jamais de viser un chiffre rond. Les seuils actuels sont posés deux à trois
+points sous le réel mesuré (52,38 % de lignes, 75,65 % de branches) : assez de
 marge pour absorber une variation, assez de serrage pour rougir si une zone
-perd sa couverture. L'ancien seuil de 20 % laissait passer une chute de moitie.
+perd sa couverture. L'ancien seuil de 20 % laissait passer une chute de moitié.
 
-Contre-intuitif et mesure : les dossiers longtemps exclus de la mesure etaient
+Contre-intuitif et mesuré : les dossiers longtemps exclus de la mesure étaient
 les **mieux** couverts du projet. Ce qui tirait le chiffre vers le bas, ce sont
-les composants de page. Devant une couverture qui parait basse, mesurer par
+les composants de page. Devant une couverture qui paraît basse, mesurer par
 dossier avant de conclure.
 
 ## Avant de conclure
@@ -102,31 +102,31 @@ lancer aussi `npm run test:coverage` : la CI le fera, autant le savoir avant.
 ça marche sans l'avoir exécuté. Si un test échoue, le dire avec sa sortie plutôt
 que de le contourner.
 
-## Le seed est la source des comptes E2E, et il ne se complete pas
+## Le seed est la source des comptes E2E, et il ne se complète pas
 
 Les specs E2E s'appuient sur les comptes de `prisma/seed.ts`, pas sur des
-comptes qu'ils creeraient eux-memes. C'est un choix assume : aucun test E2E
+comptes qu'ils créeraient eux-mêmes. C'est un choix assumé : aucun test E2E
 n'ouvre de connexion Prisma aujourd'hui, et l'introduire pour un seul spec
-ajouterait au harnais une dependance a la base que les vingt autres n'ont pas.
+ajouterait au harnais une dépendance à la base que les vingt autres n'ont pas.
 
-La contrepartie est que **le seed ne complete jamais une base existante**. Il
-part d'un `company.create()` et echoue en `P2002` des que la base contient
-quelque chose. La remise a niveau passe donc par un reset complet :
+La contrepartie est que **le seed ne complète jamais une base existante**. Il
+part d'un `company.create()` et échoue en `P2002` dès que la base contient
+quelque chose. La remise à niveau passe donc par un reset complet :
 
 ```bash
-npx prisma migrate reset    # DESTRUCTIF, developpement uniquement
+npx prisma migrate reset    # DESTRUCTIF, développement uniquement
 ```
 
-La CI recree sa base a chaque execution et applique le seed, donc elle ne voit
-jamais ce probleme. Une base locale, elle, derive. **Un spec rouge en local et
-vert en CI sur un compte introuvable est ce defaut jusqu'a preuve du
-contraire**, et non une regression du code.
+La CI recrée sa base à chaque exécution et applique le seed, donc elle ne voit
+jamais ce problème. Une base locale, elle, dérive. **Un spec rouge en local et
+vert en CI sur un compte introuvable est ce défaut jusqu'à preuve du
+contraire**, et non une régression du code.
 
-Mesure SP-595 : `unverified@techcorp.com` a ete ajoute au seed le 2 juin 2026
-et manquait encore en base locale le 11 septembre, faisant echouer
+Mesure SP-595 : `unverified@techcorp.com` a été ajouté au seed le 2 juin 2026
+et manquait encore en base locale le 11 septembre, faisant échouer
 `e2e/specs/auth.spec.ts` pendant plus de trois mois. Le `P2002` du seed nomme
-desormais le reset a lancer, au lieu de rendre une contrainte de slug que rien
-ne relie a « ma base est en retard ».
+désormais le reset à lancer, au lieu de rendre une contrainte de slug que rien
+ne relie à « ma base est en retard ».
 
-Corollaire : un test rouge en local qu'on apprend a ignorer est un test mort.
-Le jour ou il rougit pour une vraie raison, personne ne le verra.
+Corollaire : un test rouge en local qu'on apprend à ignorer est un test mort.
+Le jour où il rougit pour une vraie raison, personne ne le verra.

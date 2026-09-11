@@ -55,7 +55,10 @@ src/
 │   ├── actions/         # Server Actions
 │   ├── services/        # services métier
 │   └── validations/     # schémas Zod
-└── prisma/              # schema, migrations, seed
+├── hooks/ providers/ styles/ types/
+└── scripts/             # non embarqués dans l'image Docker de production
+
+prisma/                  # A LA RACINE, pas sous src/ : schema, migrations, seed
 ```
 
 Il n'existe ni `src/server/`, ni `src/app/(app)/`, ni `src/app/(marketing)/`.

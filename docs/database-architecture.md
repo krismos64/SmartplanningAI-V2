@@ -1,6 +1,6 @@
 # 🗄️ Architecture Base de Données - SmartPlanning V2
 
-**Dernière mise à jour** : 9 septembre 2026
+**Dernière mise à jour** : 10 septembre 2026
 **ORM** : Prisma 6.18.0
 **Base** : PostgreSQL 16
 **Migrations** : 24 migrations appliquées

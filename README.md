@@ -161,7 +161,7 @@ src/
 │   ├── public/       # Primitives des pages publiques (identite editoriale)
 │   ├── messaging/    # Messagerie (8 composants)
 │   ├── import/       # Import CSV (2 composants + utilitaires)
-│   └── ui/           # Shadcn/ui (36 composants)
+│   └── ui/           # Shadcn/ui (41 composants)
 ├── lib/              # Actions (32), services (22), validations Zod, email (21 fichiers de templates)
 ├── hooks/            # 22 hooks custom (SSE, SWR, messagerie, import CSV, analytics)
 ├── types/            # Types TypeScript globaux
