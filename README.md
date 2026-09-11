@@ -103,6 +103,25 @@ Voir `.env.example` pour la liste complete et les variables optionnelles (Umami,
 
 > Tous les comptes du seed partagent le mot de passe `Password123!`. Voir `prisma/seed.ts` pour la liste complete.
 
+### Remettre la base locale a niveau
+
+`npm run db:seed` ne fonctionne que sur une **base vide** : il part d'un
+`company.create()` et echoue en `P2002` sur une base deja peuplee. Il ne
+complete pas une base existante.
+
+Pour rejouer le seed apres qu'il a evolue (DESTRUCTIF, developpement
+uniquement) :
+
+```bash
+npx prisma migrate reset    # vide, rejoue les migrations, puis le seed
+```
+
+A faire des qu'un test E2E echoue sur un compte introuvable. Le seed est la
+source de verite des comptes de test, et la CI le rejoue sur une base neuve a
+chaque execution : une base locale qui derive fait rougir en local des specs
+vertes en CI. C'est SP-595, ou `unverified@techcorp.com` a manque pendant plus
+de trois mois apres son ajout.
+
 ## Scripts
 
 ```bash

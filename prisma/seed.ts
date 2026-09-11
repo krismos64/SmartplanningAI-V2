@@ -2,6 +2,7 @@
 // @ts-nocheck
 // Note: Variables are created for their database side-effects in seed files
 import {
+  Prisma,
   PrismaClient,
   UserRole,
   SubscriptionPlan,
@@ -1026,6 +1027,26 @@ main()
   .catch((e) => {
     console.error('\n❌ ERREUR PENDANT LE SEEDING:')
     console.error(e)
+
+    // Ce seed suppose une base vide : il part de `company.create()` et n'est
+    // pas idempotent. La CI recree sa base a chaque execution, donc le cas ne
+    // s'y presente jamais, mais une base de developpement, elle, est deja
+    // peuplee et le seed echoue en P2002.
+    //
+    // Sans ce message, le developpeur lit une contrainte unique sur un slug et
+    // n'a aucune raison de faire le lien avec « ma base est en retard sur le
+    // seed ». C'est ce qui a laisse le compte unverified@techcorp.com absent
+    // pendant plus de trois mois apres son ajout du 2 juin 2026, et le test
+    // e2e/specs/auth.spec.ts rouge en local tout ce temps (SP-595).
+    if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002') {
+      console.error(
+        '\n💡 Contrainte unique violee : la base contient deja des donnees.\n' +
+          '   Ce seed part d\'une base vide, il ne complete pas une base existante.\n' +
+          '   Pour remettre la base a niveau (DESTRUCTIF, developpement uniquement) :\n\n' +
+          '       npx prisma migrate reset\n'
+      )
+    }
+
     process.exit(1)
   })
   .finally(async () => {

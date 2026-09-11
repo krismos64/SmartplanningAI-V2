@@ -101,3 +101,32 @@ lancer aussi `npm run test:coverage` : la CI le fera, autant le savoir avant.
 **Montrer la preuve** : sortie de commande et résultat. Ne jamais affirmer que
 ça marche sans l'avoir exécuté. Si un test échoue, le dire avec sa sortie plutôt
 que de le contourner.
+
+## Le seed est la source des comptes E2E, et il ne se complete pas
+
+Les specs E2E s'appuient sur les comptes de `prisma/seed.ts`, pas sur des
+comptes qu'ils creeraient eux-memes. C'est un choix assume : aucun test E2E
+n'ouvre de connexion Prisma aujourd'hui, et l'introduire pour un seul spec
+ajouterait au harnais une dependance a la base que les vingt autres n'ont pas.
+
+La contrepartie est que **le seed ne complete jamais une base existante**. Il
+part d'un `company.create()` et echoue en `P2002` des que la base contient
+quelque chose. La remise a niveau passe donc par un reset complet :
+
+```bash
+npx prisma migrate reset    # DESTRUCTIF, developpement uniquement
+```
+
+La CI recree sa base a chaque execution et applique le seed, donc elle ne voit
+jamais ce probleme. Une base locale, elle, derive. **Un spec rouge en local et
+vert en CI sur un compte introuvable est ce defaut jusqu'a preuve du
+contraire**, et non une regression du code.
+
+Mesure SP-595 : `unverified@techcorp.com` a ete ajoute au seed le 2 juin 2026
+et manquait encore en base locale le 11 septembre, faisant echouer
+`e2e/specs/auth.spec.ts` pendant plus de trois mois. Le `P2002` du seed nomme
+desormais le reset a lancer, au lieu de rendre une contrainte de slug que rien
+ne relie a « ma base est en retard ».
+
+Corollaire : un test rouge en local qu'on apprend a ignorer est un test mort.
+Le jour ou il rougit pour une vraie raison, personne ne le verra.
