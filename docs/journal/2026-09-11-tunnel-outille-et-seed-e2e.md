@@ -2,11 +2,11 @@
 
 | Champ | Valeur |
 |---|---|
-| Tickets | SP-591 (préparation), SP-595 (clos) |
+| Tickets | SP-591 (préparation), SP-595 (clos), SP-596 (ouvert) |
 | Documents produits | `scripts/ops/read-funnel-steps.sh`, `docs/runbooks/verification-tunnel-sp591.md` |
 | Documents modifiés | `scripts/ops/README.md`, `prisma/seed.ts`, `e2e/specs/auth.spec.ts`, `README.md`, `.claude/rules/tests.md` |
 | Contrôles | script prouvé par mutation et sur chemin d'erreur, shellcheck sans avertissement, 21 specs auth au vert, 3327 tests unitaires |
-| Jira | SP-595 commenté et clos |
+| Jira | SP-595 clos, SP-591 complété, SP-596 ouvert sur les vulnérabilités |
 | PRs | #100 (SP-591) et #101 (SP-595), mergées et déployées en `sha-adee64c` |
 
 ## SP-591, tout est prêt sauf le parcours humain
@@ -87,9 +87,53 @@ déjà sur ce code, et le rollback de SP-588 ne couvre pas ça : il attrape un
 démarrage raté, pas un code qui démarre et se trompe. Espacer les merges suffit
 à l'éviter.
 
+## L'audit de fin de session
+
+Christophe a demandé un audit complet avant de quitter la session : README,
+CLAUDE.md, agents, skills, hooks, journal, mémoire, `docs/` et Jira.
+
+**Neuf écarts documentaires**, tous mineurs : trois compteurs périmés (six
+scripts ops pour sept, 36 composants Shadcn pour 41, 360 lignes de règles pour
+828), deux dates figées, le journal qui disait les branches non poussées, et
+des accents manquants dans deux sections de `.claude/rules/tests.md` dont celle
+écrite le matin même. Écrire à côté d'un texte fautif fait recopier sa faute.
+
+**Un vrai sujet est sorti de l'audit**, et il ne relevait pas de la
+documentation. `docs/security/vulnerability-fixes-2026-01-05.md` annonçait
+« 0 vulnérabilité restante », vrai le 5 janvier et faux depuis :
+
+```
+npm audit              55 vulnérabilités,  3 critiques, 26 hautes
+npm audit --omit=dev   18 vulnérabilités,  0 critique,  16 hautes
+```
+
+Les trois critiques sont dans `vitest` et sa couverture, absents de l'image de
+production. La production porte 16 hautes, sur `next-auth`, `nodemailer`,
+`postcss`, `prisma` et `xlsx`. Ouvert en **SP-596**. Rien dans la CI ne mesure
+ce chiffre, ce qui lui a permis de dériver huit mois sans alerte.
+
+**Deux alertes de l'audit ont été écartées après vérification.** Les trois
+routes d'upload contrôlent bien la taille avant traitement, et la mention
+« sauvegardes » d'un document de janvier est devenue vraie depuis SP-593.
+
+Le reste est sain, et vérifié par exécution plutôt que par lecture : les six
+hooks font ce que CLAUDE.md décrit (testés, dont un test négatif sur le blocage
+des secrets), aucune entrée morte dans la whitelist E2E, tous les chemins de la
+doc résolvent, les scripts ops du VPS et le compose de production sont
+identiques au dépôt, sauvegardes et copie hors site exécutées le matin en
+succès, ports fermés, certificats valides, et l'absence de chiffrement au repos
+correctement décrite partout.
+
+Deux pièges rencontrés dans l'audit lui-même. Une comparaison de hachages
+portait sur un chemin faux : les deux valeurs étaient vides et le test
+d'égalité affichait « identique ». Et `src/server/`, signalé comme chemin
+absent, l'est volontairement, la phrase disant qu'il n'existe pas. Corriger
+sans lire le contexte aurait introduit une erreur.
+
 ## Ce qui reste ouvert
 
 - **SP-591 attend son parcours humain**, tout le reste est prêt
+- **SP-596**, 16 vulnérabilités hautes sur les dépendances de production
 - Le chiffrement au repos n'existe toujours pas, décision d'architecture sans
   ticket
 - Le cycle de vie du bucket B2 reste sur « Keep all versions »
