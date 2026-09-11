@@ -29,6 +29,11 @@ const INVALID_USER = {
 /**
  * Compte seedé avec emailVerified = null (SP-526).
  * Sert à vérifier que le verrou de vérification email bloque la connexion.
+ *
+ * Si ce test échoue en local alors qu'il passe en CI, la base locale est en
+ * retard sur le seed : `npm run db:seed` ne complète pas une base existante,
+ * il faut `npx prisma migrate reset` (destructif, développement uniquement).
+ * Voir SP-595 et `.claude/rules/tests.md`.
  */
 const UNVERIFIED_USER = {
   email: 'unverified@techcorp.com',
