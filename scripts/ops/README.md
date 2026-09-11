@@ -408,3 +408,53 @@ Il tourne en local, sans accès au VPS. Ce qu'il **ne** couvre **pas** : le
 nommage des tags. Le premier déploiement réel après SP-588 a échoué sur un tag
 inexistant (`github.sha` en 40 caractères contre un tag de 7) alors que ces
 quatre scénarios étaient verts. Regarder aussi le déploiement réel.
+
+## `read-funnel-steps.sh`
+
+Lit les neuf étapes du tunnel de conversion (SP-591) directement dans la base
+`umami`, depuis le poste de développement.
+
+### Pourquoi ce script existe
+
+L'instrumentation du tunnel est déployée depuis le 9 septembre 2026, mais aucune
+étape n'avait jamais été observée en conditions réelles. Au 11 septembre 2026,
+`website_event` comptait 3879 lignes et **zéro** événement `funnel-` : le code
+était en production, le parcours jamais fait.
+
+Ce script est l'outil de lecture du parcours de vérification, à lancer entre
+chaque étape pour voir ce qui est réellement arrivé en base.
+
+### Pourquoi lire la base et non le tableau de bord
+
+L'API `/api/send` d'Umami répond HTTP 200 avec `{"beep":"boop"}` et n'enregistre
+rien quand le User-Agent ne ressemble pas à un navigateur. Une réponse acceptée
+ne prouve donc pas un événement enregistré, et seule la base tranche.
+
+Le tableau de bord Umami classe par ailleurs les événements par volume, jamais
+par séquence : une étape à zéro y est absente plutôt qu'affichée vide. Le script
+fait au contraire apparaître les neuf étapes, y compris muettes, ce qui est
+précisément l'information cherchée.
+
+### Ce qu'il affiche
+
+Les neuf étapes avec leur rang, leur chemin d'émission, leur compte et la date
+du dernier événement. Les deux chemins sont distingués parce que **leurs
+comptes ne sont pas sur la même échelle** : les étapes 1 à 3 dépendent du
+consentement analytics, refusé par la quasi-totalité des visiteurs, les
+étapes 4 à 9 partent du serveur et voient tous les comptes. Diviser une étape
+serveur par une étape navigateur donne un taux faussement excellent, et le
+rappel est affiché à chaque exécution.
+
+```bash
+./scripts/ops/read-funnel-steps.sh              # état complet
+./scripts/ops/read-funnel-steps.sh --depuis 1h  # dernière heure seulement
+./scripts/ops/read-funnel-steps.sh --detail     # une ligne par événement
+```
+
+Vérifié par mutation le 11 septembre 2026 : un `funnel-first-team` réel émis
+depuis le conteneur applicatif fait passer l'étape 4 de 0 à 1 avec son
+horodatage, la ligne de test ayant ensuite été supprimée après mesure du
+périmètre (`DELETE 1`).
+
+Lecture seule, aucune écriture. Il ne tourne pas en cron : c'est un outil
+d'observation manuelle, pas une surveillance.
