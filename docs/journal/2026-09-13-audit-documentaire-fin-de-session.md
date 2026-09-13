@@ -4,9 +4,9 @@
 |---|---|
 | Ticket | aucun, audit demandé avant de quitter la session |
 | Documents produits | ce journal |
-| Documents modifiés | `docs/runbooks/verification-tunnel-sp591.md` |
-| Contrôles | compteurs remesurés, chemins vérifiés, hooks testés en exécution, scripts du VPS comparés par empreinte |
-| Jira | SP-596 vérifié, seul ticket ouvert du projet |
+| Documents modifiés | `README.md`, `docs/database-architecture.md`, `docs/security/security-hardening-plan.md`, `docs/analytics.md`, `docs/runbooks/verification-tunnel-sp591.md` |
+| Contrôles | compteurs remesurés, chemins vérifiés, hooks testés en exécution, scripts du VPS comparés par empreinte, affirmations de comportement confrontées au code |
+| Jira | SP-596 vérifié, SP-598 créé sur la CSP |
 | Mémoire | `ou-en-est-le-projet` réécrite, `audit-documentation-13-septembre` créée |
 
 ## Ce qui a été vérifié
@@ -93,14 +93,57 @@ npm audit              55 vulnerabilites, 3 critiques, 26 hautes
 Les chiffres du ticket et de l'avertissement de
 `docs/security/vulnerability-fixes-2026-01-05.md` sont exacts au 13 septembre.
 
+## Quatre affirmations fausses, trouvées en second passage
+
+Mes propres contrôles portaient sur les compteurs, les chemins et les commandes,
+c'est-à-dire sur ce qui se vérifie mécaniquement. Un second passage, confiant
+les affirmations de **comportement** à un agent, en a trouvé quatre que ma
+méthode ne pouvait pas voir. Toutes vérifiées ensuite dans le code avant
+correction.
+
+**La plus grave, `security-hardening-plan.md` §4.2.** Le document décrit un
+middleware CSP à nonce, sous un statut « TERMINÉ ». Mesure : `src/middleware.ts`
+fait 46 lignes, ne contient aucun nonce, et la CSP réellement servie vient de
+`next.config.ts` avec `'unsafe-eval' 'unsafe-inline'`. Le code l'admet en
+commentaire. Une CSP à nonce et une CSP à `unsafe-inline` n'arrêtent pas les
+mêmes attaques : le document laissait croire que la première était en place.
+
+**La §2.4 du même fichier** présentait `ufw default deny incoming` comme la
+protection réseau, soit exactement la fausse assurance démontée par SP-583. La
+§3.1 omettait le binding `127.0.0.1`, et la §5.1 donnait `api 5r/s` et
+`limit_conn 20` là où Nginx sert 30r/s et 100.
+
+Le tableau de bord des phases, lui, était exact. C'est ce qui rend le document
+piégeux : ses preuves sont à jour, ses blocs de configuration sont restés à la
+proposition de décembre 2025.
+
+**`database-architecture.md` donnait `Notification.companyId` obligatoire**,
+alors qu'il est `String?`. Sur un champ d'isolation, l'écart n'est pas
+documentaire : un `undefined` dans un `where` Prisma y retire le filtre au lieu
+de ne rien rendre, ce qui est la fuite d'août 2026. Un encadré le dit désormais.
+Même fichier, `stripeCustomerId` est nullable, et `ContactMessage` n'est pas le
+seul modèle sans `companyId` mais l'un de sept, pour quatre raisons différentes.
+
+**Le README ne mentionnait pas SP-597**, mergé après sa dernière mise à jour. Il
+décrivait donc encore une clé B2 capable de détruire l'historique distant.
+
 ## Les écarts
 
-Un seul document a dû être modifié, le runbook du tunnel, et il ne portait pas
-une erreur mais une date qui vieillissait mal. Les deux alertes de compteur
-levées en cours d'audit étaient des erreurs de ma commande de mesure, pas de la
-documentation.
+Les deux alertes de compteur levées par mes propres contrôles étaient des
+erreurs de ma commande de mesure, pas de la documentation.
+
+L'enseignement de méthode est ailleurs : **vérifier des compteurs et des chemins
+ne vérifie pas une documentation.** Ce qui était faux ici, ce sont des
+affirmations de comportement sous un statut « TERMINÉ », que seule une lecture
+du code concerné pouvait démentir. Un document dont les preuves sont à jour peut
+porter des blocs entiers périmés.
 
 ## Prochaine étape
 
 Rien d'ouvert côté documentation. Reste le parcours humain de SP-591, le
 chiffrement au repos sans ticket, et SP-596 sur les dépendances.
+
+Un sujet est apparu pendant l'audit et n'a pas de ticket : **la CSP de
+production porte `unsafe-inline` sur `script-src`**, ce qui n'arrête pas une
+injection de script inline. Le passage à un middleware à nonce est une vraie
+tâche, pas une correction documentaire.
