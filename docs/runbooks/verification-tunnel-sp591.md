@@ -1,7 +1,12 @@
 # Vérification terrain du tunnel de conversion (SP-591)
 
-> **Statut** : parcours jamais effectué au 11 septembre 2026
+> **Statut** : parcours jamais effectué, revérifié le 13 septembre 2026
 > **Préalables vérifiés le 11 septembre 2026**, détail en fin de document
+>
+> Contre-mesure du 13 septembre 2026 : `website_event` compte désormais
+> 3908 lignes, dont l'événement le plus récent du matin même, et **toujours
+> zéro `funnel-`**. Umami enregistre donc normalement, ce qui écarte une panne
+> d'instrumentation : c'est bien le parcours humain qui manque.
 
 L'instrumentation des neuf étapes est déployée depuis le 9 septembre 2026, et
 n'a jamais rien enregistré : `website_event` comptait 3879 lignes et zéro
