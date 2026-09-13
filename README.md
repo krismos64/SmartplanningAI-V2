@@ -329,6 +329,28 @@ Restauration depuis le hors-site prouvee le 10 septembre 2026 sur une machine
 autre que le VPS : 23 tables, 200 objets, dix comptages identiques a la
 production.
 
+**La copie hors site masque, elle ne supprime plus (SP-597).** La cle B2 qui vit
+sur le VPS portait `deleteFiles` : un rancongiciel qui prend la machine chiffrait
+la base, puis se servait de cette cle pour effacer les copies distantes, rendant
+le dispositif inutile au moment precis ou il servirait.
+
+La rotation appelle desormais `b2_hide_file`, qui pose un marqueur sans detruire
+un octet, et l'effacement reel est confie a une regle de cycle de vie du
+compartiment, masquage a 30 jours puis effacement 1 jour apres, **qui s'applique
+meme serveur eteint**. La cle est reduite a quatre capacites, `listBuckets`,
+`listFiles`, `readFiles` et `writeFiles`.
+
+Deux scripts encadrent l'operation : `rotate-b2-key.sh` cree la cle restreinte
+et refuse de basculer si la regle de cycle de vie manque,
+`check-b2-key-hardening.sh` prouve le durcissement par un test negatif sur un
+fichier reel. **Il ne se lance qu'apres la bascule** : l'API B2 n'offre aucun
+dry run pour `b2_delete_file_version`, donc lance sur une cle non durcie, il
+detruit vraiment.
+
+Consequence pour une restauration : une archive masquee disparait de la liste par
+nom mais reste entierement telechargeable par son `fileId`, marche a suivre dans
+le runbook.
+
 **Limite qui subsiste** : le disque du VPS n'est pas chiffre (`ext4` nu, aucun
 volume LUKS), donc un acces fichier sur la machine donne acces a la cle locale.
 Le chiffrement au repos reste une decision d'architecture, sans ticket.
@@ -346,7 +368,9 @@ Le chiffrement au repos reste une decision d'architecture, sans ticket.
 - Messagerie : messages prives par conversation, isolation multi-tenant, verification membership sur chaque action
 - Sauvegardes quotidiennes chiffrees (AES256), restauration verifiee (SP-593),
   copiees hors du VPS chaque nuit vers Backblaze B2 avec restauration prouvee
-  sur une autre machine (SP-594)
+  sur une autre machine (SP-594). La cle qui vit sur le VPS ne peut plus
+  detruire l'historique distant, refus prouve en 401 sur un fichier reel
+  (SP-597)
 - Domaines d'images distantes restreints a Cloudinary : `hostname: '**'` ouvrait
   l'optimiseur `next/image` a n'importe quel domaine HTTPS (SP-589)
 - Import de fichiers plafonne a 5 Mo, verifie **avant** lecture (SP-590)

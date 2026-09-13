@@ -533,8 +533,8 @@ Employee = Métier RH (job, équipe, contrat, compétences)
 // Destinataire
 - userId: String
 - user: User
-- companyId: String
-- company: Company
+- companyId: String?             // NULLABLE, et c'est un piege d'isolation
+- company: Company?
 
 // Statut
 - isRead: Boolean                 // Lue ou non
@@ -543,6 +543,17 @@ Employee = Métier RH (job, équipe, contrat, compétences)
 // Audit
 - createdAt, updatedAt
 ```
+
+> **`companyId` est nullable, et c'est le piège central du projet.** Un `where`
+> Prisma qui recevrait `undefined` sur ce champ ne rendrait pas « aucun
+> résultat », il **retirerait le filtre** et renverrait les notifications de
+> toutes les entreprises. C'est exactement la fuite d'août 2026, où les demandes
+> de congé des employés sans équipe partaient aux managers de toutes les
+> entreprises.
+>
+> En SQL de diagnostic, comparer avec `IS DISTINCT FROM` et jamais `<>` :
+> `NULL <> 'x'` vaut `NULL`, donc faux, et la requête rate silencieusement les
+> lignes concernées. Détail dans `.claude/rules/multi-tenant.md`.
 
 **🎯 Types de Notification (Enum NotificationType) :**
 
@@ -755,7 +766,7 @@ Deux conséquences pour tout code qui lit cette table :
 - companyId: String (unique)
 
 // Stripe
-- stripeCustomerId: String (unique)
+- stripeCustomerId: String? (unique)   // nullable : cree au 1er checkout, pas a l'inscription
 - stripeSubscriptionId: String? (unique)
 - stripePriceId: String?
 - stripeProductId: String?         // ID du produit Stripe
@@ -875,10 +886,24 @@ Deux conséquences pour tout code qui lit cette table :
 
 ### 1️⃣9️⃣ **ContactMessage** (Formulaire de contact public - SP-576)
 
-**Rôle :** Persiste les demandes du formulaire de contact public. Seul modèle
-sans `companyId` : il porte des messages de visiteurs non connectés, donc hors
-de toute entreprise. L'isolation multi-tenant ne s'y applique pas, la lecture
-est réservée au `SYSTEM_ADMIN` (écran admin livré par SP-577).
+**Rôle :** Persiste les demandes du formulaire de contact public. Il porte des
+messages de visiteurs non connectés, donc hors de toute entreprise : l'isolation
+multi-tenant ne s'y applique pas, et la lecture est réservée au `SYSTEM_ADMIN`
+(écran admin livré par SP-577).
+
+Il n'est pas le seul modèle sans `companyId`. Mesure du 13 septembre 2026, sept
+modèles n'en portent pas, et pour quatre raisons différentes :
+
+| Modèle | Pourquoi pas de `companyId` |
+|---|---|
+| `Company` | il **est** le tenant |
+| `Account`, `Session`, `VerificationToken` | propres à NextAuth, rattachés à `User` |
+| `PersonalTask` | privé à un utilisateur, isolé par `userId` |
+| `ConversationMember` | isolé par sa `Conversation` parente |
+| `ContactMessage` | hors de toute entreprise, visiteur non connecté |
+
+L'absence de `companyId` ne veut donc pas dire « pas d'isolation », mais
+« isolation portée par un autre champ ». Le vérifier avant d'écrire une requête.
 
 **Champs principaux :**
 

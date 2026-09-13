@@ -209,7 +209,7 @@ d'Umami.
 **Aucune donnée personnelle ne transite par le chemin serveur.** On envoie le
 nom de l'étape, son rang, et des valeurs non identifiantes : ancienneté du
 compte en jours, tranche d'effectif (`1-5`, `6-20`, `21-50`, `50+`), méthode
-(`import` ou `manual`). Jamais de `companyId`, d'identifiant utilisateur ni
+(`import`, `manual` ou `invitation`). Jamais de `companyId`, d'identifiant utilisateur ni
 d'email. L'appel partant du serveur, l'IP vue par Umami est celle du VPS.
 C'est ce qui rend ce chemin licite sans consentement : rien n'est déposé sur le
 poste du visiteur et aucune donnée personnelle n'est transmise. Un garde-fou de
@@ -246,7 +246,7 @@ quarantième équipe n'est plus en train de s'activer.
 l'opération. Cela traite correctement les lots : douze collaborateurs importés
 d'un coup sur une entreprise vide restent une seule première fois.
 
-### Lire le tunnel
+### Lire le tunnel depuis le tableau de bord
 
 Dans Umami, onglet **Events**, filtrer sur `funnel-`. Le taux de passage entre
 deux rangs consécutifs donne le décrochage de l'étape.

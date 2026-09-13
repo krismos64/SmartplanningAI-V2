@@ -1,9 +1,24 @@
 # Plan de Sécurisation SmartPlanning V2
 
-**Version** : 1.1
+**Version** : 1.2
 **Créé le** : 15 décembre 2025
-**Dernière mise à jour** : 10 septembre 2026
-**Statut global** : TERMINÉ, les six phases sont livrées et vérifiées dans le dépôt
+**Dernière mise à jour** : 13 septembre 2026
+**Statut global** : les six phases sont livrées, le tableau de bord ci-dessous
+porte les preuves
+
+> **Comment lire ce document, et c'est important.** Le tableau de bord des
+> phases est à jour et vérifié. Les **blocs de configuration** qui suivent, eux,
+> sont pour partie la proposition de décembre 2025, et non ce qui tourne
+> aujourd'hui : la mise en oeuvre réelle a divergé, parfois délibérément.
+>
+> Quatre sections portent désormais un encadré disant en quoi elles diffèrent du
+> réel, les §2.4, §3.1, §4.2 et §5.1, plus la §6.1 déjà signalée. **La §4.2 est
+> celle qui trompe le plus** : elle décrit une CSP à nonce qui n'existe pas, la
+> CSP servie portant `unsafe-inline`.
+>
+> Devant une valeur de configuration, lire le fichier du dépôt plutôt que ce
+> document : `next.config.ts`, `nginx/smartplanning.conf`,
+> `docker/docker-compose.prod.yml`. Audit du 13 septembre 2026.
 
 ---
 
@@ -170,6 +185,20 @@ ignoreregex =
 
 ### 2.4 Configuration UFW Correcte
 
+> **Ce titre promet plus que la mesure ne tient.** `ufw default deny incoming`
+> ne filtre PAS les ports publies par Docker : celui-ci insere ses regles DNAT
+> en amont de la chaine d'ufw, donc `ufw status` peut montrer un port ferme qui
+> repond pourtant depuis Internet. C'est SP-583, mesure du 8 septembre 2026, ou
+> l'application et Umami servaient sur les ports 3000 et 3001 de l'adresse
+> publique en contournant TLS.
+>
+> La protection reelle est ailleurs : les ports se publient sur la boucle locale
+> (`127.0.0.1:3000:3000`), Nginx restant le seul point d'entree, et
+> `scripts/ops/check-public-ports.sh` le surveille en cron quotidien depuis
+> SP-587. Se verifier depuis l'exterieur, jamais depuis le VPS. Detail dans
+> `.claude/rules/prisma-pieges.md`.
+
+
 **Configuration recommandée** :
 
 ```bash
@@ -209,6 +238,14 @@ sudo ufw default deny outgoing  # ❌ Incompatible avec Docker
 **Priorité** : HAUTE
 
 ### 3.1 docker-compose.yml Sécurisé
+
+> **Le YAML ci-dessous omet la mesure qui compte.** Son service `app` ne publie
+> aucun port, ce qui laisse croire que la question est reglee. Le compose reel,
+> `docker/docker-compose.prod.yml`, publie explicitement
+> `127.0.0.1:3000:3000` : c'est ce binding sur la boucle locale, et non
+> l'absence de ligne `ports`, qui ferme l'acces direct depuis Internet (SP-583).
+> Verifie le 13 septembre 2026.
+
 
 ```yaml
 version: '3.8'
@@ -358,6 +395,19 @@ export default nextConfig
 
 ### 4.2 Middleware CSP
 
+> **Proposition jamais mise en oeuvre, et l'ecart porte sur la valeur de la
+> protection.** `src/middleware.ts` fait 46 lignes et ne contient ni nonce ni
+> CSP : c'est le middleware NextAuth. La CSP reellement servie est definie dans
+> `next.config.ts` et porte `'unsafe-eval' 'unsafe-inline'` sur `script-src`,
+> avec un commentaire du code qui l'admet, « Pour une securite maximale,
+> implementer un middleware avec nonce ».
+>
+> Une CSP a nonce et une CSP a `unsafe-inline` n'ont pas la meme valeur : la
+> seconde n'arrete pas une injection de script inline, qui est l'attaque que la
+> premiere ferme. Lire ce qui suit comme un objectif, pas comme l'etat courant.
+> Verifie le 13 septembre 2026.
+
+
 **Fichier** : `src/middleware.ts`
 
 ```typescript
@@ -420,6 +470,21 @@ export const config = {
 **Priorité** : HAUTE
 
 ### 5.1 Configuration Nginx
+
+> **Les valeurs ci-dessous ne sont plus celles en service**, et l'ecart est
+> volontaire. Mesure du 13 septembre 2026 sur `nginx/smartplanning.conf` :
+>
+> | Reglage | Ecrit ici | Reellement servi |
+> |---|---|---|
+> | zone `api` | 5r/s | **30r/s** |
+> | zone `auth` | 1r/s | **60r/m** |
+> | zone de connexions | `conn` | **`conn_limit`** |
+> | `limit_conn` | 20 | **100**, avec exemption sur `/_next/static/*` |
+>
+> La limite de connexions a ete relevee parce que Nginx compte chaque **stream**
+> HTTP/2 et non chaque connexion TCP : une page Next.js tirant trente chunks ou
+> plus, une limite basse provoquait des 503 au premier chargement.
+
 
 **Fichier** : `/var/www/smartplanning/nginx/nginx.conf`
 
