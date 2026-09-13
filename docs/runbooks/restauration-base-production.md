@@ -206,9 +206,55 @@ Le dump déchiffré contient les données personnelles de tous les salariés de
 toutes les entreprises clientes : le supprimer dès la restauration terminée,
 et arrêter le conteneur de test.
 
+## Restaurer une archive masquée
+
+Depuis SP-597, la rotation hors site **masque** au lieu de supprimer
+(`b2_hide_file`), et la règle de cycle de vie du compartiment efface réellement
+30 jours plus tard. Une archive masquée disparaît de la liste par nom, mais
+**elle est toujours là et reste entièrement téléchargeable** : mesure du
+13 septembre 2026, SHA-1 identique à la copie locale.
+
+Conséquence pratique : `b2_list_file_names` ne la montre plus, il faut passer
+par les versions et télécharger par identifiant.
+
+```bash
+set -a; . /etc/smartplanning/b2.conf; set +a
+R=$(curl -sS -u "${B2_KEY_ID}:${B2_APP_KEY}" \
+  https://api.backblazeb2.com/b2api/v4/b2_authorize_account)
+T=$(echo "$R" | jq -r .authorizationToken)
+U=$(echo "$R" | jq -r .apiInfo.storageApi.apiUrl)
+D=$(echo "$R" | jq -r .apiInfo.storageApi.downloadUrl)
+B=$(echo "$R" | jq -r '.apiInfo.storageApi.allowed.buckets[0].id')
+
+# les versions, marqueurs de masquage compris
+curl -sS -H "Authorization: $T" \
+  "$U/b2api/v4/b2_list_file_versions?bucketId=$B&maxFileCount=100" \
+  | jq -r '.files[] | "\(.action)  \(.fileName)  \(.contentLength)"'
+
+# télécharger la version « upload » par son fileId, et non par son nom
+curl -sS -H "Authorization: $T" -o archive.dump.gpg \
+  "$D/b2api/v4/b2_download_file_by_id?fileId=<fileId de la ligne upload>"
+```
+
+**La clé en service ne peut pas retirer un marqueur de masquage**, `deleteFiles`
+lui ayant été retiré. Rendre une archive de nouveau visible se fait en la
+renvoyant, ou depuis la console avec la clé maîtresse.
+
 ## Limite qui subsiste
 
 Le disque du VPS n'est pas chiffré (`ext4` nu, aucun volume LUKS). Un accès
 fichier sur la machine donne accès à `/etc/smartplanning/backup.key`, donc aux
-archives locales. Les archives distantes restent protégées tant que la clé
-d'application B2 et la passphrase ne sont pas compromises ensemble.
+archives locales.
+
+Les archives distantes, elles, ne sont plus destructibles depuis le VPS depuis
+SP-597 : la clé qui y vit ne porte plus `deleteFiles`, et une tentative de
+suppression est refusée en 401, prouvé sur un fichier réel. C'est ce qui ferme
+le scénario du rançongiciel, qui chiffrait la base puis se servait de la clé
+présente sur le serveur pour effacer les copies.
+
+Ce qu'un attaquant gardant cette clé peut encore faire : **masquer** les
+archives, ou en écraser une par une version vide. Les versions antérieures
+survivent 30 jours et restent téléchargeables par leur `fileId`, la section
+ci-dessus donne la marche à suivre. La passphrase, elle, protège la
+confidentialité et non la destruction : les deux risques sont distincts et ne
+se couvrent pas l'un l'autre.

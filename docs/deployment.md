@@ -585,7 +585,8 @@ politique de confidentialité.
 | **Déclenchement** | `smartplanning-backup-offsite.timer`, chaque jour à 04:10 UTC |
 | **Destination distante** | Backblaze B2, bucket `smartplanning-backups`, région `eu-central-003` |
 | **Identifiants B2** | `/etc/smartplanning/b2.conf`, en `0600` |
-| **Rétention distante** | 30 jours |
+| **Rétention distante** | 30 jours, par règle de cycle de vie du compartiment |
+| **Capacités de la clé** | `listBuckets`, `listFiles`, `readFiles`, `writeFiles`, aucune destructrice (SP-597) |
 
 Le script produit un dump au format `custom`, vérifie son intégrité par
 `pg_restore --list`, le chiffre, contrôle que le fichier chiffré se déchiffre
@@ -846,6 +847,7 @@ Le `reload` n'interrompt pas les connexions en cours.
 | 2026-09-09 | 2.12    | SP-588 : le CD annonçait un succès sur une production morte. Healthcheck bloquant, rollback automatique vers l'image précédente, déploiement par `sha-<court>` au lieu de `latest`, clause `concurrency`, `prune` borné à 168 h. Limite documentée : le rollback ne défait pas les migrations. |
 | 2026-09-09 | 2.13    | SP-593 : la base de production n'était sauvegardée nulle part. Sauvegarde quotidienne chiffrée (AES256, 03:20 UTC, rétention 30 jours), script de test de restauration, section 7 et runbook dédiés. |
 | 2026-09-10 | 2.14    | SP-594 : les archives et la clé vivaient sur le disque de la base. Copie hors site quotidienne vers Backblaze B2 (04:10 UTC, vérifiée taille et SHA-1, rétention 30 jours), clé conservée hors du VPS, restauration prouvée sur une autre machine. |
+| 2026-09-13 | 2.15    | SP-597 : la clé B2 vivant sur le VPS pouvait détruire l'historique hors site, ce qui annulait la protection face à un rançongiciel. Rotation `b2_hide_file` au lieu de `b2_delete_file_version`, clé réduite à quatre capacités, règle de cycle de vie côté Backblaze, refus prouvé en 401 sur fichier réel, ancienne clé révoquée. |
 
 ---
 

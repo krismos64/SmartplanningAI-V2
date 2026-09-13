@@ -113,10 +113,18 @@ SP-583, règle dans `prisma-pieges.md`. Rien ne l'impose mécaniquement, la cha�
 `DOCKER-USER` étant vide : `scripts/ops/check-public-ports.sh` le surveille en
 cron quotidien depuis SP-587.
 
-`scripts/ops/` porte sept scripts de production, tous décrits dans son README :
+`scripts/ops/` porte neuf scripts de production, tous décrits dans son README :
 surveillance TLS et ports, sauvegarde de la base, sa copie hors site et son
-test de restauration, le test hors ligne du script de déploiement, et la
-lecture du tunnel de conversion.
+test de restauration, la rotation et le contrôle de la clé Backblaze, le test
+hors ligne du script de déploiement, et la lecture du tunnel de conversion.
+
+**La copie hors site masque, elle ne supprime plus** (SP-597). La clé qui vit
+sur le VPS ne porte plus `deleteFiles`, un rançongiciel ne peut donc plus
+détruire l'historique distant après avoir chiffré la base. L'effacement réel
+est confié à une règle de cycle de vie du compartiment, qui s'applique même
+serveur éteint. Les deux moitiés se tiennent : sans la règle, plus rien
+n'efface. Une archive masquée reste téléchargeable par son `fileId`, jamais par
+son nom.
 
 Le CD ne synchronise que `docker-compose.prod.yml`. **Umami tourne depuis
 `/home/deploy/umami/docker-compose.yml`, hors du dépôt** : toute correction le
