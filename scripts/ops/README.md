@@ -294,13 +294,175 @@ ssh smartplanning 'systemctl list-timers "smartplanning-backup*"'
 ssh smartplanning 'sudo journalctl -u smartplanning-backup-offsite.service -n 20'
 ```
 
-Sortie de la première exécution réelle, le 10 septembre 2026 :
+Sortie après le durcissement de SP-597, le 13 septembre 2026 :
 
 ```
-Archive : quotidienne-20260910-032029.dump.gpg, 127731 octets
-Envoi vers b2://smartplanning-backups/quotidienne-20260910-032029.dump.gpg
-Verifie hors site : 127731 octets, sha1 concordant
-Rotation distante : 0 supprimee(s), 1 conservee(s) hors site
+Archive : quotidienne-20260913-032906.dump.gpg, 127795 octets
+Envoi vers b2://smartplanning-backups/quotidienne-20260913-032906.dump.gpg
+Verifie hors site : 127795 octets, sha1 concordant
+Rotation distante : 0 masquee(s), 4 visible(s) hors site
+```
+
+### La rotation masque, elle ne supprime plus, SP-597
+
+Le script appelait `b2_delete_file_version`, ce qui exigeait `deleteFiles` sur
+la clé vivant sur le VPS. **Un rançongiciel qui prend la machine chiffrait la
+base, puis se servait de cette clé pour effacer les copies distantes** : le
+dispositif hors site devenait inutile exactement au moment où il servirait.
+
+Il appelle désormais `b2_hide_file`, qui pose un marqueur sans détruire un
+octet et n'exige que `writeFiles`. L'effacement réel est confié à une règle de
+cycle de vie du compartiment, masquage à 30 jours puis effacement 1 jour après,
+**qui s'applique même serveur éteint**, ce qu'aucun script local ne peut
+garantir.
+
+Les deux moitiés ne sont pas indépendantes : sans la règle, le script masquerait
+sans que rien n'efface, et le compartiment accumulerait sans fin. C'est pourquoi
+`rotate-b2-key.sh` refuse de basculer la clé si la règle manque.
+
+Mesuré le 13 septembre 2026, rétention forcée à 0 jour le temps du contrôle :
+
+```
+Rotation distante : 4 masquee(s), 0 visible(s) hors site
+
+hide    quotidienne-20260910-032029.dump.gpg  0
+upload  quotidienne-20260910-032029.dump.gpg  127731
+```
+
+Les marqueurs `hide` coexistent avec les `upload` intacts. Une archive masquée
+reste téléchargeable par son `fileId`, SHA-1 identique à la copie locale : la
+marche à suivre est dans
+[`docs/runbooks/restauration-base-production.md`](../../docs/runbooks/restauration-base-production.md).
+
+### Deux défauts qui se couvraient l'un l'autre
+
+Aucun des six appels `curl` ne portait `--fail`, et la suppression redirigeait
+son corps vers `/dev/null`. **Un refus 401 était donc compté comme un ménage
+réussi.** Le durcissement de la clé serait resté invisible dans le journal,
+c'est-à-dire au moment précis où il fallait le voir.
+
+Les six portent maintenant `--fail-with-body`, et non `--fail` : celui-ci masque
+le corps de la réponse, or c'est lui qui porte le diagnostic de Backblaze.
+
+---
+
+## `rotate-b2-key.sh`
+
+Remplace la clé B2 en service par une clé restreinte à quatre capacités,
+`listBuckets`, `listFiles`, `readFiles`, `writeFiles`.
+
+### La console web ne sait pas créer cette clé
+
+Son formulaire n'offre que trois préréglages, « Read and Write », « Read Only »
+et « Write Only », et **aucune page de la documentation Backblaze ne dit quelles
+capacités chacun accorde**. Mesure du 13 septembre 2026 : la clé en service,
+créée en « Read and Write », en portait **dix-huit**.
+
+`deleteFiles` n'était pas la seule à retirer. Trois autres détruisent par un
+chemin différent :
+
+| Capacité | Ce qu'elle permet |
+| --- | --- |
+| `writeBucketLifecycleRules` | poser une règle à un jour et faire effacer l'historique **par Backblaze**, sans jamais appeler de suppression |
+| `writeBucketEncryption` | activer un chiffrement dont Backblaze détient la clé, rendant les archives illisibles pour nous |
+| `writeBuckets` | changer le compartiment sous le script |
+
+« Write Only » aurait retiré `readFiles` et `listFiles`, dont le script a besoin
+pour vérifier les empreintes et pour restaurer : le durcissement aurait cassé la
+sauvegarde, ce qui est pire que le risque fermé.
+
+### Ce que le script garantit
+
+| Contrôle | Raison |
+| --- | --- |
+| La règle de cycle de vie existe **avant** la bascule | sinon plus rien n'efface |
+| Le fichier de clé maîtresse est en `600` | LS-223 : il était en 644, lisible par le service qu'il protège |
+| Les capacités **réellement accordées** sont relues | ce que Backblaze déclare n'est pas forcément ce qu'il applique |
+| `b2.conf` n'est touché qu'après ces contrôles | un échec laisse la configuration intacte |
+| Écriture par fichier temporaire puis `mv` | une écriture interrompue laisserait un `b2.conf` tronqué |
+| La clé maîtresse est effacée au `shred`, **même sur échec** | `trap EXIT` posé avant tout ce qui peut échouer |
+
+La clé maîtresse est **lue** depuis son fichier, jamais passée en argument de
+commande : tout `ps` la lirait. Ni elle ni la nouvelle clé ne sont affichées,
+seuls les `keyID`, qui ne sont pas des secrets.
+
+### Une clé maîtresse ne se reconnaît pas à ses capacités déclarées
+
+Piège mesuré le 13 septembre 2026. `b2_authorize_account` rend
+**`capabilities: null`** pour une clé maîtresse valide, en v4 comme en v3 : elle
+les possède toutes implicitement et l'API ne les énumère pas.
+
+Un garde qui cherchait littéralement `writeKeys` dans cette liste refusait donc
+une clé parfaitement bonne, avec un message évoquant une clé mal collée, soit
+exactement le faux diagnostic du 10 septembre. Le script exerce désormais
+`b2_list_keys`, une lecture qui exige `listKeys` : une clé applicative ne l'a
+pas, une maîtresse oui.
+
+Même principe que le test négatif ci-dessous : ce qu'un service **déclare** ne
+remplace pas l'exercice de l'appel.
+
+```bash
+# déposer la clé maîtresse sans affichage intermédiaire, puis
+ssh smartplanning 'sudo /opt/smartplanning/ops/rotate-b2-key.sh'
+```
+
+La révocation de l'ancienne clé reste manuelle, depuis la console : retirer une
+valeur d'un fichier ne la désactive pas, et elle est déjà passée par un
+historique de session.
+
+---
+
+## `check-b2-key-hardening.sh`
+
+Prouve le durcissement en trois sens : capacités de la clé, présence de la règle
+de cycle de vie, et **refus effectif d'une suppression**.
+
+### Pourquoi le troisième sens existe
+
+Lire les capacités annoncées dit ce que Backblaze **déclare**, pas ce qu'il
+**applique**. Un contrôle qui s'en contente n'a jamais vu le refus qu'il prétend
+garantir.
+
+### Le piège de la cible, hérité de LS-223
+
+Un test négatif ne doit **pas** viser un `fileId` fabriqué, même par précaution :
+Backblaze valide la **forme** de l'identifiant avant d'examiner les droits, rend
+« Bad file ID » en `bad_request`, et la question de l'autorisation n'est jamais
+posée. Le contrôle rougit alors pour une raison étrangère à ce qu'il teste, et
+ce rouge se prend facilement pour une preuve.
+
+```
+fileId factice   {"code":"bad_request","message":"Bad file ID: ..."}
+fichier reel     {"code":"unauthorized","status":401}
+```
+
+La cible est donc une archive réelle, avec son vrai `fileId`.
+
+### Il ne se lance qu'APRÈS la bascule
+
+Contrainte d'ordonnancement, apprise à ses dépens le 13 septembre 2026. Lancé
+contre la clé **non encore durcie**, ce contrôle a réellement détruit deux
+versions d'archives avant de conclure : la cible était bien choisie, le verdict
+était juste, et le contrôle a fait exactement ce qu'il servait à empêcher.
+
+**L'API B2 n'offre aucun dry run pour `b2_delete_file_version`.** Le test ne peut
+donc être que réel, et il n'est sans risque qu'une fois `deleteFiles` retiré.
+Les archives détruites ont été renvoyées depuis les copies locales, SHA-1
+vérifiés.
+
+```bash
+ssh smartplanning 'sudo /opt/smartplanning/ops/check-b2-key-hardening.sh'
+```
+
+Sortie du 13 septembre 2026, après bascule et révocation :
+
+```
+1. Capacites de la cle en service (4 au total)
+  OK : aucune capacite destructrice, les quatre necessaires sont presentes
+2. Regle de cycle de vie du bucket
+  OK : masquage a 30 jours, effacement 1 jour(s) apres masquage
+3. Test negatif, suppression sur une archive reelle
+  OK : suppression refusee en 401, la cle ne peut pas detruire l'historique
 ```
 
 ### Restauration depuis le hors-site

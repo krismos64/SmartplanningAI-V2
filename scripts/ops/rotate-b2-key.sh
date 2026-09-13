@@ -217,14 +217,31 @@ AUTH_MAITRESSE=$(curl -sS --fail-with-body --max-time 30 \
   exit 1
 }
 
-if ! echo "$AUTH_MAITRESSE" | jq -e '.apiInfo.storageApi.capabilities | index("writeKeys")' >/dev/null 2>&1; then
-  echo "Arret : cette cle ne porte pas writeKeys, ce n'est pas une cle maitresse." >&2
-  echo "  Une cle applicative ne peut pas en creer une autre." >&2
-  exit 1
-fi
-
 JETON_M=$(echo "$AUTH_MAITRESSE" | jq -r '.authorizationToken')
 URL_M=$(echo "$AUTH_MAITRESSE" | jq -r '.apiInfo.storageApi.apiUrl')
+
+# LA CLE MAITRESSE EST RECONNUE PAR CE QU'ELLE FAIT, PAS PAR CE QU'ELLE DECLARE.
+#
+# Mesure du 13 septembre 2026 : `b2_authorize_account` rend
+# `capabilities: null` pour une cle maitresse valide, en v4 comme en v3. Elle
+# les possede TOUTES implicitement, et l'API ne les enumere pas. Un garde qui
+# cherchait litteralement `writeKeys` dans cette liste refusait donc une cle
+# parfaitement bonne, et ce refus ressemblait a s'y meprendre a une cle mal
+# collee, le defaut du 10 septembre.
+#
+# On exerce donc `b2_list_keys`, qui exige `listKeys` : une cle applicative ne
+# l'a pas, une maitresse oui. C'est une lecture, elle ne modifie rien.
+#
+# Meme famille que le test negatif de check-b2-key-hardening.sh : lire ce qu'un
+# service DECLARE ne remplace jamais l'exercice de l'appel.
+if ! curl -sS --fail-with-body --max-time 30 \
+  -H "Authorization: $JETON_M" \
+  "$URL_M/b2api/v4/b2_list_keys?accountId=$COMPTE&maxKeyCount=1" >/dev/null 2>&1; then
+  echo "Arret : cette cle ne peut pas lister les cles du compte." >&2
+  echo "  Une cle applicative ne peut pas en creer une autre : il faut la cle" >&2
+  echo "  maitresse, generee depuis la console Backblaze." >&2
+  exit 1
+fi
 
 # EN API v4 LE PARAMETRE EST `bucketIds`, UNE LISTE. `bucketId` au singulier
 # rend un 400 : « The bucketId parameter has been deprecated in favor of
