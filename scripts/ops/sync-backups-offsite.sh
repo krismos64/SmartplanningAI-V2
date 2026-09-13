@@ -31,6 +31,13 @@
 # conservation sans limite de donnees personnelles de salaries contredirait le
 # RGPD.
 #
+# DEPUIS SP-597, CE SCRIPT NE SUPPRIME PLUS RIEN. Il masque (`b2_hide_file`),
+# et la regle de cycle de vie du bucket efface reellement. La cle en service
+# ne porte donc plus `deleteFiles` : un rancongiciel qui prend le VPS ne peut
+# plus detruire l'historique distant au moment precis ou il servirait. Le
+# corollaire est que la retention n'est plus tenue par ce script seul, elle
+# depend de la regle cote Backblaze : les deux se verifient ensemble.
+#
 # Usage : ./sync-backups-offsite.sh
 # Sortie : 0 si l'envoi est fait ET verifie, 1 sinon.
 
@@ -141,7 +148,7 @@ echo "  Archive : $NOM, $TAILLE octets"
 
 # Le -u de curl construit lui-meme l'en-tete Basic : les identifiants ne
 # passent donc pas par la ligne de commande d'un autre processus.
-REPONSE_AUTH=$(curl -sS --max-time 30 -u "${B2_KEY_ID}:${B2_APP_KEY}" "$API_AUTH" 2>&1) || {
+REPONSE_AUTH=$(curl -sS --fail-with-body --max-time 30 -u "${B2_KEY_ID}:${B2_APP_KEY}" "$API_AUTH" 2>&1) || {
   echo "Arret : appel d'authentification B2 impossible." >&2
   echo "  $REPONSE_AUTH" >&2
   exit 1
@@ -205,7 +212,7 @@ fi
 # Envoi
 # ---------------------------------------------------------------------------
 
-REPONSE_URL=$(curl -sS --max-time 30 \
+REPONSE_URL=$(curl -sS --fail-with-body --max-time 30 \
   -H "Authorization: $JETON" \
   "$API_URL/b2api/v4/b2_get_upload_url?bucketId=$BUCKET_ID" 2>&1) || {
   echo "Arret : impossible d'obtenir une URL d'envoi." >&2
@@ -230,7 +237,7 @@ SHA1=$(sha1sum "$DERNIERE" | cut -d' ' -f1)
 
 echo "  Envoi vers b2://$B2_BUCKET/$NOM"
 
-REPONSE_ENVOI=$(curl -sS --max-time 300 \
+REPONSE_ENVOI=$(curl -sS --fail-with-body --max-time 300 \
   -H "Authorization: $JETON_ENVOI" \
   -H "X-Bz-File-Name: $NOM" \
   -H "Content-Type: application/octet-stream" \
@@ -259,7 +266,7 @@ fi
 # on compare taille et empreinte a ce qu'on a envoye.
 # ---------------------------------------------------------------------------
 
-REPONSE_LISTE=$(curl -sS --max-time 30 \
+REPONSE_LISTE=$(curl -sS --fail-with-body --max-time 30 \
   -H "Authorization: $JETON" \
   "$API_URL/b2api/v4/b2_list_file_names?bucketId=$BUCKET_ID&prefix=$PREFIXE&maxFileCount=1000" 2>&1) || {
   echo "Arret : impossible de relire la liste distante." >&2
@@ -291,7 +298,25 @@ fi
 echo "  Verifie hors site : $TAILLE_DISTANTE octets, sha1 concordant"
 
 # ---------------------------------------------------------------------------
-# Rotation distante
+# Rotation distante, par MASQUAGE et non par suppression
+#
+# LA ROTATION NE DETRUIT PLUS RIEN, C'EST LE POINT DE SP-597. Une cle capable
+# de supprimer une version distante rend le hors-site destructible depuis le
+# VPS : un rancongiciel qui prend la machine chiffre la base, puis se sert de
+# cette cle pour effacer les copies. Le dispositif devient inutile exactement
+# au moment ou il servirait.
+#
+# `b2_hide_file` pose un marqueur de masquage sans detruire un octet, et la
+# regle de cycle de vie du bucket (posee le 13 septembre 2026 : masquage a
+# 30 jours, effacement 1 jour apres) fait le vrai menage cote Backblaze. Elle
+# s'applique MEME SERVEUR ETEINT, ce qu'aucun script local ne peut garantir.
+#
+# `b2_hide_file` n'exige que `writeFiles`, deja necessaire a l'envoi. Retirer
+# `deleteFiles` de la cle est donc sans effet de bord sur ce script.
+#
+# SES PARAMETRES SONT bucketId ET fileName, PAS fileId. Le piege vient de
+# `b2_delete_file_version`, qui prend fileName ET fileId : on recopie la paire
+# par reflexe et B2 rend un 400.
 #
 # La rotation ne fait pas echouer le script : la copie du jour est faite et
 # verifiee, c'est ce qui compte. Un echec de menage se signale sans annuler le
@@ -299,22 +324,36 @@ echo "  Verifie hors site : $TAILLE_DISTANTE octets, sha1 concordant"
 # ---------------------------------------------------------------------------
 
 LIMITE_MS=$(( ($(date +%s) - RETENTION * 86400) * 1000 ))
-SUPPRIMES=0
+MASQUES=0
 ECHECS=0
 
-while read -r ancien_nom ancien_id; do
+# ON NE MASQUE PAS CE QUI EST DEJA MASQUE. `b2_list_file_names` ne rend que les
+# versions visibles, donc une archive deja masquee lors d'une execution
+# precedente n'apparait plus ici et ne sera pas retentee. Sans cela, chaque
+# nuit rejouerait le masquage des memes fichiers jusqu'a leur effacement par la
+# regle, et le compteur annoncerait un menage qui n'a pas lieu.
+while read -r ancien_nom; do
   [ -z "$ancien_nom" ] && continue
-  if curl -sS --max-time 30 -X POST \
+
+  # LE CORPS DE L'ERREUR EST CAPTURE, PAS JETE. La version precedente redirigeait
+  # vers /dev/null : combinee a l'absence de --fail, elle comptait un refus 401
+  # comme un menage reussi. Les deux defauts se couvraient l'un l'autre, et le
+  # durcissement de la cle serait reste invisible dans le journal.
+  if REPONSE_MASQUAGE=$(curl -sS --fail-with-body --max-time 30 -X POST \
     -H "Authorization: $JETON" \
     -H "Content-Type: application/json" \
-    -d "$(jq -nc --arg n "$ancien_nom" --arg i "$ancien_id" '{fileName: $n, fileId: $i}')" \
-    "$API_URL/b2api/v4/b2_delete_file_version" >/dev/null 2>&1; then
-    SUPPRIMES=$(( SUPPRIMES + 1 ))
+    -d "$(jq -nc --arg b "$BUCKET_ID" --arg n "$ancien_nom" '{bucketId: $b, fileName: $n}')" \
+    "$API_URL/b2api/v4/b2_hide_file" 2>&1); then
+    MASQUES=$(( MASQUES + 1 ))
   else
     ECHECS=$(( ECHECS + 1 ))
+    echo "  Masquage refuse pour $ancien_nom :" >&2
+    echo "$REPONSE_MASQUAGE" \
+      | jq -r 'if (.message // "") != "" then .message elif (.code // "") != "" then .code else tostring end' 2>/dev/null \
+      | sed 's/^/    /' >&2
   fi
 done < <(echo "$REPONSE_LISTE" | jq -r --argjson lim "$LIMITE_MS" \
-  '.files[]? | select(.uploadTimestamp < $lim) | "\(.fileName) \(.fileId)"')
+  '.files[]? | select(.uploadTimestamp < $lim) | .fileName')
 
 # LE COMPTE SE RELIT, IL NE SE CALCULE PAS. Une premiere version ajoutait 1 a
 # la liste lue apres envoi en supposant que le nouveau fichier n'y figurait pas
@@ -322,15 +361,15 @@ done < <(echo "$REPONSE_LISTE" | jq -r --argjson lim "$LIMITE_MS" \
 # un bucket qui n'en contenait qu'une. Sur un dispositif de sauvegarde, un
 # compteur approximatif est un compteur qui ment, et c'est precisement ce qu'on
 # ne veut pas quand il faudra decider si une restauration est possible.
-REPONSE_FINALE=$(curl -sS --max-time 30 \
+REPONSE_FINALE=$(curl -sS --fail-with-body --max-time 30 \
   -H "Authorization: $JETON" \
   "$API_URL/b2api/v4/b2_list_file_names?bucketId=$BUCKET_ID&prefix=$PREFIXE&maxFileCount=1000" 2>/dev/null) || true
 
 RESTANTES=$(echo "$REPONSE_FINALE" | jq -r '.files | length' 2>/dev/null || echo "?")
 
-echo "  Rotation distante : $SUPPRIMES supprimee(s), $RESTANTES conservee(s) hors site"
+echo "  Rotation distante : $MASQUES masquee(s), $RESTANTES visible(s) hors site"
 if [ "$ECHECS" -gt 0 ]; then
-  echo "  Attention : $ECHECS suppression(s) distante(s) en echec, a surveiller." >&2
+  echo "  Attention : $ECHECS masquage(s) distant(s) en echec, a surveiller." >&2
 fi
 
 echo "Termine, $(date -u +%Y-%m-%dT%H:%M:%SZ)"
