@@ -17,7 +17,10 @@ import {
   useEffect,
   useState,
 } from 'react'
+import { usePathname } from 'next/navigation'
+
 import { CookieBanner } from './CookieBanner'
+import { CookieConsentDialog } from './CookieConsentDialog'
 import { CookiePreferencesModal } from './CookiePreferencesModal'
 import {
   ACCEPT_ALL_PREFERENCES,
@@ -115,6 +118,18 @@ export function CookieConsentProvider({
   const [consent, setConsentState] = useState<CookieConsent | null>(null)
   const [isPreferencesOpen, setIsPreferencesOpen] = useState(false)
 
+  /**
+   * Dans l'application privée, le consentement passe par une modale centrée
+   * et non par la bannière fixe en bas d'écran : celle-ci recouvrait le
+   * contenu et absorbait les clics, mesuré à 89 pour cent de la grille de
+   * plannings masquée (SP-600).
+   */
+  // `/app` exactement ou `/app/...`, et non un simple prefixe : `startsWith`
+  // seul attraperait une future route publique nommee `/applications`.
+  const pathname = usePathname()
+  const isPrivateApp =
+    pathname === '/app' || (pathname?.startsWith('/app/') ?? false)
+
   // Charge le consentement au montage (côté client uniquement)
   useEffect(() => {
     const currentConsent = getConsent()
@@ -181,7 +196,7 @@ export function CookieConsentProvider({
   return (
     <CookieConsentContext.Provider value={value}>
       {children}
-      <CookieBanner />
+      {isPrivateApp ? <CookieConsentDialog /> : <CookieBanner />}
       <CookiePreferencesModal />
     </CookieConsentContext.Provider>
   )

@@ -66,6 +66,7 @@ const STATIC_LABELS: Record<string, string> = {
   create: 'Créer',
   details: 'Détails',
   billing: 'Facturation',
+  privacy: 'Confidentialité',
 }
 
 /**

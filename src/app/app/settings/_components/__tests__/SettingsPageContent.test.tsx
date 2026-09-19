@@ -22,6 +22,9 @@ describe('SettingsPageContent', () => {
       expect(
         screen.getByTestId('settings-section-security')
       ).toBeInTheDocument()
+      // SP-600 : le consentement doit rester revocable par tout utilisateur,
+      // quel que soit son role, et non par les seuls dirigeants
+      expect(screen.getByTestId('settings-section-privacy')).toBeInTheDocument()
     })
 
     it('should hide company section for EMPLOYEE', () => {
@@ -84,9 +87,11 @@ describe('SettingsPageContent', () => {
 
     it('should have correct number of sections for DIRECTOR', () => {
       render(<SettingsPageContent userRole="DIRECTOR" />)
-      // profile, appearance, notifications, security, company = 5
+      // profile, appearance, notifications, security, company, privacy = 6
+      // privacy ajoute par SP-600 : le consentement doit rester revocable
+      // depuis le back-office, il n'etait reglable que du footer public
       const sections = screen.getAllByTestId(/settings-section-/)
-      expect(sections).toHaveLength(5)
+      expect(sections).toHaveLength(6)
     })
   })
 })

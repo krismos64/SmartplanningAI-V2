@@ -68,6 +68,12 @@ export default defineConfig({
     // (159 des 566 requêtes de la session analysée en SP-580). Trois défauts
     // y ont été trouvés en deux sessions, aucun par un test. Ajouté en SP-585.
     'schedules/grid-navigation.spec.ts',
+
+    // 🔴 CRITIQUE : le consentement cookies recouvrait 89 pour cent de la
+    // grille et absorbait les clics, sur l'ecran central du produit et pour
+    // tout compte qui n'avait pas encore tranche (SP-600). Defaut mesure en
+    // production, invisible du code de l'ecran : il se garde au navigateur.
+    'schedules/consentement-ne-recouvre-pas-la-grille.spec.ts',
   ],
 
   // === CONFIGURATION GLOBALE ===

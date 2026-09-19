@@ -18,3 +18,6 @@ export {
   useCookieConsentContextOptional,
 } from './CookieConsentProvider'
 export type { CookieConsentContextValue } from './CookieConsentProvider'
+
+export { CookieConsentDialog } from './CookieConsentDialog'
+export type { CookieConsentDialogProps } from './CookieConsentDialog'
