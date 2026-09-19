@@ -281,7 +281,9 @@ HEALTH_API_KEY=<GENERER_AVEC_openssl_rand_base64_32>
 
 **`RESEND_API_KEY` est un résidu.** `docker-compose.prod.yml` la déclare encore,
 mais elle n'est utilisée nulle part : `resend` n'est pas une dépendance de
-`package.json`, et la chaîne n'apparaît dans aucun fichier de `src/`. Les envois
+`package.json`, et aucun client Resend n'est instancie. Un `grep RESEND src/`
+remonte bien trois occurrences, mais ce sont `RESEND_RATE_LIMIT` et un
+commentaire sur le renvoi d'invitation, sans rapport avec le service. Les envois
 passent par Nodemailer et le SMTP Hostinger. Vérifié le 10 septembre 2026, à
 retirer du compose lors d'un prochain passage dessus. Ne pas la renseigner, elle
 ne servirait à rien.

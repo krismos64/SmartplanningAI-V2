@@ -126,7 +126,8 @@ serveur éteint. Les deux moitiés se tiennent : sans la règle, plus rien
 n'efface. Une archive masquée reste téléchargeable par son `fileId`, jamais par
 son nom.
 
-Le CD ne synchronise que `docker-compose.prod.yml`. **Umami tourne depuis
+Le CD ne synchronise que `docker/docker-compose.prod.yml`, copie vers
+`/var/www/smartplanning/docker-compose.yml` sur le VPS. **Umami tourne depuis
 `/home/deploy/umami/docker-compose.yml`, hors du dépôt** : toute correction le
 concernant s'applique à la main sur le VPS.
 

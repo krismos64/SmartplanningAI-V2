@@ -4,6 +4,13 @@
 **Branche** : `feature/SP-157-security-audit`
 **Contexte** : Sécurisation des conteneurs Docker suite aux incidents de décembre 2025
 
+> **Document date, conserve pour l'historique.** Le tmpfs du service `app` a
+> change depuis : il est monte sur `/app/.next/cache` et non `/.next/cache`,
+> avec `uid=1001,gid=1001`. Next.js ecrivant ses images optimisees dans
+> `/app/.next/cache/images`, l'ancien chemin produisait 10 a 17 `ENOENT` par
+> jour (SP-580). Le chemin et le proprietaire comptent tous les deux. La
+> reference qui fait foi est `docker/docker-compose.prod.yml`.
+
 ---
 
 ## 📋 Résumé des Modifications

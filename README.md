@@ -39,7 +39,8 @@ Plateforme SaaS multi-tenant de gestion intelligente des plannings et des ressou
 - **Delivrabilite** : Un envoi accepte par le relais SMTP ne prouve pas la livraison. `EmailResult.outcome` distingue une adresse refusee (`BOUNCED`) d'une panne technique (`FAILED`), et le cron `/api/cron/bounce-sync` releve la boite d'expedition toutes les 6 heures pour capter les refus asynchrones, qui arrivent plusieurs secondes apres l'acceptation. Le rapprochement avec `EmailLog` se fait par adresse et la releve couvre INBOX, la corbeille et les indesirables : les bounces y sont tries automatiquement et n'atteignent pas la boite de reception. Une adresse rejetee est signalee dans la liste des employes et dans l'espace admin
 - **Admin** : Page utilisateurs cross-tenant, essais a risque, broadcast email, stats + export PDF, journal des emails, suivi des messages de contact (`/app/admin/messages-contact`, reserve au SYSTEM_ADMIN : la table ne porte pas de `companyId`, l'expediteur etant un visiteur anonyme)
 - **Profil** : Avatar Cloudinary (affiche dans le header et la sidebar), RGPD (export donnees, suppression compte), preferences affichage. Le poste (`jobTitle`) renseigne au profil s'affiche a la place du libelle de role dans l'interface
-- **Settings** : Apparence, notifications, entreprise (jours travailles, horaires)
+- **Settings** : Apparence, notifications, entreprise (jours travailles, horaires),
+  confidentialite et cookies (consentement revocable, SP-600)
 - **Notes & Incidents** : Taches personnelles (drag & drop), notes d'incidents avec visibilite RBAC
 - **SEO / GEO** : Metadata API, JSON-LD Schema.org (@graph, Article, HowTo, FAQPage, BreadcrumbList), sitemap data-driven avec `lastModified` reels, robots.txt ouvert aux crawlers IA, `llms.txt` et `llms-full.txt`
 - **Contenu editorial** : Pages secteur `/solutions/[slug]` (restauration, commerce, BTP) et guides pratiques `/guides/[slug]`, chacune sous son hub (`/solutions`, `/guides`), generes depuis des registres data-driven en SSG strict. Ajouter une page = 1 fichier de donnees + 1 ligne au registre (sitemap, footer, navigation et garde-fous de tests suivent automatiquement)
@@ -148,7 +149,7 @@ npm run email:dev        # Previsualisation des templates React Email
 
 ```
 src/
-├── app/              # Next.js 15 App Router (65 pages, 5 layouts, 18 API routes)
+├── app/              # Next.js 15 App Router (66 pages, 5 layouts, 18 API routes)
 │   ├── (auth)/       # Login, register, verify-email, activate-account
 │   ├── (about)/      # A propos, tarifs, contact
 │   ├── (landing)/    # Landing page
@@ -157,12 +158,12 @@ src/
 │   ├── (guides)/     # Hub et guides pratiques /guides/[slug] (registre data-driven)
 │   ├── app/          # Routes protegees par role
 │   └── api/          # API Routes (avatar, webhooks, health, SSE, messages...)
-├── components/       # 207 composants React
+├── components/       # 186 composants React (hors tests)
 │   ├── public/       # Primitives des pages publiques (identite editoriale)
 │   ├── messaging/    # Messagerie (8 composants)
 │   ├── import/       # Import CSV (2 composants + utilitaires)
 │   └── ui/           # Shadcn/ui (41 composants)
-├── lib/              # Actions (32), services (22), validations Zod, email (21 fichiers de templates)
+├── lib/              # Actions (31 + barrel), services (22), validations Zod, email (21 fichiers de templates)
 ├── hooks/            # 22 hooks custom (SSE, SWR, messagerie, import CSV, analytics)
 ├── types/            # Types TypeScript globaux
 └── styles/           # Design tokens centralises
@@ -170,7 +171,7 @@ src/
 
 ## Base de donnees
 
-22 modeles Prisma (18 core + 4 NextAuth), 16 enums, 65 index, 24 migrations.
+22 modeles Prisma (18 core + 4 NextAuth), 16 enums, 64 index `@@index`, 24 migrations.
 
 | Categorie | Modeles |
 |---|---|
@@ -188,11 +189,11 @@ Voir [`docs/database-architecture.md`](docs/database-architecture.md) pour le de
 
 | Type      | Framework  | Fichiers | Tests     |
 | --------- | ---------- | -------- | --------- |
-| Unitaires | Vitest     | 201      | 3 327     |
-| E2E       | Playwright | 23       | 261       |
-| **Total** |            | **224**  | **3 588** |
+| Unitaires | Vitest     | 203      | 3 346     |
+| E2E       | Playwright | 25       | 269       |
+| **Total** |            | **228**  | **3 615** |
 
-Compteurs mesures le 9 septembre 2026 en fin de journee, par `npm run test` et
+Compteurs mesures le 19 septembre 2026, par `npm run test` et
 `npx playwright test --list`. Ils se periment a chaque sprint : les remesurer
 plutot que les recopier. Ils avaient d'ailleurs deja derive dans la journee, la
 premiere mesure ayant precede l'ajout de tests par SP-589 a SP-592.
@@ -205,7 +206,7 @@ les tests passent. Le perimetre mesure inclut `src/lib/`, `src/hooks/` et
 `src/lib/validations/`, et exclut les pages et layouts, couverts par les E2E.
 Relever un seuil demande de mesurer d'abord, jamais de viser un chiffre rond.
 
-La CI execute une whitelist E2E (9 specs, 129 tests) ; la suite complete (23 specs, 261 tests) tourne en nightly. `testMatch` de `playwright.ci.config.ts` etant une liste explicite, un spec renomme ou supprime disparait silencieusement de la CI : verifier cette liste apres chaque ajout ou suppression.
+La CI execute une whitelist E2E (11 specs, 137 tests) ; la suite complete (25 specs, 269 tests) tourne en nightly. `testMatch` de `playwright.ci.config.ts` etant une liste explicite, un spec renomme ou supprime disparait silencieusement de la CI : verifier cette liste apres chaque ajout ou suppression.
 
 **Les specs publiques ne sont pas dans la whitelist CI.** Les 26 tests de
 `e2e/specs/landing/`, dont 7 audits axe-core, ne tournent donc qu'en nightly
@@ -376,6 +377,11 @@ Le chiffrement au repos reste une decision d'architecture, sans ticket.
 - Import de fichiers plafonne a 5 Mo, verifie **avant** lecture (SP-590)
 - Le middleware exige une identite exploitable (`auth.user.id`) et non la seule
   presence d'un objet de session (SP-589)
+- Consentement cookies revocable a tout moment, depuis le site public comme
+  depuis `/app/settings/privacy` : il n'etait auparavant reglable que dans le
+  pied de page public, un utilisateur connecte ne pouvait plus revenir sur son
+  choix. Dans le back-office il passe par une modale et non par la banniere
+  fixe, qui recouvrait 89 pour cent de la grille de plannings (SP-600)
 
 > Documentation securite : [`docs/security/`](docs/security/)
 

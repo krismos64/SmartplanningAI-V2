@@ -358,7 +358,7 @@ E2E analytics. Les deux restent à écrire.
 
 ### Le script ne se charge pas
 
-1. Vérifier le consentement : `localStorage.getItem('cookie-consent')`
+1. Vérifier le consentement : `document.cookie.split('; ').find((c) => c.startsWith('cookie-consent='))`
 2. Vérifier la config : `process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID`
 3. Vérifier le script : `curl -I https://analytics.smartplanning.fr/script.js`
 

@@ -86,7 +86,7 @@ Relations NextAuth v5 (authentification)
 └──────┘  │ 1:N
           ├──► Account (OAuth providers)
           ├──► Session (sessions actives)
-          └──► VerificationToken (reset password)
+          (VerificationToken vit a part, sans lien vers User)
 ```
 
 ---
@@ -408,7 +408,9 @@ Employee = Métier RH (job, équipe, contrat, compétences)
 
 - **N:1 Employee** → Une demande appartient à UN employé
 - **N:1 Company** → Isolation multi-tenant
-- **N:1 User (reviewer)** → Validée par un manager (FK via reviewedById)
+- **Pas de relation vers le validateur** : `reviewedById` est un `String?` nu,
+  sans champ de relation ni contrainte de cle etrangere. Un `include: { reviewedBy: true }` echoue donc, il faut resoudre l'identifiant par une
+  requete separee sur `User`.
 
 **🎯 Types de Congés (Enum LeaveType) :**
 
@@ -622,7 +624,7 @@ Employee = Métier RH (job, équipe, contrat, compétences)
 - date: DateTime                  // Date de l'incident
 
 // Visibilité RBAC
-- visibility: IncidentNoteVisibility  // DIRECTOR_ONLY, MANAGER_DIRECTOR, ALL
+- visibility: IncidentNoteVisibility  // DIRECTOR_ONLY, MANAGER_ONLY, MANAGER_DIRECTOR, ALL
 
 // Multi-tenant
 - companyId: String
@@ -1208,7 +1210,10 @@ Les seize enums du schéma sont désormais tous décrits ici.
 
 ### 6. Audit & Traçabilité
 
-- `createdAt`, `updatedAt` sur tous les modèles
+- `createdAt` et `updatedAt` sur les modeles metier, mais **pas sur tous** :
+  Account, Session, VerificationToken, Payment, EmailLog et ConversationMember
+  n'ont pas d'`updatedAt`, et quatre d'entre eux n'ont pas de `createdAt`.
+  Verifier dans `schema.prisma` avant de trier ou filtrer sur ces colonnes
 - `createdById` pour savoir qui a créé un planning
 - `reviewedById`, `reviewedAt` pour les validations de congés
 - `updatedById` pour les modifications de soldes
