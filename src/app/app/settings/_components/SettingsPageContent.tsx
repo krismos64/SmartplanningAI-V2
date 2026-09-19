@@ -72,6 +72,14 @@ const SETTINGS_SECTIONS: SettingsSectionConfig[] = [
     href: '/app/settings/company',
     roles: ['DIRECTOR', 'SYSTEM_ADMIN'],
   },
+  {
+    id: 'privacy',
+    icon: Shield,
+    title: 'Confidentialité et cookies',
+    description: "Gérez votre consentement et la mesure d'audience",
+    href: '/app/settings/privacy',
+    roles: 'ALL',
+  },
 ]
 
 /**
