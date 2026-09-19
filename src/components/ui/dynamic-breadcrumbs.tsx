@@ -267,10 +267,41 @@ export interface DynamicBreadcrumbsProps {
 }
 
 /**
+ * Construit les segments affichés et leur href réel.
+ *
+ * Le href ne peut pas être reconstruit en préfixant « /app/dashboard/ » :
+ * le back-office porte plusieurs espaces de routes (`/app/director/...`,
+ * `/app/admin/...`, `/app/manager/...`, `/app/profile`, `/app/settings`), et
+ * ce préfixe fixe renvoyait vers des URL inexistantes. Le lien se déduit donc
+ * du pathname réel, segment par segment.
+ *
+ * Les segments `app` et `dashboard` restent masqués à l'affichage, sans être
+ * retirés du chemin cliquable.
+ */
+function buildCrumbs(
+  pathname: string
+): Array<{ segment: string; href: string }> {
+  const rawSegments = pathname.split('/').filter(Boolean)
+
+  return rawSegments.flatMap((segment, index) => {
+    if (segment === 'app' || segment === 'dashboard') {
+      return []
+    }
+
+    return [
+      {
+        segment,
+        href: '/' + rawSegments.slice(0, index + 1).join('/'),
+      },
+    ]
+  })
+}
+
+/**
  * Génère les données structurées Schema.org pour le SEO
  */
 function generateSchemaData(
-  segments: string[],
+  crumbs: Array<{ segment: string; href: string }>,
   homeLabel: string,
   homeHref: string,
   origin: string
@@ -282,11 +313,11 @@ function generateSchemaData(
       name: homeLabel,
       item: `${origin}${homeHref}`,
     },
-    ...segments.map((segment, index) => ({
+    ...crumbs.map((crumb, index) => ({
       '@type': 'ListItem',
       position: index + 2,
-      name: STATIC_LABELS[segment.toLowerCase()] ?? segment,
-      item: `${origin}/app/dashboard/${segments.slice(0, index + 1).join('/')}`,
+      name: STATIC_LABELS[crumb.segment.toLowerCase()] ?? crumb.segment,
+      item: `${origin}${crumb.href}`,
     })),
   ]
 
@@ -307,12 +338,8 @@ export function DynamicBreadcrumbs({
   homeHref = '/app/dashboard',
   className,
 }: DynamicBreadcrumbsProps) {
-  // Parser le pathname et extraire les segments
-  const segments = useMemo(() => {
-    return pathname
-      .split('/')
-      .filter((s) => s && s !== 'app' && s !== 'dashboard')
-  }, [pathname])
+  // Parser le pathname : segments affichés et href réels
+  const crumbs = useMemo(() => buildCrumbs(pathname), [pathname])
 
   // État pour le schema (évite erreur d'hydratation)
   const [schemaData, setSchemaData] = useState<ReturnType<
@@ -322,11 +349,11 @@ export function DynamicBreadcrumbs({
   // Générer le schema uniquement côté client après hydratation
   useEffect(() => {
     const origin = window.location.origin
-    setSchemaData(generateSchemaData(segments, homeLabel, homeHref, origin))
-  }, [segments, homeLabel, homeHref])
+    setSchemaData(generateSchemaData(crumbs, homeLabel, homeHref, origin))
+  }, [crumbs, homeLabel, homeHref])
 
   // Ne pas afficher si pas de segments
-  if (segments.length === 0) {
+  if (crumbs.length === 0) {
     return null
   }
 
@@ -366,22 +393,20 @@ export function DynamicBreadcrumbs({
           </BreadcrumbItem>
 
           {/* Segments dynamiques */}
-          {segments.map((segment, index) => {
+          {crumbs.map((crumb, index) => {
             const previousSegment: string | null =
-              index > 0 ? (segments[index - 1] ?? null) : null
-            const href =
-              '/app/dashboard/' + segments.slice(0, index + 1).join('/')
-            const isLast = index === segments.length - 1
+              index > 0 ? (crumbs[index - 1]?.segment ?? null) : null
+            const isLast = index === crumbs.length - 1
 
             return (
-              <Fragment key={`${segment}-${index}`}>
+              <Fragment key={`${crumb.segment}-${index}`}>
                 <BreadcrumbSeparator>
                   <ChevronRight className="h-4 w-4" aria-hidden="true" />
                 </BreadcrumbSeparator>
                 <BreadcrumbSegment
-                  segment={segment}
+                  segment={crumb.segment}
                   previousSegment={previousSegment}
-                  href={href}
+                  href={crumb.href}
                   isLast={isLast}
                 />
               </Fragment>
