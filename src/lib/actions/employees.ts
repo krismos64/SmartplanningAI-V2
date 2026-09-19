@@ -1518,6 +1518,8 @@ export async function getEmployeesForSelect(): Promise<
       lastName: string
       weeklyHours: number
       image?: string | null
+      /** Equipe de rattachement, pour filtrer les lignes de la grille (SP-601) */
+      teamId?: string | null
     }[]
   >
 > {
@@ -1564,6 +1566,7 @@ export async function getEmployeesForSelect(): Promise<
         firstName: true,
         lastName: true,
         weeklyHours: true,
+        teamId: true,
         user: {
           select: {
             image: true,
@@ -1579,6 +1582,7 @@ export async function getEmployeesForSelect(): Promise<
       firstName: emp.firstName,
       lastName: emp.lastName,
       weeklyHours: emp.weeklyHours,
+      teamId: emp.teamId,
       image: emp.user?.image ?? null,
     }))
 

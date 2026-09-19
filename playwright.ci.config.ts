@@ -74,6 +74,11 @@ export default defineConfig({
     // tout compte qui n'avait pas encore tranche (SP-600). Defaut mesure en
     // production, invisible du code de l'ecran : il se garde au navigateur.
     'schedules/consentement-ne-recouvre-pas-la-grille.spec.ts',
+
+    // 🔴 CRITIQUE : la grille ne listait que les employes deja planifies, donc
+    // elle restait vide tant qu'aucun creneau n'existait, sans aucune case ou
+    // cliquer pour en creer un (SP-601). Defaut mesure sur un compte reel.
+    'schedules/grille-affiche-tous-les-employes.spec.ts',
   ],
 
   // === CONFIGURATION GLOBALE ===
