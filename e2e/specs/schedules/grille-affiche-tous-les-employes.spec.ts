@@ -11,25 +11,32 @@
  */
 import { test, expect, type Page } from '@playwright/test'
 
-const EMAIL = 'oliver.green@startupinc.com'
-const PASSWORD = 'Password123!'
+import { loginAs, TEST_USERS } from '../../fixtures/auth.fixture'
+
+/**
+ * Compte DIRECTOR de TechCorp, dont la souscription est active dans le seed.
+ * StartupInc ne convient pas : son `trialEndsAt` y vaut le 31 decembre 2025,
+ * donc le garde d'abonnement detourne vers la facturation et l'ecran des
+ * plannings n'est jamais rendu.
+ *
+ * TechCorp porte 110 employes actifs et aucun creneau, soit exactement le cas
+ * du defaut, a plus grande echelle.
+ */
+const DIRECTEUR = TEST_USERS.DIRECTOR!
 
 async function ouvrirLaGrille(page: Page): Promise<void> {
-  await page.goto('/login')
-  await page.getByPlaceholder('vous@entreprise.com').fill(EMAIL)
-  await page.getByPlaceholder('••••••••').fill(PASSWORD)
-  await page.getByRole('button', { name: 'Se connecter' }).click()
-  await page.waitForURL(/\/app\//, { timeout: 30000 })
+  await loginAs(page, DIRECTEUR)
 
   await page.goto('/app/dashboard/schedules')
-  await page.getByTestId('new-shift-button').waitFor({ timeout: 30000 })
+  await page.waitForLoadState('domcontentloaded')
+  await page.getByTestId('new-shift-button').waitFor({ timeout: 60000 })
 
   // Repondre au consentement, qui sinon recouvre la grille (SP-600)
   await page
     .getByTestId('cookie-reject-all')
     .click()
     .catch(() => {})
-  await page.waitForTimeout(2000)
+  await page.waitForTimeout(1500)
 }
 
 test.describe('SP-601 : la grille liste les employes de l entreprise', () => {
