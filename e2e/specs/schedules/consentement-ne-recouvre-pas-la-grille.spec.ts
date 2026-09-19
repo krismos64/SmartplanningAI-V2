@@ -9,36 +9,39 @@
  * Ces specs verifient les deux moities du correctif : la grille est libre, et
  * le consentement reste recueilli, par une modale qui se traite en un clic.
  *
- * Non ajoutees a la whitelist CI : elles touchent l'ecran plannings et suivent
- * la meme convention que les autres specs `schedules`, jouees en nightly.
+ * Elles n'utilisent volontairement PAS les fixtures `directorPage` : celles-ci
+ * posent le cookie de consentement au demarrage (`consent.fixture.ts`), alors
+ * que ces tests doivent observer l'etat d'un visiteur qui n'a pas encore
+ * tranche. Elles reutilisent en revanche `loginAs`, qui porte les attentes
+ * d'hydratation et les reprises necessaires en CI.
  */
 import { test, expect, type Page } from '@playwright/test'
 
-const EMAIL = 'oliver.green@startupinc.com'
-const PASSWORD = 'Password123!'
+import { loginAs, TEST_USERS } from '../../fixtures/auth.fixture'
 
 /** Points echantillonnes dans la zone de grille autrefois recouverte. */
 const POINTS_DE_GRILLE = [500, 550, 600, 640]
 
-async function seConnecter(page: Page): Promise<void> {
-  await page.goto('/login')
-  await page.getByPlaceholder('vous@entreprise.com').fill(EMAIL)
-  await page.getByPlaceholder('••••••••').fill(PASSWORD)
-  await page.getByRole('button', { name: 'Se connecter' }).click()
-  await page.waitForURL(/\/app\//, { timeout: 30000 })
-}
+/**
+ * Compte DIRECTOR de TechCorp, dont la souscription est active dans le seed.
+ * StartupInc ne convient pas : son `trialEndsAt` y vaut le 31 decembre 2025,
+ * donc le garde d'abonnement detourne vers la facturation et l'ecran des
+ * plannings n'est jamais rendu.
+ */
+const DIRECTEUR = TEST_USERS.DIRECTOR!
 
 async function ouvrirLesPlannings(page: Page): Promise<void> {
+  await loginAs(page, DIRECTEUR)
+
   await page.goto('/app/dashboard/schedules')
   await page.waitForLoadState('domcontentloaded')
-  await page.getByTestId('new-shift-button').waitFor({ timeout: 30000 })
+  await page.getByTestId('new-shift-button').waitFor({ timeout: 60000 })
 }
 
 test.describe('SP-600 : consentement cookies dans le back-office', () => {
   test("la banniere fixe ne s'affiche plus dans l'application privee", async ({
     page,
   }) => {
-    await seConnecter(page)
     await ouvrirLesPlannings(page)
 
     // C'est la banniere `fixed bottom-0` qui recouvrait la grille.
@@ -46,7 +49,6 @@ test.describe('SP-600 : consentement cookies dans le back-office', () => {
   })
 
   test('le consentement est bien demande, par une modale', async ({ page }) => {
-    await seConnecter(page)
     await ouvrirLesPlannings(page)
 
     // Umami n'exclut aucune route : le consentement reste du ici.
@@ -56,7 +58,6 @@ test.describe('SP-600 : consentement cookies dans le back-office', () => {
   test("a l'arrivee, le consentement n'intercepte aucun clic sur la grille", async ({
     page,
   }) => {
-    await seConnecter(page)
     await ouvrirLesPlannings(page)
 
     // Mesure faite AVANT de repondre, c'est-a-dire dans l'etat exact ou se
@@ -84,14 +85,13 @@ test.describe('SP-600 : consentement cookies dans le back-office', () => {
   test('le choix est memorise et la modale ne revient pas au rechargement', async ({
     page,
   }) => {
-    await seConnecter(page)
     await ouvrirLesPlannings(page)
 
     await page.getByTestId('cookie-reject-all').click()
     await expect(page.getByTestId('cookie-consent-dialog')).toHaveCount(0)
 
     await page.reload()
-    await page.getByTestId('new-shift-button').waitFor({ timeout: 30000 })
+    await page.getByTestId('new-shift-button').waitFor({ timeout: 60000 })
 
     await expect(page.getByTestId('cookie-consent-dialog')).toHaveCount(0)
     await expect(page.getByTestId('cookie-banner')).toHaveCount(0)
