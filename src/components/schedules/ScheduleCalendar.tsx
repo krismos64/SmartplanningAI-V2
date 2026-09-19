@@ -57,6 +57,18 @@ export interface ScheduleCalendarProps {
   onRangeChange?: (start: Date, end: Date) => void
   /** ID entreprise */
   companyId?: string
+  /**
+   * Employés actifs de l'entreprise, pour que la vue semaine affiche une
+   * ligne par collaborateur même sans créneau (SP-601).
+   */
+  employees?: {
+    id: string
+    firstName: string
+    lastName: string
+    image?: string | null
+  }[]
+  /** Callback au clic sur une case libre de la grille semaine (SP-601) */
+  onEmptyCellClick?: (employeeId: string, day: Date) => void
 }
 
 // ============================================================================
@@ -92,6 +104,8 @@ export function ScheduleCalendar(props: ScheduleCalendarProps) {
           canEdit={props.canEdit}
           isLoading={props.isLoading}
           leaveRequests={props.leaveRequests}
+          employees={props.employees}
+          onEmptyCellClick={props.onEmptyCellClick}
         />
       ) : (
         <ScheduleCalendarDesktop {...props} />

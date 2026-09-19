@@ -11,6 +11,7 @@
 'use client'
 
 import { useMemo, useCallback } from 'react'
+import Link from 'next/link'
 import {
   format,
   startOfWeek,
@@ -30,7 +31,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { ChevronLeft, ChevronRight, Palmtree } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Palmtree, Plus } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { ScheduleWithRelations } from '@/lib/actions/schedules'
 import type { LeaveRequest } from '@prisma/client'
@@ -72,6 +73,18 @@ interface WeeklyGridViewProps {
    * fenêtre, et un chargement autonome doublait chaque appel à getTeamAbsences.
    */
   leaveRequests?: LeaveRequestWithEmployee[]
+  /**
+   * Employés actifs de l'entreprise, chargés par le parent (SP-601).
+   *
+   * Sans cette liste, la grille déduisait ses lignes des seuls créneaux et
+   * congés de la semaine : une entreprise sans planning n'affichait donc
+   * aucune ligne, et un employé non planifié restait invisible. Le parent
+   * les charge déjà pour le filtre et le panneau d'heures, aucun appel
+   * supplémentaire n'est fait ici.
+   */
+  employees?: Employee[]
+  /** Ouvre la création d'un créneau pour un employé et un jour donnés */
+  onEmptyCellClick?: (employeeId: string, day: Date) => void
 }
 
 // ============================================================================
@@ -139,6 +152,8 @@ export function WeeklyGridView({
   canEdit = false,
   isLoading = false,
   leaveRequests = [],
+  employees: companyEmployees,
+  onEmptyCellClick,
 }: WeeklyGridViewProps) {
   // SP-584 : la semaine affichée vient du parent et n'est plus dupliquée en
   // état local. Deux états de la même semaine se désynchronisaient dès que la
@@ -165,9 +180,25 @@ export function WeeklyGridView({
     [leaveRequests]
   )
 
-  // Extraire la liste unique des employés depuis schedules + leaves
+  // Liste des lignes affichées : les employés de l'entreprise d'abord, puis
+  // ceux déduits des créneaux et des congés.
+  //
+  // SP-601 : la déduction seule rendait la grille vide tant qu'aucun créneau
+  // n'existait, et masquait tout employé non planifié sur la semaine. Elle
+  // reste en repli, pour deux cas : un employé devenu inactif qui garde un
+  // créneau sur la semaine consultée, et le premier rendu, avant que la
+  // liste du parent ne soit chargée.
   const employees = useMemo(() => {
     const map = new Map<string, Employee>()
+
+    for (const e of companyEmployees ?? []) {
+      map.set(e.id, {
+        id: e.id,
+        firstName: e.firstName,
+        lastName: e.lastName,
+        image: e.image ?? null,
+      })
+    }
 
     for (const s of schedules) {
       if (!map.has(s.employeeId)) {
@@ -194,7 +225,7 @@ export function WeeklyGridView({
     return Array.from(map.values()).sort((a, b) =>
       `${a.lastName}${a.firstName}`.localeCompare(`${b.lastName}${b.firstName}`)
     )
-  }, [schedules, leaves])
+  }, [companyEmployees, schedules, leaves])
 
   // Index : employeeId-YYYY-MM-DD → schedules
   const scheduleIndex = useMemo(() => {
@@ -330,11 +361,30 @@ export function WeeklyGridView({
             <tbody>
               {employees.length === 0 ? (
                 <tr>
-                  <td
-                    colSpan={8}
-                    className="py-12 text-center text-sm text-muted-foreground"
-                  >
-                    Aucun planning cette semaine
+                  <td colSpan={8} className="py-12 text-center">
+                    {/*
+                      Depuis SP-601, la grille liste les employés de
+                      l'entreprise : ce repli ne concerne donc plus une semaine
+                      sans créneau, mais une entreprise qui n'a pas encore de
+                      collaborateur. Le message le dit, et pointe l'étape qui
+                      débloque réellement.
+                    */}
+                    <p className="text-sm font-medium text-foreground">
+                      Aucun collaborateur à planifier
+                    </p>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      Ajoutez vos collaborateurs pour construire leur planning.
+                    </p>
+                    <Button
+                      asChild
+                      variant="outline"
+                      size="sm"
+                      className="mt-4"
+                    >
+                      <Link href="/app/dashboard/employees/new">
+                        Ajouter un collaborateur
+                      </Link>
+                    </Button>
                   </td>
                 </tr>
               ) : (
@@ -346,6 +396,7 @@ export function WeeklyGridView({
                     scheduleIndex={scheduleIndex}
                     leaveIndex={leaveIndex}
                     onScheduleClick={onScheduleClick}
+                    onEmptyCellClick={onEmptyCellClick}
                     canEdit={canEdit}
                   />
                 ))
@@ -382,6 +433,7 @@ function EmployeeRow({
   scheduleIndex,
   leaveIndex,
   onScheduleClick,
+  onEmptyCellClick,
   canEdit,
 }: {
   employee: Employee
@@ -389,6 +441,7 @@ function EmployeeRow({
   scheduleIndex: Map<string, ScheduleWithRelations[]>
   leaveIndex: Map<string, LeaveRequestWithEmployee[]>
   onScheduleClick?: (s: ScheduleWithRelations) => void
+  onEmptyCellClick?: (employeeId: string, day: Date) => void
   canEdit: boolean
 }) {
   const initials =
@@ -455,9 +508,26 @@ function EmployeeRow({
                     />
                   ))}
               </div>
+            ) : canEdit && onEmptyCellClick ? (
+              /*
+                SP-601 : une case libre ouvre la création, pré-remplie avec cet
+                employé et ce jour. Auparavant elle n'affichait qu'un tiret
+                inerte, et le seul point d'entrée était le bouton en haut de
+                page. Le week-end reste cliquable : rien n'interdit d'y
+                planifier un créneau.
+              */
+              <button
+                type="button"
+                onClick={() => onEmptyCellClick(employee.id, day)}
+                aria-label={`Créer un planning pour ${employee.firstName} ${employee.lastName} le ${format(day, 'EEEE d MMMM', { locale: fr })}`}
+                data-testid="empty-cell-button"
+                className="flex h-10 w-full items-center justify-center rounded text-muted-foreground/40 opacity-0 transition hover:bg-primary/10 hover:text-primary focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary group-hover:opacity-100"
+              >
+                <Plus className="h-4 w-4" aria-hidden="true" />
+              </button>
             ) : isWeekend ? null : (
               <div className="flex h-10 items-center justify-center text-xs text-muted-foreground/40">
-                —
+                -
               </div>
             )}
           </td>

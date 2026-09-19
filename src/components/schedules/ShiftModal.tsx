@@ -101,6 +101,12 @@ export interface ShiftModalProps {
   companyId: string
   /** Callback après succès */
   onSuccess?: () => void
+  /**
+   * Pré-remplissage en mode création, quand l'ouverture vient d'une case de
+   * la grille plutôt que du bouton générique (SP-601). Le jour et l'employé
+   * de la case sont alors déjà renseignés.
+   */
+  createDefaults?: { employeeId: string; day: Date } | null
 }
 
 // ============================================================================
@@ -150,6 +156,7 @@ export function ShiftModal({
   schedule,
   companyId,
   onSuccess,
+  createDefaults = null,
 }: ShiftModalProps) {
   const isImpersonating = useIsImpersonating()
 
@@ -229,14 +236,17 @@ export function ShiftModal({
           location: schedule.location ?? '',
         })
       } else {
-        // Mode création : réinitialiser avec horaires entreprise
+        // Mode création : réinitialiser avec horaires entreprise, et le jour
+        // et l'employé de la case cliquée quand l'ouverture vient de la
+        // grille (SP-601).
         setIsRecurring(false)
         setRecurrenceRule(null)
+        const jour = createDefaults?.day ?? new Date()
         reset({
-          employeeIds: [],
+          employeeIds: createDefaults ? [createDefaults.employeeId] : [],
           teamId: null,
-          startDate: new Date(),
-          endDate: new Date(),
+          startDate: jour,
+          endDate: jour,
           startTime: defaultStartTime,
           endTime: defaultEndTime,
           type: 'WORK',
@@ -247,7 +257,15 @@ export function ShiftModal({
         })
       }
     }
-  }, [isOpen, mode, schedule, reset, defaultStartTime, defaultEndTime])
+  }, [
+    isOpen,
+    mode,
+    schedule,
+    reset,
+    defaultStartTime,
+    defaultEndTime,
+    createDefaults,
+  ])
 
   // Employés sélectionnés et dates surveillées
   const selectedEmployeeIds = watch('employeeIds')
@@ -641,11 +659,13 @@ export function ShiftModal({
                         key={id}
                         variant="secondary"
                         className="flex items-center gap-1"
+                        data-testid="selected-employee-badge"
                       >
                         {emp.firstName} {emp.lastName}
                         <button
                           type="button"
                           onClick={() => toggleEmployee(id)}
+                          aria-label={`Retirer ${emp.firstName} ${emp.lastName}`}
                           className="ml-1 hover:text-destructive"
                         >
                           <X className="h-3 w-3" />

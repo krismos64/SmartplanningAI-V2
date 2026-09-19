@@ -120,6 +120,11 @@ export function SchedulesPageContent({
   const [shiftModalMode, setShiftModalMode] = useState<'create' | 'edit'>(
     'create'
   )
+  // Employé et jour de la case cliquée, pour pré-remplir la création (SP-601)
+  const [createDefaults, setCreateDefaults] = useState<{
+    employeeId: string
+    day: Date
+  } | null>(null)
 
   // État pour le dialog de détail (lecture seule EMPLOYEE)
   const [detailSchedule, setDetailSchedule] =
@@ -161,6 +166,7 @@ export function SchedulesPageContent({
       lastName: string
       weeklyHours: number
       image?: string | null
+      teamId?: string | null
     }[]
   >([])
 
@@ -183,7 +189,44 @@ export function SchedulesPageContent({
 
   // Permissions RBAC
   const canCreate = userRole === 'DIRECTOR' || userRole === 'MANAGER'
+
   const canExport = userRole !== 'SYSTEM_ADMIN'
+
+  // Clic sur une case libre de la grille : ouvrir la creation deja remplie
+  // avec l'employe et le jour de la case (SP-601).
+  const handleEmptyCellClick = useCallback(
+    (employeeId: string, day: Date) => {
+      if (!canCreate) return
+      setShiftModalMode('create')
+      setSelectedSchedule(null)
+      setCreateDefaults({ employeeId, day })
+      setIsShiftModalOpen(true)
+    },
+    [canCreate]
+  )
+
+  // Lignes de la grille : les employes de l'entreprise, restreints aux
+  // filtres actifs (SP-601). Sans cela, choisir une equipe filtrait les
+  // creneaux mais laissait toutes les lignes affichees.
+  const gridEmployees = useMemo(() => {
+    const teamId = activeFilters.teamId as string | undefined
+    const employeeId = activeFilters.employeeId as string | undefined
+    const search = (activeFilters.search as string | undefined)
+      ?.trim()
+      .toLowerCase()
+
+    return employees.filter((e) => {
+      if (teamId && e.teamId !== teamId) return false
+      if (employeeId && e.id !== employeeId) return false
+      if (
+        search &&
+        !`${e.firstName} ${e.lastName}`.toLowerCase().includes(search)
+      ) {
+        return false
+      }
+      return true
+    })
+  }, [employees, activeFilters])
 
   // Calcul des dates selon le mode de vue
   // Protéger contre une date invalide (ex: parsing Schedule-X)
@@ -259,9 +302,7 @@ export function SchedulesPageContent({
         const results = await Promise.all(
           teams.map((t) => getTeamAbsences(t.id, start, end))
         )
-        const allLeaves = results.flatMap((r) =>
-          r.success ? r.data : []
-        )
+        const allLeaves = results.flatMap((r) => (r.success ? r.data : []))
         setLeaveRequests(allLeaves)
       } catch {
         setLeaveRequests([])
@@ -506,6 +547,7 @@ export function SchedulesPageContent({
               onClick={() => {
                 setShiftModalMode('create')
                 setSelectedSchedule(null)
+                setCreateDefaults(null)
                 setIsShiftModalOpen(true)
               }}
             >
@@ -579,6 +621,8 @@ export function SchedulesPageContent({
               companyId={companyId}
               leaveRequests={leaveRequests}
               showLeaves={true}
+              employees={gridEmployees}
+              onEmptyCellClick={handleEmptyCellClick}
             />
           </CardContent>
         </Card>
@@ -637,7 +681,9 @@ export function SchedulesPageContent({
           setIsShiftModalOpen(false)
           setSelectedSchedule(null)
           setEditRecurrenceGroupId(null)
+          setCreateDefaults(null)
         }}
+        createDefaults={createDefaults}
         mode={shiftModalMode}
         schedule={selectedSchedule}
         companyId={companyId}
