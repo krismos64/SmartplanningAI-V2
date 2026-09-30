@@ -5,7 +5,7 @@
 | Ticket | SP-603, SP-604, SP-605, ouverts à l'analyse de l'inscription du 28 septembre |
 | Documents produits | `src/lib/utils/schedule-date.ts`, `src/components/auth/RegisterCheckEmail.tsx`, deux fichiers de tests |
 | Documents modifiés | `notifications.ts`, `schedules.ts`, `schedule-notification.ts`, `RegisterForm.tsx`, `e2e/specs/auth.spec.ts`, deux fichiers de tests |
-| Contrôles | type-check vert, Vitest 3370/3370, E2E `auth.spec.ts` 21/21, couverture 53,03 % lignes et 75,71 % branches, axe-core sans violation sur le nouvel écran |
+| Contrôles | type-check vert, Vitest 3372/3372, E2E `auth.spec.ts` 21/21 et `landing/` 26/26, couverture 53,15 % lignes et 75,67 % branches, axe-core sans violation sur le nouvel écran |
 | Jira | SP-603, SP-604, SP-605 créés et commentés |
 | Mémoire | `inscription-promo-service-diffusion-28-septembre.md` |
 
@@ -51,6 +51,14 @@ créneau. Le chemin groupé, lui, les envoyait déjà en double à chaque créat
 de plusieurs créneaux. Les trois appelants dotés d'un email SP-480 passent
 désormais `skipEmail`. Les trois autres (suppression d'un groupe, suppression
 et modification de récurrence) gardent l'email de la notification, leur seul.
+
+La revue avant PR a trouvé un défaut de plus. `deleteScheduleGroup` et
+`deleteRecurrenceGroup` suppriment plusieurs créneaux mais n'envoyaient
+qu'une notification unitaire, datée du premier. Invisible tant que le
+`RangeError` coupait tout, ce message serait apparu avec le correctif : un
+employé aurait lu « Votre planning du 28/09/2026 a été supprimé » pour une
+récurrence de dix semaines. Les deux chemins passent par la notification
+groupée, qui annonce la plage complète.
 
 Le renvoi de vérification invalide le lien précédent, un seul jeton restant
 actif. Le toast le dit, sinon l'utilisateur cliquerait le premier email et
