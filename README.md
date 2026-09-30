@@ -148,7 +148,7 @@ npm run email:dev        # Previsualisation des templates React Email
 
 ```
 src/
-├── app/              # Next.js 15 App Router (65 pages, 5 layouts, 18 API routes)
+├── app/              # Next.js 15 App Router (66 pages, 5 layouts, 18 API routes)
 │   ├── (auth)/       # Login, register, verify-email, activate-account
 │   ├── (about)/      # A propos, tarifs, contact
 │   ├── (landing)/    # Landing page
@@ -157,7 +157,7 @@ src/
 │   ├── (guides)/     # Hub et guides pratiques /guides/[slug] (registre data-driven)
 │   ├── app/          # Routes protegees par role
 │   └── api/          # API Routes (avatar, webhooks, health, SSE, messages...)
-├── components/       # 207 composants React
+├── components/       # 187 composants React (.tsx hors tests)
 │   ├── public/       # Primitives des pages publiques (identite editoriale)
 │   ├── messaging/    # Messagerie (8 composants)
 │   ├── import/       # Import CSV (2 composants + utilitaires)
@@ -188,14 +188,13 @@ Voir [`docs/database-architecture.md`](docs/database-architecture.md) pour le de
 
 | Type      | Framework  | Fichiers | Tests     |
 | --------- | ---------- | -------- | --------- |
-| Unitaires | Vitest     | 201      | 3 327     |
-| E2E       | Playwright | 23       | 261       |
-| **Total** |            | **224**  | **3 588** |
+| Unitaires | Vitest     | 206      | 3 372     |
+| E2E       | Playwright | 25       | 269       |
+| **Total** |            | **231**  | **3 641** |
 
-Compteurs mesures le 9 septembre 2026 en fin de journee, par `npm run test` et
+Compteurs mesures le 30 septembre 2026, par `npm run test` et
 `npx playwright test --list`. Ils se periment a chaque sprint : les remesurer
-plutot que les recopier. Ils avaient d'ailleurs deja derive dans la journee, la
-premiere mesure ayant precede l'ajout de tests par SP-589 a SP-592.
+plutot que les recopier.
 
 **La couverture est un garde-fou bloquant depuis SP-592**, et pas seulement une
 commande d'information. `vitest.config.ts` porte des seuils mesures (lines 50,
@@ -205,7 +204,7 @@ les tests passent. Le perimetre mesure inclut `src/lib/`, `src/hooks/` et
 `src/lib/validations/`, et exclut les pages et layouts, couverts par les E2E.
 Relever un seuil demande de mesurer d'abord, jamais de viser un chiffre rond.
 
-La CI execute une whitelist E2E (9 specs, 129 tests) ; la suite complete (23 specs, 261 tests) tourne en nightly. `testMatch` de `playwright.ci.config.ts` etant une liste explicite, un spec renomme ou supprime disparait silencieusement de la CI : verifier cette liste apres chaque ajout ou suppression.
+La CI execute une whitelist E2E (11 specs, 137 tests) ; la suite complete (25 specs, 269 tests) tourne en nightly. `testMatch` de `playwright.ci.config.ts` etant une liste explicite, un spec renomme ou supprime disparait silencieusement de la CI : verifier cette liste apres chaque ajout ou suppression.
 
 **Les specs publiques ne sont pas dans la whitelist CI.** Les 26 tests de
 `e2e/specs/landing/`, dont 7 audits axe-core, ne tournent donc qu'en nightly

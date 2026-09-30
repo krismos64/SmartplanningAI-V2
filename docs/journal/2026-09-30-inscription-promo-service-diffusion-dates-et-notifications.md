@@ -6,8 +6,8 @@
 | Documents produits | `src/lib/utils/schedule-date.ts`, `src/components/auth/RegisterCheckEmail.tsx`, deux fichiers de tests |
 | Documents modifiés | `notifications.ts`, `schedules.ts`, `schedule-notification.ts`, `RegisterForm.tsx`, `e2e/specs/auth.spec.ts`, deux fichiers de tests |
 | Contrôles | type-check vert, Vitest 3372/3372, E2E `auth.spec.ts` 21/21 et `landing/` 26/26, couverture 53,15 % lignes et 75,67 % branches, axe-core sans violation sur le nouvel écran |
-| Jira | SP-603, SP-604, SP-605 créés et commentés |
-| Mémoire | `inscription-promo-service-diffusion-28-septembre.md` |
+| Jira | SP-603, SP-604, SP-605 créés, commentés et clos après déploiement. SP-606 ouvert à l'audit de fin de session |
+| Mémoire | `inscription-promo-service-diffusion-28-septembre.md` créée, `lint-erreurs-noyees-en-fin-de-sortie.md` complétée |
 
 ## Ce qui a été fait
 
@@ -69,14 +69,51 @@ l'email, et le relais rejette `example.com` trois fois avant d'abandonner, ce
 qui dépasse cinq secondes. Sans rapport avec l'écran. Constat en passant :
 l'environnement de développement envoie par le vrai SMTP.
 
+## Livraison
+
+PR #107, mergée en squash (`06f62ea`). Le premier run CI a rougi au lint sur
+quatre erreurs `no-unsafe-assignment` dans les nouveaux tests : `expect.any()`,
+`expect.stringContaining()` et un `vi.fn()` non typé. J'avais lancé `npx eslint`
+à la main, qui ne charge pas les règles typées de `next lint`, et filtré sur le
+mauvais motif. Assertions réécrites sur les appels typés, mutations rejouées,
+second run vert : lint, unitaires, 127 E2E critiques, build. CD vert, image
+`sha-06f62ea` en production, conteneur sain, aucune erreur au démarrage.
+
+## Audit de fin de session
+
+Contrôles rejoués selon la méthode du 13 septembre, par la mesure :
+
+- README : cinq compteurs faux. Pages 65 pour 66, tests 201 fichiers et
+  3327 tests pour 206 et 3372, E2E 23 specs et 261 tests pour 25 et 269,
+  whitelist CI 9 specs et 129 tests pour 11 et 137. Et « 207 composants »,
+  qu'aucune méthode ne retrouve, pas même au commit qui l'a posé : 187 fichiers
+  `.tsx` hors tests
+- `deployment.md`, `database-architecture.md` et `analytics.md` affichaient
+  une mise à jour au 10 ou 11 septembre, pour un dernier changement de fond le 13
+- Les six hooks exécutés, blocage des secrets compris avec son test négatif :
+  tous conformes. Aucune commande npm inexistante, aucun chemin mort hors trois
+  négations volontaires de `nextjs-architect`, aucune entrée morte dans la
+  whitelist, les neuf scripts ops documentés
+- Leçons du jour portées là où elles seront relues : deux pièges dans
+  `prisma-pieges.md` (date serveur en UTC, exception avalée), forme des mocks et
+  lint typé dans `tests.md`, rappel dans `test-writer` et `revue-pre-pr`
+- SP-606 ouvert : le renvoi de l'email de vérification n'a aucune limite, et
+  Nginx ne couvre les Server Actions de `/login` et `/register` que par la zone
+  `general`, 10 requêtes par seconde et par IP
+
 ## Prochaine étape
 
+- Preuve en production à relever. Au prochain créneau posé par un client, une
+  notification PLANNING unitaire en base et aucun `RangeError` dans les logs. À
+  la prochaine inscription, plus de série de `POST /login` avant le
+  `GET /verify-email` dans les logs Nginx
 - Question restée ouverte : le créneau du dimanche 4 octobre était-il voulu ?
   Il a été posé juste après le passage aux sept jours, puis la dirigeante a
   réinitialisé les paramètres. À trancher au navigateur sur la grille.
 - La double convention de stockage (00:00 contre 22:00 UTC) reste en base.
   Tout nouveau formatage serveur d'une date de créneau doit passer par
   `schedule-date.ts`.
-- `resendVerificationEmailAction` n'a aucune limitation de débit.
-- Push et PR groupés en fin de sprint, branche
-  `fix/inscription-28-septembre-sp603-605`.
+- SP-606, limiter le renvoi de l'email de vérification.
+- L'environnement de développement envoie par le vrai SMTP : les inscriptions
+  de test y partent réellement, refusées ici parce qu'elles visaient
+  `example.com`.

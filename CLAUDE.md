@@ -35,7 +35,7 @@ convention de mémoire.
 | Fichier                          | Charger avant de toucher                                               |
 | -------------------------------- | ---------------------------------------------------------------------- |
 | `.claude/rules/multi-tenant.md`  | Server Action, route API, requête Prisma, auth, choix de destinataires |
-| `.claude/rules/prisma-pieges.md` | `'use server'`, backfill, SQL de diagnostic, cache dashboard, envoi d'emails, Nginx, workflow CD, script de `scripts/ops/`, manipulation de fichier vers un conteneur |
+| `.claude/rules/prisma-pieges.md` | `'use server'`, backfill, SQL de diagnostic, cache dashboard, envoi d'emails, date formatée côté serveur, Nginx, workflow CD, script de `scripts/ops/`, manipulation de fichier vers un conteneur |
 | `.claude/rules/seo-content.md`   | pages secteur, guides, landing, sitemap, `llms.txt` et la route `llms-full.txt`, texte public |
 | `.claude/rules/tests.md`         | écriture de tests, et avant de conclure un travail                     |
 
