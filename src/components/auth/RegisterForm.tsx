@@ -5,8 +5,7 @@
  * - React Hook Form + zodResolver pour validation
  * - Server Action registerAction pour création Company + User
  * - Gestion des erreurs avec toast (Sonner)
- * - Auto-login après inscription réussie
- * - Redirect vers /app/dashboard après succès
+ * - Écran « vérifiez votre boîte mail » après succès (SP-605)
  * - Support light/dark mode via CSS variables
  *
  * @ticket SP-139
@@ -16,9 +15,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { signIn } from 'next-auth/react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Loader2, Eye, EyeOff, Building2, Phone } from 'lucide-react'
@@ -42,16 +39,19 @@ import {
 import { cn } from '@/lib/utils'
 import { AUTH_BUTTON_CLASSES } from '@/app/(landing)/components'
 
+import { RegisterCheckEmail } from './RegisterCheckEmail'
+
 /**
  * RegisterForm Component
  *
  * Formulaire d'inscription pour nouveaux clients SaaS.
- * Crée une Company et un User DIRECTOR via Server Action.
- * Auto-login après inscription réussie.
+ * Crée une Company et un User DIRECTOR via Server Action, puis cède la place
+ * à l'écran de vérification d'email.
  */
 export function RegisterForm() {
-  const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
+  // SP-605 : adresse du compte créé, dont l'email reste à vérifier
+  const [registeredEmail, setRegisteredEmail] = useState<string | null>(null)
   // SP-591 : instrumentation du tunnel, etapes 2 et 3
   const { track } = useUmamiTrack()
   const [showPassword, setShowPassword] = useState(false)
@@ -74,9 +74,8 @@ export function RegisterForm() {
    * Submit handler
    *
    * 1. Appelle registerAction (Server Action)
-   * 2. Si succès : auto-login avec signIn('credentials')
-   * 3. Affiche toast success/error
-   * 4. Redirige vers /app/dashboard
+   * 2. Si succès : affiche l'écran de vérification d'email
+   * 3. Sinon : toast d'erreur et focus sur le champ en cause
    */
   async function onSubmit(data: SignupFormData) {
     setIsLoading(true)
@@ -108,35 +107,10 @@ export function RegisterForm() {
       // mesure les echecs de creation, refus de validation compris.
       track('funnel-signup-complete', { stepRank: 3, source: 'client' })
 
-      // 2. Succès : auto-login avec les credentials
-      toast.success('Compte créé avec succès !', {
-        description: 'Connexion en cours...',
-      })
-
-      const signInResult = await signIn('credentials', {
-        email: data.email,
-        password: data.password,
-        redirect: false,
-      })
-
-      if (signInResult?.error) {
-        // Le compte est créé mais l'auto-login a échoué
-        // Rediriger vers la page de login
-        toast.info('Veuillez vous connecter', {
-          description:
-            'Votre compte a été créé. Connectez-vous pour continuer.',
-        })
-        router.push('/login')
-        return
-      }
-
-      // 3. Auto-login réussi : rediriger vers le dashboard
-      toast.success('Bienvenue sur SmartPlanning !', {
-        description: 'Redirection vers votre tableau de bord...',
-      })
-
-      router.push('/app/dashboard')
-      router.refresh()
+      // 2. Succès. SP-605 : pas de connexion automatique, elle échouerait
+      // toujours tant que l'email n'est pas vérifié (SP-526). L'écran qui
+      // suit dit où est le lien au lieu de renvoyer vers /login.
+      setRegisteredEmail(data.email)
     } catch {
       // Erreur inattendue
       toast.error("Erreur lors de l'inscription", {
@@ -153,6 +127,10 @@ export function RegisterForm() {
   function handleFormSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     void form.handleSubmit(onSubmit)(e)
+  }
+
+  if (registeredEmail) {
+    return <RegisterCheckEmail email={registeredEmail} />
   }
 
   return (
