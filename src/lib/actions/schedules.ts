@@ -33,6 +33,7 @@ import {
 } from '@/lib/actions/notifications'
 import type { CrudActionResult, DeleteActionResult } from '@/types'
 import { sendScheduleNotificationEmail } from '@/lib/email/templates/schedule-notification'
+import { formatScheduleDateShort } from '@/lib/utils/schedule-date'
 import { canSendEmailToEmployee } from '@/lib/email/check-preference'
 import {
   generateOccurrences,
@@ -333,8 +334,8 @@ async function validateNoConflicts(
 
   if (conflictingLeave) {
     const leaveLabel = leaveTypeLabels[conflictingLeave.type] ?? 'congé'
-    const from = conflictingLeave.startDate.toLocaleDateString('fr-FR')
-    const to = conflictingLeave.endDate.toLocaleDateString('fr-FR')
+    const from = formatScheduleDateShort(conflictingLeave.startDate)
+    const to = formatScheduleDateShort(conflictingLeave.endDate)
     return `Impossible : ${name} est en ${leaveLabel} du ${from} au ${to}. Annulez d'abord le congé avant de planifier un créneau.`
   }
 
@@ -362,7 +363,7 @@ async function validateNoConflicts(
     const noOverlap =
       endTime <= existing.startTime || startTime >= existing.endTime
     if (!noOverlap) {
-      const date = existing.startDate.toLocaleDateString('fr-FR')
+      const date = formatScheduleDateShort(existing.startDate)
       return `Impossible : ${name} a déjà un planning le ${date} de ${existing.startTime} à ${existing.endTime}. Les horaires se chevauchent avec le créneau ${startTime}–${endTime}.`
     }
   }
@@ -709,8 +710,8 @@ export async function checkScheduleConflicts(
     for (const leave of approvedLeaves) {
       const name = nameMap.get(leave.employeeId) ?? 'Employé inconnu'
       const leaveLabel = leaveTypeLabels[leave.type] ?? 'congé'
-      const from = leave.startDate.toLocaleDateString('fr-FR')
-      const to = leave.endDate.toLocaleDateString('fr-FR')
+      const from = formatScheduleDateShort(leave.startDate)
+      const to = formatScheduleDateShort(leave.endDate)
 
       // Pour les demi-journées, vérifier si le créneau tombe sur la période d'absence
       if (leave.halfDay) {
@@ -756,7 +757,7 @@ export async function checkScheduleConflicts(
       }
 
       const name = nameMap.get(schedule.employeeId) ?? 'Employé inconnu'
-      const from = schedule.startDate.toLocaleDateString('fr-FR')
+      const from = formatScheduleDateShort(schedule.startDate)
 
       conflicts.push({
         employeeId: schedule.employeeId,
@@ -1052,7 +1053,9 @@ export async function createSchedule(
             })),
             uid,
             'created',
-            user.id
+            user.id,
+            // SP-604 : l'email part par le bloc SP-480 ci-dessous
+            { skipEmail: true }
           ).catch(console.error)
         }
       })
@@ -1248,7 +1251,10 @@ export async function updateSchedule(
             updated.id,
             emp.userId,
             'updated',
-            user.id
+            user.id,
+            undefined,
+            // SP-604 : l'email part par le bloc SP-480 ci-dessous
+            { skipEmail: true }
           ).catch(console.error)
         }
       })
@@ -1353,11 +1359,14 @@ export async function deleteSchedule(id: string): Promise<DeleteActionResult> {
         'deleted',
         user.id,
         {
+          startDate: schedule.startDate,
           startTime: schedule.startTime,
           endTime: schedule.endTime,
           companyId: schedule.companyId,
           type: schedule.type,
-        }
+        },
+        // SP-604 : l'email part par le bloc SP-480 ci-dessous
+        { skipEmail: true }
       ).catch(console.error)
     }
 
@@ -1431,11 +1440,11 @@ export async function deleteScheduleGroup(
       }
     }
 
-    // Collecter les employeeIds uniques et leurs scheduleIds pour les notifications
-    const employeeScheduleMap = new Map<string, string>()
+    // Collecter le premier créneau de chaque employé pour les notifications
+    const employeeScheduleMap = new Map<string, (typeof schedules)[number]>()
     for (const s of schedules) {
       if (!employeeScheduleMap.has(s.employeeId)) {
-        employeeScheduleMap.set(s.employeeId, s.id)
+        employeeScheduleMap.set(s.employeeId, s)
       }
     }
 
@@ -1462,11 +1471,23 @@ export async function deleteScheduleGroup(
     // Notifications SSE : planning supprimé pour chaque employé (fire-and-forget)
     for (const emp of employees) {
       if (emp.userId) {
-        const scheduleId = employeeScheduleMap.get(emp.id)
-        if (scheduleId) {
-          createPlanningNotification(scheduleId, emp.userId, 'deleted').catch(
-            console.error
-          )
+        const deleted = employeeScheduleMap.get(emp.id)
+        if (deleted) {
+          // SP-604 : le créneau est déjà supprimé, un findUnique ne le
+          // trouverait plus. Ses données sont donc passées explicitement.
+          createPlanningNotification(
+            deleted.id,
+            emp.userId,
+            'deleted',
+            user.id,
+            {
+              startDate: deleted.startDate,
+              startTime: deleted.startTime,
+              endTime: deleted.endTime,
+              companyId: deleted.companyId,
+              type: deleted.type,
+            }
+          ).catch(console.error)
         }
       }
     }
@@ -1542,6 +1563,7 @@ export async function deleteRecurrenceGroup(
       if (uid && !notifiedUserIds.has(uid)) {
         notifiedUserIds.add(uid)
         createPlanningNotification(s.id, uid, 'deleted', user.id, {
+          startDate: s.startDate,
           startTime: s.startTime,
           endTime: s.endTime,
           companyId: s.companyId,

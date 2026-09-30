@@ -5,11 +5,10 @@
  */
 
 import { render } from '@react-email/components'
-import { format } from 'date-fns'
-import { fr } from 'date-fns/locale'
 
 import { sendEmail } from '@/lib/email'
 import { getBaseUrl } from '@/lib/email/config'
+import { formatScheduleDateLong } from '@/lib/utils/schedule-date'
 
 import { ScheduleNotificationEmail } from '../../../../emails/templates/ScheduleNotificationEmail'
 
@@ -51,8 +50,9 @@ export interface ScheduleNotificationEmailData {
 // HELPERS
 // =============================================================================
 
+// SP-603 : fuseau explicite, le serveur tourne en UTC et rendait la veille
 function formatDateFr(date: Date): string {
-  return format(date, 'd MMMM yyyy', { locale: fr })
+  return formatScheduleDateLong(date)
 }
 
 function getScheduleTypeLabel(type: string): string {
@@ -102,8 +102,8 @@ export async function sendScheduleNotificationEmail(
 
     const subject =
       count > 1
-        ? `${actionLabels[action]} — ${count} créneaux`
-        : `${actionLabels[action]} — ${formatDateFr(startDate)}`
+        ? `${actionLabels[action]} : ${count} créneaux`
+        : `${actionLabels[action]} : ${formatDateFr(startDate)}`
 
     const result = await sendEmail({
       to: employeeEmail,

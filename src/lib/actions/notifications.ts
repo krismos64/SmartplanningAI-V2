@@ -38,6 +38,7 @@ import {
   isInAppNotificationEnabled,
   isEmailNotificationEnabled,
 } from '@/lib/utils/preferences'
+import { formatScheduleDateShort } from '@/lib/utils/schedule-date'
 import { getNotificationCategory } from '@/lib/helpers/notification-categories'
 import {
   notificationFiltersSchema,
@@ -59,6 +60,14 @@ import type {
 // ============================================================================
 // Types
 // ============================================================================
+
+/**
+ * Options des factories de notification planning (SP-604)
+ */
+interface PlanningNotificationOptions {
+  /** L'appelant envoie déjà son propre email (SP-480) : ne pas en envoyer un second */
+  skipEmail?: boolean
+}
 
 interface AuthenticatedUser {
   id: string
@@ -147,7 +156,8 @@ async function getAuthenticatedUser(
  * @param employeeUserId - ID de l'utilisateur employé destinataire
  * @param action - Type d'action (created, updated, deleted)
  * @param creatorUserId - ID de l'utilisateur qui a créé/modifié le planning (pour éviter l'auto-notification)
- * @param scheduleData - Données du schedule (optionnel, utilisé pour deleteSchedule car le schedule est déjà supprimé)
+ * @param scheduleData - Données du schedule (optionnel, utilisé pour les suppressions car le schedule est déjà supprimé)
+ * @param options - skipEmail quand l'appelant envoie déjà l'email SP-480
  * @returns Résultat de création (non-bloquant)
  */
 export async function createPlanningNotification(
@@ -156,11 +166,13 @@ export async function createPlanningNotification(
   action: PlanningNotificationAction,
   creatorUserId?: string,
   scheduleData?: {
+    startDate: string | Date
     startTime: string | Date
     endTime: string | Date
     companyId: string
     type: string
-  }
+  },
+  options: PlanningNotificationOptions = {}
 ): Promise<NotificationResult> {
   try {
     // Validation de l'action
@@ -174,20 +186,22 @@ export async function createPlanningNotification(
       return { success: true, notification: null, skipped: 'self-notification' }
     }
 
-    // Récupérer les infos du planning (ou utiliser les données fournies pour delete)
-    let startTime: string | Date
+    // Récupérer les infos du planning (ou utiliser les données fournies pour delete).
+    // SP-604 : la date du créneau est startDate. startTime est une heure
+    // (« 10:00 ») : formatée comme une date, elle levait RangeError et aucune
+    // notification unitaire n'a jamais été créée.
+    let startDate: string | Date
     let scheduleCompanyId: string
 
     if (scheduleData) {
-      startTime = scheduleData.startTime
+      startDate = scheduleData.startDate
       scheduleCompanyId = scheduleData.companyId
     } else {
       const schedule = await prisma.schedule.findUnique({
         where: { id: scheduleId },
         select: {
           id: true,
-          startTime: true,
-          endTime: true,
+          startDate: true,
           companyId: true,
         },
       })
@@ -195,7 +209,7 @@ export async function createPlanningNotification(
       if (!schedule) {
         return { success: false, error: 'Planning non trouvé' }
       }
-      startTime = schedule.startTime
+      startDate = schedule.startDate
       scheduleCompanyId = schedule.companyId
     }
 
@@ -246,15 +260,15 @@ export async function createPlanningNotification(
     > = {
       created: {
         title: 'Nouveau planning assigné',
-        message: `Un nouveau planning a été créé pour le ${formatDate(startTime)}.`,
+        message: `Un nouveau planning a été créé pour le ${formatDate(startDate)}.`,
       },
       updated: {
         title: 'Planning modifié',
-        message: `Votre planning du ${formatDate(startTime)} a été modifié.`,
+        message: `Votre planning du ${formatDate(startDate)} a été modifié.`,
       },
       deleted: {
         title: 'Planning supprimé',
-        message: `Votre planning du ${formatDate(startTime)} a été supprimé.`,
+        message: `Votre planning du ${formatDate(startDate)} a été supprimé.`,
       },
     }
 
@@ -282,8 +296,9 @@ export async function createPlanningNotification(
       emitNotification(employeeUserId, notification)
     }
 
-    // Email planning (fire-and-forget)
-    if (emailEnabled && user.email) {
+    // Email planning (fire-and-forget). SP-604 : ignoré quand l'appelant
+    // envoie déjà le sien (SP-480), sinon l'employé reçoit deux emails.
+    if (emailEnabled && user.email && !options.skipEmail) {
       const { sendScheduleNotificationEmail } = await import(
         '@/lib/email/templates/schedule-notification'
       )
@@ -292,8 +307,7 @@ export async function createPlanningNotification(
         firstName: user.name?.split(' ')[0] || 'Collaborateur',
         action,
         count: 1,
-        startDate:
-          typeof startTime === 'string' ? new Date(startTime) : startTime,
+        startDate: new Date(startDate),
         scheduleType: scheduleData?.type || 'WORK',
         timeRange: scheduleData
           ? `${formatTime(scheduleData.startTime)} - ${formatTime(scheduleData.endTime)}`
@@ -332,7 +346,8 @@ export async function createBatchPlanningNotification(
   }>,
   employeeUserId: string,
   action: PlanningNotificationAction,
-  creatorUserId?: string
+  creatorUserId?: string,
+  options: PlanningNotificationOptions = {}
 ): Promise<NotificationResult> {
   try {
     if (schedules.length === 0) {
@@ -353,11 +368,13 @@ export async function createBatchPlanningNotification(
         action,
         creatorUserId,
         {
+          startDate: s.startDate,
           startTime: s.startTime,
           endTime: s.endTime,
           companyId: s.companyId,
           type: s.type,
-        }
+        },
+        options
       )
     }
 
@@ -454,8 +471,8 @@ export async function createBatchPlanningNotification(
       emitNotification(employeeUserId, notification)
     }
 
-    // UN seul email groupé (fire-and-forget)
-    if (emailEnabled && user.email) {
+    // UN seul email groupé (fire-and-forget), sauf si l'appelant envoie le sien
+    if (emailEnabled && user.email && !options.skipEmail) {
       const { sendScheduleNotificationEmail } = await import(
         '@/lib/email/templates/schedule-notification'
       )
@@ -1306,12 +1323,8 @@ export async function cleanupOldNotifications(
  * Formate une date en français (DD/MM/YYYY)
  */
 function formatDate(date: Date | string): string {
-  const dateObj = typeof date === 'string' ? new Date(date) : date
-  return new Intl.DateTimeFormat('fr-FR', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-  }).format(dateObj)
+  // SP-603 : fuseau explicite, le serveur tourne en UTC et rendait la veille
+  return formatScheduleDateShort(date)
 }
 
 /**
