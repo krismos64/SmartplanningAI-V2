@@ -14,6 +14,7 @@ import {
   updateSchedule,
   deleteSchedule,
   deleteScheduleGroup,
+  deleteRecurrenceGroup,
   duplicateSchedule,
   updateScheduleStatus,
   getEmployeeSchedules,
@@ -56,6 +57,17 @@ vi.mock('@/lib/auth', () => ({
 
 vi.mock('next/cache', () => ({
   revalidatePath: vi.fn(),
+}))
+
+// SP-604 : les factories de notification sont observées, pas exécutées
+const { mockCreatePlanningNotification, mockCreateBatchPlanningNotification } =
+  vi.hoisted(() => ({
+    mockCreatePlanningNotification: vi.fn(),
+    mockCreateBatchPlanningNotification: vi.fn(),
+  }))
+vi.mock('@/lib/actions/notifications', () => ({
+  createPlanningNotification: mockCreatePlanningNotification,
+  createBatchPlanningNotification: mockCreateBatchPlanningNotification,
 }))
 
 import { prisma } from '@/lib/prisma'
@@ -594,6 +606,36 @@ describe('schedules actions', () => {
       }
     })
 
+    it("notifie une seule fois l'employé, avec tous ses créneaux supprimés (SP-604)", async () => {
+      vi.mocked(auth).mockResolvedValue(mockSession('DIRECTOR') as never)
+      vi.mocked(prisma.employee.findUnique).mockResolvedValue(null)
+      vi.mocked(prisma.schedule.findMany).mockResolvedValue([
+        mockSchedule({ scheduleGroupId: 'group1', id: 'sch1' }) as never,
+        mockSchedule({ scheduleGroupId: 'group1', id: 'sch2' }) as never,
+      ])
+      vi.mocked(prisma.employee.findMany).mockResolvedValue([
+        { id: 'clxxxxxxxxxxxxxxxxxx1', userId: 'clemployeeuser000001' },
+      ] as never)
+      vi.mocked(prisma.schedule.deleteMany).mockResolvedValue({ count: 2 })
+      mockCreateBatchPlanningNotification.mockResolvedValue({ success: true })
+
+      await deleteScheduleGroup('group1')
+
+      // Les créneaux sont déjà supprimés : leurs données doivent être passées,
+      // un findUnique après le deleteMany ne trouverait plus rien
+      expect(mockCreatePlanningNotification).not.toHaveBeenCalled()
+      expect(mockCreateBatchPlanningNotification).toHaveBeenCalledTimes(1)
+      expect(mockCreateBatchPlanningNotification).toHaveBeenCalledWith(
+        [
+          expect.objectContaining({ id: 'sch1', startDate: expect.any(Date) }),
+          expect.objectContaining({ id: 'sch2', startDate: expect.any(Date) }),
+        ],
+        'clemployeeuser000001',
+        'deleted',
+        'cluser00000000000001'
+      )
+    })
+
     it('retourne erreur si groupe vide', async () => {
       vi.mocked(auth).mockResolvedValue(mockSession('DIRECTOR') as never)
       vi.mocked(prisma.employee.findUnique).mockResolvedValue(null)
@@ -605,6 +647,36 @@ describe('schedules actions', () => {
       if (!result.success) {
         expect(result.error).toContain('Aucun planning')
       }
+    })
+  })
+
+  // ==========================================================================
+  // deleteRecurrenceGroup
+  // ==========================================================================
+
+  describe('deleteRecurrenceGroup', () => {
+    it('notifie chaque employé une fois, avec toute sa récurrence (SP-604)', async () => {
+      vi.mocked(auth).mockResolvedValue(mockSession('DIRECTOR') as never)
+      vi.mocked(prisma.employee.findUnique).mockResolvedValue(null)
+      const employe = { userId: 'clemployeeuser000001' }
+      vi.mocked(prisma.schedule.findMany).mockResolvedValue([
+        mockSchedule({ id: 'rec1', recurrenceGroupId: 'r1', employee: employe }),
+        mockSchedule({ id: 'rec2', recurrenceGroupId: 'r1', employee: employe }),
+        mockSchedule({ id: 'rec3', recurrenceGroupId: 'r1', employee: employe }),
+      ] as never)
+      vi.mocked(prisma.schedule.deleteMany).mockResolvedValue({ count: 3 })
+      mockCreateBatchPlanningNotification.mockResolvedValue({ success: true })
+
+      const result = await deleteRecurrenceGroup('r1')
+
+      expect(result.success).toBe(true)
+      expect(mockCreatePlanningNotification).not.toHaveBeenCalled()
+      expect(mockCreateBatchPlanningNotification).toHaveBeenCalledTimes(1)
+      const [creneaux, destinataire, action] =
+        mockCreateBatchPlanningNotification.mock.calls[0]!
+      expect(creneaux).toHaveLength(3)
+      expect(destinataire).toBe('clemployeeuser000001')
+      expect(action).toBe('deleted')
     })
   })
 

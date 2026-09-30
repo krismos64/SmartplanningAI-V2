@@ -1440,12 +1440,12 @@ export async function deleteScheduleGroup(
       }
     }
 
-    // Collecter le premier créneau de chaque employé pour les notifications
-    const employeeScheduleMap = new Map<string, (typeof schedules)[number]>()
+    // Regrouper les créneaux par employé pour une notification chacun
+    const employeeScheduleMap = new Map<string, typeof schedules>()
     for (const s of schedules) {
-      if (!employeeScheduleMap.has(s.employeeId)) {
-        employeeScheduleMap.set(s.employeeId, s)
-      }
+      const existing = employeeScheduleMap.get(s.employeeId) ?? []
+      existing.push(s)
+      employeeScheduleMap.set(s.employeeId, existing)
     }
 
     // Récupérer les userIds des employés concernés
@@ -1473,20 +1473,22 @@ export async function deleteScheduleGroup(
       if (emp.userId) {
         const deleted = employeeScheduleMap.get(emp.id)
         if (deleted) {
-          // SP-604 : le créneau est déjà supprimé, un findUnique ne le
-          // trouverait plus. Ses données sont donc passées explicitement.
-          createPlanningNotification(
-            deleted.id,
+          // SP-604 : les créneaux sont déjà supprimés, un findUnique ne les
+          // trouverait plus. Leurs données sont passées explicitement, et la
+          // notification groupée annonce toute la plage, pas le seul premier.
+          createBatchPlanningNotification(
+            deleted.map((d) => ({
+              id: d.id,
+              startDate: d.startDate,
+              endDate: d.endDate,
+              startTime: d.startTime,
+              endTime: d.endTime,
+              type: d.type,
+              companyId: d.companyId,
+            })),
             emp.userId,
             'deleted',
-            user.id,
-            {
-              startDate: deleted.startDate,
-              startTime: deleted.startTime,
-              endTime: deleted.endTime,
-              companyId: deleted.companyId,
-              type: deleted.type,
-            }
+            user.id
           ).catch(console.error)
         }
       }
@@ -1562,13 +1564,24 @@ export async function deleteRecurrenceGroup(
       const uid = s.employee?.userId
       if (uid && !notifiedUserIds.has(uid)) {
         notifiedUserIds.add(uid)
-        createPlanningNotification(s.id, uid, 'deleted', user.id, {
-          startDate: s.startDate,
-          startTime: s.startTime,
-          endTime: s.endTime,
-          companyId: s.companyId,
-          type: s.type,
-        }).catch(console.error)
+        // SP-604 : notification groupée, la récurrence supprimée compte
+        // souvent plusieurs créneaux pour le même employé
+        createBatchPlanningNotification(
+          schedules
+            .filter((sc) => sc.employee?.userId === uid)
+            .map((sc) => ({
+              id: sc.id,
+              startDate: sc.startDate,
+              endDate: sc.endDate,
+              startTime: sc.startTime,
+              endTime: sc.endTime,
+              type: sc.type,
+              companyId: sc.companyId,
+            })),
+          uid,
+          'deleted',
+          user.id
+        ).catch(console.error)
       }
     }
 
