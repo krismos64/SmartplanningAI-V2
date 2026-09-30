@@ -4,7 +4,15 @@
  * donc le jour précédent. Le fuseau du processus est forcé à UTC pour que le
  * test reproduise la production, y compris sur un poste en heure de Paris.
  */
-import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
+import {
+  afterAll,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from 'vitest'
 
 const { mockSendEmail, mockRender } = vi.hoisted(() => ({
   mockSendEmail: vi.fn(),
@@ -51,9 +59,8 @@ describe('sendScheduleNotificationEmail : date du créneau (SP-603)', () => {
       timeRange: '10:00 - 19:00',
     })
 
-    expect(mockSendEmail).toHaveBeenCalledWith(
-      expect.objectContaining({ subject: expect.stringContaining('4 octobre 2026') })
-    )
+    const [envoi] = mockSendEmail.mock.calls[0] as [{ subject: string }]
+    expect(envoi.subject).toContain('4 octobre 2026')
     expect(mockRender).toHaveBeenCalledWith(
       expect.objectContaining({ startDate: '4 octobre 2026' })
     )

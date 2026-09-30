@@ -63,7 +63,15 @@ vi.mock('next/cache', () => ({
 const { mockCreatePlanningNotification, mockCreateBatchPlanningNotification } =
   vi.hoisted(() => ({
     mockCreatePlanningNotification: vi.fn(),
-    mockCreateBatchPlanningNotification: vi.fn(),
+    mockCreateBatchPlanningNotification:
+      vi.fn<
+        (
+          schedules: Array<{ id: string; startDate: Date }>,
+          employeeUserId: string,
+          action: string,
+          creatorUserId?: string
+        ) => Promise<{ success: boolean }>
+      >(),
   }))
 vi.mock('@/lib/actions/notifications', () => ({
   createPlanningNotification: mockCreatePlanningNotification,
@@ -625,15 +633,13 @@ describe('schedules actions', () => {
       // un findUnique après le deleteMany ne trouverait plus rien
       expect(mockCreatePlanningNotification).not.toHaveBeenCalled()
       expect(mockCreateBatchPlanningNotification).toHaveBeenCalledTimes(1)
-      expect(mockCreateBatchPlanningNotification).toHaveBeenCalledWith(
-        [
-          expect.objectContaining({ id: 'sch1', startDate: expect.any(Date) }),
-          expect.objectContaining({ id: 'sch2', startDate: expect.any(Date) }),
-        ],
-        'clemployeeuser000001',
-        'deleted',
-        'cluser00000000000001'
-      )
+      const [creneaux, destinataire, action, auteur] =
+        mockCreateBatchPlanningNotification.mock.calls[0]!
+      expect(creneaux.map((c) => c.id)).toEqual(['sch1', 'sch2'])
+      expect(creneaux.every((c) => c.startDate instanceof Date)).toBe(true)
+      expect(destinataire).toBe('clemployeeuser000001')
+      expect(action).toBe('deleted')
+      expect(auteur).toBe('cluser00000000000001')
     })
 
     it('retourne erreur si groupe vide', async () => {
@@ -660,9 +666,21 @@ describe('schedules actions', () => {
       vi.mocked(prisma.employee.findUnique).mockResolvedValue(null)
       const employe = { userId: 'clemployeeuser000001' }
       vi.mocked(prisma.schedule.findMany).mockResolvedValue([
-        mockSchedule({ id: 'rec1', recurrenceGroupId: 'r1', employee: employe }),
-        mockSchedule({ id: 'rec2', recurrenceGroupId: 'r1', employee: employe }),
-        mockSchedule({ id: 'rec3', recurrenceGroupId: 'r1', employee: employe }),
+        mockSchedule({
+          id: 'rec1',
+          recurrenceGroupId: 'r1',
+          employee: employe,
+        }),
+        mockSchedule({
+          id: 'rec2',
+          recurrenceGroupId: 'r1',
+          employee: employe,
+        }),
+        mockSchedule({
+          id: 'rec3',
+          recurrenceGroupId: 'r1',
+          employee: employe,
+        }),
       ] as never)
       vi.mocked(prisma.schedule.deleteMany).mockResolvedValue({ count: 3 })
       mockCreateBatchPlanningNotification.mockResolvedValue({ success: true })
