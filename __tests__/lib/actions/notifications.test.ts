@@ -63,6 +63,14 @@ vi.mock('@/lib/notifications', () => ({
   emitNotification: vi.fn(),
 }))
 
+// Mock de l'email planning, importé dynamiquement par les factories (SP-604)
+const { mockSendScheduleEmail } = vi.hoisted(() => ({
+  mockSendScheduleEmail: vi.fn(),
+}))
+vi.mock('@/lib/email/templates/schedule-notification', () => ({
+  sendScheduleNotificationEmail: mockSendScheduleEmail,
+}))
+
 // Import après les mocks
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/lib/auth'
@@ -120,8 +128,7 @@ describe('Notification Server Actions - SP-325', () => {
     it('should create notification for planning creation', async () => {
       const mockSchedule = {
         id: 'schedule-123',
-        startTime: new Date('2026-02-10T09:00:00Z'),
-        endTime: new Date('2026-02-10T17:00:00Z'),
+        startDate: new Date('2026-02-10T00:00:00Z'),
         companyId: 'company-123',
         employee: { firstName: 'Jean', lastName: 'Dupont' },
       }
@@ -165,8 +172,7 @@ describe('Notification Server Actions - SP-325', () => {
     it('should assign HIGH priority for deleted planning', async () => {
       const mockSchedule = {
         id: 'schedule-123',
-        startTime: new Date(),
-        endTime: new Date(),
+        startDate: new Date('2026-02-10T00:00:00Z'),
         companyId: 'company-123',
         employee: { firstName: 'Jean', lastName: 'Dupont' },
       }
@@ -186,6 +192,113 @@ describe('Notification Server Actions - SP-325', () => {
         data: expect.objectContaining({
           priority: 'HIGH',
         }),
+      })
+    })
+
+    // SP-604 : en base, startTime vaut « 10:00 ». Les mocks d'avant lui
+    // donnaient une Date, ce qui masquait le RangeError levé en production.
+    describe('SP-604 : forme réelle du créneau', () => {
+      // Créneau du dimanche 4 octobre posé d'un clic dans la grille, relevé
+      // en production le 28 septembre 2026
+      const creneauReel = {
+        startDate: new Date('2026-10-03T22:00:00.000Z'),
+        startTime: '10:00',
+        endTime: '19:00',
+        companyId: 'company-123',
+        type: 'WORK',
+      }
+      const destinataire = {
+        id: 'user-123',
+        companyId: 'company-123',
+        email: 'employe@example.com',
+        name: 'Pablo Felipe',
+        preferences: null,
+      }
+
+      beforeEach(() => {
+        mockSendScheduleEmail.mockResolvedValue({ success: true })
+        mockPrisma.user.findUnique.mockResolvedValue(destinataire as never)
+        mockPrisma.notification.create.mockResolvedValue({
+          id: 'notif-123',
+        } as never)
+      })
+
+      it('crée la notification en lisant startDate, avec le jour de Paris', async () => {
+        mockPrisma.schedule.findUnique.mockResolvedValue({
+          id: 'schedule-123',
+          ...creneauReel,
+        } as never)
+
+        const result = await createPlanningNotification(
+          'schedule-123',
+          'user-123',
+          'created'
+        )
+
+        expect(result.success).toBe(true)
+        expect(mockPrisma.schedule.findUnique).toHaveBeenCalledWith(
+          expect.objectContaining({
+            select: expect.objectContaining({ startDate: true }),
+          })
+        )
+        expect(mockPrisma.notification.create).toHaveBeenCalledWith({
+          data: expect.objectContaining({
+            message: 'Un nouveau planning a été créé pour le 04/10/2026.',
+          }),
+        })
+      })
+
+      it('notifie une suppression à partir des données passées, créneau déjà effacé', async () => {
+        mockPrisma.schedule.findUnique.mockResolvedValue(null)
+
+        const result = await createPlanningNotification(
+          'schedule-123',
+          'user-123',
+          'deleted',
+          'director-1',
+          creneauReel
+        )
+
+        expect(result.success).toBe(true)
+        expect(mockPrisma.schedule.findUnique).not.toHaveBeenCalled()
+        expect(mockPrisma.notification.create).toHaveBeenCalledWith({
+          data: expect.objectContaining({
+            message: 'Votre planning du 04/10/2026 a été supprimé.',
+          }),
+        })
+      })
+
+      it("envoie un seul email avec la date du créneau quand l'appelant n'en envoie pas", async () => {
+        await createPlanningNotification(
+          'schedule-123',
+          'user-123',
+          'deleted',
+          'director-1',
+          creneauReel
+        )
+
+        expect(mockSendScheduleEmail).toHaveBeenCalledTimes(1)
+        expect(mockSendScheduleEmail).toHaveBeenCalledWith(
+          expect.objectContaining({
+            startDate: creneauReel.startDate,
+            timeRange: '10:00 - 19:00',
+          })
+        )
+      })
+
+      it("n'envoie aucun email quand l'appelant envoie déjà le sien (skipEmail)", async () => {
+        const result = await createPlanningNotification(
+          'schedule-123',
+          'user-123',
+          'deleted',
+          'director-1',
+          creneauReel,
+          { skipEmail: true }
+        )
+
+        expect(result.success).toBe(true)
+        expect(mockPrisma.notification.create).toHaveBeenCalledTimes(1)
+        expect(mockSendScheduleEmail).not.toHaveBeenCalled()
       })
     })
 

@@ -10,6 +10,7 @@
  * @see Playwright documentation
  */
 
+import AxeBuilder from '@axe-core/playwright'
 import { test, expect } from '../fixtures/consent.fixture'
 
 /**
@@ -342,6 +343,23 @@ test.describe('Register Page', () => {
     // On vérifie donc que l'inscription aboutit SANS donner accès au dashboard.
     await page.waitForLoadState('networkidle')
     await expect(page).not.toHaveURL(/\/app\//)
+
+    // SP-605 : l'écran dit où est le lien, au lieu de renvoyer vers /login
+    await expect(
+      page.getByRole('heading', { name: 'Vérifiez votre boîte mail' })
+    ).toBeVisible()
+    await expect(page.getByText(uniqueEmail)).toBeVisible()
+    await expect(page).toHaveURL('/register')
+
+    // Écran neuf sur une page publique : axe-core, WCAG 2.1 AA
+    const a11y = await new AxeBuilder({ page })
+      .include('section[aria-labelledby="register-check-email-title"]')
+      .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+      .analyze()
+    expect(
+      a11y.violations,
+      JSON.stringify(a11y.violations, null, 2)
+    ).toEqual([])
   })
 
   test('should toggle password visibility for both password fields', async ({

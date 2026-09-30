@@ -4,10 +4,10 @@
  * RegisterForm est le composant d'inscription SaaS avec :
  * - React Hook Form + zodResolver (signupSchema)
  * - Server Action registerAction
- * - Auto-login après inscription réussie
+ * - Écran de vérification d'email après inscription réussie (SP-605)
  * - Toast notifications (Sonner)
  *
- * @ticket SP-140
+ * @ticket SP-140, SP-605
  */
 
 import React from 'react'
@@ -25,7 +25,14 @@ vi.mock('@/lib/actions', () => ({
   registerAction: (...args: unknown[]) => mockRegisterAction(...args),
 }))
 
-// Mock next-auth/react
+// Mock du renvoi de l'email de vérification (SP-605)
+const mockResendVerification = vi.fn()
+vi.mock('@/lib/actions/verification-actions', () => ({
+  resendVerificationEmailAction: (...args: unknown[]) =>
+    mockResendVerification(...args),
+}))
+
+// Mock next-auth/react : le formulaire ne doit plus s'en servir (SP-605)
 const mockSignIn = vi.fn()
 vi.mock('next-auth/react', () => ({
   signIn: (...args: unknown[]) => mockSignIn(...args),
@@ -291,7 +298,6 @@ describe('RegisterForm', () => {
         userId: 'user-123',
         companyId: 'company-456',
       })
-      mockSignIn.mockResolvedValue({ ok: true })
 
       render(<RegisterForm />)
 
@@ -419,88 +425,84 @@ describe('RegisterForm', () => {
   // SUCCÈS D'INSCRIPTION + AUTO-LOGIN
   // =========================================================================
 
-  describe("Succès d'inscription", () => {
-    it('calls signIn for auto-login after successful registration', async () => {
-      const user = setupUser()
+  describe("Succès d'inscription (SP-605)", () => {
+    async function inscrire(user: ReturnType<typeof setupUser>) {
       mockRegisterAction.mockResolvedValue({
         success: true,
         userId: 'user-123',
         companyId: 'company-456',
       })
-      mockSignIn.mockResolvedValue({ ok: true })
-
       render(<RegisterForm />)
-
       await fillValidForm(user)
-      const { submitButton } = getFormInputs()
-      await user.click(submitButton)
+      await user.click(getFormInputs().submitButton)
+    }
+
+    it("affiche l'écran de vérification, avec l'adresse saisie", async () => {
+      const user = setupUser()
+      await inscrire(user)
+
+      const titre = await screen.findByRole('heading', {
+        name: /vérifiez votre boîte mail/i,
+      })
+      expect(titre).toHaveFocus()
+      expect(screen.getByText('jean@example.com')).toBeInTheDocument()
+      expect(
+        screen.queryByRole('button', { name: /créer mon compte/i })
+      ).not.toBeInTheDocument()
+      expect(
+        screen.getByRole('link', { name: 'Me connecter' })
+      ).toHaveAttribute('href', '/login')
+    })
+
+    it('ne tente plus de connexion automatique ni de redirection', async () => {
+      const user = setupUser()
+      await inscrire(user)
+
+      await screen.findByRole('heading', { name: /vérifiez votre boîte mail/i })
+      expect(mockSignIn).not.toHaveBeenCalled()
+      expect(mockPush).not.toHaveBeenCalled()
+      expect(mockToastInfo).not.toHaveBeenCalled()
+    })
+
+    it("renvoie l'email de vérification à l'adresse du compte créé", async () => {
+      const user = setupUser()
+      mockResendVerification.mockResolvedValue({ success: true })
+      await inscrire(user)
+
+      await user.click(
+        await screen.findByRole('button', { name: /renvoyer l'email/i })
+      )
 
       await waitFor(() => {
-        expect(mockSignIn).toHaveBeenCalledWith('credentials', {
+        expect(mockResendVerification).toHaveBeenCalledWith({
           email: 'jean@example.com',
-          password: 'Password123!',
-          redirect: false,
         })
-      })
-    })
-
-    it('shows toast success and redirects after successful auto-login', async () => {
-      const user = setupUser()
-      mockRegisterAction.mockResolvedValue({
-        success: true,
-        userId: 'user-123',
-        companyId: 'company-456',
-      })
-      mockSignIn.mockResolvedValue({ ok: true })
-
-      render(<RegisterForm />)
-
-      await fillValidForm(user)
-      const { submitButton } = getFormInputs()
-      await user.click(submitButton)
-
-      await waitFor(() => {
         expect(mockToastSuccess).toHaveBeenCalledWith(
-          'Bienvenue sur SmartPlanning !',
+          'Email renvoyé',
           expect.objectContaining({
-            description: expect.stringContaining('tableau de bord'),
+            description: expect.stringContaining("n'est plus valable"),
           })
         )
-      })
-
-      await waitFor(() => {
-        expect(mockPush).toHaveBeenCalledWith('/app/dashboard')
-        expect(mockRefresh).toHaveBeenCalled()
       })
     })
 
-    it('redirects to login if auto-login fails', async () => {
+    it("garde le formulaire affiché quand l'inscription échoue", async () => {
       const user = setupUser()
       mockRegisterAction.mockResolvedValue({
-        success: true,
-        userId: 'user-123',
-        companyId: 'company-456',
+        success: false,
+        error: 'Cet email est déjà utilisé',
+        field: 'email',
       })
-      mockSignIn.mockResolvedValue({ ok: false, error: 'SomeError' })
-
       render(<RegisterForm />)
-
       await fillValidForm(user)
-      const { submitButton } = getFormInputs()
-      await user.click(submitButton)
+      await user.click(getFormInputs().submitButton)
 
       await waitFor(() => {
-        expect(mockToastInfo).toHaveBeenCalledWith(
-          'Veuillez vous connecter',
-          expect.objectContaining({
-            description: expect.stringContaining('Connectez-vous'),
-          })
-        )
+        expect(mockToastError).toHaveBeenCalled()
       })
-
-      await waitFor(() => {
-        expect(mockPush).toHaveBeenCalledWith('/login')
-      })
+      expect(
+        screen.queryByRole('heading', { name: /vérifiez votre boîte mail/i })
+      ).not.toBeInTheDocument()
     })
   })
 

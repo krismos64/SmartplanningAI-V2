@@ -151,8 +151,7 @@ describe('createPlanningNotification : isolation multi-tenant', () => {
   it("refuse un destinataire d'une autre entreprise", async () => {
     mockScheduleFindUnique.mockResolvedValue({
       id: 'clsched000000000001',
-      startTime: new Date('2026-09-01T09:00:00Z'),
-      endTime: new Date('2026-09-01T17:00:00Z'),
+      startDate: new Date('2026-09-01T00:00:00Z'),
       companyId: COMPANY_A,
     })
     mockUserFindUnique.mockResolvedValue(mockTargetUser(COMPANY_B))
@@ -170,8 +169,7 @@ describe('createPlanningNotification : isolation multi-tenant', () => {
   it('accepte un destinataire de la même entreprise', async () => {
     mockScheduleFindUnique.mockResolvedValue({
       id: 'clsched000000000001',
-      startTime: new Date('2026-09-01T09:00:00Z'),
-      endTime: new Date('2026-09-01T17:00:00Z'),
+      startDate: new Date('2026-09-01T00:00:00Z'),
       companyId: COMPANY_A,
     })
     mockUserFindUnique.mockResolvedValue(mockTargetUser(COMPANY_A))
