@@ -2,7 +2,7 @@
 
 > **Tickets** : SP-345 (intégration Umami), SP-591 (tunnel de conversion)
 > **Statut** : ✅ Implémenté
-> **Dernière mise à jour** : 11 septembre 2026
+> **Dernière mise à jour** : 13 septembre 2026
 
 ## Vue d'ensemble
 

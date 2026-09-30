@@ -92,6 +92,32 @@ les **mieux** couverts du projet. Ce qui tirait le chiffre vers le bas, ce sont
 les composants de page. Devant une couverture qui paraît basse, mesurer par
 dossier avant de conclure.
 
+## Un mock a la forme de la base, pas celle qu'on imagine
+
+Les mocks de `createPlanningNotification` donnaient à `startTime` une `Date`.
+En base, c'est une chaîne `"10:00"`. Le code formatait cette heure comme une
+date et levait `RangeError` : aucun test ne l'a vu, et aucune notification
+unitaire n'a été créée en production entre février et septembre 2026 (SP-604).
+
+Construire un mock à partir d'une ligne réelle ou de `prisma/schema.prisma`,
+jamais de l'intuition. Voisin de la fiche « mock plus aimable que la vraie
+lib ».
+
+## Le lint de la CI est typé, `npx eslint` ne l'est pas
+
+La CI lance `npm run lint` (`next lint`), qui applique les règles typées de
+`@typescript-eslint`. Un `npx eslint <fichier>` lancé à la main ne les charge
+pas et passe au vert là où la CI rougit.
+
+Trois formes de test tombent sous `no-unsafe-assignment` : `expect.any()`,
+`expect.stringContaining()` placés dans un objet, et la déstructuration de
+`mock.calls` d'un `vi.fn()` non typé. Typer le `vi.fn<...>()`, ou lire l'appel
+et asserter sur ses champs. PR #107 rejetée sur quatre erreurs de ce type.
+
+```bash
+npm run lint 2>&1 | grep -c "Error:"   # doit valoir 0, filtrer sur « Error: »
+```
+
 ## Avant de conclure
 
 Types, lint et tests concernés au vert. Critères d'acceptation vérifiés un par

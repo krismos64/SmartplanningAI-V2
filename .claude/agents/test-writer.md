@@ -139,6 +139,17 @@ Certaines fonctionnalités (panneau sessions actives) ne s'affichent que si Redi
    compte donc, un test de rendu de page ne compte pas et n'a pas à être écrit.
    Relever un seuil demande de mesurer d'abord, jamais de viser un chiffre rond
 
+### Lint typé de la CI
+
+`npm run lint` refuse `expect.any()` et `expect.stringContaining()` dans un
+objet, ainsi que la déstructuration de `mock.calls` d'un `vi.fn()` non typé
+(`no-unsafe-assignment`). Typer le mock (`vi.fn<(a: T) => R>()`) ou asserter
+sur les champs de l'appel. Vérifier avec `npm run lint 2>&1 | grep -c "Error:"`,
+jamais avec `npx eslint`, qui ne charge pas les règles typées.
+
+Un mock prend la forme réelle de la base : `startTime` est une chaîne
+`"HH:mm"`, `startDate` une `Date`. Voir `.claude/rules/tests.md`.
+
 ## 🎯 Objectif
 
 Des tests qui s'intègrent sans friction dans la suite existante, couvrent la logique métier critique (isolation tenant, RBAC, validation, workflows), et ne gonflent pas artificiellement le compteur de tests.

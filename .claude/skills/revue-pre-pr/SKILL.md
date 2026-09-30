@@ -116,6 +116,9 @@ volontairement le code, vérifier que le test rougit, restaurer.
 - **Aucun test cosmétique** introduit : rendu pur, passage de props, attributs
   SVG. Le projet en a supprimé environ 197
 - **Compteurs mesurés**, jamais cités de mémoire
+- **Lint lancé comme la CI** : `npm run lint 2>&1 | grep -c "Error:"` doit
+  valoir 0. `npx eslint` sur les fichiers modifiés ne charge pas les règles
+  typées et passe là où la CI rougit (PR #107)
 
 ## 6. Le compte rendu
 

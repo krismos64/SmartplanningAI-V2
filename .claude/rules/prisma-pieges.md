@@ -128,6 +128,34 @@ Les seuils de rappel (J-14, J-7, J-3, J-1) gardent le même sens : il reste
 Corrigé le 26 août 2026. Un défaut de ce type ne se voit ni en développement ni
 sur un compte récent : il ne se déclenche que le dernier jour.
 
+## Une date de créneau formatée côté serveur rend la veille
+
+Le conteneur de production tourne en UTC. Un créneau posé d'un clic dans la
+grille est stocké à minuit heure de Paris, soit **22:00 UTC la veille**, alors
+que la saisie groupée écrit 00:00 UTC. Les deux conventions coexistent en base
+(mesure du 28 septembre 2026 : 977 lignes à 00:00, 16 à 22:00).
+
+`format()` de date-fns ou `toLocaleDateString()` sans fuseau héritent de celui
+du processus. Relevé dans le conteneur : `2026-10-03T22:00Z` donnait « samedi
+3 octobre » pour un créneau du dimanche 4. Chaque email de planning annonçait
+ainsi le jour précédent (SP-603).
+
+Toute date de créneau écrite dans un texte envoyé à un utilisateur, email,
+notification ou message d'erreur, passe par `src/lib/utils/schedule-date.ts`,
+à fuseau explicite. Un test de formatage force `process.env.TZ = 'UTC'`, sinon
+il passe sur un poste en heure de Paris et ne prouve rien.
+
+## Une exception avalée coupe tout ce qui la suit
+
+`createPlanningNotification` levait `RangeError` avant d'envoyer son email, et
+son `catch` renvoyait un simple échec. Corriger l'erreur seule aurait réveillé
+cet email, qui doublait celui déjà envoyé par l'appelant (SP-480) : deux emails
+par créneau (SP-604).
+
+Avant de corriger une fonction qui plantait en silence, lire tout ce qu'elle
+fait **après** le point de plantage, et vérifier qu'aucun appelant ne le fait
+déjà. Une fonction jamais exécutée jusqu'au bout n'a jamais été testée en vrai.
+
 ## Stripe impose des contraintes sur les dates transmises
 
 `subscription_data.trial_end` doit être à **au moins 48 heures** dans le futur.
