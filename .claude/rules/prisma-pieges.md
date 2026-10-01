@@ -1,14 +1,14 @@
 ---
 paths:
-  - "src/lib/**"
-  - "src/app/api/**"
-  - "src/scripts/**"
-  - "scripts/**"
-  - "prisma/**"
-  - "**/*.sql"
-  - "nginx/**"
-  - "docker/**"
-  - ".github/workflows/**"
+  - 'src/lib/**'
+  - 'src/app/api/**'
+  - 'src/scripts/**'
+  - 'scripts/**'
+  - 'prisma/**'
+  - '**/*.sql'
+  - 'nginx/**'
+  - 'docker/**'
+  - '.github/workflows/**'
 ---
 
 # Pièges Prisma, Next.js et production
@@ -192,7 +192,7 @@ non-remise, quelques secondes plus tard.
 
 Trois pièges, tous rencontrés en production le 31 août 2026 (SP-579).
 
-**Nodemailer lève au lieu de renseigner `rejected`.** Quand *tous* les
+**Nodemailer lève au lieu de renseigner `rejected`.** Quand _tous_ les
 destinataires sont refusés, l'erreur est `EENVELOPE` et porte `err.rejected`.
 Nos envois étant mono-destinataire, c'est toujours ce chemin. Un code qui ne
 lirait que `info.rejected` paraîtrait complet sans jamais rien détecter.
@@ -333,6 +333,22 @@ accepté. Détail et contrôle dans `docs/analytics.md`.
 Même famille que « un email accepté par le relais n'est pas un email délivré » :
 un appel accepté par un service tiers n'est pas un appel traité.
 
+## `docker logs` ne voit pas au-delà du dernier déploiement
+
+Le driver `json-file` range les logs dans le dossier du conteneur, supprimé
+avec lui. Le CD recrée `smartplanning-app` à chaque déploiement : le 1er
+octobre 2026, les logs de l'inscription Trasco de la veille au soir avaient
+disparu, et avec eux le seul moyen de vérifier qu'un `RangeError` corrigé ne
+revenait pas.
+
+Depuis, le service `app` écrit dans journald. Chercher par
+`sudo journalctl CONTAINER_NAME=smartplanning-app --since …`, jamais par
+`docker logs`, qui ne lit que le conteneur courant et répond « aucune erreur »
+sur une période qu'il n'a jamais vue. `-p err` isole stderr.
+
+Postgres, Redis et Umami restent en `json-file` : le CD ne les recrée pas,
+mais un `docker compose up` manuel qui le ferait effacerait aussi leurs logs.
+
 ## Un rollback d'image ne défait pas les migrations
 
 Le job `migrate` du CD s'exécute **avant** le remplacement du conteneur, et
@@ -382,7 +398,7 @@ locale, Nginx restant le seul point d'entrée :
 
 ```yaml
 ports:
-  - '127.0.0.1:3000:3000'   # et non '3000:3000'
+  - '127.0.0.1:3000:3000' # et non '3000:3000'
 ```
 
 **Se vérifier depuis l'extérieur, jamais depuis le VPS.** `curl localhost:3000`

@@ -154,6 +154,18 @@ services:
           memory: 1G
         reservations:
           memory: 512M
+    # Les logs vont dans journald et non dans le json-file par défaut, qui vit
+    # dans le dossier du conteneur et disparaît avec lui. Le CD recrée ce
+    # conteneur à chaque déploiement : les logs de la veille étaient perdus,
+    # et ceux d'une image écartée par le rollback de SP-588 aussi.
+    # Lecture, conteneurs successifs compris :
+    #   journalctl CONTAINER_NAME=smartplanning-app --since "2026-09-30 18:45"
+    # stderr arrive en priorité 3, donc « -p err » isole les console.error.
+    # docker logs et docker compose logs fonctionnent toujours.
+    logging:
+      driver: journald
+      options:
+        tag: smartplanning-app
 
   # ----------------------------------------------
   # 🗄️ POSTGRESQL 16 (Base de données)
@@ -197,7 +209,11 @@ services:
     networks:
       - smartplanning-network
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-smartplanning} -d ${POSTGRES_DB:-smartplanning}']
+      test:
+        [
+          'CMD-SHELL',
+          'pg_isready -U ${POSTGRES_USER:-smartplanning} -d ${POSTGRES_DB:-smartplanning}',
+        ]
       interval: 10s
       timeout: 5s
       retries: 5

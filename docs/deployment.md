@@ -75,12 +75,12 @@
 
 ### URLs
 
-| Service            | URL                                          |
-| ------------------ | -------------------------------------------- |
-| Application        | https://smartplanning.fr                     |
-| Analytics          | https://analytics.smartplanning.fr           |
+| Service            | URL                                             |
+| ------------------ | ----------------------------------------------- |
+| Application        | https://smartplanning.fr                        |
+| Analytics          | https://analytics.smartplanning.fr              |
 | Repository GitHub  | https://github.com/krismos64/SmartplanningAI-V2 |
-| Container Registry | ghcr.io/krismos64/smartplanningai-v2         |
+| Container Registry | ghcr.io/krismos64/smartplanningai-v2            |
 
 ---
 
@@ -135,12 +135,12 @@ conteneur demarre avec une valeur vide.
 
 ### Conteneurs Docker
 
-| Container              | Image                                          | Publication      | Compose |
-| ---------------------- | ---------------------------------------------- | ---------------- | ------- |
+| Container              | Image                                                  | Publication      | Compose |
+| ---------------------- | ------------------------------------------------------ | ---------------- | ------- |
 | smartplanning-app      | ghcr.io/krismos64/smartplanningai-v2:sha-&lt;court&gt; | `127.0.0.1:3000` | dépôt   |
-| smartplanning-postgres | postgres:16-alpine                             | interne          | dépôt   |
-| smartplanning-redis    | redis:7-alpine                                 | interne          | dépôt   |
-| smartplanning-umami    | ghcr.io/umami-software/umami:postgresql-latest | `127.0.0.1:3001` | VPS     |
+| smartplanning-postgres | postgres:16-alpine                                     | interne          | dépôt   |
+| smartplanning-redis    | redis:7-alpine                                         | interne          | dépôt   |
+| smartplanning-umami    | ghcr.io/umami-software/umami:postgresql-latest         | `127.0.0.1:3001` | VPS     |
 
 **Tous les ports applicatifs sont publiés sur la boucle locale depuis SP-583**
 (8 septembre 2026), Nginx restant le seul point d'entrée. Publier sur toutes
@@ -259,25 +259,25 @@ HEALTH_API_KEY=<GENERER_AVEC_openssl_rand_base64_32>
 
 > **IMPORTANT** : Les noms des variables doivent correspondre exactement à ceux attendus par le code.
 
-| Variable (code)         | Fichier                   | Description                |
-| ----------------------- | ------------------------- | -------------------------- |
-| `SMTP_HOST`             | `src/lib/email/config.ts` | Serveur SMTP               |
-| `SMTP_PORT`             | `src/lib/email/config.ts` | Port SMTP (587)            |
-| `SMTP_USER`             | `src/lib/email/config.ts` | Email d'auth SMTP          |
-| `SMTP_PASSWORD`         | `src/lib/email/config.ts` | Mot de passe SMTP          |
-| `SMTP_FROM`             | `src/lib/email/config.ts` | Adresse d'expédition       |
-| `CONTACT_EMAIL`         | `src/lib/email/config.ts` | Email de réception contact |
-| `IMAP_HOST`             | `src/lib/email/bounce/bounce-sync.service.ts` | Serveur IMAP de la boîte relevée |
-| `IMAP_PORT`             | `src/lib/email/bounce/bounce-sync.service.ts` | Port IMAP (993 par défaut) |
-| `IMAP_USER`             | `src/lib/email/bounce/bounce-sync.service.ts` | Compte de la boîte relevée |
-| `IMAP_PASSWORD`         | `src/lib/email/bounce/bounce-sync.service.ts` | Mot de passe IMAP, identique au SMTP |
-| `CLOUDINARY_CLOUD_NAME` | `src/lib/cloudinary.ts`   | Nom du cloud Cloudinary    |
-| `CLOUDINARY_API_KEY`    | `src/lib/cloudinary.ts`   | Clé API Cloudinary         |
-| `CLOUDINARY_API_SECRET` | `src/lib/cloudinary.ts`   | Secret API Cloudinary      |
-| `STRIPE_SECRET_KEY`              | `src/lib/stripe/`         | Clé secrète Stripe         |
-| `STRIPE_WEBHOOK_SECRET`          | `src/lib/stripe/`         | Secret webhook Stripe      |
-| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | `src/lib/stripe/`     | Clé publique Stripe        |
-| `STRIPE_PRICE_ID`                | `src/lib/stripe/`         | ID du prix per-seat Stripe |
+| Variable (code)                      | Fichier                                       | Description                          |
+| ------------------------------------ | --------------------------------------------- | ------------------------------------ |
+| `SMTP_HOST`                          | `src/lib/email/config.ts`                     | Serveur SMTP                         |
+| `SMTP_PORT`                          | `src/lib/email/config.ts`                     | Port SMTP (587)                      |
+| `SMTP_USER`                          | `src/lib/email/config.ts`                     | Email d'auth SMTP                    |
+| `SMTP_PASSWORD`                      | `src/lib/email/config.ts`                     | Mot de passe SMTP                    |
+| `SMTP_FROM`                          | `src/lib/email/config.ts`                     | Adresse d'expédition                 |
+| `CONTACT_EMAIL`                      | `src/lib/email/config.ts`                     | Email de réception contact           |
+| `IMAP_HOST`                          | `src/lib/email/bounce/bounce-sync.service.ts` | Serveur IMAP de la boîte relevée     |
+| `IMAP_PORT`                          | `src/lib/email/bounce/bounce-sync.service.ts` | Port IMAP (993 par défaut)           |
+| `IMAP_USER`                          | `src/lib/email/bounce/bounce-sync.service.ts` | Compte de la boîte relevée           |
+| `IMAP_PASSWORD`                      | `src/lib/email/bounce/bounce-sync.service.ts` | Mot de passe IMAP, identique au SMTP |
+| `CLOUDINARY_CLOUD_NAME`              | `src/lib/cloudinary.ts`                       | Nom du cloud Cloudinary              |
+| `CLOUDINARY_API_KEY`                 | `src/lib/cloudinary.ts`                       | Clé API Cloudinary                   |
+| `CLOUDINARY_API_SECRET`              | `src/lib/cloudinary.ts`                       | Secret API Cloudinary                |
+| `STRIPE_SECRET_KEY`                  | `src/lib/stripe/`                             | Clé secrète Stripe                   |
+| `STRIPE_WEBHOOK_SECRET`              | `src/lib/stripe/`                             | Secret webhook Stripe                |
+| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | `src/lib/stripe/`                             | Clé publique Stripe                  |
+| `STRIPE_PRICE_ID`                    | `src/lib/stripe/`                             | ID du prix per-seat Stripe           |
 
 **`RESEND_API_KEY` est un résidu.** `docker-compose.prod.yml` la déclare encore,
 mais elle n'est utilisée nulle part : `resend` n'est pas une dépendance de
@@ -348,12 +348,12 @@ une PR, même en draft, pour obtenir le retour de la CI.
 
 **Jobs** :
 
-| Job        | Description                | Condition                     |
-| ---------- | -------------------------- | ----------------------------- |
-| `lint`     | ESLint + TypeScript        | Tous les déclenchements       |
-| `test`     | Tests unitaires Vitest     | Tous les déclenchements       |
+| Job        | Description                                 | Condition                     |
+| ---------- | ------------------------------------------- | ----------------------------- |
+| `lint`     | ESLint + TypeScript                         | Tous les déclenchements       |
+| `test`     | Tests unitaires Vitest                      | Tous les déclenchements       |
 | `test-e2e` | Tests E2E Playwright, whitelist `testMatch` | PR vers main OU push sur main |
-| `build`    | Build Next.js              | Tous les déclenchements       |
+| `build`    | Build Next.js                               | Tous les déclenchements       |
 
 Les compteurs de tests ne sont pas repris ici : ils se périment à chaque
 sprint. Les mesurer avec `npm run test` et `npx playwright test --list`.
@@ -367,9 +367,9 @@ sprint. Les mesurer avec `npm run test` et `npx playwright test --list`.
 
 **Jobs (ordre important — SP-523)** :
 
-| Ordre | Job              | Description                                                      |
-| ----- | ---------------- | ---------------------------------------------------------------- |
-| 1     | `build-and-push` | Build image Docker → Push GHCR                                   |
+| Ordre | Job              | Description                                                       |
+| ----- | ---------------- | ----------------------------------------------------------------- |
+| 1     | `build-and-push` | Build image Docker → Push GHCR                                    |
 | 2     | `migrate`        | Prisma migrate deploy (conteneur éphémère avec la nouvelle image) |
 | 3     | `deploy`         | SSH → Pull image → Restart conteneur app                          |
 
@@ -378,15 +378,19 @@ sprint. Les mesurer avec `npm run test` et `npx playwright test --list`.
 **Point technique clé** : `prisma migrate deploy` ne peut pas tourner via `docker compose exec` sur l'ancien conteneur (les nouveaux fichiers `prisma/migrations/` ne s'y trouvent pas). Solution : `docker run --rm` avec la nouvelle image en conteneur éphémère, accès DB via le réseau Docker du compose. Pendant cette opération, l'ancienne app continue de servir les requêtes.
 
 **Lecture de `DATABASE_URL`** : ne PAS parser le fichier `.env` (caractères spéciaux + guillemets cassent Prisma). Lire directement depuis l'environnement du conteneur app running :
+
 ```bash
 DATABASE_URL=$(docker exec smartplanning-app printenv DATABASE_URL)
 ```
+
 Le nom du réseau Docker est résolu dynamiquement via `docker inspect smartplanning-postgres` (le nom réel est préfixé par le projet : `smartplanning_smartplanning-network`).
 
 **Condition du job `deploy`** :
+
 ```yaml
 if: always() && needs.build-and-push.result == 'success' && (needs.migrate.result == 'success' || needs.migrate.result == 'skipped')
 ```
+
 Cas `workflow_dispatch` manuel : `migrate` skippé, `deploy` s'exécute quand même.
 
 ### Flux complet
@@ -493,8 +497,12 @@ version hors production.
 ### Logs et monitoring
 
 ```bash
-# Logs de l'application
+# Logs de l'application, conteneur courant seulement
 docker logs smartplanning-app --tail 100 -f
+
+# Logs de l'application à travers les déploiements (driver journald)
+sudo journalctl CONTAINER_NAME=smartplanning-app --since "2026-09-30 18:45" --until "2026-09-30 20:00"
+sudo journalctl CONTAINER_NAME=smartplanning-app -p err --since yesterday   # console.error seuls
 
 # Logs de tous les services
 docker compose logs -f
@@ -573,20 +581,20 @@ politique de confidentialité.
 
 ### Ce qui tourne
 
-| Élément | Valeur |
-|---|---|
-| Script | `/opt/smartplanning/ops/backup-database.sh` |
-| Déclenchement | `smartplanning-backup.timer`, chaque jour à 03:20 UTC |
-| Destination | `/var/backups/smartplanning/`, en `0700` |
-| Chiffrement | GPG symétrique AES256 |
-| Clé | `/etc/smartplanning/backup.key`, en `0600` |
-| Rétention | 30 jours |
-| **Copie hors site** | `/opt/smartplanning/ops/sync-backups-offsite.sh` |
-| **Déclenchement** | `smartplanning-backup-offsite.timer`, chaque jour à 04:10 UTC |
-| **Destination distante** | Backblaze B2, bucket `smartplanning-backups`, région `eu-central-003` |
-| **Identifiants B2** | `/etc/smartplanning/b2.conf`, en `0600` |
-| **Rétention distante** | 30 jours, par règle de cycle de vie du compartiment |
-| **Capacités de la clé** | `listBuckets`, `listFiles`, `readFiles`, `writeFiles`, aucune destructrice (SP-597) |
+| Élément                  | Valeur                                                                              |
+| ------------------------ | ----------------------------------------------------------------------------------- |
+| Script                   | `/opt/smartplanning/ops/backup-database.sh`                                         |
+| Déclenchement            | `smartplanning-backup.timer`, chaque jour à 03:20 UTC                               |
+| Destination              | `/var/backups/smartplanning/`, en `0700`                                            |
+| Chiffrement              | GPG symétrique AES256                                                               |
+| Clé                      | `/etc/smartplanning/backup.key`, en `0600`                                          |
+| Rétention                | 30 jours                                                                            |
+| **Copie hors site**      | `/opt/smartplanning/ops/sync-backups-offsite.sh`                                    |
+| **Déclenchement**        | `smartplanning-backup-offsite.timer`, chaque jour à 04:10 UTC                       |
+| **Destination distante** | Backblaze B2, bucket `smartplanning-backups`, région `eu-central-003`               |
+| **Identifiants B2**      | `/etc/smartplanning/b2.conf`, en `0600`                                             |
+| **Rétention distante**   | 30 jours, par règle de cycle de vie du compartiment                                 |
+| **Capacités de la clé**  | `listBuckets`, `listFiles`, `readFiles`, `writeFiles`, aucune destructrice (SP-597) |
 
 Le script produit un dump au format `custom`, vérifie son intégrité par
 `pg_restore --list`, le chiffre, contrôle que le fichier chiffré se déchiffre
@@ -692,6 +700,29 @@ politique de confidentialité plutôt que maintenue à tort.
 
 ## 8. Troubleshooting
 
+### Les logs d'avant le dernier déploiement
+
+`docker logs` ne lit que le conteneur courant. Le CD recrée `smartplanning-app`
+à chaque déploiement (`--force-recreate`), et jusqu'au 1er octobre 2026 le
+driver `json-file` effaçait les logs avec l'ancien conteneur : une erreur de la
+veille devenait introuvable dès le déploiement suivant. Constaté en analysant
+l'inscription Trasco du 30 septembre, dont les logs avaient disparu au
+déploiement du lendemain matin.
+
+Le service `app` écrit désormais dans journald, persistant sur ce VPS
+(`/var/log/journal`). Les logs d'une image écartée par le rollback de SP-588
+y restent aussi. Toujours chercher par `journalctl`, qui couvre les conteneurs
+successifs :
+
+```bash
+sudo journalctl CONTAINER_NAME=smartplanning-app --since "2026-10-01 05:00" -o short-iso --no-pager
+```
+
+La rétention suit le plafond de taille par défaut de journald (4 Go), partagé
+avec tout le VPS, Lune & Soleil compris : environ quatre mois d'historique à
+2,4 Go mesurés le 1er octobre 2026. Les autres services gardent `json-file`,
+le CD ne les recréant pas.
+
 ### L'application ne démarre pas
 
 ```bash
@@ -753,11 +784,11 @@ docker pull ghcr.io/krismos64/smartplanningai-v2:latest
 
 Symptômes typiques et solutions (20 avril 2026) :
 
-| Exit code | Cause | Fix |
-| --------- | ----- | --- |
-| 1 — Prisma ne reçoit pas l'URL | `grep -oP 'DATABASE_URL=\K.*'` tronquait l'URL à cause des caractères spéciaux | Lire depuis l'env du conteneur : `docker exec smartplanning-app printenv DATABASE_URL` |
-| 125 — Docker refuse de démarrer | `--network smartplanning-network` hardcodé ≠ nom réel `smartplanning_smartplanning-network` | Résoudre dynamiquement : `docker inspect -f '{{range $n,$_ := .NetworkSettings.Networks}}{{$n}}{{end}}' smartplanning-postgres` |
-| 1 — Prisma reçoit l'URL avec guillemets | `--env-file .env` propage les guillemets littéraux | Ne pas utiliser `--env-file`, passer la variable via `-e DATABASE_URL=$DATABASE_URL` |
+| Exit code                               | Cause                                                                                       | Fix                                                                                                                             |
+| --------------------------------------- | ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| 1 — Prisma ne reçoit pas l'URL          | `grep -oP 'DATABASE_URL=\K.*'` tronquait l'URL à cause des caractères spéciaux              | Lire depuis l'env du conteneur : `docker exec smartplanning-app printenv DATABASE_URL`                                          |
+| 125 — Docker refuse de démarrer         | `--network smartplanning-network` hardcodé ≠ nom réel `smartplanning_smartplanning-network` | Résoudre dynamiquement : `docker inspect -f '{{range $n,$_ := .NetworkSettings.Networks}}{{$n}}{{end}}' smartplanning-postgres` |
+| 1 — Prisma reçoit l'URL avec guillemets | `--env-file .env` propage les guillemets littéraux                                          | Ne pas utiliser `--env-file`, passer la variable via `-e DATABASE_URL=$DATABASE_URL`                                            |
 
 ### La 1re visite de smartplanning.fr renvoie des 503 sur les chunks JS (12 mai 2026)
 
@@ -766,19 +797,23 @@ Symptômes typiques et solutions (20 avril 2026) :
 **Cause** : `limit_conn conn_limit 10` était appliqué globalement dans `nginx/smartplanning.conf`. En HTTP/2, Nginx 1.24 compte **chaque stream multiplexé** individuellement contre `limit_conn`, alors qu'une seule connexion TCP est ouverte. Une landing Next.js qui charge 30+ chunks en parallèle dépasse trivialement le seuil.
 
 **Diagnostic rapide** :
+
 ```bash
 ssh deploy@51.77.146.72
 sudo tail -200 /var/log/nginx/smartplanning-error.log | grep "limiting connections"
 ```
+
 Si tu vois des entrées `client: <ton-IP>`, c'est ce bug.
 
 **Fix appliqué** dans `nginx/smartplanning.conf` :
+
 - Retrait de `limit_conn` global du server block
 - Ajout de `limit_conn conn_limit 100` uniquement sur `location /` et `location /api/`
 - `/_next/static/*`, fonts et images exempts (cachés par `proxy_cache nextjs_cache`)
 - `limit_req_status 429` + `limit_conn_status 429` (au lieu de 503) → monitoring plus précis
 
 **Validation post-fix** :
+
 ```bash
 # 31 chunks HTTP/2 multiplexés doivent tous renvoyer 200
 CHUNKS=$(curl -s https://smartplanning.fr | grep -oE '/_next/static/chunks/[^"]+\.js' | sort -u)
@@ -794,12 +829,14 @@ rm "$TMPFILE"
 **Attention** : la config Nginx du VPS peut diverger du repo si des modifs sont appliquées en urgence directement en SSH. À chaque édition `/etc/nginx/sites-available/smartplanning.conf`, **backporter dans `nginx/smartplanning.conf` du repo** et commit.
 
 **Vérifier le drift** :
+
 ```bash
 ssh deploy@51.77.146.72 'sudo cat /etc/nginx/sites-available/smartplanning.conf' > /tmp/vps.conf
 diff nginx/smartplanning.conf /tmp/vps.conf
 ```
 
 Drift connus déjà backportés (12 mai 2026) :
+
 - `proxy_cache nextjs_cache` sur `/_next/static/`
 - `include /etc/nginx/snippets/umami-location.conf`
 
@@ -827,26 +864,26 @@ Le `reload` n'interrompt pas les connexions en cours.
 
 ## Historique des mises à jour
 
-| Date       | Version | Description                                   |
-| ---------- | ------- | --------------------------------------------- |
-| 2025-12-02 | 1.0     | Déploiement initial                           |
-| 2026-01-06 | 1.1     | Migration vers nouveau VPS (51.77.146.72)     |
-| 2026-01-16 | 1.2     | Ajout Umami Analytics                         |
-| 2026-01-19 | 2.0     | Configuration SMTP + refonte documentation    |
-| 2026-02-04 | 2.1     | Ajout Cloudinary pour upload avatars (SP-272) |
-| 2026-02-10 | 2.2     | Variables Stripe activées                                                  |
-| 2026-03-12 | 2.3     | Compteurs tests mis à jour après rationalisation (~2 785 unit / ~189 E2E)  |
-| 2026-04-17 | 2.4     | Fix admin : changement statut abonnement sans Stripe, correction redirects 404 |
-| 2026-04-20 | 2.5     | CI/CD : ordre `migrate → deploy` inversé (SP-523), pattern `docker run --rm` avec image éphémère, lecture `DATABASE_URL` depuis `docker exec printenv` (sans parse `.env`) |
-| 2026-05-12 | 2.6     | Fix Nginx HTTP/2 : `limit_conn` 10 → 100 sur `location /` et `/api/`, exempt sur `/_next/static/*`, codes 429 au lieu de 503. Backport repo des additions VPS (`proxy_cache`, include Umami). Procédure de push config Nginx documentée. |
-| 2026-08-18 | 2.7     | Panne DNS et certificat TLS : la zone avait basculé vers le CDN Hostinger, certbot allait bien. Surveillance ajoutée (`scripts/ops/check-tls-expiry.sh`). |
-| 2026-09-08 | 2.8     | SP-580 : le compose de production avait dérivé du dépôt, le CD ne le copiait pas. `scp` ajouté au job de déploiement, cache d'images rendu inscriptible. |
-| 2026-09-08 | 2.9     | SP-583 : les ports 3000 et 3001 répondaient depuis Internet en contournant Nginx, ufw ne filtrant pas les ports publiés par Docker. Publication passée sur la boucle locale. |
-| 2026-09-09 | 2.10    | Correction du document : tableau des conteneurs aligné sur la publication réelle, déclencheurs du CI corrigés (push sur `main` uniquement), compteurs de tests retirés au profit de la mesure. |
-| 2026-09-09 | 2.11    | SP-587 : surveillance quotidienne des ports applicatifs joignables depuis Internet, en filet de SP-583. Le durcissement `iptables` (`DOCKER-USER`) reste écarté, arbitrage documenté. |
-| 2026-09-09 | 2.12    | SP-588 : le CD annonçait un succès sur une production morte. Healthcheck bloquant, rollback automatique vers l'image précédente, déploiement par `sha-<court>` au lieu de `latest`, clause `concurrency`, `prune` borné à 168 h. Limite documentée : le rollback ne défait pas les migrations. |
-| 2026-09-09 | 2.13    | SP-593 : la base de production n'était sauvegardée nulle part. Sauvegarde quotidienne chiffrée (AES256, 03:20 UTC, rétention 30 jours), script de test de restauration, section 7 et runbook dédiés. |
-| 2026-09-10 | 2.14    | SP-594 : les archives et la clé vivaient sur le disque de la base. Copie hors site quotidienne vers Backblaze B2 (04:10 UTC, vérifiée taille et SHA-1, rétention 30 jours), clé conservée hors du VPS, restauration prouvée sur une autre machine. |
+| Date       | Version | Description                                                                                                                                                                                                                                                                                                                         |
+| ---------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2025-12-02 | 1.0     | Déploiement initial                                                                                                                                                                                                                                                                                                                 |
+| 2026-01-06 | 1.1     | Migration vers nouveau VPS (51.77.146.72)                                                                                                                                                                                                                                                                                           |
+| 2026-01-16 | 1.2     | Ajout Umami Analytics                                                                                                                                                                                                                                                                                                               |
+| 2026-01-19 | 2.0     | Configuration SMTP + refonte documentation                                                                                                                                                                                                                                                                                          |
+| 2026-02-04 | 2.1     | Ajout Cloudinary pour upload avatars (SP-272)                                                                                                                                                                                                                                                                                       |
+| 2026-02-10 | 2.2     | Variables Stripe activées                                                                                                                                                                                                                                                                                                           |
+| 2026-03-12 | 2.3     | Compteurs tests mis à jour après rationalisation (~2 785 unit / ~189 E2E)                                                                                                                                                                                                                                                           |
+| 2026-04-17 | 2.4     | Fix admin : changement statut abonnement sans Stripe, correction redirects 404                                                                                                                                                                                                                                                      |
+| 2026-04-20 | 2.5     | CI/CD : ordre `migrate → deploy` inversé (SP-523), pattern `docker run --rm` avec image éphémère, lecture `DATABASE_URL` depuis `docker exec printenv` (sans parse `.env`)                                                                                                                                                          |
+| 2026-05-12 | 2.6     | Fix Nginx HTTP/2 : `limit_conn` 10 → 100 sur `location /` et `/api/`, exempt sur `/_next/static/*`, codes 429 au lieu de 503. Backport repo des additions VPS (`proxy_cache`, include Umami). Procédure de push config Nginx documentée.                                                                                            |
+| 2026-08-18 | 2.7     | Panne DNS et certificat TLS : la zone avait basculé vers le CDN Hostinger, certbot allait bien. Surveillance ajoutée (`scripts/ops/check-tls-expiry.sh`).                                                                                                                                                                           |
+| 2026-09-08 | 2.8     | SP-580 : le compose de production avait dérivé du dépôt, le CD ne le copiait pas. `scp` ajouté au job de déploiement, cache d'images rendu inscriptible.                                                                                                                                                                            |
+| 2026-09-08 | 2.9     | SP-583 : les ports 3000 et 3001 répondaient depuis Internet en contournant Nginx, ufw ne filtrant pas les ports publiés par Docker. Publication passée sur la boucle locale.                                                                                                                                                        |
+| 2026-09-09 | 2.10    | Correction du document : tableau des conteneurs aligné sur la publication réelle, déclencheurs du CI corrigés (push sur `main` uniquement), compteurs de tests retirés au profit de la mesure.                                                                                                                                      |
+| 2026-09-09 | 2.11    | SP-587 : surveillance quotidienne des ports applicatifs joignables depuis Internet, en filet de SP-583. Le durcissement `iptables` (`DOCKER-USER`) reste écarté, arbitrage documenté.                                                                                                                                               |
+| 2026-09-09 | 2.12    | SP-588 : le CD annonçait un succès sur une production morte. Healthcheck bloquant, rollback automatique vers l'image précédente, déploiement par `sha-<court>` au lieu de `latest`, clause `concurrency`, `prune` borné à 168 h. Limite documentée : le rollback ne défait pas les migrations.                                      |
+| 2026-09-09 | 2.13    | SP-593 : la base de production n'était sauvegardée nulle part. Sauvegarde quotidienne chiffrée (AES256, 03:20 UTC, rétention 30 jours), script de test de restauration, section 7 et runbook dédiés.                                                                                                                                |
+| 2026-09-10 | 2.14    | SP-594 : les archives et la clé vivaient sur le disque de la base. Copie hors site quotidienne vers Backblaze B2 (04:10 UTC, vérifiée taille et SHA-1, rétention 30 jours), clé conservée hors du VPS, restauration prouvée sur une autre machine.                                                                                  |
 | 2026-09-13 | 2.15    | SP-597 : la clé B2 vivant sur le VPS pouvait détruire l'historique hors site, ce qui annulait la protection face à un rançongiciel. Rotation `b2_hide_file` au lieu de `b2_delete_file_version`, clé réduite à quatre capacités, règle de cycle de vie côté Backblaze, refus prouvé en 401 sur fichier réel, ancienne clé révoquée. |
 
 ---
