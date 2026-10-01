@@ -1,13 +1,13 @@
-# 1er octobre 2026, une inscription qui ne prouve qu'un correctif sur trois, et des logs qui disparaissaient à chaque déploiement
+# 1er octobre 2026, une inscription qui ne prouve qu'un correctif sur trois, des logs qui disparaissaient à chaque déploiement et une page Employés trop large sur iPhone
 
-| Champ              | Valeur                                                                                                                              |
-| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------- |
-| Ticket             | SP-607, ouvert à l'analyse de l'inscription Trasco du 30 septembre                                                                  |
-| Documents produits | cette entrée                                                                                                                        |
-| Documents modifiés | `docker/docker-compose.prod.yml`, `docs/deployment.md`, `.claude/rules/prisma-pieges.md`                                            |
-| Contrôles          | Vitest 3372/3372, `test-cd-rollback.sh` vert, CI de la PR #109 et de `main` vertes (lint, unitaires, E2E critiques, build), CD vert |
-| Jira               | SP-607 créé et commenté, laissé ouvert jusqu'au critère 2                                                                           |
-| Mémoire            | `inscription-trasco-30-septembre.md` créée                                                                                          |
+| Champ              | Valeur                                                                                                                                                                                                      |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Ticket             | SP-607 et SP-608, ouverts à l'analyse de l'inscription Trasco du 30 septembre                                                                                                                               |
+| Documents produits | cette entrée                                                                                                                                                                                                |
+| Documents modifiés | `docker/docker-compose.prod.yml`, `docs/deployment.md`, `.claude/rules/prisma-pieges.md`, `EmployeesDataTable.tsx`, `DashboardLayout.tsx`, `e2e/specs/crud/employees.spec.ts`                               |
+| Contrôles          | Vitest 3372/3372, `test-cd-rollback.sh` vert, CI de la PR #109 et de `main` vertes, CD vert. SP-608 : type-check, lint sans erreur, `crud/employees.spec.ts` 20/20, deux tests mobiles prouvés par mutation |
+| Jira               | SP-607 créé et commenté, laissé ouvert jusqu'au critère 2. SP-608 créé                                                                                                                                      |
+| Mémoire            | `inscription-trasco-30-septembre.md` créée, `lire-les-logs-du-vps.md` corrigée sur les `_rsc`                                                                                                               |
 
 ## Ce qui a été fait
 
@@ -41,6 +41,19 @@ désormais dans journald. PR #109, squash `233e7dd`, image `sha-233e7dd` en
 production, `LogConfig` vérifié à `journald`, démarrage du conteneur lisible
 par `journalctl`.
 
+**SP-608.** En rejouant la session, j'avais exclu les requêtes `_rsc`, prises
+pour du préchargement. Les navigations côté client y passent aussi : relue sans
+ce filtre, la session montre l'ouverture de `/employees/new` à 19:00:31 et un
+retour à la liste 3 s après. En émulation iPhone 13, le formulaire est sain. La
+liste, elle, mesurait 535 px pour 390 : le bouton desktop « Nouvel employé »
+n'était plus masqué depuis `cd4be4b` (18 mars), qui avait retiré son enveloppe
+`hidden sm:block` en gardant le commentaire « masqué sur mobile ». Sur 14 écrans
+mesurés, 12 tenaient dans 390 px. Correctif : bouton masqué sous `sm`, le FAB
+le remplace, et `min-w-0` sur la colonne principale du layout. Deux tests E2E
+mobiles. Le premier mesurait `scrollWidth` et restait vert sous mutation, le
+`min-w-0` rognant le bouton sans élargir la page : il mesure désormais les
+boutons eux-mêmes.
+
 ## Les écarts
 
 Deux constats sans ticket, sortis de l'analyse :
@@ -66,7 +79,8 @@ correctif effaçait les logs de la veille.
   `journalctl CONTAINER_NAME=smartplanning-app` montre les deux conteneurs
 - Preuve de SP-604 : attendre un créneau posé pour un employé autre que
   l'auteur, désormais vérifiable par `journalctl -p err`
-- Comprendre au navigateur, en vue mobile, pourquoi Trasco n'a invité aucun
-  employé
+- Paramètres déborde encore de 23 px sur mobile, cause non trouvée
+- Sur mobile, en-tête et footer fixes prennent 120 px sur 664, et le FAB
+  recouvre le lien « Contact »
 - Décider si l'email SP-480 doit exclure l'auteur
 - SP-606, limiter le renvoi de l'email de vérification
