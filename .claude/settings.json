@@ -139,7 +139,10 @@
       "mcp__ide__*"
     ]
   },
-  "includeCoAuthoredBy": false,
+  "attribution": {
+    "commit": "",
+    "pr": ""
+  },
   "hooks": {
     "SessionStart": [
       {
