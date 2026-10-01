@@ -1,3 +1,13 @@
+---
+paths:
+  - "**/__tests__/**"
+  - "**/*.test.{ts,tsx}"
+  - "e2e/**"
+  - "vitest.config.ts"
+  - "playwright.config.ts"
+  - "prisma/seed*.ts"
+---
+
 # Tests et vérification
 
 Charger ce fichier avant d'écrire ou de modifier un test, et avant de déclarer

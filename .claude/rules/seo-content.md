@@ -1,3 +1,14 @@
+---
+paths:
+  - "src/app/?{landing,about,sectors,guides,legal,auth}?/**"
+  - "src/app/{page,LandingPageContent,StructuredData,not-found}.tsx"
+  - "src/app/{sitemap,robots,page-last-modified}.ts"
+  - "src/app/llms-full.txt/**"
+  - "public/llms.txt"
+  - "src/components/public/**"
+  - "src/components/layout/Landing*.tsx"
+---
+
 # Contenu public, SEO et GEO
 
 Charger ce fichier avant de toucher : `src/app/(sectors)/`, `src/app/(guides)/`,

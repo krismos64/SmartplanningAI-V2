@@ -1,3 +1,17 @@
+---
+paths:
+  - "src/lib/actions/**"
+  - "src/lib/services/**"
+  - "src/app/api/**"
+  - "src/app/app/**/*.{ts,tsx}"
+  - "src/lib/*auth*.ts"
+  - "src/lib/notifications/**"
+  - "src/lib/email/**"
+  - "src/lib/prisma.ts"
+  - "src/scripts/**"
+  - "prisma/schema.prisma"
+---
+
 # Isolation multi-tenant et RBAC
 
 Charger ce fichier avant de toucher : une Server Action, une route API, une

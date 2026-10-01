@@ -1,3 +1,16 @@
+---
+paths:
+  - "src/lib/**"
+  - "src/app/api/**"
+  - "src/scripts/**"
+  - "scripts/**"
+  - "prisma/**"
+  - "**/*.sql"
+  - "nginx/**"
+  - "docker/**"
+  - ".github/workflows/**"
+---
+
 # Pièges Prisma, Next.js et production
 
 Charger ce fichier avant de toucher : un fichier `'use server'`, une requête
