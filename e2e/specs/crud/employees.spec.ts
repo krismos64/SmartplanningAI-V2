@@ -234,3 +234,56 @@ test.describe('Navigation et UX - Employees', () => {
     await expect(listPage.nextPageButton).toBeVisible()
   })
 })
+
+// =============================================================================
+// Mobile - Employees (DIRECTOR)
+// =============================================================================
+
+// Inscription Trasco du 30 septembre 2026, faite sur iPhone : la ligne de titre
+// gardait le bouton desktop « Nouvel employé » à côté des deux exports et
+// atteignait 535 px. Le navigateur mobile élargit alors toute la page, et le
+// bouton d'ajout sortait à moitié de l'écran.
+test.describe('Mobile - Employees (DIRECTOR)', () => {
+  const LARGEUR_IPHONE = 390
+
+  test.use({
+    viewport: { width: LARGEUR_IPHONE, height: 844 },
+    isMobile: true,
+    hasTouch: true,
+  })
+
+  test('aucun bouton de la liste ne sort de l ecran', async ({
+    directorPage,
+  }) => {
+    const listPage = new EmployeeListPage(directorPage)
+    await listPage.goto()
+    await listPage.waitForLoad()
+
+    // On mesure les contrôles et non la largeur du document : depuis le
+    // min-w-0 du layout, un bouton trop large est rogné sans élargir la page,
+    // et scrollWidth ne le voit plus.
+    const horsEcran = await directorPage.evaluate((largeur) => {
+      return [...document.querySelectorAll('main a, main button')]
+        .filter((el) => {
+          const r = el.getBoundingClientRect()
+          return r.width > 0 && r.right > largeur
+        })
+        .map((el) => el.textContent?.trim() || el.getAttribute('aria-label'))
+    }, LARGEUR_IPHONE)
+    expect(horsEcran).toEqual([])
+  })
+
+  test('le bouton flottant mene au formulaire de creation', async ({
+    directorPage,
+  }) => {
+    const listPage = new EmployeeListPage(directorPage)
+    await listPage.goto()
+    await listPage.waitForLoad()
+
+    // Un seul lien visible : le bouton desktop est masqué, le FAB le remplace
+    await expect(listPage.newEmployeeButton).toHaveCount(1)
+    await listPage.clickNewEmployee()
+
+    await expect(directorPage).toHaveURL(/\/app\/dashboard\/employees\/new/)
+  })
+})

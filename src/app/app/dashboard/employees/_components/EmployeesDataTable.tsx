@@ -317,7 +317,7 @@ export function EmployeesDataTable({ userRole }: EmployeesDataTableProps) {
     <TooltipProvider>
       <div className="space-y-4">
         {/* Header */}
-        <div className="flex items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <div className="hidden h-10 w-10 items-center justify-center rounded-lg bg-primary/10 sm:flex">
               <Users className="h-5 w-5 text-primary" />
@@ -364,14 +364,20 @@ export function EmployeesDataTable({ userRole }: EmployeesDataTableProps) {
               />
               Actualiser
             </Button>
-            {/* Bouton desktop — masqué sur mobile (FAB en bas) */}
+            {/* Bouton desktop, masqué sur mobile où le FAB en bas le remplace.
+                Sans ce masquage, la ligne atteint 535 px sur un écran de 390 et
+                le navigateur mobile élargit toute la page. */}
             {isImpersonating ? (
-              <Button disabled title="Non disponible en mode support">
+              <Button
+                disabled
+                title="Non disponible en mode support"
+                className="hidden sm:inline-flex"
+              >
                 <Plus className="mr-2 h-4 w-4" />
                 Nouvel employé
               </Button>
             ) : (
-              <Button asChild>
+              <Button asChild className="hidden sm:inline-flex">
                 <Link href="/app/dashboard/employees/new">
                   <Plus className="mr-2 h-4 w-4" />
                   Nouvel employé

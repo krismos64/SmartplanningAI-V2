@@ -105,8 +105,11 @@ function DashboardLayoutContent({
           {/* Sidebar */}
           <Sidebar user={user} variant={sidebarVariant} />
 
-          {/* Main content area */}
-          <div className="flex flex-1 flex-col">
+          {/* Main content area. min-w-0 : sans lui, un élément flex ne
+              descend pas sous la largeur de son contenu, et un seul enfant
+              trop large élargit toute la page sur mobile (390 px devenus 413
+              sur Paramètres). */}
+          <div className="flex min-w-0 flex-1 flex-col">
             {/* Impersonation Banner — SP-453 (above header) */}
             {impersonationData?.isImpersonating && (
               <ImpersonationBanner
