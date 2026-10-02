@@ -35,7 +35,7 @@ convention de mémoire.
 | Fichier                          | Charger avant de toucher                                               |
 | -------------------------------- | ---------------------------------------------------------------------- |
 | `.claude/rules/multi-tenant.md`  | Server Action, route API, requête Prisma, auth, choix de destinataires |
-| `.claude/rules/prisma-pieges.md` | `'use server'`, backfill, SQL de diagnostic, cache dashboard, envoi d'emails, date formatée côté serveur, Nginx, workflow CD, script de `scripts/ops/`, manipulation de fichier vers un conteneur |
+| `.claude/rules/prisma-pieges.md` | `'use server'`, backfill, SQL de diagnostic, cache dashboard, envoi d'emails, date formatée côté serveur, date de jour écrite ou calculée côté serveur, Nginx, workflow CD, script de `scripts/ops/`, manipulation de fichier vers un conteneur |
 | `.claude/rules/seo-content.md`   | pages secteur, guides, landing, sitemap, `llms.txt` et la route `llms-full.txt`, texte public |
 | `.claude/rules/tests.md`         | écriture de tests, et avant de conclure un travail                     |
 
@@ -75,6 +75,10 @@ récente en début de session** donne l'état du projet plus vite que Jira.
   relève la boîte pour capter les refus asynchrones. Pièges dans `prisma-pieges.md`.
   Les emails sécurité, RGPD et billing partent toujours. Idempotence billing via
   `EmailLog`, contrainte unique `(subscriptionId, emailType)`
+- Dates de jour (créneau, congé, indisponibilité) : stockées à 00:00 UTC du jour
+  calendaire de Paris depuis SP-609, via `toCalendarDay()` à l'entrée de chaque
+  écriture. Jamais `startOfDay`, `setHours` ni `getDay` sur une date de jour côté
+  serveur, ils suivent le fuseau du processus. Tests sous `TZ=UTC`
 - Redis : `withCache()` en cache-aside, rate limiting `INCR` + `EXPIRE` avec repli
   mémoire si Redis est indisponible. `/api/health` renvoie alors « degraded », pas
   « unhealthy »
@@ -175,6 +179,12 @@ est réellement servi. S'ils divergent, le trafic n'atteint pas le VPS et le
 problème est dans la zone DNS. `dig +short smartplanning.fr A` doit renvoyer
 `51.77.146.72`. C'est la panne du 18 août 2026, détaillée dans
 `docs/deployment.md`. Surveillance : `scripts/ops/check-tls-expiry.sh`.
+
+**Les logs applicatifs survivent aux déploiements depuis SP-607** : le service
+`app` écrit dans journald. Les lire par
+`sudo journalctl CONTAINER_NAME=smartplanning-app`, jamais par `docker logs`,
+qui ne voit que le conteneur courant et répond « aucune erreur » sur une
+période qu'il n'a jamais vue.
 
 Pour dater une panne, lire `/var/log/nginx/access.log*`. La date d'expiration
 d'un certificat dit quand il a cessé d'être valide, jamais depuis quand il est

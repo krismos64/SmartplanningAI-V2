@@ -11,21 +11,21 @@ Plateforme SaaS multi-tenant de gestion intelligente des plannings et des ressou
 
 ## Stack technique
 
-| Couche          | Technologies                                                                  |
-| --------------- | ----------------------------------------------------------------------------- |
-| Frontend        | Next.js 15.5.25 (App Router), React 19, TypeScript 5.9, Tailwind + Shadcn/ui |
-| Backend         | NextAuth v5 (Auth.js), Prisma 6.18.0, Zod, Stripe v20.3.1                     |
-| Base de donnees | PostgreSQL 16, Redis 7 (ioredis 5.10)                                         |
+| Couche          | Technologies                                                                     |
+| --------------- | -------------------------------------------------------------------------------- |
+| Frontend        | Next.js 15.5.25 (App Router), React 19, TypeScript 5.9, Tailwind + Shadcn/ui     |
+| Backend         | NextAuth v5 (Auth.js), Prisma 6.18.0, Zod, Stripe v20.3.1                        |
+| Base de donnees | PostgreSQL 16, Redis 7 (ioredis 5.10)                                            |
 | Emails          | React Email (30 envois transactionnels), Nodemailer SMTP, releve IMAP des rejets |
-| Temps reel      | Server-Sent Events (SSE) — notifications + messagerie sur un stream unique     |
-| DevOps          | Docker, GitHub Actions (CI/CD), VPS OVH (Ubuntu 24.04), Nginx, Let's Encrypt  |
+| Temps reel      | Server-Sent Events (SSE) — notifications + messagerie sur un stream unique       |
+| DevOps          | Docker, GitHub Actions (CI/CD), VPS OVH (Ubuntu 24.04), Nginx, Let's Encrypt     |
 
 ## Fonctionnalites
 
 - **Authentification** : Multi-roles (SYSTEM_ADMIN, DIRECTOR, MANAGER, EMPLOYEE), verification email, invitation par email, activation de compte
 - **Dashboards** : 4 tableaux de bord par role avec KPIs, graphiques Recharts, animations Framer Motion
 - **Onboarding** : Ecran de bienvenue a la premiere connexion (DIRECTOR) et checklist de demarrage contextuelle sur le dashboard (equipe -> employe -> planning -> profil), affichee tant que la configuration est incomplete
-- **Planning** : Calendrier Schedule-X (drag & drop, recurrence, conflits, exports PDF/Excel/CSV), vues jour/semaine/mois
+- **Planning** : Calendrier Schedule-X (drag & drop, recurrence, conflits, exports PDF/Excel/CSV), vues jour/semaine/mois. Les dates de creneau, de conge et d'indisponibilite sont stockees au jour calendaire de Paris, a 00:00 UTC, quelle que soit la forme envoyee par le navigateur : recurrences, jours ouvres et conflits ne dependent plus du fuseau du serveur (SP-609)
 - **Conges** : Workflow validation (PENDING -> APPROVED/REJECTED), soldes CP/RTT, overlay calendrier, demi-journees
 - **Messagerie interne** : Conversations DIRECT (1:1), TEAM (auto-sync equipes) et GROUP (manuelles). Messages texte + pieces jointes (PDF, images via Cloudinary, max 10 Mo). Reception temps reel via SSE. Groupement de messages, scroll infini cursor-based, optimistic updates. Archivage avec desarchivage auto sur nouveau message. Administration de groupe : avatar personnalisable, renommage, gestion des membres reserves a l'admin. **SYSTEM_ADMIN peut contacter n'importe quel utilisateur cross-tenant** (conversations avec `companyId: null`, isolation multi-tenant preservee pour les autres roles).
 - **Import CSV/Excel** : Import bulk d'employes depuis fichier CSV ou Excel (.xlsx). Validation Zod temps reel cote client avec cellules colorees. Support headers FR/EN avec normalisation. Detection des doublons, creation auto des equipes, sync Stripe. Modele telecharger pre-rempli.
@@ -50,12 +50,12 @@ Plateforme SaaS multi-tenant de gestion intelligente des plannings et des ressou
 
 ## Prerequis
 
-| Outil      | Version minimale | Verification          |
-| ---------- | ---------------- | --------------------- |
-| Node.js    | >= 20.0.0        | `node -v`             |
-| npm        | >= 10.0.0        | `npm -v`              |
-| Docker     | >= 24.0          | `docker --version`    |
-| Docker Compose | >= 2.0       | `docker compose version` |
+| Outil          | Version minimale | Verification             |
+| -------------- | ---------------- | ------------------------ |
+| Node.js        | >= 20.0.0        | `node -v`                |
+| npm            | >= 10.0.0        | `npm -v`                 |
+| Docker         | >= 24.0          | `docker --version`       |
+| Docker Compose | >= 2.0           | `docker compose version` |
 
 ## Installation
 
@@ -75,31 +75,31 @@ npm run dev
 
 Copier `.env.example` vers `.env.local` et renseigner au minimum :
 
-| Variable | Description | Obligatoire |
-| -------- | ----------- | :---------: |
-| `DATABASE_URL` | URL PostgreSQL (pre-rempli pour Docker local) | Oui |
-| `AUTH_SECRET` | Cle JWT — `openssl rand -base64 32` | Oui |
-| `AUTH_URL` | URL de l'app (`http://localhost:3000`) | Oui |
-| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD` | Config SMTP pour emails transactionnels | Oui |
-| `IMAP_HOST`, `IMAP_PORT`, `IMAP_USER`, `IMAP_PASSWORD` | Releve de la boite d'expedition pour detecter les adresses rejetees (SP-579). Memes identifiants que le SMTP chez Hostinger. Sans elles, `/api/cron/bounce-sync` repond 200 sans rien faire | Non |
-| `STRIPE_SECRET_KEY`, `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Cles API Stripe (mode test en dev) | Oui |
-| `STRIPE_WEBHOOK_SECRET` | Webhook Stripe — `stripe listen --forward-to localhost:3000/api/webhooks/stripe` | Oui |
-| `STRIPE_PRICE_ID` | Price ID du tarif per-seat | Oui |
-| `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` | Upload avatars + pieces jointes messagerie | Oui |
-| `REDIS_URL` | URL Redis (pre-rempli pour Docker local) | Oui |
-| `CRON_SECRET` | Secret routes cron — `openssl rand -base64 32` | Oui |
-| `HEALTH_API_KEY` | Secret endpoint `/api/health` | Oui |
+| Variable                                                               | Description                                                                                                                                                                                 | Obligatoire |
+| ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------: |
+| `DATABASE_URL`                                                         | URL PostgreSQL (pre-rempli pour Docker local)                                                                                                                                               |     Oui     |
+| `AUTH_SECRET`                                                          | Cle JWT — `openssl rand -base64 32`                                                                                                                                                         |     Oui     |
+| `AUTH_URL`                                                             | URL de l'app (`http://localhost:3000`)                                                                                                                                                      |     Oui     |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`                 | Config SMTP pour emails transactionnels                                                                                                                                                     |     Oui     |
+| `IMAP_HOST`, `IMAP_PORT`, `IMAP_USER`, `IMAP_PASSWORD`                 | Releve de la boite d'expedition pour detecter les adresses rejetees (SP-579). Memes identifiants que le SMTP chez Hostinger. Sans elles, `/api/cron/bounce-sync` repond 200 sans rien faire |     Non     |
+| `STRIPE_SECRET_KEY`, `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`              | Cles API Stripe (mode test en dev)                                                                                                                                                          |     Oui     |
+| `STRIPE_WEBHOOK_SECRET`                                                | Webhook Stripe — `stripe listen --forward-to localhost:3000/api/webhooks/stripe`                                                                                                            |     Oui     |
+| `STRIPE_PRICE_ID`                                                      | Price ID du tarif per-seat                                                                                                                                                                  |     Oui     |
+| `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` | Upload avatars + pieces jointes messagerie                                                                                                                                                  |     Oui     |
+| `REDIS_URL`                                                            | URL Redis (pre-rempli pour Docker local)                                                                                                                                                    |     Oui     |
+| `CRON_SECRET`                                                          | Secret routes cron — `openssl rand -base64 32`                                                                                                                                              |     Oui     |
+| `HEALTH_API_KEY`                                                       | Secret endpoint `/api/health`                                                                                                                                                               |     Oui     |
 
 Voir `.env.example` pour la liste complete et les variables optionnelles (Umami, Sentry, OpenAI).
 
 ### Acces locaux
 
-| Service     | URL                   | Identifiants                                              |
-| ----------- | --------------------- | --------------------------------------------------------- |
-| Application | http://localhost:3000 | `contact@smartplanning.fr` / `Password123!` (admin)       |
-| Adminer     | http://localhost:8080 | smartplanning / smartplanning / smartplanning              |
-| PostgreSQL  | localhost:5432        | —                                                         |
-| Redis       | localhost:6379        | —                                                         |
+| Service     | URL                   | Identifiants                                        |
+| ----------- | --------------------- | --------------------------------------------------- |
+| Application | http://localhost:3000 | `contact@smartplanning.fr` / `Password123!` (admin) |
+| Adminer     | http://localhost:8080 | smartplanning / smartplanning / smartplanning       |
+| PostgreSQL  | localhost:5432        | —                                                   |
+| Redis       | localhost:6379        | —                                                   |
 
 > Tous les comptes du seed partagent le mot de passe `Password123!`. Voir `prisma/seed.ts` pour la liste complete.
 
@@ -172,15 +172,15 @@ src/
 
 22 modeles Prisma (18 core + 4 NextAuth), 16 enums, 65 index, 24 migrations.
 
-| Categorie | Modeles |
-|---|---|
-| Auth (NextAuth) | User, Account, Session, VerificationToken |
-| Core | Company, Employee, Team |
-| Planning | Schedule, Availability |
-| Conges | LeaveRequest, LeaveBalance |
-| Notes | PersonalTask, IncidentNote |
-| Messagerie | Conversation, ConversationMember, Message |
-| Systeme | Notification, Subscription, Payment, AuditLog, EmailLog, ContactMessage |
+| Categorie       | Modeles                                                                 |
+| --------------- | ----------------------------------------------------------------------- |
+| Auth (NextAuth) | User, Account, Session, VerificationToken                               |
+| Core            | Company, Employee, Team                                                 |
+| Planning        | Schedule, Availability                                                  |
+| Conges          | LeaveRequest, LeaveBalance                                              |
+| Notes           | PersonalTask, IncidentNote                                              |
+| Messagerie      | Conversation, ConversationMember, Message                               |
+| Systeme         | Notification, Subscription, Payment, AuditLog, EmailLog, ContactMessage |
 
 Voir [`docs/database-architecture.md`](docs/database-architecture.md) pour le detail complet.
 
@@ -188,26 +188,26 @@ Voir [`docs/database-architecture.md`](docs/database-architecture.md) pour le de
 
 | Type      | Framework  | Fichiers | Tests     |
 | --------- | ---------- | -------- | --------- |
-| Unitaires | Vitest     | 206      | 3 372     |
-| E2E       | Playwright | 25       | 269       |
-| **Total** |            | **231**  | **3 641** |
+| Unitaires | Vitest     | 210      | 3 443     |
+| E2E       | Playwright | 25       | 271       |
+| **Total** |            | **235**  | **3 714** |
 
-Compteurs mesures le 30 septembre 2026, par `npm run test` et
+Compteurs mesures le 2 octobre 2026, par `npm run test` et
 `npx playwright test --list`. Ils se periment a chaque sprint : les remesurer
 plutot que les recopier.
 
 **La couverture est un garde-fou bloquant depuis SP-592**, et pas seulement une
 commande d'information. `vitest.config.ts` porte des seuils mesures (lines 50,
-branches 73, functions 73, statements 50, pour un reel a 52,38 %) et la CI lance
+branches 73, functions 73, statements 50, pour un reel a 53,27 % le 2 octobre 2026) et la CI lance
 `npm run test:coverage` : elle rougit si la couverture baisse, meme quand tous
 les tests passent. Le perimetre mesure inclut `src/lib/`, `src/hooks/` et
 `src/lib/validations/`, et exclut les pages et layouts, couverts par les E2E.
 Relever un seuil demande de mesurer d'abord, jamais de viser un chiffre rond.
 
-La CI execute une whitelist E2E (11 specs, 137 tests) ; la suite complete (25 specs, 269 tests) tourne en nightly. `testMatch` de `playwright.ci.config.ts` etant une liste explicite, un spec renomme ou supprime disparait silencieusement de la CI : verifier cette liste apres chaque ajout ou suppression.
+La CI execute une whitelist E2E (11 specs, 139 tests) ; la suite complete (25 specs, 271 tests) tourne en nightly. `testMatch` de `playwright.ci.config.ts` etant une liste explicite, un spec renomme ou supprime disparait silencieusement de la CI : verifier cette liste apres chaque ajout ou suppression.
 
 **Les specs publiques ne sont pas dans la whitelist CI.** Les 26 tests de
-`e2e/specs/landing/`, dont 7 audits axe-core, ne tournent donc qu'en nightly
+`e2e/specs/landing/`, dont 11 audits axe-core, ne tournent donc qu'en nightly
 et en local (`npx playwright test e2e/specs/landing/`). L'arbitrage sur leur
 entree en CI n'est pas tranche.
 
@@ -233,12 +233,12 @@ Push main → CI (lint + tests + build) → CD (Docker build → Prisma migrate 
 L'ordre `migrate` puis `deploy` est deliberé (SP-523) : l'ancien ordre laissait
 une fenetre ou le nouveau code tournait avec l'ancien schema.
 
-| Trigger                  | Tests                            | Deploiement | Temps      |
-| ------------------------ | -------------------------------- | ----------- | ---------- |
-| Push feature (sans PR)   | Aucun                            | Non         | —          |
-| PR vers main             | Unitaires + E2E (whitelist CI)   | Non         | ~15-18 min |
-| Push direct / merge main | Unitaires + E2E (whitelist CI)   | Oui (auto)  | ~15-18 min |
-| Nightly (2h UTC)         | Unitaires + E2E complet          | Non         | ~45-60 min |
+| Trigger                  | Tests                          | Deploiement | Temps      |
+| ------------------------ | ------------------------------ | ----------- | ---------- |
+| Push feature (sans PR)   | Aucun                          | Non         | —          |
+| PR vers main             | Unitaires + E2E (whitelist CI) | Non         | ~15-18 min |
+| Push direct / merge main | Unitaires + E2E (whitelist CI) | Oui (auto)  | ~15-18 min |
+| Nightly (2h UTC)         | Unitaires + E2E complet        | Non         | ~45-60 min |
 
 Depuis la revision de juillet 2026, un push sur une branche sans PR ne declenche plus le CI : auparavant, chaque push sur une branche avec PR ouverte lancait deux runs complets pour le meme commit (evenements `push` et `pull_request`). Ouvrir une PR, meme en draft, donne le feedback CI.
 
@@ -254,6 +254,12 @@ Le deploiement vise `sha-<commit court>`, expose en sortie du job de build
 plutot que reconstruit, et une clause `concurrency` empeche deux deploiements
 simultanes. **Le rollback restaure le code, jamais le schema** : une migration
 destructive se decoupe en expand puis contract.
+
+**Les logs de l'application survivent aux deploiements** (SP-607). Le service
+`app` ecrit dans journald et non dans le `json-file` de Docker, efface avec le
+conteneur que le CD recree a chaque mise en production. Lecture, conteneurs
+precedents compris : `sudo journalctl CONTAINER_NAME=smartplanning-app`, et
+`-p err` pour les seules erreurs.
 
 > Guide complet : [`docs/deployment.md`](docs/deployment.md)
 
@@ -362,7 +368,7 @@ Le chiffrement au repos reste une decision d'architecture, sans ticket.
 - Cookies httpOnly + secure + sameSite, hashage bcrypt
 - Rate limiting Redis distribue (fallback memoire), audit logs, CSP headers, SRI en production
 - Subscription guard middleware Edge Runtime
-- Verification email a l'inscription (token 24h, page `/verify-email`)
+- Verification email a l'inscription (token 24h, page `/verify-email`). Envoi limite a trois par heure et par adresse, inscription comprise, avec une reponse identique au-dela de la limite pour ne pas reveler l'existence du compte (SP-606)
 - Emails securite envoyes inconditionnellement (changement mot de passe, suppression RGPD)
 - Messagerie : messages prives par conversation, isolation multi-tenant, verification membership sur chaque action
 - Sauvegardes quotidiennes chiffrees (AES256), restauration verifiee (SP-593),
@@ -380,9 +386,9 @@ Le chiffrement au repos reste une decision d'architecture, sans ticket.
 
 ### Scores Lighthouse
 
-| Page                            | Performance | SEO  | Accessibilite | Best Practices |
-| ------------------------------- | ----------- | ---- | ------------- | -------------- |
-| Landing (mesure mai 2026)       | 91%         | 100% | 100%          | 96%            |
+| Page                             | Performance | SEO  | Accessibilite | Best Practices |
+| -------------------------------- | ----------- | ---- | ------------- | -------------- |
+| Landing (mesure mai 2026)        | 91%         | 100% | 100%          | 96%            |
 | `/solutions/planning-restaurant` | —           | 100% | 97%           | 100%           |
 
 Mesures ponctuelles, non rejouees a chaque build : les rejouer apres toute modification d'une page publique.
