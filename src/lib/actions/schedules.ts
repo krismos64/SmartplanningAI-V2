@@ -33,7 +33,12 @@ import {
 } from '@/lib/actions/notifications'
 import type { CrudActionResult, DeleteActionResult } from '@/types'
 import { sendScheduleNotificationEmail } from '@/lib/email/templates/schedule-notification'
-import { formatScheduleDateShort } from '@/lib/utils/schedule-date'
+import {
+  addCalendarDays,
+  endOfCalendarDay,
+  formatScheduleDateShort,
+  toCalendarDay,
+} from '@/lib/utils/schedule-date'
 import { canSendEmailToEmployee } from '@/lib/email/check-preference'
 import {
   generateOccurrences,
@@ -316,11 +321,11 @@ async function validateNoConflicts(
     OTHER: 'congé',
   }
 
-  // Élargir au jour entier pour éviter les problèmes d'heures dans les timestamps
-  const leaveCheckStart = new Date(startDate)
-  leaveCheckStart.setHours(0, 0, 0, 0)
-  const leaveCheckEnd = new Date(endDate)
-  leaveCheckEnd.setHours(23, 59, 59, 999)
+  // Élargir au jour calendaire entier (SP-609). setHours suivait le fuseau du
+  // processus : en production (UTC), une date à 22:00 UTC faisait regarder la
+  // veille du jour réellement choisi.
+  const leaveCheckStart = toCalendarDay(startDate)
+  const leaveCheckEnd = endOfCalendarDay(toCalendarDay(endDate))
 
   const conflictingLeave = await prisma.leaveRequest.findFirst({
     where: {
@@ -340,11 +345,9 @@ async function validateNoConflicts(
   }
 
   // 2. Vérifier les chevauchements de plannings existants
-  // Les dates sont stockées avec des heures variables → comparer sur la journée entière
-  const dayStart = new Date(startDate)
-  dayStart.setHours(0, 0, 0, 0)
-  const dayEnd = new Date(endDate)
-  dayEnd.setHours(23, 59, 59, 999)
+  // Comparer sur la journée calendaire entière (SP-609)
+  const dayStart = toCalendarDay(startDate)
+  const dayEnd = endOfCalendarDay(toCalendarDay(endDate))
 
   const sameDaySchedules = await prisma.schedule.findMany({
     where: {
@@ -668,6 +671,12 @@ export async function checkScheduleConflicts(
     const user = authResult.user
     const conflicts: ScheduleConflict[] = []
 
+    // SP-609 : comparer des journées calendaires entières. La modale envoie
+    // minuit local ou l'heure courante, la base des jours à 00:00 UTC : une
+    // comparaison à l'instant près ratait les chevauchements du même jour.
+    const dayStart = toCalendarDay(startDate)
+    const dayEnd = endOfCalendarDay(toCalendarDay(endDate))
+
     // Filtrer les employeeIds par companyId du tenant (defense-in-depth)
     const companyScope = user.companyId ? { companyId: user.companyId } : {}
     const employees = await prisma.employee.findMany({
@@ -684,8 +693,8 @@ export async function checkScheduleConflicts(
       where: {
         employeeId: { in: validEmployeeIds },
         status: 'APPROVED',
-        startDate: { lte: endDate },
-        endDate: { gte: startDate },
+        startDate: { lte: dayEnd },
+        endDate: { gte: dayStart },
       },
       select: {
         employeeId: true,
@@ -736,8 +745,8 @@ export async function checkScheduleConflicts(
     const existingSchedules = await prisma.schedule.findMany({
       where: {
         employeeId: { in: validEmployeeIds },
-        startDate: { lte: endDate },
-        endDate: { gte: startDate },
+        startDate: { lte: dayEnd },
+        endDate: { gte: dayStart },
         ...(excludeScheduleId ? { id: { not: excludeScheduleId } } : {}),
       },
       select: {
@@ -854,7 +863,14 @@ export async function createSchedule(
       }
     }
 
-    const validated = validation.data
+    // SP-609 : dates ramenées au jour calendaire de Paris dès l'entrée. Le
+    // navigateur envoie minuit local, l'heure courante ou l'instant réel ;
+    // conflits, récurrence et stockage ne voient plus que 00:00 UTC du jour.
+    const validated = {
+      ...validation.data,
+      startDate: toCalendarDay(validation.data.startDate),
+      endDate: toCalendarDay(validation.data.endDate),
+    }
 
     // Verifier l'acces a la company
     if (user.companyId !== validated.companyId) {
@@ -1147,7 +1163,16 @@ export async function updateSchedule(
       }
     }
 
-    const validated = validation.data
+    // SP-609 : même normalisation qu'à la création, glisser-déposer compris
+    const validated = {
+      ...validation.data,
+      startDate: validation.data.startDate
+        ? toCalendarDay(validation.data.startDate)
+        : undefined,
+      endDate: validation.data.endDate
+        ? toCalendarDay(validation.data.endDate)
+        : undefined,
+    }
 
     // Recuperer le schedule existant
     const existing = await prisma.schedule.findUnique({
@@ -1758,9 +1783,14 @@ export async function duplicateSchedule(
     }
 
     // Calculer les nouvelles dates
-    const shiftMs = (options.shiftDays || 7) * 24 * 60 * 60 * 1000
-    const newStartDate = new Date(original.startDate.getTime() + shiftMs)
-    const newEndDate = new Date(original.endDate.getTime() + shiftMs)
+    // SP-609 : décalage en jours calendaires, pas en millisecondes, pour ne
+    // pas glisser d'une heure à travers un changement d'heure
+    const shiftDays = options.shiftDays || 7
+    const newStartDate = addCalendarDays(
+      toCalendarDay(original.startDate),
+      shiftDays
+    )
+    const newEndDate = addCalendarDays(toCalendarDay(original.endDate), shiftDays)
 
     // Determiner les employes cibles
     const employeeIds = options.newEmployeeIds?.length
@@ -2324,8 +2354,16 @@ type RecurringScheduleUpdates = {
 export async function updateRecurringSchedules(
   scheduleId: string,
   scope: 'single' | 'future' | 'all',
-  updates: RecurringScheduleUpdates
+  rawUpdates: RecurringScheduleUpdates
 ): Promise<CrudActionResult<{ updatedCount: number }>> {
+  // SP-609 : dates au jour calendaire de Paris, comme à la création
+  const updates: RecurringScheduleUpdates = {
+    ...rawUpdates,
+    startDate: rawUpdates.startDate
+      ? toCalendarDay(rawUpdates.startDate)
+      : undefined,
+    endDate: rawUpdates.endDate ? toCalendarDay(rawUpdates.endDate) : undefined,
+  }
   const authResult = await getAuthenticatedUser()
 
   if (!authResult.success) {

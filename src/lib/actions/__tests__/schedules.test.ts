@@ -6,7 +6,7 @@
 
 /* eslint-disable @typescript-eslint/unbound-method */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { afterAll, beforeAll, describe, it, expect, vi, beforeEach } from 'vitest'
 import {
   getSchedules,
   getScheduleById,
@@ -900,5 +900,114 @@ describe('schedules actions', () => {
         expect(result.error).toContain('non autorisé')
       }
     })
+  })
+})
+
+// ============================================================================
+// SP-609 : dates écrites au jour calendaire de Paris (00:00 UTC)
+// ============================================================================
+
+describe('schedules actions : jour calendaire (SP-609)', () => {
+  const previousTz = process.env.TZ
+
+  beforeAll(() => {
+    // Le conteneur de production tourne en UTC
+    process.env.TZ = 'UTC'
+  })
+
+  afterAll(() => {
+    process.env.TZ = previousTz
+  })
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+    vi.mocked(auth).mockResolvedValue(mockSession('DIRECTOR') as never)
+    vi.mocked(prisma.leaveRequest.findFirst).mockResolvedValue(null)
+    vi.mocked(prisma.schedule.findMany).mockResolvedValue([])
+    vi.mocked(prisma.employee.findUnique).mockResolvedValue(null)
+    vi.mocked(prisma.employee.findMany).mockResolvedValue([
+      mockEmployee() as never,
+    ])
+    vi.mocked(prisma.$transaction).mockResolvedValue([mockSchedule()])
+  })
+
+  const createInput = (startDate: Date, endDate: Date = startDate) => ({
+    employeeId: 'clxxxxxxxxxxxxxxxxxx1',
+    companyId: 'clcompany0000000001',
+    startDate,
+    endDate,
+    startTime: '09:00',
+    endTime: '17:00',
+    type: 'WORK' as const,
+    status: 'DRAFT' as const,
+    isRecurring: false,
+  })
+
+  function writtenDates(): string[] {
+    return vi
+      .mocked(prisma.schedule.create)
+      .mock.calls.map((call) => new Date(call[0].data.startDate).toISOString())
+  }
+
+  it('écrit le jour cliqué dans la grille, minuit Paris reçu à 22:00 UTC', async () => {
+    await createSchedule(createInput(new Date('2026-10-03T22:00:00.000Z')))
+
+    expect(writtenDates()).toEqual(['2026-10-04T00:00:00.000Z'])
+  })
+
+  it('écrit le jour d une heure courante (bouton Nouveau créneau)', async () => {
+    await createSchedule(createInput(new Date('2026-09-30T18:51:45.853Z')))
+
+    expect(writtenDates()).toEqual(['2026-09-30T00:00:00.000Z'])
+  })
+
+  it('garde la fin au lendemain pour une garde de nuit', async () => {
+    await createSchedule(
+      createInput(
+        new Date('2026-03-26T23:00:00.000Z'),
+        new Date('2026-03-27T23:00:00.000Z')
+      )
+    )
+
+    const data = vi.mocked(prisma.schedule.create).mock.calls[0]?.[0].data
+    expect(new Date(data?.startDate ?? 0).toISOString()).toBe(
+      '2026-03-27T00:00:00.000Z'
+    )
+    expect(new Date(data?.endDate ?? 0).toISOString()).toBe(
+      '2026-03-28T00:00:00.000Z'
+    )
+  })
+
+  it('cherche les congés sur toute la journée calendaire choisie', async () => {
+    await createSchedule(createInput(new Date('2026-10-03T22:00:00.000Z')))
+
+    const where = vi.mocked(prisma.leaveRequest.findFirst).mock.calls[0]?.[0]
+      ?.where
+    expect(where?.startDate).toEqual({
+      lte: new Date('2026-10-04T23:59:59.999Z'),
+    })
+    expect(where?.endDate).toEqual({ gte: new Date('2026-10-04T00:00:00.000Z') })
+  })
+
+  it('ramène un glisser-déposer au jour du créneau', async () => {
+    vi.mocked(prisma.schedule.findUnique).mockResolvedValue(
+      mockSchedule() as never
+    )
+    vi.mocked(prisma.schedule.update).mockResolvedValue(mockSchedule() as never)
+
+    // Schedule-X envoie l'instant réel : 10:00 à Paris le 12 mai
+    await updateSchedule({
+      id: 'clschedule000000001',
+      startDate: new Date('2026-05-12T08:00:00.000Z'),
+      endDate: new Date('2026-05-12T15:00:00.000Z'),
+    })
+
+    const data = vi.mocked(prisma.schedule.update).mock.calls[0]?.[0].data
+    expect(new Date(data?.startDate as Date).toISOString()).toBe(
+      '2026-05-12T00:00:00.000Z'
+    )
+    expect(new Date(data?.endDate as Date).toISOString()).toBe(
+      '2026-05-12T00:00:00.000Z'
+    )
   })
 })
