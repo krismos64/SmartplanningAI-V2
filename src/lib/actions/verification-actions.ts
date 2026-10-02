@@ -15,7 +15,10 @@
 
 'use server'
 
+import { createHash } from 'node:crypto'
+
 import { sendVerificationEmailCore } from '@/lib/services/verification.service'
+import { checkRateLimit } from '@/lib/rate-limit'
 import { verifyPassword } from '@/lib/password'
 import { prisma } from '@/lib/prisma'
 import { sendWelcomeEmail } from '@/lib/email/templates/welcome'
@@ -53,6 +56,24 @@ export type CheckEmailVerificationStatusResult =
 /** Préfixe pour distinguer les tokens de vérification des tokens de reset */
 const VERIFICATION_TOKEN_PREFIX = 'verify_'
 
+/**
+ * SP-606 : trois envois par adresse et par heure sur le flux public, envoi de
+ * l'inscription compris (auth-actions.ts passe par cette action). Le flux admin
+ * garde sa propre limite dans admin-users.ts.
+ */
+const PUBLIC_SEND_RATE_LIMIT = { maxRequests: 3, windowMs: 60 * 60 * 1000 }
+
+/**
+ * Clé de limitation par adresse. L'email est normalisé comme dans le service,
+ * pour que « A@x.fr » et « a@x.fr » partagent le même quota, puis haché :
+ * Redis ne stocke pas l'adresse en clair.
+ */
+function publicSendRateLimitKey(email: string): string {
+  const normalized = email.toLowerCase().trim()
+  const hash = createHash('sha256').update(normalized).digest('hex')
+  return `verification-send:${hash}`
+}
+
 // =============================================================================
 // SEND VERIFICATION EMAIL ACTION
 // =============================================================================
@@ -71,11 +92,23 @@ const VERIFICATION_TOKEN_PREFIX = 'verify_'
  * @security
  * - Ne révèle ni l'existence du compte ni l'état de vérification
  * - Token sécurisé crypto.randomUUID, 24h, un seul actif (via le service)
+ * - Trois envois par adresse et par heure (SP-606), réponse identique au-delà
  */
 export async function sendVerificationEmailAction(data: {
   email: string
 }): Promise<SendVerificationEmailActionResult> {
   try {
+    // SP-606 : au-delà de la limite, rien ne part, mais la réponse reste la
+    // même. Un refus visible révélerait que l'adresse a déjà reçu des envois,
+    // donc qu'un compte existe.
+    const rateLimit = await checkRateLimit(
+      publicSendRateLimitKey(data.email),
+      PUBLIC_SEND_RATE_LIMIT
+    )
+    if (!rateLimit.allowed) {
+      return { success: true }
+    }
+
     await sendVerificationEmailCore(data.email)
     return { success: true }
   } catch (error) {
