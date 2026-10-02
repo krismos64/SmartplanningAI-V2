@@ -28,6 +28,7 @@ import {
 } from '@/lib/validations/availability'
 import type { CrudActionResult, DeleteActionResult } from '@/types'
 import { assertNotImpersonating, getEffectiveSessionData } from '@/lib/impersonation'
+import { endOfCalendarDay, toCalendarDay } from '@/lib/utils/schedule-date'
 
 // ============================================================================
 // Types
@@ -435,7 +436,12 @@ export async function createAvailability(
       }
     }
 
-    const validated = validation.data
+    // SP-609 : jour calendaire de Paris, les heures vivent dans startTime/endTime
+    const validated = {
+      ...validation.data,
+      startDate: toCalendarDay(validation.data.startDate),
+      endDate: toCalendarDay(validation.data.endDate),
+    }
 
     // Vérifier l'accès à la company
     if (user.companyId !== validated.companyId) {
@@ -563,7 +569,16 @@ export async function updateAvailability(
       }
     }
 
-    const validated = validation.data
+    // SP-609 : même normalisation qu'à la création
+    const validated = {
+      ...validation.data,
+      startDate: validation.data.startDate
+        ? toCalendarDay(validation.data.startDate)
+        : undefined,
+      endDate: validation.data.endDate
+        ? toCalendarDay(validation.data.endDate)
+        : undefined,
+    }
 
     // Récupérer l'availability existante
     const existing = await prisma.availability.findUnique({
@@ -1138,8 +1153,9 @@ export async function checkAvailabilityConflicts(
     const whereClause: Prisma.AvailabilityWhereInput = {
       employeeId: { in: employeeIds },
       ...(user.companyId ? { companyId: user.companyId } : {}),
-      startDate: { lte: endDate },
-      endDate: { gte: startDate },
+      // SP-609 : journées calendaires entières, pas une comparaison à l'instant
+      startDate: { lte: endOfCalendarDay(toCalendarDay(endDate)) },
+      endDate: { gte: toCalendarDay(startDate) },
     }
 
     // Exclure une availability spécifique (pour l'édition)

@@ -4,7 +4,7 @@
  * @ticket SP-409
  */
 
-import { describe, it, expect } from 'vitest'
+import { afterAll, beforeAll, describe, it, expect } from 'vitest'
 import {
   calculateWorkingDays,
   hasEnoughBalance,
@@ -159,3 +159,61 @@ describe('getRemainingBalance', () => {
     expect(remaining.rtt).toBe(0)
   })
 })
+
+// ─── SP-609 : jours ouvrés au jour calendaire de Paris ───────────────
+
+describe.each(['UTC', 'Europe/Paris'])(
+  'calculateWorkingDays au jour calendaire (TZ=%s)',
+  (tz) => {
+    const previousTz = process.env.TZ
+
+    beforeAll(() => {
+      process.env.TZ = tz
+    })
+
+    afterAll(() => {
+      process.env.TZ = previousTz
+    })
+
+    it('compte 5 jours pour un congé du lundi au vendredi saisi au calendrier', () => {
+      // Lundi 5 au vendredi 9 octobre 2026, minuit Paris : 22:00 UTC la veille.
+      // Sur un serveur en UTC, setHours ramenait au dimanche et au jeudi : 4.
+      expect(
+        calculateWorkingDays(
+          new Date('2026-10-04T22:00:00.000Z'),
+          new Date('2026-10-08T22:00:00.000Z')
+        )
+      ).toBe(5)
+    })
+
+    it('compte 5 jours pour le même congé stocké à 00:00 UTC', () => {
+      expect(
+        calculateWorkingDays(
+          new Date('2026-10-05T00:00:00.000Z'),
+          new Date('2026-10-09T00:00:00.000Z')
+        )
+      ).toBe(5)
+    })
+
+    it('compte 5 jours en hiver, minuit Paris à 23:00 UTC', () => {
+      // Lundi 14 au vendredi 18 décembre 2026
+      expect(
+        calculateWorkingDays(
+          new Date('2026-12-13T23:00:00.000Z'),
+          new Date('2026-12-17T23:00:00.000Z')
+        )
+      ).toBe(5)
+    })
+
+    it('compte 6 jours du lundi au samedi en mode MON_SAT', () => {
+      expect(
+        calculateWorkingDays(
+          new Date('2026-10-04T22:00:00.000Z'),
+          new Date('2026-10-09T22:00:00.000Z'),
+          false,
+          'MON_SAT'
+        )
+      ).toBe(6)
+    })
+  }
+)

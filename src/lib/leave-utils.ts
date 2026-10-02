@@ -7,6 +7,7 @@
 
 import { LeaveType } from '@prisma/client'
 import type { WorkingDaysMode } from '@/lib/validations/leave'
+import { addCalendarDays, toCalendarDay } from '@/lib/utils/schedule-date'
 
 // ─── Interface LeaveBalance (miroir Prisma) ─────────────────────────
 
@@ -36,15 +37,16 @@ export function calculateWorkingDays(
 ): number {
   if (halfDay) return 0.5
 
+  // SP-609 : parcours en jours calendaires de Paris. setHours et getDay
+  // suivaient le fuseau du processus : en production (UTC), un congé du lundi
+  // au vendredi saisi au calendrier, stocké à 22:00 UTC la veille, était
+  // compté du dimanche au jeudi, soit 4 jours au lieu de 5.
   let count = 0
-  const current = new Date(startDate)
-  current.setHours(0, 0, 0, 0)
-
-  const end = new Date(endDate)
-  end.setHours(0, 0, 0, 0)
+  let current = toCalendarDay(startDate)
+  const end = toCalendarDay(endDate)
 
   while (current <= end) {
-    const dayOfWeek = current.getDay() // 0 = Dimanche, 6 = Samedi
+    const dayOfWeek = current.getUTCDay() // 0 = Dimanche, 6 = Samedi
 
     const isWorkingDay =
       mode === 'ALL_DAYS'
@@ -54,7 +56,7 @@ export function calculateWorkingDays(
           : dayOfWeek !== 0 && dayOfWeek !== 6
 
     if (isWorkingDay) count++
-    current.setDate(current.getDate() + 1)
+    current = addCalendarDays(current, 1)
   }
 
   return count

@@ -158,6 +158,29 @@ notification ou message d'erreur, passe par `src/lib/utils/schedule-date.ts`,
 à fuseau explicite. Un test de formatage force `process.env.TZ = 'UTC'`, sinon
 il passe sur un poste en heure de Paris et ne prouve rien.
 
+## Une date de jour se stocke à 00:00 UTC du jour calendaire à Paris
+
+Depuis SP-609 (octobre 2026), c'est la seule convention pour `startDate` et
+`endDate` de `Schedule`, `LeaveRequest` et `Availability`. Avant, rien ne
+normalisait : la base mêlait minuit Paris (22:00 ou 23:00 UTC selon la
+saison), l'heure courante du bouton « Nouveau créneau » et l'instant réel
+envoyé par le glisser-déposer. Le serveur tournant en UTC, `startOfDay`,
+`setHours` et `getDay` se trompaient de jour : récurrence démarrant la veille,
+congé lundi-vendredi compté 4 jours, conflits cherchés sur la veille.
+
+Toute écriture serveur passe par `toCalendarDay()` de
+`src/lib/utils/schedule-date.ts`, juste après la validation Zod. Tout calcul
+de jour se fait ensuite en UTC pur : `addCalendarDays`, `getUTCDay`,
+`getUTCFullYear`, `endOfCalendarDay` pour borner une requête. Jamais
+`startOfDay`, `setHours`, `getDay` ou `getFullYear` de date-fns ou de `Date`
+sur une date de jour côté serveur : ils suivent le fuseau du processus, UTC
+en production et Paris en développement, et le défaut ne se voit qu'en
+production.
+
+Un test de date tourne sous `TZ=UTC` (`describe.each(['UTC', 'Europe/Paris'])`
+et `process.env.TZ`), sinon il passe sur un poste en heure de Paris et ne
+prouve rien.
+
 ## Une exception avalée coupe tout ce qui la suit
 
 `createPlanningNotification` levait `RangeError` avant d'envoyer son email, et

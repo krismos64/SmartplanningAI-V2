@@ -5,15 +5,19 @@
  * @ticket SP-399
  */
 
+import { isBefore, isAfter } from 'date-fns'
+
 import {
-  addDays,
-  addWeeks,
-  addMonths,
-  isBefore,
-  isAfter,
-  getDay,
-  startOfDay,
-} from 'date-fns'
+  addCalendarDays,
+  addCalendarMonths,
+  differenceInCalendarDaysUtc,
+  toCalendarDay,
+} from '@/lib/utils/schedule-date'
+
+// SP-609 : toutes les dates sont ramenées au jour calendaire de Paris (00:00
+// UTC), puis avancées en UTC pur. startOfDay et addDays de date-fns suivaient
+// le fuseau du processus : en production (UTC), une série partant d'un jour
+// cliqué dans la grille, stocké à 22:00 UTC la veille, démarrait la veille.
 
 // ============================================================================
 // Types
@@ -72,9 +76,10 @@ const DAY_TO_INDEX: Record<DayOfWeek, number> = {
  * Calcule la durée en jours entre deux dates
  */
 function getDurationInDays(startDate: Date, endDate: Date): number {
-  const start = startOfDay(startDate)
-  const end = startOfDay(endDate)
-  return Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24))
+  return differenceInCalendarDaysUtc(
+    toCalendarDay(endDate),
+    toCalendarDay(startDate)
+  )
 }
 
 /**
@@ -87,15 +92,15 @@ function advanceDate(
 ): Date {
   switch (frequency) {
     case 'DAILY':
-      return addDays(date, interval)
+      return addCalendarDays(date, interval)
     case 'WEEKLY':
-      return addWeeks(date, interval)
+      return addCalendarDays(date, interval * 7)
     case 'BIWEEKLY':
-      return addWeeks(date, interval * 2)
+      return addCalendarDays(date, interval * 14)
     case 'MONTHLY':
-      return addMonths(date, interval)
+      return addCalendarMonths(date, interval)
     default:
-      return addDays(date, interval)
+      return addCalendarDays(date, interval)
   }
 }
 
@@ -137,7 +142,7 @@ export function generateOccurrences(
     rule.occurrences || MAX_OCCURRENCES,
     MAX_OCCURRENCES
   )
-  const ruleEndDate = rule.endDate ? startOfDay(rule.endDate) : null
+  const ruleEndDate = rule.endDate ? toCalendarDay(rule.endDate) : null
 
   // Pour WEEKLY/BIWEEKLY avec jours spécifiques
   if (
@@ -157,7 +162,7 @@ export function generateOccurrences(
   }
 
   // Pour DAILY, MONTHLY ou WEEKLY sans jours spécifiques
-  let currentStart = startOfDay(startDate)
+  let currentStart = toCalendarDay(startDate)
 
   while (occurrences.length < maxOccurrences) {
     // Vérifier la date de fin
@@ -166,7 +171,7 @@ export function generateOccurrences(
     }
 
     // Ajouter l'occurrence
-    const occurrenceEnd = addDays(currentStart, duration)
+    const occurrenceEnd = addCalendarDays(currentStart, duration)
     occurrences.push({
       startDate: new Date(currentStart),
       endDate: new Date(occurrenceEnd),
@@ -199,11 +204,11 @@ function generateWeeklyWithDays(
   )
 
   // Trouver le début de la semaine de départ
-  let currentWeekStart = startOfDay(startDate)
-  const startDayIndex = getDay(currentWeekStart)
+  const firstDay = toCalendarDay(startDate)
+  const startDayIndex = firstDay.getUTCDay()
 
   // Reculer au dimanche de cette semaine
-  currentWeekStart = addDays(currentWeekStart, -startDayIndex)
+  let currentWeekStart = addCalendarDays(firstDay, -startDayIndex)
 
   // Compteur de semaines pour gérer l'intervalle
   let weekCounter = 0
@@ -227,10 +232,10 @@ function generateWeeklyWithDays(
         if (occurrences.length >= maxOccurrences) break
 
         const dayIndex = DAY_TO_INDEX[day]
-        const occurrenceStart = addDays(currentWeekStart, dayIndex)
+        const occurrenceStart = addCalendarDays(currentWeekStart, dayIndex)
 
         // Ignorer si avant la date de début originale
-        if (isBefore(occurrenceStart, startOfDay(startDate))) {
+        if (isBefore(occurrenceStart, firstDay)) {
           continue
         }
 
@@ -240,7 +245,7 @@ function generateWeeklyWithDays(
         }
 
         // Ajouter l'occurrence
-        const occurrenceEnd = addDays(occurrenceStart, duration)
+        const occurrenceEnd = addCalendarDays(occurrenceStart, duration)
         occurrences.push({
           startDate: new Date(occurrenceStart),
           endDate: new Date(occurrenceEnd),
@@ -249,7 +254,7 @@ function generateWeeklyWithDays(
     }
 
     // Passer à la semaine suivante
-    currentWeekStart = addWeeks(currentWeekStart, 1)
+    currentWeekStart = addCalendarDays(currentWeekStart, 7)
     weekCounter++
   }
 

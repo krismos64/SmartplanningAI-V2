@@ -44,6 +44,7 @@ import {
   type LeaveRequestFilters,
 } from '@/lib/validations/leave'
 import { calculateWorkingDays, hasEnoughBalance } from '@/lib/leave-utils'
+import { endOfCalendarDay, toCalendarDay } from '@/lib/utils/schedule-date'
 import {
   sendLeaveApprovedEmail,
   sendLeaveRejectedEmail,
@@ -362,7 +363,12 @@ export async function createLeaveRequest(
   const validation = validateData(createLeaveRequestSchema, input)
   if (!validation.success)
     return { success: false, error: validation.error, field: validation.field }
-  const data = validation.data
+  // SP-609 : jour calendaire de Paris, quelle que soit la forme reçue
+  const data = {
+    ...validation.data,
+    startDate: toCalendarDay(validation.data.startDate),
+    endDate: toCalendarDay(validation.data.endDate),
+  }
 
   try {
     // Vérifier que l'employé existe et appartient à la même entreprise
@@ -402,7 +408,7 @@ export async function createLeaveRequest(
 
     // Vérifier le solde si CP ou RTT
     if (LEAVE_TYPES_WITH_BALANCE.includes(data.type)) {
-      const year = data.startDate.getFullYear()
+      const year = toCalendarDay(data.startDate).getUTCFullYear()
       const balance = await prisma.leaveBalance.findUnique({
         where: { employeeId_year: { employeeId: data.employeeId, year } },
       })
@@ -519,7 +525,12 @@ export async function updateLeaveRequest(
   const validation = validateData(createLeaveRequestSchema, input)
   if (!validation.success)
     return { success: false, error: validation.error, field: validation.field }
-  const data = validation.data
+  // SP-609 : jour calendaire de Paris, quelle que soit la forme reçue
+  const data = {
+    ...validation.data,
+    startDate: toCalendarDay(validation.data.startDate),
+    endDate: toCalendarDay(validation.data.endDate),
+  }
 
   try {
     const existing = await prisma.leaveRequest.findUnique({ where: { id } })
@@ -549,7 +560,7 @@ export async function updateLeaveRequest(
 
     // Revérifier le solde
     if (LEAVE_TYPES_WITH_BALANCE.includes(data.type)) {
-      const year = data.startDate.getFullYear()
+      const year = toCalendarDay(data.startDate).getUTCFullYear()
       const balance = await prisma.leaveBalance.findUnique({
         where: { employeeId_year: { employeeId: data.employeeId, year } },
       })
@@ -642,7 +653,7 @@ export async function cancelLeaveRequest(
         leaveRequest.endDate,
         leaveRequest.halfDay
       )
-      const year = leaveRequest.startDate.getFullYear()
+      const year = toCalendarDay(leaveRequest.startDate).getUTCFullYear()
       const balanceField =
         leaveRequest.type === LeaveType.PAID_LEAVE ? 'paidLeaveUsed' : 'rttUsed'
 
@@ -796,7 +807,7 @@ export async function reviewLeaveRequest(
           result.endDate,
           result.halfDay
         )
-        const year = result.startDate.getFullYear()
+        const year = toCalendarDay(result.startDate).getUTCFullYear()
         const balanceField =
           result.type === LeaveType.PAID_LEAVE ? 'paidLeaveUsed' : 'rttUsed'
 
@@ -914,7 +925,12 @@ export async function managerEditLeaveRequest(
   const validation = validateData(managerEditLeaveSchema, input)
   if (!validation.success)
     return { success: false, error: validation.error, field: validation.field }
-  const data = validation.data
+  // SP-609 : jour calendaire de Paris, quelle que soit la forme reçue
+  const data = {
+    ...validation.data,
+    startDate: toCalendarDay(validation.data.startDate),
+    endDate: toCalendarDay(validation.data.endDate),
+  }
 
   try {
     const leaveRequest = await prisma.leaveRequest.findUnique({
@@ -960,7 +976,7 @@ export async function managerEditLeaveRequest(
 
     // Vérifier le solde si le nouveau type nécessite un solde
     if (LEAVE_TYPES_WITH_BALANCE.includes(data.type)) {
-      const year = data.startDate.getFullYear()
+      const year = toCalendarDay(data.startDate).getUTCFullYear()
       const balance = await prisma.leaveBalance.findUnique({
         where: {
           employeeId_year: { employeeId: leaveRequest.employeeId, year },
@@ -994,7 +1010,7 @@ export async function managerEditLeaveRequest(
     const updated = await prisma.$transaction(async (tx) => {
       // 1. Recrédit de l'ancien solde si applicable
       if (LEAVE_TYPES_WITH_BALANCE.includes(oldType)) {
-        const oldYear = leaveRequest.startDate.getFullYear()
+        const oldYear = toCalendarDay(leaveRequest.startDate).getUTCFullYear()
         const oldBalanceField =
           oldType === LeaveType.PAID_LEAVE ? 'paidLeaveUsed' : 'rttUsed'
         await tx.leaveBalance.update({
@@ -1025,7 +1041,7 @@ export async function managerEditLeaveRequest(
 
       // 3. Débit du nouveau solde si applicable
       if (LEAVE_TYPES_WITH_BALANCE.includes(data.type)) {
-        const newYear = data.startDate.getFullYear()
+        const newYear = toCalendarDay(data.startDate).getUTCFullYear()
         const newBalanceField =
           data.type === LeaveType.PAID_LEAVE ? 'paidLeaveUsed' : 'rttUsed'
         await tx.leaveBalance.upsert({
@@ -1164,7 +1180,7 @@ export async function revokeLeaveRequest(
 
       // Recrédit du solde si type avec balance
       if (LEAVE_TYPES_WITH_BALANCE.includes(leaveRequest.type)) {
-        const year = leaveRequest.startDate.getFullYear()
+        const year = toCalendarDay(leaveRequest.startDate).getUTCFullYear()
         const balanceField =
           leaveRequest.type === LeaveType.PAID_LEAVE
             ? 'paidLeaveUsed'
@@ -1613,8 +1629,9 @@ export async function checkLeaveConflicts(
         status: {
           in: [LeaveRequestStatus.APPROVED, LeaveRequestStatus.PENDING],
         },
-        startDate: { lte: endDate },
-        endDate: { gte: startDate },
+        // SP-609 : journées calendaires entières
+        startDate: { lte: endOfCalendarDay(toCalendarDay(endDate)) },
+        endDate: { gte: toCalendarDay(startDate) },
       },
       select: {
         employee: { select: { firstName: true, lastName: true } },

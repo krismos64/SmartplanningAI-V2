@@ -5,7 +5,7 @@
  * @ticket SP-399
  */
 
-import { describe, it, expect } from 'vitest'
+import { afterAll, beforeAll, describe, it, expect } from 'vitest'
 import {
   generateOccurrences,
   validateRecurrenceRule,
@@ -406,3 +406,105 @@ describe('Constantes', () => {
     expect(MAX_TOTAL_SCHEDULES).toBe(200)
   })
 })
+
+// ============================================================================
+// SP-609 : occurrences au jour calendaire, quel que soit le fuseau du serveur
+// ============================================================================
+
+describe.each(['UTC', 'Europe/Paris'])(
+  'generateOccurrences au jour calendaire (TZ=%s)',
+  (tz) => {
+    const previousTz = process.env.TZ
+
+    beforeAll(() => {
+      process.env.TZ = tz
+    })
+
+    afterAll(() => {
+      process.env.TZ = previousTz
+    })
+
+    // Dimanche 4 octobre 2026 cliqué dans la grille : minuit Paris, stocké
+    // 22:00 UTC le samedi. Avec startOfDay sur un serveur en UTC, la série
+    // démarrait le samedi 3.
+    const clicDimanche = new Date('2026-10-03T22:00:00.000Z')
+
+    it('démarre une série quotidienne le jour cliqué', () => {
+      const result = generateOccurrences(clicDimanche, clicDimanche, {
+        frequency: 'DAILY',
+        interval: 1,
+        occurrences: 3,
+      })
+
+      expect(result.map((o) => o.startDate.toISOString())).toEqual([
+        '2026-10-04T00:00:00.000Z',
+        '2026-10-05T00:00:00.000Z',
+        '2026-10-06T00:00:00.000Z',
+      ])
+    })
+
+    it('choisit les jours de la semaine dans le calendrier de Paris', () => {
+      const result = generateOccurrences(clicDimanche, clicDimanche, {
+        frequency: 'WEEKLY',
+        interval: 1,
+        daysOfWeek: ['SUNDAY', 'MONDAY'],
+        occurrences: 3,
+      })
+
+      expect(result.map((o) => o.startDate.toISOString())).toEqual([
+        '2026-10-04T00:00:00.000Z',
+        '2026-10-05T00:00:00.000Z',
+        '2026-10-11T00:00:00.000Z',
+      ])
+    })
+
+    it('garde la date de fin au lendemain pour une garde de nuit', () => {
+      // 19:00 à 07:00, fin le lendemain (SAS ESTEREL, mars 2026)
+      const debut = new Date('2026-03-27T00:00:00.000Z')
+      const fin = new Date('2026-03-28T00:00:00.000Z')
+
+      const result = generateOccurrences(debut, fin, {
+        frequency: 'DAILY',
+        interval: 1,
+        occurrences: 3,
+      })
+
+      // La série franchit le changement d'heure du 29 mars sans décaler
+      expect(
+        result.map((o) => [o.startDate.toISOString(), o.endDate.toISOString()])
+      ).toEqual([
+        ['2026-03-27T00:00:00.000Z', '2026-03-28T00:00:00.000Z'],
+        ['2026-03-28T00:00:00.000Z', '2026-03-29T00:00:00.000Z'],
+        ['2026-03-29T00:00:00.000Z', '2026-03-30T00:00:00.000Z'],
+      ])
+    })
+
+    it('arrête la série à la date de fin de règle, jour inclus', () => {
+      const result = generateOccurrences(clicDimanche, clicDimanche, {
+        frequency: 'DAILY',
+        interval: 1,
+        // Mardi 6 octobre choisi au calendrier : minuit Paris
+        endDate: new Date('2026-10-05T22:00:00.000Z'),
+      })
+
+      expect(result.map((o) => o.startDate.toISOString())).toEqual([
+        '2026-10-04T00:00:00.000Z',
+        '2026-10-05T00:00:00.000Z',
+        '2026-10-06T00:00:00.000Z',
+      ])
+    })
+
+    it('avance d un mois en restant au dernier jour quand il manque', () => {
+      const result = generateOccurrences(
+        new Date('2026-01-31T00:00:00.000Z'),
+        new Date('2026-01-31T00:00:00.000Z'),
+        { frequency: 'MONTHLY', interval: 1, occurrences: 2 }
+      )
+
+      expect(result.map((o) => o.startDate.toISOString())).toEqual([
+        '2026-01-31T00:00:00.000Z',
+        '2026-02-28T00:00:00.000Z',
+      ])
+    })
+  }
+)

@@ -7,7 +7,7 @@
 /* eslint-disable @typescript-eslint/unbound-method */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { afterAll, beforeAll, describe, it, expect, vi, beforeEach } from 'vitest'
 import {
   getLeaveRequests,
   getLeaveRequestById,
@@ -984,5 +984,100 @@ describe('checkLeaveConflicts', () => {
     if (result.success) {
       expect(result.data.hasConflict).toBe(false)
     }
+  })
+})
+
+// =============================================================================
+// SP-609 : congé au jour calendaire de Paris, serveur en UTC
+// =============================================================================
+
+describe('createLeaveRequest : jour calendaire (SP-609)', () => {
+  const previousTz = process.env.TZ
+
+  beforeAll(() => {
+    process.env.TZ = 'UTC'
+  })
+
+  afterAll(() => {
+    process.env.TZ = previousTz
+  })
+
+  it('stocke et décompte un congé du lundi au vendredi saisi au calendrier', async () => {
+    setupAuth('EMPLOYEE')
+    vi.mocked(prisma.employee.findUnique)
+      .mockResolvedValueOnce({ id: EMPLOYEE_ID, managedTeams: [] } as never)
+      .mockResolvedValueOnce({
+        id: EMPLOYEE_ID,
+        companyId: COMPANY_ID,
+        firstName: 'Jean',
+        lastName: 'Dupont',
+        email: 'jean@test.com',
+        teamId: null,
+      } as never)
+    vi.mocked(prisma.leaveBalance.findUnique).mockResolvedValue(
+      mockBalance() as never
+    )
+    vi.mocked(prisma.leaveRequest.create).mockResolvedValue(
+      mockLeaveRequest() as never
+    )
+
+    // Lundi 4 au vendredi 8 janvier 2027 choisis au calendrier : minuit Paris
+    // en hiver, soit 23:00 UTC la veille. Le lundi 4 tombait le dimanche 3,
+    // et l'année du solde aurait pu glisser sur 2026 pour un 1er janvier.
+    await createLeaveRequest({
+      type: 'PAID_LEAVE',
+      startDate: new Date('2027-01-03T23:00:00.000Z'),
+      endDate: new Date('2027-01-07T23:00:00.000Z'),
+      halfDay: false,
+      reason: 'Vacances',
+      employeeId: EMPLOYEE_ID,
+    })
+
+    const data = vi.mocked(prisma.leaveRequest.create).mock.calls[0]?.[0].data
+    expect(new Date(data?.startDate ?? 0).toISOString()).toBe(
+      '2027-01-04T00:00:00.000Z'
+    )
+    expect(new Date(data?.endDate ?? 0).toISOString()).toBe(
+      '2027-01-08T00:00:00.000Z'
+    )
+    expect(data?.days).toBe(5)
+
+    const balanceWhere = vi.mocked(prisma.leaveBalance.findUnique).mock
+      .calls[0]?.[0].where
+    expect(balanceWhere?.employeeId_year?.year).toBe(2027)
+  })
+
+  it('débite le solde de l année du 1er janvier, pas de la veille', async () => {
+    setupAuth('EMPLOYEE')
+    vi.mocked(prisma.employee.findUnique)
+      .mockResolvedValueOnce({ id: EMPLOYEE_ID, managedTeams: [] } as never)
+      .mockResolvedValueOnce({
+        id: EMPLOYEE_ID,
+        companyId: COMPANY_ID,
+        firstName: 'Jean',
+        lastName: 'Dupont',
+        email: 'jean@test.com',
+        teamId: null,
+      } as never)
+    vi.mocked(prisma.leaveBalance.findUnique).mockResolvedValue(
+      mockBalance() as never
+    )
+    vi.mocked(prisma.leaveRequest.create).mockResolvedValue(
+      mockLeaveRequest() as never
+    )
+
+    // Vendredi 1er janvier 2027, minuit Paris : 31 décembre 2026 à 23:00 UTC
+    await createLeaveRequest({
+      type: 'PAID_LEAVE',
+      startDate: new Date('2026-12-31T23:00:00.000Z'),
+      endDate: new Date('2026-12-31T23:00:00.000Z'),
+      halfDay: false,
+      reason: 'Pont',
+      employeeId: EMPLOYEE_ID,
+    })
+
+    const balanceWhere = vi.mocked(prisma.leaveBalance.findUnique).mock
+      .calls[0]?.[0].where
+    expect(balanceWhere?.employeeId_year?.year).toBe(2027)
   })
 })
