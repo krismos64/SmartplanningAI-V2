@@ -12,7 +12,9 @@
  * @see Context7 - Prisma Best Practices Data Access Layer
  */
 
+import type { Prisma } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
+import { formatTimeInZone, toCalendarDay } from '@/lib/utils/schedule-date'
 import { withCache } from '@/lib/cache'
 import type {
   EmployeeStatsParams,
@@ -161,15 +163,29 @@ async function getHoursWorked(
  * Compte les shifts a venir
  */
 async function getUpcomingShiftsCount(employeeId: string): Promise<number> {
-  const now = new Date()
-
   return prisma.schedule.count({
     where: {
       employeeId,
-      startDate: { gt: now },
+      ...upcomingScheduleWhere(new Date()),
       status: { in: ['DRAFT', 'CONFIRMED'] },
     },
   })
+}
+
+/**
+ * SP-609 : un créneau est à venir s'il tombe après aujourd'hui, ou aujourd'hui
+ * avec une heure de début pas encore passée. startDate valant 00:00 UTC du
+ * jour, la comparer à l'instant présent faisait disparaître le créneau du
+ * jour dès minuit, même s'il commençait à 18:00.
+ */
+function upcomingScheduleWhere(now: Date): Prisma.ScheduleWhereInput {
+  const today = toCalendarDay(now)
+  return {
+    OR: [
+      { startDate: { gt: today } },
+      { startDate: today, startTime: { gt: formatTimeInZone(now) } },
+    ],
+  }
 }
 
 /**
@@ -221,15 +237,13 @@ async function getPendingRequestsCount(employeeId: string): Promise<number> {
 async function getNextShift(
   employeeId: string
 ): Promise<EmployeeStatsResult['nextShift']> {
-  const now = new Date()
-
   const nextSchedule = await prisma.schedule.findFirst({
     where: {
       employeeId,
-      startDate: { gte: now },
+      ...upcomingScheduleWhere(new Date()),
       status: { in: ['DRAFT', 'CONFIRMED'] },
     },
-    orderBy: { startDate: 'asc' },
+    orderBy: [{ startDate: 'asc' }, { startTime: 'asc' }],
     select: {
       startDate: true,
       startTime: true,

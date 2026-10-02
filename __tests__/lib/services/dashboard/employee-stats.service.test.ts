@@ -576,3 +576,60 @@ describe('employee-stats.service', () => {
     })
   })
 })
+
+// ============================================================================
+// SP-609 : le créneau du jour reste à venir tant qu'il n'a pas commencé
+// ============================================================================
+
+describe('getEmployeeStats : créneaux à venir au jour calendaire (SP-609)', () => {
+  beforeEach(() => {
+    mockReset(prismaMock)
+    vi.useFakeTimers()
+    // 18:30 à Paris le vendredi 2 octobre 2026
+    vi.setSystemTime(new Date('2026-10-02T16:30:00.000Z'))
+  })
+
+  it('compte et cherche à partir d aujourd hui, après l heure courante de Paris', async () => {
+    prismaMock.employee.findUnique.mockResolvedValue({
+      id: 'emp-1',
+      companyId: 'company-1',
+      userId: 'user-1',
+      firstName: 'John',
+      lastName: 'Doe',
+      jobTitle: null,
+      department: null,
+      phone: null,
+      hireDate: null,
+      weeklyHours: 35,
+      skills: [],
+      preferences: null,
+      teamId: null,
+      isActive: true,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    })
+    prismaMock.schedule.findMany.mockResolvedValue([])
+    prismaMock.schedule.count.mockResolvedValue(0)
+    prismaMock.leaveRequest.findMany.mockResolvedValue([])
+    prismaMock.leaveRequest.count.mockResolvedValue(0)
+    prismaMock.schedule.findFirst.mockResolvedValue(null)
+
+    await getEmployeeStats({ employeeId: 'emp-1', companyId: 'company-1' })
+
+    // Avant : startDate > maintenant, ce qui excluait un créneau du jour
+    // stocké à 00:00 UTC et commençant à 19:00
+    const attendu = [
+      { startDate: { gt: new Date('2026-10-02T00:00:00.000Z') } },
+      {
+        startDate: new Date('2026-10-02T00:00:00.000Z'),
+        startTime: { gt: '18:30' },
+      },
+    ]
+    expect(prismaMock.schedule.count.mock.calls[0]?.[0]?.where?.OR).toEqual(
+      attendu
+    )
+    expect(prismaMock.schedule.findFirst.mock.calls[0]?.[0]?.where?.OR).toEqual(
+      attendu
+    )
+  })
+})

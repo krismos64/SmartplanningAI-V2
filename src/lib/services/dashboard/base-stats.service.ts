@@ -12,6 +12,11 @@
  */
 
 import { prisma } from '@/lib/prisma'
+import {
+  addCalendarDays,
+  endOfCalendarDay,
+  toCalendarDay,
+} from '@/lib/utils/schedule-date'
 import type { DateRange } from './types'
 
 // ============================================================================
@@ -43,14 +48,16 @@ export function calculateTrend(current: number, previous: number): number {
  * @returns DateRange du 1er au dernier jour du mois courant
  */
 export function getDefaultDateRange(): DateRange {
-  const now = new Date()
-  const from = new Date(now.getFullYear(), now.getMonth(), 1)
-  from.setHours(0, 0, 0, 0)
+  // SP-609 : mois du jour calendaire de Paris, bornes en UTC comme les dates
+  // stockées. Les méthodes locales suivaient le fuseau du processus.
+  const today = toCalendarDay(new Date())
+  const year = today.getUTCFullYear()
+  const month = today.getUTCMonth()
 
-  const to = new Date(now.getFullYear(), now.getMonth() + 1, 0)
-  to.setHours(23, 59, 59, 999)
-
-  return { from, to }
+  return {
+    from: new Date(Date.UTC(year, month, 1)),
+    to: endOfCalendarDay(new Date(Date.UTC(year, month + 1, 0))),
+  }
 }
 
 /**
@@ -78,13 +85,9 @@ export function getPreviousPeriod(range: DateRange): DateRange {
  * @returns Date du lundi de la semaine
  */
 export function getWeekStart(date: Date): Date {
-  const d = new Date(date)
-  const day = d.getDay()
-  // Ajustement pour que lundi = 0
-  const diff = d.getDate() - day + (day === 0 ? -6 : 1)
-  const weekStart = new Date(d.setDate(diff))
-  weekStart.setHours(0, 0, 0, 0)
-  return weekStart
+  const day = toCalendarDay(date)
+  const dayOfWeek = day.getUTCDay() // 0 = dimanche
+  return addCalendarDays(day, dayOfWeek === 0 ? -6 : 1 - dayOfWeek)
 }
 
 /**
@@ -94,11 +97,7 @@ export function getWeekStart(date: Date): Date {
  * @returns Date du dimanche de la semaine
  */
 export function getWeekEnd(date: Date): Date {
-  const weekStart = getWeekStart(date)
-  const weekEnd = new Date(weekStart)
-  weekEnd.setDate(weekEnd.getDate() + 6)
-  weekEnd.setHours(23, 59, 59, 999)
-  return weekEnd
+  return endOfCalendarDay(addCalendarDays(getWeekStart(date), 6))
 }
 
 /**
@@ -108,7 +107,7 @@ export function getWeekEnd(date: Date): Date {
  * @returns 1er janvier de l'annee
  */
 export function getYearStart(date: Date): Date {
-  return new Date(date.getFullYear(), 0, 1, 0, 0, 0, 0)
+  return new Date(Date.UTC(toCalendarDay(date).getUTCFullYear(), 0, 1))
 }
 
 /**
@@ -308,15 +307,16 @@ export const WEEKDAY_LABELS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim']
  */
 export function calculateWorkingDays(startDate: Date, endDate: Date): number {
   let count = 0
-  const current = new Date(startDate)
+  let current = toCalendarDay(startDate)
+  const end = toCalendarDay(endDate)
 
-  while (current <= endDate) {
-    const day = current.getDay()
+  while (current <= end) {
+    const day = current.getUTCDay()
     // Exclure samedi (6) et dimanche (0)
     if (day !== 0 && day !== 6) {
       count++
     }
-    current.setDate(current.getDate() + 1)
+    current = addCalendarDays(current, 1)
   }
 
   return count

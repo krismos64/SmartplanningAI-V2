@@ -96,32 +96,32 @@ describe('base-stats.service', () => {
     it('devrait retourner le mois courant', () => {
       const range = getDefaultDateRange()
 
-      expect(range.from.getFullYear()).toBe(2025)
-      expect(range.from.getMonth()).toBe(5) // Juin (0-indexed)
-      expect(range.from.getDate()).toBe(1)
+      expect(range.from.getUTCFullYear()).toBe(2025)
+      expect(range.from.getUTCMonth()).toBe(5) // Juin (0-indexed)
+      expect(range.from.getUTCDate()).toBe(1)
     })
 
     it('devrait avoir le premier jour a minuit', () => {
       const range = getDefaultDateRange()
 
-      expect(range.from.getHours()).toBe(0)
-      expect(range.from.getMinutes()).toBe(0)
-      expect(range.from.getSeconds()).toBe(0)
+      expect(range.from.getUTCHours()).toBe(0)
+      expect(range.from.getUTCMinutes()).toBe(0)
+      expect(range.from.getUTCSeconds()).toBe(0)
     })
 
     it('devrait avoir le dernier jour a 23:59:59', () => {
       const range = getDefaultDateRange()
 
-      expect(range.to.getHours()).toBe(23)
-      expect(range.to.getMinutes()).toBe(59)
-      expect(range.to.getSeconds()).toBe(59)
+      expect(range.to.getUTCHours()).toBe(23)
+      expect(range.to.getUTCMinutes()).toBe(59)
+      expect(range.to.getUTCSeconds()).toBe(59)
     })
 
     it('devrait retourner le dernier jour du mois', () => {
       const range = getDefaultDateRange()
 
       // Juin a 30 jours
-      expect(range.to.getDate()).toBe(30)
+      expect(range.to.getUTCDate()).toBe(30)
     })
   })
 
@@ -170,23 +170,23 @@ describe('base-stats.service', () => {
       const date = new Date('2025-06-15')
       const weekStart = getWeekStart(date)
 
-      expect(weekStart.getDay()).toBe(1) // Lundi
-      expect(weekStart.getDate()).toBe(9) // Lundi 9 juin
+      expect(weekStart.getUTCDay()).toBe(1) // Lundi
+      expect(weekStart.getUTCDate()).toBe(9) // Lundi 9 juin
     })
 
     it("devrait retourner la meme date si c'est deja lundi", () => {
       const monday = new Date('2025-06-09') // Lundi
       const weekStart = getWeekStart(monday)
 
-      expect(weekStart.getDate()).toBe(9)
+      expect(weekStart.getUTCDate()).toBe(9)
     })
 
     it("devrait avoir l'heure a minuit", () => {
       const date = new Date('2025-06-15T15:30:00')
       const weekStart = getWeekStart(date)
 
-      expect(weekStart.getHours()).toBe(0)
-      expect(weekStart.getMinutes()).toBe(0)
+      expect(weekStart.getUTCHours()).toBe(0)
+      expect(weekStart.getUTCMinutes()).toBe(0)
     })
   })
 
@@ -195,17 +195,17 @@ describe('base-stats.service', () => {
       const date = new Date('2025-06-10') // Mardi
       const weekEnd = getWeekEnd(date)
 
-      expect(weekEnd.getDay()).toBe(0) // Dimanche
-      expect(weekEnd.getDate()).toBe(15) // Dimanche 15 juin
+      expect(weekEnd.getUTCDay()).toBe(0) // Dimanche
+      expect(weekEnd.getUTCDate()).toBe(15) // Dimanche 15 juin
     })
 
     it("devrait avoir l'heure a 23:59:59", () => {
       const date = new Date('2025-06-10')
       const weekEnd = getWeekEnd(date)
 
-      expect(weekEnd.getHours()).toBe(23)
-      expect(weekEnd.getMinutes()).toBe(59)
-      expect(weekEnd.getSeconds()).toBe(59)
+      expect(weekEnd.getUTCHours()).toBe(23)
+      expect(weekEnd.getUTCMinutes()).toBe(59)
+      expect(weekEnd.getUTCSeconds()).toBe(59)
     })
   })
 
@@ -218,17 +218,17 @@ describe('base-stats.service', () => {
       const date = new Date('2025-06-15')
       const yearStart = getYearStart(date)
 
-      expect(yearStart.getMonth()).toBe(0) // Janvier
-      expect(yearStart.getDate()).toBe(1)
-      expect(yearStart.getFullYear()).toBe(2025)
+      expect(yearStart.getUTCMonth()).toBe(0) // Janvier
+      expect(yearStart.getUTCDate()).toBe(1)
+      expect(yearStart.getUTCFullYear()).toBe(2025)
     })
 
     it("devrait avoir l'heure a minuit", () => {
       const date = new Date('2025-06-15T15:30:00')
       const yearStart = getYearStart(date)
 
-      expect(yearStart.getHours()).toBe(0)
-      expect(yearStart.getMinutes()).toBe(0)
+      expect(yearStart.getUTCHours()).toBe(0)
+      expect(yearStart.getUTCMinutes()).toBe(0)
     })
   })
 

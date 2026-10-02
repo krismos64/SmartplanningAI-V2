@@ -532,3 +532,54 @@ describe('manager-stats.service', () => {
     })
   })
 })
+
+// ============================================================================
+// SP-609 : « absents aujourd'hui » au jour calendaire de Paris
+// ============================================================================
+
+describe('getManagerStats : absences du jour (SP-609)', () => {
+  beforeEach(() => {
+    mockReset(prismaMock)
+    vi.useFakeTimers()
+    // 01:30 à Paris le lundi 5 octobre 2026, encore dimanche 4 en UTC
+    vi.setSystemTime(new Date('2026-10-04T23:30:00.000Z'))
+  })
+
+  it('cherche les absences du lundi à Paris, pas du dimanche UTC', async () => {
+    prismaMock.team.findUnique.mockResolvedValue({
+      id: 'team-1',
+      managerId: 'emp-1',
+      companyId: 'company-1',
+      name: 'Team A',
+      description: null,
+      color: '#3B82F6',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    })
+    prismaMock.employee.count.mockResolvedValue(1)
+    prismaMock.employee.findMany.mockResolvedValue([])
+    prismaMock.leaveRequest.findMany.mockResolvedValue([])
+    prismaMock.leaveRequest.count.mockResolvedValue(0)
+    prismaMock.schedule.findMany.mockResolvedValue([])
+    prismaMock.schedule.count.mockResolvedValue(0)
+
+    await getManagerStats({
+      teamId: 'team-1',
+      managerId: 'emp-1',
+      companyId: 'company-1',
+    })
+
+    const lundi = new Date('2026-10-05T00:00:00.000Z')
+    const appelsDuJour = prismaMock.leaveRequest.findMany.mock.calls.filter(
+      (call) => {
+        const where = call[0]?.where
+        return where?.status === 'APPROVED' && where?.endDate !== undefined
+      }
+    )
+    expect(appelsDuJour.length).toBeGreaterThan(0)
+    for (const call of appelsDuJour) {
+      expect(call[0]?.where?.startDate).toEqual({ lte: lundi })
+      expect(call[0]?.where?.endDate).toEqual({ gte: lundi })
+    }
+  })
+})

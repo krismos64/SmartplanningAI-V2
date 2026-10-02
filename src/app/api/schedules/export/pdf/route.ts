@@ -7,6 +7,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
+import { endOfCalendarDay, toCalendarDay } from '@/lib/utils/schedule-date'
 import { renderToBuffer } from '@react-pdf/renderer'
 import React from 'react'
 import { auth } from '@/lib/auth'
@@ -56,12 +57,18 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const startDate = new Date(startDateStr)
-    const endDate = new Date(endDateStr)
+    const rawStartDate = new Date(startDateStr)
+    const rawEndDate = new Date(endDateStr)
 
-    if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+    if (isNaN(rawStartDate.getTime()) || isNaN(rawEndDate.getTime())) {
       return NextResponse.json({ error: 'Dates invalides' }, { status: 400 })
     }
+
+    // SP-609 : le navigateur envoie la semaine en heure locale (lundi minuit
+    // Paris, soit 22:00 UTC le dimanche). Ramenée aux jours calendaires, elle
+    // couvre exactement les créneaux stockés à 00:00 UTC de lundi à dimanche.
+    const startDate = toCalendarDay(rawStartDate)
+    const endDate = endOfCalendarDay(toCalendarDay(rawEndDate))
 
     // Build where clause with tenant isolation
     const where: Prisma.ScheduleWhereInput = {

@@ -24,6 +24,7 @@ import { createEventsServicePlugin } from '@schedule-x/events-service'
 import 'temporal-polyfill/global'
 import '@schedule-x/theme-default/dist/index.css'
 import { format } from 'date-fns'
+import { scheduleFieldsFromEvent } from '@/lib/utils/schedule-x-event'
 import { ScheduleCalendarProps } from './ScheduleCalendar'
 import { ScheduleWithRelations, updateSchedule } from '@/lib/actions/schedules'
 import {
@@ -702,17 +703,10 @@ export function ScheduleCalendarDesktop({
       // Sauvegarder l'événement original pour rollback
       const originalEvent = originalEventsRef.current.get(eventId)
 
-      // En v3.7.3, event.start/end sont des Temporal.ZonedDateTime
-      // toString() produit '2026-01-27T09:00:00+01:00[Europe/Paris]'
-      // new Date() ne sait pas parser le bracket → on le retire
-      const startStr = String(event.start.toString()).replace(/\[.*\]$/, '')
-      const endStr = String(event.end.toString()).replace(/\[.*\]$/, '')
-
-      const startDate = new Date(startStr)
-      const endDate = new Date(endStr)
-
-      const startTime = format(startDate, 'HH:mm')
-      const endTime = format(endDate, 'HH:mm')
+      // ZonedDateTime pour un créneau horaire, PlainDate pour un repos
+      // (SP-609 : un repos déplacé gardait 01:00 comme heure de début)
+      const { startDate, endDate, startTime, endTime } =
+        scheduleFieldsFromEvent(event.start, event.end)
 
       // Récupérer le schedule pour obtenir l'employeeId
       const schedule = schedulesMapRef.current.get(eventId)

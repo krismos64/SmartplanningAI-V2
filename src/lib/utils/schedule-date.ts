@@ -120,3 +120,20 @@ export function endOfCalendarDay(day: Date): Date {
 export function differenceInCalendarDaysUtc(later: Date, earlier: Date): number {
   return Math.round((later.getTime() - earlier.getTime()) / MS_PER_DAY)
 }
+
+/**
+ * Heure courante dans le fuseau de l'entreprise, au format « HH:mm » des
+ * colonnes startTime et endTime. Sert à distinguer, dans la journée en cours,
+ * un créneau déjà commencé d'un créneau à venir.
+ */
+export function formatTimeInZone(
+  date: Date,
+  timeZone: string = DEFAULT_SCHEDULE_TIME_ZONE
+): string {
+  return new Intl.DateTimeFormat('fr-FR', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23',
+    timeZone,
+  }).format(date)
+}
