@@ -8,8 +8,9 @@
 
 import React from 'react'
 import { Document, Page, Text, View } from '@react-pdf/renderer'
-import { format, eachDayOfInterval, isSameDay } from 'date-fns'
+import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
+import { addCalendarDays, toCalendarDay } from '@/lib/utils/schedule-date'
 import {
   scheduleTypeColors,
   scheduleTypeLabels,
@@ -87,18 +88,27 @@ function groupByEmployee(schedules: ScheduleForPdf[]): GroupedByEmployee {
   return grouped
 }
 
-function getDaysInPeriod(start: Date, end: Date): Date[] {
-  return eachDayOfInterval({ start, end })
+// SP-609 : colonnes en jours calendaires de Paris (00:00 UTC), comme les dates
+// stockées. eachDayOfInterval et isSameDay suivaient le fuseau du processus.
+export function getDaysInPeriod(start: Date, end: Date): Date[] {
+  const days: Date[] = []
+  const last = toCalendarDay(end)
+  for (
+    let day = toCalendarDay(start);
+    day <= last;
+    day = addCalendarDays(day, 1)
+  ) {
+    days.push(day)
+  }
+  return days
 }
 
-function getSchedulesForDay(
+export function getSchedulesForDay(
   schedules: ScheduleForPdf[],
   day: Date
 ): ScheduleForPdf[] {
   return schedules.filter(
-    (s) =>
-      isSameDay(new Date(s.startDate), day) ||
-      (new Date(s.startDate) <= day && new Date(s.endDate) >= day)
+    (s) => toCalendarDay(s.startDate) <= day && toCalendarDay(s.endDate) >= day
   )
 }
 

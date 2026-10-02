@@ -14,6 +14,7 @@
  */
 
 import { prisma } from '@/lib/prisma'
+import { toCalendarDay } from '@/lib/utils/schedule-date'
 import { withCache } from '@/lib/cache'
 import type {
   ManagerStatsParams,
@@ -154,8 +155,9 @@ async function getTodayAbsencesWithDetails(teamId: string): Promise<{
   count: number
   details: Array<{ employeeName: string; reason: string }>
 }> {
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
+  // SP-609 : jour calendaire de Paris. setHours rendait le jour UTC, donc la
+  // veille entre minuit et 2 heures à Paris.
+  const today = toCalendarDay(new Date())
 
   // Récupérer les employés de l'équipe
   const employees = await prisma.employee.findMany({
