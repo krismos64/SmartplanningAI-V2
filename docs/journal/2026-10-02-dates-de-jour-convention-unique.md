@@ -6,7 +6,7 @@
 | Documents produits | `src/lib/utils/__tests__/calendar-day.test.ts`, cette entrée                                                                                                        |
 | Documents modifiés | `schedule-date.ts`, `recurrence.ts`, `leave-utils.ts`, `schedules.ts`, `leaves.ts`, `availabilities.ts`, quatre fichiers de tests, `.claude/rules/prisma-pieges.md` |
 | Contrôles          | Vitest 3430/3430 sous `TZ=UTC` et `TZ=Europe/Paris`, type-check propre, lint sans erreur, couverture 53,24 % des lignes. CI et CD verts (PR #112)                   |
-| Jira               | SP-609 créé et commenté à chaque étape                                                                                                                              |
+| Jira               | SP-609 créé, commenté à chaque étape et clos. Audit : SP-604 et SP-605 commentés, SP-610 créé                                                                       |
 | Mémoire            | fiche d'état du projet réécrite                                                                                                                                     |
 
 ## Ce qui a été fait
@@ -77,10 +77,45 @@ En local, le lot E2E plannings et congés échoue à chaque exécution sur un sp
 différent, sur `main` comme sur la branche, alors que chaque spec passe seul.
 Instabilité de l'environnement local, laissée de côté. La CI était verte.
 
+## Audit de fin de session
+
+Contrôles rejoués selon la méthode du 13 septembre, par la mesure :
+
+- README : compteurs périmés depuis le 30 septembre. Vitest 206 fichiers et
+  3372 tests pour 210 et 3443, E2E 269 pour 271, whitelist CI 137 pour 139,
+  couverture réelle 52,38 % pour 53,27 %, audits axe-core des pages
+  publiques 7 pour 11. Aucun des trois changements de la session (SP-606,
+  SP-607, SP-609) n'y figurait
+- `security-auditor` affirmait que `/login` et `/forgot-password` étaient
+  limités par Redis. Faux : `checkRateLimit` ne sert qu'au contact, au renvoi
+  admin et à l'email de vérification, et la zone Nginx `auth` ne couvre que
+  `/api/auth/`. Les Server Actions de connexion ne relèvent que de `general`,
+  10 r/s par IP
+- `deployment.md` daté du 13 septembre pour un changement au 1er octobre,
+  `database-architecture.md` muet sur la convention des dates
+- Le hook `SessionStart` choisissait l'entrée de journal par ordre
+  alphabétique du sujet : avec deux entrées le même jour, il affichait la
+  première écrite. Il retient désormais la dernière commitée
+- Sains : six hooks exécutés, blocage des secrets compris (code 2 sur `.env`,
+  0 sur `README.md`), commandes npm citées, chemins cités, whitelist CI, neuf
+  scripts d'ops documentés, sept identiques au VPS par empreinte et deux
+  lancés depuis le poste par conception, horaires des timers
+
 ## Prochaine étape
 
+- Contacter Trasco avant la fin de son essai, le 21 octobre : aucun employé
+  invité, reparti le 1er octobre depuis l'écran de connexion
+- Aucune limite applicative sur la connexion, l'inscription et le mot de passe
+  oublié : seule la zone Nginx `general` les couvre. Ticket SP-610 ouvert
+- `checkRateLimit` rejoue `EXPIRE` à chaque appel sur le chemin Redis : la
+  fenêtre repart de zéro à chaque tentative (à trancher dans SP-610)
+- L'email de planning SP-480 part aussi à l'auteur du créneau
+- La page Paramètres déborde de 23 px sur iPhone, cause non trouvée
 - Un glisser-déposer d'une garde de nuit renvoie une date de fin égale à la
   date de début : Schedule-X affiche ces gardes sur un seul jour. Défaut
   antérieur à SP-609, non traité
 - L'heure de génération imprimée sur le PDF est celle du serveur (UTC)
 - Le lot E2E local instable, à diagnostiquer par `error-context.md`
+- Preuve de SP-604 en production : attendre un créneau posé pour un employé
+  autre que l'auteur, vérifiable par `journalctl -p err`
+- SP-591 : le parcours humain du tunnel n'a toujours pas été fait

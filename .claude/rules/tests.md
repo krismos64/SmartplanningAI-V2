@@ -1,11 +1,11 @@
 ---
 paths:
-  - "**/__tests__/**"
-  - "**/*.test.{ts,tsx}"
-  - "e2e/**"
-  - "vitest.config.ts"
-  - "playwright.config.ts"
-  - "prisma/seed*.ts"
+  - '**/__tests__/**'
+  - '**/*.test.{ts,tsx}'
+  - 'e2e/**'
+  - 'vitest.config.ts'
+  - 'playwright.config.ts'
+  - 'prisma/seed*.ts'
 ---
 
 # Tests et vérification
@@ -93,7 +93,8 @@ ne compte pas et n'a pas à être écrit.
 
 **Relever un seuil demande de mesurer d'abord** (`npx vitest run --coverage`),
 jamais de viser un chiffre rond. Les seuils actuels sont posés deux à trois
-points sous le réel mesuré (52,38 % de lignes, 75,65 % de branches) : assez de
+points sous le réel mesuré à leur pose par SP-592 (52,38 % de lignes, 75,65 %
+de branches ; 53,27 % et 75,91 % le 2 octobre 2026) : assez de
 marge pour absorber une variation, assez de serrage pour rougir si une zone
 perd sa couverture. L'ancien seuil de 20 % laissait passer une chute de moitié.
 

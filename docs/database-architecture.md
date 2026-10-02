@@ -1,6 +1,6 @@
 # 🗄️ Architecture Base de Données - SmartPlanning V2
 
-**Dernière mise à jour** : 13 septembre 2026
+**Dernière mise à jour** : 2 octobre 2026
 **ORM** : Prisma 6.18.0
 **Base** : PostgreSQL 16
 **Migrations** : 24 migrations appliquées
@@ -297,6 +297,19 @@ Employee = Métier RH (job, équipe, contrat, compétences)
 
 ---
 
+### Convention des dates de jour (SP-609)
+
+`startDate` et `endDate` de **Schedule**, **LeaveRequest** et **Availability**
+portent un jour, pas un instant : **00:00 UTC du jour calendaire à Paris**.
+L'heure d'un créneau vit dans `startTime` / `endTime`. Toute écriture serveur
+passe par `toCalendarDay()` (`src/lib/utils/schedule-date.ts`), et tout calcul
+de jour se fait ensuite en UTC pur, jamais avec les méthodes locales de `Date`
+ni `startOfDay` de date-fns, qui suivent le fuseau du processus.
+
+Avant le 2 octobre 2026, rien ne normalisait : la base mêlait minuit Paris
+(22:00 ou 23:00 UTC), l'heure courante et l'instant réel du créneau. 28
+créneaux et 5 congés ont été convertis ce jour-là, après sauvegarde vérifiée.
+
 ### 5️⃣ **Schedule** (Planning)
 
 **Rôle :** Créneaux de planning (travail, réunion, astreinte, etc.)
@@ -307,8 +320,8 @@ Employee = Métier RH (job, équipe, contrat, compétences)
 - id: String (cuid)
 
 // Date & horaires
-- startDate: DateTime             // 2025-11-05
-- endDate: DateTime               // 2025-11-05
+- startDate: DateTime             // 2025-11-05T00:00:00Z, jour calendaire de Paris
+- endDate: DateTime               // idem, le lendemain pour une garde de nuit
 - startTime: String               // "09:00"
 - endTime: String                 // "17:00"
 
@@ -634,12 +647,12 @@ Employee = Métier RH (job, équipe, contrat, compétences)
 
 **🎯 Visibilité (Enum IncidentNoteVisibility) :**
 
-| Visibilité         | Qui peut voir         |
-| ------------------ | --------------------- |
-| `DIRECTOR_ONLY`    | Directeurs uniquement |
+| Visibilité         | Qui peut voir                  |
+| ------------------ | ------------------------------ |
+| `DIRECTOR_ONLY`    | Directeurs uniquement          |
 | `MANAGER_ONLY`     | Managers de l'équipe concernée |
-| `MANAGER_DIRECTOR` | Managers + Directeurs |
-| `ALL`              | Tous (info générale)  |
+| `MANAGER_DIRECTOR` | Managers + Directeurs          |
+| `ALL`              | Tous (info générale)           |
 
 ---
 
@@ -894,13 +907,13 @@ multi-tenant ne s'y applique pas, et la lecture est réservée au `SYSTEM_ADMIN`
 Il n'est pas le seul modèle sans `companyId`. Mesure du 13 septembre 2026, sept
 modèles n'en portent pas, et pour quatre raisons différentes :
 
-| Modèle | Pourquoi pas de `companyId` |
-|---|---|
-| `Company` | il **est** le tenant |
-| `Account`, `Session`, `VerificationToken` | propres à NextAuth, rattachés à `User` |
-| `PersonalTask` | privé à un utilisateur, isolé par `userId` |
-| `ConversationMember` | isolé par sa `Conversation` parente |
-| `ContactMessage` | hors de toute entreprise, visiteur non connecté |
+| Modèle                                    | Pourquoi pas de `companyId`                     |
+| ----------------------------------------- | ----------------------------------------------- |
+| `Company`                                 | il **est** le tenant                            |
+| `Account`, `Session`, `VerificationToken` | propres à NextAuth, rattachés à `User`          |
+| `PersonalTask`                            | privé à un utilisateur, isolé par `userId`      |
+| `ConversationMember`                      | isolé par sa `Conversation` parente             |
+| `ContactMessage`                          | hors de toute entreprise, visiteur non connecté |
 
 L'absence de `companyId` ne veut donc pas dire « pas d'isolation », mais
 « isolation portée par un autre champ ». Le vérifier avant d'écrire une requête.
@@ -1227,17 +1240,17 @@ Mises en place par SP-593, le 9 septembre 2026. **Avant cette date, la base de
 production n'était sauvegardée nulle part** : aucune tâche cron, aucun timer,
 aucun fichier de dump.
 
-| Élément | Valeur |
-|---|---|
-| Script | `/opt/smartplanning/ops/backup-database.sh` |
-| Déclenchement | `smartplanning-backup.timer`, quotidien à 03:20 UTC |
-| Format | PostgreSQL `custom` (`pg_dump --format=custom`) |
-| Chiffrement | GPG symétrique AES256 |
-| Emplacement | `/var/backups/smartplanning/`, en `0700` |
-| Rétention | 30 jours |
-| **Copie hors site** | `sync-backups-offsite.sh`, quotidien à 04:10 UTC (SP-594) |
-| **Destination distante** | Backblaze B2, bucket `smartplanning-backups` |
-| **Rétention distante** | 30 jours |
+| Élément                  | Valeur                                                    |
+| ------------------------ | --------------------------------------------------------- |
+| Script                   | `/opt/smartplanning/ops/backup-database.sh`               |
+| Déclenchement            | `smartplanning-backup.timer`, quotidien à 03:20 UTC       |
+| Format                   | PostgreSQL `custom` (`pg_dump --format=custom`)           |
+| Chiffrement              | GPG symétrique AES256                                     |
+| Emplacement              | `/var/backups/smartplanning/`, en `0700`                  |
+| Rétention                | 30 jours                                                  |
+| **Copie hors site**      | `sync-backups-offsite.sh`, quotidien à 04:10 UTC (SP-594) |
+| **Destination distante** | Backblaze B2, bucket `smartplanning-backups`              |
+| **Rétention distante**   | 30 jours                                                  |
 
 **Pourquoi le format `custom` et non du SQL brut** : il est validable par
 `pg_restore --list`, qui lit l'en-tête et la table des matières sans restaurer,
@@ -1282,17 +1295,18 @@ chiffrement au repos reste une décision d'architecture, sans ticket à ce jour.
 
 ## 📅 Historique des Mises à Jour
 
-| Date       | Description                                                              |
-| ---------- | ------------------------------------------------------------------------ |
-| 19/04/2026 | Sprint 13 — `companyId` nullable sur Conversation et Message (SP-513). Messagerie SYSTEM_ADMIN cross-tenant. 22→23 migrations |
-| 03/04/2026 | Ajout Messagerie : Conversation, ConversationMember, Message (SP-500) + avatarUrl + isArchived. AuditLog documenté. 17→20 tables, 12→16 enums, 16→19 migrations |
-| 10/02/2026 | Ajout EmailLog (SP-368), correction compteur 16→17 tables, mise à jour diagramme et relations Company |
-| 09/09/2026 | Correction du document : `AuditLog.userId` nullable en SetNull (SP-580), ajout de ContactMessage (SP-576), `MANAGER_ONLY` rétabli dans IncidentNoteVisibility, compteurs remesurés (22 modèles, 24 migrations, 65 index) |
-| 08/09/2026 | `AuditLog.userId` passe nullable en `onDelete: SetNull` (SP-580), l'audit survit à la suppression de son auteur |
-| 13/08/2026 | Ajout ContactMessage (SP-576), formulaire de contact persisté |
-| 10/02/2026 | Correction Subscription per-seat, Payment typé, SubscriptionStatus +INCOMPLETE, diagramme Subscription→Payment |
-| 04/02/2026 | Ajout User.image (Cloudinary SP-272), mise à jour complète documentation |
-| 01/2026    | Ajout IncidentNote (SP-424), PersonalTask (SP-417)                       |
-| 01/2026    | Ajout LeaveBalance (SP-408), Availability (SP-392)                       |
-| 12/2025    | Ajout Subscription, Payment (Stripe)                                     |
-| 11/2025    | Création initiale du schéma                                              |
+| Date       | Description                                                                                                                                                                                                                                           |
+| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 02/10/2026 | Convention unique des dates de jour (SP-609) : 00:00 UTC du jour calendaire à Paris pour Schedule, LeaveRequest et Availability. 28 créneaux et 5 congés convertis en production. Compteurs inchangés (22 modèles, 16 enums, 65 index, 24 migrations) |
+| 19/04/2026 | Sprint 13 — `companyId` nullable sur Conversation et Message (SP-513). Messagerie SYSTEM_ADMIN cross-tenant. 22→23 migrations                                                                                                                         |
+| 03/04/2026 | Ajout Messagerie : Conversation, ConversationMember, Message (SP-500) + avatarUrl + isArchived. AuditLog documenté. 17→20 tables, 12→16 enums, 16→19 migrations                                                                                       |
+| 10/02/2026 | Ajout EmailLog (SP-368), correction compteur 16→17 tables, mise à jour diagramme et relations Company                                                                                                                                                 |
+| 09/09/2026 | Correction du document : `AuditLog.userId` nullable en SetNull (SP-580), ajout de ContactMessage (SP-576), `MANAGER_ONLY` rétabli dans IncidentNoteVisibility, compteurs remesurés (22 modèles, 24 migrations, 65 index)                              |
+| 08/09/2026 | `AuditLog.userId` passe nullable en `onDelete: SetNull` (SP-580), l'audit survit à la suppression de son auteur                                                                                                                                       |
+| 13/08/2026 | Ajout ContactMessage (SP-576), formulaire de contact persisté                                                                                                                                                                                         |
+| 10/02/2026 | Correction Subscription per-seat, Payment typé, SubscriptionStatus +INCOMPLETE, diagramme Subscription→Payment                                                                                                                                        |
+| 04/02/2026 | Ajout User.image (Cloudinary SP-272), mise à jour complète documentation                                                                                                                                                                              |
+| 01/2026    | Ajout IncidentNote (SP-424), PersonalTask (SP-417)                                                                                                                                                                                                    |
+| 01/2026    | Ajout LeaveBalance (SP-408), Availability (SP-392)                                                                                                                                                                                                    |
+| 12/2025    | Ajout Subscription, Payment (Stripe)                                                                                                                                                                                                                  |
+| 11/2025    | Création initiale du schéma                                                                                                                                                                                                                           |

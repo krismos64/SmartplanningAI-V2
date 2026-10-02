@@ -81,10 +81,27 @@ git log -5 --format='  %h  %s' 2>/dev/null || true
 # --- Derniere entree de journal -------------------------------------------
 #
 # Le tri est lexicographique sur un nom de fichier en AAAA-MM-JJ-sujet.md,
-# donc chronologique par construction. Plusieurs entrees peuvent porter la
-# meme date, la derniere du tri est alors la plus recemment nommee.
+# donc chronologique entre deux jours. Le 2 octobre 2026, deux entrees du meme
+# jour ont montre la limite : l'ordre alphabetique du sujet affichait la
+# premiere ecrite, dont la prochaine etape etait deja faite. Entre entrees du
+# meme jour, on retient donc la derniere commitee, et une entree pas encore
+# commitee passe devant toutes.
 
 derniere=$(ls docs/journal/[0-9]*.md 2>/dev/null | sort | tail -1)
+if [ -n "$derniere" ]; then
+    jour=$(basename "$derniere" | cut -c1-10)
+    meilleur=""
+    meilleur_ts=-1
+    for f in docs/journal/"$jour"-*.md; do
+        ts=$(git log -1 --format=%ct -- "$f" 2>/dev/null)
+        [ -z "$ts" ] && ts=9999999999
+        if [ "$ts" -gt "$meilleur_ts" ]; then
+            meilleur_ts=$ts
+            meilleur=$f
+        fi
+    done
+    [ -n "$meilleur" ] && derniere=$meilleur
+fi
 
 echo
 if [ -n "$derniere" ]; then

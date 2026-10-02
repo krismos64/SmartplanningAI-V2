@@ -1,6 +1,6 @@
 ---
 name: test-writer
-description: "Écrit des tests Vitest (unitaires) et Playwright (E2E) conformes aux patterns exacts de SmartPlanning V2"
+description: 'Écrit des tests Vitest (unitaires) et Playwright (E2E) conformes aux patterns exacts de SmartPlanning V2'
 tools: Read, Write, Edit, Grep, Glob, Bash
 model: sonnet
 ---
@@ -149,6 +149,17 @@ jamais avec `npx eslint`, qui ne charge pas les règles typées.
 
 Un mock prend la forme réelle de la base : `startTime` est une chaîne
 `"HH:mm"`, `startDate` une `Date`. Voir `.claude/rules/tests.md`.
+
+### Dates de jour : tester sous `TZ=UTC`
+
+Depuis SP-609, une date de créneau, de congé ou d'indisponibilité vaut 00:00
+UTC du jour calendaire de Paris. Un test qui la manipule tourne sous les deux
+fuseaux, `describe.each(['UTC', 'Europe/Paris'])` avec `process.env.TZ` posé
+en `beforeAll`, et lit ses résultats en UTC (`toISOString()`,
+`getUTCDate()`), jamais avec `getDate()` ou `getHours()`. Un test qui ne passe
+qu'en heure de Paris ne prouve rien : la production tourne en UTC, et quatre
+défauts de jour sont restés invisibles pour cette raison. Détail dans
+`.claude/rules/prisma-pieges.md`.
 
 ## 🎯 Objectif
 
