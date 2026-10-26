@@ -24,6 +24,8 @@ export interface EmployeeOption {
   firstName: string
   lastName: string
   teamId?: string | null
+  /** SP-615 : contrat hebdomadaire, pour avertir d'un dépassement */
+  weeklyHours?: number
 }
 
 export interface TeamOption {
@@ -71,6 +73,7 @@ export function useShiftFormData(): ShiftFormData {
             firstName: emp.firstName,
             lastName: emp.lastName,
             teamId: emp.team?.id ?? null,
+            weeklyHours: emp.weeklyHours,
           }))
         )
       } else if (!employeesResult.success) {

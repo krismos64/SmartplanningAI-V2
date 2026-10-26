@@ -82,6 +82,8 @@ import {
   calculateTotalSchedules,
 } from '@/lib/utils/recurrence'
 import { useConflictDetection } from '@/hooks/use-conflict-detection'
+import { useWeeklyHoursCheck } from './useWeeklyHoursCheck'
+import { formatScheduleDateShort } from '@/lib/utils/schedule-date'
 import { useIsImpersonating } from '@/hooks'
 
 // ============================================================================
@@ -301,6 +303,20 @@ export function ShiftModal({
     endTime: watchedEndTime,
     enabled: isOpen && selectedEmployeeIds?.length > 0,
     debounceMs: 300,
+  })
+
+  // SP-615 : semaines où le créneau porte un employé au-delà de son contrat
+  const hoursWarnings = useWeeklyHoursCheck({
+    employees,
+    employeeIds: selectedEmployeeIds || [],
+    startDate: watchedStartDate,
+    endDate: watchedEndDate,
+    startTime: watchedStartTime,
+    endTime: watchedEndTime,
+    type: watchedType,
+    recurrenceRule: mode === 'create' && isRecurring ? recurrenceRule : null,
+    excludeScheduleId: mode === 'edit' ? schedule?.id : undefined,
+    enabled: isOpen,
   })
 
   // Détection des conflits congés / plannings existants
@@ -971,6 +987,45 @@ export function ShiftModal({
               <Repeat className="h-4 w-4" />
               <span>Ce planning fait partie d&apos;une série récurrente</span>
             </div>
+          )}
+
+          {/* SP-615 : dépassement du contrat ou des 48 h, sans bloquer */}
+          {hoursWarnings.length > 0 && (
+            <Alert
+              variant="default"
+              data-testid="weekly-hours-warning"
+              className="border-amber-500/50 bg-amber-50 text-amber-900 dark:border-amber-400/30 dark:bg-amber-950/30 dark:text-amber-200 [&>svg]:text-amber-600"
+            >
+              <AlertTriangle className="h-4 w-4" />
+              <AlertTitle>Heures au-delà du contrat</AlertTitle>
+              <AlertDescription>
+                <ul className="space-y-1">
+                  {hoursWarnings.slice(0, 5).map((w) => {
+                    const emp = employees.find((e) => e.id === w.employeeId)
+                    const nom = emp
+                      ? `${emp.firstName} ${emp.lastName}`
+                      : 'Un employé'
+                    return (
+                      <li key={`${w.employeeId}-${w.weekStart.getTime()}`}>
+                        {nom} : {w.totalHours} h la semaine du{' '}
+                        {formatScheduleDateShort(w.weekStart)}, contrat{' '}
+                        {w.contractHours} h
+                        {w.exceedsLegal && (
+                          <strong> (au-delà des 48 h légales)</strong>
+                        )}
+                      </li>
+                    )
+                  })}
+                </ul>
+                {hoursWarnings.length > 5 && (
+                  <p className="mt-1">
+                    Et {hoursWarnings.length - 5} autre
+                    {hoursWarnings.length - 5 > 1 ? 's' : ''} semaine
+                    {hoursWarnings.length - 5 > 1 ? 's' : ''}.
+                  </p>
+                )}
+              </AlertDescription>
+            </Alert>
           )}
 
           {/* Alerte de conflits avec les indisponibilités (SP-400) */}
