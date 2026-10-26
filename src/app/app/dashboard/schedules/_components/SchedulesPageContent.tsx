@@ -217,7 +217,7 @@ export function SchedulesPageContent({
       ?.trim()
       .toLowerCase()
 
-    return employees.filter((e) => {
+    const filtered = employees.filter((e) => {
       if (teamId && e.teamId !== teamId) return false
       if (employeeId && e.id !== employeeId) return false
       if (
@@ -228,7 +228,13 @@ export function SchedulesPageContent({
       }
       return true
     })
-  }, [employees, activeFilters])
+    // SP-616 : la grille regroupe ses lignes par équipe
+    const teamNames = new Map(teams.map((t) => [t.id, t.name]))
+    return filtered.map((e) => ({
+      ...e,
+      teamName: e.teamId ? (teamNames.get(e.teamId) ?? null) : null,
+    }))
+  }, [employees, activeFilters, teams])
 
   // Calcul des dates selon le mode de vue
   // Protéger contre une date invalide (ex: parsing Schedule-X)

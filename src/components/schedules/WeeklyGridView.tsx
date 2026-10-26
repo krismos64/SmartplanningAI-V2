@@ -36,6 +36,7 @@ import { cn } from '@/lib/utils'
 import type { ScheduleWithRelations } from '@/lib/actions/schedules'
 import type { LeaveRequest } from '@prisma/client'
 import { LEAVE_TYPE_LABELS } from '@/lib/validations/leave'
+import { compareGridEmployees } from '@/lib/utils/grid-order'
 
 // ============================================================================
 // Types
@@ -57,6 +58,8 @@ interface Employee {
   firstName: string
   lastName: string
   image?: string | null
+  /** SP-616 : les lignes sont regroupées par équipe */
+  teamName?: string | null
 }
 
 interface WeeklyGridViewProps {
@@ -197,6 +200,7 @@ export function WeeklyGridView({
         firstName: e.firstName,
         lastName: e.lastName,
         image: e.image ?? null,
+        teamName: e.teamName ?? null,
       })
     }
 
@@ -222,9 +226,8 @@ export function WeeklyGridView({
       }
     }
 
-    return Array.from(map.values()).sort((a, b) =>
-      `${a.lastName}${a.firstName}`.localeCompare(`${b.lastName}${b.firstName}`)
-    )
+    // SP-616 : équipe, puis nom, puis prénom ; sans équipe en dernier
+    return Array.from(map.values()).sort(compareGridEmployees)
   }, [companyEmployees, schedules, leaves])
 
   // Index : employeeId-YYYY-MM-DD → schedules
