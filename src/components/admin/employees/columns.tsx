@@ -366,29 +366,31 @@ export function createEmployeeColumns(
                 </DropdownMenuItem>
               )}
 
-              {onToggleStatus && (
-                <DropdownMenuItem
-                  onClick={() => onToggleStatus(employee)}
-                  disabled={isImpersonating}
-                  title={
-                    isImpersonating
-                      ? 'Non disponible en mode support'
-                      : undefined
-                  }
-                >
-                  {employee.isActive ? (
-                    <>
-                      <PowerOff className="mr-2 h-4 w-4" />
-                      Désactiver
-                    </>
-                  ) : (
-                    <>
-                      <Power className="mr-2 h-4 w-4" />
-                      Activer
-                    </>
-                  )}
-                </DropdownMenuItem>
-              )}
+              {/* SP-611 : la fiche d'un dirigeant ne se désactive pas */}
+              {onToggleStatus &&
+                !(employee.isActive && employee.user?.role === 'DIRECTOR') && (
+                  <DropdownMenuItem
+                    onClick={() => onToggleStatus(employee)}
+                    disabled={isImpersonating}
+                    title={
+                      isImpersonating
+                        ? 'Non disponible en mode support'
+                        : undefined
+                    }
+                  >
+                    {employee.isActive ? (
+                      <>
+                        <PowerOff className="mr-2 h-4 w-4" />
+                        Désactiver
+                      </>
+                    ) : (
+                      <>
+                        <Power className="mr-2 h-4 w-4" />
+                        Activer
+                      </>
+                    )}
+                  </DropdownMenuItem>
+                )}
 
               {/* SP-578 : proposee uniquement tant que le compte n'est pas active */}
               {onResendInvitation &&
