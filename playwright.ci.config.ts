@@ -85,6 +85,10 @@ export default defineConfig({
     // 🟡 IMPORTANT : un planning entier en brouillon restait invisible des
     // employes sans que rien ne le signale (SP-614, Patisserie CARL).
     'schedules/brouillons-publication.spec.ts',
+
+    // 🟡 IMPORTANT : un planning le week-end avec des jours d'ouverture
+    // restes a lundi-vendredi, qui servent aussi au decompte des conges (SP-617)
+    'schedules/jours-ouverture-proposes.spec.ts',
   ],
 
   // === CONFIGURATION GLOBALE ===

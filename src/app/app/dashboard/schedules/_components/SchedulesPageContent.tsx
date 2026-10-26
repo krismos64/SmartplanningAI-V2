@@ -52,6 +52,16 @@ import {
 } from '@/components/ui/sheet'
 import { SchedulesFilters } from './SchedulesFilters'
 import { DraftsBanner } from './DraftsBanner'
+import { OpeningDaysSuggestion } from './OpeningDaysSuggestion'
+import {
+  getCompanySettings,
+  updateCompanySettings,
+} from '@/lib/actions/company-settings'
+import {
+  findDaysOutsideOpening,
+  mergeWorkingDays,
+} from '@/lib/utils/opening-days'
+import type { DayOfWeek } from '@/types/company'
 import {
   Dialog,
   DialogContent,
@@ -331,7 +341,66 @@ export function SchedulesPageContent({
     [schedules]
   )
 
-    // Charger les indisponibilités et congés au changement de période
+    // SP-617 : jours planifiés hors des jours d'ouverture (DIRECTOR seul, le
+  // seul rôle qui peut modifier les paramètres de l'entreprise)
+  const isDirector = userRole === 'DIRECTOR'
+  const ignoredDaysKey = `sp617-jours-ignores:${companyId}`
+  const [workingDays, setWorkingDays] = useState<DayOfWeek[] | null>(null)
+  const [ignoredDays, setIgnoredDays] = useState<DayOfWeek[]>([])
+  const [isSavingDays, setIsSavingDays] = useState(false)
+
+  useEffect(() => {
+    if (!isDirector) return
+    try {
+      const raw = localStorage.getItem(ignoredDaysKey)
+      if (raw) setIgnoredDays(JSON.parse(raw) as DayOfWeek[])
+    } catch {
+      // Stockage indisponible : la proposition reviendra, sans gravité
+    }
+    void getCompanySettings().then((result) => {
+      if (result.success && result.data) setWorkingDays(result.data.workingDays)
+    })
+  }, [isDirector, ignoredDaysKey])
+
+  const daysOutsideOpening = useMemo(
+    () =>
+      workingDays
+        ? findDaysOutsideOpening(schedules, workingDays, ignoredDays)
+        : [],
+    [schedules, workingDays, ignoredDays]
+  )
+
+  const handleAddOpeningDays = useCallback(() => {
+    if (!workingDays) return
+    setIsSavingDays(true)
+    void (async () => {
+      try {
+        const result = await updateCompanySettings({
+          workingDays: mergeWorkingDays(workingDays, daysOutsideOpening),
+        })
+        if (!result.success) {
+          toast.error(result.error ?? 'Mise à jour impossible')
+          return
+        }
+        setWorkingDays(result.data.workingDays)
+        toast.success("Jours d'ouverture mis à jour")
+      } finally {
+        setIsSavingDays(false)
+      }
+    })()
+  }, [workingDays, daysOutsideOpening, toast])
+
+  const handleDismissOpeningDays = useCallback(() => {
+    const next = [...new Set([...ignoredDays, ...daysOutsideOpening])]
+    setIgnoredDays(next)
+    try {
+      localStorage.setItem(ignoredDaysKey, JSON.stringify(next))
+    } catch {
+      // Stockage indisponible : le refus vaut pour cette visite seulement
+    }
+  }, [ignoredDays, daysOutsideOpening, ignoredDaysKey])
+
+  // Charger les indisponibilités et congés au changement de période
   // On utilise getTime() pour des dépendances primitives stables
   const rangeStartTime = dateRange.start.getTime()
   const rangeEndTime = dateRange.end.getTime()
@@ -599,6 +668,15 @@ export function SchedulesPageContent({
           )}
         </div>
       </div>
+
+      {isDirector && (
+        <OpeningDaysSuggestion
+          days={daysOutsideOpening}
+          isSaving={isSavingDays}
+          onAdd={handleAddOpeningDays}
+          onDismiss={handleDismissOpeningDays}
+        />
+      )}
 
       {canCreate && (
         <DraftsBanner
