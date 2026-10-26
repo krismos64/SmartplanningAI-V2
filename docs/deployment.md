@@ -503,6 +503,10 @@ docker logs smartplanning-app --tail 100 -f
 # Logs de l'application à travers les déploiements (driver journald)
 sudo journalctl CONTAINER_NAME=smartplanning-app --since "2026-09-30 18:45" --until "2026-09-30 20:00"
 sudo journalctl CONTAINER_NAME=smartplanning-app -p err --since yesterday   # console.error seuls
+# Depuis SP-612 (26/10/2026), aucune ligne « prisma:error ... edge runtime ».
+# Avant, chaque requête d'une session de plus de 5 minutes en écrivait une :
+# leur retour signale une régression du rafraîchissement d'abonnement.
+sudo journalctl CONTAINER_NAME=smartplanning-app --since today | grep -c "edge runtime"
 
 # Logs de tous les services
 docker compose logs -f
@@ -886,6 +890,7 @@ Le `reload` n'interrompt pas les connexions en cours.
 | 2026-09-10 | 2.14    | SP-594 : les archives et la clé vivaient sur le disque de la base. Copie hors site quotidienne vers Backblaze B2 (04:10 UTC, vérifiée taille et SHA-1, rétention 30 jours), clé conservée hors du VPS, restauration prouvée sur une autre machine.                                                                                  |
 | 2026-09-13 | 2.15    | SP-597 : la clé B2 vivant sur le VPS pouvait détruire l'historique hors site, ce qui annulait la protection face à un rançongiciel. Rotation `b2_hide_file` au lieu de `b2_delete_file_version`, clé réduite à quatre capacités, règle de cycle de vie côté Backblaze, refus prouvé en 401 sur fichier réel, ancienne clé révoquée. |
 | 2026-10-01 | 2.16    | SP-607 : les logs de l'application disparaissaient à chaque déploiement avec le conteneur recréé. Le service `app` écrit dans journald, lecture par `journalctl CONTAINER_NAME=smartplanning-app`, deux conteneurs successifs vérifiés                                                                                              |
+| 2026-10-26 | 2.17    | SP-612 : le rafraîchissement d'abonnement du callback `jwt` tentait Prisma dans le middleware edge. Rattrapé, mais Prisma écrivait une erreur par requête dès 5 minutes de session (410 lignes pour deux sessions). Garde `NEXT_RUNTIME`, contrôle `grep -c "edge runtime"` ajouté aux commandes de logs |
 
 ---
 

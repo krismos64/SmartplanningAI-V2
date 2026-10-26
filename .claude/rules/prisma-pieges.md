@@ -356,6 +356,20 @@ accepté. Détail et contrôle dans `docs/analytics.md`.
 Même famille que « un email accepté par le relais n'est pas un email délivré » :
 un appel accepté par un service tiers n'est pas un appel traité.
 
+## Un `catch` n'empêche pas Prisma d'écrire son erreur
+
+`auth.config.ts` est partagé avec le middleware, qui tourne en Edge Runtime.
+Le rafraîchissement d'abonnement SP-440 y importait Prisma dans un `try`, en
+comptant sur le `catch` pour rendre l'échec silencieux. L'exception était bien
+rattrapée, mais Prisma avait déjà écrit `prisma:error In order to run Prisma
+Client on edge runtime` sur stderr : une ligne par requête dès 5 minutes de
+session, 310 pour une seule session le 20 octobre 2026 (SP-612). Le bruit
+noyait les vraies erreurs dans journald.
+
+Dans un code que le middleware exécute, écarter Prisma **avant** l'import par
+`process.env.NEXT_RUNTIME !== 'edge'`, que Next.js remplace au build. Vérifier
+dans `.next/server/src/middleware.js` que le bloc a disparu.
+
 ## `docker logs` ne voit pas au-delà du dernier déploiement
 
 Le driver `json-file` range les logs dans le dossier du conteneur, supprimé

@@ -35,7 +35,7 @@ convention de mémoire.
 | Fichier                          | Charger avant de toucher                                               |
 | -------------------------------- | ---------------------------------------------------------------------- |
 | `.claude/rules/multi-tenant.md`  | Server Action, route API, requête Prisma, auth, choix de destinataires |
-| `.claude/rules/prisma-pieges.md` | `'use server'`, backfill, SQL de diagnostic, cache dashboard, envoi d'emails, date formatée côté serveur, date de jour écrite ou calculée côté serveur, Nginx, workflow CD, script de `scripts/ops/`, manipulation de fichier vers un conteneur |
+| `.claude/rules/prisma-pieges.md` | `'use server'`, backfill, SQL de diagnostic, cache dashboard, envoi d'emails, date formatée côté serveur, date de jour écrite ou calculée côté serveur, Nginx, workflow CD, script de `scripts/ops/`, manipulation de fichier vers un conteneur, code exécuté par le middleware (`auth.config.ts`) |
 | `.claude/rules/seo-content.md`   | pages secteur, guides, landing, sitemap, `llms.txt` et la route `llms-full.txt`, texte public |
 | `.claude/rules/tests.md`         | écriture de tests, et avant de conclure un travail                     |
 
@@ -79,6 +79,11 @@ récente en début de session** donne l'état du projet plus vite que Jira.
   calendaire de Paris depuis SP-609, via `toCalendarDay()` à l'entrée de chaque
   écriture. Jamais `startOfDay`, `setHours` ni `getDay` sur une date de jour côté
   serveur, ils suivent le fuseau du processus. Tests sous `TZ=UTC`
+- Créneaux en brouillon (`DRAFT`) : invisibles des employés, qui ne voient que
+  `CONFIRMED`. Leur création ne notifie personne, les employés sont prévenus à
+  la publication par `publishDraftSchedules` (SP-614). **Pas encore** la
+  modification ni la suppression d'un brouillon, qui notifient encore sans
+  regarder le statut (SP-618)
 - Redis : `withCache()` en cache-aside, rate limiting `INCR` + `EXPIRE` avec repli
   mémoire si Redis est indisponible. `/api/health` renvoie alors « degraded », pas
   « unhealthy »
