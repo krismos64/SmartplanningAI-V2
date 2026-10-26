@@ -19,6 +19,7 @@ import {
   deleteSchedule,
   deleteRecurrenceGroup,
   updateRecurrenceGroup,
+  publishDraftSchedules,
   type ScheduleWithRelations,
 } from '@/lib/actions/schedules'
 import {
@@ -50,6 +51,7 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet'
 import { SchedulesFilters } from './SchedulesFilters'
+import { DraftsBanner } from './DraftsBanner'
 import {
   Dialog,
   DialogContent,
@@ -316,7 +318,14 @@ export function SchedulesPageContent({
   // `leaveRequests`. Le `useMemo` de SP-582, qui stabilisait cette dépendance,
   // n'a donc plus d'objet : la source du doublon a disparu.
 
-  // Charger les indisponibilités et congés au changement de période
+  // SP-614 : brouillons de la période affichée, que les employés ne voient pas
+  const [isPublishing, setIsPublishing] = useState(false)
+  const draftCount = useMemo(
+    () => schedules.filter((s) => s.status === 'DRAFT').length,
+    [schedules]
+  )
+
+    // Charger les indisponibilités et congés au changement de période
   // On utilise getTime() pour des dépendances primitives stables
   const rangeStartTime = dateRange.start.getTime()
   const rangeEndTime = dateRange.end.getTime()
@@ -348,6 +357,33 @@ export function SchedulesPageContent({
   )
 
   // Callback quand Schedule-X change de période (navigation interne)
+  const handlePublishDrafts = useCallback(() => {
+    setIsPublishing(true)
+    void (async () => {
+      try {
+        const result = await publishDraftSchedules({
+          startDate: new Date(rangeStartTime),
+          endDate: new Date(rangeEndTime),
+        })
+        if (!result.success) {
+          toast.error(result.error ?? 'Publication impossible')
+          return
+        }
+        const n = result.data.published
+        toast.success(
+          n === 1 ? '1 créneau publié' : `${n} créneaux publiés`
+        )
+        reloadSchedules(
+          new Date(rangeStartTime),
+          new Date(rangeEndTime),
+          activeFilters
+        )
+      } finally {
+        setIsPublishing(false)
+      }
+    })()
+  }, [rangeStartTime, rangeEndTime, activeFilters, reloadSchedules, toast])
+
   const handleRangeChange = useCallback(
     (start: Date, end: Date) => {
       // Déduire le viewMode depuis la durée du range
@@ -557,6 +593,14 @@ export function SchedulesPageContent({
           )}
         </div>
       </div>
+
+      {canCreate && (
+        <DraftsBanner
+          count={draftCount}
+          isPublishing={isPublishing}
+          onPublish={handlePublishDrafts}
+        />
+      )}
 
       {/* Filtres — un seul composant, replié sur mobile */}
       <details open className="group">

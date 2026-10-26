@@ -24,7 +24,9 @@ import {
   createScheduleSchema,
   updateScheduleSchema,
   scheduleFiltersSchema,
+  publishDraftsSchema,
   type CreateScheduleInput,
+  type PublishDraftsInput,
   type UpdateScheduleInput,
 } from '@/lib/validations/schedule'
 import {
@@ -284,6 +286,100 @@ async function canModifySchedule(
 
   // DIRECTOR et MANAGER : peuvent modifier selon leurs acces
   return canAccessSchedule(user, schedule)
+}
+
+/**
+ * Prévient chaque employé concerné de créneaux qu'il peut désormais voir :
+ * une notification groupée in-app, et l'email SP-480. Fire-and-forget.
+ *
+ * Extrait de createSchedule par SP-614 pour servir aussi à la publication.
+ */
+function notifyEmployeesOfNewSchedules(
+  schedules: {
+    id: string
+    employeeId: string
+    startDate: Date
+    endDate: Date
+    startTime: string
+    endTime: string
+    type: string
+    companyId: string
+  }[],
+  actorId: string
+): void {
+  // Notifier les employés du nouveau planning (groupé par employé, fire-and-forget)
+  const notifyEmpIds = [...new Set(schedules.map((s) => s.employeeId))]
+  prisma.employee
+    .findMany({
+      where: { id: { in: notifyEmpIds }, userId: { not: null } },
+      select: { id: true, userId: true },
+    })
+    .then((employees) => {
+      const userIdMap = new Map(employees.map((e) => [e.id, e.userId]))
+      // Grouper les schedules par employé pour envoyer UNE notification par employé
+      const schedulesByEmployee = new Map<string, typeof schedules>()
+      for (const s of schedules) {
+        const uid = userIdMap.get(s.employeeId)
+        if (uid) {
+          const existing = schedulesByEmployee.get(uid) || []
+          existing.push(s)
+          schedulesByEmployee.set(uid, existing)
+        }
+      }
+      // Envoyer une notification groupée par employé
+      for (const [uid, empSchedules] of schedulesByEmployee) {
+        createBatchPlanningNotification(
+          empSchedules.map((s) => ({
+            id: s.id,
+            startDate: s.startDate,
+            endDate: s.endDate,
+            startTime: s.startTime,
+            endTime: s.endTime,
+            type: s.type,
+            companyId: s.companyId,
+          })),
+          uid,
+          'created',
+          actorId,
+          // SP-604 : l'email part par le bloc SP-480 ci-dessous
+          { skipEmail: true }
+        ).catch(console.error)
+      }
+    })
+    .catch(console.error)
+
+  // SP-480 : Email de notification planning aux employés concernés (fire-and-forget)
+  const notifEmployeeIds = [...new Set(schedules.map((s) => s.employeeId))]
+  prisma.employee
+    .findMany({
+      where: { id: { in: notifEmployeeIds } },
+      select: { id: true, firstName: true, email: true },
+    })
+    .then(async (employees) => {
+      for (const emp of employees) {
+        if (!emp.email) continue
+        const canSend = await canSendEmailToEmployee(emp.email, 'planning')
+        if (!canSend) continue
+        const empSchedules = schedules.filter((s) => s.employeeId === emp.id)
+        if (empSchedules.length === 0) continue
+        const first = empSchedules[0]
+        if (!first) continue
+        sendScheduleNotificationEmail({
+          employeeEmail: emp.email,
+          firstName: emp.firstName,
+          action: 'created',
+          count: empSchedules.length,
+          startDate: first.startDate,
+          endDate:
+            empSchedules.length > 1
+              ? empSchedules[empSchedules.length - 1]?.endDate
+              : undefined,
+          scheduleType: first.type,
+          timeRange: `${first.startTime} - ${first.endTime}`,
+        }).catch(console.error)
+      }
+    })
+    .catch(console.error)
 }
 
 /**
@@ -1036,79 +1132,12 @@ export async function createSchedule(
       }).catch(console.error)
     }
 
-    // Notifier les employés du nouveau planning (groupé par employé, fire-and-forget)
-    const notifyEmpIds = [...new Set(schedules.map((s) => s.employeeId))]
-    prisma.employee
-      .findMany({
-        where: { id: { in: notifyEmpIds }, userId: { not: null } },
-        select: { id: true, userId: true },
-      })
-      .then((employees) => {
-        const userIdMap = new Map(employees.map((e) => [e.id, e.userId]))
-        // Grouper les schedules par employé pour envoyer UNE notification par employé
-        const schedulesByEmployee = new Map<string, typeof schedules>()
-        for (const s of schedules) {
-          const uid = userIdMap.get(s.employeeId)
-          if (uid) {
-            const existing = schedulesByEmployee.get(uid) || []
-            existing.push(s)
-            schedulesByEmployee.set(uid, existing)
-          }
-        }
-        // Envoyer une notification groupée par employé
-        for (const [uid, empSchedules] of schedulesByEmployee) {
-          createBatchPlanningNotification(
-            empSchedules.map((s) => ({
-              id: s.id,
-              startDate: s.startDate,
-              endDate: s.endDate,
-              startTime: s.startTime,
-              endTime: s.endTime,
-              type: s.type,
-              companyId: s.companyId,
-            })),
-            uid,
-            'created',
-            user.id,
-            // SP-604 : l'email part par le bloc SP-480 ci-dessous
-            { skipEmail: true }
-          ).catch(console.error)
-        }
-      })
-      .catch(console.error)
-
-    // SP-480 : Email de notification planning aux employés concernés (fire-and-forget)
-    const notifEmployeeIds = [...new Set(schedules.map((s) => s.employeeId))]
-    prisma.employee
-      .findMany({
-        where: { id: { in: notifEmployeeIds } },
-        select: { id: true, firstName: true, email: true },
-      })
-      .then(async (employees) => {
-        for (const emp of employees) {
-          if (!emp.email) continue
-          const canSend = await canSendEmailToEmployee(emp.email, 'planning')
-          if (!canSend) continue
-          const empSchedules = schedules.filter((s) => s.employeeId === emp.id)
-          if (empSchedules.length === 0) continue
-          const first = empSchedules[0]
-          if (!first) continue
-          sendScheduleNotificationEmail({
-            employeeEmail: emp.email,
-            firstName: emp.firstName,
-            action: 'created',
-            count: empSchedules.length,
-            startDate: first.startDate,
-            endDate:
-              empSchedules.length > 1
-                ? empSchedules[empSchedules.length - 1]?.endDate
-                : undefined,
-            scheduleType: first.type,
-            timeRange: `${first.startTime} - ${first.endTime}`,
-          }).catch(console.error)
-        }
-      })
-      .catch(console.error)
+    // SP-614 : un brouillon reste invisible des employés, qui ne voient que
+    // les créneaux CONFIRMED. Les prévenir maintenant annonçait un planning
+    // introuvable ; ils le sont à la publication (publishDraftSchedules).
+    if (validated.status === 'CONFIRMED') {
+      notifyEmployeesOfNewSchedules(schedules, user.id)
+    }
 
     revalidatePath('/app/schedules')
     revalidatePath('/app/dashboard')
@@ -1969,6 +1998,117 @@ export async function updateScheduleStatus(
     return { success: true, data: updated as ScheduleWithRelations }
   } catch (error) {
     console.error('[updateScheduleStatus] Error:', error)
+    const prismaError = handlePrismaError(error)
+    return { success: false, error: prismaError.error }
+  }
+}
+
+/**
+ * Publie les brouillons d'une période : DRAFT vers CONFIRMED (SP-614)
+ *
+ * Le 22 octobre 2026, Patisserie CARL a posé 40 créneaux en brouillon sur un
+ * mois, sans rien qui dise que ses employées ne les verraient pas. Cette
+ * action sert le bouton « Publier » du bandeau de la page planning.
+ *
+ * Périmètre : l'entreprise de l'utilisateur, toujours, et pour un MANAGER
+ * les seules équipes qu'il gère. Les employés concernés sont prévenus une
+ * fois, et seulement si cet appel a bien publié tout ce qu'il a lu : un
+ * double clic concurrent publie zéro ligne et ne notifie rien.
+ */
+export async function publishDraftSchedules(
+  input: PublishDraftsInput
+): Promise<CrudActionResult<{ published: number }>> {
+  const authResult = await getAuthenticatedUser()
+
+  if (!authResult.success) {
+    return { success: false, error: authResult.error }
+  }
+
+  const impersonationBlock = await assertNotImpersonating()
+  if (impersonationBlock) return impersonationBlock
+
+  const user = authResult.user
+
+  if (user.role !== 'DIRECTOR' && user.role !== 'MANAGER') {
+    return { success: false, error: 'Action non autorisée pour ce rôle' }
+  }
+  if (!user.companyId) {
+    return { success: false, error: 'Utilisateur sans entreprise associée' }
+  }
+  const companyId = user.companyId
+
+  const validation = validateData(publishDraftsSchema, input)
+  if (!validation.success) {
+    return { success: false, error: validation.error }
+  }
+
+  try {
+    const where: Prisma.ScheduleWhereInput = {
+      companyId,
+      employee: { companyId },
+      status: 'DRAFT',
+      startDate: {
+        gte: toCalendarDay(validation.data.startDate),
+        lte: endOfCalendarDay(toCalendarDay(validation.data.endDate)),
+      },
+    }
+    if (user.role === 'MANAGER') {
+      where.OR = [
+        { teamId: { in: user.managedTeamIds } },
+        { employee: { teamId: { in: user.managedTeamIds } } },
+      ]
+    }
+
+    const drafts = await prisma.schedule.findMany({
+      where,
+      select: {
+        id: true,
+        employeeId: true,
+        startDate: true,
+        endDate: true,
+        startTime: true,
+        endTime: true,
+        type: true,
+        companyId: true,
+      },
+      orderBy: { startDate: 'asc' },
+    })
+
+    if (drafts.length === 0) {
+      return { success: true, data: { published: 0 } }
+    }
+
+    const { count } = await prisma.schedule.updateMany({
+      where: {
+        id: { in: drafts.map((d) => d.id) },
+        companyId,
+        status: 'DRAFT',
+      },
+      data: { status: 'CONFIRMED' },
+    })
+
+    logAuditAction({
+      action: 'STATUS_CHANGE',
+      entityType: 'SCHEDULE',
+      entityId: drafts[0]?.id,
+      userId: user.id,
+      companyId,
+      details: { from: 'DRAFT', to: 'CONFIRMED', count },
+    }).catch(console.error)
+
+    if (count === drafts.length) {
+      notifyEmployeesOfNewSchedules(drafts, user.id)
+    }
+
+    revalidatePath('/app/schedules')
+    revalidatePath('/app/dashboard')
+    revalidatePath('/app/manager/dashboard')
+    revalidatePath('/app/director/dashboard')
+    invalidateDashboardCache(companyId).catch(console.error)
+
+    return { success: true, data: { published: count } }
+  } catch (error) {
+    console.error('[publishDraftSchedules] Error:', error)
     const prismaError = handlePrismaError(error)
     return { success: false, error: prismaError.error }
   }

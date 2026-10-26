@@ -79,6 +79,10 @@ export default defineConfig({
     // elle restait vide tant qu'aucun creneau n'existait, sans aucune case ou
     // cliquer pour en creer un (SP-601). Defaut mesure sur un compte reel.
     'schedules/grille-affiche-tous-les-employes.spec.ts',
+
+    // 🟡 IMPORTANT : un planning entier en brouillon restait invisible des
+    // employes sans que rien ne le signale (SP-614, Patisserie CARL).
+    'schedules/brouillons-publication.spec.ts',
   ],
 
   // === CONFIGURATION GLOBALE ===
