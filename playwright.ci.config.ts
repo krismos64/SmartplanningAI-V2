@@ -58,6 +58,8 @@ export default defineConfig({
     // 🟡 IMPORTANT : CRUD
     'crud/employees.spec.ts',
     'crud/teams.spec.ts',
+    // SP-613 : creer un employe depuis une equipe ramene a ses membres
+    'crud/creer-employe-depuis-equipe.spec.ts',
     'crud/companies.spec.ts',
 
     // 🟡 IMPORTANT : Workflow congés (création + validation manager)
@@ -79,6 +81,14 @@ export default defineConfig({
     // elle restait vide tant qu'aucun creneau n'existait, sans aucune case ou
     // cliquer pour en creer un (SP-601). Defaut mesure sur un compte reel.
     'schedules/grille-affiche-tous-les-employes.spec.ts',
+
+    // 🟡 IMPORTANT : un planning entier en brouillon restait invisible des
+    // employes sans que rien ne le signale (SP-614, Patisserie CARL).
+    'schedules/brouillons-publication.spec.ts',
+
+    // 🟡 IMPORTANT : un planning le week-end avec des jours d'ouverture
+    // restes a lundi-vendredi, qui servent aussi au decompte des conges (SP-617)
+    'schedules/jours-ouverture-proposes.spec.ts',
   ],
 
   // === CONFIGURATION GLOBALE ===

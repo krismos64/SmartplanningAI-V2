@@ -46,6 +46,9 @@ vi.mock('@/lib/actions/schedules', () => ({
     mockCreateSchedule(data) as Promise<unknown>,
   updateSchedule: (data: unknown) =>
     mockUpdateSchedule(data) as Promise<unknown>,
+  // SP-615 : lu par useWeeklyHoursCheck pour le contrôle des heures
+  getSchedules: () =>
+    Promise.resolve({ success: true, data: { schedules: [] } }),
 }))
 
 // Mock checkAvailabilityConflicts Server Action

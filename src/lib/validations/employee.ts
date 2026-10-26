@@ -10,6 +10,7 @@
  */
 
 import { z } from 'zod'
+import type { UserRole } from '@prisma/client'
 import { nameSchema, phoneSchema, optionalDateSchema } from './common'
 
 // ============================================================================
@@ -259,6 +260,8 @@ export interface EmployeeWithCounts {
      * n'avait jamais recu ou ouvert son invitation.
      */
     isEmailVerified?: boolean
+    /** SP-611 : la fiche d'un dirigeant ne se désactive pas */
+    role?: UserRole
   } | null
   /**
    * Dernier email refusé par le serveur du destinataire, s'il y en a un.

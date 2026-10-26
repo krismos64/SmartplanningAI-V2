@@ -59,6 +59,7 @@ import {
 import { emitNotification } from '@/lib/notifications/emit-notification'
 import { resetPasswordSchema } from '@/lib/validations'
 import { invalidateDashboardCache, invalidateEmployeesCache } from '@/lib/cache'
+import { getDeactivationBlock } from '@/lib/utils/employee-deactivation'
 
 // ============================================================================
 // Types internes
@@ -327,6 +328,7 @@ async function canAccessEmployee(
           email: true,
           image: true,
           isEmailVerified: true,
+          role: true, // SP-611 : garde de désactivation
         },
       },
       company: {
@@ -537,6 +539,7 @@ export async function listEmployees(
               email: true,
               image: true,
               isEmailVerified: true,
+              role: true, // SP-611 : garde de désactivation
             },
           },
           company: {
@@ -1045,6 +1048,14 @@ export async function updateEmployee(
       }
     }
 
+    // SP-611 : le formulaire d'édition porte aussi le statut actif
+    if (updateData.isActive === false && existing.isActive) {
+      const block = getDeactivationBlock(existing, user.id)
+      if (block) {
+        return { success: false, error: block, field: 'isActive' }
+      }
+    }
+
     // Pour un MANAGER, verifie que si teamId change, c'est vers une de ses equipes
     if (user.role === 'MANAGER' && updateData.teamId) {
       if (!user.managedTeamIds.includes(updateData.teamId)) {
@@ -1339,6 +1350,15 @@ export async function toggleEmployeeStatus(
       return {
         success: false,
         error: 'Employé non trouvé ou accès non autorisé',
+      }
+    }
+
+    // SP-611 : un dirigeant ne désactive ni sa fiche ni celle d'un dirigeant.
+    // La réactivation reste permise, pour réparer une fiche déjà désactivée.
+    if (!isActive) {
+      const block = getDeactivationBlock(existing, user.id)
+      if (block) {
+        return { success: false, error: block }
       }
     }
 

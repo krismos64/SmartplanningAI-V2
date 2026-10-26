@@ -10,6 +10,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import Link from 'next/link'
 import { UserPlus, UserMinus, Search, Users, Loader2 } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
@@ -288,13 +289,33 @@ export function TeamMembersManager({
                       <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
                     </div>
                   ) : filteredAvailable.length === 0 ? (
-                    <div className="flex h-full flex-col items-center justify-center gap-2 text-center">
+                    <div
+                      className="flex h-full flex-col items-center justify-center gap-3 text-center"
+                      data-testid="no-available-employee"
+                    >
                       <Users className="h-8 w-8 text-muted-foreground" />
+                      {/*
+                        SP-613 : ce message disait « Tous les employés sont
+                        déjà dans une équipe » à une entreprise qui n'en
+                        avait aucun. Les deux dirigeants inscrits en octobre
+                        2026 y ont buté avant de trouver la page Employés.
+                      */}
                       <p className="text-sm text-muted-foreground">
                         {searchQuery
                           ? 'Aucun employé trouvé'
-                          : 'Tous les employés sont déjà dans une équipe'}
+                          : 'Aucun employé disponible pour cette équipe.'}
                       </p>
+                      {!searchQuery && (
+                        <Button asChild className="min-h-11">
+                          <Link
+                            href={`/app/dashboard/employees/new?teamId=${encodeURIComponent(team.id)}`}
+                            data-testid="create-employee-from-team"
+                          >
+                            <UserPlus className="mr-2 h-4 w-4" />
+                            Créer un employé
+                          </Link>
+                        </Button>
+                      )}
                     </div>
                   ) : (
                     <div className="space-y-2">

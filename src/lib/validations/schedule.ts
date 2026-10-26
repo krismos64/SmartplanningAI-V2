@@ -349,6 +349,28 @@ export const scheduleFiltersSchema = z.object({
 
 export type ScheduleFilters = z.infer<typeof scheduleFiltersSchema>
 
+/**
+ * Publication des brouillons d'une période (SP-614)
+ *
+ * Bornes en instants du navigateur, ramenées au jour calendaire côté serveur.
+ * La période ne dépasse pas une vue mois, marge comprise.
+ */
+export const publishDraftsSchema = z
+  .object({
+    startDate: z.coerce.date(),
+    endDate: z.coerce.date(),
+  })
+  .refine((v) => v.endDate >= v.startDate, {
+    message: 'La fin de période précède son début',
+    path: ['endDate'],
+  })
+  .refine(
+    (v) => v.endDate.getTime() - v.startDate.getTime() <= 45 * 86_400_000,
+    { message: 'Période trop longue', path: ['endDate'] }
+  )
+
+export type PublishDraftsInput = z.infer<typeof publishDraftsSchema>
+
 // ============================================================================
 // LABELS FRANCAIS
 // ============================================================================

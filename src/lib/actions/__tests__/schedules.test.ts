@@ -6,7 +6,15 @@
 
 /* eslint-disable @typescript-eslint/unbound-method */
 
-import { afterAll, beforeAll, describe, it, expect, vi, beforeEach } from 'vitest'
+import {
+  afterAll,
+  beforeAll,
+  describe,
+  it,
+  expect,
+  vi,
+  beforeEach,
+} from 'vitest'
 import {
   getSchedules,
   getScheduleById,
@@ -184,6 +192,25 @@ describe('schedules actions', () => {
         expect(result.data.schedules).toHaveLength(1)
         expect(result.data.total).toBe(1)
       }
+    })
+
+    it("SP-615 : des employeeIds d'une autre entreprise ne lèvent pas le filtre entreprise", async () => {
+      // Le contrôle des heures du formulaire lit les créneaux par employeeIds
+      vi.mocked(auth).mockResolvedValue(mockSession('DIRECTOR') as never)
+      vi.mocked(prisma.employee.findUnique).mockResolvedValue(null)
+      vi.mocked(prisma.$transaction).mockResolvedValue([[], 0])
+
+      await getSchedules({
+        employeeIds: ['clemployeeautrecomp01'],
+        startDate: new Date('2026-11-02T00:00:00.000Z'),
+        endDate: new Date('2026-11-08T23:59:59.999Z'),
+        limit: 500,
+      })
+
+      const call = vi.mocked(prisma.schedule.findMany).mock.calls[0]
+      const where = (call?.[0] as { where: Record<string, unknown> }).where
+      expect(where.companyId).toBe('clcompany0000000001')
+      expect(where.employeeId).toEqual({ in: ['clemployeeautrecomp01'] })
     })
 
     it('filtre les schedules pour un EMPLOYEE avec equipe (OR propres + equipe)', async () => {
@@ -986,7 +1013,9 @@ describe('schedules actions : jour calendaire (SP-609)', () => {
     expect(where?.startDate).toEqual({
       lte: new Date('2026-10-04T23:59:59.999Z'),
     })
-    expect(where?.endDate).toEqual({ gte: new Date('2026-10-04T00:00:00.000Z') })
+    expect(where?.endDate).toEqual({
+      gte: new Date('2026-10-04T00:00:00.000Z'),
+    })
   })
 
   it('ramène un glisser-déposer au jour du créneau', async () => {

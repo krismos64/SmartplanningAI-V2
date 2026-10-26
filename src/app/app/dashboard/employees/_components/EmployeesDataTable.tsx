@@ -189,14 +189,18 @@ export function EmployeesDataTable({ userRole }: EmployeesDataTableProps) {
       // Autres rôles : toggle direct
       void (async () => {
         try {
-          await toggleEmployeeStatus(employee.id, !employee.isActive)
+          const result = await toggleEmployeeStatus(
+            employee.id,
+            !employee.isActive
+          )
+          if (!result.success) toastError(result.error ?? 'Action impossible')
           await fetchData()
         } catch (error) {
           console.error('Erreur toggle status:', error)
         }
       })()
     },
-    [fetchData, userRole]
+    [fetchData, userRole, toastError]
   )
 
   const confirmToggleStatus = useCallback(() => {
@@ -205,13 +209,14 @@ export function EmployeesDataTable({ userRole }: EmployeesDataTableProps) {
     setToggleEmployee(null)
     void (async () => {
       try {
-        await toggleEmployeeStatus(emp.id, !emp.isActive)
+        const result = await toggleEmployeeStatus(emp.id, !emp.isActive)
+        if (!result.success) toastError(result.error ?? 'Action impossible')
         await fetchData()
       } catch (error) {
         console.error('Erreur toggle status:', error)
       }
     })()
-  }, [toggleEmployee, fetchData])
+  }, [toggleEmployee, fetchData, toastError])
 
   /**
    * SP-578 : relance de l'invitation d'un compte jamais active.

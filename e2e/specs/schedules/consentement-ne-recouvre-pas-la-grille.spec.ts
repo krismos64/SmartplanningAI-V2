@@ -35,7 +35,7 @@ async function ouvrirLesPlannings(page: Page): Promise<void> {
 
   await page.goto('/app/dashboard/schedules')
   await page.waitForLoadState('domcontentloaded')
-  await page.getByTestId('new-shift-button').waitFor({ timeout: 60000 })
+  await page.getByTestId('new-shift-button').first().waitFor({ timeout: 60000 })
 }
 
 test.describe('SP-600 : consentement cookies dans le back-office', () => {
@@ -91,7 +91,7 @@ test.describe('SP-600 : consentement cookies dans le back-office', () => {
     await expect(page.getByTestId('cookie-consent-dialog')).toHaveCount(0)
 
     await page.reload()
-    await page.getByTestId('new-shift-button').waitFor({ timeout: 60000 })
+    await page.getByTestId('new-shift-button').first().waitFor({ timeout: 60000 })
 
     await expect(page.getByTestId('cookie-consent-dialog')).toHaveCount(0)
     await expect(page.getByTestId('cookie-banner')).toHaveCount(0)

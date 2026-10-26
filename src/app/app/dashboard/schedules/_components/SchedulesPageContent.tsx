@@ -19,6 +19,7 @@ import {
   deleteSchedule,
   deleteRecurrenceGroup,
   updateRecurrenceGroup,
+  publishDraftSchedules,
   type ScheduleWithRelations,
 } from '@/lib/actions/schedules'
 import {
@@ -50,6 +51,17 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet'
 import { SchedulesFilters } from './SchedulesFilters'
+import { DraftsBanner } from './DraftsBanner'
+import { OpeningDaysSuggestion } from './OpeningDaysSuggestion'
+import {
+  getCompanySettings,
+  updateCompanySettings,
+} from '@/lib/actions/company-settings'
+import {
+  findDaysOutsideOpening,
+  mergeWorkingDays,
+} from '@/lib/utils/opening-days'
+import type { DayOfWeek } from '@/types/company'
 import {
   Dialog,
   DialogContent,
@@ -215,7 +227,7 @@ export function SchedulesPageContent({
       ?.trim()
       .toLowerCase()
 
-    return employees.filter((e) => {
+    const filtered = employees.filter((e) => {
       if (teamId && e.teamId !== teamId) return false
       if (employeeId && e.id !== employeeId) return false
       if (
@@ -226,7 +238,13 @@ export function SchedulesPageContent({
       }
       return true
     })
-  }, [employees, activeFilters])
+    // SP-616 : la grille regroupe ses lignes par équipe
+    const teamNames = new Map(teams.map((t) => [t.id, t.name]))
+    return filtered.map((e) => ({
+      ...e,
+      teamName: e.teamId ? (teamNames.get(e.teamId) ?? null) : null,
+    }))
+  }, [employees, activeFilters, teams])
 
   // Calcul des dates selon le mode de vue
   // Protéger contre une date invalide (ex: parsing Schedule-X)
@@ -316,6 +334,72 @@ export function SchedulesPageContent({
   // `leaveRequests`. Le `useMemo` de SP-582, qui stabilisait cette dépendance,
   // n'a donc plus d'objet : la source du doublon a disparu.
 
+  // SP-614 : brouillons de la période affichée, que les employés ne voient pas
+  const [isPublishing, setIsPublishing] = useState(false)
+  const draftCount = useMemo(
+    () => schedules.filter((s) => s.status === 'DRAFT').length,
+    [schedules]
+  )
+
+    // SP-617 : jours planifiés hors des jours d'ouverture (DIRECTOR seul, le
+  // seul rôle qui peut modifier les paramètres de l'entreprise)
+  const isDirector = userRole === 'DIRECTOR'
+  const ignoredDaysKey = `sp617-jours-ignores:${companyId}`
+  const [workingDays, setWorkingDays] = useState<DayOfWeek[] | null>(null)
+  const [ignoredDays, setIgnoredDays] = useState<DayOfWeek[]>([])
+  const [isSavingDays, setIsSavingDays] = useState(false)
+
+  useEffect(() => {
+    if (!isDirector) return
+    try {
+      const raw = localStorage.getItem(ignoredDaysKey)
+      if (raw) setIgnoredDays(JSON.parse(raw) as DayOfWeek[])
+    } catch {
+      // Stockage indisponible : la proposition reviendra, sans gravité
+    }
+    void getCompanySettings().then((result) => {
+      if (result.success && result.data) setWorkingDays(result.data.workingDays)
+    })
+  }, [isDirector, ignoredDaysKey])
+
+  const daysOutsideOpening = useMemo(
+    () =>
+      workingDays
+        ? findDaysOutsideOpening(schedules, workingDays, ignoredDays)
+        : [],
+    [schedules, workingDays, ignoredDays]
+  )
+
+  const handleAddOpeningDays = useCallback(() => {
+    if (!workingDays) return
+    setIsSavingDays(true)
+    void (async () => {
+      try {
+        const result = await updateCompanySettings({
+          workingDays: mergeWorkingDays(workingDays, daysOutsideOpening),
+        })
+        if (!result.success) {
+          toast.error(result.error ?? 'Mise à jour impossible')
+          return
+        }
+        setWorkingDays(result.data.workingDays)
+        toast.success("Jours d'ouverture mis à jour")
+      } finally {
+        setIsSavingDays(false)
+      }
+    })()
+  }, [workingDays, daysOutsideOpening, toast])
+
+  const handleDismissOpeningDays = useCallback(() => {
+    const next = [...new Set([...ignoredDays, ...daysOutsideOpening])]
+    setIgnoredDays(next)
+    try {
+      localStorage.setItem(ignoredDaysKey, JSON.stringify(next))
+    } catch {
+      // Stockage indisponible : le refus vaut pour cette visite seulement
+    }
+  }, [ignoredDays, daysOutsideOpening, ignoredDaysKey])
+
   // Charger les indisponibilités et congés au changement de période
   // On utilise getTime() pour des dépendances primitives stables
   const rangeStartTime = dateRange.start.getTime()
@@ -348,6 +432,33 @@ export function SchedulesPageContent({
   )
 
   // Callback quand Schedule-X change de période (navigation interne)
+  const handlePublishDrafts = useCallback(() => {
+    setIsPublishing(true)
+    void (async () => {
+      try {
+        const result = await publishDraftSchedules({
+          startDate: new Date(rangeStartTime),
+          endDate: new Date(rangeEndTime),
+        })
+        if (!result.success) {
+          toast.error(result.error ?? 'Publication impossible')
+          return
+        }
+        const n = result.data.published
+        toast.success(
+          n === 1 ? '1 créneau publié' : `${n} créneaux publiés`
+        )
+        reloadSchedules(
+          new Date(rangeStartTime),
+          new Date(rangeEndTime),
+          activeFilters
+        )
+      } finally {
+        setIsPublishing(false)
+      }
+    })()
+  }, [rangeStartTime, rangeEndTime, activeFilters, reloadSchedules, toast])
+
   const handleRangeChange = useCallback(
     (start: Date, end: Date) => {
       // Déduire le viewMode depuis la durée du range
@@ -557,6 +668,23 @@ export function SchedulesPageContent({
           )}
         </div>
       </div>
+
+      {isDirector && (
+        <OpeningDaysSuggestion
+          days={daysOutsideOpening}
+          isSaving={isSavingDays}
+          onAdd={handleAddOpeningDays}
+          onDismiss={handleDismissOpeningDays}
+        />
+      )}
+
+      {canCreate && (
+        <DraftsBanner
+          count={draftCount}
+          isPublishing={isPublishing}
+          onPublish={handlePublishDrafts}
+        />
+      )}
 
       {/* Filtres — un seul composant, replié sur mobile */}
       <details open className="group">

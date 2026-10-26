@@ -117,10 +117,7 @@ describe('TeamMembersManager', () => {
       success: true,
       data: {
         ...mockTeam,
-        employees: [
-          ...mockMembers,
-          mockAvailableEmployees[0],
-        ],
+        employees: [...mockMembers, mockAvailableEmployees[0]],
       },
     })
     mockRemoveTeamMember.mockResolvedValue({
@@ -181,9 +178,7 @@ describe('TeamMembersManager', () => {
 
     it('affiche "Ajouter le premier membre" en état vide', () => {
       render(<TeamMembersManager team={mockTeamEmpty} />)
-      expect(
-        screen.getByText('Ajouter le premier membre')
-      ).toBeInTheDocument()
+      expect(screen.getByText('Ajouter le premier membre')).toBeInTheDocument()
     })
 
     it('masque "Ajouter le premier membre" en lecture seule', () => {
@@ -197,9 +192,7 @@ describe('TeamMembersManager', () => {
   describe('Mode lecture seule', () => {
     it('masque le bouton "Ajouter un membre" en readOnly', () => {
       render(<TeamMembersManager team={mockTeam} readOnly />)
-      expect(
-        screen.queryByText('Ajouter un membre')
-      ).not.toBeInTheDocument()
+      expect(screen.queryByText('Ajouter un membre')).not.toBeInTheDocument()
     })
 
     it('masque les boutons de suppression des membres en readOnly', () => {
@@ -240,9 +233,7 @@ describe('TeamMembersManager', () => {
       await user.click(screen.getByText('Ajouter un membre'))
 
       await waitFor(() => {
-        expect(mockGetAvailableEmployees).toHaveBeenCalledWith(
-          'clteam000001'
-        )
+        expect(mockGetAvailableEmployees).toHaveBeenCalledWith('clteam000001')
       })
     })
 
@@ -324,12 +315,14 @@ describe('TeamMembersManager', () => {
       })
 
       // Cliquer sur le bouton d'ajout à côté d'Alice Martin
-      const addButtons = screen.getAllByRole('button').filter(
-        (btn) => btn.closest('[class*="hover:bg-muted"]')
-      )
+      const addButtons = screen
+        .getAllByRole('button')
+        .filter((btn) => btn.closest('[class*="hover:bg-muted"]'))
 
       // Le bouton UserPlus est à côté de chaque employé
-      const aliceRow = screen.getByText('Alice Martin').closest('div[class*="items-center justify-between"]')
+      const aliceRow = screen
+        .getByText('Alice Martin')
+        .closest('div[class*="items-center justify-between"]')
       const addButton = aliceRow?.querySelector('button')
       if (addButton) {
         await user.click(addButton)
@@ -374,7 +367,9 @@ describe('TeamMembersManager', () => {
       await waitFor(() => {
         expect(screen.getByText('Retirer ce membre ?')).toBeInTheDocument()
         // Le nom est dans un <strong> dans le dialog
-        const strongElement = screen.getByRole('alertdialog').querySelector('strong')
+        const strongElement = screen
+          .getByRole('alertdialog')
+          .querySelector('strong')
         expect(strongElement?.textContent).toBe('Jean Dupont')
       })
     })
@@ -440,7 +435,9 @@ describe('TeamMembersManager', () => {
         expect(screen.getByText('Alice Martin')).toBeInTheDocument()
       })
 
-      const aliceRow = screen.getByText('Alice Martin').closest('div[class*="items-center justify-between"]')
+      const aliceRow = screen
+        .getByText('Alice Martin')
+        .closest('div[class*="items-center justify-between"]')
       const addButton = aliceRow?.querySelector('button')
       if (addButton) {
         await user.click(addButton)
@@ -469,7 +466,9 @@ describe('TeamMembersManager', () => {
       })
     })
 
-    it('affiche message quand aucun employé disponible', async () => {
+    it('sans employé disponible, propose de créer un employé pour cette équipe (SP-613)', async () => {
+      // Le message disait « Tous les employés sont déjà dans une équipe » à
+      // une entreprise qui n'en avait aucun.
       mockGetAvailableEmployees.mockResolvedValue({
         success: true,
         data: [],
@@ -482,11 +481,18 @@ describe('TeamMembersManager', () => {
 
       await waitFor(() => {
         expect(
-          screen.getByText(
-            'Tous les employés sont déjà dans une équipe'
-          )
+          screen.getByText('Aucun employé disponible pour cette équipe.')
         ).toBeInTheDocument()
       })
+      expect(
+        screen.queryByText('Tous les employés sont déjà dans une équipe')
+      ).not.toBeInTheDocument()
+      expect(
+        screen.getByRole('link', { name: /Créer un employé/ })
+      ).toHaveAttribute(
+        'href',
+        `/app/dashboard/employees/new?teamId=${mockTeam.id}`
+      )
     })
   })
 
@@ -497,9 +503,7 @@ describe('TeamMembersManager', () => {
         employees: [mockMembers[0]],
       }
       render(<TeamMembersManager team={teamOneMember} />)
-      expect(
-        screen.getByText('1 membre dans cette équipe')
-      ).toBeInTheDocument()
+      expect(screen.getByText('1 membre dans cette équipe')).toBeInTheDocument()
     })
   })
 })
