@@ -105,6 +105,12 @@ interface EmployeeFormProps {
     monthlyAmount: number
     hasActiveSubscription: boolean
   }
+  /**
+   * SP-613 : création lancée depuis une équipe. L'équipe est préremplie et
+   * la création ramène à ses membres. Valeurs déjà vérifiées côté serveur
+   * par resolveTeamPrefill.
+   */
+  teamPrefill?: { teamId: string; returnTo: string } | null
   /** Callback apres succes */
   onSuccess?: () => void
   /** Callback apres annulation */
@@ -171,6 +177,7 @@ export function EmployeeForm({
   billingInfo,
   onSuccess,
   onCancel,
+  teamPrefill,
 }: EmployeeFormProps) {
   const router = useRouter()
   const toast = useToast()
@@ -205,7 +212,7 @@ export function EmployeeForm({
     successMessage: 'Employé créé avec succès',
     onSuccess: () => {
       onSuccess?.()
-      router.push('/app/dashboard/employees')
+      router.push(teamPrefill?.returnTo ?? '/app/dashboard/employees')
       router.refresh()
     },
   })
@@ -246,7 +253,7 @@ export function EmployeeForm({
           email: '',
           hireDate: '',
           weeklyHours: 35,
-          teamId: '',
+          teamId: teamPrefill?.teamId ?? '',
           isActive: true,
           role: 'EMPLOYEE',
         },

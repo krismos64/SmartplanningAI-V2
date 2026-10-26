@@ -58,6 +58,8 @@ export default defineConfig({
     // 🟡 IMPORTANT : CRUD
     'crud/employees.spec.ts',
     'crud/teams.spec.ts',
+    // SP-613 : creer un employe depuis une equipe ramene a ses membres
+    'crud/creer-employe-depuis-equipe.spec.ts',
     'crud/companies.spec.ts',
 
     // 🟡 IMPORTANT : Workflow congés (création + validation manager)

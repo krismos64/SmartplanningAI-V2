@@ -17,13 +17,17 @@ import { Button } from '@/components/ui/button'
 import { EmployeeForm } from '@/components/admin/employees'
 import { getTeamsForSelect } from '@/lib/actions/employees'
 import { prisma } from '@/lib/prisma'
+import { resolveTeamPrefill } from '@/lib/utils/team-prefill'
 
 export const metadata: Metadata = {
   title: 'Nouvel employé | SmartPlanning',
   description: 'Créer un nouvel employé',
 }
 
-export default async function NewEmployeePage() {
+export default async function NewEmployeePage(props: {
+  searchParams: Promise<{ teamId?: string | string[] }>
+}) {
+  const searchParams = await props.searchParams
   const session = await auth()
 
   if (!session?.user) {
@@ -39,6 +43,9 @@ export default async function NewEmployeePage() {
   // Charger les equipes disponibles
   const teamsResult = await getTeamsForSelect()
   const teams = teamsResult.success ? teamsResult.data || [] : []
+
+  // SP-613 : création lancée depuis la page membres d'une équipe
+  const teamPrefill = resolveTeamPrefill(searchParams.teamId, teams)
 
   // CompanyId pour la creation
   const companyId = session.user.companyId || ''
@@ -89,7 +96,7 @@ export default async function NewEmployeePage() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="sm" asChild>
-            <Link href="/app/dashboard/employees">
+            <Link href={teamPrefill?.returnTo ?? '/app/dashboard/employees'}>
               <ArrowLeft className="mr-2 h-4 w-4" />
               Retour
             </Link>
@@ -117,6 +124,7 @@ export default async function NewEmployeePage() {
           teams={teams}
           userRole={role as 'SYSTEM_ADMIN' | 'DIRECTOR' | 'MANAGER'}
           billingInfo={billingInfo}
+          teamPrefill={teamPrefill}
         />
       </div>
     </div>
