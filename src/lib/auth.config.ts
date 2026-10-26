@@ -188,20 +188,23 @@ export const authConfig: NextAuthConfig = {
       // - Pas de companyId (SYSTEM_ADMIN sans entreprise)
       // - Rôle SYSTEM_ADMIN (pas concerné par les abonnements)
       // - Mode impersonation actif (on garde les données de la company cible)
+      // - Edge Runtime (middleware) : Prisma n'y tourne pas (SP-612). L'import
+      //   échouait dans le catch ci-dessous, mais Prisma écrivait d'abord
+      //   « prisma:error ... edge runtime » sur stderr, à chaque requête dès
+      //   5 minutes de session : 310 lignes pour une seule session le 20/10/2026.
+      //   Next.js remplace NEXT_RUNTIME au build, 'edge' dans le middleware.
       const SUBSCRIPTION_CHECK_INTERVAL = 5 * 60 * 1000 // 5 minutes
       const checkedAt = token.subscriptionCheckedAt as number | null
       if (
+        process.env.NEXT_RUNTIME !== 'edge' &&
         token.companyId &&
         token.role !== 'SYSTEM_ADMIN' &&
         !token.isImpersonating &&
         (!checkedAt || Date.now() - checkedAt > SUBSCRIPTION_CHECK_INTERVAL)
       ) {
         try {
-          // Import dynamique de Prisma : cette technique permet au code
-          // de fonctionner dans les deux environnements :
-          // - Côté serveur Node.js : l'import réussit, on fetch la DB
-          // - En Edge Runtime (middleware) : l'import échoue silencieusement,
-          //   le catch conserve les données existantes du token
+          // Import dynamique : le middleware partage ce fichier et ne doit
+          // pas embarquer Prisma. Côté Node.js seulement (garde ci-dessus).
           const { prisma } = await import('@/lib/prisma')
           const company = await prisma.company.findUnique({
             where: { id: token.companyId as string },
@@ -223,9 +226,8 @@ export const authConfig: NextAuthConfig = {
             token.subscriptionCheckedAt = Date.now()
           }
         } catch {
-          // En Edge Runtime, l'import Prisma échoue — c'est le comportement
-          // attendu. Le token conserve ses valeurs existantes jusqu'au
-          // prochain passage côté serveur Node.js.
+          // Base injoignable : le token conserve ses valeurs existantes
+          // jusqu'au prochain passage.
         }
       }
 
