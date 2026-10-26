@@ -201,6 +201,13 @@ describe('SP-614, publishDraftSchedules', () => {
 
     expect(mockBatchNotification).toHaveBeenCalledTimes(1)
     expect(mockSendEmail).toHaveBeenCalledTimes(1)
+
+    // Les destinataires sont choisis dans l'entreprise des créneaux
+    for (const call of mockEmployeeFindMany.mock.calls as [
+      { where: Record<string, unknown> },
+    ][]) {
+      expect(call[0].where.companyId).toEqual({ in: [COMPANY] })
+    }
   })
 
   it('borne un MANAGER à ses équipes', async () => {

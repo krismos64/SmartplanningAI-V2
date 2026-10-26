@@ -308,10 +308,17 @@ function notifyEmployeesOfNewSchedules(
   actorId: string
 ): void {
   // Notifier les employés du nouveau planning (groupé par employé, fire-and-forget)
+  // Sélection de destinataires : bornée explicitement à l'entreprise des
+  // créneaux, en plus des identifiants (règle multi-tenant)
+  const companyIds = [...new Set(schedules.map((s) => s.companyId))]
   const notifyEmpIds = [...new Set(schedules.map((s) => s.employeeId))]
   prisma.employee
     .findMany({
-      where: { id: { in: notifyEmpIds }, userId: { not: null } },
+      where: {
+        id: { in: notifyEmpIds },
+        companyId: { in: companyIds },
+        userId: { not: null },
+      },
       select: { id: true, userId: true },
     })
     .then((employees) => {
@@ -352,7 +359,7 @@ function notifyEmployeesOfNewSchedules(
   const notifEmployeeIds = [...new Set(schedules.map((s) => s.employeeId))]
   prisma.employee
     .findMany({
-      where: { id: { in: notifEmployeeIds } },
+      where: { id: { in: notifEmployeeIds }, companyId: { in: companyIds } },
       select: { id: true, firstName: true, email: true },
     })
     .then(async (employees) => {
