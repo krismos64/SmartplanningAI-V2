@@ -8,10 +8,9 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { listEmployees } from '@/lib/actions/employees'
+import { getEmployeesForSelect } from '@/lib/actions/employees'
 import { listTeams } from '@/lib/actions/teams'
 import { getCompanySettings } from '@/lib/actions/company-settings'
-import type { EmployeeWithCounts } from '@/lib/validations/employee'
 import type { TeamWithCounts } from '@/lib/validations/team'
 import type { CompanySettings } from '@/types/company'
 
@@ -61,18 +60,22 @@ export function useShiftFormData(): ShiftFormData {
     try {
       // Charger en parallèle
       const [employeesResult, teamsResult, settingsResult] = await Promise.all([
-        listEmployees({ pageSize: 100 }, { isActive: true }),
+        // Liste complète des employés actifs, bornée par les droits. Une page
+        // de 100 laissait hors du formulaire les employés suivants : dans une
+        // entreprise de 113 employés, cliquer la case du 108e ne présélectionnait
+        // personne et il était introuvable dans la liste (relevé par SP-616).
+        getEmployeesForSelect(),
         listTeams({ pageSize: 100 }),
         getCompanySettings(),
       ])
 
       if (employeesResult.success && employeesResult.data) {
         setEmployees(
-          employeesResult.data.data.map((emp: EmployeeWithCounts) => ({
+          employeesResult.data.map((emp) => ({
             id: emp.id,
             firstName: emp.firstName,
             lastName: emp.lastName,
-            teamId: emp.team?.id ?? null,
+            teamId: emp.teamId ?? null,
             weeklyHours: emp.weeklyHours,
           }))
         )

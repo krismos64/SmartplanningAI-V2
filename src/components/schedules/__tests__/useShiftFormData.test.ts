@@ -13,13 +13,12 @@ import { useShiftFormData } from '../useShiftFormData'
 // Mocks
 // ============================================================================
 
-const mockListEmployees = vi.fn()
+const mockGetEmployeesForSelect = vi.fn()
 const mockListTeams = vi.fn()
 const mockGetCompanySettings = vi.fn()
 
 vi.mock('@/lib/actions/employees', () => ({
-  listEmployees: (params: unknown, filters: unknown) =>
-    mockListEmployees(params, filters) as Promise<unknown>,
+  getEmployeesForSelect: () => mockGetEmployeesForSelect() as Promise<unknown>,
 }))
 
 vi.mock('@/lib/actions/teams', () => ({
@@ -34,28 +33,27 @@ vi.mock('@/lib/actions/company-settings', () => ({
 // Données de test
 // ============================================================================
 
+/** Forme de getEmployeesForSelect : liste à plat, sans pagination */
 const mockEmployeesData = {
   success: true,
-  data: {
-    data: [
-      {
-        id: 'emp-1',
-        firstName: 'Jean',
-        lastName: 'Dupont',
-        team: { id: 'team-1', name: 'Équipe A' },
-      },
-      {
-        id: 'emp-2',
-        firstName: 'Marie',
-        lastName: 'Martin',
-        team: { id: 'team-2', name: 'Équipe B' },
-      },
-    ],
-    total: 2,
-    page: 1,
-    pageSize: 100,
-    totalPages: 1,
-  },
+  data: [
+    {
+      id: 'emp-1',
+      firstName: 'Jean',
+      lastName: 'Dupont',
+      weeklyHours: 35,
+      teamId: 'team-1',
+      image: null,
+    },
+    {
+      id: 'emp-2',
+      firstName: 'Marie',
+      lastName: 'Martin',
+      weeklyHours: 24,
+      teamId: 'team-2',
+      image: null,
+    },
+  ],
 }
 
 const mockTeamsData = {
@@ -79,7 +77,7 @@ const mockTeamsData = {
 describe('useShiftFormData', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    mockListEmployees.mockResolvedValue(mockEmployeesData)
+    mockGetEmployeesForSelect.mockResolvedValue(mockEmployeesData)
     mockListTeams.mockResolvedValue(mockTeamsData)
     mockGetCompanySettings.mockResolvedValue({
       success: true,
@@ -134,6 +132,7 @@ describe('useShiftFormData', () => {
         firstName: 'Jean',
         lastName: 'Dupont',
         teamId: 'team-1',
+        weeklyHours: 35,
       })
     })
 
@@ -150,15 +149,30 @@ describe('useShiftFormData', () => {
       })
     })
 
-    it('appelle listEmployees avec les bons paramètres', async () => {
-      renderHook(() => useShiftFormData())
+    it('charge tous les employés, au-delà de 100 (SP-616)', async () => {
+      // TechCorp compte 113 employés actifs : avec une page de 100, le 108e
+      // était absent du formulaire et sa case ne présélectionnait personne.
+      mockGetEmployeesForSelect.mockResolvedValue({
+        success: true,
+        data: Array.from({ length: 150 }, (_, i) => ({
+          id: `emp-${i}`,
+          firstName: 'Prénom',
+          lastName: `Nom${i}`,
+          weeklyHours: 35,
+          teamId: null,
+          image: null,
+        })),
+      })
+
+      const { result } = renderHook(() => useShiftFormData())
 
       await waitFor(() => {
-        expect(mockListEmployees).toHaveBeenCalledWith(
-          { pageSize: 100 },
-          { isActive: true }
-        )
+        expect(result.current.isLoading).toBe(false)
       })
+      expect(result.current.employees).toHaveLength(150)
+      expect(result.current.employees.some((e) => e.id === 'emp-107')).toBe(
+        true
+      )
     })
 
     it('appelle listTeams avec les bons paramètres', async () => {
@@ -172,7 +186,7 @@ describe('useShiftFormData', () => {
 
   describe('Error handling', () => {
     it('gère les erreurs de chargement des employés', async () => {
-      mockListEmployees.mockResolvedValue({
+      mockGetEmployeesForSelect.mockResolvedValue({
         success: false,
         error: 'Erreur employés',
       })
@@ -188,7 +202,7 @@ describe('useShiftFormData', () => {
     })
 
     it('gère les erreurs de Promise.all', async () => {
-      mockListEmployees.mockRejectedValue(new Error('Network error'))
+      mockGetEmployeesForSelect.mockRejectedValue(new Error('Network error'))
 
       const { result } = renderHook(() => useShiftFormData())
 
@@ -200,7 +214,7 @@ describe('useShiftFormData', () => {
     })
 
     it('continue de charger les équipes même si employés échouent', async () => {
-      mockListEmployees.mockResolvedValue({
+      mockGetEmployeesForSelect.mockResolvedValue({
         success: false,
         error: 'Erreur employés',
       })
@@ -225,14 +239,14 @@ describe('useShiftFormData', () => {
       })
 
       // Premier appel au montage
-      expect(mockListEmployees).toHaveBeenCalledTimes(1)
+      expect(mockGetEmployeesForSelect).toHaveBeenCalledTimes(1)
       expect(mockListTeams).toHaveBeenCalledTimes(1)
 
       // Déclencher le refetch
       await result.current.refetch()
 
       // Deuxième appel après refetch
-      expect(mockListEmployees).toHaveBeenCalledTimes(2)
+      expect(mockGetEmployeesForSelect).toHaveBeenCalledTimes(2)
       expect(mockListTeams).toHaveBeenCalledTimes(2)
     })
 
@@ -251,7 +265,7 @@ describe('useShiftFormData', () => {
     })
 
     it('réinitialise les erreurs lors du refetch', async () => {
-      mockListEmployees.mockResolvedValue({
+      mockGetEmployeesForSelect.mockResolvedValue({
         success: false,
         error: 'Erreur',
       })
@@ -263,7 +277,7 @@ describe('useShiftFormData', () => {
       })
 
       // Préparer un succès pour le refetch
-      mockListEmployees.mockResolvedValue(mockEmployeesData)
+      mockGetEmployeesForSelect.mockResolvedValue(mockEmployeesData)
 
       await result.current.refetch()
 
@@ -275,22 +289,18 @@ describe('useShiftFormData', () => {
 
   describe('Employee without team', () => {
     it('gère les employés sans équipe', async () => {
-      mockListEmployees.mockResolvedValue({
+      mockGetEmployeesForSelect.mockResolvedValue({
         success: true,
-        data: {
-          data: [
-            {
-              id: 'emp-1',
-              firstName: 'Jean',
-              lastName: 'Dupont',
-              team: null,
-            },
-          ],
-          total: 1,
-          page: 1,
-          pageSize: 100,
-          totalPages: 1,
-        },
+        data: [
+          {
+            id: 'emp-1',
+            firstName: 'Jean',
+            lastName: 'Dupont',
+            weeklyHours: 35,
+            teamId: null,
+            image: null,
+          },
+        ],
       })
 
       const { result } = renderHook(() => useShiftFormData())
@@ -304,6 +314,7 @@ describe('useShiftFormData', () => {
         firstName: 'Jean',
         lastName: 'Dupont',
         teamId: null,
+        weeklyHours: 35,
       })
     })
   })

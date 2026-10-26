@@ -18,7 +18,9 @@ async function ouvrirLaGrille(page: Page): Promise<void> {
 
   await page.goto('/app/dashboard/schedules')
   await page.waitForLoadState('domcontentloaded')
-  await page.getByTestId('new-shift-button').waitFor({ timeout: 60000 })
+  // .first() : pendant l'hydratation, deux rendus du bouton coexistent un
+  // instant, y compris en build de production (mesuré le 26/10/2026)
+  await page.getByTestId('new-shift-button').first().waitFor({ timeout: 60000 })
 
   await page
     .getByTestId('cookie-reject-all')
