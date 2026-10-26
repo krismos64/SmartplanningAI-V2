@@ -25,7 +25,7 @@ Plateforme SaaS multi-tenant de gestion intelligente des plannings et des ressou
 - **Authentification** : Multi-roles (SYSTEM_ADMIN, DIRECTOR, MANAGER, EMPLOYEE), verification email, invitation par email, activation de compte
 - **Dashboards** : 4 tableaux de bord par role avec KPIs, graphiques Recharts, animations Framer Motion
 - **Onboarding** : Ecran de bienvenue a la premiere connexion (DIRECTOR) et checklist de demarrage contextuelle sur le dashboard (equipe -> employe -> planning -> profil), affichee tant que la configuration est incomplete
-- **Planning** : Calendrier Schedule-X (drag & drop, recurrence, conflits, exports PDF/Excel/CSV), vues jour/semaine/mois. Les dates de creneau, de conge et d'indisponibilite sont stockees au jour calendaire de Paris, a 00:00 UTC, quelle que soit la forme envoyee par le navigateur : recurrences, jours ouvres et conflits ne dependent plus du fuseau du serveur (SP-609)
+- **Planning** : Calendrier Schedule-X (drag & drop, recurrence, conflits, exports PDF/Excel/CSV), vues jour/semaine/mois. Les dates de creneau, de conge et d'indisponibilite sont stockees au jour calendaire de Paris, a 00:00 UTC, quelle que soit la forme envoyee par le navigateur : recurrences, jours ouvres et conflits ne dependent plus du fuseau du serveur (SP-609). Un bandeau signale les créneaux en brouillon de la période, invisibles des employés, et les publie d'un clic (SP-614) ; le formulaire avertit au-delà du contrat hebdomadaire et des 48 h légales (SP-615) ; la grille range ses lignes par équipe puis par nom (SP-616), et propose d'ajouter aux jours d'ouverture un jour planifié hors de ceux-ci (SP-617)
 - **Conges** : Workflow validation (PENDING -> APPROVED/REJECTED), soldes CP/RTT, overlay calendrier, demi-journees
 - **Messagerie interne** : Conversations DIRECT (1:1), TEAM (auto-sync equipes) et GROUP (manuelles). Messages texte + pieces jointes (PDF, images via Cloudinary, max 10 Mo). Reception temps reel via SSE. Groupement de messages, scroll infini cursor-based, optimistic updates. Archivage avec desarchivage auto sur nouveau message. Administration de groupe : avatar personnalisable, renommage, gestion des membres reserves a l'admin. **SYSTEM_ADMIN peut contacter n'importe quel utilisateur cross-tenant** (conversations avec `companyId: null`, isolation multi-tenant preservee pour les autres roles).
 - **Import CSV/Excel** : Import bulk d'employes depuis fichier CSV ou Excel (.xlsx). Validation Zod temps reel cote client avec cellules colorees. Support headers FR/EN avec normalisation. Detection des doublons, creation auto des equipes, sync Stripe. Modele telecharger pre-rempli.
@@ -188,23 +188,23 @@ Voir [`docs/database-architecture.md`](docs/database-architecture.md) pour le de
 
 | Type      | Framework  | Fichiers | Tests     |
 | --------- | ---------- | -------- | --------- |
-| Unitaires | Vitest     | 210      | 3 443     |
-| E2E       | Playwright | 25       | 271       |
-| **Total** |            | **235**  | **3 714** |
+| Unitaires | Vitest     | 219      | 3 497     |
+| E2E       | Playwright | 28       | 275       |
+| **Total** |            | **247**  | **3 772** |
 
-Compteurs mesures le 2 octobre 2026, par `npm run test` et
+Compteurs mesurés le 26 octobre 2026, par `npm run test` et
 `npx playwright test --list`. Ils se periment a chaque sprint : les remesurer
 plutot que les recopier.
 
 **La couverture est un garde-fou bloquant depuis SP-592**, et pas seulement une
 commande d'information. `vitest.config.ts` porte des seuils mesures (lines 50,
-branches 73, functions 73, statements 50, pour un reel a 53,27 % le 2 octobre 2026) et la CI lance
+branches 73, functions 73, statements 50, pour un réel à 53,42 % le 26 octobre 2026) et la CI lance
 `npm run test:coverage` : elle rougit si la couverture baisse, meme quand tous
 les tests passent. Le perimetre mesure inclut `src/lib/`, `src/hooks/` et
 `src/lib/validations/`, et exclut les pages et layouts, couverts par les E2E.
 Relever un seuil demande de mesurer d'abord, jamais de viser un chiffre rond.
 
-La CI execute une whitelist E2E (11 specs, 139 tests) ; la suite complete (25 specs, 271 tests) tourne en nightly. `testMatch` de `playwright.ci.config.ts` etant une liste explicite, un spec renomme ou supprime disparait silencieusement de la CI : verifier cette liste apres chaque ajout ou suppression.
+La CI exécute une whitelist E2E (14 specs, 143 tests) ; la suite complète (28 specs, 275 tests) tourne en nightly. `testMatch` de `playwright.ci.config.ts` etant une liste explicite, un spec renomme ou supprime disparait silencieusement de la CI : verifier cette liste apres chaque ajout ou suppression.
 
 **Les specs publiques ne sont pas dans la whitelist CI.** Les 26 tests de
 `e2e/specs/landing/`, dont 11 audits axe-core, ne tournent donc qu'en nightly
