@@ -1,6 +1,6 @@
 # 🗄️ Architecture Base de Données - SmartPlanning V2
 
-**Dernière mise à jour** : 2 octobre 2026
+**Dernière mise à jour** : 3 novembre 2026
 **ORM** : Prisma 6.18.0
 **Base** : PostgreSQL 16
 **Migrations** : 24 migrations appliquées
@@ -111,7 +111,7 @@ Relations NextAuth v5 (authentification)
 - workingHoursEnd: String         // "18:00"
 - workingDays: String[]           // ["MONDAY", "TUESDAY", ...]
 - timezone: String                // "Europe/Paris"
-- defaultOpeningHours: Json?      // Configuration avancée par jour
+- defaultOpeningHours: Json?      // { lunchBreak: { enabled, start, end } }, lu par parseLunchBreak (SP-622)
 
 // Abonnement SaaS (source de vérité = Subscription.plan)
 - trialEndsAt: DateTime?
@@ -141,6 +141,13 @@ Relations NextAuth v5 (authentification)
 - **1:N Message** → Messages de messagerie (SP-500)
 
 **🔐 Sécurité :** Toutes les requêtes doivent filtrer par `companyId` pour l'isolation.
+
+**Cycle de vie (SP-624) :** une entreprise est supprimée avec son dernier
+utilisateur, dans la transaction de `deleteAccount`, après un recomptage des
+utilisateurs. La cascade emporte tout ce qui précède, `Payment` et `AuditLog`
+compris. Les audits de la suppression (`USER` et `COMPANY`) sont écrits sans
+`companyId` pour lui survivre. La suppression est refusée tant qu'un
+abonnement Stripe est `ACTIVE`, `PAST_DUE` ou `INCOMPLETE`.
 
 ---
 
@@ -338,7 +345,10 @@ créneaux et 5 congés ont été convertis ce jour-là, après sauvegarde vérif
 // Récurrence (SP-399)
 - isRecurring: Boolean
 - recurrenceRule: Json?           // { frequency, interval, daysOfWeek, endDate }
-- recurrenceGroupId: String?      // ID partagé par tous les créneaux récurrents
+- recurrenceGroupId: String?      // ID partagé par tous les créneaux d'une récurrence,
+                                  // y compris entre les employés créés ensemble.
+                                  // Une « série » se lit donc toujours par
+                                  // (recurrenceGroupId, employeeId, companyId) (SP-621)
 
 // Multi-employés (SP-397)
 - scheduleGroupId: String?        // ID partagé pour créneaux multi-employés

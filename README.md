@@ -25,7 +25,7 @@ Plateforme SaaS multi-tenant de gestion intelligente des plannings et des ressou
 - **Authentification** : Multi-roles (SYSTEM_ADMIN, DIRECTOR, MANAGER, EMPLOYEE), verification email, invitation par email, activation de compte
 - **Dashboards** : 4 tableaux de bord par role avec KPIs, graphiques Recharts, animations Framer Motion
 - **Onboarding** : Ecran de bienvenue a la premiere connexion (DIRECTOR) et checklist de demarrage contextuelle sur le dashboard (equipe -> employe -> planning -> profil), affichee tant que la configuration est incomplete
-- **Planning** : Calendrier Schedule-X (drag & drop, recurrence, conflits, exports PDF/Excel/CSV), vues jour/semaine/mois. Les dates de creneau, de conge et d'indisponibilite sont stockees au jour calendaire de Paris, a 00:00 UTC, quelle que soit la forme envoyee par le navigateur : recurrences, jours ouvres et conflits ne dependent plus du fuseau du serveur (SP-609). Un bandeau signale les créneaux en brouillon de la période, invisibles des employés, et les publie d'un clic (SP-614) ; le formulaire avertit au-delà du contrat hebdomadaire et des 48 h légales (SP-615) ; la grille range ses lignes par équipe puis par nom (SP-616), et propose d'ajouter aux jours d'ouverture un jour planifié hors de ceux-ci (SP-617)
+- **Planning** : Calendrier Schedule-X (drag & drop, recurrence, conflits, exports PDF/Excel/CSV), vues jour/semaine/mois. Les dates de creneau, de conge et d'indisponibilite sont stockees au jour calendaire de Paris, a 00:00 UTC, quelle que soit la forme envoyee par le navigateur : recurrences, jours ouvres et conflits ne dependent plus du fuseau du serveur (SP-609). Un bandeau signale les créneaux en brouillon de la période, invisibles des employés, et les publie d'un clic (SP-614) ; le formulaire avertit au-delà du contrat hebdomadaire et des 48 h légales (SP-615) ; la grille range ses lignes par équipe puis par nom (SP-616), et propose d'ajouter aux jours d'ouverture un jour planifié hors de ceux-ci (SP-617). Modifier ou supprimer « toute la série » ne touche que l'employé du créneau cliqué, avec un compteur lu côté serveur (SP-621) ; la pause déjeuner des paramètres est déduite des heures, dans la jauge, l'avertissement et le PDF (SP-622) ; la répétition propose les jours d'ouverture de l'entreprise (SP-623)
 - **Conges** : Workflow validation (PENDING -> APPROVED/REJECTED), soldes CP/RTT, overlay calendrier, demi-journees
 - **Messagerie interne** : Conversations DIRECT (1:1), TEAM (auto-sync equipes) et GROUP (manuelles). Messages texte + pieces jointes (PDF, images via Cloudinary, max 10 Mo). Reception temps reel via SSE. Groupement de messages, scroll infini cursor-based, optimistic updates. Archivage avec desarchivage auto sur nouveau message. Administration de groupe : avatar personnalisable, renommage, gestion des membres reserves a l'admin. **SYSTEM_ADMIN peut contacter n'importe quel utilisateur cross-tenant** (conversations avec `companyId: null`, isolation multi-tenant preservee pour les autres roles).
 - **Import CSV/Excel** : Import bulk d'employes depuis fichier CSV ou Excel (.xlsx). Validation Zod temps reel cote client avec cellules colorees. Support headers FR/EN avec normalisation. Detection des doublons, creation auto des equipes, sync Stripe. Modele telecharger pre-rempli.
@@ -38,7 +38,7 @@ Plateforme SaaS multi-tenant de gestion intelligente des plannings et des ressou
 - **Monitoring** : Health check DB + Redis (PING/PONG), KPIs SaaS, graphiques admin, service MRR unifie
 - **Delivrabilite** : Un envoi accepte par le relais SMTP ne prouve pas la livraison. `EmailResult.outcome` distingue une adresse refusee (`BOUNCED`) d'une panne technique (`FAILED`), et le cron `/api/cron/bounce-sync` releve la boite d'expedition toutes les 6 heures pour capter les refus asynchrones, qui arrivent plusieurs secondes apres l'acceptation. Le rapprochement avec `EmailLog` se fait par adresse et la releve couvre INBOX, la corbeille et les indesirables : les bounces y sont tries automatiquement et n'atteignent pas la boite de reception. Une adresse rejetee est signalee dans la liste des employes et dans l'espace admin
 - **Admin** : Page utilisateurs cross-tenant, essais a risque, broadcast email, stats + export PDF, journal des emails, suivi des messages de contact (`/app/admin/messages-contact`, reserve au SYSTEM_ADMIN : la table ne porte pas de `companyId`, l'expediteur etant un visiteur anonyme)
-- **Profil** : Avatar Cloudinary (affiche dans le header et la sidebar), RGPD (export donnees, suppression compte), preferences affichage. Le poste (`jobTitle`) renseigne au profil s'affiche a la place du libelle de role dans l'interface
+- **Profil** : Avatar Cloudinary (affiche dans le header et la sidebar), RGPD (export donnees, suppression compte avec motif facultatif ; le dernier utilisateur emporte son entreprise et ses donnees, refus tant qu'un abonnement payant court, SP-624), preferences affichage. Le poste (`jobTitle`) renseigne au profil s'affiche a la place du libelle de role dans l'interface
 - **Settings** : Apparence, notifications, entreprise (jours travailles, horaires)
 - **Notes & Incidents** : Taches personnelles (drag & drop), notes d'incidents avec visibilite RBAC
 - **SEO / GEO** : Metadata API, JSON-LD Schema.org (@graph, Article, HowTo, FAQPage, BreadcrumbList), sitemap data-driven avec `lastModified` reels, robots.txt ouvert aux crawlers IA, `llms.txt` et `llms-full.txt`
@@ -188,17 +188,17 @@ Voir [`docs/database-architecture.md`](docs/database-architecture.md) pour le de
 
 | Type      | Framework  | Fichiers | Tests     |
 | --------- | ---------- | -------- | --------- |
-| Unitaires | Vitest     | 219      | 3 497     |
+| Unitaires | Vitest     | 219      | 3 521     |
 | E2E       | Playwright | 28       | 275       |
-| **Total** |            | **247**  | **3 772** |
+| **Total** |            | **247**  | **3 796** |
 
-Compteurs mesurés le 26 octobre 2026, par `npm run test` et
+Compteurs mesurés le 3 novembre 2026, par `npm run test` et
 `npx playwright test --list`. Ils se periment a chaque sprint : les remesurer
 plutot que les recopier.
 
 **La couverture est un garde-fou bloquant depuis SP-592**, et pas seulement une
 commande d'information. `vitest.config.ts` porte des seuils mesures (lines 50,
-branches 73, functions 73, statements 50, pour un réel à 53,42 % le 26 octobre 2026) et la CI lance
+branches 73, functions 73, statements 50, pour un réel à 53,66 % de lignes et 76,14 % de branches le 3 novembre 2026) et la CI lance
 `npm run test:coverage` : elle rougit si la couverture baisse, meme quand tous
 les tests passent. Le perimetre mesure inclut `src/lib/`, `src/hooks/` et
 `src/lib/validations/`, et exclut les pages et layouts, couverts par les E2E.
