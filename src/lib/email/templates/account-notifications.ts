@@ -109,6 +109,9 @@ export async function sendAccountDeletionAdminEmail(params: {
   userEmail: string
   companyName: string | null
   userRole: string
+  reason?: string | null
+  reasonDetail?: string | null
+  companyDeleted?: boolean
 }): Promise<EmailResult> {
   try {
     const baseUrl = getBaseUrl()
@@ -125,6 +128,9 @@ export async function sendAccountDeletionAdminEmail(params: {
           timeZone: 'Europe/Paris',
         }),
         adminUrl: `${baseUrl}/app/admin/logs`,
+        reason: params.reason ?? null,
+        reasonDetail: params.reasonDetail ?? null,
+        companyDeleted: params.companyDeleted ?? false,
       })
     )
 

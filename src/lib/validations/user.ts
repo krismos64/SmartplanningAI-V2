@@ -95,6 +95,21 @@ export type ChangePasswordFormData = z.infer<typeof changePasswordSchema>
  *
  * @ticket SP-277 - RGPD Article 17 - Droit à l'effacement
  */
+/**
+ * SP-624 : motif de départ, facultatif. Le 3 novembre 2026, un prospect a
+ * supprimé son compte après une heure d'usage sans qu'on sache pourquoi.
+ */
+export const DELETION_REASONS = {
+  TOO_COMPLEX: 'Trop compliqué à prendre en main',
+  MISSING_FEATURE: 'Il manque une fonctionnalité dont j’ai besoin',
+  WRONG_HOURS: 'Les heures ou les plannings calculés ne correspondent pas',
+  TOO_EXPENSIVE: 'Trop cher pour mon activité',
+  JUST_TESTING: 'Je testais seulement',
+  OTHER: 'Autre raison',
+} as const
+
+export type DeletionReason = keyof typeof DELETION_REASONS
+
 export const deleteAccountSchema = z.object({
   confirmEmail: z
     .string()
@@ -104,6 +119,29 @@ export const deleteAccountSchema = z.object({
   confirmDeletion: z.boolean().refine((val) => val === true, {
     message: 'Vous devez confirmer la suppression définitive',
   }),
+  reason: z
+    .enum(Object.keys(DELETION_REASONS) as [DeletionReason, ...DeletionReason[]])
+    .optional(),
+  reasonDetail: z
+    .string()
+    .trim()
+    .max(500, '500 caractères au maximum')
+    .optional(),
 })
 
 export type DeleteAccountInput = z.infer<typeof deleteAccountSchema>
+
+/**
+ * SP-624 : ce que la suppression d'un compte entraîne pour son entreprise,
+ * affiché avant confirmation et appliqué à l'identique par le serveur
+ */
+export interface AccountDeletionImpact {
+  companyName: string | null
+  /** Dernier utilisateur : l'entreprise et ses données partent avec lui */
+  willDeleteCompany: boolean
+  employeeCount: number
+  /** D'autres comptes restent, mais plus aucun dirigeant */
+  leavesCompanyWithoutDirector: boolean
+  /** Abonnement payant en cours : à résilier avant, sinon Stripe facture */
+  blockedByActiveSubscription: boolean
+}

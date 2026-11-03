@@ -8,7 +8,11 @@
  * production le 18 septembre 2026, 29 occurrences pendant la session d'un
  * vrai prospect sur /app/director/teams.
  *
- * @ticket SP-599
+ * SP-624 : /app/director, /app/admin et /app/manager n'ont pas de page. Leur
+ * segment s'affiche désormais sans lien, la 404 ayant été cliquée par un
+ * prospect le 3 novembre 2026.
+ *
+ * @ticket SP-599, SP-624
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
@@ -59,10 +63,11 @@ describe('DynamicBreadcrumbs', () => {
     it('construit le href de "Equipes" depuis /app/director/teams, et non /app/dashboard/director/teams', () => {
       render(<DynamicBreadcrumbs pathname="/app/director/teams" />)
 
-      // Le segment intermediaire "Directeur" doit pointer vers /app/director
-      const directorLink = getCrumbHref('Directeur')
-      expect(directorLink).toBe('/app/director')
-      expect(directorLink).not.toBe('/app/dashboard/director')
+      // SP-624 : "Directeur" n'a pas de page, il s'affiche sans lien
+      expect(screen.getByText('Directeur').closest('a')).toBeNull()
+      expect(
+        screen.queryByRole('link', { name: /Directeur/i })
+      ).not.toBeInTheDocument()
 
       // Le dernier segment "Equipes" est le BreadcrumbPage courant, pas un lien
       const page = screen.getByText('Équipes')
@@ -72,9 +77,8 @@ describe('DynamicBreadcrumbs', () => {
     it('resout /app/admin/users sans prefixer /app/dashboard', () => {
       render(<DynamicBreadcrumbs pathname="/app/admin/users" />)
 
-      const adminLink = getCrumbHref('admin')
-      expect(adminLink).toBe('/app/admin')
-      expect(adminLink).not.toContain('/app/dashboard/admin')
+      // SP-624 : /app/admin n'a pas de page, le segment n'est pas un lien
+      expect(screen.queryByRole('link', { name: /admin/i })).toBeNull()
 
       // Pas de mapping STATIC_LABELS pour "users" : le fallback capitalise
       // le segment brut.
@@ -191,14 +195,17 @@ describe('DynamicBreadcrumbs', () => {
         'script[type="application/ld+json"]'
       )
       const schema = JSON.parse(script?.textContent ?? '{}') as {
-        itemListElement: Array<{ item: string; name: string }>
+        itemListElement: Array<{ item: string; name: string; position?: number }>
       }
 
+      // SP-624 : aucune URL déclarée pour un segment sans page
       const directorItem = schema.itemListElement.find((item) =>
         item.item.endsWith('/app/director')
       )
-      expect(directorItem).toBeDefined()
-      expect(directorItem?.item).not.toContain('/app/dashboard/director')
+      expect(directorItem).toBeUndefined()
+      expect(
+        schema.itemListElement.map((item) => item.position ?? 0)
+      ).toEqual(schema.itemListElement.map((_, i) => i + 1))
 
       const teamsItem = schema.itemListElement.find((item) =>
         item.item.endsWith('/app/director/teams')

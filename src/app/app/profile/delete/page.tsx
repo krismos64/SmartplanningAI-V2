@@ -13,6 +13,7 @@ import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 
 import { auth } from '@/lib/auth'
+import { getAccountDeletionImpact } from '@/lib/actions/profile'
 import { Button } from '@/components/ui/button'
 import { DeleteAccountForm } from './_components'
 
@@ -27,6 +28,10 @@ export default async function DeleteAccountPage() {
   if (!session?.user?.email) {
     redirect('/login')
   }
+
+  // SP-624 : effet sur l'entreprise, affiché avant confirmation
+  const impactResult = await getAccountDeletionImpact()
+  const impact = impactResult.success ? impactResult.data : null
 
   return (
     <div className="container max-w-2xl space-y-6 py-8">
@@ -50,7 +55,7 @@ export default async function DeleteAccountPage() {
       </div>
 
       {/* Formulaire */}
-      <DeleteAccountForm userEmail={session.user.email} />
+      <DeleteAccountForm userEmail={session.user.email} impact={impact} />
     </div>
   )
 }
