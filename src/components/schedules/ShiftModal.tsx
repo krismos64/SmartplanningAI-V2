@@ -84,6 +84,7 @@ import {
 import { useConflictDetection } from '@/hooks/use-conflict-detection'
 import { useWeeklyHoursCheck } from './useWeeklyHoursCheck'
 import type { LunchBreak } from '@/lib/utils/weekly-hours'
+import type { DayOfWeek } from '@/lib/utils/recurrence'
 import { formatScheduleDateShort } from '@/lib/utils/schedule-date'
 import { useIsImpersonating } from '@/hooks'
 
@@ -112,6 +113,8 @@ export interface ShiftModalProps {
   createDefaults?: { employeeId: string; day: Date } | null
   /** SP-622 : pause déjeuner de l'entreprise, lue par la page pour tout rôle */
   lunchBreak?: LunchBreak | null
+  /** SP-623 : jours d'ouverture, proposés par défaut à la répétition */
+  openingDays?: DayOfWeek[] | null
 }
 
 // ============================================================================
@@ -163,6 +166,7 @@ export function ShiftModal({
   onSuccess,
   createDefaults = null,
   lunchBreak = null,
+  openingDays = null,
 }: ShiftModalProps) {
   const isImpersonating = useIsImpersonating()
 
@@ -983,6 +987,7 @@ export function ShiftModal({
               endDate={watch('endDate')}
               employeeCount={selectedEmployeeIds.length || 1}
               disabled={isSubmitting}
+              defaultDays={openingDays ?? companySettings?.workingDays}
             />
           )}
 

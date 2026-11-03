@@ -46,6 +46,8 @@ import {
   generateOccurrences,
   generateRecurrenceGroupId,
   MAX_TOTAL_SCHEDULES,
+  DAYS_OF_WEEK,
+  type DayOfWeek,
   type RecurrenceRule,
 } from '@/lib/utils/recurrence'
 import {
@@ -2196,29 +2198,44 @@ export async function publishDraftSchedules(
 }
 
 /**
- * Pause déjeuner de l'entreprise de l'utilisateur (SP-622)
+ * Réglages d'entreprise utiles à la saisie des plannings (SP-622, SP-623)
  *
- * Lisible par tout rôle de l'entreprise : elle sert au calcul des heures
- * affichées dans la grille, que le manager voit comme le dirigeant.
- * `getCompanySettings`, réservé au dirigeant, laissait le manager sans pause.
+ * Lisibles par tout rôle de l'entreprise : la pause sert au calcul des heures,
+ * les jours d'ouverture aux jours proposés par la répétition. Le manager
+ * planifie comme le dirigeant, mais `getCompanySettings` est réservé à ce
+ * dernier et le laissait sans pause et sans jours d'ouverture.
  */
-export async function getCompanyLunchBreak(): Promise<
-  CrudActionResult<LunchBreak | null>
+export async function getCompanyPlanningSettings(): Promise<
+  CrudActionResult<{
+    lunchBreak: LunchBreak | null
+    workingDays: DayOfWeek[] | null
+  }>
 > {
   const authResult = await getAuthenticatedUser()
   if (!authResult.success) return { success: false, error: authResult.error }
 
   const { companyId } = authResult.user
-  if (!companyId) return { success: true, data: null }
+  if (!companyId) {
+    return { success: true, data: { lunchBreak: null, workingDays: null } }
+  }
 
   try {
     const company = await prisma.company.findUnique({
       where: { id: companyId },
-      select: { defaultOpeningHours: true },
+      select: { defaultOpeningHours: true, workingDays: true },
     })
-    return { success: true, data: parseLunchBreak(company?.defaultOpeningHours) }
+    // Dans l'ordre du calendrier, quel que soit l'ordre stocké
+    const stored = company?.workingDays ?? []
+    const workingDays = DAYS_OF_WEEK.filter((day) => stored.includes(day))
+    return {
+      success: true,
+      data: {
+        lunchBreak: parseLunchBreak(company?.defaultOpeningHours),
+        workingDays: workingDays.length > 0 ? workingDays : null,
+      },
+    }
   } catch (error) {
-    console.error('[getCompanyLunchBreak] Error:', error)
+    console.error('[getCompanyPlanningSettings] Error:', error)
     const prismaError = handlePrismaError(error)
     return { success: false, error: prismaError.error }
   }

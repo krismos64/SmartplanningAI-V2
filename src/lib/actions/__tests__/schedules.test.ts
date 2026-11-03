@@ -25,6 +25,7 @@ import {
   deleteRecurrenceGroup,
   updateRecurrenceGroup,
   getRecurrenceGroupCounts,
+  getCompanyPlanningSettings,
   duplicateSchedule,
   updateScheduleStatus,
   getEmployeeSchedules,
@@ -52,6 +53,9 @@ vi.mock('@/lib/prisma', () => ({
     },
     leaveRequest: {
       findFirst: vi.fn(),
+    },
+    company: {
+      findUnique: vi.fn(),
     },
     team: {
       findMany: vi.fn(),
@@ -835,6 +839,46 @@ describe('schedules actions', () => {
 
       expect(result.success).toBe(false)
       expect(prisma.schedule.count).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('getCompanyPlanningSettings (SP-622, SP-623)', () => {
+    it("lit la pause et les jours de l'entreprise de l'utilisateur, dans l'ordre du calendrier", async () => {
+      vi.mocked(auth).mockResolvedValue(mockSession('MANAGER') as never)
+      vi.mocked(prisma.employee.findUnique).mockResolvedValue(null)
+      vi.mocked(prisma.company.findUnique).mockResolvedValue({
+        workingDays: ['SATURDAY', 'MONDAY', 'TUESDAY'],
+        defaultOpeningHours: {
+          lunchBreak: { enabled: true, start: '12:00', end: '13:00' },
+        },
+      } as never)
+
+      const result = await getCompanyPlanningSettings()
+
+      expect(result).toEqual({
+        success: true,
+        data: {
+          lunchBreak: { enabled: true, start: '12:00', end: '13:00' },
+          workingDays: ['MONDAY', 'TUESDAY', 'SATURDAY'],
+        },
+      })
+      const lecture = vi.mocked(prisma.company.findUnique).mock.calls[0]?.[0]
+      expect(lecture?.where).toEqual({ id: 'clcompany0000000001' })
+    })
+
+    it("sans entreprise, ne lit rien et rend des réglages vides", async () => {
+      vi.mocked(auth).mockResolvedValue(
+        mockSession('SYSTEM_ADMIN', null) as never
+      )
+      vi.mocked(prisma.employee.findUnique).mockResolvedValue(null)
+
+      const result = await getCompanyPlanningSettings()
+
+      expect(result).toEqual({
+        success: true,
+        data: { lunchBreak: null, workingDays: null },
+      })
+      expect(prisma.company.findUnique).not.toHaveBeenCalled()
     })
   })
 

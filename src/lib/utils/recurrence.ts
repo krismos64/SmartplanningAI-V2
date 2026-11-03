@@ -52,6 +52,26 @@ export interface OccurrenceDate {
 // ============================================================================
 
 /** Nombre maximum d'occurrences autorisées */
+/** Jours de la semaine dans l'ordre du calendrier français, lundi en tête */
+export const DAYS_OF_WEEK: DayOfWeek[] = [
+  'MONDAY',
+  'TUESDAY',
+  'WEDNESDAY',
+  'THURSDAY',
+  'FRIDAY',
+  'SATURDAY',
+  'SUNDAY',
+]
+
+/** Jours ouvrés, repli quand les jours d'ouverture ne sont pas connus */
+export const WEEKDAYS: DayOfWeek[] = [
+  'MONDAY',
+  'TUESDAY',
+  'WEDNESDAY',
+  'THURSDAY',
+  'FRIDAY',
+]
+
 export const MAX_OCCURRENCES = 52
 
 /** Nombre maximum de créneaux créés en une fois (multi-employés × occurrences) */

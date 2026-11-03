@@ -20,7 +20,7 @@ import {
   deleteRecurrenceGroup,
   updateRecurrenceGroup,
   getRecurrenceGroupCounts,
-  getCompanyLunchBreak,
+  getCompanyPlanningSettings,
   publishDraftSchedules,
   type ScheduleWithRelations,
 } from '@/lib/actions/schedules'
@@ -46,6 +46,7 @@ import {
 } from '@/components/schedules'
 import type { EmployeeWithHours } from '@/components/schedules'
 import type { LunchBreak } from '@/lib/utils/weekly-hours'
+import type { DayOfWeek as RecurrenceDay } from '@/lib/utils/recurrence'
 import {
   Sheet,
   SheetContent,
@@ -372,10 +373,14 @@ export function SchedulesPageContent({
 
   // SP-622 : pause déjeuner déduite de la jauge d'heures et de l'avertissement
   // de création, pour tout rôle qui voit la grille
+  // SP-623 : jours d'ouverture proposés par la répétition
   const [lunchBreak, setLunchBreak] = useState<LunchBreak | null>(null)
+  const [openingDays, setOpeningDays] = useState<RecurrenceDay[] | null>(null)
   useEffect(() => {
-    void getCompanyLunchBreak().then((result) => {
-      if (result.success) setLunchBreak(result.data)
+    void getCompanyPlanningSettings().then((result) => {
+      if (!result.success) return
+      setLunchBreak(result.data.lunchBreak)
+      setOpeningDays(result.data.workingDays)
     })
   }, [])
 
@@ -832,6 +837,7 @@ export function SchedulesPageContent({
         }}
         createDefaults={createDefaults}
         lunchBreak={lunchBreak}
+        openingDays={openingDays}
         mode={shiftModalMode}
         schedule={selectedSchedule}
         companyId={companyId}

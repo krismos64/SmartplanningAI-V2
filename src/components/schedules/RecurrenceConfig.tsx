@@ -20,7 +20,9 @@ import {
   type RecurrenceRule,
   type DayOfWeek,
   DAY_LABELS,
+  DAYS_OF_WEEK,
   MAX_TOTAL_SCHEDULES,
+  WEEKDAYS,
 } from '@/lib/utils/recurrence'
 
 // ============================================================================
@@ -36,29 +38,16 @@ interface RecurrenceConfigProps {
   endDate: Date
   employeeCount: number
   disabled?: boolean
+  /**
+   * SP-623 : jours proposés à l'ouverture, ceux où l'entreprise est ouverte.
+   * Un commerce ouvert le samedi devait le rajouter à chaque série.
+   */
+  defaultDays?: DayOfWeek[] | null
 }
 
 // ============================================================================
 // Constantes
 // ============================================================================
-
-const DAYS_OF_WEEK: DayOfWeek[] = [
-  'MONDAY',
-  'TUESDAY',
-  'WEDNESDAY',
-  'THURSDAY',
-  'FRIDAY',
-  'SATURDAY',
-  'SUNDAY',
-]
-
-const WEEKDAYS: DayOfWeek[] = [
-  'MONDAY',
-  'TUESDAY',
-  'WEDNESDAY',
-  'THURSDAY',
-  'FRIDAY',
-]
 
 // ============================================================================
 // Composant
@@ -71,11 +60,22 @@ export function RecurrenceConfig({
   onEnabledChange,
   employeeCount,
   disabled = false,
+  defaultDays,
 }: RecurrenceConfigProps) {
+  const openingDays = defaultDays?.length ? defaultDays : WEEKDAYS
+
   // État simplifié : jours sélectionnés + nombre de semaines
   const [selectedDays, setSelectedDays] = useState<DayOfWeek[]>(
-    value?.daysOfWeek ?? WEEKDAYS
+    value?.daysOfWeek ?? openingDays
   )
+  const openingKey = openingDays.join(',')
+
+  // Les jours d'ouverture arrivent après le premier rendu : tant que personne
+  // n'a encore choisi de jours, la proposition les suit
+  useEffect(() => {
+    if (!value) setSelectedDays(openingKey.split(',') as DayOfWeek[])
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- value lu à l'arrivée des jours seulement
+  }, [openingKey])
   const [weeks, setWeeks] = useState<number>(() => {
     if (value?.occurrences && value?.daysOfWeek?.length) {
       return Math.ceil(value.occurrences / value.daysOfWeek.length)
@@ -121,6 +121,12 @@ export function RecurrenceConfig({
 
     setSelectedDays(newDays)
     propagateRule(newDays, weeks)
+  }
+
+  // SP-623 : revenir aux jours d'ouverture de l'entreprise
+  const selectOpeningDays = () => {
+    setSelectedDays(openingDays)
+    propagateRule(openingDays, weeks)
   }
 
   // Sélectionner tous les jours ouvrés
@@ -183,13 +189,26 @@ export function RecurrenceConfig({
             <div className="flex items-center justify-between">
               <Label className="text-sm">Jours</Label>
               <div className="flex gap-1.5">
+                {openingKey !== WEEKDAYS.join(',') && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={selectOpeningDays}
+                      className="text-xs text-primary hover:underline"
+                      disabled={disabled}
+                    >
+                      Jours d&apos;ouverture
+                    </button>
+                    <span className="text-xs text-muted-foreground">·</span>
+                  </>
+                )}
                 <button
                   type="button"
                   onClick={selectWeekdays}
                   className="text-xs text-primary hover:underline"
                   disabled={disabled}
                 >
-                  Lun–Ven
+                  Lun à ven
                 </button>
                 <span className="text-xs text-muted-foreground">·</span>
                 <button
