@@ -24,6 +24,7 @@ import {
 import {
   findWeeklyHoursWarnings,
   weekStartOf,
+  type LunchBreak,
   type ShiftForHours,
   type WeeklyHoursWarning,
 } from '@/lib/utils/weekly-hours'
@@ -39,6 +40,8 @@ interface UseWeeklyHoursCheckParams {
   recurrenceRule: RecurrenceRule | null
   /** Créneau en cours d'édition, à ne pas compter deux fois */
   excludeScheduleId?: string
+  /** SP-622 : pause des paramètres entreprise, déduite des créneaux qui la couvrent */
+  lunchBreak?: LunchBreak | null
   enabled: boolean
 }
 
@@ -52,6 +55,7 @@ export function useWeeklyHoursCheck({
   type,
   recurrenceRule,
   excludeScheduleId,
+  lunchBreak,
   enabled,
 }: UseWeeklyHoursCheckParams): WeeklyHoursWarning[] {
   // Créneaux que le formulaire va créer, en jours calendaires
@@ -143,8 +147,10 @@ export function useWeeklyHoursCheck({
     const plannedKeys = new Set(
       planned.map((p) => weekStartOf(p.startDate).getTime())
     )
-    return findWeeklyHoursWarnings([...existing, ...planned], contracts).filter(
-      (w) => plannedKeys.has(w.weekStart.getTime())
-    )
-  }, [planned, existing, employees])
+    return findWeeklyHoursWarnings(
+      [...existing, ...planned],
+      contracts,
+      lunchBreak
+    ).filter((w) => plannedKeys.has(w.weekStart.getTime()))
+  }, [planned, existing, employees, lunchBreak])
 }

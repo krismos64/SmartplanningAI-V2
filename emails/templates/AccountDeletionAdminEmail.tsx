@@ -26,6 +26,11 @@ export interface AccountDeletionAdminEmailProps {
   userRole: string
   deletedAt: string
   adminUrl: string
+  /** SP-624 : motif choisi, déjà en toutes lettres */
+  reason?: string | null
+  reasonDetail?: string | null
+  /** SP-624 : l'entreprise est partie avec son dernier utilisateur */
+  companyDeleted?: boolean
 }
 
 export function AccountDeletionAdminEmail({
@@ -35,6 +40,9 @@ export function AccountDeletionAdminEmail({
   userRole,
   deletedAt,
   adminUrl,
+  reason = null,
+  reasonDetail = null,
+  companyDeleted = false,
 }: AccountDeletionAdminEmailProps) {
   const previewText = `Suppression de compte : ${userName} (${companyName || 'Sans entreprise'})`
 
@@ -97,6 +105,39 @@ export function AccountDeletionAdminEmail({
             <Text style={valueStyle}>{deletedAt}</Text>
           </Column>
         </Row>
+
+        <Row style={infoRowStyle}>
+          <Column style={labelColumnStyle}>
+            <Text style={labelStyle}>Motif</Text>
+          </Column>
+          <Column>
+            <Text style={valueStyle}>{reason ?? 'Non renseigné'}</Text>
+          </Column>
+        </Row>
+
+        {reasonDetail && (
+          <Row style={infoRowStyle}>
+            <Column style={labelColumnStyle}>
+              <Text style={labelStyle}>Précision</Text>
+            </Column>
+            <Column>
+              <Text style={valueStyle}>{reasonDetail}</Text>
+            </Column>
+          </Row>
+        )}
+
+        {companyDeleted && (
+          <Row style={infoRowStyle}>
+            <Column style={labelColumnStyle}>
+              <Text style={labelStyle}>Entreprise</Text>
+            </Column>
+            <Column>
+              <Text style={valueStyle}>
+                Supprimée avec ses données, dernier utilisateur parti
+              </Text>
+            </Column>
+          </Row>
+        )}
       </Section>
 
       <Hr style={presetStyles.divider} />

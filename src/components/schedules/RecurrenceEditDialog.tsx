@@ -49,6 +49,11 @@ interface RecurrenceEditDialogProps {
     all: number
   }
   isLoading?: boolean
+  /**
+   * SP-621 : le compteur vient du serveur. Tant qu'il n'est pas connu, le choix
+   * « Toute la série » reste masqué plutôt que d'annoncer un nombre faux.
+   */
+  isCountLoading?: boolean
   /** Callback pour changer d'action (modifier → supprimer) */
   onActionChange?: (action: RecurrenceEditAction) => void
 }
@@ -64,6 +69,7 @@ export function RecurrenceEditDialog({
   action,
   counts = { single: 1, future: 0, all: 0 },
   isLoading = false,
+  isCountLoading = false,
   onActionChange,
 }: RecurrenceEditDialogProps) {
   const isImpersonating = useIsImpersonating()
@@ -102,7 +108,12 @@ export function RecurrenceEditDialog({
             <DialogDescription>{description}</DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4 py-2">
+          <div className="space-y-4 py-2" aria-busy={isCountLoading}>
+            {isCountLoading && (
+              <p className="text-xs text-muted-foreground" role="status">
+                Calcul de la série en cours…
+              </p>
+            )}
             {/* Section Modifier */}
             {!isDelete && (
               <div className="space-y-2">
@@ -133,7 +144,7 @@ export function RecurrenceEditDialog({
                       <div>
                         <p className="text-sm font-medium">Toute la série</p>
                         <p className="text-xs text-muted-foreground">
-                          {counts.all} créneaux
+                          {counts.all} créneaux de cet employé
                         </p>
                       </div>
                     </Button>
@@ -178,7 +189,7 @@ export function RecurrenceEditDialog({
                       <div>
                         <p className="text-sm font-medium">Toute la série</p>
                         <p className="text-xs text-destructive/70">
-                          {counts.all} créneaux
+                          {counts.all} créneaux de cet employé
                         </p>
                       </div>
                     </Button>
@@ -213,7 +224,7 @@ export function RecurrenceEditDialog({
                     <div>
                       <p className="text-sm font-medium">Toute la série</p>
                       <p className="text-xs text-destructive/70">
-                        {counts.all} créneaux
+                        {counts.all} créneaux de cet employé
                       </p>
                     </div>
                   </Button>
@@ -236,8 +247,9 @@ export function RecurrenceEditDialog({
           <AlertDialogHeader>
             <AlertDialogTitle>Supprimer toute la série ?</AlertDialogTitle>
             <AlertDialogDescription>
-              Les {counts.all} créneaux de cette récurrence seront
-              définitivement supprimés. Cette action est irréversible.
+              Les {counts.all} créneaux de cette série seront définitivement
+              supprimés, pour cet employé uniquement. Les autres employés ne
+              sont pas touchés. Cette action est irréversible.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

@@ -29,6 +29,8 @@ import {
 import {
   changePasswordSchema,
   deleteAccountSchema,
+  DELETION_REASONS,
+  type AccountDeletionImpact,
   type ChangePasswordFormData,
   type DeleteAccountInput,
 } from '@/lib/validations/user'
@@ -423,6 +425,94 @@ export async function changePassword(
 }
 
 /**
+ * SP-624 : statuts d'un abonnement que Stripe facture encore
+ */
+const BILLED_SUBSCRIPTION_STATUSES = ['ACTIVE', 'PAST_DUE', 'INCOMPLETE']
+
+/**
+ * Ce que la suppression du compte entraîne pour son entreprise (SP-624).
+ *
+ * Avant, supprimer le seul utilisateur laissait l'entreprise en base, avec
+ * ses employés nommés, ses équipes et ses créneaux, sans plus personne pour y
+ * accéder : QUAI DES BRUMES le 3 novembre 2026, Serra Propreté depuis le
+ * 7 septembre. L'email annonçait pourtant une suppression définitive.
+ */
+async function computeDeletionImpact(
+  userId: string
+): Promise<(AccountDeletionImpact & { companyId: string | null }) | null> {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      role: true,
+      companyId: true,
+      company: { select: { name: true } },
+    },
+  })
+  if (!user) return null
+
+  const { companyId } = user
+  if (!companyId) {
+    return {
+      companyId: null,
+      companyName: null,
+      willDeleteCompany: false,
+      employeeCount: 0,
+      leavesCompanyWithoutDirector: false,
+      blockedByActiveSubscription: false,
+    }
+  }
+
+  const [otherUsers, otherDirectors, employeeCount, subscription] =
+    await Promise.all([
+      prisma.user.count({ where: { companyId, id: { not: userId } } }),
+      prisma.user.count({
+        where: { companyId, id: { not: userId }, role: 'DIRECTOR' },
+      }),
+      prisma.employee.count({ where: { companyId } }),
+      prisma.subscription.findFirst({
+        where: { companyId },
+        select: { status: true, stripeSubscriptionId: true },
+      }),
+    ])
+
+  const willDeleteCompany = otherUsers === 0
+  const isBilled =
+    !!subscription?.stripeSubscriptionId &&
+    BILLED_SUBSCRIPTION_STATUSES.includes(subscription.status)
+
+  return {
+    companyId,
+    companyName: user.company?.name ?? null,
+    willDeleteCompany,
+    employeeCount,
+    leavesCompanyWithoutDirector:
+      !willDeleteCompany && user.role === 'DIRECTOR' && otherDirectors === 0,
+    blockedByActiveSubscription: willDeleteCompany && isBilled,
+  }
+}
+
+/**
+ * Impact de la suppression, affiché sur la page avant confirmation (SP-624)
+ */
+export async function getAccountDeletionImpact(): Promise<
+  CrudActionResult<AccountDeletionImpact>
+> {
+  const session = await auth()
+  if (!session?.user?.id) {
+    return { success: false, error: 'Non authentifié' }
+  }
+  try {
+    const impact = await computeDeletionImpact(session.user.id)
+    if (!impact) return { success: false, error: 'Compte introuvable' }
+    const { companyId: _companyId, ...visible } = impact
+    return { success: true, data: visible }
+  } catch (error) {
+    console.error('[getAccountDeletionImpact] Error:', error)
+    return { success: false, error: 'Erreur lors du calcul de l’impact' }
+  }
+}
+
+/**
  * Supprime définitivement le compte utilisateur et toutes ses données
  *
  * RGPD Article 17 - Droit à l'effacement
@@ -476,7 +566,7 @@ export async function deleteAccount(
       }
     }
 
-    const { confirmEmail, password } = validation.data
+    const { confirmEmail, password, reason, reasonDetail } = validation.data
 
     // 3. Récupérer l'utilisateur avec email, mot de passe et entreprise
     const user = await prisma.user.findUnique({
@@ -524,6 +614,19 @@ export async function deleteAccount(
       }
     }
 
+    // SP-624 : effet sur l'entreprise, calculé avant toute écriture
+    const impact = await computeDeletionImpact(user.id)
+    if (impact?.blockedByActiveSubscription) {
+      return {
+        success: false,
+        error:
+          'Votre abonnement est encore actif. Résiliez-le depuis la page Facturation avant de supprimer votre compte, sinon il continuerait d’être facturé.',
+      }
+    }
+    const companyToDelete =
+      impact?.willDeleteCompany && impact.companyId ? impact.companyId : null
+    const reasonLabel = reason ? DELETION_REASONS[reason] : null
+
     // 6. Log avant suppression (traçabilité RGPD Article 30)
     // Note: utilisation de console.warn pour la traçabilité (autorisé par ESLint)
     console.warn(
@@ -552,8 +655,27 @@ export async function deleteAccount(
         role: user.role,
         companyName: user.company?.name ?? null,
         selfDeletion: true,
+        ...(reason && { reason }),
+        ...(reasonDetail && { reasonDetail }),
+        ...(companyToDelete && { companyDeleted: true }),
       },
     })
+
+    // SP-624 : trace de l'entreprise supprimée, écrite sans companyId pour
+    // ne pas partir dans la cascade qu'elle décrit
+    if (companyToDelete) {
+      await logAuditAction({
+        action: 'DELETE',
+        entityType: 'COMPANY',
+        entityId: companyToDelete,
+        userId: user.id,
+        details: {
+          companyName: user.company?.name ?? null,
+          employeeCount: impact?.employeeCount ?? 0,
+          reason: 'LAST_USER_DELETED',
+        },
+      })
+    }
 
     // 7. Transaction : Nettoyer les FK puis supprimer
     await prisma.$transaction(async (tx) => {
@@ -568,6 +690,19 @@ export async function deleteAccount(
       await tx.user.delete({
         where: { id: user.id },
       })
+
+      // SP-624 : dernier utilisateur, l'entreprise part avec ses employés,
+      // équipes, créneaux, congés et abonnement d'essai (cascade du schéma).
+      // Recompté dans la transaction : un compte arrivé depuis le calcul de
+      // l'impact, par une invitation acceptée, partirait sinon avec elle.
+      if (companyToDelete) {
+        const remainingUsers = await tx.user.count({
+          where: { companyId: companyToDelete },
+        })
+        if (remainingUsers === 0) {
+          await tx.company.delete({ where: { id: companyToDelete } })
+        }
+      }
     })
 
     // 8. Log après suppression
@@ -588,6 +723,9 @@ export async function deleteAccount(
       userEmail: user.email,
       companyName: user.company?.name || null,
       userRole: user.role,
+      reason: reasonLabel,
+      reasonDetail: reasonDetail || null,
+      companyDeleted: companyToDelete !== null,
     }).catch(console.error)
 
     // Pas de revalidatePath car l'utilisateur sera déconnecté

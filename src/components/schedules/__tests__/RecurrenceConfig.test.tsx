@@ -1,7 +1,7 @@
 /**
  * Tests unitaires pour RecurrenceConfig (version simplifiée)
  *
- * @ticket SP-399
+ * @ticket SP-399, SP-623
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
@@ -60,9 +60,35 @@ describe('RecurrenceConfig', () => {
     expect(defaultProps.onChange).toHaveBeenCalled()
   })
 
-  it('propose le raccourci Lun-Ven', () => {
+  it('propose le raccourci du lundi au vendredi', () => {
     render(<RecurrenceConfig {...defaultProps} isEnabled={true} />)
-    expect(screen.getByText('Lun–Ven')).toBeInTheDocument()
+    expect(screen.getByText('Lun à ven')).toBeInTheDocument()
+  })
+
+  it("sans jours d'ouverture connus, propose le lundi au vendredi", () => {
+    render(<RecurrenceConfig {...defaultProps} isEnabled={true} />)
+    expect(screen.getByText(/5 jours × 4 semaines/)).toBeInTheDocument()
+    expect(screen.queryByText("Jours d'ouverture")).not.toBeInTheDocument()
+  })
+
+  it("propose les jours d'ouverture de l'entreprise (SP-623)", () => {
+    render(
+      <RecurrenceConfig
+        {...defaultProps}
+        isEnabled={true}
+        defaultDays={[
+          'MONDAY',
+          'TUESDAY',
+          'WEDNESDAY',
+          'THURSDAY',
+          'FRIDAY',
+          'SATURDAY',
+        ]}
+      />
+    )
+    // Commerce ouvert le samedi : 6 jours × 4 semaines
+    expect(screen.getByText(/6 jours × 4 semaines/)).toBeInTheDocument()
+    expect(screen.getByText("Jours d'ouverture")).toBeInTheDocument()
   })
 
   it('propose le raccourci Tous', () => {

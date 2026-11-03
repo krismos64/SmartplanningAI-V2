@@ -63,6 +63,7 @@ const STATIC_LABELS: Record<string, string> = {
   company: 'Entreprise',
   new: 'Nouveau',
   edit: 'Modifier',
+  delete: 'Suppression',
   create: 'Créer',
   details: 'Détails',
   billing: 'Facturation',
@@ -159,7 +160,7 @@ async function fetchEntityName(url: string): Promise<string> {
 interface BreadcrumbSegmentProps {
   segment: string
   previousSegment: string | null
-  href: string
+  href: string | null
   isLast: boolean
   className?: string
 }
@@ -228,7 +229,18 @@ function BreadcrumbSegment({
   // Afficher le label (ou l'ID tronqué si pas de résolution)
   const displayLabel = label ?? (isId ? `${segment.slice(0, 8)}...` : segment)
 
-  if (isLast) {
+  // SP-624 : un segment sans page s'affiche sans lien
+  if (!isLast && !href) {
+    return (
+      <BreadcrumbItem className={className}>
+        <span className="max-w-48 truncate" title={displayLabel}>
+          {displayLabel}
+        </span>
+      </BreadcrumbItem>
+    )
+  }
+
+  if (isLast || !href) {
     return (
       <BreadcrumbItem className={className}>
         <BreadcrumbPage
@@ -279,9 +291,16 @@ export interface DynamicBreadcrumbsProps {
  * Les segments `app` et `dashboard` restent masqués à l'affichage, sans être
  * retirés du chemin cliquable.
  */
+/**
+ * SP-624 : espaces de routes qui n'ont pas de page propre. Leur segment reste
+ * affiché, sans lien : « Directeur » renvoyait vers /app/director, une 404
+ * cliquée par un prospect le 3 novembre 2026.
+ */
+const PATHS_WITHOUT_PAGE = new Set(['/app/director', '/app/admin', '/app/manager'])
+
 function buildCrumbs(
   pathname: string
-): Array<{ segment: string; href: string }> {
+): Array<{ segment: string; href: string | null }> {
   const rawSegments = pathname.split('/').filter(Boolean)
 
   return rawSegments.flatMap((segment, index) => {
@@ -289,12 +308,8 @@ function buildCrumbs(
       return []
     }
 
-    return [
-      {
-        segment,
-        href: '/' + rawSegments.slice(0, index + 1).join('/'),
-      },
-    ]
+    const href = '/' + rawSegments.slice(0, index + 1).join('/')
+    return [{ segment, href: PATHS_WITHOUT_PAGE.has(href) ? null : href }]
   })
 }
 
@@ -302,7 +317,7 @@ function buildCrumbs(
  * Génère les données structurées Schema.org pour le SEO
  */
 function generateSchemaData(
-  crumbs: Array<{ segment: string; href: string }>,
+  crumbs: Array<{ segment: string; href: string | null }>,
   homeLabel: string,
   homeHref: string,
   origin: string
@@ -314,12 +329,17 @@ function generateSchemaData(
       name: homeLabel,
       item: `${origin}${homeHref}`,
     },
-    ...crumbs.map((crumb, index) => ({
-      '@type': 'ListItem',
-      position: index + 2,
-      name: STATIC_LABELS[crumb.segment.toLowerCase()] ?? crumb.segment,
-      item: `${origin}${crumb.href}`,
-    })),
+    // Un segment sans page n'a pas d'URL à déclarer
+    ...crumbs
+      .filter((crumb): crumb is { segment: string; href: string } =>
+        Boolean(crumb.href)
+      )
+      .map((crumb, index) => ({
+        '@type': 'ListItem',
+        position: index + 2,
+        name: STATIC_LABELS[crumb.segment.toLowerCase()] ?? crumb.segment,
+        item: `${origin}${crumb.href}`,
+      })),
   ]
 
   return {

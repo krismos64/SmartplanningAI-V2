@@ -22,6 +22,14 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Checkbox } from '@/components/ui/checkbox'
+import { Textarea } from '@/components/ui/textarea'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import {
   Card,
   CardContent,
@@ -44,14 +52,23 @@ import { useIsImpersonating } from '@/hooks'
 import { deleteAccount } from '@/lib/actions/profile'
 import {
   deleteAccountSchema,
+  DELETION_REASONS,
+  type AccountDeletionImpact,
   type DeleteAccountInput,
+  type DeletionReason,
 } from '@/lib/validations/user'
 
 interface DeleteAccountFormProps {
   userEmail: string
+  /** SP-624 : effet sur l'entreprise, calculé côté serveur */
+  impact?: AccountDeletionImpact | null
 }
 
-export function DeleteAccountForm({ userEmail }: DeleteAccountFormProps) {
+export function DeleteAccountForm({
+  userEmail,
+  impact = null,
+}: DeleteAccountFormProps) {
+  const isBlocked = impact?.blockedByActiveSubscription ?? false
   const [showPassword, setShowPassword] = useState(false)
   const isImpersonating = useIsImpersonating()
 
@@ -134,6 +151,122 @@ export function DeleteAccountForm({ userEmail }: DeleteAccountFormProps) {
                 </p>
               </AlertDescription>
             </Alert>
+
+            {/* SP-624 : ce que la suppression entraîne pour l'entreprise */}
+            {impact?.blockedByActiveSubscription && (
+              <Alert variant="destructive" data-testid="deletion-blocked">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertTitle>Abonnement en cours</AlertTitle>
+                <AlertDescription className="mt-2 space-y-2">
+                  <p>
+                    Vous êtes le dernier utilisateur de{' '}
+                    {impact.companyName ?? 'votre entreprise'} et son
+                    abonnement est encore facturé. Résiliez-le avant de
+                    supprimer votre compte.
+                  </p>
+                  <Link
+                    href="/app/dashboard/billing"
+                    className="font-medium underline"
+                  >
+                    Aller à la facturation
+                  </Link>
+                </AlertDescription>
+              </Alert>
+            )}
+            {impact?.willDeleteCompany && !isBlocked && (
+              <Alert variant="destructive" data-testid="deletion-company-impact">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertTitle>Votre entreprise sera supprimée</AlertTitle>
+                <AlertDescription className="mt-2">
+                  Vous êtes le dernier utilisateur de{' '}
+                  {impact.companyName ?? 'votre entreprise'}. Elle sera
+                  supprimée avec vos données, dont{' '}
+                  {impact.employeeCount > 1
+                    ? `ses ${impact.employeeCount} fiches employés`
+                    : 'sa fiche employé'}
+                  , ses équipes, ses plannings et ses congés.
+                </AlertDescription>
+              </Alert>
+            )}
+            {impact?.leavesCompanyWithoutDirector && (
+              <Alert data-testid="deletion-last-director">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertTitle>Plus aucun dirigeant après vous</AlertTitle>
+                <AlertDescription className="mt-2">
+                  D&apos;autres comptes restent dans{' '}
+                  {impact.companyName ?? 'votre entreprise'}, mais aucun
+                  n&apos;est dirigeant : personne ne pourra plus gérer
+                  l&apos;abonnement ni les paramètres. Donnez ce rôle à un
+                  manager avant de partir.
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {/* SP-624 : motif facultatif */}
+            <FormField
+              control={form.control}
+              name="reason"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>
+                    Pourquoi partez-vous ?
+                    <span className="ml-1 font-normal text-muted-foreground">
+                      (facultatif)
+                    </span>
+                  </FormLabel>
+                  <Select
+                    value={field.value ?? ''}
+                    onValueChange={(value) =>
+                      field.onChange(value as DeletionReason)
+                    }
+                    disabled={isPending}
+                  >
+                    <FormControl>
+                      <SelectTrigger
+                        className="min-h-11"
+                        data-testid="deletion-reason-select"
+                      >
+                        <SelectValue placeholder="Choisir une raison" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {Object.entries(DELETION_REASONS).map(([key, label]) => (
+                        <SelectItem key={key} value={key}>
+                          {label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="reasonDetail"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>
+                    Un mot de plus ?
+                    <span className="ml-1 font-normal text-muted-foreground">
+                      (facultatif, lu par l&apos;équipe SmartPlanning)
+                    </span>
+                  </FormLabel>
+                  <FormControl>
+                    <Textarea
+                      {...field}
+                      value={field.value ?? ''}
+                      maxLength={500}
+                      rows={3}
+                      placeholder="Ce qui vous a bloqué, ce qui vous a manqué…"
+                      data-testid="deletion-reason-detail"
+                      disabled={isPending}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             {/* Champ Email de confirmation */}
             <FormField
@@ -257,7 +390,8 @@ export function DeleteAccountForm({ userEmail }: DeleteAccountFormProps) {
                 !form.formState.isDirty ||
                 isPending ||
                 !confirmDeletion ||
-                isImpersonating
+                isImpersonating ||
+                isBlocked
               }
               title={
                 isImpersonating ? 'Non disponible en mode support' : undefined

@@ -17,6 +17,7 @@ import {
 } from '@/lib/validations/schedule'
 import type { ScheduleType } from '@prisma/client'
 import { styles } from './styles'
+import { workedHours, type LunchBreak } from '@/lib/utils/weekly-hours'
 
 // ============================================================================
 // Types
@@ -44,6 +45,8 @@ export interface SchedulePdfDocumentProps {
   viewMode: 'week' | 'month'
   companyName: string
   generatedAt: Date
+  /** SP-622 : pause déjeuner déduite du total d'heures, comme dans la grille */
+  lunchBreak?: LunchBreak | null
 }
 
 // ============================================================================
@@ -60,14 +63,10 @@ type GroupedByEmployee = Record<
   }
 >
 
-function computeDuration(startTime: string, endTime: string): number {
-  const [sh = 0, sm = 0] = startTime.split(':').map(Number)
-  const [eh = 0, em = 0] = endTime.split(':').map(Number)
-  const diff = eh * 60 + em - (sh * 60 + sm)
-  return diff > 0 ? diff / 60 : 0
-}
-
-function groupByEmployee(schedules: ScheduleForPdf[]): GroupedByEmployee {
+function groupByEmployee(
+  schedules: ScheduleForPdf[],
+  lunchBreak: LunchBreak | null
+): GroupedByEmployee {
   const grouped: GroupedByEmployee = {}
   for (const s of schedules) {
     const key = s.employee.id
@@ -82,7 +81,11 @@ function groupByEmployee(schedules: ScheduleForPdf[]): GroupedByEmployee {
     grouped[key].schedules.push(s)
     // Ne pas compter les repos dans le total heures
     if (s.type !== 'REST') {
-      grouped[key].totalPlanned += computeDuration(s.startTime, s.endTime)
+      grouped[key].totalPlanned += workedHours(
+        s.startTime,
+        s.endTime,
+        lunchBreak
+      )
     }
   }
   return grouped
@@ -142,9 +145,10 @@ export function SchedulePdfDocument({
   viewMode,
   companyName,
   generatedAt,
+  lunchBreak = null,
 }: SchedulePdfDocumentProps) {
   const days = getDaysInPeriod(period.start, period.end)
-  const grouped = groupByEmployee(schedules)
+  const grouped = groupByEmployee(schedules, lunchBreak)
   const employees = Object.entries(grouped).sort(([, a], [, b]) =>
     a.name.localeCompare(b.name)
   )

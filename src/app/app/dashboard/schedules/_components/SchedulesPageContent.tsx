@@ -19,6 +19,8 @@ import {
   deleteSchedule,
   deleteRecurrenceGroup,
   updateRecurrenceGroup,
+  getRecurrenceGroupCounts,
+  getCompanyPlanningSettings,
   publishDraftSchedules,
   type ScheduleWithRelations,
 } from '@/lib/actions/schedules'
@@ -43,6 +45,8 @@ import {
   type RecurrenceEditScope,
 } from '@/components/schedules'
 import type { EmployeeWithHours } from '@/components/schedules'
+import type { LunchBreak } from '@/lib/utils/weekly-hours'
+import type { DayOfWeek as RecurrenceDay } from '@/lib/utils/recurrence'
 import {
   Sheet,
   SheetContent,
@@ -150,8 +154,9 @@ export function SchedulesPageContent({
   )
   const [isRecurrenceDialogOpen, setIsRecurrenceDialogOpen] = useState(false)
   const [isRecurrenceDeleting, setIsRecurrenceDeleting] = useState(false)
-  // Si true, le prochain submit du ShiftModal appliquera les changements à toute la récurrence
-  const [editRecurrenceGroupId, setEditRecurrenceGroupId] = useState<
+  // Créneau de référence : s'il est posé, le prochain submit du ShiftModal
+  // applique les changements à la série de son employé (SP-621)
+  const [editSeriesReferenceId, setEditSeriesReferenceId] = useState<
     string | null
   >(null)
 
@@ -357,10 +362,27 @@ export function SchedulesPageContent({
     } catch {
       // Stockage indisponible : la proposition reviendra, sans gravité
     }
+  }, [isDirector, ignoredDaysKey])
+
+  useEffect(() => {
+    if (!isDirector) return
     void getCompanySettings().then((result) => {
       if (result.success && result.data) setWorkingDays(result.data.workingDays)
     })
-  }, [isDirector, ignoredDaysKey])
+  }, [isDirector])
+
+  // SP-622 : pause déjeuner déduite de la jauge d'heures et de l'avertissement
+  // de création, pour tout rôle qui voit la grille
+  // SP-623 : jours d'ouverture proposés par la répétition
+  const [lunchBreak, setLunchBreak] = useState<LunchBreak | null>(null)
+  const [openingDays, setOpeningDays] = useState<RecurrenceDay[] | null>(null)
+  useEffect(() => {
+    void getCompanyPlanningSettings().then((result) => {
+      if (!result.success) return
+      setLunchBreak(result.data.lunchBreak)
+      setOpeningDays(result.data.workingDays)
+    })
+  }, [])
 
   const daysOutsideOpening = useMemo(
     () =>
@@ -522,9 +544,9 @@ export function SchedulesPageContent({
       setShiftModalMode('edit')
       setSelectedSchedule(recurrenceSchedule)
       if (scope === 'single') {
-        setEditRecurrenceGroupId(null)
+        setEditSeriesReferenceId(null)
       } else {
-        setEditRecurrenceGroupId(recurrenceSchedule.recurrenceGroupId)
+        setEditSeriesReferenceId(recurrenceSchedule.id)
       }
       setIsShiftModalOpen(true)
     } else {
@@ -539,9 +561,7 @@ export function SchedulesPageContent({
             toast.error(result.error ?? 'Erreur')
           }
         } else {
-          const result = await deleteRecurrenceGroup(
-            recurrenceSchedule.recurrenceGroupId!
-          )
+          const result = await deleteRecurrenceGroup(recurrenceSchedule.id)
           if (result.success) {
             toast.success(`${result.data.deletedCount} créneaux supprimés`)
           } else {
@@ -563,24 +583,26 @@ export function SchedulesPageContent({
     }
   }
 
-  // Compter les créneaux de la récurrence
-  const recurrenceCounts = useMemo(() => {
-    if (!recurrenceSchedule?.recurrenceGroupId) {
-      return { single: 1, future: 0, all: 0 }
+  // SP-621 : compter la série de l'employé côté serveur. Le calcul sur les
+  // créneaux chargés ne voyait que la période affichée, et annonçait 12
+  // créneaux pour une suppression qui en effaçait 60.
+  const [recurrenceCounts, setRecurrenceCounts] = useState<{
+    single: number
+    future: number
+    all: number
+  } | null>(null)
+
+  useEffect(() => {
+    setRecurrenceCounts(null)
+    if (!recurrenceSchedule?.recurrenceGroupId) return
+    let cancelled = false
+    void getRecurrenceGroupCounts(recurrenceSchedule.id).then((result) => {
+      if (!cancelled && result.success) setRecurrenceCounts(result.data)
+    })
+    return () => {
+      cancelled = true
     }
-    const groupId = recurrenceSchedule.recurrenceGroupId
-    const allInGroup = schedules.filter((s) => s.recurrenceGroupId === groupId)
-    const futureInGroup = allInGroup.filter(
-      (s) =>
-        new Date(s.startDate) >= new Date(recurrenceSchedule.startDate) &&
-        s.id !== recurrenceSchedule.id
-    )
-    return {
-      single: 1,
-      future: futureInGroup.length + 1,
-      all: allInGroup.length,
-    }
-  }, [recurrenceSchedule, schedules])
+  }, [recurrenceSchedule])
 
   return (
     <div className="space-y-6" data-testid="schedules-page">
@@ -761,6 +783,7 @@ export function SchedulesPageContent({
             schedules={schedules}
             employees={employees as EmployeeWithHours[]}
             isOpen={showHoursPanel}
+            lunchBreak={lunchBreak}
             viewMode={viewMode}
             onToggle={() => {}}
           />
@@ -795,6 +818,7 @@ export function SchedulesPageContent({
               schedules={schedules}
               employees={employees as EmployeeWithHours[]}
               isOpen={true}
+              lunchBreak={lunchBreak}
               onToggle={() => {}}
               viewMode={viewMode}
             />
@@ -808,24 +832,26 @@ export function SchedulesPageContent({
         onClose={() => {
           setIsShiftModalOpen(false)
           setSelectedSchedule(null)
-          setEditRecurrenceGroupId(null)
+          setEditSeriesReferenceId(null)
           setCreateDefaults(null)
         }}
         createDefaults={createDefaults}
+        lunchBreak={lunchBreak}
+        openingDays={openingDays}
         mode={shiftModalMode}
         schedule={selectedSchedule}
         companyId={companyId}
         onSuccess={() => {
           void (async () => {
             // Si édition récurrence "all" : appliquer les changements à toute la série
-            if (editRecurrenceGroupId && selectedSchedule) {
+            if (editSeriesReferenceId && selectedSchedule) {
               // Relire le schedule mis à jour par son ID
               const result = await getScheduleById(selectedSchedule.id)
 
               if (result.success && result.data) {
                 const updated = result.data
                 const updateResult = await updateRecurrenceGroup(
-                  editRecurrenceGroupId,
+                  editSeriesReferenceId,
                   {
                     startTime: updated.startTime,
                     endTime: updated.endTime,
@@ -850,7 +876,7 @@ export function SchedulesPageContent({
 
             setIsShiftModalOpen(false)
             setSelectedSchedule(null)
-            setEditRecurrenceGroupId(null)
+            setEditSeriesReferenceId(null)
             void reloadSchedules(
               new Date(rangeStartTime),
               new Date(rangeEndTime),
@@ -870,7 +896,8 @@ export function SchedulesPageContent({
         }}
         onConfirm={(scope) => void handleRecurrenceConfirm(scope)}
         action={recurrenceAction}
-        counts={recurrenceCounts}
+        counts={recurrenceCounts ?? undefined}
+        isCountLoading={recurrenceCounts === null}
         isLoading={isRecurrenceDeleting}
         onActionChange={setRecurrenceAction}
       />

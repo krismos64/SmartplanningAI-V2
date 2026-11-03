@@ -143,7 +143,11 @@ function DashboardLayoutContent({
 
             {/* Page content */}
             <main className="bg-mesh flex-1 transition-all duration-300">
-              <ScrollArea className="h-[calc(100vh-4rem-3.5rem)]">
+              {/* SP-623 : Radix enveloppe le contenu dans un display: table,
+                  qui s'élargit à la largeur de contenu au lieu de la zone
+                  disponible. Mesuré à 1470 px : 66 px coupés à droite de la
+                  page plannings, bouton « Nouveau planning » compris. */}
+              <ScrollArea className="h-[calc(100vh-4rem-3.5rem)] [&>[data-radix-scroll-area-viewport]>div]:!block">
                 <div className="container mx-auto p-6">
                   {/* Dynamic Breadcrumbs - SP-264 */}
                   <DynamicBreadcrumbs pathname={pathname} />
