@@ -32,12 +32,12 @@ Le détail applicable se charge selon ce que touche le travail. Lire la règle
 correspondante **avant** de modifier ces chemins, plutôt que de reconstruire la
 convention de mémoire.
 
-| Fichier                          | Charger avant de toucher                                               |
-| -------------------------------- | ---------------------------------------------------------------------- |
-| `.claude/rules/multi-tenant.md`  | Server Action, route API, requête Prisma, auth, choix de destinataires |
+| Fichier                          | Charger avant de toucher                                                                                                                                                                                                                                                                           |
+| -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `.claude/rules/multi-tenant.md`  | Server Action, route API, requête Prisma, auth, choix de destinataires                                                                                                                                                                                                                             |
 | `.claude/rules/prisma-pieges.md` | `'use server'`, backfill, SQL de diagnostic, cache dashboard, envoi d'emails, date formatée côté serveur, date de jour écrite ou calculée côté serveur, Nginx, workflow CD, script de `scripts/ops/`, manipulation de fichier vers un conteneur, code exécuté par le middleware (`auth.config.ts`) |
-| `.claude/rules/seo-content.md`   | pages secteur, guides, landing, sitemap, `llms.txt` et la route `llms-full.txt`, texte public |
-| `.claude/rules/tests.md`         | écriture de tests, et avant de conclure un travail                     |
+| `.claude/rules/seo-content.md`   | pages secteur, guides, landing, sitemap, `llms.txt` et la route `llms-full.txt`, texte public                                                                                                                                                                                                      |
+| `.claude/rules/tests.md`         | écriture de tests, et avant de conclure un travail                                                                                                                                                                                                                                                 |
 
 Documentation longue : `docs/deployment.md` pour le déploiement,
 `docs/database-architecture.md` pour la base.
@@ -84,6 +84,17 @@ récente en début de session** donne l'état du projet plus vite que Jira.
   la publication par `publishDraftSchedules` (SP-614). **Pas encore** la
   modification ni la suppression d'un brouillon, qui notifient encore sans
   regarder le statut (SP-618)
+- Séries récurrentes : un `recurrenceGroupId` est partagé par tous les employés
+  créés ensemble. Toute action « sur la série » se borne au groupe, à l'employé
+  et à l'entreprise du créneau de référence (`seriesWhere`, SP-621), sinon elle
+  touche les autres employés : 12 créneaux annoncés, 60 supprimés
+- Suppression de compte : le dernier utilisateur emporte son entreprise dans la
+  même transaction, recomptage compris (SP-624). Refus tant qu'un abonnement
+  Stripe est facturé. Les audits de la suppression sont écrits sans `companyId`
+  pour survivre à la cascade
+- Réglages entreprise utiles à la saisie (pause déjeuner, jours d'ouverture) :
+  `getCompanyPlanningSettings`, lisible par le manager. `getCompanySettings` est
+  réservé au dirigeant
 - Redis : `withCache()` en cache-aside, rate limiting `INCR` + `EXPIRE` avec repli
   mémoire si Redis est indisponible. `/api/health` renvoie alors « degraded », pas
   « unhealthy »

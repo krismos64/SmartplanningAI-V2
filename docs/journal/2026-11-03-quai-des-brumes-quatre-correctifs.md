@@ -60,8 +60,33 @@ par « Lun à ven ».
 
 ## Prochaine étape
 
-- Nettoyage fait le 3 novembre 2026 : les deux entreprises orphelines sont
-  supprimées en production (2 lignes, 0 restante), après un test à blanc
-- PR #117 : CI verte, merger, vérifier le déploiement
-- Après déploiement, relire le motif de la prochaine suppression de compte
+Fait le 3 novembre 2026 :
+
+- Nettoyage des deux entreprises orphelines en production, après un test à
+  blanc : 2 lignes supprimées, 0 restante
+- PR #117 mergée (`98a9145`), CI puis CD verts, production sur l'image
+  `sha-98a9145`, conteneur healthy, aucune erreur journald. SP-621 à SP-624
+  passés en Terminé
+
+Audit de fin de session, à la demande de Christophe :
+
+- Compteurs remesurés : Vitest 219 fichiers et 3521 tests, E2E 28 specs et
+  275 tests, whitelist CI 14 specs et 143 tests, couverture 53,66 % de lignes
+  et 76,14 % de branches. Le README annonçait 3497 tests unitaires, corrigé
+- README, `CLAUDE.md` (trois conventions ajoutées aux Patterns) et
+  `docs/database-architecture.md` (`defaultOpeningHours`, cycle de vie de
+  l'entreprise, périmètre d'une série) mis à jour
+- Six hooks testés en exécution, commandes npm citées et scripts ops
+  documentés vérifiés : rien à corriger
+- **SP-612 clos** : zéro ligne `edge runtime` dans journald depuis le
+  26 octobre, session de 1 h 40 comprise
+- Essais : CARL sans activité depuis le 22/10, 40 brouillons jamais publiés,
+  essai jusqu'au 12/11 ; chouphil sans activité depuis le 20/10
+
+Reste ouvert :
+
+- GitGuardian a signalé le mot de passe fictif `ValidP@ss123` d'un test
+  (incident 26702661) : faux positif à marquer sur le dashboard. L'application
+  GitHub de GitGuardian ne lit pas `.gitguardian.yaml`
+- Relire le motif de la prochaine suppression de compte, désormais recueilli
 - L'export Excel compte toujours les heures sans pause
