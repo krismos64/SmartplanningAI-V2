@@ -434,6 +434,7 @@ describe('deleteAccount : entreprise du compte supprimé (SP-624)', () => {
     company: { name: 'QUAI DES BRUMES' },
   }
   let txCompanyDelete: ReturnType<typeof vi.fn>
+  let txUserCount: ReturnType<typeof vi.fn>
 
   beforeEach(() => {
     vi.clearAllMocks()
@@ -448,10 +449,14 @@ describe('deleteAccount : entreprise du compte supprimé (SP-624)', () => {
       stripeSubscriptionId: null,
     })
     txCompanyDelete = vi.fn().mockResolvedValue({})
+    txUserCount = vi.fn().mockResolvedValue(0)
     mockTransaction.mockImplementation(async (fn) => {
       await fn({
         leaveBalance: { updateMany: vi.fn().mockResolvedValue({ count: 0 }) },
-        user: { delete: vi.fn().mockResolvedValue(director) },
+        user: {
+          delete: vi.fn().mockResolvedValue(director),
+          count: txUserCount,
+        },
         company: { delete: txCompanyDelete },
       })
     })
@@ -524,6 +529,19 @@ describe('deleteAccount : entreprise du compte supprimé (SP-624)', () => {
       'Les heures ou les plannings calculés ne correspondent pas'
     )
     expect(params?.companyDeleted).toBe(true)
+  })
+
+  it("conserve l'entreprise si un compte l'a rejointe depuis le calcul de l'impact", async () => {
+    mockUserCount.mockResolvedValue(0)
+    txUserCount.mockResolvedValue(1)
+
+    const result = await deleteAccount(input)
+
+    expect(result.success).toBe(true)
+    expect(txCompanyDelete).not.toHaveBeenCalled()
+    expect(txUserCount).toHaveBeenCalledWith({
+      where: { companyId: 'company-a' },
+    })
   })
 
   it('accepte une suppression sans motif', async () => {

@@ -692,9 +692,16 @@ export async function deleteAccount(
       })
 
       // SP-624 : dernier utilisateur, l'entreprise part avec ses employés,
-      // équipes, créneaux, congés et abonnement d'essai (cascade du schéma)
+      // équipes, créneaux, congés et abonnement d'essai (cascade du schéma).
+      // Recompté dans la transaction : un compte arrivé depuis le calcul de
+      // l'impact, par une invitation acceptée, partirait sinon avec elle.
       if (companyToDelete) {
-        await tx.company.delete({ where: { id: companyToDelete } })
+        const remainingUsers = await tx.user.count({
+          where: { companyId: companyToDelete },
+        })
+        if (remainingUsers === 0) {
+          await tx.company.delete({ where: { id: companyToDelete } })
+        }
       }
     })
 
