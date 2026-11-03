@@ -20,6 +20,7 @@ import {
   deleteRecurrenceGroup,
   updateRecurrenceGroup,
   getRecurrenceGroupCounts,
+  getCompanyLunchBreak,
   publishDraftSchedules,
   type ScheduleWithRelations,
 } from '@/lib/actions/schedules'
@@ -44,6 +45,7 @@ import {
   type RecurrenceEditScope,
 } from '@/components/schedules'
 import type { EmployeeWithHours } from '@/components/schedules'
+import type { LunchBreak } from '@/lib/utils/weekly-hours'
 import {
   Sheet,
   SheetContent,
@@ -359,10 +361,23 @@ export function SchedulesPageContent({
     } catch {
       // Stockage indisponible : la proposition reviendra, sans gravité
     }
+  }, [isDirector, ignoredDaysKey])
+
+  useEffect(() => {
+    if (!isDirector) return
     void getCompanySettings().then((result) => {
       if (result.success && result.data) setWorkingDays(result.data.workingDays)
     })
-  }, [isDirector, ignoredDaysKey])
+  }, [isDirector])
+
+  // SP-622 : pause déjeuner déduite de la jauge d'heures et de l'avertissement
+  // de création, pour tout rôle qui voit la grille
+  const [lunchBreak, setLunchBreak] = useState<LunchBreak | null>(null)
+  useEffect(() => {
+    void getCompanyLunchBreak().then((result) => {
+      if (result.success) setLunchBreak(result.data)
+    })
+  }, [])
 
   const daysOutsideOpening = useMemo(
     () =>
@@ -763,6 +778,7 @@ export function SchedulesPageContent({
             schedules={schedules}
             employees={employees as EmployeeWithHours[]}
             isOpen={showHoursPanel}
+            lunchBreak={lunchBreak}
             viewMode={viewMode}
             onToggle={() => {}}
           />
@@ -797,6 +813,7 @@ export function SchedulesPageContent({
               schedules={schedules}
               employees={employees as EmployeeWithHours[]}
               isOpen={true}
+              lunchBreak={lunchBreak}
               onToggle={() => {}}
               viewMode={viewMode}
             />
@@ -814,6 +831,7 @@ export function SchedulesPageContent({
           setCreateDefaults(null)
         }}
         createDefaults={createDefaults}
+        lunchBreak={lunchBreak}
         mode={shiftModalMode}
         schedule={selectedSchedule}
         companyId={companyId}

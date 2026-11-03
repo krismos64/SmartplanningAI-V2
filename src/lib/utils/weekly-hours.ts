@@ -10,6 +10,7 @@
  * Paris, convention SP-609) : tout calcul de semaine se fait en UTC pur.
  */
 
+import { z } from 'zod'
 import { addCalendarDays } from '@/lib/utils/schedule-date'
 
 /** Durée maximale hebdomadaire absolue (article L3121-20 du Code du travail) */
@@ -28,6 +29,66 @@ export function shiftDurationHours(startTime: string, endTime: string): number {
   let minutes = eh * 60 + em - (sh * 60 + sm)
   if (minutes <= 0) minutes += 24 * 60
   return minutes / 60
+}
+
+/** Pause déjeuner telle que réglée dans les paramètres entreprise */
+export interface LunchBreak {
+  enabled: boolean
+  /** HH:mm */
+  start: string
+  /** HH:mm */
+  end: string
+}
+
+const lunchBreakSchema = z.object({
+  enabled: z.boolean(),
+  start: z.string().regex(/^\d{2}:\d{2}$/),
+  end: z.string().regex(/^\d{2}:\d{2}$/),
+})
+
+/**
+ * Pause déjeuner lue dans `Company.defaultOpeningHours`, JSON libre en base.
+ * Une valeur absente ou mal formée vaut « pas de pause » plutôt qu'une erreur.
+ */
+export function parseLunchBreak(openingHours: unknown): LunchBreak | null {
+  if (!openingHours || typeof openingHours !== 'object') return null
+  const parsed = lunchBreakSchema.safeParse(
+    (openingHours as { lunchBreak?: unknown }).lunchBreak
+  )
+  return parsed.success ? parsed.data : null
+}
+
+function toMinutes(time: string): number {
+  const [h = 0, m = 0] = time.split(':').map(Number)
+  return h * 60 + m
+}
+
+/**
+ * Heures travaillées d'un créneau, pause déjeuner déduite (SP-622).
+ *
+ * Le 3 novembre 2026, QUAI DES BRUMES avait activé une pause de 12:00 à 13:00 :
+ * ses créneaux de 09:00 à 19:00 restaient comptés 10 h, et l'avertissement
+ * annonçait un dépassement des 48 h légales. La pause n'est déduite que si le
+ * créneau la couvre entièrement : un créneau du matin ou de l'après-midi n'en
+ * contient pas. Une garde de nuit, qui finit le lendemain, n'en contient pas
+ * non plus.
+ */
+export function workedHours(
+  startTime: string,
+  endTime: string,
+  lunchBreak?: LunchBreak | null
+): number {
+  const duration = shiftDurationHours(startTime, endTime)
+  if (!lunchBreak?.enabled) return duration
+
+  const start = toMinutes(startTime)
+  const end = toMinutes(endTime)
+  const breakStart = toMinutes(lunchBreak.start)
+  const breakEnd = toMinutes(lunchBreak.end)
+  if (end <= start || breakEnd <= breakStart) return duration
+  if (start > breakStart || end < breakEnd) return duration
+
+  return duration - (breakEnd - breakStart) / 60
 }
 
 /** Lundi de la semaine d'un jour calendaire */
@@ -59,7 +120,8 @@ export interface WeeklyHoursWarning {
  */
 export function findWeeklyHoursWarnings(
   shifts: ShiftForHours[],
-  contractHours: Map<string, number>
+  contractHours: Map<string, number>,
+  lunchBreak?: LunchBreak | null
 ): WeeklyHoursWarning[] {
   const totals = new Map<
     string,
@@ -75,7 +137,7 @@ export function findWeeklyHoursWarnings(
       weekStart,
       hours: 0,
     }
-    entry.hours += shiftDurationHours(shift.startTime, shift.endTime)
+    entry.hours += workedHours(shift.startTime, shift.endTime, lunchBreak)
     totals.set(key, entry)
   }
 

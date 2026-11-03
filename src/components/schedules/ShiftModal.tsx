@@ -83,6 +83,7 @@ import {
 } from '@/lib/utils/recurrence'
 import { useConflictDetection } from '@/hooks/use-conflict-detection'
 import { useWeeklyHoursCheck } from './useWeeklyHoursCheck'
+import type { LunchBreak } from '@/lib/utils/weekly-hours'
 import { formatScheduleDateShort } from '@/lib/utils/schedule-date'
 import { useIsImpersonating } from '@/hooks'
 
@@ -109,6 +110,8 @@ export interface ShiftModalProps {
    * de la case sont alors déjà renseignés.
    */
   createDefaults?: { employeeId: string; day: Date } | null
+  /** SP-622 : pause déjeuner de l'entreprise, lue par la page pour tout rôle */
+  lunchBreak?: LunchBreak | null
 }
 
 // ============================================================================
@@ -159,6 +162,7 @@ export function ShiftModal({
   companyId,
   onSuccess,
   createDefaults = null,
+  lunchBreak = null,
 }: ShiftModalProps) {
   const isImpersonating = useIsImpersonating()
 
@@ -316,6 +320,7 @@ export function ShiftModal({
     type: watchedType,
     recurrenceRule: mode === 'create' && isRecurring ? recurrenceRule : null,
     excludeScheduleId: mode === 'edit' ? schedule?.id : undefined,
+    lunchBreak: lunchBreak ?? companySettings?.lunchBreak,
     enabled: isOpen,
   })
 

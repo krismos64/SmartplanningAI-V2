@@ -1,5 +1,5 @@
 /**
- * @ticket SP-615
+ * @ticket SP-615, SP-622
  */
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
@@ -7,6 +7,8 @@ import {
   findWeeklyHoursWarnings,
   shiftDurationHours,
   weekStartOf,
+  workedHours,
+  parseLunchBreak,
   LEGAL_WEEKLY_MAX_HOURS,
   type ShiftForHours,
 } from '../weekly-hours'
@@ -118,5 +120,65 @@ describe('findWeeklyHoursWarnings', () => {
 
     const plus = [...shifts, shift('x', '2026-11-06', '08:00', '09:00')]
     expect(findWeeklyHoursWarnings(plus, new Map())).toHaveLength(1)
+  })
+})
+
+describe('pause déjeuner déduite (SP-622)', () => {
+  const pause = { enabled: true, start: '12:00', end: '13:00' }
+
+  it('un créneau qui couvre la pause compte sa durée moins la pause', () => {
+    expect(workedHours('09:00', '19:00', pause)).toBe(9)
+  })
+
+  it('une pause désactivée ou absente ne change rien', () => {
+    expect(workedHours('09:00', '19:00', { ...pause, enabled: false })).toBe(10)
+    expect(workedHours('09:00', '19:00', null)).toBe(10)
+    expect(workedHours('09:00', '19:00')).toBe(10)
+  })
+
+  it('un créneau du matin ou qui ne couvre la pause qu’en partie ne perd rien', () => {
+    expect(workedHours('08:00', '12:00', pause)).toBe(4)
+    expect(workedHours('12:30', '18:00', pause)).toBe(5.5)
+    expect(workedHours('09:00', '12:30', pause)).toBe(3.5)
+  })
+
+  it('une garde de nuit ne perd pas la pause de midi', () => {
+    expect(workedHours('22:00', '06:00', pause)).toBe(8)
+  })
+
+  it('QUAI DES BRUMES : 5 jours de 09:00 à 19:00 font 45 h, sous les 48 h légales', () => {
+    const semaine = ['02', '03', '04', '05', '06'].map((d) =>
+      shift('e1', `2026-11-${d}`, '09:00', '19:00')
+    )
+    const sansPause = findWeeklyHoursWarnings(semaine, new Map([['e1', 39]]))
+    const avecPause = findWeeklyHoursWarnings(
+      semaine,
+      new Map([['e1', 39]]),
+      pause
+    )
+
+    expect(sansPause[0]?.totalHours).toBe(50)
+    expect(sansPause[0]?.exceedsLegal).toBe(true)
+    expect(avecPause[0]?.totalHours).toBe(45)
+    expect(avecPause[0]?.exceedsLegal).toBe(false)
+  })
+})
+
+describe('parseLunchBreak (SP-622)', () => {
+  it('lit la pause rangée dans defaultOpeningHours', () => {
+    expect(
+      parseLunchBreak({
+        lunchBreak: { enabled: true, start: '12:00', end: '13:00' },
+      })
+    ).toEqual({ enabled: true, start: '12:00', end: '13:00' })
+  })
+
+  it('vaut null pour un JSON absent, vide ou mal formé', () => {
+    expect(parseLunchBreak(null)).toBeNull()
+    expect(parseLunchBreak({})).toBeNull()
+    expect(parseLunchBreak([])).toBeNull()
+    expect(
+      parseLunchBreak({ lunchBreak: { enabled: 'oui', start: '12h' } })
+    ).toBeNull()
   })
 })

@@ -53,6 +53,7 @@ import {
   getEffectiveSessionData,
 } from '@/lib/impersonation'
 import { invalidateDashboardCache } from '@/lib/cache'
+import { parseLunchBreak, type LunchBreak } from '@/lib/utils/weekly-hours'
 
 // ============================================================================
 // Types
@@ -2189,6 +2190,35 @@ export async function publishDraftSchedules(
     return { success: true, data: { published: count } }
   } catch (error) {
     console.error('[publishDraftSchedules] Error:', error)
+    const prismaError = handlePrismaError(error)
+    return { success: false, error: prismaError.error }
+  }
+}
+
+/**
+ * Pause déjeuner de l'entreprise de l'utilisateur (SP-622)
+ *
+ * Lisible par tout rôle de l'entreprise : elle sert au calcul des heures
+ * affichées dans la grille, que le manager voit comme le dirigeant.
+ * `getCompanySettings`, réservé au dirigeant, laissait le manager sans pause.
+ */
+export async function getCompanyLunchBreak(): Promise<
+  CrudActionResult<LunchBreak | null>
+> {
+  const authResult = await getAuthenticatedUser()
+  if (!authResult.success) return { success: false, error: authResult.error }
+
+  const { companyId } = authResult.user
+  if (!companyId) return { success: true, data: null }
+
+  try {
+    const company = await prisma.company.findUnique({
+      where: { id: companyId },
+      select: { defaultOpeningHours: true },
+    })
+    return { success: true, data: parseLunchBreak(company?.defaultOpeningHours) }
+  } catch (error) {
+    console.error('[getCompanyLunchBreak] Error:', error)
     const prismaError = handlePrismaError(error)
     return { success: false, error: prismaError.error }
   }

@@ -17,6 +17,7 @@ import {
   SchedulePdfDocument,
   type ScheduleForPdf,
 } from '@/lib/pdf/SchedulePdfDocument'
+import { parseLunchBreak } from '@/lib/utils/weekly-hours'
 
 export async function GET(request: NextRequest) {
   try {
@@ -172,7 +173,7 @@ export async function GET(request: NextRequest) {
     // Fetch company name
     const company = await prisma.company.findUnique({
       where: { id: companyId },
-      select: { name: true },
+      select: { name: true, defaultOpeningHours: true },
     })
 
     const pdfSchedules: ScheduleForPdf[] = schedules.map((s) => ({
@@ -200,6 +201,7 @@ export async function GET(request: NextRequest) {
         viewMode: view,
         companyName: company?.name ?? 'SmartPlanning',
         generatedAt: new Date(),
+        lunchBreak: parseLunchBreak(company?.defaultOpeningHours),
       }) as any
     )
     /* eslint-enable @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any */

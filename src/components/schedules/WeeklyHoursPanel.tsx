@@ -11,6 +11,7 @@ import { Clock } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import type { ScheduleWithRelations } from '@/lib/actions/schedules'
+import { workedHours, type LunchBreak } from '@/lib/utils/weekly-hours'
 
 // ============================================================================
 // Types
@@ -32,23 +33,13 @@ export interface WeeklyHoursPanelProps {
   isOpen: boolean
   onToggle: () => void
   viewMode?: ViewMode
+  /** SP-622 : pause des paramètres entreprise, déduite des créneaux qui la couvrent */
+  lunchBreak?: LunchBreak | null
 }
 
 // ============================================================================
 // Helpers
 // ============================================================================
-
-/**
- * Calcule la durée en heures entre deux horaires HH:mm
- */
-function computeShiftDuration(startTime: string, endTime: string): number {
-  const [sh = 0, sm = 0] = startTime.split(':').map(Number)
-  const [eh = 0, em = 0] = endTime.split(':').map(Number)
-  const startMinutes = sh * 60 + sm
-  const endMinutes = eh * 60 + em
-  const diff = endMinutes - startMinutes
-  return diff > 0 ? diff / 60 : 0
-}
 
 /**
  * Retourne les initiales d'un employé (2 lettres max)
@@ -90,6 +81,7 @@ export function WeeklyHoursPanel({
   employees,
   isOpen,
   viewMode = 'week',
+  lunchBreak,
 }: WeeklyHoursPanelProps) {
   const employeeHours = useMemo(() => {
     // Sommer les heures planifiées par employé
@@ -98,9 +90,12 @@ export function WeeklyHoursPanel({
     for (const schedule of schedules) {
       // Ne pas compter les jours de repos dans les heures travaillées
       if (schedule.type === 'REST') continue
-      const duration = computeShiftDuration(
+      // SP-622 : même calcul que l'avertissement de création, pause déduite
+      // et garde de nuit comptée jusqu'au lendemain
+      const duration = workedHours(
         schedule.startTime,
-        schedule.endTime
+        schedule.endTime,
+        lunchBreak
       )
       hoursMap.set(
         schedule.employeeId,
@@ -123,7 +118,7 @@ export function WeeklyHoursPanel({
       .sort((a, b) => a.diff - b.diff)
 
     return result
-  }, [schedules, employees, viewMode])
+  }, [schedules, employees, viewMode, lunchBreak])
 
   if (!isOpen) return null
 
