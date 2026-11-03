@@ -60,10 +60,8 @@ par « Lun à ven ».
 
 ## Prochaine étape
 
-- Exécuter l'étape 2 de `src/scripts/cleanup-orphan-companies.sql` en
-  production : mesure faite, 2 entreprises (Serra Propreté, QUAI DES
-  BRUMES), aucun paiement ni abonnement Stripe. Consigner le résultat dans le
-  script
-- Pousser la branche `fix/inscription-quai-des-brumes`, ouvrir la PR, CI
-  verte, merger
+- Nettoyage fait le 3 novembre 2026 : les deux entreprises orphelines sont
+  supprimées en production (2 lignes, 0 restante), après un test à blanc
+- PR #117 : CI verte, merger, vérifier le déploiement
 - Après déploiement, relire le motif de la prochaine suppression de compte
+- L'export Excel compte toujours les heures sans pause

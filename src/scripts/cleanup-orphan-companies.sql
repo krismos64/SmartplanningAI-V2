@@ -71,4 +71,8 @@ WHERE NOT EXISTS (SELECT 1 FROM users u WHERE u."companyId" = c.id);
 -- Mesure du 3 novembre 2026 avant exécution : 2 entreprises, aucun paiement,
 -- aucun abonnement Stripe. QUAI DES BRUMES (3 employés, 2 équipes,
 -- 2 créneaux, 79 lignes d'audit), Serra Propreté (1 employé, 1 équipe,
--- 52 créneaux). Exécution : à consigner ici.
+-- 52 créneaux).
+--
+-- Exécution du 3 novembre 2026 par cleanup-orphan-companies.run.sql, après un
+-- test à blanc en transaction annulée : « Entreprises orphelines supprimées :
+-- 2 », puis 0 entreprise sans utilisateur restante.
