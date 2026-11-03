@@ -60,8 +60,18 @@ par « Lun à ven ».
 
 ## Prochaine étape
 
-- Nettoyage fait le 3 novembre 2026 : les deux entreprises orphelines sont
-  supprimées en production (2 lignes, 0 restante), après un test à blanc
-- PR #117 : CI verte, merger, vérifier le déploiement
-- Après déploiement, relire le motif de la prochaine suppression de compte
+Fait le 3 novembre 2026 :
+
+- Nettoyage des deux entreprises orphelines en production, après un test à
+  blanc : 2 lignes supprimées, 0 restante
+- PR #117 mergée (`98a9145`), CI puis CD verts, production sur l'image
+  `sha-98a9145`, conteneur healthy, aucune erreur journald. SP-621 à SP-624
+  passés en Terminé
+
+Reste ouvert :
+
+- GitGuardian a signalé le mot de passe fictif `ValidP@ss123` d'un test
+  (incident 26702661) : faux positif à marquer sur le dashboard. L'application
+  GitHub de GitGuardian ne lit pas `.gitguardian.yaml`
+- Relire le motif de la prochaine suppression de compte, désormais recueilli
 - L'export Excel compte toujours les heures sans pause
