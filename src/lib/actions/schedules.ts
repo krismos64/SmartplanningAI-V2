@@ -1155,10 +1155,9 @@ export async function createSchedule(
     // SP-591 : etape 6 du tunnel, le jalon d'activation le plus fort. Une
     // entreprise qui a publie un planning a compris a quoi sert le produit.
     // Le detecteur ne laisse passer que le premier.
-    trackFirstScheduleIfApplicable(
-      validated.companyId,
-      schedules.length
-    ).catch(console.error)
+    trackFirstScheduleIfApplicable(validated.companyId, schedules.length).catch(
+      console.error
+    )
 
     return {
       success: true,
@@ -1573,10 +1572,56 @@ export async function deleteScheduleGroup(
 }
 
 /**
- * Supprime tous les schedules d'une récurrence
+ * SP-621 : périmètre d'une série, vue depuis un de ses créneaux.
+ *
+ * Une récurrence créée pour plusieurs employés partage un seul
+ * `recurrenceGroupId`. Agir sur le groupe entier depuis le créneau d'un
+ * employé touchait donc tous les autres : le 3 novembre 2026, un dirigeant a
+ * vu « 12 créneaux » annoncés et 60 supprimés. La série se borne désormais à
+ * l'employé du créneau de référence, et à son entreprise.
+ */
+function seriesWhere(reference: {
+  recurrenceGroupId: string
+  employeeId: string
+  companyId: string
+}): Prisma.ScheduleWhereInput {
+  return {
+    recurrenceGroupId: reference.recurrenceGroupId,
+    employeeId: reference.employeeId,
+    companyId: reference.companyId,
+  }
+}
+
+/**
+ * Lit le créneau de référence d'une série et vérifie qu'il en fait partie.
+ * Renvoie null si le créneau n'existe pas ou n'appartient à aucune série.
+ */
+async function findSeriesReference(scheduleId: string): Promise<{
+  recurrenceGroupId: string
+  employeeId: string
+  companyId: string
+  teamId: string | null
+  startDate: Date
+} | null> {
+  const reference = await prisma.schedule.findUnique({
+    where: { id: scheduleId },
+    select: {
+      recurrenceGroupId: true,
+      employeeId: true,
+      companyId: true,
+      teamId: true,
+      startDate: true,
+    },
+  })
+  if (!reference?.recurrenceGroupId) return null
+  return { ...reference, recurrenceGroupId: reference.recurrenceGroupId }
+}
+
+/**
+ * Supprime la série d'un employé, à partir d'un de ses créneaux (SP-621)
  */
 export async function deleteRecurrenceGroup(
-  recurrenceGroupId: string
+  scheduleId: string
 ): Promise<CrudActionResult<{ deletedCount: number }>> {
   const authResult = await getAuthenticatedUser()
   if (!authResult.success) return { success: false, error: authResult.error }
@@ -1587,8 +1632,20 @@ export async function deleteRecurrenceGroup(
   const user = authResult.user
 
   try {
+    const reference = await findSeriesReference(scheduleId)
+    if (!reference) {
+      return {
+        success: false,
+        error: 'Aucun planning trouvé dans cette récurrence',
+      }
+    }
+    if (!(await canModifySchedule(user, reference))) {
+      return { success: false, error: 'Suppression non autorisée' }
+    }
+    const recurrenceGroupId = reference.recurrenceGroupId
+
     const schedules = await prisma.schedule.findMany({
-      where: { recurrenceGroupId },
+      where: seriesWhere(reference),
       include: { employee: { select: { userId: true } } },
     })
 
@@ -1607,7 +1664,7 @@ export async function deleteRecurrenceGroup(
     }
 
     const result = await prisma.schedule.deleteMany({
-      where: { recurrenceGroupId },
+      where: seriesWhere(reference),
     })
 
     // Audit (fire-and-forget)
@@ -1664,10 +1721,11 @@ export async function deleteRecurrenceGroup(
 }
 
 /**
- * Met à jour tous les schedules d'une récurrence (horaires, type, statut)
+ * Met à jour la série d'un employé (horaires, type, statut), à partir d'un de
+ * ses créneaux (SP-621)
  */
 export async function updateRecurrenceGroup(
-  recurrenceGroupId: string,
+  scheduleId: string,
   input: {
     startTime?: string
     endTime?: string
@@ -1687,8 +1745,20 @@ export async function updateRecurrenceGroup(
   const user = authResult.user
 
   try {
+    const reference = await findSeriesReference(scheduleId)
+    if (!reference) {
+      return {
+        success: false,
+        error: 'Aucun planning trouvé dans cette récurrence',
+      }
+    }
+    if (!(await canModifySchedule(user, reference))) {
+      return { success: false, error: 'Modification non autorisée' }
+    }
+    const recurrenceGroupId = reference.recurrenceGroupId
+
     const schedules = await prisma.schedule.findMany({
-      where: { recurrenceGroupId },
+      where: seriesWhere(reference),
       include: { employee: { select: { userId: true } } },
     })
 
@@ -1716,7 +1786,7 @@ export async function updateRecurrenceGroup(
     if (input.location !== undefined) data.location = input.location
 
     const result = await prisma.schedule.updateMany({
-      where: { recurrenceGroupId },
+      where: seriesWhere(reference),
       data,
     })
 
@@ -1826,7 +1896,10 @@ export async function duplicateSchedule(
       toCalendarDay(original.startDate),
       shiftDays
     )
-    const newEndDate = addCalendarDays(toCalendarDay(original.endDate), shiftDays)
+    const newEndDate = addCalendarDays(
+      toCalendarDay(original.endDate),
+      shiftDays
+    )
 
     // Determiner les employes cibles
     const employeeIds = options.newEmployeeIds?.length
@@ -2277,7 +2350,6 @@ export async function getRecurrenceGroupCounts(
   }
 
   try {
-    // Récupérer le schedule
     const schedule = await prisma.schedule.findUnique({
       where: { id: scheduleId },
       select: {
@@ -2286,10 +2358,12 @@ export async function getRecurrenceGroupCounts(
         startDate: true,
         employeeId: true,
         companyId: true,
+        teamId: true,
       },
     })
 
-    if (!schedule) {
+    // SP-621 : un créneau hors de portée répond comme un créneau absent
+    if (!schedule || !(await canAccessSchedule(authResult.user, schedule))) {
       return { success: false, error: 'Planning non trouvé' }
     }
 
@@ -2300,18 +2374,20 @@ export async function getRecurrenceGroupCounts(
       }
     }
 
-    // Compter tous les créneaux de la série
-    const allCount = await prisma.schedule.count({
-      where: { recurrenceGroupId: schedule.recurrenceGroupId },
+    // SP-621 : la série de cet employé, et non le groupe entier, qui peut
+    // couvrir tous les employés sélectionnés à la création
+    const series = seriesWhere({
+      recurrenceGroupId: schedule.recurrenceGroupId,
+      employeeId: schedule.employeeId,
+      companyId: schedule.companyId,
     })
 
-    // Compter les créneaux futurs (y compris celui-ci)
-    const futureCount = await prisma.schedule.count({
-      where: {
-        recurrenceGroupId: schedule.recurrenceGroupId,
-        startDate: { gte: schedule.startDate },
-      },
-    })
+    const [allCount, futureCount] = await Promise.all([
+      prisma.schedule.count({ where: series }),
+      prisma.schedule.count({
+        where: { ...series, startDate: { gte: schedule.startDate } },
+      }),
+    ])
 
     return {
       success: true,
@@ -2382,7 +2458,11 @@ export async function deleteRecurringSchedules(
           // Récupérer tous les créneaux futurs du groupe pour vérifier les permissions
           const futureSchedules = await prisma.schedule.findMany({
             where: {
-              recurrenceGroupId: schedule.recurrenceGroupId,
+              ...seriesWhere({
+                recurrenceGroupId: schedule.recurrenceGroupId,
+                employeeId: schedule.employeeId,
+                companyId: schedule.companyId,
+              }),
               startDate: { gte: schedule.startDate },
             },
           })
@@ -2401,7 +2481,11 @@ export async function deleteRecurringSchedules(
           // Supprimer tous les futurs
           const result = await prisma.schedule.deleteMany({
             where: {
-              recurrenceGroupId: schedule.recurrenceGroupId,
+              ...seriesWhere({
+                recurrenceGroupId: schedule.recurrenceGroupId,
+                employeeId: schedule.employeeId,
+                companyId: schedule.companyId,
+              }),
               startDate: { gte: schedule.startDate },
             },
           })
@@ -2417,7 +2501,11 @@ export async function deleteRecurringSchedules(
         } else {
           // Récupérer tous les créneaux du groupe pour vérifier les permissions
           const allSchedules = await prisma.schedule.findMany({
-            where: { recurrenceGroupId: schedule.recurrenceGroupId },
+            where: seriesWhere({
+              recurrenceGroupId: schedule.recurrenceGroupId,
+              employeeId: schedule.employeeId,
+              companyId: schedule.companyId,
+            }),
           })
 
           // Vérifier les permissions pour chacun
@@ -2433,7 +2521,11 @@ export async function deleteRecurringSchedules(
 
           // Supprimer tous
           const result = await prisma.schedule.deleteMany({
-            where: { recurrenceGroupId: schedule.recurrenceGroupId },
+            where: seriesWhere({
+              recurrenceGroupId: schedule.recurrenceGroupId,
+              employeeId: schedule.employeeId,
+              companyId: schedule.companyId,
+            }),
           })
           deletedCount = result.count
         }
@@ -2583,7 +2675,11 @@ export async function updateRecurringSchedules(
           // Récupérer tous les créneaux futurs du groupe
           const futureSchedules = await prisma.schedule.findMany({
             where: {
-              recurrenceGroupId: schedule.recurrenceGroupId,
+              ...seriesWhere({
+                recurrenceGroupId: schedule.recurrenceGroupId,
+                employeeId: schedule.employeeId,
+                companyId: schedule.companyId,
+              }),
               startDate: { gte: schedule.startDate },
             },
           })
@@ -2602,7 +2698,11 @@ export async function updateRecurringSchedules(
           // Mettre à jour tous les futurs (sans changer les dates)
           const result = await prisma.schedule.updateMany({
             where: {
-              recurrenceGroupId: schedule.recurrenceGroupId,
+              ...seriesWhere({
+                recurrenceGroupId: schedule.recurrenceGroupId,
+                employeeId: schedule.employeeId,
+                companyId: schedule.companyId,
+              }),
               startDate: { gte: schedule.startDate },
             },
             data: updateData,
@@ -2625,7 +2725,11 @@ export async function updateRecurringSchedules(
         } else {
           // Récupérer tous les créneaux du groupe
           const allSchedules = await prisma.schedule.findMany({
-            where: { recurrenceGroupId: schedule.recurrenceGroupId },
+            where: seriesWhere({
+              recurrenceGroupId: schedule.recurrenceGroupId,
+              employeeId: schedule.employeeId,
+              companyId: schedule.companyId,
+            }),
           })
 
           // Vérifier les permissions pour chacun
@@ -2641,7 +2745,11 @@ export async function updateRecurringSchedules(
 
           // Mettre à jour tous (sans changer les dates)
           const result = await prisma.schedule.updateMany({
-            where: { recurrenceGroupId: schedule.recurrenceGroupId },
+            where: seriesWhere({
+              recurrenceGroupId: schedule.recurrenceGroupId,
+              employeeId: schedule.employeeId,
+              companyId: schedule.companyId,
+            }),
             data: updateData,
           })
           updatedCount = result.count

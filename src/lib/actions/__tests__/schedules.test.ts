@@ -23,6 +23,8 @@ import {
   deleteSchedule,
   deleteScheduleGroup,
   deleteRecurrenceGroup,
+  updateRecurrenceGroup,
+  getRecurrenceGroupCounts,
   duplicateSchedule,
   updateScheduleStatus,
   getEmployeeSchedules,
@@ -709,10 +711,13 @@ describe('schedules actions', () => {
           employee: employe,
         }),
       ] as never)
+      vi.mocked(prisma.schedule.findUnique).mockResolvedValue(
+        mockSchedule({ id: 'rec1', recurrenceGroupId: 'r1' }) as never
+      )
       vi.mocked(prisma.schedule.deleteMany).mockResolvedValue({ count: 3 })
       mockCreateBatchPlanningNotification.mockResolvedValue({ success: true })
 
-      const result = await deleteRecurrenceGroup('r1')
+      const result = await deleteRecurrenceGroup('rec1')
 
       expect(result.success).toBe(true)
       expect(mockCreatePlanningNotification).not.toHaveBeenCalled()
@@ -722,6 +727,114 @@ describe('schedules actions', () => {
       expect(creneaux).toHaveLength(3)
       expect(destinataire).toBe('clemployeeuser000001')
       expect(action).toBe('deleted')
+    })
+  })
+
+  // ==========================================================================
+  // SP-621 : une série se borne à l'employé du créneau cliqué
+  // ==========================================================================
+
+  describe('séries récurrentes bornées à un employé (SP-621)', () => {
+    const SERIE = {
+      recurrenceGroupId: 'r1',
+      employeeId: 'clxxxxxxxxxxxxxxxxxx1',
+      companyId: 'clcompany0000000001',
+    }
+
+    beforeEach(() => {
+      vi.mocked(auth).mockResolvedValue(mockSession('DIRECTOR') as never)
+      vi.mocked(prisma.employee.findUnique).mockResolvedValue(null)
+      vi.mocked(prisma.schedule.findUnique).mockResolvedValue(
+        mockSchedule({ id: 'rec1', recurrenceGroupId: 'r1' }) as never
+      )
+      vi.mocked(prisma.schedule.findMany).mockResolvedValue([
+        mockSchedule({ id: 'rec1', recurrenceGroupId: 'r1' }),
+      ] as never)
+      mockCreateBatchPlanningNotification.mockResolvedValue({ success: true })
+    })
+
+    it('la suppression ne vise que la série de cet employé, dans son entreprise', async () => {
+      vi.mocked(prisma.schedule.deleteMany).mockResolvedValue({ count: 20 })
+
+      const result = await deleteRecurrenceGroup('rec1')
+
+      expect(result.success).toBe(true)
+      const lecture = vi.mocked(prisma.schedule.findMany).mock.calls[0]?.[0]
+      expect(lecture?.where).toEqual(SERIE)
+      const suppression = vi.mocked(prisma.schedule.deleteMany).mock
+        .calls[0]?.[0]
+      expect(suppression?.where).toEqual(SERIE)
+    })
+
+    it('la modification de série ne vise que la série de cet employé', async () => {
+      vi.mocked(prisma.schedule.updateMany).mockResolvedValue({ count: 20 })
+
+      const result = await updateRecurrenceGroup('rec1', { endTime: '18:00' })
+
+      expect(result.success).toBe(true)
+      const maj = vi.mocked(prisma.schedule.updateMany).mock.calls[0]?.[0]
+      expect(maj?.where).toEqual(SERIE)
+    })
+
+    it("refuse de supprimer la série d'une autre entreprise", async () => {
+      vi.mocked(prisma.schedule.findUnique).mockResolvedValue(
+        mockSchedule({
+          id: 'rec1',
+          recurrenceGroupId: 'r1',
+          companyId: 'clcompany0000000002',
+        }) as never
+      )
+
+      const result = await deleteRecurrenceGroup('rec1')
+
+      expect(result.success).toBe(false)
+      expect(prisma.schedule.findMany).not.toHaveBeenCalled()
+      expect(prisma.schedule.deleteMany).not.toHaveBeenCalled()
+    })
+
+    it("refuse de modifier la série d'une autre entreprise", async () => {
+      vi.mocked(prisma.schedule.findUnique).mockResolvedValue(
+        mockSchedule({
+          id: 'rec1',
+          recurrenceGroupId: 'r1',
+          companyId: 'clcompany0000000002',
+        }) as never
+      )
+
+      const result = await updateRecurrenceGroup('rec1', { endTime: '18:00' })
+
+      expect(result.success).toBe(false)
+      expect(prisma.schedule.updateMany).not.toHaveBeenCalled()
+    })
+
+    it('compte la série de cet employé, toutes périodes confondues', async () => {
+      vi.mocked(prisma.schedule.count)
+        .mockResolvedValueOnce(20)
+        .mockResolvedValueOnce(16)
+
+      const result = await getRecurrenceGroupCounts('rec1')
+
+      expect(result).toEqual({
+        success: true,
+        data: { single: 1, future: 16, all: 20 },
+      })
+      const total = vi.mocked(prisma.schedule.count).mock.calls[0]?.[0]
+      expect(total?.where).toEqual(SERIE)
+    })
+
+    it("ne compte rien pour un créneau d'une autre entreprise", async () => {
+      vi.mocked(prisma.schedule.findUnique).mockResolvedValue(
+        mockSchedule({
+          id: 'rec1',
+          recurrenceGroupId: 'r1',
+          companyId: 'clcompany0000000002',
+        }) as never
+      )
+
+      const result = await getRecurrenceGroupCounts('rec1')
+
+      expect(result.success).toBe(false)
+      expect(prisma.schedule.count).not.toHaveBeenCalled()
     })
   })
 
