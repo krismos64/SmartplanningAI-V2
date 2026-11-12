@@ -780,7 +780,7 @@ Deux conséquences pour tout code qui lit cette table :
 
 **Rôle :** Gestion des abonnements SaaS via Stripe. Relation 1:1 avec Company.
 
-**Modèle tarifaire :** Per-seat à 2,90€/employé/mois. La `quantity` est synchronisée automatiquement avec le nombre d'employés actifs via `syncEmployeeCountToStripe` (SP-439).
+**Modèle tarifaire :** Per-seat à 2,90€/employé/mois. La `quantity` est synchronisée automatiquement avec le nombre d'employés actifs via `syncEmployeeCountToStripe` (SP-439). Ce compte inclut la fiche employé du dirigeant, créée à l'inscription : il occupe un siège facturé, ce que la FAQ tarifs, le simulateur et l'écran Facturation disent depuis SP-626.
 
 **Champs principaux :**
 
@@ -1308,6 +1308,7 @@ chiffrement au repos reste une décision d'architecture, sans ticket à ce jour.
 | Date       | Description                                                                                                                                                                                                                                           |
 | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 02/10/2026 | Convention unique des dates de jour (SP-609) : 00:00 UTC du jour calendaire à Paris pour Schedule, LeaveRequest et Availability. 28 créneaux et 5 congés convertis en production. Compteurs inchangés (22 modèles, 16 enums, 65 index, 24 migrations) |
+| 12/11/2026 | Siège du dirigeant : sa fiche employé compte dans `Subscription.quantity` (SP-626). Aucun changement de schéma                                                                                                                                        |
 | 19/04/2026 | Sprint 13 — `companyId` nullable sur Conversation et Message (SP-513). Messagerie SYSTEM_ADMIN cross-tenant. 22→23 migrations                                                                                                                         |
 | 03/04/2026 | Ajout Messagerie : Conversation, ConversationMember, Message (SP-500) + avatarUrl + isArchived. AuditLog documenté. 17→20 tables, 12→16 enums, 16→19 migrations                                                                                       |
 | 10/02/2026 | Ajout EmailLog (SP-368), correction compteur 16→17 tables, mise à jour diagramme et relations Company                                                                                                                                                 |
