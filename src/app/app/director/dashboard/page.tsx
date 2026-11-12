@@ -10,7 +10,10 @@ import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { hasRequiredRole } from '@/lib/permissions'
-import { getDirectorStats } from '@/lib/services/dashboard'
+import {
+  getDirectorStats,
+  countEmployeesBesidesUser,
+} from '@/lib/services/dashboard'
 import { getEffectiveSessionData } from '@/lib/impersonation'
 import { parseUserPreferences } from '@/lib/utils/preferences'
 
@@ -171,6 +174,13 @@ export default async function DirectorDashboardPage() {
     where: { companyId: user.company.id },
   })
 
+  // Etape « employes » : la fiche du dirigeant, creee a l'inscription, ne
+  // compte pas comme une equipe saisie (SP-625)
+  const otherEmployeeCount = await countEmployeesBesidesUser(
+    user.company.id,
+    user.id
+  )
+
   // Etape « profil » : photo, poste et date d'embauche renseignes
   const hasCompleteProfile = Boolean(
     user.image && user.employee?.jobTitle && user.employee?.hireDate
@@ -238,7 +248,7 @@ export default async function DirectorDashboardPage() {
       {/* Checklist de demarrage tant que la configuration est incomplete */}
       <OnboardingChecklist
         hasTeam={stats.totalTeams > 0}
-        hasEmployee={stats.totalEmployees > 0}
+        hasEmployee={otherEmployeeCount > 0}
         hasSchedule={scheduleCount > 0}
         hasCompleteProfile={hasCompleteProfile}
       />
