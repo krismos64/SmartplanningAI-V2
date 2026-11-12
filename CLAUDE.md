@@ -92,6 +92,10 @@ récente en début de session** donne l'état du projet plus vite que Jira.
   même transaction, recomptage compris (SP-624). Refus tant qu'un abonnement
   Stripe est facturé. Les audits de la suppression sont écrits sans `companyId`
   pour survivre à la cascade
+- Siège du dirigeant : sa fiche employé, créée à l'inscription, compte dans les
+  sièges facturés, et les tarifs le disent (SP-626). La checklist de démarrage
+  juge l'étape employés **hors** cette fiche, par `countEmployeesBesidesUser`
+  (SP-625). Un `NOT: { userId }` y exclurait les employés sans compte
 - Réglages entreprise utiles à la saisie (pause déjeuner, jours d'ouverture) :
   `getCompanyPlanningSettings`, lisible par le manager. `getCompanySettings` est
   réservé au dirigeant
@@ -149,6 +153,10 @@ son nom.
 Le CD ne synchronise que `docker-compose.prod.yml`. **Umami tourne depuis
 `/home/deploy/umami/docker-compose.yml`, hors du dépôt** : toute correction le
 concernant s'applique à la main sur le VPS.
+
+Les runners des trois workflows sont épinglés sur `ubuntu-24.04` :
+`ubuntu-latest`, passé à Ubuntu 26.04 en novembre 2026, empêche Playwright
+d'installer Chromium, et la nightly est restée rouge sept nuits sans alerte.
 
 Le CD ne se déclenche que si le CI passe entièrement, E2E comprises. Un push sur
 une branche sans PR ne déclenche aucun workflow : ouvrir une PR, même en draft,

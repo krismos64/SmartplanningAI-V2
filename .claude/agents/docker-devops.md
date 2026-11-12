@@ -39,6 +39,8 @@ L'ordre **migrate avant deploy** est volontaire (SP-523) : si la migration écho
 
 Redis est un **service container** requis en CI et nightly (`redis:7-alpine` + `REDIS_URL`) : sans lui, le panneau sessions actives ne s'affiche pas et certains tests échouent silencieusement.
 
+Les jobs des trois workflows tournent sur `runs-on: ubuntu-24.04`, jamais `ubuntu-latest` : passé à Ubuntu 26.04 en novembre 2026, il empêche Playwright 1.57 d'installer Chromium, et la nightly est restée rouge sept nuits sans alerte. Ne relever la version qu'avec une version de Playwright qui supporte la nouvelle.
+
 ### Mode déploiement manuel (fallback documenté)
 
 Quand le quota GitHub Actions est épuisé, la procédure éprouvée est : commit avec `[skip ci]` → build local `--platform linux/amd64` (le Mac est ARM, le VPS est amd64) → push GHCR manuel → recreate sur le VPS. Toujours vérifier auprès de Christophe si ce mode est actif avant de proposer un `git push` qui déclenchera la CI normale.

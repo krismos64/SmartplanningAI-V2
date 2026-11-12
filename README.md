@@ -24,12 +24,12 @@ Plateforme SaaS multi-tenant de gestion intelligente des plannings et des ressou
 
 - **Authentification** : Multi-roles (SYSTEM_ADMIN, DIRECTOR, MANAGER, EMPLOYEE), verification email, invitation par email, activation de compte
 - **Dashboards** : 4 tableaux de bord par role avec KPIs, graphiques Recharts, animations Framer Motion
-- **Onboarding** : Ecran de bienvenue a la premiere connexion (DIRECTOR) et checklist de demarrage contextuelle sur le dashboard (equipe -> employe -> planning -> profil), affichee tant que la configuration est incomplete
+- **Onboarding** : Ecran de bienvenue a la premiere connexion (DIRECTOR) et checklist de demarrage contextuelle sur le dashboard (equipe -> employe -> planning -> profil), affichee tant que la configuration est incomplete. L'etape employes ne se coche qu'avec une fiche autre que celle du dirigeant, creee a l'inscription (SP-625)
 - **Planning** : Calendrier Schedule-X (drag & drop, recurrence, conflits, exports PDF/Excel/CSV), vues jour/semaine/mois. Les dates de creneau, de conge et d'indisponibilite sont stockees au jour calendaire de Paris, a 00:00 UTC, quelle que soit la forme envoyee par le navigateur : recurrences, jours ouvres et conflits ne dependent plus du fuseau du serveur (SP-609). Un bandeau signale les créneaux en brouillon de la période, invisibles des employés, et les publie d'un clic (SP-614) ; le formulaire avertit au-delà du contrat hebdomadaire et des 48 h légales (SP-615) ; la grille range ses lignes par équipe puis par nom (SP-616), et propose d'ajouter aux jours d'ouverture un jour planifié hors de ceux-ci (SP-617). Modifier ou supprimer « toute la série » ne touche que l'employé du créneau cliqué, avec un compteur lu côté serveur (SP-621) ; la pause déjeuner des paramètres est déduite des heures, dans la jauge, l'avertissement et le PDF (SP-622) ; la répétition propose les jours d'ouverture de l'entreprise (SP-623)
 - **Conges** : Workflow validation (PENDING -> APPROVED/REJECTED), soldes CP/RTT, overlay calendrier, demi-journees
 - **Messagerie interne** : Conversations DIRECT (1:1), TEAM (auto-sync equipes) et GROUP (manuelles). Messages texte + pieces jointes (PDF, images via Cloudinary, max 10 Mo). Reception temps reel via SSE. Groupement de messages, scroll infini cursor-based, optimistic updates. Archivage avec desarchivage auto sur nouveau message. Administration de groupe : avatar personnalisable, renommage, gestion des membres reserves a l'admin. **SYSTEM_ADMIN peut contacter n'importe quel utilisateur cross-tenant** (conversations avec `companyId: null`, isolation multi-tenant preservee pour les autres roles).
 - **Import CSV/Excel** : Import bulk d'employes depuis fichier CSV ou Excel (.xlsx). Validation Zod temps reel cote client avec cellules colorees. Support headers FR/EN avec normalisation. Detection des doublons, creation auto des equipes, sync Stripe. Modele telecharger pre-rempli.
-- **Billing** : Abonnement per-seat Stripe (2,90 euros/employe/mois), portail client, webhooks, sync employes auto. Essai gratuit 21 jours sans carte bancaire : aucun customer Stripe n'est cree avant la premiere souscription volontaire, le suivi de l'essai passe par une ligne `Subscription` locale (statut TRIAL) basculee en EXPIRED par le cron `/api/cron/trial-emails`, une fois la date de fin reellement depassee et non le jour meme. `Subscription.quantity` compte les sieges factures chez Stripe : il vaut 0 tant qu'aucun abonnement n'existe, y compris pour une entreprise ayant des employes actifs
+- **Billing** : Abonnement per-seat Stripe (2,90 euros/employe/mois), le dirigeant comptant comme un employe facture, ce que disent la FAQ tarifs, le simulateur et l'ecran Facturation (SP-626), portail client, webhooks, sync employes auto. Essai gratuit 21 jours sans carte bancaire : aucun customer Stripe n'est cree avant la premiere souscription volontaire, le suivi de l'essai passe par une ligne `Subscription` locale (statut TRIAL) basculee en EXPIRED par le cron `/api/cron/trial-emails`, une fois la date de fin reellement depassee et non le jour meme. `Subscription.quantity` compte les sieges factures chez Stripe : il vaut 0 tant qu'aucun abonnement n'existe, y compris pour une entreprise ayant des employes actifs
 - **Notifications** : Temps reel SSE, 30 emails transactionnels (React Email), preferences par categorie/canal. Destinataires bornes par `companyId` a la selection ET refuses par une garde multi-tenant dans les factories : une notification ne peut pas partir vers une autre entreprise
 - **Redis** : Rate limiting distribue (INCR+EXPIRE), sessions actives (TTL 24h), cache dashboards (TTL 300s), fallback memoire
 - **CRUD** : Entreprises, employes, equipes avec RBAC et multi-tenant strict. Corriger l'email d'un collaborateur propage le changement au compte de connexion : reinvitation immediate si le compte n'a jamais ete active, sinon confirmation par le collaborateur lui-meme (l'ancienne adresse reste l'identifiant jusqu'au clic, et recoit une alerte)
@@ -162,7 +162,7 @@ src/
 │   ├── messaging/    # Messagerie (8 composants)
 │   ├── import/       # Import CSV (2 composants + utilitaires)
 │   └── ui/           # Shadcn/ui (41 composants)
-├── lib/              # Actions (32), services (22), validations Zod, email (21 fichiers de templates)
+├── lib/              # Actions (32), services (23), validations Zod, email (21 fichiers de templates)
 ├── hooks/            # 22 hooks custom (SSE, SWR, messagerie, import CSV, analytics)
 ├── types/            # Types TypeScript globaux
 └── styles/           # Design tokens centralises
@@ -188,17 +188,17 @@ Voir [`docs/database-architecture.md`](docs/database-architecture.md) pour le de
 
 | Type      | Framework  | Fichiers | Tests     |
 | --------- | ---------- | -------- | --------- |
-| Unitaires | Vitest     | 219      | 3 521     |
+| Unitaires | Vitest     | 221      | 3 527     |
 | E2E       | Playwright | 28       | 275       |
-| **Total** |            | **247**  | **3 796** |
+| **Total** |            | **249**  | **3 802** |
 
-Compteurs mesurés le 3 novembre 2026, par `npm run test` et
+Compteurs mesurés le 12 novembre 2026, par `npm run test` et
 `npx playwright test --list`. Ils se periment a chaque sprint : les remesurer
 plutot que les recopier.
 
 **La couverture est un garde-fou bloquant depuis SP-592**, et pas seulement une
 commande d'information. `vitest.config.ts` porte des seuils mesures (lines 50,
-branches 73, functions 73, statements 50, pour un réel à 53,66 % de lignes et 76,14 % de branches le 3 novembre 2026) et la CI lance
+branches 73, functions 73, statements 50, pour un réel à 53,85 % de lignes et 76,15 % de branches le 12 novembre 2026) et la CI lance
 `npm run test:coverage` : elle rougit si la couverture baisse, meme quand tous
 les tests passent. Le perimetre mesure inclut `src/lib/`, `src/hooks/` et
 `src/lib/validations/`, et exclut les pages et layouts, couverts par les E2E.
@@ -241,6 +241,8 @@ une fenetre ou le nouveau code tournait avec l'ancien schema.
 | Nightly (2h UTC)         | Unitaires + E2E complet        | Non         | ~45-60 min |
 
 Depuis la revision de juillet 2026, un push sur une branche sans PR ne declenche plus le CI : auparavant, chaque push sur une branche avec PR ouverte lancait deux runs complets pour le meme commit (evenements `push` et `pull_request`). Ouvrir une PR, meme en draft, donne le feedback CI.
+
+Les runners sont epingles sur `ubuntu-24.04` : `ubuntu-latest`, passe a Ubuntu 26.04 en novembre 2026, empeche Playwright d'installer Chromium (detail dans `docs/deployment.md`).
 
 Le CD ne se declenche que si le CI reussit entierement, E2E comprises : meme un push direct sur main passe par les tests avant deploiement. Les migrations Prisma sont executees dans un conteneur ephemere, avant le remplacement du conteneur applicatif.
 

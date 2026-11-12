@@ -6,7 +6,7 @@
 | Documents produits | `src/lib/services/dashboard/onboarding.service.ts`, `__tests__/lib/services/dashboard/onboarding.service.test.ts`, `src/app/(about)/tarifs/__tests__/pricing-faqs.test.ts`                                                              |
 | Documents modifiés | `src/app/app/director/dashboard/page.tsx`, `OnboardingChecklist.tsx`, `src/lib/services/dashboard/index.ts`, `tarifs/StructuredData.tsx`, `PricingSimulator.tsx`, `llms-full.content.ts`, `UsageIndicator.tsx`, `page-last-modified.ts` |
 | Contrôles          | Après SP-626 : type-check vert, lint 0 erreur, 221 fichiers et 3527 tests verts, couverture 53,86 % lignes et 76,15 % branches, 26 specs `e2e/specs/landing/` vertes dont axe-core sur `/tarifs`                                        |
-| Jira               | SP-625 et SP-626 créés et commentés                                                                                                                                                                                                     |
+| Jira               | SP-625 et SP-626 créés, commentés et clos, SP-627 créé (défauts mobiles et lien `/docs`)                                                                                                                                                |
 | Mémoire            | `inscription-julienne-11-novembre.md` créée puis complétée                                                                                                                                                                              |
 
 ## Ce qui a été fait
@@ -66,6 +66,29 @@ passé au vert sur ses quatre jobs.
 servies sur `/tarifs`, la règle figure dans `llms-full.txt`, aucune erreur
 dans journald sur les dix minutes suivantes. La checklist n'a pas été revue
 sur un vrai compte de production.
+
+**JULIENNE revient après le déploiement.** Reconnexion à 19:30 UTC, sur un
+ordinateur Windows cette fois, 8 minutes. Le lien « Ajouter » de la checklist
+vers `/app/dashboard/employees/new` est préchargé : l'étape s'affiche bien
+ouverte en production. Il ouvre la liste des employés et sa propre fiche,
+Paramètres > Entreprise trois fois sans rien enregistrer (`updatedAt`
+inchangé, aucun audit), Plannings trois fois. Toujours aucun employé, équipe
+ni créneau. À 19:33:52, un clic depuis le tableau de bord mène à `/docs`, qui
+répond 404 : le lien « Documentation » du pied de page de l'app
+(`Footer.tsx:87`) et la palette de commandes pointent vers une route qui
+n'existe pas. Ajouté à SP-627.
+
+**Audit de fin de session.** Compteurs remesurés : 22 modèles, 16 enums,
+65 index, 24 migrations, 66 pages, 18 routes API, 32 actions, **23 services**
+(22 annoncés, `onboarding.service.ts` en plus), 9 scripts ops, 221 fichiers et
+3527 tests unitaires, couverture 53,85 % de lignes et 76,15 % de branches,
+28 specs et 275 tests E2E dont 14 et 143 en CI. Les six hooks testés en
+exécution. README, `CLAUDE.md`, `deployment.md`, `database-architecture.md`
+et l'agent `docker-devops` mis à jour sur la checklist, le siège du
+dirigeant et les runners épinglés. Jira : 8 tickets ouverts (SP-627, SP-620,
+SP-619, SP-618, SP-610, SP-602, SP-598, SP-596). L'essai de CARL se termine
+ce jour sans activité depuis le 22 octobre (40 brouillons), chouphil est
+passé en EXPIRED le 10.
 
 ## Les écarts
 
