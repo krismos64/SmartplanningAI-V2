@@ -71,8 +71,12 @@ export function OnboardingChecklist({
     },
     {
       key: 'employee',
-      label: 'Ajouter votre premier employé',
-      description: 'La base de vos équipes et de vos plannings',
+      // Le dirigeant a sa propre fiche dès l'inscription et occupe un siège
+      // facturé : l'étape le dit, mais ne se coche qu'une fois un autre
+      // employé ajouté (SP-625).
+      label: 'Ajouter vos employés',
+      description:
+        'Vous comptez déjà comme premier employé : ajoutez votre équipe pour la planifier',
       done: hasEmployee,
       href: '/app/dashboard/employees/new',
       ctaLabel: 'Ajouter',

@@ -65,6 +65,13 @@ export const PRICING_FAQS = [
       'SmartPlanning coûte 2,90\u00a0\u20ac HT par employé par mois. Toutes les fonctionnalités sont incluses, sans frais cachés.',
   },
   {
+    // SP-626 : le dirigeant a sa propre fiche dès l'inscription et occupe un
+    // siège facturé, ce que rien ne disait avant la première facture.
+    question: 'Le dirigeant est-il compté comme un employé ?',
+    answer:
+      'Oui. Votre compte de dirigeant a sa propre fiche dans le planning et compte comme un employé. Pour une équipe de 5 salariés, comptez 6 employés : vos 5 salariés et vous.',
+  },
+  {
     question: "Que se passe-t-il si j'ajoute un employé en cours de mois ?",
     answer:
       'Le prorata est calculé automatiquement. Vous ne payez que les jours restants du mois en cours.',

@@ -45,7 +45,7 @@ jobs:
   # Pas besoin de PostgreSQL : les tests unitaires mockent Prisma
   unit-tests:
     name: Unit Tests (Vitest)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
 
     steps:
@@ -88,7 +88,7 @@ jobs:
   # Chromium uniquement, pas de tests mobile actuellement
   e2e-tests:
     name: Full E2E Suite
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     # Run réel ~16 min (build ~5 min + tests ~10 min)
     timeout-minutes: 40
 
@@ -221,7 +221,7 @@ jobs:
   # déjà ouverte pour regrouper les échecs consécutifs.
   notify-failure:
     name: Notify Failure
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [unit-tests, e2e-tests]
     if: failure()
     permissions:

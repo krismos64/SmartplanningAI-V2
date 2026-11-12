@@ -149,6 +149,11 @@ export function UsageIndicator({
             Exemple : un employé ajouté le 15 du mois = environ{' '}
             {formatCurrency(pricePerEmployeeEur / 2)} pour le mois en cours.
           </p>
+          {/* SP-626 : le dirigeant occupe un siège, sa fiche est créée à l'inscription */}
+          <p className="ml-5.5 pl-0.5" data-testid="director-seat-info">
+            Votre propre fiche compte comme un employé : chaque personne
+            présente au planning occupe un siège, vous compris.
+          </p>
         </div>
       </CardContent>
     </Card>

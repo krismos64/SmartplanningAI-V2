@@ -127,6 +127,14 @@ export function PricingSimulator({
         <span>{PRICING.MAX_EMPLOYEES}</span>
       </div>
 
+      {/*
+        SP-626 : le dirigeant occupe un siège facturé. Sans cette ligne, une
+        équipe de 5 salariés se simule à 5 et en paie 6.
+      */}
+      <p className="mt-4 font-geist text-sm text-public-content">
+        Comptez-vous dans le total : le dirigeant est aussi un employé.
+      </p>
+
       <div className="mt-8 flex flex-wrap gap-3">
         {BADGES.map((badge) => (
           <p

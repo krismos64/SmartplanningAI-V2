@@ -101,7 +101,7 @@ jobs:
   # Construit l'image et la pousse sur le registry
   build-and-push:
     name: Build & Push Docker Image
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     # Ne déploie que si CI a réussi (ou si lancé manuellement)
     if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
 
@@ -207,7 +207,7 @@ jobs:
   #   (évite d'exécuter des migrations non prévues lors d'un redéploiement manuel)
   migrate:
     name: Run Database Migrations
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: build-and-push
     if: ${{ github.event_name == 'workflow_run' }}
     # N'exécute pas les migrations sur workflow_dispatch manuel
@@ -262,7 +262,7 @@ jobs:
   # avec un schéma déjà à jour — aucune fenêtre de mismatch.
   deploy:
     name: Deploy to VPS
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [build-and-push, migrate]
     # Attend toujours build-and-push.
     # Attend migrate quand il tourne (workflow_run). GitHub considère un job
