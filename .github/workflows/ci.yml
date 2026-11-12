@@ -80,7 +80,7 @@ jobs:
   # Exécuté sur TOUS les push et PR
   lint:
     name: Lint & Type Check
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
 
     steps:
@@ -112,7 +112,7 @@ jobs:
   # Exécuté sur TOUS les push et PR
   test:
     name: Unit Tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: lint
     timeout-minutes: 15
 
@@ -166,7 +166,7 @@ jobs:
   #                          impersonation, landing/a11y
   test-e2e:
     name: E2E Tests (Critical)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: lint
     if: |
       (github.event_name == 'pull_request' && github.base_ref == 'main') ||
@@ -336,7 +336,7 @@ jobs:
   # Exécuté sur TOUS les push et PR
   build:
     name: Build Application
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [lint, test]
     timeout-minutes: 15
 
