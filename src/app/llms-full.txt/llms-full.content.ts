@@ -206,6 +206,7 @@ ${examples}
 ### Avantages du per-seat
 - Coût proportionnel à la taille réelle de l'équipe
 - Idéal pour les TPE qui démarrent (pas de minimum mensuel élevé)
+- Le dirigeant compte comme un employé : une équipe de 5 salariés et son dirigeant est facturée pour 6 employés
 - Mise à jour automatique du tarif lors d'embauches ou départs, à la hausse comme à la baisse
 - Pas de coût caché : aucune option payante, aucun module supplémentaire`
 }

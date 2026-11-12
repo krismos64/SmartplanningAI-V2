@@ -102,6 +102,12 @@ describe('llms-full.txt : contenu embarque', () => {
     expect(content).not.toMatch(/\b2,9\s/)
   })
 
+  it('dit que le dirigeant compte comme un employé facturé (SP-626)', () => {
+    // Sans cette règle, un assistant chiffre 5 salariés à 5 sièges, la
+    // facture en compte 6 : la fiche du dirigeant est créée à l'inscription.
+    expect(content).toMatch(/dirigeant compte comme un employé/)
+  })
+
   it('conserve le preambule de presentation et le glossaire', () => {
     expect(content).toContain('## Présentation')
     expect(content).toContain('## Glossaire')

@@ -25,7 +25,7 @@
 
 export const PAGE_LAST_MODIFIED = {
   home: new Date('2026-08-26'),
-  tarifs: new Date('2026-08-13'),
+  tarifs: new Date('2026-11-12'),
   aPropos: new Date('2026-08-13'),
   contact: new Date('2026-08-13'),
   cgu: new Date('2026-08-13'),
