@@ -52,6 +52,21 @@ JSON-LD `FAQPage`, vérifié dans le HTML servi), sous le curseur du simulateur
 d'utilisation de la Facturation. Deux garde-fous de test, la FAQ et
 `llms-full`, puisqu'une phrase supprimée ne casserait rien d'autre.
 
+**La CI rouge sans rapport avec le diff.** La PR #119 a échoué sur les E2E
+avant le premier test : `ubuntu-latest` est passé à Ubuntu 26.04 (image
+`ubuntu26/20261101`), où Playwright 1.57 refuse d'installer Chromium. La
+suite de nuit sur `main` était rouge pour la même raison depuis le
+6 novembre, verte le 5, sans que personne le voie. Les trois workflows (CI,
+nuit, CD) sont épinglés sur `ubuntu-24.04` par `4084f7a`. Le run suivant est
+passé au vert sur ses quatre jobs.
+
+**Déploiement.** PR #119 mergée (`ddd37e3`), CI de `main` verte (run
+43275146334), CD vert (run 43276816276). Image `sha-ddd37e3` démarrée à
+18:19 UTC. En production : la question de FAQ et la ligne du simulateur sont
+servies sur `/tarifs`, la règle figure dans `llms-full.txt`, aucune erreur
+dans journald sur les dix minutes suivantes. La checklist n'a pas été revue
+sur un vrai compte de production.
+
 ## Les écarts
 
 Le test unitaire vérifie la forme de la requête, pas sa traduction SQL. La
@@ -69,4 +84,5 @@ la suite unitaire.
 - `EmployeesDataTable` porte un état vide « Ajoutez votre premier employé » qui
   ne s'affiche sans doute jamais, la liste contenant toujours le dirigeant. Non
   vérifié.
-- SP-625 et SP-626 non poussés, à grouper en fin de sprint.
+- Vérifier le 13 novembre que la suite de nuit repasse au vert.
+- Relever `ubuntu-24.04` quand Playwright supportera Ubuntu 26.04.
