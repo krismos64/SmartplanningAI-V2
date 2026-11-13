@@ -6,7 +6,7 @@
 | Documents produits | `__tests__/integration/series-overlap.test.ts`                                                                                                                                           |
 | Documents modifiés | `src/lib/actions/schedules.ts`, `schedules.test.ts`, `schedules-draft-notifications.test.ts`                                                                                             |
 | Contrôles          | type-check vert, lint 0 erreur, 229 fichiers et 3623 tests verts, couverture 54,27 % de lignes. Intégration 11 sur 11 sur cinq passages. 2 mutations détectées, après correction du test |
-| Jira               | SP-628 créé, commenté                                                                                                                                                                    |
+| Jira               | SP-628 créé, commenté puis clos                                                                                                                                                                    |
 | Mémoire            | `ou-en-est-le-projet.md` mise à jour                                                                                                                                                     |
 
 ## Ce qui a été fait
@@ -46,5 +46,6 @@ appelant hors des tests.
 
 ## Prochaine étape
 
-- Pousser, PR, CI, merge, vérifier la production, clore SP-628.
+- Fait le jour même : PR #129 mergée (`17e39ae`), image `sha-17e39ae`,
+  healthy, aucune erreur dans journald. SP-628 clos.
 - Ticket ouvert : SP-602.
