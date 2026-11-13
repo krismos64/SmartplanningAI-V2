@@ -57,17 +57,20 @@ grep -rn "\$queryRawUnsafe\|\$executeRawUnsafe" src/
 
 ### 5. Security Misconfiguration
 
-- Headers de sécurité (CSP, HSTS, X-Frame-Options) au niveau Nginx, pas seulement applicatif
+- Headers de sécurité : HSTS et `X-Frame-Options` dans `next.config.ts` et Nginx. La CSP est posée par le middleware depuis SP-598 (`src/lib/security/csp.ts`), nonce par requête, `script-src` sans `'unsafe-inline'` ni `'unsafe-eval'` en production. Tout script inline exécutable doit recevoir le nonce (`headers().get('x-nonce')`) ; un `'unsafe-inline'` réintroduit dans `script-src` annule la protection
 - `/api/health` : vérifier que le niveau de détail exposé dépend bien du niveau d'authentification (3 niveaux prévus), jamais de stack trace ou de version de dépendance en clair pour un appelant non authentifié
-- Dépendances : `npm audit --audit-level=moderate`
+- Dépendances : `npm run audit:prod` (SP-596), qui bloque toute faille haute ou critique de production hors `scripts/ci/audit-exceptions.json`. Chaque exception porte une date de réexamen (13 février 2027 pour les deux actuelles)
 - `next.config.ts`, `images.remotePatterns` : un `hostname: '**'` ouvre l'optimiseur `next/image` à n'importe quel domaine HTTPS, que le serveur télécharge et retraite. Vecteur de déni de service documenté par un avis Next.js. Doit lister les domaines réellement utilisés, `res.cloudinary.com` seul ici (SP-589)
 
 ### 6. Vulnerable Components
 
 ```bash
-npm audit --audit-level=moderate
+npm run audit:prod      # production seule, exceptions datées
+npm audit --omit=dev    # détail des advisories
 npm outdated
 ```
+
+`npm audit` sans `--omit=dev` mélange les outils de test aux dépendances servies en production. `npm audit fix` a rétrogradé Prisma en novembre 2026 : relire `package.json` après tout correctif automatique.
 
 ### 7. Authentication Failures
 

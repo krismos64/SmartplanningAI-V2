@@ -1,7 +1,7 @@
 # 🗄️ Architecture Base de Données - SmartPlanning V2
 
-**Dernière mise à jour** : 3 novembre 2026
-**ORM** : Prisma 6.18.0
+**Dernière mise à jour** : 14 novembre 2026
+**ORM** : Prisma 6.19.3
 **Base** : PostgreSQL 16
 **Migrations** : 24 migrations appliquées
 
@@ -382,6 +382,24 @@ créneaux et 5 congés ont été convertis ce jour-là, après sauvegarde vérif
 - `ON_CALL` : Astreinte
 - `OVERTIME` : Heures supplémentaires
 - `REST` : Repos (journée entière)
+
+**🔒 Écritures concurrentes (SP-619, SP-628) :**
+
+Aucune contrainte de la base n'interdit deux créneaux qui se chevauchent pour
+un même employé : la règle vit dans le code (`validateNoConflicts`,
+`findSeriesOverlap`). Pour que deux écritures simultanées ne la contournent
+pas, la vérification et l'écriture se font dans une même transaction, sous un
+verrou consultatif par employé
+(`pg_advisory_xact_lock(hashtextextended('schedule:' || id, 0))`), pris par
+`lockEmployeesForScheduling` dans `src/lib/services/schedule-lock.ts`, en
+ordre trié pour éviter les interblocages. Création, modification d'un
+créneau et changement d'horaire d'une série passent par ce verrou ; une
+approbation de congé, non.
+
+Ces transactions tournent en `ReadCommitted` : `src/lib/prisma.ts` impose
+`Serializable` à toutes les autres, et l'instantané pris pendant l'attente du
+verrou ferait échouer la seconde en `P2034`. Preuve sur une vraie base :
+`npm run test:integration`.
 
 ---
 

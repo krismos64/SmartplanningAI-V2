@@ -31,7 +31,7 @@ Ne jamais proposer une image Nginx statique pour le frontend : Next.js standalon
 
 ```
 git push main
-  → CI : lint, tests Vitest, tests E2E Playwright (whitelist testMatch), build
+  → CI : lint et audit:prod, tests Vitest, tests sur base réelle (npm run test:integration, job E2E) puis E2E Playwright (whitelist testMatch), build
   → CD : build-and-push (image GHCR) → migrate (conteneur Prisma éphémère) → deploy (SSH, pull par tag SHA, restart, healthcheck bloquant)
 ```
 

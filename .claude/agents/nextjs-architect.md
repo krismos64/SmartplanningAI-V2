@@ -71,6 +71,8 @@ Il n'existe ni `src/server/`, ni `src/app/(app)/`, ni `src/app/(marketing)/`.
 3. Secrets en .env jamais committés ni lus (un hook bloque leur lecture)
 4. SEO obligatoire : metadata API, sitemap, robots, JSON-LD, Lighthouse 90+
 5. Server Components par défaut ; mesurer avant d'optimiser
+6. Toutes les transactions tournent en `Serializable` (`src/lib/prisma.ts`). Une écriture de créneau qui vérifie puis écrit passe par `lockEmployeesForScheduling` et `SCHEDULE_TRANSACTION_OPTIONS` (`src/lib/services/schedule-lock.ts`, `ReadCommitted`) : un verrou consultatif seul échoue en `P2034` sous `Serializable` (SP-619). Détail dans `prisma-pieges.md`
+7. Un script inline exécutable reçoit le nonce CSP (`headers().get('x-nonce')`), et le middleware NextAuth ne reçoit jamais de handler (SP-598)
 
 ## 📖 Livrables
 

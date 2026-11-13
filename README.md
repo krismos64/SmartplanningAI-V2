@@ -25,7 +25,7 @@ Plateforme SaaS multi-tenant de gestion intelligente des plannings et des ressou
 - **Authentification** : Multi-roles (SYSTEM_ADMIN, DIRECTOR, MANAGER, EMPLOYEE), verification email, invitation par email, activation de compte
 - **Dashboards** : 4 tableaux de bord par role avec KPIs, graphiques Recharts, animations Framer Motion
 - **Onboarding** : Ecran de bienvenue a la premiere connexion (DIRECTOR) et checklist de demarrage contextuelle sur le dashboard (equipe -> employe -> planning -> profil), affichee tant que la configuration est incomplete. L'etape employes ne se coche qu'avec une fiche autre que celle du dirigeant, creee a l'inscription (SP-625)
-- **Planning** : Calendrier Schedule-X (drag & drop, recurrence, conflits, exports PDF/Excel/CSV), vues jour/semaine/mois. Les dates de creneau, de conge et d'indisponibilite sont stockees au jour calendaire de Paris, a 00:00 UTC, quelle que soit la forme envoyee par le navigateur : recurrences, jours ouvres et conflits ne dependent plus du fuseau du serveur (SP-609). Un bandeau signale les créneaux en brouillon de la période, invisibles des employés, et les publie d'un clic (SP-614) ; le formulaire avertit au-delà du contrat hebdomadaire et des 48 h légales (SP-615) ; la grille range ses lignes par équipe puis par nom (SP-616), et propose d'ajouter aux jours d'ouverture un jour planifié hors de ceux-ci (SP-617). Modifier ou supprimer « toute la série » ne touche que l'employé du créneau cliqué, avec un compteur lu côté serveur (SP-621) ; la pause déjeuner des paramètres est déduite des heures, dans la jauge, l'avertissement et le PDF (SP-622) ; la répétition propose les jours d'ouverture de l'entreprise (SP-623)
+- **Planning** : Calendrier Schedule-X (drag & drop, recurrence, conflits, exports PDF/Excel/CSV), vues jour/semaine/mois. Les dates de creneau, de conge et d'indisponibilite sont stockees au jour calendaire de Paris, a 00:00 UTC, quelle que soit la forme envoyee par le navigateur : recurrences, jours ouvres et conflits ne dependent plus du fuseau du serveur (SP-609). Un bandeau signale les créneaux en brouillon de la période, invisibles des employés, et les publie d'un clic (SP-614) ; le formulaire avertit au-delà du contrat hebdomadaire et des 48 h légales (SP-615) ; la grille range ses lignes par équipe puis par nom (SP-616), et propose d'ajouter aux jours d'ouverture un jour planifié hors de ceux-ci (SP-617). Modifier ou supprimer « toute la série » ne touche que l'employé du créneau cliqué, avec un compteur lu côté serveur (SP-621) ; la pause déjeuner des paramètres est déduite des heures, dans la jauge, l'avertissement et le PDF (SP-622) ; la répétition propose les jours d'ouverture de l'entreprise (SP-623). Deux managers qui planifient le même employé en même temps ne créent plus de doublon : vérification et écriture passent sous un verrou par employé (SP-619), et changer les horaires de toute une série refuse de recouvrir un autre créneau, en nommant sa date (SP-628)
 - **Conges** : Workflow validation (PENDING -> APPROVED/REJECTED), soldes CP/RTT, overlay calendrier, demi-journees
 - **Messagerie interne** : Conversations DIRECT (1:1), TEAM (auto-sync equipes) et GROUP (manuelles). Messages texte + pieces jointes (PDF, images via Cloudinary, max 10 Mo). Reception temps reel via SSE. Groupement de messages, scroll infini cursor-based, optimistic updates. Archivage avec desarchivage auto sur nouveau message. Administration de groupe : avatar personnalisable, renommage, gestion des membres reserves a l'admin. **SYSTEM_ADMIN peut contacter n'importe quel utilisateur cross-tenant** (conversations avec `companyId: null`, isolation multi-tenant preservee pour les autres roles).
 - **Import CSV/Excel** : Import bulk d'employes depuis fichier CSV ou Excel (.xlsx). Validation Zod temps reel cote client avec cellules colorees. Support headers FR/EN avec normalisation. Detection des doublons, creation auto des equipes, sync Stripe. Modele telecharger pre-rempli.
@@ -136,6 +136,8 @@ npm run db:seed          # Seed base de donnees
 npm run test             # Tests unitaires (single run)
 npm run test:watch       # Tests unitaires (watch)
 npm run test:coverage    # Couverture de tests
+npm run test:integration # Tests sur base locale reelle (concurrence)
+npm run audit:prod       # Failles hautes de production hors exceptions
 npm run test:e2e         # Tests E2E Playwright (suite complete)
 npm run test:e2e:ci      # Tests E2E (whitelist CI)
 npm run a11y:audit       # Audit Lighthouse accessibilite
@@ -162,7 +164,7 @@ src/
 │   ├── messaging/    # Messagerie (8 composants)
 │   ├── import/       # Import CSV (2 composants + utilitaires)
 │   └── ui/           # Shadcn/ui (41 composants)
-├── lib/              # Actions (32), services (23), validations Zod, email (21 fichiers de templates)
+├── lib/              # Actions (32), services (24), validations Zod, email (21 fichiers de templates)
 ├── hooks/            # 22 hooks custom (SSE, SWR, messagerie, import CSV, analytics)
 ├── types/            # Types TypeScript globaux
 └── styles/           # Design tokens centralises
@@ -186,19 +188,20 @@ Voir [`docs/database-architecture.md`](docs/database-architecture.md) pour le de
 
 ## Tests
 
-| Type      | Framework  | Fichiers | Tests     |
-| --------- | ---------- | -------- | --------- |
-| Unitaires | Vitest     | 224      | 3 594     |
-| E2E       | Playwright | 28       | 275       |
-| **Total** |            | **252**  | **3 869** |
+| Type        | Framework  | Fichiers | Tests     |
+| ----------- | ---------- | -------- | --------- |
+| Unitaires   | Vitest     | 229      | 3 623     |
+| Base réelle | Vitest     | 2        | 11        |
+| E2E         | Playwright | 28       | 275       |
+| **Total**   |            | **259**  | **3 909** |
 
-Compteurs mesurés le 13 novembre 2026, par `npm run test` et
-`npx playwright test --list`. Ils se periment a chaque sprint : les remesurer
+Compteurs mesurés le 14 novembre 2026, par `npm run test`,
+`npm run test:integration` et `npx playwright test --list`. Ils se periment a chaque sprint : les remesurer
 plutot que les recopier.
 
 **La couverture est un garde-fou bloquant depuis SP-592**, et pas seulement une
 commande d'information. `vitest.config.ts` porte des seuils mesures (lines 50,
-branches 73, functions 73, statements 50, pour un réel à 54,12 % de lignes et 76,56 % de branches le 13 novembre 2026) et la CI lance
+branches 73, functions 73, statements 50, pour un réel à 54,25 % de lignes et 76,67 % de branches le 14 novembre 2026) et la CI lance
 `npm run test:coverage` : elle rougit si la couverture baisse, meme quand tous
 les tests passent. Le perimetre mesure inclut `src/lib/`, `src/hooks/` et
 `src/lib/validations/`, et exclut les pages et layouts, couverts par les E2E.
@@ -368,7 +371,8 @@ Le chiffrement au repos reste une decision d'architecture, sans ticket.
 - Isolation multi-tenant par `companyId` sur chaque requete Prisma (defense-in-depth)
 - Validation Zod aux frontieres, protection CSRF (NextAuth)
 - Cookies httpOnly + secure + sameSite, hashage bcrypt
-- Rate limiting Redis distribue (fallback memoire), audit logs, CSP headers, SRI en production
+- Rate limiting Redis distribue (fallback memoire), audit logs, SRI en production. CSP à nonce posée par le middleware (SP-598) : `script-src` sans `'unsafe-inline'` ni `'unsafe-eval'` en production, un script injecté ne s'exécute pas
+- Dépendances de production surveillées par `npm run audit:prod` en CI et chaque nuit (SP-596) : toute faille haute ou critique bloque, hors exceptions datées dans `scripts/ci/audit-exceptions.json`
 - Connexion, inscription et mot de passe oublie plafonnes par adresse et par IP (SP-610). La connexion ne retient que les echecs, reserves avant la comparaison du mot de passe : 10 par quart d'heure pour une IP sur une adresse, 30 par IP, 50 par adresse toutes IP confondues. Mot de passe oublie : 3 par heure et par adresse, reponse identique au-dela. Inscription : 5 par heure et par adresse. Les confirmations par mot de passe du profil (changement de mot de passe, suppression de compte) sont plafonnees a 5 essais par quart d'heure. L'IP se lit dans `x-real-ip`, que Nginx ecrit lui-meme sur chaque bloc relaye, et une IPv6 compte par prefixe /64
 - Subscription guard middleware Edge Runtime
 - Verification email a l'inscription (token 24h, page `/verify-email`). Envoi limite a trois par heure et par adresse, inscription comprise, avec une reponse identique au-dela de la limite pour ne pas reveler l'existence du compte (SP-606)

@@ -115,6 +115,14 @@ Charger `.claude/rules/multi-tenant.md`, puis :
 - **Une action sur un créneau qui notifie** passe par
   `scheduleVisibilityChange` : un brouillon n'annonce rien à un employé qui
   ne le voit pas (SP-618)
+- **Une écriture de créneau qui vérifie un conflit puis écrit** le fait
+  dans une transaction, après `lockEmployeesForScheduling`, avec
+  `SCHEDULE_TRANSACTION_OPTIONS`. Sans verrou, deux appels simultanés passent
+  tous les deux la vérification (SP-619) ; sans `ReadCommitted`, le second
+  échoue en `P2034`. La preuve se fait par `npm run test:integration`, une
+  course rejouée sur plusieurs tours (SP-628)
+- **Un script inline exécutable** reçoit le nonce CSP : sinon il est bloqué
+  en production sans erreur au build (SP-598)
 
 En cas de doute sur un test d'isolation, le prouver par mutation : casser
 volontairement le code, vérifier que le test rougit, restaurer.

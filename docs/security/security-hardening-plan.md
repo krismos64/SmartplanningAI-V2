@@ -36,7 +36,7 @@ Suite à **deux incidents de sécurité** en 10 jours (5 et 15 décembre 2025), 
 | 1     | Réponse immédiate         | FAIT   | `docs/security/archive/2025-12-ancien-vps/` |
 | 2     | Blocage IPs malveillantes | FAIT   | Fail2ban + UFW, voir phase 2 ci-dessous (6 janvier 2026) |
 | 3     | Hardening Docker          | FAIT   | `read_only`, `cap_drop: ALL`, `no-new-privileges` sur les 3 services de `docker/docker-compose.prod.yml` |
-| 4     | Security Headers Next.js  | FAIT   | `next.config.ts`, `async headers()` : CSP, HSTS, `X-Frame-Options` |
+| 4     | Security Headers Next.js  | FAIT   | `next.config.ts`, `async headers()` : HSTS, `X-Frame-Options`. CSP à nonce dans `src/middleware.ts` depuis SP-598 |
 | 5     | Rate Limiting Nginx       | FAIT   | `nginx/smartplanning.conf` : `limit_req_zone` general/auth/api, `limit_conn_zone` |
 | 6     | Monitoring & Alertes      | FAIT   | `scripts/ops/check-tls-expiry.sh` et `check-public-ports.sh`, en cron |
 
