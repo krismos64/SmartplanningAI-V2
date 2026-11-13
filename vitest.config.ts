@@ -20,7 +20,8 @@ export default defineConfig({
       '__tests__/**/*.{test,spec}.{ts,tsx}',
       'src/**/__tests__/**/*.{test,spec}.{ts,tsx}',
     ],
-    exclude: ['node_modules', 'e2e'],
+    // __tests__/integration : base réelle, config dédiée (SP-619)
+    exclude: ['node_modules', 'e2e', '__tests__/integration/**'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html', 'lcov'],

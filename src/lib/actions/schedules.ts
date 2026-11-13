@@ -56,6 +56,10 @@ import {
   getEffectiveSessionData,
 } from '@/lib/impersonation'
 import { invalidateDashboardCache } from '@/lib/cache'
+import {
+  lockEmployeesForScheduling,
+  SCHEDULE_TRANSACTION_OPTIONS,
+} from '@/lib/services/schedule-lock'
 import { parseLunchBreak, type LunchBreak } from '@/lib/utils/weekly-hours'
 
 // ============================================================================
@@ -461,9 +465,14 @@ function notifyEmployeeOfRemovedSchedule(
  * 1. Congé approuvé sur la période → REFUS
  * 2. Chevauchement horaire avec un planning existant → REFUS
  *
+ * Lit par `db`, la transaction qui écrira le créneau : lue hors de la
+ * transaction qui tient le verrou de l'employé, la vérification ne protège
+ * de rien (SP-619).
+ *
  * @returns null si OK, sinon un message d'erreur explicite
  */
 async function validateNoConflicts(
+  db: Prisma.TransactionClient,
   employeeId: string,
   startDate: Date,
   endDate: Date,
@@ -472,7 +481,7 @@ async function validateNoConflicts(
   excludeScheduleId?: string
 ): Promise<string | null> {
   // Récupérer le nom de l'employé pour les messages
-  const employee = await prisma.employee.findUnique({
+  const employee = await db.employee.findUnique({
     where: { id: employeeId },
     select: { firstName: true, lastName: true },
   })
@@ -497,7 +506,7 @@ async function validateNoConflicts(
   const leaveCheckStart = toCalendarDay(startDate)
   const leaveCheckEnd = endOfCalendarDay(toCalendarDay(endDate))
 
-  const conflictingLeave = await prisma.leaveRequest.findFirst({
+  const conflictingLeave = await db.leaveRequest.findFirst({
     where: {
       employeeId,
       status: 'APPROVED',
@@ -519,7 +528,7 @@ async function validateNoConflicts(
   const dayStart = toCalendarDay(startDate)
   const dayEnd = endOfCalendarDay(toCalendarDay(endDate))
 
-  const sameDaySchedules = await prisma.schedule.findMany({
+  const sameDaySchedules = await db.schedule.findMany({
     where: {
       employeeId,
       startDate: { lte: dayEnd },
@@ -1122,24 +1131,6 @@ export async function createSchedule(
       recurrenceGroupId = generateRecurrenceGroupId()
     }
 
-    // Vérifier les conflits bloquants (congés + chevauchements) pour chaque employé × occurrence
-    // Pour les types REST, ne pas vérifier les chevauchements horaires (journée entière)
-    const isRest = validated.type === 'REST'
-    for (const employeeId of employeeIds) {
-      for (const occurrence of occurrenceDates) {
-        const conflict = await validateNoConflicts(
-          employeeId,
-          occurrence.startDate,
-          occurrence.endDate,
-          isRest ? '00:00' : validated.startTime,
-          isRest ? '23:59' : validated.endTime
-        )
-        if (conflict) {
-          return { success: false, error: conflict }
-        }
-      }
-    }
-
     // Construire la liste des créations (employés × occurrences)
     const createOperations: Prisma.ScheduleCreateArgs[] = []
 
@@ -1184,10 +1175,39 @@ export async function createSchedule(
       }
     }
 
-    // Creer les schedules en transaction
-    const schedules = await prisma.$transaction(
-      createOperations.map((op) => prisma.schedule.create(op))
-    )
+    // SP-619 : vérification et écriture dans une même transaction, sous le
+    // verrou de chaque employé. Lus hors transaction, deux appels simultanés
+    // passaient tous deux la vérification et créaient un doublon.
+    // Pour les types REST, la vérification porte sur la journée entière.
+    const isRest = validated.type === 'REST'
+    const outcome = await prisma.$transaction(async (tx) => {
+      await lockEmployeesForScheduling(tx, employeeIds)
+
+      for (const employeeId of employeeIds) {
+        for (const occurrence of occurrenceDates) {
+          const conflict = await validateNoConflicts(
+            tx,
+            employeeId,
+            occurrence.startDate,
+            occurrence.endDate,
+            isRest ? '00:00' : validated.startTime,
+            isRest ? '23:59' : validated.endTime
+          )
+          if (conflict) return { ok: false as const, conflict }
+        }
+      }
+
+      const created = []
+      for (const op of createOperations) {
+        created.push(await tx.schedule.create(op))
+      }
+      return { ok: true as const, created }
+    }, SCHEDULE_TRANSACTION_OPTIONS)
+
+    if (!outcome.ok) {
+      return { success: false, error: outcome.conflict }
+    }
+    const schedules = outcome.created
 
     // SP-444 : Audit trail (fire-and-forget)
     for (const s of schedules) {
@@ -1300,58 +1320,70 @@ export async function updateSchedule(
     const newType = validated.type ?? existing.type
     const isRest = newType === 'REST'
 
-    const conflict = await validateNoConflicts(
-      existing.employeeId,
-      newStartDate,
-      newEndDate,
-      isRest ? '00:00' : newStartTime,
-      isRest ? '23:59' : newEndTime,
-      existing.id // Exclure le schedule actuel
-    )
-    if (conflict) {
-      return { success: false, error: conflict }
-    }
+    // SP-619 : vérification et écriture sous le verrou de l'employé, comme à
+    // la création. Deux modifications simultanées vers le même horaire
+    // passaient sinon toutes deux la vérification.
+    const outcome = await prisma.$transaction(async (tx) => {
+      await lockEmployeesForScheduling(tx, [existing.employeeId])
 
-    // Mettre a jour
-    const updated = await prisma.schedule.update({
-      where: { id: validated.id },
-      data: {
-        ...(validated.teamId !== undefined && { teamId: validated.teamId }),
-        ...(validated.startDate && { startDate: validated.startDate }),
-        ...(validated.endDate && { endDate: validated.endDate }),
-        ...(validated.startTime && { startTime: validated.startTime }),
-        ...(validated.endTime && { endTime: validated.endTime }),
-        ...(validated.type && { type: validated.type }),
-        ...(validated.status && { status: validated.status }),
-        ...(validated.title !== undefined && { title: validated.title }),
-        ...(validated.description !== undefined && {
-          description: validated.description,
-        }),
-        ...(validated.location !== undefined && {
-          location: validated.location,
-        }),
-        ...(validated.color !== undefined && { color: validated.color }),
-        ...(validated.isRecurring !== undefined && {
-          isRecurring: validated.isRecurring,
-        }),
-        ...(validated.recurrenceRule !== undefined && {
-          recurrenceRule: validated.recurrenceRule ?? Prisma.JsonNull,
-        }),
-      },
-      include: {
-        employee: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            user: { select: { image: true } },
+      const conflict = await validateNoConflicts(
+        tx,
+        existing.employeeId,
+        newStartDate,
+        newEndDate,
+        isRest ? '00:00' : newStartTime,
+        isRest ? '23:59' : newEndTime,
+        existing.id // Exclure le schedule actuel
+      )
+      if (conflict) return { ok: false as const, conflict }
+
+      // Mettre a jour
+      const updatedSchedule = await tx.schedule.update({
+        where: { id: validated.id },
+        data: {
+          ...(validated.teamId !== undefined && { teamId: validated.teamId }),
+          ...(validated.startDate && { startDate: validated.startDate }),
+          ...(validated.endDate && { endDate: validated.endDate }),
+          ...(validated.startTime && { startTime: validated.startTime }),
+          ...(validated.endTime && { endTime: validated.endTime }),
+          ...(validated.type && { type: validated.type }),
+          ...(validated.status && { status: validated.status }),
+          ...(validated.title !== undefined && { title: validated.title }),
+          ...(validated.description !== undefined && {
+            description: validated.description,
+          }),
+          ...(validated.location !== undefined && {
+            location: validated.location,
+          }),
+          ...(validated.color !== undefined && { color: validated.color }),
+          ...(validated.isRecurring !== undefined && {
+            isRecurring: validated.isRecurring,
+          }),
+          ...(validated.recurrenceRule !== undefined && {
+            recurrenceRule: validated.recurrenceRule ?? Prisma.JsonNull,
+          }),
+        },
+        include: {
+          employee: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              user: { select: { image: true } },
+            },
+          },
+          team: {
+            select: { id: true, name: true },
           },
         },
-        team: {
-          select: { id: true, name: true },
-        },
-      },
-    })
+      })
+      return { ok: true as const, updated: updatedSchedule }
+    }, SCHEDULE_TRANSACTION_OPTIONS)
+
+    if (!outcome.ok) {
+      return { success: false, error: outcome.conflict }
+    }
+    const updated = outcome.updated
 
     // SP-444 : Audit trail (fire-and-forget)
     logAuditAction({

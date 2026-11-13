@@ -24,6 +24,7 @@ const {
   mockEmployeeFindMany,
   mockEmployeeFindUnique,
   mockTransaction,
+  mockScheduleCreate,
   mockBatchNotification,
   mockSendEmail,
 } = vi.hoisted(() => ({
@@ -32,6 +33,7 @@ const {
   mockEmployeeFindMany: vi.fn(),
   mockEmployeeFindUnique: vi.fn(),
   mockTransaction: vi.fn(),
+  mockScheduleCreate: vi.fn(),
   mockBatchNotification: vi.fn(),
   mockSendEmail: vi.fn(),
 }))
@@ -41,7 +43,7 @@ vi.mock('@/lib/prisma', () => ({
     schedule: {
       findMany: mockScheduleFindMany,
       updateMany: mockScheduleUpdateMany,
-      create: vi.fn(),
+      create: mockScheduleCreate,
       count: vi.fn().mockResolvedValue(0),
     },
     employee: {
@@ -50,6 +52,7 @@ vi.mock('@/lib/prisma', () => ({
     },
     leaveRequest: { findFirst: vi.fn().mockResolvedValue(null) },
     $transaction: mockTransaction,
+    $executeRaw: vi.fn().mockResolvedValue(0),
   },
 }))
 vi.mock('@/lib/auth', () => ({ auth: vi.fn() }))
@@ -79,6 +82,8 @@ vi.mock('@/lib/email/check-preference', () => ({
 }))
 
 import { auth } from '@/lib/auth'
+import { prisma } from '@/lib/prisma'
+import { runTransactionOn } from '../../../../__tests__/utils/prisma-transaction'
 import { getEffectiveSessionData } from '@/lib/impersonation'
 import { createSchedule, publishDraftSchedules } from '../schedules'
 
@@ -303,9 +308,13 @@ describe('SP-614, createSchedule et notifications', () => {
         teamId: TEAM,
       },
     ])
-    mockTransaction.mockResolvedValue([
-      { ...draft('c'), status: 'DRAFT', employee: { id: EMPLOYEE } },
-    ])
+    // SP-619 : la création passe par une transaction interactive
+    mockTransaction.mockImplementation(runTransactionOn(prisma) as never)
+    mockScheduleCreate.mockResolvedValue({
+      ...draft('c'),
+      status: 'DRAFT',
+      employee: { id: EMPLOYEE },
+    })
     mockBatchNotification.mockResolvedValue({ success: true })
     mockSendEmail.mockResolvedValue({ success: true })
   })

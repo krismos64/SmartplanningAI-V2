@@ -287,6 +287,14 @@ jobs:
         env:
           DATABASE_URL: postgresql://test:test@localhost:5432/smartplanning_test
 
+      # SP-619 : concurrence prouvée sur une vraie base, ce que la suite
+      # unitaire (Prisma mocké) ne peut pas faire. Ici parce que ce job a déjà
+      # une base migrée ; chaque test crée sa propre entreprise et la supprime.
+      - name: Run integration tests (real database)
+        run: npm run test:integration
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/smartplanning_test
+
       # Build production avant les tests E2E
       - name: Build Next.js application
         run: npm run build
@@ -365,8 +373,6 @@ jobs:
           DATABASE_URL: 'postgresql://fake:fake@localhost:5432/fake'
           NEXTAUTH_SECRET: 'build-secret'
           NEXTAUTH_URL: 'http://localhost:3000'
-
-
 # ==============================================
 # RÉSUMÉ DU PIPELINE CI OPTIMISÉ (SP-333, révisé juillet 2026)
 # ==============================================
