@@ -28,6 +28,8 @@ import { SkipLink } from '@/components/layout/skip-link'
 import { ThemeProvider } from '@/components/providers'
 import { ToastProvider } from '@/components/toast'
 import type { Metadata, Viewport } from 'next'
+import { headers } from 'next/headers'
+import { NONCE_HEADER } from '@/lib/security/csp'
 import { Rajdhani } from 'next/font/google'
 import { publicFontVariables } from './(public)/fonts'
 import './globals.css'
@@ -239,11 +241,17 @@ export const viewport: Viewport = {
  *
  * @param children - Contenu de la page enfant
  */
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  // SP-598 : nonce de la CSP, posé par le middleware. Next.js l'appose seul
+  // sur ses scripts ; le script anti-flash de next-themes le reçoit ici.
+  // Lire les en-têtes rend chaque page à la demande : un nonce n'existe pas
+  // au build, et une page statique sans 'unsafe-inline' ne s'hydraterait pas.
+  const nonce = (await headers()).get(NONCE_HEADER) ?? undefined
+
   return (
     <html
       lang="fr"
@@ -271,7 +279,7 @@ export default function RootLayout({
         <SkipLink />
 
         {/* Theme Provider (SP-265) - Dark/Light mode avec détection système */}
-        <ThemeProvider>
+        <ThemeProvider nonce={nonce}>
           {/* Cookie Consent RGPD (SP-283) - Provider enveloppe tout le contenu */}
           <CookieConsentProvider>
             {/* Error Boundary (SP-304) - Capture les erreurs React côté client */}

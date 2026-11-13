@@ -12,9 +12,8 @@ porte les preuves
 > aujourd'hui : la mise en oeuvre réelle a divergé, parfois délibérément.
 >
 > Quatre sections portent désormais un encadré disant en quoi elles diffèrent du
-> réel, les §2.4, §3.1, §4.2 et §5.1, plus la §6.1 déjà signalée. **La §4.2 est
-> celle qui trompe le plus** : elle décrit une CSP à nonce qui n'existe pas, la
-> CSP servie portant `unsafe-inline`.
+> réel, les §2.4, §3.1, §4.2 et §5.1, plus la §6.1 déjà signalée. La §4.2 décrit
+> depuis le 13 novembre 2026 la CSP à nonce réellement en place (SP-598).
 >
 > Devant une valeur de configuration, lire le fichier du dépôt plutôt que ce
 > document : `next.config.ts`, `nginx/smartplanning.conf`,
@@ -395,18 +394,28 @@ export default nextConfig
 
 ### 4.2 Middleware CSP
 
-> **Proposition jamais mise en oeuvre, et l'ecart porte sur la valeur de la
-> protection.** `src/middleware.ts` fait 46 lignes et ne contient ni nonce ni
-> CSP : c'est le middleware NextAuth. La CSP reellement servie est definie dans
-> `next.config.ts` et porte `'unsafe-eval' 'unsafe-inline'` sur `script-src`,
-> avec un commentaire du code qui l'admet, « Pour une securite maximale,
-> implementer un middleware avec nonce ».
+> **En place depuis le 13 novembre 2026 (SP-598), et différent de la
+> proposition ci-dessous sur deux points.** `src/middleware.ts` génère un
+> nonce par requête et pose la CSP, construite par `src/lib/security/csp.ts`.
+> `script-src` ne porte plus ni `'unsafe-inline'` ni `'unsafe-eval'` en
+> production. Ce document n'en est pas la source : lire ces deux fichiers.
 >
-> Une CSP a nonce et une CSP a `unsafe-inline` n'ont pas la meme valeur : la
-> seconde n'arrete pas une injection de script inline, qui est l'attaque que la
-> premiere ferme. Lire ce qui suit comme un objectif, pas comme l'etat courant.
-> Verifie le 13 septembre 2026.
+> - **Pas de `'strict-dynamic'`.** Next.js 15 émet pour `next/dynamic` des
+>   `<link rel="preload" as="script">` sans nonce. Sous `'strict-dynamic'`,
+>   qui fait ignorer `'self'`, le navigateur les bloquait (14 violations sur
+>   la page d'accueil). La politique est `'self'` + nonce + l'hôte d'Umami.
+> - **Le middleware NextAuth n'est pas remplacé mais enveloppé**
+>   (`src/lib/security/csp-response.ts`). Un handler passé à `auth()`
+>   désactiverait la redirection par défaut de NextAuth quand `authorized`
+>   rend `false` ; il est donc appelé tel quel, puis la CSP est ajoutée.
+>
+> Conséquence assumée : le layout racine lit le nonce, toutes les pages sont
+> rendues à la demande, les pages publiques comprises. Mesuré en local,
+> 2 à 3 ms de plus par page, pour environ 105 ms de temps de réponse en
+> production réseau compris. Contrôlé au navigateur sur 24 pages publiques et
+> privées : zéro violation.
 
+La proposition d'origine, conservée pour mémoire :
 
 **Fichier** : `src/middleware.ts`
 
@@ -456,11 +465,11 @@ export const config = {
 
 ### 4.3 Checklist
 
-- [ ] Ajouter les security headers dans next.config.ts
-- [ ] Créer/modifier le middleware CSP
-- [ ] Tester que le site fonctionne avec CSP
+- [x] Ajouter les security headers dans next.config.ts
+- [x] Créer/modifier le middleware CSP (SP-598)
+- [x] Tester que le site fonctionne avec CSP (24 pages, zéro violation)
 - [ ] Vérifier les headers avec SecurityHeaders.com
-- [ ] Corriger les éventuelles violations CSP
+- [x] Corriger les éventuelles violations CSP
 
 ---
 

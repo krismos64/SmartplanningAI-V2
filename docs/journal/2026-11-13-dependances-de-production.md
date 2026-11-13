@@ -6,7 +6,7 @@
 | Documents produits | `scripts/ci/check-prod-audit.mjs`, `scripts/ci/audit-exceptions.json`, `__tests__/scripts/check-prod-audit.test.ts`, `__tests__/lib/email/nodemailer-contract.test.ts`                                      |
 | Documents modifiés | `package.json`, `package-lock.json`, `ci.yml`, `nightly-e2e.yml`, `CLAUDE.md`, `README.md`, `deployment.md`, `vulnerability-fixes-2026-01-05.md`                                                            |
 | Contrôles          | type-check vert, lint 0 erreur, 228 fichiers et 3611 tests verts, couverture 54,15 % de lignes. Intégration 6 sur 6. Build de production vert. Image Docker construite en local, `sharp` chargé sous Alpine |
-| Jira               | SP-596 commenté                                                                                                                                                                                             |
+| Jira               | SP-596 commenté puis clos                                                                                                                                                                                             |
 | Mémoire            | `npm-audit-lire-omit-dev.md` réécrite, `ou-en-est-le-projet.md` mise à jour                                                                                                                                 |
 
 ## Ce qui a été fait
@@ -74,7 +74,10 @@ Le build signale `CompressionStream` de `jose` dans le middleware Edge :
 
 ## Prochaine étape
 
-- Pousser, PR, CI, merge, vérifier la production, clore SP-596.
+- Fait le jour même : PR #127 mergée (`13ea6f3`), image `sha-13ea6f3` en
+  production, healthy, aucune erreur dans journald. `sharp` 0.35.5 tourne en
+  production, l'optimiseur d'images répond en 200, les routes d'Auth.js
+  aussi. SP-596 clos.
 - Réexaminer les deux exceptions avant le 13 février 2027 : migration zod 4,
   Prisma 7.
 - Tickets ouverts : SP-602, SP-598.

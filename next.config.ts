@@ -12,9 +12,6 @@ import path from 'path'
  * @see Context7 - Next.js CSP/SRI documentation
  */
 const isDev = process.env.NODE_ENV === 'development'
-const isHttps = (
-  process.env.AUTH_URL ?? process.env.NEXTAUTH_URL ?? 'https://'
-).startsWith('https://')
 
 const nextConfig: NextConfig = {
   // Mode strict React
@@ -114,35 +111,14 @@ const nextConfig: NextConfig = {
 
   // Headers de sécurité (bonnes pratiques)
   async headers() {
-    // Content Security Policy - Protection contre XSS, injection de code, clickjacking
-    // Note: 'unsafe-eval' et 'unsafe-inline' sont nécessaires pour Next.js 15
-    // Pour une sécurité maximale, implémenter un middleware avec nonce (voir Context7)
-    const cspHeader = `
-      default-src 'self';
-      script-src 'self' 'unsafe-eval' 'unsafe-inline' https://analytics.smartplanning.fr;
-      style-src 'self' 'unsafe-inline';
-      img-src 'self' blob: data: https:;
-      font-src 'self' data:;
-      object-src 'none';
-      base-uri 'self';
-      form-action 'self';
-      frame-ancestors 'none';
-      frame-src 'self' https://www.youtube.com https://youtube.com https://www.youtube-nocookie.com;
-      connect-src 'self' https://*.pusher.com wss://*.pusher.com https://analytics.smartplanning.fr;
-      ${isHttps ? 'upgrade-insecure-requests;' : ''}
-    `
-      .replace(/\s{2,}/g, ' ')
-      .trim()
-
+    // SP-598 : la Content Security Policy n'est plus posée ici. Elle porte
+    // un nonce par requête et vient donc du middleware (src/middleware.ts,
+    // src/lib/security/csp.ts). Un en-tête statique ici s'ajouterait au
+    // sien, et le navigateur appliquerait les deux.
     return [
       {
         source: '/(.*)',
         headers: [
-          // Content Security Policy
-          {
-            key: 'Content-Security-Policy',
-            value: cspHeader,
-          },
           // Empêche le navigateur de deviner le type MIME
           {
             key: 'X-Content-Type-Options',
