@@ -155,20 +155,20 @@ export function LeaveRequestForm({
           render={({ field }) => (
             <FormItem>
               <FormLabel>Type de congé</FormLabel>
-              <FormControl>
-                <Select onValueChange={field.onChange} value={field.value}>
+              <Select onValueChange={field.onChange} value={field.value}>
+                <FormControl>
                   <SelectTrigger data-testid="leave-type-select">
                     <SelectValue placeholder="Sélectionner" />
                   </SelectTrigger>
-                  <SelectContent>
-                    {leaveTypeOptions.map((opt) => (
-                      <SelectItem key={opt.value} value={opt.value}>
-                        {opt.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </FormControl>
+                </FormControl>
+                <SelectContent>
+                  {leaveTypeOptions.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               {field.value &&
                 LEAVE_TYPE_DESCRIPTIONS[field.value as LeaveType] && (
                   <FormDescription>
@@ -256,20 +256,20 @@ export function LeaveRequestForm({
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Période</FormLabel>
-                <FormControl>
-                  <Select
-                    onValueChange={field.onChange}
-                    value={field.value ?? undefined}
-                  >
+                <Select
+                  onValueChange={field.onChange}
+                  value={field.value ?? undefined}
+                >
+                  <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Matin ou après-midi" />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="AM">Matin</SelectItem>
-                      <SelectItem value="PM">Après-midi</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </FormControl>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="AM">Matin</SelectItem>
+                    <SelectItem value="PM">Après-midi</SelectItem>
+                  </SelectContent>
+                </Select>
                 <FormMessage />
               </FormItem>
             )}

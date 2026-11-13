@@ -160,9 +160,9 @@ export function DeleteAccountForm({
                 <AlertDescription className="mt-2 space-y-2">
                   <p>
                     Vous êtes le dernier utilisateur de{' '}
-                    {impact.companyName ?? 'votre entreprise'} et son
-                    abonnement est encore facturé. Résiliez-le avant de
-                    supprimer votre compte.
+                    {impact.companyName ?? 'votre entreprise'} et son abonnement
+                    est encore facturé. Résiliez-le avant de supprimer votre
+                    compte.
                   </p>
                   <Link
                     href="/app/dashboard/billing"
@@ -174,7 +174,10 @@ export function DeleteAccountForm({
               </Alert>
             )}
             {impact?.willDeleteCompany && !isBlocked && (
-              <Alert variant="destructive" data-testid="deletion-company-impact">
+              <Alert
+                variant="destructive"
+                data-testid="deletion-company-impact"
+              >
                 <AlertTriangle className="h-4 w-4" />
                 <AlertTitle>Votre entreprise sera supprimée</AlertTitle>
                 <AlertDescription className="mt-2">
@@ -302,8 +305,8 @@ export function DeleteAccountForm({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Confirmez votre mot de passe</FormLabel>
-                  <FormControl>
-                    <div className="relative">
+                  <div className="relative">
+                    <FormControl>
                       <Input
                         {...field}
                         type={showPassword ? 'text' : 'password'}
@@ -313,28 +316,28 @@ export function DeleteAccountForm({
                         disabled={isPending}
                         className="pr-10"
                       />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
-                        onClick={() => setShowPassword(!showPassword)}
-                        tabIndex={-1}
-                        data-testid="toggle-password-visibility"
-                        aria-label={
-                          showPassword
-                            ? 'Masquer le mot de passe'
-                            : 'Afficher le mot de passe'
-                        }
-                      >
-                        {showPassword ? (
-                          <EyeOff className="h-4 w-4 text-muted-foreground" />
-                        ) : (
-                          <Eye className="h-4 w-4 text-muted-foreground" />
-                        )}
-                      </Button>
-                    </div>
-                  </FormControl>
+                    </FormControl>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                      onClick={() => setShowPassword(!showPassword)}
+                      tabIndex={-1}
+                      data-testid="toggle-password-visibility"
+                      aria-label={
+                        showPassword
+                          ? 'Masquer le mot de passe'
+                          : 'Afficher le mot de passe'
+                      }
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-4 w-4 text-muted-foreground" />
+                      ) : (
+                        <Eye className="h-4 w-4 text-muted-foreground" />
+                      )}
+                    </Button>
+                  </div>
                   <FormMessage data-testid="password-error" />
                 </FormItem>
               )}

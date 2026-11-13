@@ -6,7 +6,7 @@
 | Documents produits | `src/lib/services/schedule-lock.ts` et son test, `__tests__/integration/` (setup et test de concurrence), `vitest.integration.config.ts`, `__tests__/utils/prisma-transaction.ts`                                                     |
 | Documents modifiés | `schedules.ts`, `validations/schedule.ts`, trois fichiers de test des actions, `vitest.config.ts`, `package.json`, `ci.yml`, `CLAUDE.md`, `prisma-pieges.md`, `tests.md`                                                              |
 | Contrôles          | type-check vert, lint 0 erreur, 225 fichiers et 3602 tests verts, couverture 54,13 % de lignes et 76,59 % de branches. Intégration : 6 tests verts sur cinq passages. 4 mutations sur SP-619 et 2 sur la validation, toutes détectées |
-| Jira               | SP-619 commenté                                                                                                                                                                                                                       |
+| Jira               | SP-619 commenté puis clos                                                                                                                                                                                                                       |
 | Mémoire            | `ou-en-est-le-projet.md` mise à jour, `transactions-serializable-globales.md` créée                                                                                                                                                   |
 
 ## Ce qui a été fait
@@ -75,6 +75,8 @@ Rien n'a été vérifié au navigateur. La preuve repose sur la base réelle.
 
 ## Prochaine étape
 
-- Pousser, ouvrir la PR, vérifier l'étape d'intégration dans le job E2E.
+- Fait le jour même : PR #125 mergée (`7543cdf`), image `sha-7543cdf` en
+  production, healthy, étape d'intégration verte en CI (6 sur 6), aucune
+  erreur de transaction dans journald après déploiement. SP-619 clos.
 - Décider du niveau d'isolation global de `src/lib/prisma.ts`.
 - Tickets ouverts : SP-620, SP-602, SP-598, SP-596.

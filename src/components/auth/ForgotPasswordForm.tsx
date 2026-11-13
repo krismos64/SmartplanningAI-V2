@@ -160,9 +160,9 @@ export function ForgotPasswordForm() {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Email</FormLabel>
-              <FormControl>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-public-content-muted" />
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-public-content-muted" />
+                <FormControl>
                   <Input
                     type="email"
                     placeholder="vous@entreprise.com"
@@ -171,8 +171,8 @@ export function ForgotPasswordForm() {
                     className="pl-10"
                     {...field}
                   />
-                </div>
-              </FormControl>
+                </FormControl>
+              </div>
               <FormMessage />
             </FormItem>
           )}

@@ -18,7 +18,14 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Loader2, Save, Briefcase, Calendar, Clock } from 'lucide-react'
+import {
+  ArrowLeft,
+  Loader2,
+  Save,
+  Briefcase,
+  Calendar,
+  Clock,
+} from 'lucide-react'
 import Link from 'next/link'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
@@ -220,9 +227,9 @@ export function EditProfileForm({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>{EDIT_PROFILE_LABELS.jobTitle}</FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <Briefcase className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <div className="relative">
+                      <Briefcase className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                      <FormControl>
                         <Input
                           {...field}
                           value={field.value ?? ''}
@@ -231,8 +238,8 @@ export function EditProfileForm({
                           data-testid="input-jobTitle"
                           className="pl-10"
                         />
-                      </div>
-                    </FormControl>
+                      </FormControl>
+                    </div>
                     <FormMessage data-testid="error-jobTitle" />
                   </FormItem>
                 )}
@@ -275,9 +282,7 @@ export function EditProfileForm({
                           startMonth={new Date(1970, 0)}
                           endMonth={new Date()}
                           defaultMonth={
-                            field.value
-                              ? new Date(field.value)
-                              : new Date()
+                            field.value ? new Date(field.value) : new Date()
                           }
                           selected={
                             field.value ? new Date(field.value) : undefined
@@ -304,12 +309,10 @@ export function EditProfileForm({
                 name="weeklyHours"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>
-                      {EDIT_PROFILE_LABELS.weeklyHours}
-                    </FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <Clock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <FormLabel>{EDIT_PROFILE_LABELS.weeklyHours}</FormLabel>
+                    <div className="relative">
+                      <Clock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                      <FormControl>
                         <Input
                           type="number"
                           min={1}
@@ -328,8 +331,8 @@ export function EditProfileForm({
                           data-testid="input-weeklyHours"
                           className="pl-10"
                         />
-                      </div>
-                    </FormControl>
+                      </FormControl>
+                    </div>
                     <FormDescription>
                       Entre 1 et 60 heures par semaine
                     </FormDescription>

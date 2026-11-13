@@ -453,9 +453,9 @@ export function EmployeeForm({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Téléphone</FormLabel>
-                  <FormControl>
-                    <div className="relative">
-                      <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <div className="relative">
+                    <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <FormControl>
                       <Input
                         type="tel"
                         placeholder="+33 6 12 34 56 78"
@@ -463,8 +463,8 @@ export function EmployeeForm({
                         {...field}
                         disabled={isPending}
                       />
-                    </div>
-                  </FormControl>
+                    </FormControl>
+                  </div>
                   <FormDescription>
                     Format: 0612345678 ou +33612345678
                   </FormDescription>
@@ -480,9 +480,9 @@ export function EmployeeForm({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>{isEditing ? 'Adresse email' : 'Email'}</FormLabel>
-                  <FormControl>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <FormControl>
                       <Input
                         type="email"
                         placeholder="jean.dupont@exemple.fr"
@@ -490,8 +490,8 @@ export function EmployeeForm({
                         {...field}
                         disabled={isPending}
                       />
-                    </div>
-                  </FormControl>
+                    </FormControl>
+                  </div>
                   {isEditing && !emailWillChange && (
                     <FormDescription>
                       Sert de contact RH et d&apos;identifiant de connexion.
@@ -529,33 +529,30 @@ export function EmployeeForm({
                         Rôle du compte
                       </span>
                     </FormLabel>
-                    <FormControl>
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value || 'EMPLOYEE'}
-                        disabled={isPending}
-                      >
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value || 'EMPLOYEE'}
+                      disabled={isPending}
+                    >
+                      <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Sélectionner un rôle" />
                         </SelectTrigger>
-                        <SelectContent>
-                          {roleOptions.map((option) => {
-                            const Icon = option.icon
-                            return (
-                              <SelectItem
-                                key={option.value}
-                                value={option.value}
-                              >
-                                <span className="flex items-center gap-2">
-                                  <Icon className="h-4 w-4" />
-                                  {option.label}
-                                </span>
-                              </SelectItem>
-                            )
-                          })}
-                        </SelectContent>
-                      </Select>
-                    </FormControl>
+                      </FormControl>
+                      <SelectContent>
+                        {roleOptions.map((option) => {
+                          const Icon = option.icon
+                          return (
+                            <SelectItem key={option.value} value={option.value}>
+                              <span className="flex items-center gap-2">
+                                <Icon className="h-4 w-4" />
+                                {option.label}
+                              </span>
+                            </SelectItem>
+                          )
+                        })}
+                      </SelectContent>
+                    </Select>
                     <FormDescription>
                       {roleOptions.find((r) => r.value === watchedRole)
                         ?.description ||
@@ -616,17 +613,17 @@ export function EmployeeForm({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Équipe {isTeamRequired && '*'}</FormLabel>
-                  <FormControl>
-                    <div className="relative">
-                      <Users className="absolute left-3 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value || ''}
-                        disabled={
-                          isPending ||
-                          (userRole === 'MANAGER' && teams.length === 1)
-                        }
-                      >
+                  <div className="relative">
+                    <Users className="absolute left-3 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value || ''}
+                      disabled={
+                        isPending ||
+                        (userRole === 'MANAGER' && teams.length === 1)
+                      }
+                    >
+                      <FormControl>
                         <SelectTrigger className="pl-10">
                           <SelectValue
                             placeholder={
@@ -636,16 +633,16 @@ export function EmployeeForm({
                             }
                           />
                         </SelectTrigger>
-                        <SelectContent>
-                          {teams.map((team) => (
-                            <SelectItem key={team.id} value={team.id}>
-                              {team.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </FormControl>
+                      </FormControl>
+                      <SelectContent>
+                        {teams.map((team) => (
+                          <SelectItem key={team.id} value={team.id}>
+                            {team.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                   {/* Premier employé d'un compte neuf : aucune équipe n'existe
                       encore et le sélecteur s'ouvrait sur une liste vide sans
                       explication. On dit quoi faire, sans bloquer la création. */}
@@ -680,17 +677,17 @@ export function EmployeeForm({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Date d&apos;embauche</FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <Calendar className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <div className="relative">
+                      <Calendar className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                      <FormControl>
                         <Input
                           type="date"
                           className="pl-10"
                           {...field}
                           disabled={isPending}
                         />
-                      </div>
-                    </FormControl>
+                      </FormControl>
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -703,9 +700,9 @@ export function EmployeeForm({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Heures hebdomadaires *</FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <Clock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <div className="relative">
+                      <Clock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                      <FormControl>
                         <Input
                           type="number"
                           min={1}
@@ -719,8 +716,8 @@ export function EmployeeForm({
                           }
                           disabled={isPending}
                         />
-                      </div>
-                    </FormControl>
+                      </FormControl>
+                    </div>
                     <FormDescription>
                       Entre 1 et 60 heures par semaine
                     </FormDescription>

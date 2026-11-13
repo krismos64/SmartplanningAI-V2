@@ -254,8 +254,8 @@ export function LoginForm() {
                   Mot de passe oublié ?
                 </Link>
               </div>
-              <FormControl>
-                <div className="relative">
+              <div className="relative">
+                <FormControl>
                   <Input
                     type={showPassword ? 'text' : 'password'}
                     placeholder="••••••••"
@@ -263,27 +263,27 @@ export function LoginForm() {
                     disabled={isLoading}
                     {...field}
                   />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                    onClick={() => setShowPassword(!showPassword)}
-                    tabIndex={-1}
-                    aria-label={
-                      showPassword
-                        ? 'Masquer le mot de passe'
-                        : 'Afficher le mot de passe'
-                    }
-                  >
-                    {showPassword ? (
-                      <EyeOff className="h-4 w-4 text-public-content-muted" />
-                    ) : (
-                      <Eye className="h-4 w-4 text-public-content-muted" />
-                    )}
-                  </Button>
-                </div>
-              </FormControl>
+                </FormControl>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                  onClick={() => setShowPassword(!showPassword)}
+                  tabIndex={-1}
+                  aria-label={
+                    showPassword
+                      ? 'Masquer le mot de passe'
+                      : 'Afficher le mot de passe'
+                  }
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4 text-public-content-muted" />
+                  ) : (
+                    <Eye className="h-4 w-4 text-public-content-muted" />
+                  )}
+                </Button>
+              </div>
               <FormMessage />
             </FormItem>
           )}

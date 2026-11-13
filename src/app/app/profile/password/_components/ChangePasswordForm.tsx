@@ -129,8 +129,8 @@ export function ChangePasswordForm() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Mot de passe actuel</FormLabel>
-                  <FormControl>
-                    <div className="relative">
+                  <div className="relative">
+                    <FormControl>
                       <Input
                         {...field}
                         type={showCurrentPassword ? 'text' : 'password'}
@@ -140,30 +140,30 @@ export function ChangePasswordForm() {
                         autoComplete="current-password"
                         className="pr-10"
                       />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
-                        onClick={() =>
-                          setShowCurrentPassword(!showCurrentPassword)
-                        }
-                        data-testid="toggle-currentPassword"
-                        tabIndex={-1}
-                        aria-label={
-                          showCurrentPassword
-                            ? 'Masquer le mot de passe actuel'
-                            : 'Afficher le mot de passe actuel'
-                        }
-                      >
-                        {showCurrentPassword ? (
-                          <EyeOff className="h-4 w-4 text-muted-foreground" />
-                        ) : (
-                          <Eye className="h-4 w-4 text-muted-foreground" />
-                        )}
-                      </Button>
-                    </div>
-                  </FormControl>
+                    </FormControl>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                      onClick={() =>
+                        setShowCurrentPassword(!showCurrentPassword)
+                      }
+                      data-testid="toggle-currentPassword"
+                      tabIndex={-1}
+                      aria-label={
+                        showCurrentPassword
+                          ? 'Masquer le mot de passe actuel'
+                          : 'Afficher le mot de passe actuel'
+                      }
+                    >
+                      {showCurrentPassword ? (
+                        <EyeOff className="h-4 w-4 text-muted-foreground" />
+                      ) : (
+                        <Eye className="h-4 w-4 text-muted-foreground" />
+                      )}
+                    </Button>
+                  </div>
                   <FormMessage data-testid="error-currentPassword" />
                 </FormItem>
               )}
@@ -176,8 +176,8 @@ export function ChangePasswordForm() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Nouveau mot de passe</FormLabel>
-                  <FormControl>
-                    <div className="relative">
+                  <div className="relative">
+                    <FormControl>
                       <Input
                         {...field}
                         type={showNewPassword ? 'text' : 'password'}
@@ -187,28 +187,28 @@ export function ChangePasswordForm() {
                         autoComplete="new-password"
                         className="pr-10"
                       />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
-                        onClick={() => setShowNewPassword(!showNewPassword)}
-                        data-testid="toggle-newPassword"
-                        tabIndex={-1}
-                        aria-label={
-                          showNewPassword
-                            ? 'Masquer le nouveau mot de passe'
-                            : 'Afficher le nouveau mot de passe'
-                        }
-                      >
-                        {showNewPassword ? (
-                          <EyeOff className="h-4 w-4 text-muted-foreground" />
-                        ) : (
-                          <Eye className="h-4 w-4 text-muted-foreground" />
-                        )}
-                      </Button>
-                    </div>
-                  </FormControl>
+                    </FormControl>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                      onClick={() => setShowNewPassword(!showNewPassword)}
+                      data-testid="toggle-newPassword"
+                      tabIndex={-1}
+                      aria-label={
+                        showNewPassword
+                          ? 'Masquer le nouveau mot de passe'
+                          : 'Afficher le nouveau mot de passe'
+                      }
+                    >
+                      {showNewPassword ? (
+                        <EyeOff className="h-4 w-4 text-muted-foreground" />
+                      ) : (
+                        <Eye className="h-4 w-4 text-muted-foreground" />
+                      )}
+                    </Button>
+                  </div>
                   <FormMessage data-testid="error-newPassword" />
                   {/* Indicateur de force */}
                   <PasswordStrengthIndicator password={newPassword} />
@@ -223,8 +223,8 @@ export function ChangePasswordForm() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Confirmer le nouveau mot de passe</FormLabel>
-                  <FormControl>
-                    <div className="relative">
+                  <div className="relative">
+                    <FormControl>
                       <Input
                         {...field}
                         type={showConfirmPassword ? 'text' : 'password'}
@@ -234,30 +234,30 @@ export function ChangePasswordForm() {
                         autoComplete="new-password"
                         className="pr-10"
                       />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
-                        onClick={() =>
-                          setShowConfirmPassword(!showConfirmPassword)
-                        }
-                        data-testid="toggle-confirmNewPassword"
-                        tabIndex={-1}
-                        aria-label={
-                          showConfirmPassword
-                            ? 'Masquer la confirmation'
-                            : 'Afficher la confirmation'
-                        }
-                      >
-                        {showConfirmPassword ? (
-                          <EyeOff className="h-4 w-4 text-muted-foreground" />
-                        ) : (
-                          <Eye className="h-4 w-4 text-muted-foreground" />
-                        )}
-                      </Button>
-                    </div>
-                  </FormControl>
+                    </FormControl>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                      onClick={() =>
+                        setShowConfirmPassword(!showConfirmPassword)
+                      }
+                      data-testid="toggle-confirmNewPassword"
+                      tabIndex={-1}
+                      aria-label={
+                        showConfirmPassword
+                          ? 'Masquer la confirmation'
+                          : 'Afficher la confirmation'
+                      }
+                    >
+                      {showConfirmPassword ? (
+                        <EyeOff className="h-4 w-4 text-muted-foreground" />
+                      ) : (
+                        <Eye className="h-4 w-4 text-muted-foreground" />
+                      )}
+                    </Button>
+                  </div>
                   <FormMessage data-testid="error-confirmNewPassword" />
                 </FormItem>
               )}

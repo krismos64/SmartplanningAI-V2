@@ -205,9 +205,9 @@ export function CompanyForm({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Email de contact</FormLabel>
-                  <FormControl>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <FormControl>
                       <Input
                         type="email"
                         placeholder="contact@acme.com"
@@ -215,8 +215,8 @@ export function CompanyForm({
                         {...field}
                         disabled={isPending}
                       />
-                    </div>
-                  </FormControl>
+                    </FormControl>
+                  </div>
                   <FormMessage />
                 </FormItem>
               )}
@@ -229,9 +229,9 @@ export function CompanyForm({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Téléphone</FormLabel>
-                  <FormControl>
-                    <div className="relative">
-                      <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <div className="relative">
+                    <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <FormControl>
                       <Input
                         type="tel"
                         placeholder="+33 1 23 45 67 89"
@@ -239,8 +239,8 @@ export function CompanyForm({
                         {...field}
                         disabled={isPending}
                       />
-                    </div>
-                  </FormControl>
+                    </FormControl>
+                  </div>
                   <FormMessage />
                 </FormItem>
               )}
@@ -253,17 +253,17 @@ export function CompanyForm({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Adresse</FormLabel>
-                  <FormControl>
-                    <div className="relative">
-                      <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <div className="relative">
+                    <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <FormControl>
                       <Textarea
                         placeholder="123 Rue de la Paix&#10;75001 Paris"
                         className="min-h-[80px] pl-10"
                         {...field}
                         disabled={isPending}
                       />
-                    </div>
-                  </FormControl>
+                    </FormControl>
+                  </div>
                   <FormMessage />
                 </FormItem>
               )}
@@ -276,34 +276,34 @@ export function CompanyForm({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Fuseau horaire</FormLabel>
-                  <FormControl>
-                    <div className="relative">
-                      <Clock className="absolute left-3 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                        disabled={isPending}
-                      >
+                  <div className="relative">
+                    <Clock className="absolute left-3 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                      disabled={isPending}
+                    >
+                      <FormControl>
                         <SelectTrigger className="pl-10">
                           <SelectValue placeholder="Sélectionner un fuseau" />
                         </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Europe/Paris">
-                            Europe/Paris (UTC+1/+2)
-                          </SelectItem>
-                          <SelectItem value="Europe/London">
-                            Europe/London (UTC+0/+1)
-                          </SelectItem>
-                          <SelectItem value="America/New_York">
-                            America/New_York (UTC-5/-4)
-                          </SelectItem>
-                          <SelectItem value="Asia/Tokyo">
-                            Asia/Tokyo (UTC+9)
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </FormControl>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="Europe/Paris">
+                          Europe/Paris (UTC+1/+2)
+                        </SelectItem>
+                        <SelectItem value="Europe/London">
+                          Europe/London (UTC+0/+1)
+                        </SelectItem>
+                        <SelectItem value="America/New_York">
+                          America/New_York (UTC-5/-4)
+                        </SelectItem>
+                        <SelectItem value="Asia/Tokyo">
+                          Asia/Tokyo (UTC+9)
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                   <FormMessage />
                 </FormItem>
               )}
@@ -327,28 +327,28 @@ export function CompanyForm({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Plan d&apos;abonnement</FormLabel>
-                  <FormControl>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                      disabled={isPending}
-                    >
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                    disabled={isPending}
+                  >
+                    <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Sélectionner un plan" />
                       </SelectTrigger>
-                      <SelectContent>
-                        {(
-                          Object.keys(
-                            subscriptionPlanLabels
-                          ) as SubscriptionPlan[]
-                        ).map((plan) => (
-                          <SelectItem key={plan} value={plan}>
-                            {subscriptionPlanLabels[plan]}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </FormControl>
+                    </FormControl>
+                    <SelectContent>
+                      {(
+                        Object.keys(
+                          subscriptionPlanLabels
+                        ) as SubscriptionPlan[]
+                      ).map((plan) => (
+                        <SelectItem key={plan} value={plan}>
+                          {subscriptionPlanLabels[plan]}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <FormDescription>
                     FREE : gratuit | PER_SEAT : 2,90€/employé/mois
                   </FormDescription>
@@ -364,28 +364,28 @@ export function CompanyForm({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Statut de l&apos;abonnement</FormLabel>
-                  <FormControl>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                      disabled={isPending}
-                    >
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                    disabled={isPending}
+                  >
+                    <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Sélectionner un statut" />
                       </SelectTrigger>
-                      <SelectContent>
-                        {(
-                          Object.keys(
-                            subscriptionStatusLabels
-                          ) as SubscriptionStatus[]
-                        ).map((status) => (
-                          <SelectItem key={status} value={status}>
-                            {subscriptionStatusLabels[status]}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </FormControl>
+                    </FormControl>
+                    <SelectContent>
+                      {(
+                        Object.keys(
+                          subscriptionStatusLabels
+                        ) as SubscriptionStatus[]
+                      ).map((status) => (
+                        <SelectItem key={status} value={status}>
+                          {subscriptionStatusLabels[status]}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
