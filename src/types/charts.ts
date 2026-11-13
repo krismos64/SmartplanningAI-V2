@@ -86,6 +86,8 @@ export interface AreaChartProps extends BaseChartProps {
   showGradient?: boolean
   /** Type de courbe */
   curveType?: 'monotone' | 'linear' | 'step'
+  /** Autoriser des graduations décimales sur l'axe Y (défaut : true). À false pour un comptage. */
+  allowDecimals?: boolean
   /** Couleurs des series (optionnel, utilise theme par defaut) */
   colors?: string[]
 }

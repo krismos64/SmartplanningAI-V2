@@ -144,7 +144,7 @@ export function VerifyEmailContent({ token }: VerifyEmailContentProps) {
             <span className="font-semibold text-public-content">
               {countdown}
             </span>{' '}
-            secondes...
+            {countdown > 1 ? 'secondes' : 'seconde'}...
           </p>
           <Link href="/login">
             <Button className={cn('w-full', PRIMARY_BUTTON_CLASSES)}>

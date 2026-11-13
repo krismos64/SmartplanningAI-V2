@@ -56,6 +56,12 @@ const variantClasses: Record<SidebarVariant, string> = {
   cosmic: 'sidebar-cosmic',
 }
 
+const LEGAL_LINKS = [
+  { href: '/cgu', label: 'CGU' },
+  { href: '/confidentialite', label: 'Confidentialité' },
+  { href: '/contact', label: 'Contact' },
+] as const
+
 export function Sidebar({ user, variant = 'neon' }: SidebarProps) {
   const pathname = usePathname()
   const filteredMenuItems = getNavigationItemsByRole(user.role)
@@ -159,6 +165,22 @@ export function Sidebar({ user, variant = 'neon' }: SidebarProps) {
             </span>
           </motion.div>
         </div>
+        {/* SP-627 : le pied de page de l'app est masqué sous md, ses liens
+            légaux restent à portée ici sur téléphone. */}
+        <nav
+          aria-label="Informations légales"
+          className="mt-2 flex flex-wrap gap-x-4 text-xs md:hidden"
+        >
+          {LEGAL_LINKS.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className="inline-flex min-h-[44px] items-center text-slate-300 underline-offset-4 hover:underline"
+            >
+              {link.label}
+            </Link>
+          ))}
+        </nav>
       </SidebarFooter>
     </SidebarPrimitive>
   )

@@ -73,6 +73,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { scheduleTypeLabels } from '@/lib/validations/schedule'
+import { cn } from '@/lib/utils'
 import type { ScheduleType } from '@prisma/client'
 import {
   format,
@@ -122,6 +123,9 @@ export function SchedulesPageContent({
   const [schedules, setSchedules] =
     useState<ScheduleWithRelations[]>(initialSchedules)
   const [calendarVersion, setCalendarVersion] = useState(0)
+  // SP-627 : repliés par défaut sur mobile, où le panneau ouvert occupait
+  // un écran entier avant le calendrier. Sans effet à partir de md.
+  const [filtersOpen, setFiltersOpen] = useState(false)
   const [viewMode, setViewMode] = useState<ViewMode>('week')
   const [currentDate, setCurrentDate] = useState(new Date())
   const [isPending, startTransition] = useTransition()
@@ -346,7 +350,7 @@ export function SchedulesPageContent({
     [schedules]
   )
 
-    // SP-617 : jours planifiés hors des jours d'ouverture (DIRECTOR seul, le
+  // SP-617 : jours planifiés hors des jours d'ouverture (DIRECTOR seul, le
   // seul rôle qui peut modifier les paramètres de l'entreprise)
   const isDirector = userRole === 'DIRECTOR'
   const ignoredDaysKey = `sp617-jours-ignores:${companyId}`
@@ -467,9 +471,7 @@ export function SchedulesPageContent({
           return
         }
         const n = result.data.published
-        toast.success(
-          n === 1 ? '1 créneau publié' : `${n} créneaux publiés`
-        )
+        toast.success(n === 1 ? '1 créneau publié' : `${n} créneaux publiés`)
         reloadSchedules(
           new Date(rangeStartTime),
           new Date(rangeEndTime),
@@ -709,8 +711,14 @@ export function SchedulesPageContent({
       )}
 
       {/* Filtres — un seul composant, replié sur mobile */}
-      <details open className="group">
-        <summary className="flex cursor-pointer items-center gap-2 rounded-lg border px-4 py-3 text-sm font-medium md:hidden">
+      <div>
+        <button
+          type="button"
+          aria-expanded={filtersOpen}
+          aria-controls="schedules-filters-panel"
+          onClick={() => setFiltersOpen((open) => !open)}
+          className="flex min-h-[44px] w-full items-center gap-2 rounded-lg border px-4 py-3 text-left text-sm font-medium md:hidden"
+        >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
@@ -720,12 +728,18 @@ export function SchedulesPageContent({
             strokeLinecap="round"
             strokeLinejoin="round"
             className="h-4 w-4"
+            aria-hidden="true"
           >
             <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
           </svg>
           Filtres
-        </summary>
-        <Card className="mt-2 md:mt-0">
+        </button>
+        {/* Le panneau reste monté quand il est replié : les filtres choisis
+            ne se perdent pas. */}
+        <Card
+          id="schedules-filters-panel"
+          className={cn('mt-2 md:mt-0 md:block', !filtersOpen && 'hidden')}
+        >
           <CardContent className="pt-4">
             <SchedulesFilters
               onFiltersChange={handleFiltersChange}
@@ -735,7 +749,7 @@ export function SchedulesPageContent({
             />
           </CardContent>
         </Card>
-      </details>
+      </div>
 
       {/* Calendrier + Panneau heures (SP-406) */}
       <div className="flex gap-6">

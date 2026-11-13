@@ -107,6 +107,7 @@ export function AreaChartWidget({
   disableAnimation = false,
   showGradient = true,
   curveType = 'monotone',
+  allowDecimals = true,
   colors,
 }: AreaChartProps) {
   // Normaliser dataKey en tableau
@@ -168,7 +169,7 @@ export function AreaChartWidget({
         <XAxis dataKey="name" {...DEFAULT_XAXIS_PROPS} />
 
         {/* Axe Y */}
-        <YAxis {...DEFAULT_YAXIS_PROPS} />
+        <YAxis {...DEFAULT_YAXIS_PROPS} allowDecimals={allowDecimals} />
 
         {/* Tooltip */}
         {showTooltip && (

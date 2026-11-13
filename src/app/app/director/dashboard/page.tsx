@@ -243,6 +243,7 @@ export default async function DirectorDashboardPage() {
         companyName={user.company.name}
         pendingLeaves={stats.pendingLeaveRequests}
         attendanceRate={stats.averageAttendanceRate}
+        showHealth={otherEmployeeCount > 0}
       />
 
       {/* Checklist de demarrage tant que la configuration est incomplete */}
@@ -258,7 +259,10 @@ export default async function DirectorDashboardPage() {
 
       {/* Charts en 2 colonnes */}
       <div className="grid gap-6 md:grid-cols-2">
-        <DirectorTeamsChart teamStats={stats.teamStats} />
+        <DirectorTeamsChart
+          teamStats={stats.teamStats}
+          totalEmployees={stats.totalEmployees}
+        />
         <DirectorTrendsChart employeeGrowth={stats.employeeGrowth} />
       </div>
 

@@ -109,7 +109,11 @@ function DashboardLayoutContent({
               descend pas sous la largeur de son contenu, et un seul enfant
               trop large élargit toute la page sur mobile (390 px devenus 413
               sur Paramètres). */}
-          <div className="flex min-w-0 flex-1 flex-col">
+          {/* SP-627 : hauteur bornée à l'écran (h-dvh), la zone de contenu
+              prend ce qui reste. L'ancien calcul 100vh - en-tête - pied
+              ignorait les bandeaux (essai, vérification d'email) : sur
+              mobile la page défilait en plus de la zone de contenu. */}
+          <div className="flex h-dvh min-w-0 flex-1 flex-col">
             {/* Impersonation Banner — SP-453 (above header) */}
             {impersonationData?.isImpersonating && (
               <ImpersonationBanner
@@ -142,12 +146,12 @@ function DashboardLayoutContent({
             )}
 
             {/* Page content */}
-            <main className="bg-mesh flex-1 transition-all duration-300">
+            <main className="bg-mesh flex min-h-0 flex-1 flex-col transition-all duration-300">
               {/* SP-623 : Radix enveloppe le contenu dans un display: table,
                   qui s'élargit à la largeur de contenu au lieu de la zone
                   disponible. Mesuré à 1470 px : 66 px coupés à droite de la
                   page plannings, bouton « Nouveau planning » compris. */}
-              <ScrollArea className="h-[calc(100vh-4rem-3.5rem)] [&>[data-radix-scroll-area-viewport]>div]:!block">
+              <ScrollArea className="min-h-0 flex-1 [&>[data-radix-scroll-area-viewport]>div]:!block">
                 <div className="container mx-auto p-6">
                   {/* Dynamic Breadcrumbs - SP-264 */}
                   <DynamicBreadcrumbs pathname={pathname} />
@@ -169,7 +173,7 @@ function DashboardLayoutContent({
             </main>
 
             {/* Footer */}
-            <Footer variant="dashboard" />
+            <Footer />
           </div>
         </div>
       </SidebarProvider>

@@ -44,6 +44,7 @@ import {
   getActionItemsByRole,
   themeItems,
   helpItems,
+  HELP_LINKS,
 } from '@/lib/navigation/menu-items'
 import { useRecentPages, type RecentPage } from '@/hooks/use-recent-pages'
 import { formatRelativeTime } from '@/lib/utils/format-relative-time'
@@ -222,10 +223,8 @@ export function CommandPalette({
           onShowShortcuts?.()
           break
         case 'open-docs':
-          window.open('/docs', '_blank')
-          break
         case 'open-help':
-          window.open('/help', '_blank')
+          window.open(HELP_LINKS[action], '_blank')
           break
       }
       onOpenChange(false)

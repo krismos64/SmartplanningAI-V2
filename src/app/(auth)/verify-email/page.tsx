@@ -72,7 +72,7 @@ export default async function VerifyEmailPage({
           Vérification de votre email
         </h1>
         <p className="mt-3 font-geist text-base text-public-content-muted">
-          Validation de votre adresse email en cours...
+          Dernière étape avant d&apos;accéder à votre espace.
         </p>
       </div>
 
