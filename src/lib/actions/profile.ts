@@ -17,6 +17,10 @@ import { hashPassword, verifyPassword } from '@/lib/password'
 import { logAuditAction } from '@/lib/services/audit'
 import { assertNotImpersonating } from '@/lib/impersonation'
 import {
+  releasePasswordConfirmation,
+  reservePasswordConfirmation,
+} from '@/lib/auth-rate-limit'
+import {
   sendPasswordChangedEmail,
   sendAccountDeletedEmail,
   sendAccountDeletionAdminEmail,
@@ -358,6 +362,12 @@ export async function changePassword(
       return { success: false, error: 'Impossible de modifier le mot de passe' }
     }
 
+    // Plafond d'essais : une session volée ne doit pas servir à deviner le
+    // mot de passe
+    if (!(await reservePasswordConfirmation(user.id))) {
+      return { success: false, error: TOO_MANY_PASSWORD_ATTEMPTS }
+    }
+
     // 4. Vérifier l'ancien mot de passe (timing-safe avec bcrypt.compare)
     const isCurrentPasswordValid = await verifyPassword(
       currentPassword,
@@ -370,6 +380,7 @@ export async function changePassword(
         field: 'currentPassword',
       }
     }
+    await releasePasswordConfirmation(user.id)
 
     // 5. Hasher le nouveau mot de passe
     const hashedNewPassword = await hashPassword(newPassword)
@@ -427,6 +438,9 @@ export async function changePassword(
 /**
  * SP-624 : statuts d'un abonnement que Stripe facture encore
  */
+const TOO_MANY_PASSWORD_ATTEMPTS =
+  "Trop d'essais de mot de passe. Réessayez dans un quart d'heure."
+
 const BILLED_SUBSCRIPTION_STATUSES = ['ACTIVE', 'PAST_DUE', 'INCOMPLETE']
 
 /**
@@ -605,6 +619,10 @@ export async function deleteAccount(
       }
     }
 
+    if (!(await reservePasswordConfirmation(user.id))) {
+      return { success: false, error: TOO_MANY_PASSWORD_ATTEMPTS }
+    }
+
     const isPasswordValid = await verifyPassword(password, user.password)
     if (!isPasswordValid) {
       return {
@@ -613,6 +631,7 @@ export async function deleteAccount(
         field: 'password',
       }
     }
+    await releasePasswordConfirmation(user.id)
 
     // SP-624 : effet sur l'entreprise, calculé avant toute écriture
     const impact = await computeDeletionImpact(user.id)

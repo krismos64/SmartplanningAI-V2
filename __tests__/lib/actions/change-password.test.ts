@@ -6,6 +6,8 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
+import { resetRateLimitCache } from '@/lib/rate-limit'
+
 import { changePassword } from '@/lib/actions/profile'
 
 // Mock auth
@@ -43,6 +45,7 @@ vi.mock('next/cache', () => ({
 describe('changePassword', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    resetRateLimitCache()
     mockAuth.mockResolvedValue({ user: { id: 'user-123' } })
     mockFindUnique.mockResolvedValue({
       id: 'user-123',
@@ -170,6 +173,51 @@ describe('changePassword', () => {
       expect(result.success).toBe(false)
       expect(result.error).toBe('Mot de passe actuel incorrect')
       expect(result.field).toBe('currentPassword')
+    })
+
+    it('refuse au-delà de cinq mots de passe erronés, même avec le bon', async () => {
+      const input = {
+        currentPassword: 'WrongPass123!',
+        newPassword: 'NewPass123!',
+        confirmNewPassword: 'NewPass123!',
+      }
+      mockVerifyPassword.mockResolvedValue(false)
+      for (let i = 0; i < 5; i++) {
+        await changePassword(input)
+      }
+      mockVerifyPassword.mockClear()
+      mockVerifyPassword.mockResolvedValue(true)
+
+      const result = await changePassword(input)
+
+      expect(result.success).toBe(false)
+      expect(result.error).toMatch(/Trop d'essais/)
+      // Le mot de passe n'est plus comparé, et rien n'est modifié
+      expect(mockVerifyPassword).not.toHaveBeenCalled()
+      expect(mockUpdate).not.toHaveBeenCalled()
+    })
+
+    it('un bon mot de passe efface les essais précédents', async () => {
+      const input = {
+        currentPassword: 'OldPass123!',
+        newPassword: 'NewPass123!',
+        confirmNewPassword: 'NewPass123!',
+      }
+      mockVerifyPassword.mockResolvedValue(false)
+      for (let i = 0; i < 4; i++) {
+        await changePassword(input)
+      }
+      mockVerifyPassword.mockResolvedValue(true)
+      await changePassword(input)
+      mockVerifyPassword.mockResolvedValue(false)
+      for (let i = 0; i < 4; i++) {
+        await changePassword(input)
+      }
+      mockVerifyPassword.mockResolvedValue(true)
+
+      const result = await changePassword(input)
+
+      expect(result.success).toBe(true)
     })
 
     it('should call verifyPassword with correct arguments', async () => {

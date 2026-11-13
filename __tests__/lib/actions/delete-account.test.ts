@@ -7,6 +7,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 import { deleteAccount } from '@/lib/actions/profile'
+import { resetRateLimitCache } from '@/lib/rate-limit'
 
 // Mock auth
 const mockAuth = vi.fn()
@@ -80,6 +81,7 @@ describe('deleteAccount', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+    resetRateLimitCache()
     mockAuth.mockResolvedValue({ user: { id: 'user-123' } })
     mockFindUnique.mockResolvedValue(mockUser)
     mockVerifyPassword.mockResolvedValue(true)
@@ -233,6 +235,22 @@ describe('deleteAccount', () => {
   // VÉRIFICATION MOT DE PASSE
   // ============================================
   describe('Vérification mot de passe', () => {
+    it('refuse au-delà de cinq mots de passe erronés, sans rien supprimer', async () => {
+      mockVerifyPassword.mockResolvedValue(false)
+      for (let i = 0; i < 5; i++) {
+        await deleteAccount(validInput)
+      }
+      mockVerifyPassword.mockClear()
+      mockVerifyPassword.mockResolvedValue(true)
+
+      const result = await deleteAccount(validInput)
+
+      expect(result.success).toBe(false)
+      expect(result.error).toMatch(/Trop d'essais/)
+      expect(mockVerifyPassword).not.toHaveBeenCalled()
+      expect(mockTransaction).not.toHaveBeenCalled()
+    })
+
     it('should return error when password is incorrect', async () => {
       mockVerifyPassword.mockResolvedValue(false)
 
@@ -438,6 +456,7 @@ describe('deleteAccount : entreprise du compte supprimé (SP-624)', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+    resetRateLimitCache()
     mockAuth.mockResolvedValue({ user: { id: 'user-dir' } })
     mockFindUnique.mockResolvedValue(director)
     mockVerifyPassword.mockResolvedValue(true)
