@@ -30,7 +30,7 @@ Plateforme SaaS multi-tenant de gestion intelligente des plannings et des ressou
 - **Messagerie interne** : Conversations DIRECT (1:1), TEAM (auto-sync equipes) et GROUP (manuelles). Messages texte + pieces jointes (PDF, images via Cloudinary, max 10 Mo). Reception temps reel via SSE. Groupement de messages, scroll infini cursor-based, optimistic updates. Archivage avec desarchivage auto sur nouveau message. Administration de groupe : avatar personnalisable, renommage, gestion des membres reserves a l'admin. **SYSTEM_ADMIN peut contacter n'importe quel utilisateur cross-tenant** (conversations avec `companyId: null`, isolation multi-tenant preservee pour les autres roles).
 - **Import CSV/Excel** : Import bulk d'employes depuis fichier CSV ou Excel (.xlsx). Validation Zod temps reel cote client avec cellules colorees. Support headers FR/EN avec normalisation. Detection des doublons, creation auto des equipes, sync Stripe. Modele telecharger pre-rempli.
 - **Billing** : Abonnement per-seat Stripe (2,90 euros/employe/mois), le dirigeant comptant comme un employe facture, ce que disent la FAQ tarifs, le simulateur et l'ecran Facturation (SP-626), portail client, webhooks, sync employes auto. Essai gratuit 21 jours sans carte bancaire : aucun customer Stripe n'est cree avant la premiere souscription volontaire, le suivi de l'essai passe par une ligne `Subscription` locale (statut TRIAL) basculee en EXPIRED par le cron `/api/cron/trial-emails`, une fois la date de fin reellement depassee et non le jour meme. `Subscription.quantity` compte les sieges factures chez Stripe : il vaut 0 tant qu'aucun abonnement n'existe, y compris pour une entreprise ayant des employes actifs
-- **Notifications** : Temps reel SSE, 30 emails transactionnels (React Email), preferences par categorie/canal. Destinataires bornes par `companyId` a la selection ET refuses par une garde multi-tenant dans les factories : une notification ne peut pas partir vers une autre entreprise
+- **Notifications** : Temps reel SSE, 30 emails transactionnels (React Email), preferences par categorie/canal. Un employe n'est prevenu que de ce qu'il voit changer : modifier ou supprimer un brouillon ne lui annonce rien, le publier lui annonce une publication, repasser un creneau publie en brouillon lui annonce une suppression (SP-618). Destinataires bornes par `companyId` a la selection ET refuses par une garde multi-tenant dans les factories : une notification ne peut pas partir vers une autre entreprise
 - **Redis** : Rate limiting distribue (SET NX EX + INCR, fenetre fixe), sessions actives (TTL 24h), cache dashboards (TTL 300s), fallback memoire
 - **CRUD** : Entreprises, employes, equipes avec RBAC et multi-tenant strict. Corriger l'email d'un collaborateur propage le changement au compte de connexion : reinvitation immediate si le compte n'a jamais ete active, sinon confirmation par le collaborateur lui-meme (l'ancienne adresse reste l'identifiant jusqu'au clic, et recoit une alerte)
 - **Audit** : Journal d'audit complet, export CSV, protection anti-injection
@@ -188,17 +188,17 @@ Voir [`docs/database-architecture.md`](docs/database-architecture.md) pour le de
 
 | Type      | Framework  | Fichiers | Tests     |
 | --------- | ---------- | -------- | --------- |
-| Unitaires | Vitest     | 221      | 3 527     |
+| Unitaires | Vitest     | 224      | 3 594     |
 | E2E       | Playwright | 28       | 275       |
-| **Total** |            | **249**  | **3 802** |
+| **Total** |            | **252**  | **3 869** |
 
-Compteurs mesurés le 12 novembre 2026, par `npm run test` et
+Compteurs mesurés le 13 novembre 2026, par `npm run test` et
 `npx playwright test --list`. Ils se periment a chaque sprint : les remesurer
 plutot que les recopier.
 
 **La couverture est un garde-fou bloquant depuis SP-592**, et pas seulement une
 commande d'information. `vitest.config.ts` porte des seuils mesures (lines 50,
-branches 73, functions 73, statements 50, pour un réel à 53,85 % de lignes et 76,15 % de branches le 12 novembre 2026) et la CI lance
+branches 73, functions 73, statements 50, pour un réel à 54,12 % de lignes et 76,56 % de branches le 13 novembre 2026) et la CI lance
 `npm run test:coverage` : elle rougit si la couverture baisse, meme quand tous
 les tests passent. Le perimetre mesure inclut `src/lib/`, `src/hooks/` et
 `src/lib/validations/`, et exclut les pages et layouts, couverts par les E2E.
@@ -369,6 +369,7 @@ Le chiffrement au repos reste une decision d'architecture, sans ticket.
 - Validation Zod aux frontieres, protection CSRF (NextAuth)
 - Cookies httpOnly + secure + sameSite, hashage bcrypt
 - Rate limiting Redis distribue (fallback memoire), audit logs, CSP headers, SRI en production
+- Connexion, inscription et mot de passe oublie plafonnes par adresse et par IP (SP-610). La connexion ne retient que les echecs, reserves avant la comparaison du mot de passe : 10 par quart d'heure pour une IP sur une adresse, 30 par IP, 50 par adresse toutes IP confondues. Mot de passe oublie : 3 par heure et par adresse, reponse identique au-dela. Inscription : 5 par heure et par adresse. Les confirmations par mot de passe du profil (changement de mot de passe, suppression de compte) sont plafonnees a 5 essais par quart d'heure. L'IP se lit dans `x-real-ip`, que Nginx ecrit lui-meme sur chaque bloc relaye, et une IPv6 compte par prefixe /64
 - Subscription guard middleware Edge Runtime
 - Verification email a l'inscription (token 24h, page `/verify-email`). Envoi limite a trois par heure et par adresse, inscription comprise, avec une reponse identique au-dela de la limite pour ne pas reveler l'existence du compte (SP-606)
 - Emails securite envoyes inconditionnellement (changement mot de passe, suppression RGPD)

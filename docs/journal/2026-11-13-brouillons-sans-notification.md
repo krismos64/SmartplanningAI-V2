@@ -1,13 +1,13 @@
 # 13 novembre 2026, modifier ou supprimer un brouillon ne prévient plus personne
 
-| Champ              | Valeur                                                                                                                                                                                                                              |
-| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Ticket             | SP-618, ouvert le 26 octobre. Plus un correctif sans ticket : plafond d'essais sur les confirmations par mot de passe du profil                                                                                                     |
-| Documents produits | `src/lib/utils/schedule-visibility.ts`, `src/lib/actions/__tests__/schedules-draft-notifications.test.ts`                                                                                                                           |
-| Documents modifiés | `schedules.ts`, `profile.ts`, `auth-rate-limit.ts`, `schedules.test.ts`, `change-password.test.ts`, `delete-account.test.ts`, `CLAUDE.md`                                                                                           |
-| Contrôles          | type-check vert, lint 0 erreur, 224 fichiers et 3594 tests verts, couverture 54,12 % de lignes et 76,56 % de branches. 10 mutations sur SP-618 et 1 sur le profil, toutes détectées. E2E locales (plannings, connexion) : 37 vertes |
-| Jira               | SP-618 commenté                                                                                                                                                                                                                     |
-| Mémoire            | `ou-en-est-le-projet.md` mise à jour, `pas-de-ticket-pour-un-correctif-rapide.md` créée                                                                                                                                             |
+| Champ              | Valeur                                                                                                                                                                                                                                                                                  |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Ticket             | SP-618, ouvert le 26 octobre. Plus un correctif sans ticket : plafond d'essais sur les confirmations par mot de passe du profil                                                                                                                                                         |
+| Documents produits | `src/lib/utils/schedule-visibility.ts`, `src/lib/actions/__tests__/schedules-draft-notifications.test.ts`                                                                                                                                                                               |
+| Documents modifiés | `schedules.ts`, `profile.ts`, `auth-rate-limit.ts`, `schedules.test.ts`, `change-password.test.ts`, `delete-account.test.ts`, `CLAUDE.md`, puis par l'audit : `README.md`, `deployment.md`, `prisma-pieges.md`, `tests.md`, deux agents, `revue-pre-pr`, `schema.prisma` (commentaires) |
+| Contrôles          | type-check vert, lint 0 erreur, 224 fichiers et 3594 tests verts, couverture 54,12 % de lignes et 76,56 % de branches. 10 mutations sur SP-618 et 1 sur le profil, toutes détectées. E2E locales (plannings, connexion) : 37 vertes                                                     |
+| Jira               | SP-618 commenté                                                                                                                                                                                                                                                                         |
+| Mémoire            | `ou-en-est-le-projet.md` mise à jour, `pas-de-ticket-pour-un-correctif-rapide.md` créée                                                                                                                                                                                                 |
 
 ## Ce qui a été fait
 
@@ -55,6 +55,25 @@ derrière une session. Cinq essais erronés par quart d'heure et par
 utilisateur, réservés avant la comparaison, effacés par un mot de passe
 correct. Christophe a demandé de corriger ce type de défaut directement, sans
 ticket.
+
+**Audit de fin de session.** Compteurs remesurés : 22 modèles, 16 enums,
+65 index, 24 migrations, 66 pages, 18 routes API, 32 actions, 23 services,
+9 scripts ops, 187 composants, 28 specs et 275 tests E2E dont 14 et 143 en
+CI, tous inchangés. Seuls les tests unitaires ont bougé : 224 fichiers et
+3594 tests, couverture 54,12 % de lignes et 76,56 % de branches. Les six
+hooks testés en exécution, le hook de démarrage affichant bien la dernière
+des trois entrées du jour. Whitelist CI, commandes npm citées et scripts ops
+documentés : aucun écart. Sept scripts ops sur neuf sont sur le VPS, à
+l'identique par empreinte. `read-funnel-steps.sh` et `test-cd-rollback.sh`
+n'y sont pas.
+
+Corrigé par l'audit : compteurs et sécurité du README, `deployment.md`
+(version 2.19 et règle `X-Real-IP`), `CLAUDE.md`, `prisma-pieges.md`,
+`tests.md`, les agents `test-writer` et `docker-devops`, le skill
+`revue-pre-pr`. Les commentaires de `schema.prisma` annonçaient un essai de
+14 jours : il est de 21 (`PRICING.TRIAL_DAYS`). Jira : SP-627, SP-610 et
+SP-618 en Terminé, cinq tickets ouverts (SP-620, SP-619, SP-602, SP-598,
+SP-596).
 
 ## Les écarts
 

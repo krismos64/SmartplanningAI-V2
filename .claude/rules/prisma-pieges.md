@@ -426,6 +426,21 @@ Nginx compte chaque **stream**, pas chaque connexion TCP. Une limite basse
 provoque des 503 au premier chargement, une page Next.js tirant 30 chunks JS ou
 plus. Limite actuelle : 100, avec exemption sur `/_next/static/*`.
 
+## Nginx, un bloc relayé sans `X-Real-IP` laisse le client choisir son IP
+
+L'application lit `x-real-ip` pour ses limites de débit par IP (SP-610), et
+jamais `x-forwarded-for`, dont la première valeur est celle que le client
+envoie (`$proxy_add_x_forwarded_for` ne fait que la compléter).
+
+Encore faut-il que Nginx écrive `X-Real-IP` sur **chaque** bloc qui relaie
+vers l'application. Le 13 novembre 2026, `/_next/static/`, `/_next/image` et
+le bloc des extensions statiques ne portaient que `Host` : une requête sur un
+chemin en `.png` aurait transmis l'en-tête du client tel quel.
+
+Tout nouveau bloc `location` avec un `proxy_pass` porte
+`proxy_set_header X-Real-IP $remote_addr;`. Sans l'en-tête (développement,
+E2E), la limite par IP ne s'applique pas et celle par adresse tient.
+
 ## Nginx, www vers apex
 
 Bloc 443 dédié en 301. Ne jamais remettre `www` dans le `server_name` du bloc

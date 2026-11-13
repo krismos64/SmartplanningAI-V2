@@ -140,6 +140,12 @@ Accès VPS par alias SSH : `ssh smartplanning`, clé `~/.ssh/id_ed25519`. Ne jam
 Soleil, avec son propre bloc Nginx et son port. Ne plus supposer que tout ce qui
 tourne sur cette machine appartient à SmartPlanning.
 
+**Tout bloc Nginx qui relaie vers l'application réécrit `X-Real-IP`** par
+`$remote_addr` : les limites de débit par IP en dépendent (SP-610). Trois blocs
+statiques ne le faisaient pas jusqu'au 13 novembre 2026. `nginx/smartplanning.conf`
+est la source, appliquée à la main sur le VPS : comparer les deux après chaque
+changement.
+
 **UFW ne filtre pas les ports publiés par Docker**, qui écrit ses règles en amont
 de sa chaîne : un port peut répondre depuis Internet alors qu'`ufw status` le dit
 fermé. Tout port qui n'a pas à être joignable de l'extérieur se publie en
@@ -168,6 +174,7 @@ concernant s'applique à la main sur le VPS.
 Les runners des trois workflows sont épinglés sur `ubuntu-24.04` :
 `ubuntu-latest`, passé à Ubuntu 26.04 en novembre 2026, empêche Playwright
 d'installer Chromium, et la nightly est restée rouge sept nuits sans alerte.
+Elle est repassée au vert le 13 novembre.
 
 Le CD ne se déclenche que si le CI passe entièrement, E2E comprises. Un push sur
 une branche sans PR ne déclenche aucun workflow : ouvrir une PR, même en draft,

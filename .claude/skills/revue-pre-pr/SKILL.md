@@ -104,6 +104,18 @@ Charger `.claude/rules/multi-tenant.md`, puis :
   `invalidateDashboardCache(companyId)` plus les `revalidatePath` des deux
   routes par rôle, `/app/dashboard` seul n'en couvre aucune
 
+- **Toute comparaison de mot de passe est plafonnée** : `verifyPassword`
+  n'apparaît jamais sans `reserveLoginAttempt` ou
+  `reservePasswordConfirmation` juste avant. Un point d'entrée oublié devient
+  l'oracle que les autres plafonds protègent pour rien (SP-610, la connexion
+  en avait deux) :
+  ```bash
+  grep -rn "verifyPassword(" src --include='*.ts' | grep -v __tests__ | grep -v "src/lib/password.ts"
+  ```
+- **Une action sur un créneau qui notifie** passe par
+  `scheduleVisibilityChange` : un brouillon n'annonce rien à un employé qui
+  ne le voit pas (SP-618)
+
 En cas de doute sur un test d'isolation, le prouver par mutation : casser
 volontairement le code, vérifier que le test rougit, restaurer.
 
