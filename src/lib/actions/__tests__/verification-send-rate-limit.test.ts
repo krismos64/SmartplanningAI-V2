@@ -69,7 +69,8 @@ function createFakeRedis() {
           })
           return chain
         },
-        expire() {
+        // SP-610 : la fenêtre s'ouvre par SET ... NX, plus par EXPIRE
+        set() {
           ops.push(() => [null, 1])
           return chain
         },

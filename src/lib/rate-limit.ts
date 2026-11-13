@@ -5,16 +5,17 @@
  * @description Limite le nombre de requêtes par IP sur une fenêtre de temps.
  *
  * Stratégie :
- * - Si Redis est disponible, utilise INCR + EXPIRE atomique.
+ * - Si Redis est disponible, utilise SET NX EX + INCR atomique : la fenêtre
+ *   s'ouvre à la première requête et ne se prolonge pas (SP-610).
  *   Avantage : fonctionne même avec plusieurs instances de l'application
  *   derrière un load balancer (les compteurs sont partagés).
  * - Si Redis est indisponible, fallback sur une Map JavaScript en mémoire.
  *   Le rate limiting fonctionne toujours, mais uniquement par instance.
  *
  * Commandes Redis utilisées :
- * - MULTI/EXEC : transaction atomique (pas d'état incohérent entre INCR et EXPIRE)
- * - INCR : incrémente le compteur de requêtes (crée la clé avec valeur 1 si elle n'existe pas)
- * - EXPIRE : définit le TTL de la clé (la clé disparaît automatiquement après la fenêtre)
+ * - MULTI/EXEC : transaction atomique (pas d'état incohérent entre les commandes)
+ * - SET clé 0 EX fenêtre NX : crée la clé avec son TTL si elle n'existe pas, ne touche à rien sinon
+ * - INCR : incrémente le compteur de requêtes
  * - TTL : récupère le temps restant avant expiration de la clé
  *
  * ✅ Source : Context7 - ioredis MULTI/EXEC + Next.js Rate Limiting
@@ -105,24 +106,24 @@ async function checkRateLimitRedis(
   const key = `ratelimit:${identifier}`
 
   try {
-    // Transaction atomique : INCR et EXPIRE s'exécutent ensemble,
-    // sans qu'une autre commande puisse s'intercaler entre les deux.
+    // Transaction atomique. SET ... NX ne pose le TTL qu'à la création de la
+    // clé. L'ancien EXPIRE, rejoué à chaque appel, repoussait la fin de la
+    // fenêtre à chaque tentative (SP-610) : un appelant régulier restait
+    // bloqué indéfiniment, et resetAt annonçait une échéance qui reculait.
     const results = await redis
       .multi()
+      .set(key, 0, 'EX', windowSeconds, 'NX')
       .incr(key)
-      .expire(key, windowSeconds)
       .ttl(key)
       .exec()
 
     if (!results) return null
 
-    const count = results[0]?.[1] as number
+    const count = results[1]?.[1] as number
     const ttl = results[2]?.[1] as number
 
     const resetAt =
-      ttl > 0
-        ? Date.now() + ttl * 1000
-        : Date.now() + config.windowMs
+      ttl > 0 ? Date.now() + ttl * 1000 : Date.now() + config.windowMs
 
     return {
       allowed: count <= config.maxRequests,
@@ -186,18 +187,69 @@ export async function checkRateLimit(
 }
 
 /**
+ * Rend une unité au compteur d'un identifiant (SP-610).
+ *
+ * Sert aux limites qui réservent avant de vérifier, comme la connexion :
+ * la tentative est comptée d'abord (checkRateLimit), puis rendue si elle
+ * réussit. Compter après coup laisserait passer une rafale de tentatives
+ * simultanées, toutes lues sous le plafond avant qu'aucune ne soit comptée.
+ *
+ * Sans effet si le compteur n'existe pas : un DECR nu créerait une clé
+ * négative et sans expiration.
+ */
+export async function releaseRateLimit(identifier: string): Promise<void> {
+  const entry = rateLimitCache.get(identifier)
+  if (entry) {
+    entry.count = Math.max(0, entry.count - 1)
+  }
+
+  const redis = getRedisClient()
+  if (!redis) return
+  try {
+    await redis.eval(
+      "if redis.call('exists', KEYS[1]) == 1 and tonumber(redis.call('get', KEYS[1])) > 0 then return redis.call('decr', KEYS[1]) end return 0",
+      1,
+      `ratelimit:${identifier}`
+    )
+  } catch {
+    // Le compteur expirera de lui-même
+  }
+}
+
+/**
+ * Efface le compteur d'un identifiant (SP-610), par exemple après une
+ * connexion réussie.
+ */
+export async function resetRateLimit(identifier: string): Promise<void> {
+  rateLimitCache.delete(identifier)
+  const redis = getRedisClient()
+  if (!redis) return
+  try {
+    await redis.del(`ratelimit:${identifier}`)
+  } catch {
+    // Le compteur expirera de lui-même
+  }
+}
+
+/**
  * Extrait l'adresse IP d'une requête Next.js
+ *
+ * `x-real-ip` d'abord : Nginx l'écrit lui-même depuis `$remote_addr`, le
+ * client ne peut pas le choisir. `x-forwarded-for` est complété par Nginx
+ * (`$proxy_add_x_forwarded_for`), sa première valeur est donc celle que le
+ * client a envoyée : s'y fier permettait de changer de quota à chaque
+ * requête (SP-610).
  */
 export function getClientIp(request: Request): string {
+  const realIp = request.headers.get('x-real-ip')
+  if (realIp) {
+    return realIp.trim()
+  }
+
   const forwardedFor = request.headers.get('x-forwarded-for')
   if (forwardedFor) {
     const firstIp = forwardedFor.split(',')[0]
     return firstIp ? firstIp.trim() : 'unknown'
-  }
-
-  const realIp = request.headers.get('x-real-ip')
-  if (realIp) {
-    return realIp.trim()
   }
 
   return 'unknown'

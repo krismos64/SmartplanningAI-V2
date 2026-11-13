@@ -22,6 +22,11 @@ import { hashPassword } from '@/lib/password'
 import { prisma } from '@/lib/prisma'
 import { forgotPasswordSchema, resetPasswordSchema } from '@/lib/validations'
 import { logAuditAction } from '@/lib/services/audit'
+import {
+  AUTH_RATE_LIMITS,
+  consumeAuthAttempt,
+  getServerActionClientIp,
+} from '@/lib/auth-rate-limit'
 
 // =============================================================================
 // TYPES
@@ -78,6 +83,21 @@ export async function forgotPasswordAction(data: {
 
     const { email } = validationResult.data
     const normalizedEmail = email.toLowerCase()
+
+    // SP-610 : au-delà du plafond, rien ne part mais la réponse reste la
+    // même. Un refus visible révélerait que l'adresse a déjà reçu des envois.
+    const allowed = await consumeAuthAttempt(
+      'forgot-password',
+      normalizedEmail,
+      await getServerActionClientIp(),
+      {
+        perEmail: AUTH_RATE_LIMITS.forgotPerEmail,
+        perIp: AUTH_RATE_LIMITS.forgotPerIp,
+      }
+    )
+    if (!allowed) {
+      return { success: true }
+    }
 
     // 2. Chercher l'utilisateur (silencieusement)
     const user = await prisma.user.findUnique({

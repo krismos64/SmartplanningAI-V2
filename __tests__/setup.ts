@@ -19,6 +19,18 @@ import { afterAll, afterEach, beforeAll, vi } from 'vitest'
 import { server } from './mocks/server'
 
 /**
+ * Aucun test unitaire ne parle au vrai Redis (SP-610).
+ *
+ * `REDIS_URL` arrive dans `process.env` depuis `.env` dès qu'un module
+ * importe Prisma. Un test qui traverse `checkRateLimit` sans mocker
+ * `@/lib/redis` écrivait alors ses compteurs dans le Redis local, où ils
+ * survivaient une heure : la suite rougissait au sixième lancement, sans
+ * rapport avec le code. Une chaîne vide désactive le client (repli mémoire),
+ * et dotenv ne remplace pas une variable déjà définie.
+ */
+process.env.REDIS_URL = ''
+
+/**
  * Mock global pour next-auth/react
  *
  * useSession() est utilisé par useIsImpersonating() et d'autres hooks.

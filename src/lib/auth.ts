@@ -21,6 +21,11 @@ import { verifyPassword } from '@/lib/password'
 import { authConfig } from '@/lib/auth.config'
 import { logAuditAction } from '@/lib/services/audit'
 import { registerSession, removeSession } from '@/lib/session-store'
+import {
+  getTrustedClientIp,
+  releaseLoginAttempt,
+  reserveLoginAttempt,
+} from '@/lib/auth-rate-limit'
 
 /**
  * Schéma de validation des credentials
@@ -71,7 +76,8 @@ type AuthorizedUser = {
  *          CompanyInactive) pour les refus métier.
  */
 export async function authorizeCredentials(
-  credentials: Partial<Record<'email' | 'password', unknown>>
+  credentials: Partial<Record<'email' | 'password', unknown>>,
+  request?: Request
 ): Promise<AuthorizedUser | null> {
   // 1. Valider les credentials avec Zod
   const result = credentialsSchema.safeParse(credentials)
@@ -80,6 +86,14 @@ export async function authorizeCredentials(
   }
 
   const { email, password } = result.data
+
+  // SP-610 : la tentative est réservée avant toute comparaison. Au-delà du
+  // plafond, le refus est le même que pour des identifiants invalides, que
+  // le compte existe ou non, et le mot de passe n'est pas comparé.
+  const clientIp = request ? getTrustedClientIp(request.headers) : null
+  if (!(await reserveLoginAttempt('login-authorize', email, clientIp))) {
+    return null
+  }
 
   // 2. Chercher l'utilisateur par email
   const user = await prisma.user.findUnique({
@@ -111,6 +125,8 @@ export async function authorizeCredentials(
   if (!isPasswordValid) {
     return null
   }
+  // Mot de passe correct : la tentative réservée est rendue
+  await releaseLoginAttempt('login-authorize', email, clientIp)
 
   // 5. Vérifier que l'email a été vérifié (SP-526)
   // emailVerified (DateTime?) est la source de vérité, pas isEmailVerified.

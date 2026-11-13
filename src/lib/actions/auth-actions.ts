@@ -19,6 +19,11 @@ import { prisma } from '@/lib/prisma'
 import { logAuditAction } from '@/lib/services/audit'
 import { signupSchema, type SignupFormData } from '@/lib/validations'
 import { sendVerificationEmailAction } from '@/lib/actions/verification-actions'
+import {
+  AUTH_RATE_LIMITS,
+  consumeAuthAttempt,
+  getServerActionClientIp,
+} from '@/lib/auth-rate-limit'
 
 /**
  * Types de retour pour les Server Actions
@@ -119,6 +124,24 @@ export async function registerAction(
     }
 
     const { name, email, companyName, password, phone } = validationResult.data
+
+    // SP-610 : plafond d'inscriptions par adresse et par IP. Placé avant la
+    // recherche du compte : le refus ne dit rien de son existence.
+    const allowed = await consumeAuthAttempt(
+      'register',
+      email,
+      await getServerActionClientIp(),
+      {
+        perEmail: AUTH_RATE_LIMITS.registerPerEmail,
+        perIp: AUTH_RATE_LIMITS.registerPerIp,
+      }
+    )
+    if (!allowed) {
+      return {
+        success: false,
+        error: "Trop de tentatives d'inscription. Réessayez dans une heure.",
+      }
+    }
 
     // 2. Vérifier que l'email n'existe pas déjà
     const existingUser = await prisma.user.findUnique({

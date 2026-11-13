@@ -22,6 +22,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { registerAction } from '../auth-actions'
+import { resetRateLimitCache } from '@/lib/rate-limit'
 
 // ============================================================================
 // Mocks hoistés
@@ -56,6 +57,14 @@ vi.mock('next-auth', () => ({
 
 vi.mock('next-auth/providers/credentials', () => ({
   default: (config: any) => config,
+}))
+
+// SP-610 : registerAction passe par le limiteur de débit. Sans ce mock, le
+// test se connecte au Redis local (REDIS_URL est chargé depuis .env) et y
+// laisse un compteur d'une heure : le sixième lancement échoue, sans rapport
+// avec le code. Redis absent, le limiteur tourne sur son repli mémoire.
+vi.mock('@/lib/redis', () => ({
+  getRedisClient: () => null,
 }))
 
 // Prisma : expose user (email-check + generateUniqueSlug) + $transaction
@@ -184,6 +193,9 @@ function setupSuccessfulTransaction() {
 
 describe("registerAction — creation de Subscription a l'inscription", () => {
   beforeEach(() => {
+    // SP-610 : le plafond d'inscriptions par adresse tourne réellement, et
+    // tous les cas partagent la même adresse
+    resetRateLimitCache()
     vi.clearAllMocks()
     // Defaults : aucun email existant, slug libre
     mockUserFindUnique.mockResolvedValue(null)
@@ -285,6 +297,9 @@ describe("registerAction — creation de Subscription a l'inscription", () => {
  */
 describe("registerAction — emails envoyes a l'inscription", () => {
   beforeEach(() => {
+    // SP-610 : le plafond d'inscriptions par adresse tourne réellement, et
+    // tous les cas partagent la même adresse
+    resetRateLimitCache()
     vi.clearAllMocks()
     mockUserFindUnique.mockResolvedValue(null)
     mockCompanyFindUnique.mockResolvedValue(null)
