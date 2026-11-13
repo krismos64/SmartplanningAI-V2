@@ -67,8 +67,44 @@ export function emailRateLimitKey(scope: string, email: string): string {
   return `${scope}:email:${hash}`
 }
 
+/**
+ * Ramène une IP à la source qu'elle désigne.
+ *
+ * Un abonné IPv6 reçoit un préfixe /64 entier, soit 2^64 adresses : compter
+ * par adresse lui donnerait autant de quotas. On compte donc par /64. Une
+ * IPv4 encapsulée (`::ffff:203.0.113.7`) est ramenée à l'IPv4.
+ */
+export function rateLimitSource(ip: string): string {
+  const value = ip.trim().toLowerCase()
+  if (!value.includes(':')) return value
+
+  const mapped = /^::ffff:(\d{1,3}(?:\.\d{1,3}){3})$/.exec(value)
+  if (mapped?.[1]) return mapped[1]
+
+  // Développer « :: » pour retrouver les huit groupes
+  const [head = '', tail] = value.split('::')
+  const headGroups = head ? head.split(':') : []
+  const tailGroups = tail ? tail.split(':') : []
+  const groups =
+    tail === undefined
+      ? headGroups
+      : [
+          ...headGroups,
+          ...Array<string>(
+            Math.max(0, 8 - headGroups.length - tailGroups.length)
+          ).fill('0'),
+          ...tailGroups,
+        ]
+
+  const prefix = groups
+    .slice(0, 4)
+    .map((group) => group.replace(/^0+(?=.)/, ''))
+    .join(':')
+  return `${prefix}::/64`
+}
+
 export function ipRateLimitKey(scope: string, ip: string): string {
-  return `${scope}:ip:${ip}`
+  return `${scope}:ip:${rateLimitSource(ip)}`
 }
 
 /**
@@ -104,7 +140,7 @@ function loginKeys(
   const emailKey = emailRateLimitKey(entryPoint, email)
   return {
     // Sans IP certifiée (développement, E2E), la paire se réduit à l'adresse
-    pair: `${emailKey}:from:${ip ?? 'sans-ip'}`,
+    pair: `${emailKey}:from:${ip === null ? 'sans-ip' : rateLimitSource(ip)}`,
     email: emailKey,
     ip: ip === null ? null : ipRateLimitKey(entryPoint, ip),
   }
@@ -174,9 +210,12 @@ export async function releaseLoginAttempt(
 }
 
 /**
- * Compte un appel et dit s'il est autorisé, par adresse et par IP. Les deux
- * compteurs avancent même si le premier refuse : un appelant bloqué sur une
- * adresse continue de consommer le quota de son IP.
+ * Compte un appel et dit s'il est autorisé, par IP puis par adresse.
+ *
+ * L'IP d'abord : quand elle est refusée, le compteur de l'adresse n'avance
+ * pas. Une IP déjà bloquée ne peut donc pas épuiser le quota d'une adresse
+ * qui n'est pas la sienne, par exemple pour priver quelqu'un de son email de
+ * réinitialisation.
  */
 export async function consumeAuthAttempt(
   scope: 'forgot-password' | 'register',
@@ -184,12 +223,14 @@ export async function consumeAuthAttempt(
   ip: string | null,
   limits: { perEmail: RateLimitConfig; perIp: RateLimitConfig }
 ): Promise<boolean> {
+  if (ip !== null) {
+    const byIp = await checkRateLimit(ipRateLimitKey(scope, ip), limits.perIp)
+    if (!byIp.allowed) return false
+  }
+
   const byEmail = await checkRateLimit(
     emailRateLimitKey(scope, email),
     limits.perEmail
   )
-  if (ip === null) return byEmail.allowed
-
-  const byIp = await checkRateLimit(ipRateLimitKey(scope, ip), limits.perIp)
-  return byEmail.allowed && byIp.allowed
+  return byEmail.allowed
 }

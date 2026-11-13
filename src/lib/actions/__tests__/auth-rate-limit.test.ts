@@ -117,7 +117,11 @@ import { authorizeCredentials } from '@/lib/auth'
 import { checkEmailVerificationStatus } from '@/lib/actions/verification-actions'
 import { forgotPasswordAction } from '@/lib/actions/password-actions'
 import { registerAction } from '@/lib/actions/auth-actions'
-import { AUTH_RATE_LIMITS, getTrustedClientIp } from '@/lib/auth-rate-limit'
+import {
+  AUTH_RATE_LIMITS,
+  getTrustedClientIp,
+  rateLimitSource,
+} from '@/lib/auth-rate-limit'
 import { resetRateLimitCache } from '@/lib/rate-limit'
 
 // ============================================================================
@@ -529,6 +533,51 @@ describe('connexion : verrouillage ciblé et attaque répartie (SP-610)', () => 
   })
 })
 
+describe('IPv6 : une source par préfixe /64 (SP-610)', () => {
+  it('ramène une IPv6 à son /64, sous toutes ses écritures', () => {
+    expect(rateLimitSource('2001:db8:abcd:12:aaaa:bbbb:cccc:dddd')).toBe(
+      '2001:db8:abcd:12::/64'
+    )
+    expect(rateLimitSource('2001:0db8:abcd:0012::1')).toBe(
+      '2001:db8:abcd:12::/64'
+    )
+    expect(rateLimitSource('2001:DB8:ABCD:12::ffff')).toBe(
+      '2001:db8:abcd:12::/64'
+    )
+    expect(rateLimitSource('::1')).toBe('0:0:0:0::/64')
+  })
+
+  it('laisse une IPv4 intacte et déballe une IPv4 encapsulée', () => {
+    expect(rateLimitSource('203.0.113.7')).toBe('203.0.113.7')
+    expect(rateLimitSource('::ffff:203.0.113.7')).toBe('203.0.113.7')
+  })
+
+  it('changer d adresse dans son /64 ne donne pas un nouveau quota', async () => {
+    const email = 'ipv6-rotation@exemple.fr'
+
+    for (let i = 0; i < LOGIN_MAX; i++) {
+      await authorizeCredentials(
+        { email, password: BAD_PASSWORD },
+        requestFrom({
+          'x-real-ip': `2001:db8:abcd:12::${(i + 1).toString(16)}`,
+        })
+      )
+    }
+
+    const sameSubnet = await authorizeCredentials(
+      { email, password: GOOD_PASSWORD },
+      requestFrom({ 'x-real-ip': '2001:db8:abcd:12:ffff:ffff:ffff:ffff' })
+    )
+    const otherSubnet = await authorizeCredentials(
+      { email, password: GOOD_PASSWORD },
+      requestFrom({ 'x-real-ip': '2001:db8:abcd:13::1' })
+    )
+
+    expect(sameSubnet).toBeNull()
+    expect(otherSubnet?.email).toBe(email)
+  })
+})
+
 describe('getTrustedClientIp (SP-610)', () => {
   it('ne lit que x-real-ip', () => {
     expect(
@@ -578,6 +627,27 @@ describe('forgotPasswordAction : plafond par adresse et par IP (SP-610)', () => 
     await forgotPasswordAction({ email: 'OUBLI-CASSE@exemple.fr' })
 
     expect(mockSendResetPasswordEmail).toHaveBeenCalledTimes(max)
+  })
+
+  it('une IP déjà bloquée ne peut pas épuiser le quota d une autre adresse', async () => {
+    const victim = 'oubli-victime@exemple.fr'
+    const ipMax = AUTH_RATE_LIMITS.forgotPerIp.maxRequests
+
+    // L'IP épuise son propre quota sur d'autres adresses, puis vise la victime
+    mockHeaders.mockResolvedValue(new Headers({ 'x-real-ip': '203.0.113.40' }))
+    for (let i = 0; i < ipMax; i++) {
+      await forgotPasswordAction({ email: `oubli-leurre-${i}@exemple.fr` })
+    }
+    for (let i = 0; i < 5; i++) {
+      await forgotPasswordAction({ email: victim })
+    }
+    mockSendResetPasswordEmail.mockClear()
+
+    // La victime, depuis chez elle, reçoit bien son email
+    mockHeaders.mockResolvedValue(new Headers({ 'x-real-ip': '198.51.100.40' }))
+    await forgotPasswordAction({ email: victim })
+
+    expect(mockSendResetPasswordEmail).toHaveBeenCalledTimes(1)
   })
 
   it('plafonne une IP qui vise beaucoup d adresses', async () => {
