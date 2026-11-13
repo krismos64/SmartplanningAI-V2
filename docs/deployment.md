@@ -58,11 +58,11 @@
 
 | Composant        | Technologie                      | Version      |
 | ---------------- | -------------------------------- | ------------ |
-| Application      | Next.js                          | 15.5.25      |
+| Application      | Next.js                          | 15.5.29      |
 | Runtime          | Node.js                          | 20 Alpine    |
 | Base de données  | PostgreSQL                       | 16 Alpine    |
 | Cache/Sessions   | Redis                            | 7 Alpine     |
-| ORM              | Prisma                           | 6.18.0       |
+| ORM              | Prisma                           | 6.19.3       |
 | Media Storage    | Cloudinary                       | SDK v2       |
 | Analytics        | Umami                            | Latest       |
 | Conteneurisation | Docker                           | 24.x         |

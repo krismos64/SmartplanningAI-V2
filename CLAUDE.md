@@ -22,6 +22,7 @@ npm run test           # Vitest, single run, pas de flag --run à ajouter
 npm run test:e2e:ci    # Playwright, whitelist CI
 npm run test:integration  # Vitest sur base locale réelle (concurrence, SP-619)
 npm run type-check     # tsc --noEmit
+npm run audit:prod     # failles hautes de production hors exceptions (SP-596)
 npm run db:migrate     # migrations Prisma
 ```
 

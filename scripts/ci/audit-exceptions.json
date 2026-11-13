@@ -1,0 +1,17 @@
+{
+  "$comment": "Failles hautes ou critiques de production acceptées en connaissance de cause (SP-596). Chaque entrée nomme l'advisory, la raison et une date de réexamen : passée cette date, l'exception ne couvre plus rien et la CI rougit. Lu par scripts/ci/check-prod-audit.mjs.",
+  "exceptions": [
+    {
+      "advisory": "GHSA-mrhx-c7xc-m3w5",
+      "package": "zod",
+      "reason": "Faille dans $ZodArray, le code de zod v4. Le projet utilise zod 3.25 et n'importe jamais zod/v4 (aucune occurrence dans src/ ni dans les dépendances de production, mesuré le 13 novembre 2026). Corriger impose la migration vers zod 4, chantier à part.",
+      "reviewBy": "2027-02-13"
+    },
+    {
+      "advisory": "GHSA-ggr8-5vv4-36mx",
+      "package": "deepmerge-ts",
+      "reason": "Épuisement de pile en fusionnant des objets récursifs, via @prisma/config du CLI prisma. Le CLI ne fusionne que la configuration du dépôt, jamais une donnée extérieure. Prisma 6.19.3, dernière 6.x, épingle deepmerge-ts 7.1.5 ; la correction passe par Prisma 7.",
+      "reviewBy": "2027-02-13"
+    }
+  ]
+}

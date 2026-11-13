@@ -105,6 +105,13 @@ jobs:
       - name: Run Type Check
         run: npm run type-check
 
+      # SP-596 : rougit sur toute faille haute ou critique des dépendances de
+      # production qui n'est pas documentée dans scripts/ci/audit-exceptions.json,
+      # ou dont l'exception a dépassé sa date de réexamen. Sans lui, le chiffre
+      # est passé de 0 à 18 hautes et 1 critique entre janvier et novembre 2026.
+      - name: Audit des dépendances de production
+        run: npm run audit:prod
+
   # ============================================
   # JOB 2 : TESTS UNITAIRES
   # ============================================

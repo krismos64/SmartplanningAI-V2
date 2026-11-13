@@ -13,8 +13,8 @@ Plateforme SaaS multi-tenant de gestion intelligente des plannings et des ressou
 
 | Couche          | Technologies                                                                     |
 | --------------- | -------------------------------------------------------------------------------- |
-| Frontend        | Next.js 15.5.25 (App Router), React 19, TypeScript 5.9, Tailwind + Shadcn/ui     |
-| Backend         | NextAuth v5 (Auth.js), Prisma 6.18.0, Zod, Stripe v20.3.1                        |
+| Frontend        | Next.js 15.5.29 (App Router), React 19, TypeScript 5.9, Tailwind + Shadcn/ui     |
+| Backend         | NextAuth v5 (Auth.js), Prisma 6.19.3, Zod, Stripe v20.3.1                        |
 | Base de donnees | PostgreSQL 16, Redis 7 (ioredis 5.10)                                            |
 | Emails          | React Email (30 envois transactionnels), Nodemailer SMTP, releve IMAP des rejets |
 | Temps reel      | Server-Sent Events (SSE) — notifications + messagerie sur un stream unique       |
