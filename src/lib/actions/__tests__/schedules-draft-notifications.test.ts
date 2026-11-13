@@ -451,7 +451,9 @@ describe('SP-618, updateRecurrenceGroup', () => {
       schedule(status, { id: `serie-${index}`, recurrenceGroupId: 'r1' })
     )
     mockScheduleFindUnique.mockResolvedValue(series[0])
-    mockScheduleFindMany.mockResolvedValue(series)
+    // La série d'abord, puis les autres créneaux de l'employé que SP-628
+    // cherche pour les chevauchements : aucun ici
+    mockScheduleFindMany.mockResolvedValueOnce(series).mockResolvedValue([])
     mockScheduleUpdateMany.mockResolvedValue({ count: series.length })
     const result = await updateRecurrenceGroup('clserie000000000000', input)
     await flush()

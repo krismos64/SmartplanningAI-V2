@@ -555,6 +555,74 @@ async function validateNoConflicts(
 }
 
 /**
+ * Premier chevauchement que produirait la nouvelle plage horaire d'une série
+ * (SP-628), ou null.
+ *
+ * Mêmes règles que `validateNoConflicts` pour un créneau unique : journée
+ * calendaire entière, comparaison des heures, journée pleine pour un REST.
+ * Les créneaux de la série ne comptent pas, ils changent ensemble. Les
+ * congés ne sont pas vérifiés : la modification ne change aucune date, un
+ * congé approuvé après la création de la série ne vient pas d'elle.
+ *
+ * Une seule requête pour toute la série, qui peut compter 200 créneaux.
+ */
+async function findSeriesOverlap(
+  db: Prisma.TransactionClient,
+  series: ReadonlyArray<{
+    id: string
+    employeeId: string
+    startDate: Date
+    endDate: Date
+    startTime: string
+    endTime: string
+    type: string
+  }>,
+  change: { startTime?: string; endTime?: string; type?: string }
+): Promise<string | null> {
+  const first = series[0]
+  if (!first) return null
+
+  const days = series.map((occurrence) => ({
+    from: toCalendarDay(occurrence.startDate),
+    to: endOfCalendarDay(toCalendarDay(occurrence.endDate)),
+    occurrence,
+  }))
+  const others = await db.schedule.findMany({
+    where: {
+      employeeId: first.employeeId,
+      id: { notIn: series.map((occurrence) => occurrence.id) },
+      startDate: {
+        lte: new Date(Math.max(...days.map((d) => d.to.getTime()))),
+      },
+      endDate: {
+        gte: new Date(Math.min(...days.map((d) => d.from.getTime()))),
+      },
+    },
+    select: { startDate: true, endDate: true, startTime: true, endTime: true },
+  })
+  if (others.length === 0) return null
+
+  for (const { from, to, occurrence } of days) {
+    const isRest = (change.type ?? occurrence.type) === 'REST'
+    const startTime = isRest
+      ? '00:00'
+      : (change.startTime ?? occurrence.startTime)
+    const endTime = isRest ? '23:59' : (change.endTime ?? occurrence.endTime)
+    for (const other of others) {
+      const sameDay = other.startDate <= to && other.endDate >= from
+      const overlaps = !(
+        endTime <= other.startTime || startTime >= other.endTime
+      )
+      if (sameDay && overlaps) {
+        const date = formatScheduleDateShort(occurrence.startDate)
+        return `Impossible : la série chevaucherait le créneau du ${date} de ${other.startTime} à ${other.endTime} (nouvel horaire ${startTime}–${endTime}). Déplacez ou supprimez d'abord ce créneau.`
+      }
+    }
+  }
+  return null
+}
+
+/**
  * Construit la clause WHERE Prisma selon le role et les filtres
  */
 function buildWhereClause(
@@ -1880,10 +1948,31 @@ export async function updateRecurrenceGroup(
     if (input.description !== undefined) data.description = input.description
     if (input.location !== undefined) data.location = input.location
 
-    const result = await prisma.schedule.updateMany({
-      where: seriesWhere(reference),
-      data,
-    })
+    // SP-628 : un changement d'horaire ou de type peut faire recouvrir à la
+    // série un autre créneau de l'employé. Vérification et écriture sous le
+    // verrou de l'employé, dans la même transaction (SP-619).
+    const changesTimeSlot =
+      input.startTime !== undefined ||
+      input.endTime !== undefined ||
+      input.type !== undefined
+
+    const outcome = await prisma.$transaction(async (tx) => {
+      if (changesTimeSlot) {
+        await lockEmployeesForScheduling(tx, [reference.employeeId])
+        const conflict = await findSeriesOverlap(tx, schedules, input)
+        if (conflict) return { ok: false as const, conflict }
+      }
+      const updated = await tx.schedule.updateMany({
+        where: seriesWhere(reference),
+        data,
+      })
+      return { ok: true as const, result: updated }
+    }, SCHEDULE_TRANSACTION_OPTIONS)
+
+    if (!outcome.ok) {
+      return { success: false, error: outcome.conflict }
+    }
+    const result = outcome.result
 
     // Audit (fire-and-forget)
     logAuditAction({
