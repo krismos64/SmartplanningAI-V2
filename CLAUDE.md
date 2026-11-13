@@ -80,10 +80,13 @@ récente en début de session** donne l'état du projet plus vite que Jira.
   écriture. Jamais `startOfDay`, `setHours` ni `getDay` sur une date de jour côté
   serveur, ils suivent le fuseau du processus. Tests sous `TZ=UTC`
 - Créneaux en brouillon (`DRAFT`) : invisibles des employés, qui ne voient que
-  `CONFIRMED`. Leur création ne notifie personne, les employés sont prévenus à
-  la publication par `publishDraftSchedules` (SP-614). **Pas encore** la
-  modification ni la suppression d'un brouillon, qui notifient encore sans
-  regarder le statut (SP-618)
+  `CONFIRMED`. On ne prévient un employé que de ce qu'il voit changer :
+  `scheduleVisibilityChange(avant, après)` range chaque modification en
+  `none` (brouillon resté brouillon, rien ne part), `published`, `updated` ou
+  `withdrawn` (créneau publié repassé en brouillon, annoncé comme une
+  suppression). Création (SP-614), modification, suppression et changement de
+  statut (SP-618) suivent cette règle. Toute nouvelle action sur un créneau
+  qui notifie passe par elle
 - Séries récurrentes : un `recurrenceGroupId` est partagé par tous les employés
   créés ensemble. Toute action « sur la série » se borne au groupe, à l'employé
   et à l'entreprise du créneau de référence (`seriesWhere`, SP-621), sinon elle
@@ -106,8 +109,10 @@ récente en début de session** donne l'état du projet plus vite que Jira.
   qui compare un mot de passe appelle `reserveLoginAttempt` **avant** la
   comparaison et `releaseLoginAttempt` après une réussite. L'IP se lit dans
   `x-real-ip` seulement, jamais dans `x-forwarded-for`, dont la première valeur
-  vient du client. Les tests unitaires ne parlent pas au vrai Redis :
-  `__tests__/setup.ts` vide `REDIS_URL`
+  vient du client. Une confirmation par mot de passe derrière une session
+  (changement de mot de passe, suppression de compte) passe par
+  `reservePasswordConfirmation`. Les tests unitaires ne parlent pas au vrai
+  Redis : `__tests__/setup.ts` vide `REDIS_URL`
 - Analytics : le tunnel de conversion (SP-591) a deux chemins. Les étapes du
   navigateur passent par `useUmamiTrack`, conditionné au consentement. Les
   étapes serveur, en Server Action ou webhook, passent par
