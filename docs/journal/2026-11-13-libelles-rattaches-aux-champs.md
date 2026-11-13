@@ -6,7 +6,7 @@
 | Documents produits | `src/components/ui/__tests__/form-control-placement.test.ts`                                                                                                                                               |
 | Documents modifiés | 13 formulaires (connexion, inscription, mot de passe oublié, activation, réinitialisation, profil, mot de passe, suppression de compte, employé, équipe, entreprise, congé, gestion de congé), spec SP-613 |
 | Contrôles          | type-check vert, lint 0 erreur, 226 fichiers et 3605 tests verts. Mesure au navigateur sur 9 pages, avant et après. E2E locales : 139 verts, 1 rouge et 2 instables en lot, verts seuls (22 sur 22)        |
-| Jira               | SP-620 commenté                                                                                                                                                                                            |
+| Jira               | SP-620 commenté puis clos                                                                                                                                                                                            |
 | Mémoire            | `ou-en-est-le-projet.md` mise à jour                                                                                                                                                                       |
 
 ## Ce qui a été fait
@@ -60,6 +60,8 @@ et l'inscription, hors des specs `e2e/specs/landing/`.
 
 ## Prochaine étape
 
-- Pousser avec le commit de documentation de SP-619, ouvrir la PR, CI verte,
-  merger, vérifier la production, clore SP-620.
+- Fait le jour même : PR #126 mergée (`cd8d304`), image `sha-cd8d304` en
+  production, healthy, aucune erreur dans journald. Mesuré en production :
+  la connexion annonce « Mot de passe », l'inscription « Mot de passe » et
+  « Confirmer le mot de passe ». SP-620 clos.
 - Tickets ouverts : SP-602, SP-598, SP-596.
