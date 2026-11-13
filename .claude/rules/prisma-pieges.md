@@ -405,6 +405,30 @@ Dans un code que le middleware exécute, écarter Prisma **avant** l'import par
 `process.env.NEXT_RUNTIME !== 'edge'`, que Next.js remplace au build. Vérifier
 dans `.next/server/src/middleware.js` que le bloc a disparu.
 
+## Le middleware : ne pas passer de handler à `auth()`, et la CSP à nonce
+
+`src/middleware.ts` appelle le middleware NextAuth **sans handler** puis
+ajoute la CSP (`src/lib/security/csp-response.ts`, SP-598). Avec
+`auth((req) => …)`, NextAuth exécute le handler au lieu de rediriger quand
+`authorized` rend `false`, et notre callback finit par `return isLoggedIn`.
+Un test traverse le vrai middleware et rougit si la redirection vers
+`/login` se perd.
+
+La CSP porte un nonce par requête, sans `'unsafe-inline'` ni `'unsafe-eval'`
+en production. Trois conséquences :
+
+- toutes les pages sont rendues à la demande, le layout racine lisant le
+  nonce. Une page rendue au build n'aurait pas de nonce et ne s'hydraterait
+  pas : ne pas réintroduire de rendu statique sous ce layout
+- un script inline ajouté à la main (`<script>` exécutable,
+  `dangerouslySetInnerHTML`) doit recevoir le nonce, lu par
+  `headers().get('x-nonce')`. Les blocs JSON-LD ne sont pas concernés
+- `eval` est refusé : une animation Lottie à expressions After Effects
+  casserait en silence, un test garde `public/animations/`
+
+Une violation ne se voit qu'au navigateur, sur un build de production :
+`npm run dev` accorde `'unsafe-eval'`.
+
 ## `docker logs` ne voit pas au-delà du dernier déploiement
 
 Le driver `json-file` range les logs dans le dossier du conteneur, supprimé

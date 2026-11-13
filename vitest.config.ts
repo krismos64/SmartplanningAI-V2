@@ -16,6 +16,10 @@ export default defineConfig({
     globals: true,
     testTimeout: 15000,
     setupFiles: ['./__tests__/setup.ts'],
+    // SP-598 : next-auth importe `next/server` sans extension, ce que le
+    // chargeur ESM de Node refuse hors de Next. Transformé par Vite, il se
+    // résout : le test du middleware peut charger le vrai NextAuth.
+    server: { deps: { inline: ['next-auth'] } },
     include: [
       '__tests__/**/*.{test,spec}.{ts,tsx}',
       'src/**/__tests__/**/*.{test,spec}.{ts,tsx}',

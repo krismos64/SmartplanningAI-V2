@@ -1,15 +1,19 @@
 /**
- * Middleware Next.js pour la protection des routes
+ * Middleware Next.js : protection des routes et CSP à nonce
  *
- * @description Utilise NextAuth v5 pour protéger les routes /app/*
- * Le middleware s'exécute en Edge Runtime avant chaque requête.
+ * @description NextAuth v5 protège les routes /app/* (SP-108). Le middleware
+ * génère aussi un nonce par requête et pose la Content Security Policy
+ * (SP-598). Il s'exécute en Edge Runtime avant chaque requête.
  *
  * @see https://authjs.dev/getting-started/session-management/protecting
- * @ticket SP-108
+ * @ticket SP-108, SP-598
  */
 
+import type { NextFetchEvent, NextRequest } from 'next/server'
 import NextAuth from 'next-auth'
 import { authConfig } from '@/lib/auth.config'
+import { buildCsp, generateNonce } from '@/lib/security/csp'
+import { applyCsp } from '@/lib/security/csp-response'
 
 /**
  * Middleware NextAuth
@@ -19,7 +23,33 @@ import { authConfig } from '@/lib/auth.config'
  */
 const { auth } = NextAuth(authConfig)
 
-export default auth
+type Middleware = (
+  request: NextRequest,
+  event: NextFetchEvent
+) => Promise<Response | null | undefined>
+
+// Appelé sans handler : voir csp-response.ts, un handler désactiverait la
+// redirection par défaut de NextAuth
+const authMiddleware = auth as unknown as Middleware
+
+const isHttps = (
+  process.env.AUTH_URL ??
+  process.env.NEXTAUTH_URL ??
+  'https://'
+).startsWith('https://')
+
+export default async function middleware(
+  request: NextRequest,
+  event: NextFetchEvent
+): Promise<Response> {
+  const nonce = generateNonce()
+  const csp = buildCsp(nonce, {
+    isDev: process.env.NODE_ENV === 'development',
+    isHttps,
+  })
+  const authResponse = await authMiddleware(request, event)
+  return applyCsp(authResponse, request, nonce, csp)
+}
 
 /**
  * Configuration du matcher
@@ -28,7 +58,6 @@ export default auth
  *
  * Exclut :
  * - /_next/* : Assets Next.js
- * - /api/* : Routes API (sauf /api/auth qui est géré)
  * - /static/* : Fichiers statiques
  * - Fichiers avec extensions (images, fonts, etc.)
  */

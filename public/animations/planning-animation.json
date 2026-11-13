@@ -1611,8 +1611,7 @@
               "c": {
                 "a": 0,
                 "k": [0.996078431373, 0.306061449238, 0.234371379777, 1],
-                "ix": 4,
-                "x": "var $bm_rt;\ntry {\n    $bm_rt = thisComp.layer('Controller').effect('Color 2')('ADBE Color Control-0001');\n} catch (e) {\n    $bm_rt = value;\n}"
+                "ix": 4
               },
               "o": { "a": 0, "k": 100, "ix": 5 },
               "r": 1,
@@ -1682,8 +1681,7 @@
               "c": {
                 "a": 0,
                 "k": [0.996078431373, 0.306061449238, 0.234371379777, 1],
-                "ix": 4,
-                "x": "var $bm_rt;\ntry {\n    $bm_rt = thisComp.layer('Controller').effect('Color 2')('ADBE Color Control-0001');\n} catch (e) {\n    $bm_rt = value;\n}"
+                "ix": 4
               },
               "o": { "a": 0, "k": 100, "ix": 5 },
               "r": 1,
@@ -1900,8 +1898,7 @@
               "c": {
                 "a": 0,
                 "k": [0.996078431373, 0.306061449238, 0.234371379777, 1],
-                "ix": 4,
-                "x": "var $bm_rt;\ntry {\n    $bm_rt = thisComp.layer('Controller').effect('Color 2')('ADBE Color Control-0001');\n} catch (e) {\n    $bm_rt = value;\n}"
+                "ix": 4
               },
               "o": { "a": 0, "k": 100, "ix": 5 },
               "r": 1,
@@ -1971,8 +1968,7 @@
               "c": {
                 "a": 0,
                 "k": [0.996078431373, 0.306061449238, 0.234371379777, 1],
-                "ix": 4,
-                "x": "var $bm_rt;\ntry {\n    $bm_rt = thisComp.layer('Controller').effect('Color 2')('ADBE Color Control-0001');\n} catch (e) {\n    $bm_rt = value;\n}"
+                "ix": 4
               },
               "o": { "a": 0, "k": 100, "ix": 5 },
               "r": 1,
@@ -2189,8 +2185,7 @@
               "c": {
                 "a": 0,
                 "k": [0.996078431373, 0.306061449238, 0.234371379777, 1],
-                "ix": 4,
-                "x": "var $bm_rt;\ntry {\n    $bm_rt = thisComp.layer('Controller').effect('Color 2')('ADBE Color Control-0001');\n} catch (e) {\n    $bm_rt = value;\n}"
+                "ix": 4
               },
               "o": { "a": 0, "k": 100, "ix": 5 },
               "r": 1,
@@ -2260,8 +2255,7 @@
               "c": {
                 "a": 0,
                 "k": [0.996078431373, 0.306061449238, 0.234371379777, 1],
-                "ix": 4,
-                "x": "var $bm_rt;\ntry {\n    $bm_rt = thisComp.layer('Controller').effect('Color 2')('ADBE Color Control-0001');\n} catch (e) {\n    $bm_rt = value;\n}"
+                "ix": 4
               },
               "o": { "a": 0, "k": 100, "ix": 5 },
               "r": 1,
