@@ -115,6 +115,11 @@ récente en début de session** donne l'état du projet plus vite que Jira.
   (changement de mot de passe, suppression de compte) passe par
   `reservePasswordConfirmation`. Les tests unitaires ne parlent pas au vrai
   Redis : `__tests__/setup.ts` vide `REDIS_URL`
+- CSP à nonce (SP-598) : le middleware pose la CSP, `script-src` sans
+  `'unsafe-inline'` ni `'unsafe-eval'` en production, toutes les pages
+  rendues à la demande. Un script inline exécutable reçoit le nonce
+  (`headers().get('x-nonce')`), et le middleware NextAuth ne reçoit jamais
+  de handler. Détail dans `prisma-pieges.md`
 - Analytics : le tunnel de conversion (SP-591) a deux chemins. Les étapes du
   navigateur passent par `useUmamiTrack`, conditionné au consentement. Les
   étapes serveur, en Server Action ou webhook, passent par

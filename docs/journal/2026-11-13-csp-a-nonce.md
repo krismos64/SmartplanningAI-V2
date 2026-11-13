@@ -6,7 +6,7 @@
 | Documents produits | `src/lib/security/csp.ts`, `src/lib/security/csp-response.ts`, `src/lib/security/__tests__/csp.test.ts`                                                                                                  |
 | Documents modifiés | `src/middleware.ts`, `src/app/layout.tsx`, `next.config.ts`, `vitest.config.ts`, `public/animations/planning-animation.json`, `security-hardening-plan.md`, `prisma-pieges.md`                           |
 | Contrôles          | type-check vert, lint 0 erreur, 229 fichiers et 3621 tests verts, couverture 54,24 % de lignes. Navigateur sur build de production : 24 pages, zéro violation. Landing 26 sur 26, auth et RBAC 47 sur 47 |
-| Jira               | SP-598 commenté                                                                                                                                                                                          |
+| Jira               | SP-598 commenté puis clos                                                                                                                                                                                          |
 | Mémoire            | `ou-en-est-le-projet.md` mise à jour                                                                                                                                                                     |
 
 ## Ce qui a été fait
@@ -62,6 +62,9 @@ après déploiement.
 
 ## Prochaine étape
 
-- Pousser, PR, CI, merge, vérifier l'en-tête servi par `curl -sI`, une
-  session Umami réelle en base, puis clore SP-598.
+- Fait le jour même : PR #128 mergée (`4178c34`), image `sha-4178c34`,
+  healthy. `curl -sI` : un seul en-tête CSP, sans `unsafe-inline` ni
+  `unsafe-eval`. Navigateur en production : 9 pages publiques, zéro
+  violation. Umami : 2 sessions et 10 événements en base depuis le
+  déploiement. SP-598 clos.
 - Ticket ouvert : SP-602.
