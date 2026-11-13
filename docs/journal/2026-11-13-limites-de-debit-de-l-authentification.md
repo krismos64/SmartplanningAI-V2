@@ -82,6 +82,18 @@ atteint le plafond. `__tests__/setup.ts` vide désormais `REDIS_URL` pour toute
 la suite. Après `npm run test`, `redis-cli --scan --pattern 'ratelimit:*'` ne
 rend plus rien.
 
+**Nginx laissait passer un `X-Real-IP` forgé sur trois blocs.**
+`/_next/static/`, `/_next/image` et le bloc des extensions statiques
+relayaient vers l'application sans réécrire cet en-tête, là où les quatre
+autres blocs posent `proxy_set_header X-Real-IP $remote_addr`. Une requête
+envoyée sur un chemin en `.png` aurait porté l'IP de son choix jusqu'à
+l'application, et contourné les plafonds par IP. Exploitation non démontrée.
+Les trois blocs réécrivent désormais l'en-tête. Appliqué sur le VPS le
+13 novembre à 09:15 UTC avec l'accord de Christophe : sauvegarde
+`smartplanning.conf.bak.20261113_*`, `nginx -t` réussi, rechargement, le
+fichier du VPS et `nginx/smartplanning.conf` du dépôt sont identiques, le
+site et Lune & Soleil répondent 200.
+
 ## Les écarts
 
 Le ticket proposait une « fenêtre glissante » pour la connexion. La fenêtre
@@ -98,14 +110,6 @@ requête ne porte `x-real-ip`. Les tests les couvrent avec des en-têtes forgés
 
 ## Prochaine étape
 
-- **Nginx laisse passer un `X-Real-IP` forgé sur trois blocs.**
-  `/_next/static/`, `/_next/image` et le bloc des extensions statiques
-  relaient vers l'application sans réécrire cet en-tête, là où les autres
-  blocs posent `proxy_set_header X-Real-IP $remote_addr`. Une requête envoyée
-  sur un chemin en `.png` porterait donc l'IP de son choix jusqu'à
-  l'application. Exploitation non démontrée, correctif d'une ligne par bloc,
-  à appliquer sur le VPS avec l'accord de Christophe. Tant qu'il n'est pas
-  posé, les plafonds par IP se contournent, celui par adresse tient.
 - Le plafond par adresse de la connexion (50 échecs, toutes IP confondues)
   reste un refus sec : un attaquant disposant de cinq sources peut verrouiller
   un compte un quart d'heure. Le lever demanderait un second facteur que seul
