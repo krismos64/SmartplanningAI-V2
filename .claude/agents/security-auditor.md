@@ -52,7 +52,7 @@ grep -rn "\$queryRawUnsafe\|\$executeRawUnsafe" src/
 
 ### 4. Insecure Design
 
-- Rate limiting Redis (`MULTI/EXEC` → `INCR`+`EXPIRE`+`TTL` atomique) avec fallback mémoire si Redis down — vérifier qu'aucune route sensible (login, reset password, contact) n'y échappe
+- Rate limiting Redis (`MULTI/EXEC` → `SET NX EX`+`INCR`+`TTL` atomique, fenêtre fixe depuis SP-610) avec fallback mémoire si Redis down — vérifier qu'aucune route sensible (login, reset password, contact) n'y échappe
 - `emailVerified` enforced : tout utilisateur doit vérifier son email avant `/app/*` — vérifier qu'aucun nouveau chemin d'auth ne contourne `authorizeCredentials()`
 
 ### 5. Security Misconfiguration
@@ -71,13 +71,15 @@ npm outdated
 
 ### 7. Authentication Failures
 
-- **Aucune limite applicative sur la connexion ni sur le mot de passe oublié**
-  (vérifié le 2 octobre 2026). `checkRateLimit` n'est appelé que par
-  `/api/contact`, le renvoi admin et l'envoi de l'email de vérification
-  (SP-606, trois par heure et par adresse). Les Server Actions de `/login`,
-  `/register` et `/forgot-password` ne relèvent que de la zone Nginx
-  `general` (10 r/s par IP) ; la zone `auth` (60 r/min) ne couvre que
-  `/api/auth/`. Suivi dans SP-610, à signaler tant que ce n'est pas traité
+- **Connexion, inscription et mot de passe oublié plafonnés depuis SP-610**
+  (`src/lib/auth-rate-limit.ts`). La connexion réserve la tentative avant de
+  comparer le mot de passe, sur ses deux points d'entrée
+  (`checkEmailVerificationStatus` et `authorizeCredentials`) : 10 échecs par
+  quart d'heure pour une IP sur une adresse, 30 par IP, 50 par adresse toutes
+  IP confondues. Vérifier que tout nouveau code qui compare un mot de passe
+  passe par `reserveLoginAttempt`, sinon il devient l'oracle non plafonné.
+  L'IP vient de `x-real-ip` uniquement : la première valeur de
+  `x-forwarded-for` est choisie par le client
 - Sessions actives trackées (`SET session:{userId}` TTL 24h) — vérifier l'invalidation correcte au logout et au changement de mot de passe
 - Email `PasswordChanged` toujours envoyé (signal utilisateur en cas de compromission)
 

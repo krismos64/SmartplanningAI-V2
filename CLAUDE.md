@@ -99,9 +99,15 @@ récente en début de session** donne l'état du projet plus vite que Jira.
 - Réglages entreprise utiles à la saisie (pause déjeuner, jours d'ouverture) :
   `getCompanyPlanningSettings`, lisible par le manager. `getCompanySettings` est
   réservé au dirigeant
-- Redis : `withCache()` en cache-aside, rate limiting `INCR` + `EXPIRE` avec repli
-  mémoire si Redis est indisponible. `/api/health` renvoie alors « degraded », pas
-  « unhealthy »
+- Redis : `withCache()` en cache-aside, rate limiting `SET NX EX` + `INCR` (fenêtre
+  fixe) avec repli mémoire si Redis est indisponible. `/api/health` renvoie alors
+  « degraded », pas « unhealthy »
+- Limites de l'authentification (SP-610) : `src/lib/auth-rate-limit.ts`. Tout code
+  qui compare un mot de passe appelle `reserveLoginAttempt` **avant** la
+  comparaison et `releaseLoginAttempt` après une réussite. L'IP se lit dans
+  `x-real-ip` seulement, jamais dans `x-forwarded-for`, dont la première valeur
+  vient du client. Les tests unitaires ne parlent pas au vrai Redis :
+  `__tests__/setup.ts` vide `REDIS_URL`
 - Analytics : le tunnel de conversion (SP-591) a deux chemins. Les étapes du
   navigateur passent par `useUmamiTrack`, conditionné au consentement. Les
   étapes serveur, en Server Action ou webhook, passent par

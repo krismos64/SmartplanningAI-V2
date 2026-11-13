@@ -19,6 +19,11 @@ import { createHash } from 'node:crypto'
 
 import { sendVerificationEmailCore } from '@/lib/services/verification.service'
 import { checkRateLimit } from '@/lib/rate-limit'
+import {
+  getServerActionClientIp,
+  releaseLoginAttempt,
+  reserveLoginAttempt,
+} from '@/lib/auth-rate-limit'
 import { verifyPassword } from '@/lib/password'
 import { prisma } from '@/lib/prisma'
 import { sendWelcomeEmail } from '@/lib/email/templates/welcome'
@@ -43,11 +48,15 @@ export type VerifyEmailActionResult =
  * - NOT_VERIFIED : credentials valides MAIS email non vérifié → UX dédiée
  * - INVALID_CREDENTIALS : user inconnu OU mauvais mot de passe (indifférencié
  *   pour ne pas permettre l'énumération de comptes)
+ * - RATE_LIMITED : trop d'échecs sur cette adresse ou depuis cette IP (SP-610).
+ *   Ne dit rien de l'existence du compte : le plafond compte les échecs sur
+ *   l'adresse saisie, qu'un compte existe ou non
  */
 export type CheckEmailVerificationStatusResult =
   | { status: 'VERIFIED' }
   | { status: 'NOT_VERIFIED' }
   | { status: 'INVALID_CREDENTIALS' }
+  | { status: 'RATE_LIMITED' }
 
 // =============================================================================
 // CONSTANTES
@@ -306,7 +315,9 @@ export async function resendVerificationEmailAction(data: {
  *   (fuite d'information).
  * - user inexistant et mauvais mot de passe renvoient le même statut
  *   INVALID_CREDENTIALS → pas d'énumération de comptes.
- * - Lecture pure : aucune écriture, aucun envoi d'email, aucun log.
+ * - Aucune écriture en base, aucun envoi d'email, aucun log.
+ * - Plafond d'échecs par adresse et par IP, réservé avant la comparaison
+ *   du mot de passe (SP-610).
  */
 export async function checkEmailVerificationStatus(data: {
   email: string
@@ -314,6 +325,16 @@ export async function checkEmailVerificationStatus(data: {
 }): Promise<CheckEmailVerificationStatusResult> {
   try {
     const normalizedEmail = data.email.toLowerCase().trim()
+
+    // SP-610 : cette action compare un mot de passe, c'est donc un oracle au
+    // même titre que authorize(). Sans plafond ici, limiter authorize() seul
+    // ne servirait à rien.
+    const clientIp = await getServerActionClientIp()
+    if (
+      !(await reserveLoginAttempt('login-precheck', normalizedEmail, clientIp))
+    ) {
+      return { status: 'RATE_LIMITED' }
+    }
 
     // 1. Chercher l'utilisateur (mêmes primitives que authorize())
     const user = await prisma.user.findUnique({
@@ -331,6 +352,8 @@ export async function checkEmailVerificationStatus(data: {
     if (!isPasswordValid) {
       return { status: 'INVALID_CREDENTIALS' }
     }
+    // Mot de passe correct : la tentative réservée est rendue
+    await releaseLoginAttempt('login-precheck', normalizedEmail, clientIp)
 
     // 4. Credentials valides : on peut révéler l'état de vérification
     if (!user.emailVerified) {

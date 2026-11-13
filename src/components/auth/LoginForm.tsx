@@ -95,6 +95,15 @@ export function LoginForm() {
         password: data.password,
       })
 
+      if (verificationStatus.status === 'RATE_LIMITED') {
+        // SP-610 : plafond d'échecs atteint, inutile d'appeler signIn()
+        toast.error('Trop de tentatives', {
+          description:
+            "Par sécurité, la connexion est suspendue quelques minutes. Réessayez dans un quart d'heure, ou réinitialisez votre mot de passe.",
+        })
+        return
+      }
+
       if (verificationStatus.status === 'NOT_VERIFIED') {
         // Credentials valides mais email non vérifié : on affiche l'alerte
         // dédiée avec le bouton « Renvoyer » et on n'appelle PAS signIn().

@@ -85,6 +85,19 @@ Deux signes : une durée anormale pour un test unitaire (487 ms contre 59 ms
 après correction) et un identifiant réaliste dans les logs là où on attendait
 une valeur mockée. Vérifier en base au moindre doute.
 
+### Même piège avec Redis
+
+`REDIS_URL` arrive dans `process.env` depuis `.env` dès qu'un module importe
+Prisma. Un test qui traversait `checkRateLimit` sans mocker `@/lib/redis`
+écrivait ses compteurs dans le Redis local, où ils vivaient une heure. Vu le
+13 novembre 2026 (SP-610) : les tests d'inscription sont passés cinq fois puis
+ont rougi au sixième lancement, le plafond d'inscriptions étant atteint pour
+l'adresse du jeu de données.
+
+`__tests__/setup.ts` vide désormais `REDIS_URL` pour toute la suite. Contrôle :
+`redis-cli --scan --pattern 'ratelimit:*'` ne doit rien rendre après
+`npm run test`.
+
 ## Scripts `src/scripts/*.ts` non exécutables en production
 
 L'image Docker est un build Next.js standalone : pas de `src/scripts/`, pas de
