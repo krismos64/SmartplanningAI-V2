@@ -25,6 +25,7 @@ import {
   updateScheduleSchema,
   scheduleFiltersSchema,
   publishDraftsSchema,
+  updateRecurrenceGroupSchema,
   type CreateScheduleInput,
   type PublishDraftsInput,
   type UpdateScheduleInput,
@@ -1810,7 +1811,8 @@ export async function deleteRecurrenceGroup(
  */
 export async function updateRecurrenceGroup(
   scheduleId: string,
-  input: {
+  // Entrée non fiable : typée large comme l'envoie le client, Zod tranche
+  rawInput: {
     startTime?: string
     endTime?: string
     type?: string
@@ -1828,8 +1830,17 @@ export async function updateRecurrenceGroup(
 
   const user = authResult.user
 
+  const validation = validateData(updateRecurrenceGroupSchema, {
+    ...rawInput,
+    scheduleId,
+  })
+  if (!validation.success) {
+    return { success: false, error: validation.error, field: validation.field }
+  }
+  const { scheduleId: validatedId, ...input } = validation.data
+
   try {
-    const reference = await findSeriesReference(scheduleId)
+    const reference = await findSeriesReference(validatedId)
     if (!reference) {
       return {
         success: false,
@@ -1860,7 +1871,7 @@ export async function updateRecurrenceGroup(
       }
     }
 
-    const data: Record<string, unknown> = {}
+    const data: Prisma.ScheduleUpdateManyMutationInput = {}
     if (input.startTime !== undefined) data.startTime = input.startTime
     if (input.endTime !== undefined) data.endTime = input.endTime
     if (input.type !== undefined) data.type = input.type

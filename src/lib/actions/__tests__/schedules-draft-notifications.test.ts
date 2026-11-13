@@ -453,7 +453,7 @@ describe('SP-618, updateRecurrenceGroup', () => {
     mockScheduleFindUnique.mockResolvedValue(series[0])
     mockScheduleFindMany.mockResolvedValue(series)
     mockScheduleUpdateMany.mockResolvedValue({ count: series.length })
-    const result = await updateRecurrenceGroup('serie-0', input)
+    const result = await updateRecurrenceGroup('clserie000000000000', input)
     await flush()
     return result
   }

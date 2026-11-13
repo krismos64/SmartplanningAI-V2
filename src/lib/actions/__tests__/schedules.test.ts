@@ -802,13 +802,57 @@ describe('schedules actions', () => {
     it('la modification de série ne vise que la série de cet employé', async () => {
       vi.mocked(prisma.schedule.updateMany).mockResolvedValue({ count: 20 })
 
-      const result = await updateRecurrenceGroup('rec1', {
+      const result = await updateRecurrenceGroup('clschedule000000001', {
         endTime: '18:00',
       })
 
       expect(result.success).toBe(true)
       const maj = vi.mocked(prisma.schedule.updateMany).mock.calls[0]?.[0]
       expect(maj?.where).toEqual(SERIE)
+    })
+
+    it('refuse un statut inconnu avant toute écriture', async () => {
+      const result = await updateRecurrenceGroup('clschedule000000001', {
+        status: 'PUBLISHED',
+      })
+
+      expect(result.success).toBe(false)
+      expect(prisma.schedule.findUnique).not.toHaveBeenCalled()
+      expect(prisma.schedule.updateMany).not.toHaveBeenCalled()
+    })
+
+    it('refuse un type inconnu et une heure mal formée', async () => {
+      const badType = await updateRecurrenceGroup('clschedule000000001', {
+        type: 'NAP',
+      })
+      const badTime = await updateRecurrenceGroup('clschedule000000001', {
+        endTime: '25:00',
+      })
+
+      expect(badType.success).toBe(false)
+      expect(badTime.success).toBe(false)
+      expect(prisma.schedule.updateMany).not.toHaveBeenCalled()
+    })
+
+    it('refuse un identifiant de créneau qui n’en est pas un', async () => {
+      const result = await updateRecurrenceGroup('rec1', { endTime: '18:00' })
+
+      expect(result.success).toBe(false)
+      expect(prisma.schedule.findUnique).not.toHaveBeenCalled()
+    })
+
+    it('n’écrit que les champs de la série, une clé ajoutée est écartée', async () => {
+      vi.mocked(prisma.schedule.updateMany).mockResolvedValue({ count: 20 })
+
+      const result = await updateRecurrenceGroup('clschedule000000001', {
+        endTime: '18:00',
+        title: '  Ouverture  ',
+        companyId: 'clcompany0000000002',
+      } as Parameters<typeof updateRecurrenceGroup>[1])
+
+      expect(result.success).toBe(true)
+      const maj = vi.mocked(prisma.schedule.updateMany).mock.calls[0]?.[0]
+      expect(maj?.data).toEqual({ endTime: '18:00', title: 'Ouverture' })
     })
 
     it("refuse de supprimer la série d'une autre entreprise", async () => {
@@ -836,7 +880,7 @@ describe('schedules actions', () => {
         }) as never
       )
 
-      const result = await updateRecurrenceGroup('rec1', {
+      const result = await updateRecurrenceGroup('clschedule000000001', {
         endTime: '18:00',
       })
 
