@@ -207,17 +207,17 @@ export function TeamForm({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Description</FormLabel>
-                  <FormControl>
-                    <div className="relative">
-                      <FileText className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <div className="relative">
+                    <FileText className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <FormControl>
                       <Textarea
                         placeholder="Description de l'équipe..."
                         className="min-h-[100px] pl-10"
                         {...field}
                         disabled={isPending}
                       />
-                    </div>
-                  </FormControl>
+                    </FormControl>
+                  </div>
                   <FormDescription>
                     Décrivez brièvement le rôle et les objectifs de
                     l&apos;équipe
@@ -280,33 +280,31 @@ export function TeamForm({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Manager de l&apos;équipe</FormLabel>
-                  <FormControl>
-                    <div className="relative">
-                      <User className="absolute left-3 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                      <Select
-                        onValueChange={(val) =>
-                          field.onChange(val === '__none__' ? '' : val)
-                        }
-                        value={field.value || '__none__'}
-                        disabled={isPending}
-                      >
+                  <div className="relative">
+                    <User className="absolute left-3 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <Select
+                      onValueChange={(val) =>
+                        field.onChange(val === '__none__' ? '' : val)
+                      }
+                      value={field.value || '__none__'}
+                      disabled={isPending}
+                    >
+                      <FormControl>
                         <SelectTrigger className="pl-10">
                           <SelectValue placeholder="Sélectionner un manager (optionnel)" />
                         </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="__none__">
-                            Aucun manager
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="__none__">Aucun manager</SelectItem>
+                        {managers.map((manager) => (
+                          <SelectItem key={manager.id} value={manager.id}>
+                            {manager.firstName} {manager.lastName}
+                            {manager.jobTitle && ` - ${manager.jobTitle}`}
                           </SelectItem>
-                          {managers.map((manager) => (
-                            <SelectItem key={manager.id} value={manager.id}>
-                              {manager.firstName} {manager.lastName}
-                              {manager.jobTitle && ` - ${manager.jobTitle}`}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </FormControl>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                   <FormDescription>
                     Le manager pourra gérer les membres et les plannings de
                     l&apos;équipe

@@ -185,9 +185,9 @@ export function RegisterForm() {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Nom de votre organisation</FormLabel>
-              <FormControl>
-                <div className="relative">
-                  <Building2 className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-public-content-muted" />
+              <div className="relative">
+                <Building2 className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-public-content-muted" />
+                <FormControl>
                   <Input
                     type="text"
                     placeholder="Mon Entreprise SAS"
@@ -196,8 +196,8 @@ export function RegisterForm() {
                     className="pl-10"
                     {...field}
                   />
-                </div>
-              </FormControl>
+                </FormControl>
+              </div>
               <FormMessage />
             </FormItem>
           )}
@@ -215,9 +215,9 @@ export function RegisterForm() {
                   (optionnel)
                 </span>
               </FormLabel>
-              <FormControl>
-                <div className="relative">
-                  <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-public-content-muted" />
+              <div className="relative">
+                <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-public-content-muted" />
+                <FormControl>
                   <Input
                     type="tel"
                     placeholder="0612345678"
@@ -226,8 +226,8 @@ export function RegisterForm() {
                     className="pl-10"
                     {...field}
                   />
-                </div>
-              </FormControl>
+                </FormControl>
+              </div>
               <FormMessage />
             </FormItem>
           )}
@@ -240,8 +240,8 @@ export function RegisterForm() {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Mot de passe</FormLabel>
-              <FormControl>
-                <div className="relative">
+              <div className="relative">
+                <FormControl>
                   <Input
                     type={showPassword ? 'text' : 'password'}
                     placeholder="••••••••"
@@ -249,27 +249,27 @@ export function RegisterForm() {
                     disabled={isLoading}
                     {...field}
                   />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                    onClick={() => setShowPassword(!showPassword)}
-                    tabIndex={-1}
-                    aria-label={
-                      showPassword
-                        ? 'Masquer le mot de passe'
-                        : 'Afficher le mot de passe'
-                    }
-                  >
-                    {showPassword ? (
-                      <EyeOff className="h-4 w-4 text-public-content-muted" />
-                    ) : (
-                      <Eye className="h-4 w-4 text-public-content-muted" />
-                    )}
-                  </Button>
-                </div>
-              </FormControl>
+                </FormControl>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                  onClick={() => setShowPassword(!showPassword)}
+                  tabIndex={-1}
+                  aria-label={
+                    showPassword
+                      ? 'Masquer le mot de passe'
+                      : 'Afficher le mot de passe'
+                  }
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4 text-public-content-muted" />
+                  ) : (
+                    <Eye className="h-4 w-4 text-public-content-muted" />
+                  )}
+                </Button>
+              </div>
               <FormDescription>
                 Minimum 8 caractères, 1 majuscule, 1 minuscule, 1 chiffre, 1
                 caractère spécial
@@ -286,8 +286,8 @@ export function RegisterForm() {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Confirmer le mot de passe</FormLabel>
-              <FormControl>
-                <div className="relative">
+              <div className="relative">
+                <FormControl>
                   <Input
                     type={showConfirmPassword ? 'text' : 'password'}
                     placeholder="••••••••"
@@ -295,27 +295,27 @@ export function RegisterForm() {
                     disabled={isLoading}
                     {...field}
                   />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    tabIndex={-1}
-                    aria-label={
-                      showConfirmPassword
-                        ? 'Masquer le mot de passe'
-                        : 'Afficher le mot de passe'
-                    }
-                  >
-                    {showConfirmPassword ? (
-                      <EyeOff className="h-4 w-4 text-public-content-muted" />
-                    ) : (
-                      <Eye className="h-4 w-4 text-public-content-muted" />
-                    )}
-                  </Button>
-                </div>
-              </FormControl>
+                </FormControl>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  tabIndex={-1}
+                  aria-label={
+                    showConfirmPassword
+                      ? 'Masquer le mot de passe'
+                      : 'Afficher le mot de passe'
+                  }
+                >
+                  {showConfirmPassword ? (
+                    <EyeOff className="h-4 w-4 text-public-content-muted" />
+                  ) : (
+                    <Eye className="h-4 w-4 text-public-content-muted" />
+                  )}
+                </Button>
+              </div>
               <FormMessage />
             </FormItem>
           )}

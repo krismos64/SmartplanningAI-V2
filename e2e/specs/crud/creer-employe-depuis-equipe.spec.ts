@@ -45,13 +45,10 @@ test.describe('SP-613 : création d employé depuis une équipe', () => {
 
     await page.goto(`/app/dashboard/employees/new?teamId=${teamId}`)
     await refuserLesCookies(page)
-    // Le combobox n'a pas de nom accessible : le libellé « Équipe » ne lui
-    // est pas rattaché. On le retrouve par son conteneur.
-    const equipe = page
-      .getByText('Équipe', { exact: true })
-      .locator('..')
-      .getByRole('combobox')
-      .first()
+    // SP-620 : le libellé est rattaché au combobox, qui se trouve par son
+    // nom comme un lecteur d'écran l'annonce. L'astérisque n'apparaît que
+    // pour un manager, d'où l'expression.
+    const equipe = page.getByRole('combobox', { name: /^Équipe( \*)?$/ })
     await expect(equipe).toBeVisible({ timeout: 30000 })
     await expect(equipe).not.toContainText(/sélectionner|aucune/i)
 
