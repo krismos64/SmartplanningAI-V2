@@ -17,6 +17,8 @@ import { cn } from '@/lib/utils'
 export interface DirectorTeamsChartProps {
   /** Statistiques par equipe */
   teamStats: DirectorStatsResult['teamStats']
+  /** Nombre d'employés actifs de l'entreprise, avec ou sans équipe */
+  totalEmployees: number
   /** Etat de chargement */
   isLoading?: boolean
   /** Classes CSS additionnelles */
@@ -31,6 +33,7 @@ export interface DirectorTeamsChartProps {
  */
 export function DirectorTeamsChart({
   teamStats,
+  totalEmployees,
   isLoading = false,
   className,
 }: DirectorTeamsChartProps) {
@@ -43,11 +46,16 @@ export function DirectorTeamsChart({
   // Generer les couleurs automatiquement
   const colors = getChartColors(chartData.length)
 
-  // Calculer le total
-  const totalEmployees = teamStats.reduce(
+  // Employés rattachés à une équipe. Un employé n'a qu'une équipe
+  // (Employee.teamId), la somme ne compte donc personne deux fois.
+  const assignedEmployees = teamStats.reduce(
     (sum, team) => sum + team.employees,
     0
   )
+  // SP-627 : le sous-titre annonçait cette somme comme « au total », soit
+  // « 0 employé » à côté d'un compteur « Employés actifs 1 » tant que
+  // personne n'a d'équipe.
+  const unassignedEmployees = Math.max(0, totalEmployees - assignedEmployees)
 
   // Verifier si donnees vides
   const isEmpty = chartData.length === 0
@@ -60,6 +68,8 @@ export function DirectorTeamsChart({
         </CardTitle>
         <p className="text-sm text-muted-foreground">
           {totalEmployees} employé{totalEmployees > 1 ? 's' : ''} au total
+          {unassignedEmployees > 0 &&
+            `, dont ${unassignedEmployees} sans équipe`}
         </p>
       </CardHeader>
       <CardContent>
@@ -95,8 +105,8 @@ export function DirectorTeamsChart({
                 </div>
                 <span className="font-medium">
                   {team.employees} (
-                  {totalEmployees > 0
-                    ? Math.round((team.employees / totalEmployees) * 100)
+                  {assignedEmployees > 0
+                    ? Math.round((team.employees / assignedEmployees) * 100)
                     : 0}
                   %)
                 </span>

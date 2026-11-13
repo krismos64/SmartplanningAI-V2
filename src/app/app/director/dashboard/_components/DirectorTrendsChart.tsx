@@ -107,10 +107,11 @@ export function DirectorTrendsChart({
           dataKey="effectifs"
           height={200}
           isLoading={isLoading}
-          emptyMessage="Aucune donnee disponible"
+          emptyMessage="Aucune donnée disponible"
           showGradient
+          allowDecimals={false}
           colors={[CHART_COLORS.primary[1]]}
-          title="Evolution des effectifs"
+          title="Évolution des effectifs"
         />
       </CardContent>
     </Card>

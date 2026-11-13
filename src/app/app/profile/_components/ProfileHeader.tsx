@@ -82,7 +82,10 @@ export function ProfileHeader({
           >
             {name}
           </h1>
-          <p className="text-muted-foreground" data-testid="profile-email">
+          <p
+            className="max-w-full text-muted-foreground [overflow-wrap:anywhere]"
+            data-testid="profile-email"
+          >
             {email}
           </p>
           <Badge
@@ -116,7 +119,10 @@ export function ProfileHeader({
         >
           {name}
         </h1>
-        <p className="text-muted-foreground" data-testid="profile-email">
+        <p
+          className="max-w-full text-muted-foreground [overflow-wrap:anywhere]"
+          data-testid="profile-email"
+        >
           {email}
         </p>
         <Badge

@@ -314,6 +314,18 @@ export const themeItems: ThemeItem[] = [
 ]
 
 /**
+ * Pages ouvertes par les entrées d'aide de la palette de commandes.
+ *
+ * SP-627 : elles pointaient vers `/docs` et `/help`, deux routes qui n'ont
+ * jamais existé, et un dirigeant en essai est tombé sur le 404. Un test
+ * vérifie que chaque chemin correspond à une page de `src/app`.
+ */
+export const HELP_LINKS = {
+  'open-docs': '/guides',
+  'open-help': '/contact',
+} as const
+
+/**
  * Items d'aide
  */
 export const helpItems: HelpItem[] = [
@@ -326,17 +338,17 @@ export const helpItems: HelpItem[] = [
   },
   {
     id: 'documentation',
-    label: 'Documentation',
+    label: 'Guides pratiques',
     icon: FileText,
     action: 'open-docs',
-    keywords: ['doc', 'documentation', 'aide', 'help'],
+    keywords: ['doc', 'documentation', 'guide', 'guides'],
   },
   {
     id: 'help',
-    label: 'Aide',
+    label: 'Contacter le support',
     icon: HelpCircle,
     action: 'open-help',
-    keywords: ['help', 'aide', 'support', 'assistance'],
+    keywords: ['help', 'aide', 'support', 'assistance', 'contact'],
   },
 ]
 

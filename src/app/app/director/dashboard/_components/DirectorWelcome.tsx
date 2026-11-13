@@ -23,6 +23,12 @@ export interface DirectorWelcomeProps {
   pendingLeaves: number
   /** Taux de presence moyen (%) */
   attendanceRate: number
+  /**
+   * Afficher le badge de santé. À false tant que le dirigeant est seul :
+   * son taux de présence vaut 100 % et affichait « Excellent » sur une
+   * entreprise vide (SP-627).
+   */
+  showHealth?: boolean
   /** Classes CSS additionnelles */
   className?: string
 }
@@ -99,6 +105,7 @@ export function DirectorWelcome({
   companyName,
   pendingLeaves,
   attendanceRate,
+  showHealth = true,
   className,
 }: DirectorWelcomeProps) {
   const greeting = getGreeting()
@@ -130,29 +137,31 @@ export function DirectorWelcome({
           {/* Indicateurs */}
           <div className="flex flex-wrap gap-3">
             {/* Badge sante entreprise */}
-            <div
-              className={cn(
-                'flex items-center gap-2 rounded-lg px-3 py-2',
-                healthStatus.bgColor
-              )}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className={cn('h-4 w-4', healthStatus.color)}
-                aria-hidden="true"
+            {showHealth && (
+              <div
+                className={cn(
+                  'flex items-center gap-2 rounded-lg px-3 py-2',
+                  healthStatus.bgColor
+                )}
               >
-                <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
-              </svg>
-              <span className={cn('text-sm font-medium', healthStatus.color)}>
-                {healthStatus.label}
-              </span>
-            </div>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className={cn('h-4 w-4', healthStatus.color)}
+                  aria-hidden="true"
+                >
+                  <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+                </svg>
+                <span className={cn('text-sm font-medium', healthStatus.color)}>
+                  {healthStatus.label}
+                </span>
+              </div>
+            )}
 
             {/* Badge alertes conges */}
             <div

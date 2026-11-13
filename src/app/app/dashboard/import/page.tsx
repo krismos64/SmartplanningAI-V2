@@ -291,15 +291,20 @@ export default function ImportPage() {
               </div>
 
               {/* Template */}
-              <div className="flex items-center justify-between rounded-lg bg-muted/50 p-4">
-                <div>
+              <div className="flex flex-col gap-3 rounded-lg bg-muted/50 p-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="min-w-0">
                   <p className="text-sm font-medium">Modèle à télécharger</p>
                   <p className="text-xs text-muted-foreground">
                     Pas encore de fichier ? Téléchargez notre modèle pré-rempli
                     avec des exemples et remplissez-le avec vos données.
                   </p>
                 </div>
-                <Button variant="outline" size="sm" asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  asChild
+                  className="min-h-[44px] shrink-0 sm:min-h-0"
+                >
                   <a
                     href="/templates/import-employees-template.csv"
                     download="modele-import-collaborateurs.csv"
