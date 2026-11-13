@@ -780,9 +780,15 @@ describe('schedules actions', () => {
       vi.mocked(prisma.schedule.findUnique).mockResolvedValue(
         mockSchedule({ id: 'rec1', recurrenceGroupId: 'r1' }) as never
       )
-      vi.mocked(prisma.schedule.findMany).mockResolvedValue([
-        mockSchedule({ id: 'rec1', recurrenceGroupId: 'r1' }),
-      ] as never)
+      // Premier appel : la série. Les suivants : les autres créneaux de
+      // l'employé, cherchés par SP-628 pour les chevauchements (aucun ici)
+      vi.mocked(prisma.schedule.findMany)
+        .mockReset()
+        .mockResolvedValueOnce([
+          mockSchedule({ id: 'rec1', recurrenceGroupId: 'r1' }),
+        ] as never)
+        .mockResolvedValue([] as never)
+      useInteractiveTransaction()
       mockCreateBatchPlanningNotification.mockResolvedValue({ success: true })
     })
 
@@ -809,6 +815,46 @@ describe('schedules actions', () => {
       expect(result.success).toBe(true)
       const maj = vi.mocked(prisma.schedule.updateMany).mock.calls[0]?.[0]
       expect(maj?.where).toEqual(SERIE)
+    })
+
+    it('SP-628 : refuse un horaire de série qui recouvre un autre créneau', async () => {
+      vi.mocked(prisma.schedule.findMany)
+        .mockReset()
+        .mockResolvedValueOnce([
+          mockSchedule({ id: 'rec1', recurrenceGroupId: 'r1' }),
+        ] as never)
+        // Un créneau isolé le même jour, 13:00-14:00
+        .mockResolvedValueOnce([
+          {
+            startDate: new Date('2026-02-01'),
+            endDate: new Date('2026-02-01'),
+            startTime: '13:00',
+            endTime: '14:00',
+          },
+        ] as never)
+
+      const result = await updateRecurrenceGroup('clschedule000000001', {
+        endTime: '18:00',
+      })
+
+      expect(result.success).toBe(false)
+      if (!result.success) expect(result.error).toContain('13:00 à 14:00')
+      expect(prisma.schedule.updateMany).not.toHaveBeenCalled()
+      // Les créneaux de la série sont exclus de la recherche
+      const recherche = vi.mocked(prisma.schedule.findMany).mock.calls[1]?.[0]
+      expect(recherche?.where?.id).toEqual({ notIn: ['rec1'] })
+    })
+
+    it('SP-628 : un changement de titre seul ne cherche aucun chevauchement', async () => {
+      vi.mocked(prisma.schedule.updateMany).mockResolvedValue({ count: 1 })
+
+      const result = await updateRecurrenceGroup('clschedule000000001', {
+        title: 'Inventaire',
+      })
+
+      expect(result.success).toBe(true)
+      expect(prisma.schedule.findMany).toHaveBeenCalledTimes(1)
+      expect(prisma.$executeRaw).not.toHaveBeenCalled()
     })
 
     it('refuse un statut inconnu avant toute écriture', async () => {
