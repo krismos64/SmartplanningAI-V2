@@ -277,6 +277,28 @@ Un test qui vérifie seulement que l'appel a lieu ne prouve rien : le défaut
 porte sur l'ordonnancement. Il faut enregistrer l'ordre réel des deux
 opérations.
 
+## Toutes les transactions tournent en `Serializable`
+
+`src/lib/prisma.ts` impose `isolationLevel: Serializable` à toutes les
+transactions, alors que la base est en `read committed` par défaut. Deux
+conséquences, mesurées le 13 novembre 2026 sur une vraie base (SP-619) :
+
+- **Une vérification lue hors de la transaction ne protège de rien.** Cinq
+  créations identiques lancées ensemble laissaient quatre créneaux : chacune
+  lisait « aucun conflit » avant que les autres n'écrivent.
+- **Un verrou consultatif ne suffit pas en `Serializable`.** L'instantané est
+  pris au premier ordre, donc pendant l'attente du verrou : le second appel
+  ne voit pas ce que le premier vient d'écrire, écrit à son tour, et Postgres
+  l'annule en `P2034` (« could not serialize access »). Le même mode faisait
+  échouer deux créneaux sans chevauchement posés en même temps.
+
+Une transaction qui vérifie puis écrit sous `lockEmployeesForScheduling`
+passe donc `SCHEDULE_TRANSACTION_OPTIONS` (`ReadCommitted`), de
+`src/lib/services/schedule-lock.ts`. Ailleurs, un `P2034` en concurrence
+est l'effet attendu du mode global, à prévoir dans toute nouvelle
+transaction interactive. Une course ne se prouve que sur une vraie base :
+`npm run test:integration`, jamais avec Prisma mocké.
+
 ## Un audit effacé avec son auteur ne trace rien
 
 `AuditLog.userId` était NOT NULL avec `onDelete: Cascade`. Supprimer un compte

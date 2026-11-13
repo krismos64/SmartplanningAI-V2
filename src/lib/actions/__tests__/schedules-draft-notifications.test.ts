@@ -56,8 +56,8 @@ const {
     vi.fn<(input: { action: string }) => Promise<{ success: boolean }>>(),
 }))
 
-vi.mock('@/lib/prisma', () => ({
-  prisma: {
+vi.mock('@/lib/prisma', () => {
+  const client = {
     schedule: {
       findUnique: mockScheduleFindUnique,
       findMany: mockScheduleFindMany,
@@ -74,8 +74,14 @@ vi.mock('@/lib/prisma', () => ({
       findUnique: mockEmployeeFindUnique,
     },
     leaveRequest: { findFirst: vi.fn().mockResolvedValue(null) },
-  },
-}))
+    // SP-619 : updateSchedule vérifie et écrit dans une transaction
+    // interactive, exécutée ici avec le client mocké lui-même
+    $executeRaw: vi.fn().mockResolvedValue(0),
+    $transaction: (callback: (tx: unknown) => unknown) =>
+      Promise.resolve(callback(client)),
+  }
+  return { prisma: client }
+})
 vi.mock('@/lib/auth', () => ({ auth: vi.fn() }))
 vi.mock('@/lib/impersonation', () => ({
   getEffectiveSessionData: vi.fn(),
@@ -447,7 +453,7 @@ describe('SP-618, updateRecurrenceGroup', () => {
     mockScheduleFindUnique.mockResolvedValue(series[0])
     mockScheduleFindMany.mockResolvedValue(series)
     mockScheduleUpdateMany.mockResolvedValue({ count: series.length })
-    const result = await updateRecurrenceGroup('serie-0', input)
+    const result = await updateRecurrenceGroup('clserie000000000000', input)
     await flush()
     return result
   }

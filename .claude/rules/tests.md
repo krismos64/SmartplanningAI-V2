@@ -22,6 +22,7 @@ alignés sur les conventions du dépôt plutôt que d'improviser un style.
 npm run test           # Vitest, single run, pas de flag --run à ajouter
 npm run test:e2e:ci    # Playwright, whitelist CI
 npm run test:e2e       # Playwright, suite complète
+npm run test:integration  # Vitest sur base locale réelle
 npm run type-check     # tsc --noEmit
 ```
 
@@ -67,6 +68,18 @@ par mot de passe du profil) appelle `resetRateLimitCache()` dans son
 un plafond, laisser le limiteur tourner et ne mocker que ce qui part (email,
 comparaison du mot de passe) : un mock du limiteur prouve seulement que le
 code lit sa réponse.
+
+## Tests sur base réelle
+
+`__tests__/integration/` tourne par `vitest.integration.config.ts`, hors de la
+suite unitaire, contre la base de `DATABASE_URL`. Le setup refuse tout hôte
+qui n'est pas local. Chaque fichier crée sa propre entreprise et la supprime
+en sortant : vérifier qu'aucune ne reste après une exécution interrompue. En
+CI, l'étape tourne dans le job E2E, qui a déjà une base migrée.
+
+Y écrire un test quand la propriété dépend de Postgres lui-même : course
+entre transactions, verrou, isolation, contrainte. Un mock de `$transaction`
+ne reproduit rien de cela (SP-619).
 
 ## Whitelist E2E de la CI
 

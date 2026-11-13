@@ -286,6 +286,28 @@ export const updateScheduleSchema = scheduleBaseSchema
 
 export type UpdateScheduleInput = z.infer<typeof updateScheduleSchema>
 
+/**
+ * Modification d'une série récurrente, à partir d'un de ses créneaux
+ *
+ * Le statut arrivait comme une chaîne libre : une valeur inconnue partait
+ * telle quelle vers Prisma, qui la refusait en erreur technique au lieu d'un
+ * message lisible. Les clés hors schéma sont écartées.
+ */
+export const updateRecurrenceGroupSchema = z.object({
+  scheduleId: z.string().cuid('ID schedule invalide'),
+  startTime: timeSchema.optional(),
+  endTime: timeSchema.optional(),
+  type: z.nativeEnum(ScheduleType).optional(),
+  status: z.nativeEnum(ScheduleStatus).optional(),
+  title: scheduleBaseSchema.shape.title,
+  description: scheduleBaseSchema.shape.description,
+  location: scheduleBaseSchema.shape.location,
+})
+
+export type UpdateRecurrenceGroupInput = z.infer<
+  typeof updateRecurrenceGroupSchema
+>
+
 // ============================================================================
 // SCHEMA FILTRES SCHEDULE
 // ============================================================================
