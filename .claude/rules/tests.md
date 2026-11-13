@@ -58,6 +58,16 @@ Détails dans `.claude/rules/prisma-pieges.md` : `vi.hoisted()` et jamais
 `mockDeep`, mocker `next/server` quand le code appelle `after()`, faux CUID
 valides pour la validation Zod `.cuid()`.
 
+**Redis est coupé pour toute la suite unitaire** : `__tests__/setup.ts` vide
+`REDIS_URL` (SP-610). Le limiteur de débit tourne donc sur son repli mémoire,
+dont le cache vit au niveau du module. Un fichier de test qui traverse une
+action plafonnée (connexion, inscription, mot de passe oublié, confirmation
+par mot de passe du profil) appelle `resetRateLimitCache()` dans son
+`beforeEach`, sinon les cas héritent des compteurs des précédents. Pour tester
+un plafond, laisser le limiteur tourner et ne mocker que ce qui part (email,
+comparaison du mot de passe) : un mock du limiteur prouve seulement que le
+code lit sa réponse.
+
 ## Whitelist E2E de la CI
 
 `testMatch` de `playwright.ci.config.ts` est une liste explicite. Un spec

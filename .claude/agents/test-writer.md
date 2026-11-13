@@ -115,6 +115,14 @@ Ne jamais dupliquer un sélecteur déjà encapsulé dans un Page Object existant
 
 `playwright.ci.config.ts` définit `testMatch` comme une **liste explicite de fichiers**, pas un glob large. Un nouveau spec ajouté sans être listé là **disparaît silencieusement de la CI** (il tourne seulement en nightly). Après création d'un spec E2E destiné à la CI, toujours vérifier/ajouter son entrée dans `playwright.ci.config.ts`.
 
+### Redis en test unitaire
+
+`__tests__/setup.ts` vide `REDIS_URL` : aucun test unitaire ne parle au vrai
+Redis (SP-610), le limiteur de débit tourne sur son repli mémoire. Appeler
+`resetRateLimitCache()` dans le `beforeEach` de tout fichier qui traverse une
+action plafonnée. Pour le chemin Redis lui-même, mocker `@/lib/redis` avec un
+faux client, comme dans `__tests__/lib/rate-limit.test.ts`.
+
 ### Redis requis en E2E
 
 Certaines fonctionnalités (panneau sessions actives) ne s'affichent que si Redis est up. En local : `PORT=3001 npx playwright test ...` si le port 3000 est occupé par un autre projet, et s'assurer que Redis tourne (Docker) avant de lancer des tests qui dépendent du cache ou des sessions.

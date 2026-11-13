@@ -1,6 +1,6 @@
 # Guide de Déploiement SmartPlanning V2
 
-**Dernière mise à jour** : 1er octobre 2026
+**Dernière mise à jour** : 13 novembre 2026
 **Version** : 2.0.0
 **Environnement** : Production
 **URL** : https://smartplanning.fr
@@ -853,6 +853,15 @@ Drift connus déjà backportés (12 mai 2026) :
 - `proxy_cache nextjs_cache` sur `/_next/static/`
 - `include /etc/nginx/snippets/umami-location.conf`
 
+### Tout bloc relayé réécrit `X-Real-IP`
+
+L'application lit l'IP du client dans `x-real-ip` pour ses limites de débit
+(SP-610). Un bloc `location` qui relaie vers `nextjs_backend` sans
+`proxy_set_header X-Real-IP $remote_addr;` laisse passer la valeur envoyée par
+le client, qui choisit alors son quota. C'était le cas de trois blocs
+jusqu'au 13 novembre 2026. Après toute modification, vérifier que chaque bloc
+portant un `proxy_pass` porte aussi cette ligne.
+
 ### Procédure : push d'une nouvelle config Nginx vers le VPS
 
 ```bash
@@ -901,6 +910,7 @@ Le `reload` n'interrompt pas les connexions en cours.
 | 2026-10-01 | 2.16    | SP-607 : les logs de l'application disparaissaient à chaque déploiement avec le conteneur recréé. Le service `app` écrit dans journald, lecture par `journalctl CONTAINER_NAME=smartplanning-app`, deux conteneurs successifs vérifiés                                                                                              |
 | 2026-10-26 | 2.17    | SP-612 : le rafraîchissement d'abonnement du callback `jwt` tentait Prisma dans le middleware edge. Rattrapé, mais Prisma écrivait une erreur par requête dès 5 minutes de session (410 lignes pour deux sessions). Garde `NEXT_RUNTIME`, contrôle `grep -c "edge runtime"` ajouté aux commandes de logs                            |
 | 2026-11-12 | 2.18    | Runners CI, nightly et CD épinglés sur `ubuntu-24.04` : `ubuntu-latest` (Ubuntu 26.04) cassait l'installation de Playwright depuis le 6 novembre                                                                                                                                                                                    |
+| 2026-11-13 | 2.19    | SP-610 : trois blocs Nginx (`/_next/static/`, `/_next/image`, extensions statiques) relayaient vers l'application sans réécrire `X-Real-IP`, sur lequel reposent les limites de débit par IP. Les sept blocs relayés le réécrivent désormais.                                                                                       |
 
 ---
 

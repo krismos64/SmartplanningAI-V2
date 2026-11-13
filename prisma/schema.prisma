@@ -876,14 +876,14 @@ enum UserRole {
 
 // Les deux plans d'abonnement proposés
 enum SubscriptionPlan {
-  FREE // Plan gratuit pendant la période d'essai (14 jours)
+  FREE // Plan gratuit pendant la période d'essai (21 jours, PRICING.TRIAL_DAYS)
   PER_SEAT // Plan payant à 2,90€ HT par employé actif par mois
 }
 
 // Les différents états possibles d'un abonnement.
 // Ces statuts sont synchronisés avec Stripe via les webhooks.
 enum SubscriptionStatus {
-  TRIAL // Période d'essai gratuite de 14 jours
+  TRIAL // Période d'essai gratuite de 21 jours
   ACTIVE // Abonnement actif, les paiements passent correctement
   PAST_DUE // Le dernier paiement a échoué, Stripe va retenter automatiquement
   CANCELED // L'entreprise a annulé son abonnement
