@@ -651,8 +651,17 @@ describe('schedules actions', () => {
       vi.mocked(auth).mockResolvedValue(mockSession('DIRECTOR') as never)
       vi.mocked(prisma.employee.findUnique).mockResolvedValue(null)
       vi.mocked(prisma.schedule.findMany).mockResolvedValue([
-        mockSchedule({ scheduleGroupId: 'group1', id: 'sch1' }) as never,
-        mockSchedule({ scheduleGroupId: 'group1', id: 'sch2' }) as never,
+        // SP-618 : seuls les créneaux publiés sont annoncés
+        mockSchedule({
+          scheduleGroupId: 'group1',
+          id: 'sch1',
+          status: 'CONFIRMED',
+        }) as never,
+        mockSchedule({
+          scheduleGroupId: 'group1',
+          id: 'sch2',
+          status: 'CONFIRMED',
+        }) as never,
       ])
       vi.mocked(prisma.employee.findMany).mockResolvedValue([
         { id: 'clxxxxxxxxxxxxxxxxxx1', userId: 'clemployeeuser000001' },
@@ -702,16 +711,19 @@ describe('schedules actions', () => {
         mockSchedule({
           id: 'rec1',
           recurrenceGroupId: 'r1',
+          status: 'CONFIRMED',
           employee: employe,
         }),
         mockSchedule({
           id: 'rec2',
           recurrenceGroupId: 'r1',
+          status: 'CONFIRMED',
           employee: employe,
         }),
         mockSchedule({
           id: 'rec3',
           recurrenceGroupId: 'r1',
+          status: 'CONFIRMED',
           employee: employe,
         }),
       ] as never)
@@ -866,7 +878,7 @@ describe('schedules actions', () => {
       expect(lecture?.where).toEqual({ id: 'clcompany0000000001' })
     })
 
-    it("sans entreprise, ne lit rien et rend des réglages vides", async () => {
+    it('sans entreprise, ne lit rien et rend des réglages vides', async () => {
       vi.mocked(auth).mockResolvedValue(
         mockSession('SYSTEM_ADMIN', null) as never
       )

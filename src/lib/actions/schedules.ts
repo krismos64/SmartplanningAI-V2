@@ -35,6 +35,7 @@ import {
 } from '@/lib/actions/notifications'
 import type { CrudActionResult, DeleteActionResult } from '@/types'
 import { sendScheduleNotificationEmail } from '@/lib/email/templates/schedule-notification'
+import { scheduleVisibilityChange } from '@/lib/utils/schedule-visibility'
 import {
   addCalendarDays,
   endOfCalendarDay,
@@ -387,6 +388,69 @@ function notifyEmployeesOfNewSchedules(
           scheduleType: first.type,
           timeRange: `${first.startTime} - ${first.endTime}`,
         }).catch(console.error)
+      }
+    })
+    .catch(console.error)
+}
+
+/**
+ * Prévient un employé qu'un créneau qu'il voyait a disparu : supprimé, ou
+ * repassé en brouillon (SP-618). Notification in-app et email SP-480,
+ * fire-and-forget. Ne s'appelle que pour un créneau qui était CONFIRMED.
+ */
+function notifyEmployeeOfRemovedSchedule(
+  schedule: {
+    id: string
+    employeeId: string
+    companyId: string
+    startDate: Date
+    startTime: string
+    endTime: string
+    type: string
+  },
+  actorId: string
+): void {
+  // Destinataire borné à l'entreprise du créneau (règle multi-tenant)
+  prisma.employee
+    .findFirst({
+      where: { id: schedule.employeeId, companyId: schedule.companyId },
+      select: { userId: true, firstName: true, email: true },
+    })
+    .then(async (employee) => {
+      if (!employee) return
+
+      if (employee.userId) {
+        // Les données du créneau sont passées explicitement : après une
+        // suppression, un findUnique ne le trouverait plus
+        createPlanningNotification(
+          schedule.id,
+          employee.userId,
+          'deleted',
+          actorId,
+          {
+            startDate: schedule.startDate,
+            startTime: schedule.startTime,
+            endTime: schedule.endTime,
+            companyId: schedule.companyId,
+            type: schedule.type,
+          },
+          // SP-604 : l'email part juste en dessous
+          { skipEmail: true }
+        ).catch(console.error)
+      }
+
+      if (employee.email) {
+        const canSend = await canSendEmailToEmployee(employee.email, 'planning')
+        if (canSend)
+          sendScheduleNotificationEmail({
+            employeeEmail: employee.email,
+            firstName: employee.firstName,
+            action: 'deleted',
+            count: 1,
+            startDate: schedule.startDate,
+            scheduleType: schedule.type,
+            timeRange: `${schedule.startTime} - ${schedule.endTime}`,
+          }).catch(console.error)
       }
     })
     .catch(console.error)
@@ -1302,52 +1366,64 @@ export async function updateSchedule(
       },
     }).catch(console.error)
 
-    // Notifier l'employé de la modification (fire-and-forget, sauf si c'est le créateur)
-    prisma.employee
-      .findUnique({
-        where: { id: updated.employeeId },
-        select: { userId: true },
-      })
-      .then((emp) => {
-        if (emp?.userId) {
-          createPlanningNotification(
-            updated.id,
-            emp.userId,
-            'updated',
-            user.id,
-            undefined,
-            // SP-604 : l'email part par le bloc SP-480 ci-dessous
-            { skipEmail: true }
-          ).catch(console.error)
-        }
-      })
-      .catch(console.error)
+    // SP-618 : prévenir selon ce que l'employé voit changer. Un brouillon
+    // resté brouillon ne lui a jamais été montré : rien ne part.
+    const visibility = scheduleVisibilityChange(existing.status, updated.status)
 
-    // SP-480 : Email de notification de modification planning (fire-and-forget)
-    prisma.employee
-      .findUnique({
-        where: { id: updated.employeeId },
-        select: { firstName: true, email: true },
-      })
-      .then(async (emp) => {
-        if (emp?.email) {
-          const canSendUpdate = await canSendEmailToEmployee(
-            emp.email,
-            'planning'
-          )
-          if (canSendUpdate)
-            sendScheduleNotificationEmail({
-              employeeEmail: emp.email,
-              firstName: emp.firstName,
-              action: 'updated',
-              count: 1,
-              startDate: updated.startDate,
-              scheduleType: updated.type,
-              timeRange: `${updated.startTime} - ${updated.endTime}`,
-            }).catch(console.error)
-        }
-      })
-      .catch(console.error)
+    if (visibility === 'published') {
+      // Le créneau apparaît pour l'employé : même annonce qu'une publication
+      notifyEmployeesOfNewSchedules([updated], user.id)
+    } else if (visibility === 'withdrawn') {
+      // Il le voyait, il ne le voit plus
+      notifyEmployeeOfRemovedSchedule(existing, user.id)
+    } else if (visibility === 'updated') {
+      // Notifier l'employé de la modification (fire-and-forget, sauf si c'est le créateur)
+      prisma.employee
+        .findUnique({
+          where: { id: updated.employeeId },
+          select: { userId: true },
+        })
+        .then((emp) => {
+          if (emp?.userId) {
+            createPlanningNotification(
+              updated.id,
+              emp.userId,
+              'updated',
+              user.id,
+              undefined,
+              // SP-604 : l'email part par le bloc SP-480 ci-dessous
+              { skipEmail: true }
+            ).catch(console.error)
+          }
+        })
+        .catch(console.error)
+
+      // SP-480 : Email de notification de modification planning (fire-and-forget)
+      prisma.employee
+        .findUnique({
+          where: { id: updated.employeeId },
+          select: { firstName: true, email: true },
+        })
+        .then(async (emp) => {
+          if (emp?.email) {
+            const canSendUpdate = await canSendEmailToEmployee(
+              emp.email,
+              'planning'
+            )
+            if (canSendUpdate)
+              sendScheduleNotificationEmail({
+                employeeEmail: emp.email,
+                firstName: emp.firstName,
+                action: 'updated',
+                count: 1,
+                startDate: updated.startDate,
+                scheduleType: updated.type,
+                timeRange: `${updated.startTime} - ${updated.endTime}`,
+              }).catch(console.error)
+          }
+        })
+        .catch(console.error)
+    }
 
     revalidatePath('/app/schedules')
     revalidatePath(`/app/schedules/${validated.id}`)
@@ -1413,42 +1489,10 @@ export async function deleteSchedule(id: string): Promise<DeleteActionResult> {
       details: { employeeId: schedule.employeeId, type: schedule.type },
     }).catch(console.error)
 
-    // Notification planning supprimé (fire-and-forget)
-    // On passe scheduleData car le schedule est déjà supprimé en base
-    if (schedule.employee?.userId) {
-      createPlanningNotification(
-        id,
-        schedule.employee.userId,
-        'deleted',
-        user.id,
-        {
-          startDate: schedule.startDate,
-          startTime: schedule.startTime,
-          endTime: schedule.endTime,
-          companyId: schedule.companyId,
-          type: schedule.type,
-        },
-        // SP-604 : l'email part par le bloc SP-480 ci-dessous
-        { skipEmail: true }
-      ).catch(console.error)
-    }
-
-    // SP-480 : Email de notification de suppression planning (fire-and-forget, respecte préférences)
-    if (schedule.employee?.email) {
-      const canSendDelete = await canSendEmailToEmployee(
-        schedule.employee.email,
-        'planning'
-      )
-      if (canSendDelete)
-        sendScheduleNotificationEmail({
-          employeeEmail: schedule.employee.email,
-          firstName: schedule.employee.firstName,
-          action: 'deleted',
-          count: 1,
-          startDate: schedule.startDate,
-          scheduleType: schedule.type,
-          timeRange: `${schedule.startTime} - ${schedule.endTime}`,
-        }).catch(console.error)
+    // SP-618 : un brouillon n'a jamais été montré à l'employé, sa
+    // suppression ne lui annonce rien
+    if (schedule.status === 'CONFIRMED') {
+      notifyEmployeeOfRemovedSchedule(schedule, user.id)
     }
 
     revalidatePath('/app/schedules')
@@ -1503,9 +1547,12 @@ export async function deleteScheduleGroup(
       }
     }
 
-    // Regrouper les créneaux par employé pour une notification chacun
+    // Regrouper les créneaux par employé pour une notification chacun.
+    // SP-618 : seuls les créneaux publiés comptent, un brouillon supprimé
+    // n'annonce rien à un employé qui ne l'a jamais vu.
     const employeeScheduleMap = new Map<string, typeof schedules>()
     for (const s of schedules) {
+      if (s.status !== 'CONFIRMED') continue
       const existing = employeeScheduleMap.get(s.employeeId) ?? []
       existing.push(s)
       employeeScheduleMap.set(s.employeeId, existing)
@@ -1679,16 +1726,18 @@ export async function deleteRecurrenceGroup(
       details: { recurrenceGroupId, deletedCount: result.count },
     }).catch(console.error)
 
-    // Notifications (fire-and-forget)
+    // Notifications (fire-and-forget). SP-618 : seuls les créneaux publiés
+    // sont annoncés, l'employé n'a jamais vu les brouillons.
+    const visibleSchedules = schedules.filter((sc) => sc.status === 'CONFIRMED')
     const notifiedUserIds = new Set<string>()
-    for (const s of schedules) {
+    for (const s of visibleSchedules) {
       const uid = s.employee?.userId
       if (uid && !notifiedUserIds.has(uid)) {
         notifiedUserIds.add(uid)
         // SP-604 : notification groupée, la récurrence supprimée compte
         // souvent plusieurs créneaux pour le même employé
         createBatchPlanningNotification(
-          schedules
+          visibleSchedules
             .filter((sc) => sc.employee?.userId === uid)
             .map((sc) => ({
               id: sc.id,
@@ -1806,26 +1855,57 @@ export async function updateRecurrenceGroup(
       },
     }).catch(console.error)
 
-    // Notifications (fire-and-forget)
-    const notifiedUserIds = new Set<string>()
-    for (const s of schedules) {
-      const uid = s.employee?.userId
-      if (uid && !notifiedUserIds.has(uid)) {
-        notifiedUserIds.add(uid)
+    // Notifications (fire-and-forget). SP-618 : chaque créneau est rangé
+    // selon ce que l'employé voit changer. La série peut mêler brouillons et
+    // créneaux publiés, et la modification peut elle-même changer le statut.
+    const nextStatus =
+      input.status === 'DRAFT' || input.status === 'CONFIRMED'
+        ? input.status
+        : null
+    const afterUpdate = schedules.map((sc) => ({
+      id: sc.id,
+      employeeId: sc.employeeId,
+      userId: sc.employee?.userId ?? null,
+      startDate: sc.startDate,
+      endDate: sc.endDate,
+      startTime: input.startTime ?? sc.startTime,
+      endTime: input.endTime ?? sc.endTime,
+      type: input.type ?? sc.type,
+      companyId: sc.companyId,
+      visibility: scheduleVisibilityChange(sc.status, nextStatus ?? sc.status),
+    }))
+
+    // Brouillons publiés par cette modification : annoncés comme une publication
+    const published = afterUpdate.filter((sc) => sc.visibility === 'published')
+    if (published.length > 0) {
+      notifyEmployeesOfNewSchedules(published, user.id)
+    }
+
+    // Créneaux restés visibles (modifiés) ou retirés de la vue (repassés en
+    // brouillon) : une notification groupée par employé et par cas
+    for (const [visibility, action] of [
+      ['updated', 'updated'],
+      ['withdrawn', 'deleted'],
+    ] as const) {
+      const concerned = afterUpdate.filter((sc) => sc.visibility === visibility)
+      const userIds = new Set(
+        concerned.flatMap((sc) => (sc.userId ? [sc.userId] : []))
+      )
+      for (const uid of userIds) {
         createBatchPlanningNotification(
-          schedules
-            .filter((sc) => sc.employee?.userId === uid)
+          concerned
+            .filter((sc) => sc.userId === uid)
             .map((sc) => ({
               id: sc.id,
               startDate: sc.startDate,
               endDate: sc.endDate,
-              startTime: input.startTime ?? sc.startTime,
-              endTime: input.endTime ?? sc.endTime,
-              type: input.type ?? sc.type,
+              startTime: sc.startTime,
+              endTime: sc.endTime,
+              type: sc.type,
               companyId: sc.companyId,
             })),
           uid,
-          'updated',
+          action,
           user.id
         ).catch(console.error)
       }
@@ -2070,6 +2150,16 @@ export async function updateScheduleStatus(
       companyId: schedule.companyId,
       details: { from: schedule.status, to: status },
     }).catch(console.error)
+
+    // SP-618 : un changement de statut change ce que l'employé voit. Le
+    // publier l'annonce comme une publication, le repasser en brouillon
+    // comme une suppression. Un statut inchangé n'annonce rien.
+    const visibility = scheduleVisibilityChange(schedule.status, status)
+    if (visibility === 'published') {
+      notifyEmployeesOfNewSchedules([updated], user.id)
+    } else if (visibility === 'withdrawn') {
+      notifyEmployeeOfRemovedSchedule(schedule, user.id)
+    }
 
     revalidatePath('/app/schedules')
     revalidatePath(`/app/schedules/${id}`)

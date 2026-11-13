@@ -45,6 +45,12 @@ export const AUTH_RATE_LIMITS = {
    * essais : verrouiller un compte à distance demande au moins cinq IP.
    */
   loginPerEmail: { maxRequests: 50, windowMs: 15 * MINUTE },
+  /**
+   * Mots de passe erronés saisis par un utilisateur connecté pour confirmer
+   * une action sensible (changement de mot de passe, suppression de compte).
+   * Sans plafond, une session volée servirait à deviner le mot de passe.
+   */
+  passwordConfirmPerUser: { maxRequests: 5, windowMs: 15 * MINUTE },
   /** Demandes de réinitialisation pour une même adresse */
   forgotPerEmail: { maxRequests: 3, windowMs: 60 * MINUTE },
   forgotPerIp: { maxRequests: 10, windowMs: 60 * MINUTE },
@@ -233,4 +239,25 @@ export async function consumeAuthAttempt(
     limits.perEmail
   )
   return byEmail.allowed
+}
+
+/**
+ * Réserve une confirmation par mot de passe pour un utilisateur connecté.
+ * Même principe que la connexion : compté avant la comparaison, rendu par
+ * releasePasswordConfirmation si le mot de passe est le bon.
+ */
+export async function reservePasswordConfirmation(
+  userId: string
+): Promise<boolean> {
+  const result = await checkRateLimit(
+    `password-confirm:user:${userId}`,
+    AUTH_RATE_LIMITS.passwordConfirmPerUser
+  )
+  return result.allowed
+}
+
+export async function releasePasswordConfirmation(
+  userId: string
+): Promise<void> {
+  await resetRateLimit(`password-confirm:user:${userId}`)
 }
