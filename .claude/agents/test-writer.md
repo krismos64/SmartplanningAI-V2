@@ -147,6 +147,10 @@ Certaines fonctionnalités (panneau sessions actives) ne s'affichent que si Redi
    compte donc, un test de rendu de page ne compte pas et n'a pas à être écrit.
    Relever un seuil demande de mesurer d'abord, jamais de viser un chiffre rond
 
+### Tests sur base réelle
+
+Une propriété qui dépend de Postgres (course entre deux transactions, verrou, isolation, contrainte) se teste dans `__tests__/integration/`, lancé par `npm run test:integration`, jamais avec Prisma mocké : un mock de `$transaction` exécute les appels l'un après l'autre et ne voit aucune course. Une course se rejoue sur plusieurs tours (`ROUNDS` dans `series-overlap.test.ts`) : un seul essai passait sans le verrou, trois fois sur trois (SP-628). Détail dans `.claude/rules/tests.md`
+
 ### Lint typé de la CI
 
 `npm run lint` refuse `expect.any()` et `expect.stringContaining()` dans un

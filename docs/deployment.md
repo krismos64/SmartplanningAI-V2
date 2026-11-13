@@ -348,15 +348,19 @@ une PR, même en draft, pour obtenir le retour de la CI.
 
 **Jobs** :
 
-| Job        | Description                                 | Condition                     |
-| ---------- | ------------------------------------------- | ----------------------------- |
-| `lint`     | ESLint + TypeScript                         | Tous les déclenchements       |
-| `test`     | Tests unitaires Vitest                      | Tous les déclenchements       |
-| `test-e2e` | Tests E2E Playwright, whitelist `testMatch` | PR vers main OU push sur main |
-| `build`    | Build Next.js                               | Tous les déclenchements       |
+| Job        | Description                                                                               | Condition                     |
+| ---------- | ----------------------------------------------------------------------------------------- | ----------------------------- |
+| `lint`     | ESLint + TypeScript + `npm run audit:prod`                                                | Tous les déclenchements       |
+| `test`     | Tests unitaires Vitest, couverture bloquante                                              | Tous les déclenchements       |
+| `test-e2e` | `npm run test:integration` sur la base migrée, puis E2E Playwright, whitelist `testMatch` | PR vers main OU push sur main |
+| `build`    | Build Next.js                                                                             | Tous les déclenchements       |
 
 Les compteurs de tests ne sont pas repris ici : ils se périment à chaque
 sprint. Les mesurer avec `npm run test` et `npx playwright test --list`.
+
+`audit:prod` rougit sur toute faille haute ou critique d'une dépendance de
+production absente de `scripts/ci/audit-exceptions.json` (SP-596). La nightly
+le rejoue, pour qu'une faille publiée sans commit soit vue le lendemain.
 
 **Les runners sont épinglés sur `ubuntu-24.04`**, dans `ci.yml`,
 `nightly-e2e.yml` et `cd.yml`. Début novembre 2026, `ubuntu-latest` est passé

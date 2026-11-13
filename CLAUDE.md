@@ -92,7 +92,13 @@ récente en début de session** donne l'état du projet plus vite que Jira.
 - Séries récurrentes : un `recurrenceGroupId` est partagé par tous les employés
   créés ensemble. Toute action « sur la série » se borne au groupe, à l'employé
   et à l'entreprise du créneau de référence (`seriesWhere`, SP-621), sinon elle
-  touche les autres employés : 12 créneaux annoncés, 60 supprimés
+  touche les autres employés : 12 créneaux annoncés, 60 supprimés. Changer
+  l'horaire de la série vérifie les chevauchements (`findSeriesOverlap`,
+  SP-628)
+- Écriture de créneau : vérification de conflit et écriture dans une même
+  transaction, sous `lockEmployeesForScheduling` et en `ReadCommitted`
+  (`SCHEDULE_TRANSACTION_OPTIONS`, SP-619). Toutes les autres transactions
+  tournent en `Serializable`, où un verrou seul échoue en `P2034`
 - Suppression de compte : le dernier utilisateur emporte son entreprise dans la
   même transaction, recomptage compris (SP-624). Refus tant qu'un abonnement
   Stripe est facturé. Les audits de la suppression sont écrits sans `companyId`
