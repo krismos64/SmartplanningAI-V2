@@ -1,6 +1,6 @@
 # Guide de Déploiement SmartPlanning V2
 
-**Dernière mise à jour** : 13 novembre 2026
+**Dernière mise à jour** : 18 novembre 2026
 **Version** : 2.0.0
 **Environnement** : Production
 **URL** : https://smartplanning.fr
@@ -362,6 +362,14 @@ sprint. Les mesurer avec `npm run test` et `npx playwright test --list`.
 production absente de `scripts/ci/audit-exceptions.json` (SP-596). La nightly
 le rejoue, pour qu'une faille publiée sans commit soit vue le lendemain.
 
+L'audit range une dépendance selon `package.json`, pas selon son usage réel. Le
+18 novembre 2026, la nightly a rougi sur GHSA-fc5q-39xc-vjpf (`picomatch`,
+aucune version corrigée), tiré par `tailwindcss-animate`, déclaré en production
+alors qu'il ne sert qu'au build. Devant une faille sans correctif, regarder
+d'abord si le paquet qui la tire a sa place en `dependencies` : l'étape `deps`
+du Dockerfile fait un `npm ci` complet, et l'image finale ne garde que
+`.next/standalone`.
+
 **Les runners sont épinglés sur `ubuntu-24.04`**, dans `ci.yml`,
 `nightly-e2e.yml` et `cd.yml`. Début novembre 2026, `ubuntu-latest` est passé
 à Ubuntu 26.04, où Playwright 1.57 refuse d'installer Chromium (« Playwright
@@ -389,6 +397,13 @@ job avant de chercher dans le code.
 **Pourquoi `migrate` AVANT `deploy` (SP-523)** : l'ancien ordre `deploy → migrate` créait une fenêtre où le nouveau code tournait avec l'ancien schéma. Inoffensif pour `DROP NOT NULL`, mais une future migration `ADD COLUMN ... NOT NULL` sans valeur par défaut crasherait l'app immédiatement. Avec l'ordre actuel, si `migrate` échoue → `deploy` bloqué → la prod n'est jamais mise à jour avec un schéma cassé.
 
 **Point technique clé** : `prisma migrate deploy` ne peut pas tourner via `docker compose exec` sur l'ancien conteneur (les nouveaux fichiers `prisma/migrations/` ne s'y trouvent pas). Solution : `docker run --rm` avec la nouvelle image en conteneur éphémère, accès DB via le réseau Docker du compose. Pendant cette opération, l'ancienne app continue de servir les requêtes.
+
+**La CLI qui applique les migrations est celle du Dockerfile.** L'image finale
+n'a pas de `node_modules/.bin` : `npx prisma migrate deploy` y lance le
+`prisma` installé en global par `docker/Dockerfile`. Restée en 6.18.0 après le
+passage du projet en 6.19.3 (SP-596), elle a été alignée le 18 novembre 2026,
+et `__tests__/scripts/dockerfile-prisma-version.test.ts` compare désormais sa
+version à `package-lock.json`. Toute montée de Prisma met donc à jour les deux.
 
 **Lecture de `DATABASE_URL`** : ne PAS parser le fichier `.env` (caractères spéciaux + guillemets cassent Prisma). Lire directement depuis l'environnement du conteneur app running :
 
@@ -915,6 +930,7 @@ Le `reload` n'interrompt pas les connexions en cours.
 | 2026-10-26 | 2.17    | SP-612 : le rafraîchissement d'abonnement du callback `jwt` tentait Prisma dans le middleware edge. Rattrapé, mais Prisma écrivait une erreur par requête dès 5 minutes de session (410 lignes pour deux sessions). Garde `NEXT_RUNTIME`, contrôle `grep -c "edge runtime"` ajouté aux commandes de logs                            |
 | 2026-11-12 | 2.18    | Runners CI, nightly et CD épinglés sur `ubuntu-24.04` : `ubuntu-latest` (Ubuntu 26.04) cassait l'installation de Playwright depuis le 6 novembre                                                                                                                                                                                    |
 | 2026-11-13 | 2.19    | SP-610 : trois blocs Nginx (`/_next/static/`, `/_next/image`, extensions statiques) relayaient vers l'application sans réécrire `X-Real-IP`, sur lequel reposent les limites de débit par IP. Les sept blocs relayés le réécrivent désormais.                                                                                       |
+| 2026-11-18 | 2.20    | Nightly rouge sur `picomatch` (GHSA-fc5q-39xc-vjpf, sans correctif) : `tailwindcss-animate` passé en `devDependencies`, seul chemin de la faille en production. CLI Prisma de l'image alignée de 6.18.0 sur 6.19.3, c'est elle qui applique les migrations du CD, et un test garde l'alignement (PR #131).                          |
 
 ---
 

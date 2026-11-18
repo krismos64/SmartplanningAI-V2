@@ -190,18 +190,18 @@ Voir [`docs/database-architecture.md`](docs/database-architecture.md) pour le de
 
 | Type        | Framework  | Fichiers | Tests     |
 | ----------- | ---------- | -------- | --------- |
-| Unitaires   | Vitest     | 229      | 3 623     |
+| Unitaires   | Vitest     | 230      | 3 626     |
 | Base réelle | Vitest     | 2        | 11        |
 | E2E         | Playwright | 28       | 275       |
-| **Total**   |            | **259**  | **3 909** |
+| **Total**   |            | **260**  | **3 912** |
 
-Compteurs mesurés le 14 novembre 2026, par `npm run test`,
+Compteurs mesurés le 18 novembre 2026, par `npm run test`,
 `npm run test:integration` et `npx playwright test --list`. Ils se periment a chaque sprint : les remesurer
 plutot que les recopier.
 
 **La couverture est un garde-fou bloquant depuis SP-592**, et pas seulement une
 commande d'information. `vitest.config.ts` porte des seuils mesures (lines 50,
-branches 73, functions 73, statements 50, pour un réel à 54,25 % de lignes et 76,67 % de branches le 14 novembre 2026) et la CI lance
+branches 73, functions 73, statements 50, pour un réel à 54,27 % de lignes et 76,66 % de branches le 18 novembre 2026) et la CI lance
 `npm run test:coverage` : elle rougit si la couverture baisse, meme quand tous
 les tests passent. Le perimetre mesure inclut `src/lib/`, `src/hooks/` et
 `src/lib/validations/`, et exclut les pages et layouts, couverts par les E2E.
