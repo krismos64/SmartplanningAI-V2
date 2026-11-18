@@ -78,7 +78,11 @@ COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 COPY --from=builder /app/prisma ./prisma
 
 # Installer Prisma CLI pour les migrations en production
-RUN npm install -g prisma@6.18.0 && npm cache clean --force
+# Le job migrate du CD lance `npx prisma migrate deploy` dans cette image, qui
+# n'a pas de node_modules/.bin : c'est cette CLI globale qui applique les
+# migrations. Sa version suit celle de package-lock.json, un test le vérifie
+# (__tests__/scripts/dockerfile-prisma-version.test.ts).
+RUN npm install -g prisma@6.19.3 && npm cache clean --force
 
 # Créer les répertoires cache Next.js pour l'optimisation d'images
 # Sans ces répertoires, le container en read_only échoue avec ENOENT
