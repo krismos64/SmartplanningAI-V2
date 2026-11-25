@@ -54,6 +54,8 @@ sauté, Close Tracking Issue a fermé #72 à 11:10:37 UTC avec son commentaire.
 
 - Lire l'activité de JULIENNE, essai jusqu'au 2 décembre
 - Décider de la CLI Prisma de l'image (copie depuis le builder)
+- Confirmer dans l'espace client OVH l'origine du redémarrage de 15:17 UTC
+- Surveillance externe de disponibilité, aucune aujourd'hui
 
 ## Audit documentaire de fin de session
 
@@ -71,3 +73,36 @@ depuis le poste). Jira : SP-602 seul ouvert.
 Écarts corrigés : ligne nightly du README (horaire et durée), mécanisme
 d'alerte et limite de l'override dans `deployment.md` (2.21), `CLAUDE.md` et
 l'agent `docker-devops`.
+
+## Incident : VPS figé de 15:02 à 15:17 UTC
+
+Constaté en suivant le redéploiement de la PR #134 : le job `migrate` du CD
+échoue à 15:07 UTC sur `ssh-keyscan`, avant toute action sur la machine. Le CD
+n'est donc pas en cause. De 15:10 à 15:14 UTC, depuis le poste et depuis un
+récupérateur externe : HTTPS en timeout, port 22 fermé, `http://` en 502 sans
+en-tête `Server` (ce n'était pas notre Nginx). SmartPlanning, Umami et Lune &
+Soleil étaient tous injoignables.
+
+Revenu à 15:18 UTC sans intervention de notre part. Lu sur la machine :
+
+- démarrage à 15:17:53, sur le noyau 6.8.0-151 installé le matin même par
+  `unattended-upgrades` (auparavant 6.8.0-134, depuis le 8 juillet)
+- le démarrage précédent s'arrête net à 15:02:18, sans séquence d'arrêt, OOM
+  ni panique noyau : gel ou arrêt brutal, vu de l'intérieur
+- `sar` avant le gel : CPU inoccupé à 98 %, mémoire utilisée à 15 %, disque
+  quasi inactif. Ce n'est pas une surcharge
+- aucun `Automatic-Reboot` configuré : le redémarrage vient de l'extérieur
+  (hyperviseur OVH ou action manuelle), **origine à confirmer dans l'espace
+  client OVH**
+
+Après redémarrage : sept conteneurs healthy, aucun redémarrage en boucle,
+`sha-44b47eb` toujours en place, aucune erreur dans journald, timers de
+sauvegarde programmés pour la nuit, pages en 200.
+
+**Aucune surveillance n'a rien signalé.** `check-tls-expiry.sh` et
+`check-public-ports.sh` tournent sur le VPS lui-même, donc se taisent quand il
+tombe. Rien ne surveille la production depuis l'extérieur.
+
+La PR #134 (documentation seule) est mergée, mais son image `sha-6fd915e`
+n'est pas déployée : la production tourne sur `sha-44b47eb`, code identique.
+Elle partira avec le prochain merge.
