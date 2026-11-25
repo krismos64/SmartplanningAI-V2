@@ -19,7 +19,7 @@ Multi-stage `deps` → `builder` → `runner`, basé sur `node:20-alpine` :
 
 - `builder` : `npx prisma generate` puis `npm run build` (Next.js standalone output)
 - `runner` : copie `.next/standalone`, `.next/static`, `public`, le Prisma Client généré (`node_modules/.prisma`, `node_modules/@prisma`) et `prisma/` pour les migrations
-- Installe `prisma@<version exacte du projet>` en CLI globale : c'est elle qui applique les migrations du CD (pas de `node_modules/.bin` dans l'image). Un test (`__tests__/scripts/dockerfile-prisma-version.test.ts`) rougit si elle diverge de `package-lock.json` : monter Prisma, c'est mettre à jour les deux
+- Installe `prisma@<version exacte du projet>` en CLI globale : c'est elle qui applique les migrations du CD (pas de `node_modules/.bin` dans l'image). Un test (`__tests__/scripts/dockerfile-prisma-version.test.ts`) rougit si elle diverge de `package-lock.json` : monter Prisma, c'est mettre à jour les deux. Un `overrides` de `package.json` ne s'applique pas à cette CLI globale : elle garde la version de sous-dépendance que Prisma épingle (cas d'`effect` 3.21.0, 25 novembre 2026), et `audit:prod` ne le voit pas
 - Crée les répertoires cache `.next/cache/images` et `.next/cache/fetch-cache` (sinon ENOENT en conteneur read-only)
 - User non-root `nextjs:nodejs` (uid/gid 1001)
 - `HEALTHCHECK` sur `/api/health` (pas de endpoint custom à réinventer)

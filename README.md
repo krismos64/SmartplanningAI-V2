@@ -241,9 +241,11 @@ une fenetre ou le nouveau code tournait avec l'ancien schema.
 | Push feature (sans PR)   | Aucun                          | Non         | —          |
 | PR vers main             | Unitaires + E2E (whitelist CI) | Non         | ~15-18 min |
 | Push direct / merge main | Unitaires + E2E (whitelist CI) | Oui (auto)  | ~15-18 min |
-| Nightly (2h UTC)         | Unitaires + E2E complet        | Non         | ~45-60 min |
+| Nightly (cron 2h UTC)    | Unitaires + E2E complet        | Non         | ~8-16 min  |
 
 Depuis la revision de juillet 2026, un push sur une branche sans PR ne declenche plus le CI : auparavant, chaque push sur une branche avec PR ouverte lancait deux runs complets pour le meme commit (evenements `push` et `pull_request`). Ouvrir une PR, meme en draft, donne le feedback CI.
+
+La nightly est programmée à 2 h UTC, mais GitHub la lance en pratique entre 9 h et 12 h UTC (mesuré du 16 au 25 novembre 2026). Un échec ouvre une issue `nightly-failure` assignée au propriétaire du dépôt, fermée d'elle-même à la première nightly verte.
 
 Les runners sont epingles sur `ubuntu-24.04` : `ubuntu-latest`, passe a Ubuntu 26.04 en novembre 2026, empeche Playwright d'installer Chromium (detail dans `docs/deployment.md`).
 

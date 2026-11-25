@@ -1,6 +1,6 @@
 # Guide de Déploiement SmartPlanning V2
 
-**Dernière mise à jour** : 18 novembre 2026
+**Dernière mise à jour** : 25 novembre 2026
 **Version** : 2.0.0
 **Environnement** : Production
 **URL** : https://smartplanning.fr
@@ -369,6 +369,23 @@ alors qu'il ne sert qu'au build. Devant une faille sans correctif, regarder
 d'abord si le paquet qui la tire a sa place en `dependencies` : l'étape `deps`
 du Dockerfile fait un `npm ci` complet, et l'image finale ne garde que
 `.next/standalone`.
+
+Devant une faille **avec** correctif, tirée par une version épinglée d'un
+paquet tiers, un `overrides` dans `package.json` suffit. C'est le cas du 25
+novembre 2026 : GHSA-7589-6fvf-x4pw dans `effect` 3.21.0, épinglé par
+`@prisma/config`, forcé en `^3.22.1`. **L'override ne couvre pas la CLI
+Prisma globale du Dockerfile** (`npm install -g prisma@…`), qui ignore le
+lockfile : l'image garde l'ancienne version, et `audit:prod`, qui lit le
+lockfile, ne le voit pas. Acceptable ici, cette CLI ne tournant qu'au job
+`migrate`.
+
+**Un échec de la nightly ouvre une issue `nightly-failure`**, assignée au
+propriétaire du dépôt, et les échecs suivants s'y ajoutent en commentaire.
+Le job `close-on-success` la ferme à la première nightly verte. Avant le
+25 novembre, rien ne la fermait : l'issue #72, ouverte le 12 août, recevait
+chaque échec en commentaire de bot sans notification visible, et la nightly
+est restée rouge du 20 au 24 novembre sans que personne le voie. Le cron est
+réglé sur 2 h UTC, mais GitHub lance le run entre 9 h et 12 h UTC.
 
 **Les runners sont épinglés sur `ubuntu-24.04`**, dans `ci.yml`,
 `nightly-e2e.yml` et `cd.yml`. Début novembre 2026, `ubuntu-latest` est passé
@@ -931,6 +948,7 @@ Le `reload` n'interrompt pas les connexions en cours.
 | 2026-11-12 | 2.18    | Runners CI, nightly et CD épinglés sur `ubuntu-24.04` : `ubuntu-latest` (Ubuntu 26.04) cassait l'installation de Playwright depuis le 6 novembre                                                                                                                                                                                    |
 | 2026-11-13 | 2.19    | SP-610 : trois blocs Nginx (`/_next/static/`, `/_next/image`, extensions statiques) relayaient vers l'application sans réécrire `X-Real-IP`, sur lequel reposent les limites de débit par IP. Les sept blocs relayés le réécrivent désormais.                                                                                       |
 | 2026-11-18 | 2.20    | Nightly rouge sur `picomatch` (GHSA-fc5q-39xc-vjpf, sans correctif) : `tailwindcss-animate` passé en `devDependencies`, seul chemin de la faille en production. CLI Prisma de l'image alignée de 6.18.0 sur 6.19.3, c'est elle qui applique les migrations du CD, et un test garde l'alignement (PR #131).                          |
+| 2026-11-25 | 2.21    | Nightly rouge sur `effect` (GHSA-7589-6fvf-x4pw) : override `^3.22.1`, qui ne couvre pas la CLI Prisma globale de l'image. Alerte de la nightly assignée et refermée au retour au vert (`close-on-success`)                                                                                                                         |
 
 ---
 

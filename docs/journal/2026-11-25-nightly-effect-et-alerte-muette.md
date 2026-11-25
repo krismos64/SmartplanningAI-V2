@@ -7,7 +7,7 @@
 | Documents modifiés | `package.json`, `package-lock.json`, `.github/workflows/nightly-e2e.yml`                                                           |
 | Contrôles          | `npm run audit:prod` conforme, type-check OK, lint 0 erreur, `npm run test` : 230 fichiers, 3626 tests verts, `prisma generate` OK |
 | Jira               | commentaire sur SP-596                                                                                                             |
-| Mémoire            | `ou-en-est-le-projet.md`, `npm-audit-lire-omit-dev.md`                                                                             |
+| Mémoire            | `ou-en-est-le-projet.md`, `npm-audit-lire-omit-dev.md`, `audit-documentation-13-septembre.md`                                      |
 
 ## Ce qui a été fait
 
@@ -28,7 +28,12 @@ refermée, 14 commentaires de bot. Rien ne la fermait au retour au vert, donc
 chaque nouvel épisode s'empilait dans un vieux fil sans notification visible.
 Deux changements : l'issue créée est assignée au propriétaire du dépôt, et un
 job `close-on-success` ferme toute issue `nightly-failure` ouverte à la
-première nightly verte. #72 se fermera d'elle-même à la prochaine.
+première nightly verte.
+
+**Prouvé en production le jour même.** PR #133 mergée (`44b47eb`), CI et CD
+verts, image `sha-44b47eb` healthy depuis 07:40 UTC, aucune erreur dans
+journald. La nightly de 11:02 UTC sur `44b47eb` est verte, Notify Failure
+sauté, Close Tracking Issue a fermé #72 à 11:10:37 UTC avec son commentaire.
 
 ## Les écarts
 
@@ -41,9 +46,28 @@ première nightly verte. #72 se fermera d'elle-même à la prochaine.
 - `prisma migrate status` non rejoué en local, Postgres arrêté. La CI le
   couvre par ses migrations sur base réelle
 - La notification de l'assignation n'est prouvée qu'au prochain échec
+- Le cron de la nightly est réglé sur 2 h UTC, mais les runs du 16 au 25
+  novembre ont démarré entre 9 h et 12 h UTC : GitHub les retarde. Le README
+  annonçait 2 h et 45 à 60 minutes, pour 8 à 16 minutes mesurées, corrigé
 
 ## Prochaine étape
 
-- Vérifier que la nightly du 26 novembre est verte et que #72 est fermée
 - Lire l'activité de JULIENNE, essai jusqu'au 2 décembre
 - Décider de la CLI Prisma de l'image (copie depuis le builder)
+
+## Audit documentaire de fin de session
+
+Rejoué selon la méthode de la mémoire, par la mesure. Conformes : compteurs du
+README (230 fichiers et 3626 tests unitaires, E2E 28 fichiers et 275 tests dont
+143 en whitelist, 26 tests publics, 22 modèles, 16 enums, 65 index, 24
+migrations, 66 pages, 18 routes, 32 actions, 24 services, 21 templates
+email), seuils de couverture, scripts npm cités tous présents, neuf scripts
+ops tous documentés, six hooks testés en exécution (`.env` refusé en code 2,
+export non-async signalé, `SessionStart` affichant cette entrée), cinq agents
+et deux skills. VPS : Nginx identique au dépôt, sept scripts ops identiques,
+`read-funnel-steps.sh` et `test-cd-rollback.sh` absents comme avant (lancés
+depuis le poste). Jira : SP-602 seul ouvert.
+
+Écarts corrigés : ligne nightly du README (horaire et durée), mécanisme
+d'alerte et limite de l'override dans `deployment.md` (2.21), `CLAUDE.md` et
+l'agent `docker-devops`.
