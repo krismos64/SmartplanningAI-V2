@@ -158,6 +158,7 @@
     },
     "next": {
       "postcss": "$postcss"
-    }
+    },
+    "effect": "^3.22.1"
   }
 }

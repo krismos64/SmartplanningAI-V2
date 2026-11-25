@@ -224,6 +224,12 @@ jobs:
   # peut passer inaperçu pendant des jours (vécu : 8 jours en juillet 2026).
   # Crée une issue GitHub (label nightly-failure) ou commente celle
   # déjà ouverte pour regrouper les échecs consécutifs.
+  #
+  # L'issue est assignée au propriétaire du dépôt : un commentaire de bot
+  # sur une issue où il n'est ni auteur ni assigné ne lui parvient pas.
+  # Le job close-on-success la ferme au premier vert, sinon chaque nouvel
+  # épisode s'empile dans un vieux fil. Vécu : #72 ouverte le 12 août 2026,
+  # cinq nuits rouges du 20 au 24 novembre passées inaperçues.
   notify-failure:
     name: Notify Failure
     runs-on: ubuntu-24.04
@@ -237,6 +243,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          OWNER: ${{ github.repository_owner }}
         run: |
           gh label create nightly-failure \
             --repo "$REPO" \
@@ -253,8 +260,33 @@ jobs:
           else
             gh issue create --repo "$REPO" \
               --label nightly-failure \
+              --assignee "$OWNER" \
               --title "🔴 Nightly tests en échec ($(date -u +%F))" \
               --body "La suite nightly a échoué. Run : $RUN_URL
 
-          Fermer cette issue une fois la cause corrigée — les échecs suivants seront ajoutés en commentaire tant qu'elle reste ouverte."
+          Les échecs suivants s'ajoutent en commentaire. L'issue se ferme d'elle-même à la première nightly verte."
           fi
+
+  # ============================================
+  # JOB 4 : FERMETURE AU RETOUR AU VERT
+  # ============================================
+  close-on-success:
+    name: Close Tracking Issue
+    runs-on: ubuntu-24.04
+    needs: [unit-tests, e2e-tests]
+    if: success()
+    permissions:
+      issues: write
+    steps:
+      - name: Close open nightly-failure issues
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          for number in $(gh issue list --repo "$REPO" \
+            --label nightly-failure --state open \
+            --json number --jq '.[].number'); do
+            gh issue close "$number" --repo "$REPO" \
+              --comment "🟢 Nightly repassée au vert le $(date -u +%F) : $RUN_URL"
+          done
