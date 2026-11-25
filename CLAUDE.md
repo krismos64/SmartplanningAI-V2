@@ -188,6 +188,9 @@ Les runners des trois workflows sont épinglés sur `ubuntu-24.04` :
 `ubuntu-latest`, passé à Ubuntu 26.04 en novembre 2026, empêche Playwright
 d'installer Chromium, et la nightly est restée rouge sept nuits sans alerte.
 Elle est repassée au vert le 13 novembre.
+Un échec ouvre une issue `nightly-failure` assignée, fermée d'elle-même au
+premier vert : avant le 25 novembre, l'alerte commentait une issue ouverte
+depuis août, et cinq nuits rouges sont passées inaperçues.
 
 Le CD ne se déclenche que si le CI passe entièrement, E2E comprises. Un push sur
 une branche sans PR ne déclenche aucun workflow : ouvrir une PR, même en draft,
